@@ -8,8 +8,6 @@ const router = require("./index.routes");
 const i18next = require("./i18next");
 const { Db } = require("./db/index");
 
-
-
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
 require("colors");
