@@ -6,6 +6,25 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static smetaSum(data) {
+    let sum = 0;
+    [
+      data.oy_1,
+      data.oy_2,
+      data.oy_3,
+      data.oy_4,
+      data.oy_5,
+      data.oy_6,
+      data.oy_7,
+      data.oy_8,
+      data.oy_9,
+      data.oy_10,
+      data.oy_11,
+      data.oy_12,
+    ].map((arg) => (sum += Number(arg)));
+
+    return sum;
+  }
   static paginate(data) {
     const offset = (data.page - 1) * data.limit;
     const paginatedItems = data.array.slice(offset, offset + data.limit);

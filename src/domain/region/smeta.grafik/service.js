@@ -1,41 +1,55 @@
 const { SmetaGrafikDB } = require("./db");
-const { sum } = require("@helper/functions");
+const { sum, HelperFunctions } = require("@helper/functions");
 const { db } = require(`@db/index`);
 
 exports.SmetaGrafikService = class {
   static now = new Date();
 
-  static async getOld(data) {
-    const result = await SmetaGrafikDB.getOld(
-      [data.region_id, data.offset, data.limit],
-      { year: data.year, smeta_id: data.smeta_id }
-    );
+  static async getMain(data) {
+    const result = await SmetaGrafikDB.getMain([
+      0,
+      data.year,
+      data.main_schet_id,
+      data.region_id,
+    ]);
 
     return result;
   }
 
-  static async multiInsert(data) {
-    await db.transaction(async (client) => {
-      for (let smeta of data.smetas) {
-        const itogo = sum(
-          smeta.oy_1,
-          smeta.oy_2,
-          smeta.oy_3,
-          smeta.oy_4,
-          smeta.oy_5,
-          smeta.oy_6,
-          smeta.oy_7,
-          smeta.oy_8,
-          smeta.oy_9,
-          smeta.oy_10,
-          smeta.oy_11,
-          smeta.oy_12
-        );
+  static async updateMain(data) {
+    for (let smeta of data.smetas) {
+      const itogo = HelperFunctions.smetaSum({ smeta });
 
+      const check = data.main_parent.smetas.find(
+        (item) => (item.smeta_id = smeta.smeta_id)
+      );
+
+      if (check) {
+        await SmetaGrafikDB.updateMain(
+          [
+            itogo,
+            smeta.oy_1,
+            smeta.oy_2,
+            smeta.oy_3,
+            smeta.oy_4,
+            smeta.oy_5,
+            smeta.oy_6,
+            smeta.oy_7,
+            smeta.oy_8,
+            smeta.oy_9,
+            smeta.oy_10,
+            smeta.oy_11,
+            smeta.oy_12,
+            this.now,
+            smeta.smeta_id,
+            data.parent_id,
+          ],
+          data.client
+        );
+      } else {
         await SmetaGrafikDB.create(
           [
             smeta.smeta_id,
-            null,
             data.user_id,
             itogo,
             smeta.oy_1,
@@ -50,57 +64,105 @@ exports.SmetaGrafikService = class {
             smeta.oy_10,
             smeta.oy_11,
             smeta.oy_12,
-            data.year,
-            data.main_schet_id,
+            data.old_data.year,
+            data.old_data.main_schet_id,
+            data.parent_id,
             this.now,
             this.now,
           ],
-          client
+          data.client
         );
+      }
+    }
+
+    data.main_parent.smetas.forEach(async (item) => {
+      const check = data.smetas.find(
+        (smeta) => smeta.smeta_id === item.smeta_id
+      );
+
+      if (!check) {
+        await SmetaGrafikDB.deleteMain([item.smeta_id, data.main_parent.id]);
       }
     });
   }
 
-  static async create(data) {
-    const itogo = sum(
-      data.oy_1,
-      data.oy_2,
-      data.oy_3,
-      data.oy_4,
-      data.oy_5,
-      data.oy_6,
-      data.oy_7,
-      data.oy_8,
-      data.oy_9,
-      data.oy_10,
-      data.oy_11,
-      data.oy_12
+  static async createChild(data) {
+    for (let smeta of data.smetas) {
+      const itogo = HelperFunctions.smetaSum({ smeta });
+
+      await SmetaGrafikDB.create(
+        [
+          smeta.smeta_id,
+          data.user_id,
+          itogo,
+          smeta.oy_1,
+          smeta.oy_2,
+          smeta.oy_3,
+          smeta.oy_4,
+          smeta.oy_5,
+          smeta.oy_6,
+          smeta.oy_7,
+          smeta.oy_8,
+          smeta.oy_9,
+          smeta.oy_10,
+          smeta.oy_11,
+          smeta.oy_12,
+          data.year,
+          data.main_schet_id,
+          data.parent_id,
+          this.now,
+          this.now,
+        ],
+        data.client
+      );
+    }
+  }
+
+  static async createParent(data) {
+    const parent = await SmetaGrafikDB.createParent(
+      [
+        data.user_id,
+        data.year,
+        data.main_schet_id,
+        data.order_number,
+        this.now,
+        this.now,
+      ],
+      data.client
     );
 
-    const result = await SmetaGrafikDB.create([
-      data.smeta_id,
-      data.spravochnik_budjet_name_id,
-      data.user_id,
-      itogo,
-      data.oy_1,
-      data.oy_2,
-      data.oy_3,
-      data.oy_4,
-      data.oy_5,
-      data.oy_6,
-      data.oy_7,
-      data.oy_8,
-      data.oy_9,
-      data.oy_10,
-      data.oy_11,
-      data.oy_12,
-      data.year,
-      data.main_schet_id,
-      this.now,
-      this.now,
-    ]);
+    return parent;
+  }
 
-    return result;
+  static async create(data) {
+    await db.transaction(async (client) => {
+      const order_number = await SmetaGrafikDB.getOrderNumber([
+        data.year,
+        data.main_schet_id,
+      ]);
+
+      const parent = await this.createParent({
+        ...data,
+        order_number,
+        client,
+      });
+
+      await this.createChild({ ...data, parent_id: parent.id, client });
+
+      if (order_number === 1) {
+        const main_parent = await this.createParent({
+          ...data,
+          order_number: 0,
+          client,
+        });
+
+        await this.createChild({ ...data, parent_id: main_parent.id, client });
+      } else {
+        const main_parent = await this.getMain({ ...data });
+
+        await this.updateMain({ ...data, main_parent, client });
+      }
+    });
   }
 
   static async get(data) {
@@ -123,17 +185,6 @@ exports.SmetaGrafikService = class {
     return result;
   }
 
-  static async getByYear(data) {
-    const result = await SmetaGrafikDB.getByYear([
-      data.region_id,
-      data.smeta_id,
-      data.year,
-      data.main_schet_id,
-    ]);
-
-    return result;
-  }
-
   static async update(data) {
     const itogo = sum(
       data.oy_1,
@@ -149,8 +200,6 @@ exports.SmetaGrafikService = class {
       data.oy_11,
       data.oy_12
     );
-
-    const order = await SmetaGrafikDB.getBySortNumber([data.id]);
 
     const result = await db.transaction(async (client) => {
       const grafik = await SmetaGrafikDB.update(
@@ -178,35 +227,6 @@ exports.SmetaGrafikService = class {
         client
       );
 
-      await SmetaGrafikDB.createOld(
-        [
-          data.id,
-          order,
-          data.user_id,
-          data.old_data.smeta_name,
-          data.old_data.smeta_number,
-          data.old_data.budjet_name,
-          data.old_data.itogo,
-          data.old_data.oy_1,
-          data.old_data.oy_2,
-          data.old_data.oy_3,
-          data.old_data.oy_4,
-          data.old_data.oy_5,
-          data.old_data.oy_6,
-          data.old_data.oy_7,
-          data.old_data.oy_8,
-          data.old_data.oy_9,
-          data.old_data.oy_10,
-          data.old_data.oy_11,
-          data.old_data.oy_12,
-          data.old_data.account_number,
-          data.old_data.year,
-          this.now,
-          this.now,
-        ],
-        client
-      );
-
       return grafik;
     });
 
@@ -214,8 +234,8 @@ exports.SmetaGrafikService = class {
   }
 
   static async delete(data) {
-    const result = await SmetaGrafikDB.delete([data.id]);
-
-    return result;
+    await db.transaction(async (client) => {
+      await SmetaGrafikDB.delete([data.id], client);
+    });
   }
 };

@@ -4,36 +4,10 @@ const { SmetaGrafikService } = require("./service");
 const { HelperFunctions } = require("@helper/functions");
 
 exports.Controller = class {
-  static async getOld(req, res) {
-    const region_id = req.user.region_id;
-    const { page, limit, year } = req.query;
-    const offset = (page - 1) * limit;
-
-    const { data, total } = await SmetaGrafikService.getOld({
-      ...req.query,
-      region_id,
-      offset,
-      year,
-      limit,
-    });
-
-    const pageCount = Math.ceil(total / limit);
-
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    };
-
-    return res.success(req.i18n.t(`getSuccess`), 200, meta, data);
-  }
-
-  static async multiInsert(req, res) {
+  static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const { main_schet_id, year } = req.query;
+    const { main_schet_id } = req.query;
     const { smetas } = req.body;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
@@ -45,55 +19,12 @@ exports.Controller = class {
 
     for (let smeta of smetas) {
       await ValidatorFunctions.smeta({ smeta_id: smeta.smeta_id });
-
-      const check = await SmetaGrafikService.getByYear({
-        region_id,
-        smeta_id: smeta.smeta_id,
-        year,
-        main_schet_id,
-      });
-      if (check) {
-        return res.error(req.i18n.t("docExists"), 409);
-      }
-    }
-
-    const result = await SmetaGrafikService.multiInsert({
-      ...req.body,
-      ...req.query,
-      user_id,
-    });
-
-    return res.success(req.i18n.t("createSuccess"), 201, null, result);
-  }
-
-  static async create(req, res) {
-    const region_id = req.user.region_id;
-    const user_id = req.user.id;
-    const { smeta_id, spravochnik_budjet_name_id, main_schet_id, year } =
-      req.body;
-
-    await ValidatorFunctions.smeta({ smeta_id });
-
-    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
-
-    await ValidatorFunctions.budjet({
-      budjet_id: spravochnik_budjet_name_id,
-    });
-
-    const check = await SmetaGrafikService.getByYear({
-      region_id,
-      smeta_id,
-      spravochnik_budjet_name_id,
-      year,
-      main_schet_id,
-    });
-    if (check) {
-      return res.error(req.i18n.t("docExists"), 409);
     }
 
     const result = await SmetaGrafikService.create({
       ...req.body,
       ...req.query,
+      region_id,
       user_id,
     });
 
@@ -102,39 +33,16 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, budjet_id, operator, year } = req.query;
-    if (budjet_id) {
-      const budjet = await BudjetService.getById({ id: budjet_id });
-      if (!budjet) {
-        return res.error(req.i18n.t("budjetNotFound"), 404);
-      }
-    }
+    const { page, limit, main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const offset = (page - 1) * limit;
-    const {
-      data,
-      total,
-      itogo,
-      oy_1,
-      oy_2,
-      oy_3,
-      oy_4,
-      oy_5,
-      oy_6,
-      oy_7,
-      oy_8,
-      oy_9,
-      oy_10,
-      oy_11,
-      oy_12,
-    } = await SmetaGrafikService.get({
+
+    const { data, total } = await SmetaGrafikService.get({
       ...req.query,
       region_id,
       offset,
-      limit,
-      budjet_id,
-      operator,
-      year,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -145,19 +53,6 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      itogo,
-      oy_1,
-      oy_2,
-      oy_3,
-      oy_4,
-      oy_5,
-      oy_6,
-      oy_7,
-      oy_8,
-      oy_9,
-      oy_10,
-      oy_11,
-      oy_12,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);

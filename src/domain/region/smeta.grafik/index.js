@@ -12,14 +12,9 @@ const {
 } = require("./schema");
 
 router
-  .get("/old", validator(Controller.getOld, SmetaGrafikSchema.getOld()))
   .get("/:id", validator(Controller.getById, getByIdSchema))
   .get("/", validator(Controller.get, getSchema))
-  .post("/", validator(Controller.create, createSchema))
-  .post(
-    "/multi/insert",
-    validator(Controller.multiInsert, SmetaGrafikSchema.multiInsert())
-  )
+  .post("/", validator(Controller.create, SmetaGrafikSchema.create()))
   .put("/:id", validator(Controller.update, updateSchema))
   .delete("/:id", validator(Controller.deleteSmetGrafik, deleteSchema));
 

@@ -12,7 +12,7 @@ exports.SmetaGrafikSchema = class {
     }).options({ stripUnknown: true });
   }
 
-  static multiInsert() {
+  static create() {
     return Joi.object({
       body: Joi.object({
         smetas: Joi.array()
@@ -94,10 +94,6 @@ exports.getSchema = Joi.object({
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().min(1).integer().default(10),
-    search: Joi.string().trim().allow(null, ""),
-    type: Joi.string().trim(),
-    group_number: Joi.string().trim(),
-    operator: Joi.string().trim().valid("=", ">"),
     main_schet_id: Joi.number().min(1).integer().required(),
     year: Joi.number().integer().min(1901),
   }),
