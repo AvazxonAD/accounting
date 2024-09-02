@@ -13,7 +13,9 @@ const {
     deleteUser,
     requisitesCreate,
     getRequisites,
-    updateRequisite
+    updateRequisite,
+    defaultRequisite,
+    getDefaultRequisite
 } = require('../controller/auth.controller')
 
 
@@ -27,5 +29,7 @@ router.delete("/delete/:id", protect, deleteUser)
 router.post('/requisites/create', protect, requisitesCreate)
 router.get('/get/requisite', protect, getRequisites)
 router.put('/update/requisite/:id', protect, updateRequisite)
+router.put('/default/requisite', protect, defaultRequisite)
+router.get('/get/default/requisite', protect, getDefaultRequisite)
 
 module.exports = router

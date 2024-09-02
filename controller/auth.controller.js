@@ -299,3 +299,51 @@ exports.updateRequisite = asyncHandler(async (req, res, next) => {
         data: result.rows[0]
     });
 })
+
+// default requisite 
+exports.defaultRequisite = asyncHandler(async (req, res, next) => {
+    const {shot_id , bank_id, account_number_id} = req.body
+    if(!shot_id || !bank_id || !account_number_id){
+        return next(new ErrorResponse('So`rovlar bosh qolmasligi kerak', 400))
+    }
+
+    const shot = await pool.query(`SELECT * FROM shots WHERE id = $1`, [shot_id])
+    const bank = await pool.query(`SELECT * FROM banks WHERE id = $1`, [bank_id])
+    const account_number = await pool.query(`SELECT * FROM account_numbers WHERE id = $1`, [account_number_id])
+    
+    if(!shot.rows[0] || !bank.rows[0] || !account_number.rows[0]){
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    await pool.query(`UPDATE banks SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
+    await pool.query(`UPDATE banks SET default_value = $1 WHERE id = $2 AND user_id = $3`, [true, bank_id, req.user.id])
+
+    await pool.query(`UPDATE shots SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
+    await pool.query(`UPDATE shots SET default_value = $1 WHERE id = $2 AND user_id = $3`, [true, shot_id, req.user.id])
+
+    await pool.query(`UPDATE account_numbers SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
+    await pool.query(`UPDATE account_numbers SET default_value = $1 WHERE id = $2 AND user_id = $3`, [true, account_number_id, req.user.id])
+
+    return res.status(200).json({
+        success: true,
+        data: "Default value has been created"
+    })
+})
+
+//  get default requisite 
+exports.getDefaultRequisite = asyncHandler(async (req, res, next) => {
+    const user = await pool.query(`SELECT * FROM requisites WHERE user_id = $1`, [req.user.id])
+    const bank = await pool.query(`SELECT * FROM banks WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
+    const shot = await pool.query(`SELECT * FROM shots WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
+    const account_number = await pool.query(`SELECT * FROM account_numbers WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
+
+    res.status(200).json({
+        success: true,
+        data: {
+            user: user.rows[0],
+            bank: bank.rows[0],
+            shot: shot.rows[0],
+            account_number: account_number.rows[0]
+        }
+    })
+})

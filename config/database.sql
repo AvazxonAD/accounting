@@ -23,6 +23,7 @@ CREATE TABLE banks (
     name VARCHAR(200) NOT NULL,
     mfo VARCHAR(5) NOT NULL,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    default_value BOOLEAN DEFAULT false,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP 
 );
@@ -32,6 +33,7 @@ CREATE TABLE shots (
     shot_number BIGINT NOT NULL,
     shot_balance BIGINT DEFAULT 0, 
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    default_value BOOLEAN DEFAULT false,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -40,6 +42,7 @@ CREATE TABLE account_numbers (
     id BIGSERIAL NOT NULL PRIMARY KEY,
     account_number VARCHAR(20) NOT NULL,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    default_value BOOLEAN DEFAULT false,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -60,14 +63,23 @@ CREATE TABLE contracts (
     id BIGSERIAL NOT NULL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     counterparty_id INTEGER REFERENCES counterparties(id) ON DELETE SET NULL,
+    counterparty_name VARCHAR(400) NOT NULL,
+    counterparty_account_number VARCHAR(100) NOT NUll,
+    counterparty_inn BIGINT NOT NULL,
+    counterparty_mfo VARCHAR(5) NOT NULL,
+    counterparty_bank_name VARCHAR(200) NOT NULL, 
     contract_status BOOLEAN NOT NULL,
     contract_number INTEGER NOT NULL,
     contract_date DATE NOT NULL,
     contract_summa BIGINT NOT NULL,
     contract_info VARCHAR(1000) NOT NULL,
     bank_id INTEGER REFERENCES banks(id) ON DELETE SET NULL,
+    bank_name VARCHAR(200) NOT NULL,
+    bank_mfo VARCHAR(5) NOT NULL,
     account_number_id INTEGER REFERENCES account_numbers(id) ON DELETE SET NULL,
+    account_number VARCHAR(20) NOT NULL,
     shot_id INTEGER REFERENCES shots(id) ON DELETE SET NULL,
+    shot_number BIGINT NOT NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
