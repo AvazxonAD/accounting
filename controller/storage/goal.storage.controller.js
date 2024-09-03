@@ -59,13 +59,12 @@ exports.updateGoal = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Malumotlar tog`ri formatda kiritilishi zarur', 400))
     }
 
-    if (!number !== Number(goal.number)) {
+    if (number !== goal.number) {
         const test = await pool.query(`SELECT * FROM goals WHERE user_id = $1 AND number = $2`, [req.user.id, number])
         if (test.rows[0]) {
             return next(new ErrorResponse(`Ushbu smeta raqami avval kirtilgan: ${number}`, 400))
         }
     }
-
     const result = await pool.query(`UPDATE goals SET shot_number = $1, info = $2, number = $3 WHERE  id = $4 
         RETURNING *     
     `, [shot_number, info.trim(), number, req.params.id])
@@ -76,11 +75,11 @@ exports.updateGoal = asyncHandler(async (req, res, next) => {
     })
 })
 
-// delete bank 
-exports.deleteBank = asyncHandler(async (req, res, next) => {
-    const bank = await pool.query(`DELETE FROM banks WHERE id = $1 RETURNING * `, [req.params.id])
+// delete goal
+exports.deleteGoal = asyncHandler(async (req, res, next) => {
+    const goal = await pool.query(`DELETE FROM goals WHERE id = $1 RETURNING * `, [req.params.id])
 
-    if (!bank.rows[0]) {
+    if (!goal.rows[0]) {
         return next(new ErrorResponse('DELETE FALSE', 500))
     } else {
         return res.status(200).json({
