@@ -73,118 +73,113 @@ exports.createUsers = asyncHandler(async (req, res, next) => {
     });
 });
 
-// update admin
-exports.updateAdmin = asyncHandler(async (req, res, next) => {
-    let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
-    user = user.rows[0]
-    const { login, oldPassword, newPassword } = req.body;
+// update 
+exports.update = asyncHandler(async (req, res, next) => {
+    let updateUser = null
+    if (req.user.admin_status) {
+        const { admin, user } = req.body;
 
-    if ( !login || !oldPassword || !newPassword ) {
-        return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
-    }
-
-    if (typeof oldPassword !== "string" || typeof newPassword !== "string" || typeof login !== "string") {
-        return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
-    }
-
-    const matchPassword = await bcrypt.compare(oldPassword, user.password)
-    if (!matchPassword) {
-        return next(new ErrorResponse("Eski parol xato kiritildi", 403));
-    }
-
-    /*const regex = /^(?=.*[a-zA-Z])(?=.*\d)[^\s]{8,}$/;
-    if (!regex.test(newPassword)) {
-        return next(new ErrorResponse("password sodda bolmasligi kerak"))
-    }*/
-
-    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
-    
-    if(login.trim() !== user.login){
-        const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login.trim()])
-        if(test.rows[0]){
-            return next(new ErrorResponse('Login avval ishlatilgan', 400))
+        if ((admin && user) || (!admin && !user)) {
+            return next(new ErrorResponse('Server error: Administrator or user required, but not both or none', 400));
         }
-    }
-
-    const updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING *
-        `, [login, hashedPassword, req.user.id]);
-
-    return res.status(200).json({
-        success: true,
-        data: updateUser.rows[0]
-    });
-});
-
-// update user
-exports.updateUser = asyncHandler(async (req, res, next) => {
-    let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
-    user = user.rows[0]
-    const {oldPassword, newPassword } = req.body;
-
-    if ( !oldPassword || !newPassword ) {
-        return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
-    }
-
-    if (typeof oldPassword !== "string" || typeof newPassword !== "string") {
-        return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
-    }
-
-    const matchPassword = await bcrypt.compare(oldPassword, user.password)
-    if (!matchPassword) {
-        return next(new ErrorResponse("Eski parol xato kiritildi", 403));
-    }
-
-    /*const regex = /^(?=.*[a-zA-Z])(?=.*\d)[^\s]{8,}$/;
-    if (!regex.test(newPassword)) {
-        return next(new ErrorResponse("password sodda bolmasligi kerak"))
-    }*/
-
-    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
-    
-    const updateUser = await pool.query(`UPDATE users SET password = $1 WHERE id = $2 RETURNING *
-        `, [ hashedPassword, req.user.id ]);
-
-    return res.status(200).json({
-        success: true,
-        data: updateUser.rows[0]
-    });
-});
-
-// update user by admin
-exports.updateUserByAdmin = asyncHandler(async (req, res, next) => {
-    let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.params.id]);
-    user = user.rows[0]
-    if(!user){
-        return next(new ErrorResponse('server xatolik', 400))
-    }
-
-    const { login, newPassword } = req.body;
-
-    if ( !login ||  !newPassword ) {
-        return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
-    }
-
-    if ( typeof newPassword !== "string" || typeof login !== "string") {
-        return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
-    }
-
-
-    /*const regex = /^(?=.*[a-zA-Z])(?=.*\d)[^\s]{8,}$/;
-    if (!regex.test(newPassword)) {
-        return next(new ErrorResponse("password sodda bolmasligi kerak"))
-    }*/
-
-    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
-    
-    if(login.trim() !== user.login){
-        const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login.trim()])
-        if(test.rows[0]){
-            return next(new ErrorResponse('Login avval ishlatilgan', 400))
+        if(admin){
+            if (admin !== undefined && typeof admin !== "boolean") {
+                return next(new ErrorResponse('Server error: Admin status must be boolean', 400));
+            }
         }
-    }
+        if(user){
+            if (user !== undefined && typeof user !== "boolean") {
+                return next(new ErrorResponse('Server error: User status must be boolean', 400));
+            }
+        }        
 
-    const updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING *
-        `, [login, hashedPassword, req.params.id]);
+        if (user) {
+            console.log(1)
+            const { login, newPassword, user_id} = req.body
+
+            
+            if (!user_id) {
+                return next(new ErrorResponse('Server error id is not defined', 400))
+            }
+
+            let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [user_id]);
+            user = user.rows[0]
+            if (!user) {
+                return next(new ErrorResponse('server xatolik', 400))
+            }
+
+            if (!login || !newPassword) {
+                return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
+            }
+
+            if (typeof newPassword !== "string" || typeof login !== "string") {
+                return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
+
+            if (login.trim() !== user.login) {
+                const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login.trim()])
+                if (test.rows[0]) {
+                    return next(new ErrorResponse('Login avval ishlatilgan', 400))
+                }
+            }
+
+            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING *
+            `, [login, hashedPassword, user_id]);
+        } else if (admin) {
+            let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
+            user = user.rows[0]
+            const { login, oldPassword, newPassword } = req.body;
+
+            if (!login || !oldPassword || !newPassword) {
+                return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
+            }
+
+            if (typeof oldPassword !== "string" || typeof newPassword !== "string" || typeof login !== "string") {
+                return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
+            }
+
+            const matchPassword = await bcrypt.compare(oldPassword, user.password)
+            if (!matchPassword) {
+                return next(new ErrorResponse("Eski parol xato kiritildi", 403));
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
+
+            if (login.trim() !== user.login) {
+                const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login.trim()])
+                if (test.rows[0]) {
+                    return next(new ErrorResponse('Login avval ishlatilgan', 400))
+                }
+            }
+
+            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING *
+                `, [login, hashedPassword, req.user.id]);
+        }
+    } else if( !req.user.admin_status ) {
+        let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
+        user = user.rows[0]
+        const { oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
+        }
+
+        if (typeof oldPassword !== "string" || typeof newPassword !== "string") {
+            return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
+        }
+
+        const matchPassword = await bcrypt.compare(oldPassword, user.password)
+        if (!matchPassword) {
+            return next(new ErrorResponse("Eski parol xato kiritildi", 403));
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
+
+        updateUser = await pool.query(`UPDATE users SET password = $1 WHERE id = $2 RETURNING *
+        `, [hashedPassword, req.user.id]);
+    }
 
     return res.status(200).json({
         success: true,
@@ -198,7 +193,7 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
     let users = []
     let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
     user = user.rows[0]
-    
+
     if (user.admin_status) {
         users = await pool.query(`SELECT * FROM users WHERE user_id = $1`, [user.id])
         users = users.rows
@@ -261,13 +256,13 @@ exports.getRequisites = asyncHandler(async (req, res, next) => {
     let requisite = await pool.query(`SELECT * FROM requisites WHERE user_id = $1`, [req.user.id]);
     requisite = requisite.rows[0]
 
-    if(!requisite){
+    if (!requisite) {
         return next(new ErrorResponse('Hali rekvizitlar kiritilmagan', 400))
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
         success: true,
-        data: requisite 
+        data: requisite
     })
 })
 
@@ -276,7 +271,7 @@ exports.updateRequisite = asyncHandler(async (req, res, next) => {
     const { name, inn, budget } = req.body;
 
     const requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1`, [req.params.id])
-    if(!requisite.rows[0]){
+    if (!requisite.rows[0]) {
         return next(new ErrorResponse('server xatolik', 500))
     }
 
@@ -291,7 +286,7 @@ exports.updateRequisite = asyncHandler(async (req, res, next) => {
     const result = await pool.query(`UPDATE requisites SET name = $1, inn = $2, budget = $3
         WHERE id = $4
         RETURNING *`
-    , [name, inn, budget, req.params.id]);
+        , [name, inn, budget, req.params.id]);
 
     console.log(result.rows[0])
     return res.status(200).json({
@@ -302,16 +297,16 @@ exports.updateRequisite = asyncHandler(async (req, res, next) => {
 
 // default requisite 
 exports.defaultRequisite = asyncHandler(async (req, res, next) => {
-    const {shot_id , bank_id, account_number_id} = req.body
-    if(!shot_id || !bank_id || !account_number_id){
+    const { shot_id, bank_id, account_number_id } = req.body
+    if (!shot_id || !bank_id || !account_number_id) {
         return next(new ErrorResponse('So`rovlar bosh qolmasligi kerak', 400))
     }
 
     const shot = await pool.query(`SELECT * FROM shots WHERE id = $1`, [shot_id])
     const bank = await pool.query(`SELECT * FROM banks WHERE id = $1`, [bank_id])
     const account_number = await pool.query(`SELECT * FROM account_numbers WHERE id = $1`, [account_number_id])
-    
-    if(!shot.rows[0] || !bank.rows[0] || !account_number.rows[0]){
+
+    if (!shot.rows[0] || !bank.rows[0] || !account_number.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 

@@ -6,9 +6,7 @@ const { protect, adminProtect } = require('../middleware/auth')
 const {
     login,
     createUsers,
-    updateAdmin,
-    updateUser,
-    updateUserByAdmin,
+    update,
     getProfile,
     deleteUser,
     requisitesCreate,
@@ -21,9 +19,7 @@ const {
 
 router.post('/login', login)
 router.post("/create", protect, adminProtect, createUsers)
-router.put('/update/admin', protect, adminProtect, updateAdmin)
-router.put('/update/user', protect, updateUser)
-router.put('/update/user/by/admin/:id', protect, adminProtect, updateUserByAdmin)
+router.put('/update', protect, update)
 router.get("/get", protect, getProfile)
 router.delete("/delete/:id", protect, deleteUser)
 router.post('/requisites/create', protect, requisitesCreate)

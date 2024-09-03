@@ -89,10 +89,11 @@ exports.create_contract = asyncHandler(async (req, res, next) => {
     ]);
 
     let update_shot_balance = 0;
+
     if (contract_status) {
-        update_shot_balance = shot.shot_balance + contract_summa;
+        update_shot_balance = Number(shot.shot_balance) + contract_summa;
     } else {
-        update_shot_balance = shot.shot_balance - contract_summa;
+        update_shot_balance = Number(shot.shot_balance) - contract_summa;
     }
 
     await pool.query(`UPDATE shots SET shot_balance = $1 WHERE id = $2`, [update_shot_balance, shot.id]);
