@@ -19,6 +19,7 @@ app.use('/storage/shot/number', require('./router/storage/shot.storage.router'))
 app.use('/storage/account/number', require('./router/storage/account.number.storage.router'))
 app.use('/storage/counterparties', require('./router/storage/counterparty.storage.router'))
 app.use('/contract', require('./router/contract.router'))
+app.use('/storage/goal', require('./router/storage/goal.storage.router'))
 
 app.use(require('./middleware/errorHandler'))
 

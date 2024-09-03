@@ -6,8 +6,8 @@ module.exports = async () => {
     if (admin.rows.length === 0) {
         const hashedPassword = await bcrypt.hash('123', 10);
         await pool.query(`
-            INSERT INTO users (login, password, admin_status) 
-            VALUES ($1, $2, $3) 
-        `, ['root', hashedPassword, true]);
+            INSERT INTO users (login, password, admin_status, name, inn, budget) 
+            VALUES ($1, $2, $3, $4, $5, $6) 
+        `, ['root', hashedPassword, true, 'Navoiyuran DK OYoХТТEМаrkazi', 112111212, 'Respublika budjet']);
     }
 };

@@ -9,11 +9,9 @@ const {
     update,
     getProfile,
     deleteUser,
-    requisitesCreate,
-    getRequisites,
     updateRequisite,
-    defaultRequisite,
-    getDefaultRequisite
+    getDefaultRequisite,
+    forUpdateRequisite
 } = require('../controller/auth.controller')
 
 
@@ -22,10 +20,9 @@ router.post("/create", protect, adminProtect, createUsers)
 router.put('/update', protect, update)
 router.get("/get", protect, getProfile)
 router.delete("/delete/:id", protect, deleteUser)
-router.post('/requisites/create', protect, requisitesCreate)
-router.get('/get/requisite', protect, getRequisites)
-router.put('/update/requisite/:id', protect, updateRequisite)
-router.put('/default/requisite', protect, defaultRequisite)
+router.put('/update/requisite', protect, updateRequisite)
 router.get('/get/default/requisite', protect, getDefaultRequisite)
+router.get('/for/update/requisite', protect, forUpdateRequisite)
+
 
 module.exports = router
