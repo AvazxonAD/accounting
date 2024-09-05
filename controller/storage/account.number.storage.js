@@ -35,9 +35,6 @@ exports.getAllAccountNumbers = asyncHandler(async (req, res, next) => {
     let account_numbers = await pool.query(`SELECT id, account_number FROM account_numbers WHERE user_id = $1`, [req.user.id])
     account_numbers = account_numbers.rows
     
-    if(account_numbers.length === 0){
-        return next(new ErrorResponse('Malumot topilmadi', 500))
-    }
     return res.status(200).json({
         success: true,
         data: account_numbers

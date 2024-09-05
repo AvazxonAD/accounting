@@ -33,10 +33,6 @@ exports.getAllGoal = asyncHandler(async (req, res, next) => {
     let goals = await pool.query(`SELECT id, shot_number, number, info FROM goals WHERE user_id = $1`, [req.user.id])
     goals = goals.rows
 
-    if (goals.length === 0) {
-        return next(new ErrorResponse('Malumot topilmadi', 500))
-    }
-
     return res.status(200).json({
         success: true,
         data: goals

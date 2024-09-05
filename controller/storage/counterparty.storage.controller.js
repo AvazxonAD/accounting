@@ -38,9 +38,6 @@ exports.get_all_counterparty = asyncHandler(async (req, res, next) => {
         FROM counterparties WHERE user_id = $1 ORDER BY id`, [req.user.id])
     counterparties = counterparties.rows
 
-    if (counterparties.length === 0) {
-        return next(new ErrorResponse('Malumot topilmadi', 500))
-    }
     return res.status(200).json({
         success: true,
         data: counterparties
@@ -59,7 +56,7 @@ exports.update_counterparty = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
     }
 
-    if (typeof inn !== "string" || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string") {
+    if (typeof inn !== "string" || inn.length !== 9 || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string") {
         return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400))
     }
 

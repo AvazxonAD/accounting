@@ -38,9 +38,6 @@ exports.getAllBank = asyncHandler(async (req, res, next) => {
     let banks = await pool.query(`SELECT id, name, mfo FROM banks WHERE user_id = $1`, [req.user.id])
     banks = banks.rows
     
-    if(banks.length === 0 ){
-        return next(new ErrorResponse('Malumot topilmadi', 500))
-    }
 
     return res.status(200).json({
         success: true,

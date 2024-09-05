@@ -35,9 +35,6 @@ exports.getAllShotNumbers = asyncHandler(async (req, res, next) => {
     let shots = await pool.query(`SELECT * FROM shots WHERE user_id = $1`, [req.user.id])
     shots = shots.rows
     
-    if(shots.length === 0){
-        return next(new ErrorResponse('Malumot topilmadi', 500))
-    }
     return res.status(200).json({
         success: true,
         data: shots
