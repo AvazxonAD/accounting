@@ -30,6 +30,7 @@ exports.create_account_number = asyncHandler(async (req, res, next) => {
 })
 
 // get all acccount numbers 
+
 exports.getAllAccountNumbers = asyncHandler(async (req, res, next) => {
     let account_numbers = await pool.query(`SELECT id, account_number FROM account_numbers WHERE user_id = $1`, [req.user.id])
     account_numbers = account_numbers.rows
