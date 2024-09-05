@@ -18,19 +18,19 @@ exports.createGoal = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`Ushbu smeta raqami avval kirtilgan: ${number}`, 400))
     }
 
-    const goal = await pool.query(`INSERT INTO goals(shot_number, info, number, user_id) VALUES($1, $2, $3, $4) RETURNING * 
+    await pool.query(`INSERT INTO goals(shot_number, info, number, user_id) VALUES($1, $2, $3, $4)
     `, [shot_number, info, number, req.user.id])
 
     return res.status(200).json({
         success: true,
-        data: goal.rows[0]
+        data: "Muvaffaqiyatli kirtildi"
     })
 })
 
 
 // get all  goal 
 exports.getAllGoal = asyncHandler(async (req, res, next) => {
-    let goals = await pool.query(`SELECT * FROM goals WHERE user_id = $1`, [req.user.id])
+    let goals = await pool.query(`SELECT id, shot_number, number, info FROM goals WHERE user_id = $1`, [req.user.id])
     goals = goals.rows
 
     if (goals.length === 0) {
@@ -65,13 +65,12 @@ exports.updateGoal = asyncHandler(async (req, res, next) => {
             return next(new ErrorResponse(`Ushbu smeta raqami avval kirtilgan: ${number}`, 400))
         }
     }
-    const result = await pool.query(`UPDATE goals SET shot_number = $1, info = $2, number = $3 WHERE  id = $4 
-        RETURNING *     
+    await pool.query(`UPDATE goals SET shot_number = $1, info = $2, number = $3 WHERE  id = $4 
     `, [shot_number, info.trim(), number, req.params.id])
 
     return res.status(200).json({
         success: true,
-        data: result.rows[0]
+        data: "Muvaffaqiyatli kiritildi"
     })
 })
 

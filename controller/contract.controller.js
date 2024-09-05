@@ -2,23 +2,26 @@ const asyncHandler = require("../middleware/asyncHandler");
 const ErrorResponse = require("../utils/errorResponse");
 const pool = require('../config/db')
 const { returnDate, returnStringDate } = require('../utils/date.function')
+const returnSumma = require('../utils/returnSumma')
 
 // create contract 
 exports.create_contract = asyncHandler(async (req, res, next) => {
-    const { contract_status, contract_number, contract_date, contract_summa, contract_info, counterparty_id } = req.body;
+    const { contract_status, contract_number, contract_date, contract_summa, contract_info, counterparty_id, goal_id } = req.body;
 
-    if (!contract_status || !contract_number || !contract_date || !contract_summa || !contract_info || !counterparty_id) {
+    if (!contract_status || !contract_number || !contract_date || !contract_summa || !contract_info || !counterparty_id, !goal_id) {
         return next(new ErrorResponse('So`rovlar bo`sh qolishi mumkin emas', 400));
     }
 
-    if (typeof contract_status !== "boolean" || typeof contract_number !== "number" || typeof contract_date !== "string" || typeof contract_summa !== "number" || typeof contract_info !== "string" || typeof counterparty_id !== "number") {
+    if (typeof contract_status !== "boolean" || typeof contract_number !== "number" || typeof contract_date !== "string" || typeof contract_summa !== "number" || typeof contract_info !== "string" || typeof counterparty_id !== "number" || typeof goal_id !== "number") {
         return next(new ErrorResponse('Malumotlar tog`ri formatda kiritilishi kerak', 400));
     }
 
-    let counterparty = await pool.query(`SELECT * FROM counterparties WHERE id = $1`, [counterparty_id]);
+    let counterparty = await pool.query(`SELECT * FROM counterparties WHERE id = $1 AND user_id = $2`, [counterparty_id, req.user.id]);
     counterparty = counterparty.rows[0]
-    if (!counterparty) {
-        return next(new ErrorResponse('Server xatolik kontragent topilmadi', 400));
+    let goal = await pool.query(`SELECT * FROM goals WHERE id = $1 AND user_id = $2`, [goal_id, req.user.id])
+    goal = goal.rows[0]
+    if (!counterparty || !goal) {
+        return next(new ErrorResponse('Server xatolik', 400));
     }
 
     let shot = await pool.query(`SELECT * FROM shots WHERE default_value = $1 AND user_id = $2`, [true, req.user.id]);
@@ -63,8 +66,11 @@ exports.create_contract = asyncHandler(async (req, res, next) => {
             counterparty_inn,
             counterparty_mfo,
             counterparty_bank_name,
+            goal_shot_number,
+            goal_number,
+            goal_info,
             user_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
         RETURNING *
     `, [
         contract_status, 
@@ -84,7 +90,10 @@ exports.create_contract = asyncHandler(async (req, res, next) => {
         counterparty.account_number,
         counterparty.inn,
         counterparty.mfo,
-        counterparty.bank_name, 
+        counterparty.bank_name,
+        goal.shot_number,
+        goal.number,
+        goal.info,
         req.user.id
     ]);
 
@@ -107,7 +116,8 @@ exports.create_contract = asyncHandler(async (req, res, next) => {
 
 // get all contracts 
 exports.getAllContracts = asyncHandler(async (req, res, next) => {
-    let contracts = await pool.query(`SELECT * FROM contracts WHERE user_id = $1 ORDER BY id`, [req.user.id]);
+    let contracts = await pool.query(`SELECT id, contract_date, contract_number, counterparty_name 
+        FROM contracts WHERE user_id = $1 ORDER BY id`, [req.user.id]);
     contracts = contracts.rows;
 
     if (contracts.length === 0) {
@@ -127,38 +137,51 @@ exports.getAllContracts = asyncHandler(async (req, res, next) => {
 
 // get element by id 
 exports.getElementById = asyncHandler(async (req, res, next) => {
-    let contract = await pool.query(`SELECT * FROM contracts WHERE id = $1`, [req.params.id]);
+    let contract = await pool.query(`SELECT 
+        id, 
+        counterparty_name, 
+        counterparty_account_number, 
+        counterparty_inn,
+        counterparty_bank_name,  
+        counterparty_mfo,
+        contract_number,
+        contract_date,
+        contract_summa,
+        contract_info,
+        bank_name,
+        bank_mfo,
+        account_number,
+        shot_number
+        FROM contracts WHERE id = $1`, [req.params.id]);
     contract = contract.rows[0];
 
     if (!contract) {
         return next(new ErrorResponse('Malumot topilmadi', 500));
     }
 
-    const result = [];
-
-    const counterparty = await pool.query(`SELECT * FROM counterparties WHERE id = $1`, [contract.counterparty_id]);
-    const bank = await pool.query(`SELECT * FROM banks WHERE id = $1`, [contract.bank_id]);
-    const account_number = await pool.query(`SELECT * FROM account_numbers WHERE id = $1`, [contract.account_number_id]);
-    const shot = await pool.query(`SELECT * FROM shots WHERE id = $1`, [contract.shot_id]);
-
-    const object = {};
-    object.contract_id = contract.id
-    object.counterparty_name = counterparty.rows[0]?.name || '';
-    object.counterparty_mfo = counterparty.rows[0]?.mfo || '';
-    object.counterparty_bank_name = counterparty.rows[0]?.bank_name || '';
-    object.counterparty_account_number = counterparty.rows[0]?.account_number || '';
-    object.counterparty_inn = counterparty.rows[0]?.inn || '';
-    object.bank_name = bank.rows[0]?.name || '';
-    object.bank_mfo = bank.rows[0]?.mfo || '';
-    object.account_number = account_number.rows[0]?.account_number || '';
-    object.shot_number = shot.rows[0]?.shot_number || '';
-    object.contract_number = contract.contract_number
+    const object = {...contract};
     object.contract_date = returnStringDate(contract.contract_date)
-    object.contract_summa = contract.contract_summa
-    object.contract_info = contract.contract_info
-
+    object.contract_summa = returnSumma(contract.contract_summa)
+    
     return res.status(200).json({
         success: true,
         data: object
     });
+})
+
+// for contract 
+exports.forContractCreate = asyncHandler(async (req, res, next) => {
+    const user = await pool.query(`SELECT id, name, inn FROM users WHERE id = $1`, [req.user.id])
+    const golas = await pool.query(`SELECT id, shot_number, number, info FROM goals WHERE user_id = $1`, [req.user.id])
+    const counterparties = await pool.query(`SELECT id, account_number, bank_name, mfo, name, inn 
+        FROM counterparties WHERE user_id = $1`, [req.user.id])
+
+    return res.status(200).json({
+        success: true,
+        data: {
+            user: user.rows[0],
+            golas: golas.rows,
+            counterparties: counterparties.rows
+        }
+    })
 })

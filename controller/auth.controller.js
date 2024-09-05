@@ -60,12 +60,12 @@ exports.createUsers = asyncHandler(async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password.trim(), 10)
 
     const newUser = await pool.query(`INSERT INTO users(login, password, user_id, name, inn, budget) 
-        VALUES($1, $2, $3, $4, $5, $6) RETURNING *
+        VALUES($1, $2, $3, $4, $5, $6)
     `, [login.trim(), hashedPassword, req.user.id, name, inn, budget]);
 
     return res.status(200).json({
         success: true,
-        data: newUser.rows[0]
+        data: "Muvaffaqiyatli kiritildi"
     });
 });
 
@@ -90,7 +90,6 @@ exports.update = asyncHandler(async (req, res, next) => {
         }        
 
         if (user) {
-            console.log(1)
             const { login, newPassword, user_id} = req.body
 
             
@@ -121,7 +120,7 @@ exports.update = asyncHandler(async (req, res, next) => {
                 }
             }
 
-            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING *
+            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3
             `, [login, hashedPassword, user_id]);
         } else if (admin) {
             let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
@@ -150,7 +149,7 @@ exports.update = asyncHandler(async (req, res, next) => {
                 }
             }
 
-            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING *
+            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3
                 `, [login, hashedPassword, req.user.id]);
         }
     } else if( !req.user.admin_status ) {
@@ -173,13 +172,13 @@ exports.update = asyncHandler(async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
 
-        updateUser = await pool.query(`UPDATE users SET password = $1 WHERE id = $2 RETURNING *
+        updateUser = await pool.query(`UPDATE users SET password = $1 WHERE id = $2
         `, [hashedPassword, req.user.id]);
     }
 
     return res.status(200).json({
         success: true,
-        data: updateUser.rows[0]
+        data: "Muvaffaqiyatli yangilandi"
     });
 });
 
@@ -191,14 +190,14 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
     user = user.rows[0]
 
     if (user.admin_status) {
-        users = await pool.query(`SELECT id, name, inn, budget, login FROM users WHERE user_id = $1`, [user.id])
+        users = await pool.query(`SELECT id, name, inn, budget, login FROM users WHERE user_id = $1 ORDER BY id`, [user.id])
         users = users.rows
     }
     return res.status(200).json({
         success: true,
         data: {
             user,
-            users
+            users: users.length !== 0 ? users : null
         }
     });
 });
@@ -262,7 +261,7 @@ exports.updateRequisite = asyncHandler(async (req, res, next) => {
 
 // for update requisite 
 exports.forUpdateRequisite = asyncHandler(async (req, res, next) => {
-    const user = await pool.query(`SELECT id, name, inn, budget FROM users WHERE user_id = $1`, [req.user.id])
+    const user = await pool.query(`SELECT id, name, inn, budget FROM users WHERE id = $1`, [req.user.id])
     const bank = await pool.query(`SELECT id, name, mfo FROM banks WHERE user_id = $1 ORDER BY default_value DESC`, [req.user.id])
     const shot = await pool.query(`SELECT id, shot_number, shot_balance FROM shots WHERE user_id = $1 ORDER BY default_value DESC`, [req.user.id])
     const account_number = await pool.query(`SELECT id, account_number FROM account_numbers WHERE user_id = $1 ORDER BY  default_value DESC`, [req.user.id])
@@ -271,17 +270,16 @@ exports.forUpdateRequisite = asyncHandler(async (req, res, next) => {
         success: true,
         data: {
             user: user.rows[0],
-            bank: bank.rows[0],
-            shot: shot.rows[0],
-            account_number: account_number.rows[0]
+            bank: bank.rows,
+            shot: shot.rows,
+            account_number: account_number.rows
         }
     })
 })
 
-
 //  get default requisite 
 exports.getDefaultRequisite = asyncHandler(async (req, res, next) => {
-    const user = await pool.query(`SELECT id, name, inn, budget FROM users WHERE user_id = $1`, [req.user.id])
+    const user = await pool.query(`SELECT id, name, inn, budget FROM users WHERE id = $1`, [req.user.id])
     const bank = await pool.query(`SELECT id, name, mfo FROM banks WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
     const shot = await pool.query(`SELECT id, shot_number, shot_balance FROM shots WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
     const account_number = await pool.query(`SELECT id, account_number FROM account_numbers WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])

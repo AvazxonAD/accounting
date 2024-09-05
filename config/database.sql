@@ -73,6 +73,9 @@ CREATE TABLE contracts (
     account_number VARCHAR(20) NOT NULL,
     shot_id INTEGER REFERENCES shots(id) ON DELETE SET NULL,
     shot_number BIGINT NOT NULL,
+    goal_shot_number BIGINT NOT NULL,
+    goal_number BIGINT NOT NULL,
+    goal_info VARCHAR(500) NOT NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

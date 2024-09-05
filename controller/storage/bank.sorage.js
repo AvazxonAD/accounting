@@ -23,19 +23,19 @@ exports.createBank = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Bu bank avval kiritilgan', 400))
     }
 
-    const bank = await pool.query(`INSERT INTO banks(name, mfo, user_id) VALUES($1, $2, $3)
+    await pool.query(`INSERT INTO banks(name, mfo, user_id) VALUES($1, $2, $3)
         RETURNING *     
     `, [name, MFO.trim(), req.user.id])
 
     return res.status(200).json({
         success: true,
-        data: bank.rows[0]
+        data: "Muvaffaqiyatli kiritildi"
     })
 })
 
 // get all  bank
 exports.getAllBank = asyncHandler(async (req, res, next) => {
-    let banks = await pool.query(`SELECT * FROM banks WHERE user_id = $1`, [req.user.id])
+    let banks = await pool.query(`SELECT id, name, mfo FROM banks WHERE user_id = $1`, [req.user.id])
     banks = banks.rows
     
     if(banks.length === 0 ){
@@ -72,13 +72,12 @@ exports.updateBank = asyncHandler(async (req, res, next) => {
         }
     }
 
-    const result = await pool.query(`UPDATE banks SET name = $1, mfo = $2 WHERE  id = $3 
-        RETURNING *     
+    await pool.query(`UPDATE banks SET name = $1, mfo = $2 WHERE  id = $3 
     `, [name, MFO.trim(), req.params.id])
 
     return res.status(200).json({
         success: true,
-        data: result.rows[0]
+        data: "Muvaffaqiyatli yangilandi"
     })
 })
 
