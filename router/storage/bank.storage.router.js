@@ -8,7 +8,7 @@ const {
     getAllBank,
     updateBank,
     deleteBank
-} = require('../../controller/storage/bank.sorage')
+} = require('../../controller/storage/bank.sorage.controller')
 
 
 router.post('/create', protect, createBank)

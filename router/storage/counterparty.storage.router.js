@@ -8,7 +8,7 @@ const {
     get_all_counterparty,
     update_counterparty,
     delete_counterparty
-} = require('../../controller/storage/counterparty.storage')
+} = require('../../controller/storage/counterparty.storage.controller')
 
 
 router.post('/create', protect, create_counterparty)

@@ -50,7 +50,10 @@ exports.get_all_counterparty = asyncHandler(async (req, res, next) => {
 // update  counterparty
 exports.update_counterparty = asyncHandler(async (req, res, next) => {
     let counterparty = await pool.query(`SELECT * FROM counterparties WHERE id = $1`, [req.params.id])
-    counterparty = rows[0]
+    counterparty = counterparty.rows[0]
+    if(!counterparty){
+        return next(new ErrorResponse('Server error counterparty is not defined', 500))
+    }
     const { inn, name, mfo, bank_name, account_number } = req.body
     if (!inn || !name || !mfo || !bank_name || !account_number) {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
@@ -80,7 +83,7 @@ exports.update_counterparty = asyncHandler(async (req, res, next) => {
 exports.delete_counterparty = asyncHandler(async (req, res, next) => {
     const counterparty = await pool.query(`DELETE FROM counterparties WHERE id = $1 RETURNING * `, [req.params.id])
 
-    if (!rows[0]) {
+    if (!counterparty.rows[0]) {
         return next(new ErrorResponse('DELETE FALSE', 500))
     } else {
         return res.status(200).json({
