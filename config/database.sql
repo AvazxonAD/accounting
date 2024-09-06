@@ -23,3 +23,24 @@ CREATE TABLE requisites (
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE partner (
+    id BIGSERIAL PRIMARY KEY NOT NULL,
+    inn VARCHAR(9) NOT NULL, 
+    name VARCHAR(200) NOT NULL, 
+    mfo VARCHAR(5) NOT NULL, 
+    bank_name VARCHAR(300) NOT NULL, 
+    account_number VARCHAR(20) NOT NULL, 
+    treasury_account_number VARCHAR(40), 
+    contract_number VARCHAR(30),
+    contract_date DATE,
+    contract_summa NUMERIC,
+    smeta_number VARCHAR(50),
+    budget VARCHAR(300) NOT NULL,
+    address VARCHAR(300),
+    partner_boss VARCHAR(100),
+    smeta_graph BOOLEAN,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
