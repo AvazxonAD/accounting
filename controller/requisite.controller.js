@@ -90,6 +90,7 @@ exports.update_requisite = asyncHandler(async (req, res, next) => {
     })
 })
 
+
 // delete requisite
 exports.delete_counterparty = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
