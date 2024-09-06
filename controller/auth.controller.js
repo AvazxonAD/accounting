@@ -4,6 +4,8 @@ const pool = require('../config/db');
 const generateToken = require('../utils/auth/generate.token');
 const bcrypt = require('bcrypt')
 
+const return_id = require('../utils/auth/return_id')
+
 // login 
 exports.login = asyncHandler(async (req, res, next) => {
     const { login, password } = req.body;
@@ -221,5 +223,114 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
         })
     } else {
         return next(new ErrorResponse('DELETE false', 500))
+    }
+})
+
+
+// position create 
+exports.position_create = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user);
+
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
+    }
+
+    const { position, fio, boss, manager, kadr, accountant, mib, inspector } = req.body;
+
+    if (!position || !fio) {
+        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
+    }
+   
+    if (typeof position !== "string" || typeof fio !== "string") {
+        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
+    }
+    const result = await pool.query(`
+            INSERT INTO positions (position, fio, boss, manager, kadr, accountant, mib, inspector, user_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING *     
+        `, [ position, fio, boss, manager, kadr, accountant, mib, inspector, user_id]);
+
+    if (!result.rows[0]) {
+        return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
+    }
+
+    return res.status(201).json({
+        success: true,
+        data: "Ma`lumot muvaffaqiyatli saqlandi"
+    });
+});
+
+// get all positions
+exports.get_all_positions = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    let result = await pool.query(`SELECT id, position, fio user_id
+        FROM positions WHERE user_id = $1 ORDER BY id`, [user_id]);
+
+    result = result.rows
+
+    return res.status(200).json({
+        success: true,
+        data: result
+    })
+})
+
+
+// update  position
+exports.update_position = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user);
+
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
+    }
+
+    const test = await pool.query(`SELECT * FROM positions WHERE id = $1 AND user_id = $2`, [req.params.id, user_id])
+    if (!test.rows[0]) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    const { position, fio, boss, manager, kadr, accountant, mib, inspector } = req.body;
+
+    if (!position || !fio) {
+        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
+    }
+   
+    if (typeof position !== "string" || typeof fio !== "string") {
+        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
+    }
+
+    const result = await pool.query(`UPDATE positions SET position = $1, fio = $2, boss = $3, manager = $4, kadr = $5, accountant = $6, mib = $7, inspector = $8 WHERE  id = $9
+        RETURNING *     
+    `, [position, fio, boss, manager, kadr, accountant, mib, inspector, user_id])
+
+    if (!result.rows[0]) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: "Muvaffaqiyatli yangilandi"
+    })
+})
+
+// delete position
+exports.delete_position = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    const position = await pool.query(`DELETE FROM positions WHERE id = $1 AND user_id = $2 RETURNING * `, [req.params.id, user_id])
+
+    if (!position.rows[0]) {
+        return next(new ErrorResponse('DELETE FALSE', 500))
+    } else {
+        return res.status(200).json({
+            success: true,
+            data: "DELETE TRUE"
+        })
     }
 })

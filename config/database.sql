@@ -57,11 +57,17 @@ CREATE TABLE goals (
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE boss (
+CREATE TABLE positions (
     id BIGSERIAL PRIMARY KEY NOT NULL,
     position VARCHAR(200) NOT NULL,
     fio VARCHAR(50) NOT NULL,
+    boss BOOLEAN,
+    manager BOOLEAN,
+    kadr BOOLEAN,
+    accountant BOOLEAN,
+    mib BOOLEAN,
+    inspector BOOLEAN,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-)
+);

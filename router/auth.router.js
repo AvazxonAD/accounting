@@ -8,7 +8,11 @@ const {
     createUsers,
     update,
     getProfile,
-    deleteUser
+    deleteUser,
+    position_create,
+    get_all_positions,
+    update_position,
+    delete_position
 } = require('../controller/auth.controller')
 
 
@@ -18,5 +22,9 @@ router.put('/update', protect, update)
 router.get("/get", protect, getProfile)
 router.delete("/delete/:id", protect, deleteUser)
 
+router.post('/position/create', protect, position_create)
+router.get('/position/get/all', protect, get_all_positions)
+router.put('/position/update/:id', protect, update_position)
+router.delete('/position/delete/:id', protect, delete_position)
 
 module.exports = router

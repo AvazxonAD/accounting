@@ -154,7 +154,6 @@ exports.goal_create = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all goal status true 
 exports.get_all_goal_status_true = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
