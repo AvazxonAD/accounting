@@ -333,4 +333,4 @@ exports.delete_position = asyncHandler(async (req, res, next) => {
             data: "DELETE TRUE"
         })
     }
-})
+})   
