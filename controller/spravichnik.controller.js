@@ -188,3 +188,60 @@ exports.get_all_goal_status_false = asyncHandler(async (req, res, next) => {
         data: goals
     })
 })
+
+
+// update  goal
+exports.update_goal = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user);
+
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
+    }
+
+    const goal = await pool.query(`SELECT * FROM goals WHERE id = $1 AND user_id = $2`, [req.params.id, user_id])
+    if (!goal.rows[0]) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    const { name, short_name, schot, number, shot_status } = req.body;
+
+    if (!name || !short_name || !schot || !number || shot_status === undefined) {
+        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
+    }
+
+    if (typeof name !== "string" || typeof short_name !== "string" || typeof schot !== "string" || typeof number !== "number" || typeof shot_status !== "boolean") {
+        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
+    }
+
+    const result = await pool.query(`UPDATE goals SET name = $1, short_name = $2, schot = $3, number = $4, shot_status = $5 WHERE  id = $6
+        RETURNING *     
+    `, [name, short_name, schot, number, shot_status, req.params.id])
+
+    if (!result.rows[0]) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: "Muvaffaqiyatli yangilandi"
+    })
+})
+
+// delete goal
+exports.delete_goal = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    const goal = await pool.query(`DELETE FROM goals WHERE id = $1 AND user_id = $2 RETURNING * `, [req.params.id, user_id])
+
+    if (!goal.rows[0]) {
+        return next(new ErrorResponse('DELETE FALSE', 500))
+    } else {
+        return res.status(200).json({
+            success: true,
+            data: "DELETE TRUE"
+        })
+    }
+})
