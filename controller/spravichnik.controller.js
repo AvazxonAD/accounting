@@ -6,23 +6,23 @@ const return_id = require('../utils/auth/return_id')
 // create partner 
 exports.create_partner = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
-    if(!user_id){
+    if (!user_id) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    const { inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget} = req.body
+    const { inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget } = req.body
 
-    if (!inn || !name || !mfo || !bank_name || !account_number  || smeta_graph === undefined || !budget) {
+    if (!inn || !name || !mfo || !bank_name || !account_number || smeta_graph === undefined || !budget) {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
     }
 
-    if (typeof inn !== "string" || inn.length !== 9 || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string"  || typeof smeta_graph !== "boolean" || typeof budget !== "string") {
+    if (typeof inn !== "string" || inn.length !== 9 || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string" || typeof smeta_graph !== "boolean" || typeof budget !== "string") {
         return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400))
     }
 
     const test = await pool.query(`SELECT * FROM partners WHERE user_id = $1 AND inn = $2`, [user_id, inn])
 
-    if(test.rows[0]){
+    if (test.rows[0]) {
         return next(new ErrorResponse('Bu kontragent avval kiritilgan', 400))
     }
 
@@ -31,7 +31,7 @@ exports.create_partner = asyncHandler(async (req, res, next) => {
             RETURNING *     
     `, [inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget, user_id])
 
-    if(!requisite.rows[0]){
+    if (!requisite.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
@@ -45,7 +45,7 @@ exports.create_partner = asyncHandler(async (req, res, next) => {
 // get all partner 
 exports.get_all_partner = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
-    if(!user_id){
+    if (!user_id) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
@@ -62,28 +62,28 @@ exports.get_all_partner = asyncHandler(async (req, res, next) => {
 // update  partner
 exports.update_partner = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
-    if(!user_id){
+    if (!user_id) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    const partner = await  pool.query(`SELECT * FROM partners WHERE id = $1 AND user_id = $2`, [req.params.id, user_id])
-    if(!partner.rows[0]){
+    const partner = await pool.query(`SELECT * FROM partners WHERE id = $1 AND user_id = $2`, [req.params.id, user_id])
+    if (!partner.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    const { inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget} = req.body
+    const { inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget } = req.body
 
-    if (!inn || !name || !mfo || !bank_name || !account_number  || smeta_graph === undefined || !budget) {
+    if (!inn || !name || !mfo || !bank_name || !account_number || smeta_graph === undefined || !budget) {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
     }
 
-    if (typeof inn !== "string" || inn.length !== 9 || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string"  || typeof smeta_graph !== "boolean" || typeof budget !== "string") {
+    if (typeof inn !== "string" || inn.length !== 9 || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string" || typeof smeta_graph !== "boolean" || typeof budget !== "string") {
         return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400))
     }
 
-    if(partner.rows[0].inn !== inn){
+    if (partner.rows[0].inn !== inn) {
         const test = await pool.query(`SELECT * FROM partners WHERE user_id = $1 AND inn = $2`, [user_id, inn])
-        if(test.rows[0]){
+        if (test.rows[0]) {
             return next(new ErrorResponse('Bu kontragent avval kiritilgan', 400))
         }
     }
@@ -92,7 +92,7 @@ exports.update_partner = asyncHandler(async (req, res, next) => {
         RETURNING *     
     `, [inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget, req.params.id])
 
-    if(!result.rows[0]){
+    if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
@@ -105,7 +105,7 @@ exports.update_partner = asyncHandler(async (req, res, next) => {
 // delete partner
 exports.delete_partner = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
-    if(!user_id){
+    if (!user_id) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
@@ -119,4 +119,72 @@ exports.delete_partner = asyncHandler(async (req, res, next) => {
             data: "DELETE TRUE"
         })
     }
+})
+
+// goal create 
+exports.goal_create = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user);
+
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
+    }
+
+    const { name, short_name, schot, number, shot_status } = req.body;
+
+    if (!name || !short_name || !schot || !number || shot_status === undefined) {
+        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
+    }
+
+    if (typeof name !== "string" || typeof short_name !== "string" || typeof schot !== "string" || typeof number !== "number" || typeof shot_status !== "boolean") {
+        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
+    }
+    const goal = await pool.query(`
+            INSERT INTO goals (name, short_name, schot, number, shot_status, user_id) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *     
+        `, [name, short_name, schot, number, shot_status, user_id]);
+
+    if (!goal.rows[0]) {
+        return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
+    }
+
+    return res.status(201).json({
+        success: true,
+        data: "Ma`lumot muvaffaqiyatli saqlandi"
+    });
+});
+
+
+// get all goal status true 
+exports.get_all_goal_status_true = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    let goals = await pool.query(`SELECT id, name, short_name, schot, number
+        FROM goals WHERE user_id = $1 AND shot_status = $2 ORDER BY id`, [user_id, true]);
+        goals = goals.rows
+
+    return res.status(200).json({
+        success: true,
+        data: goals
+    })
+})
+
+// get all goal status false
+exports.get_all_goal_status_false = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    let goals = await pool.query(`SELECT id, name, short_name, schot, number
+        FROM goals WHERE user_id = $1 AND shot_status = $2 ORDER BY id`, [user_id, false]);
+        goals = goals.rows
+
+    return res.status(200).json({
+        success: true,
+        data: goals
+    })
 })
