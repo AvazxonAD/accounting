@@ -41,13 +41,13 @@ exports.login = asyncHandler(async (req, res, next) => {
 // create users 
 exports.createUsers = asyncHandler(async (req, res, next) => {
 
-    const { login, password, name, inn, budget } = req.body;
+    const { login, password } = req.body;
 
-    if (!login || !password || !name || !inn || !budget) {
+    if (!login || !password) {
         return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
     }
 
-    if (typeof login !== "string" || typeof password !== "string" || typeof name !== "string" || typeof inn !== "number" || typeof budget !== "string") {
+    if (typeof login !== "string" || typeof password !== "string") {
         return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
     }
 
@@ -59,9 +59,9 @@ exports.createUsers = asyncHandler(async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password.trim(), 10)
 
-    const newUser = await pool.query(`INSERT INTO users(login, password, user_id, name, inn, budget) 
-        VALUES($1, $2, $3, $4, $5, $6)
-    `, [login.trim(), hashedPassword, req.user.id, name, inn, budget]);
+    const newUser = await pool.query(`INSERT INTO users(login, password, user_id) 
+        VALUES($1, $2, $3)
+    `, [login.trim(), hashedPassword, req.user.id]);
 
     return res.status(200).json({
         success: true,
@@ -76,6 +76,7 @@ exports.update = asyncHandler(async (req, res, next) => {
         const { admin, user } = req.body;
 
         if ((admin && user) || (!admin && !user)) {
+            console.log(2)
             return next(new ErrorResponse('Server error: Administrator or user required, but not both or none', 400));
         }
         if(admin){
@@ -120,8 +121,8 @@ exports.update = asyncHandler(async (req, res, next) => {
                 }
             }
 
-            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3
-            `, [login, hashedPassword, user_id]);
+            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 AND user_id = $4 RETURNING * 
+            `, [login, hashedPassword, user_id, req.user.id]);
         } else if (admin) {
             let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
             user = user.rows[0]
@@ -149,7 +150,7 @@ exports.update = asyncHandler(async (req, res, next) => {
                 }
             }
 
-            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3
+            updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING * 
                 `, [login, hashedPassword, req.user.id]);
         }
     } else if( !req.user.admin_status ) {
@@ -172,8 +173,12 @@ exports.update = asyncHandler(async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
 
-        updateUser = await pool.query(`UPDATE users SET password = $1 WHERE id = $2
+        updateUser = await pool.query(`UPDATE users SET password = $1 WHERE id = $2 RETRUNING * 
         `, [hashedPassword, req.user.id]);
+    }
+
+    if(!updateUser.rows[0]){
+        return next(new ErrorResponse('Server xatolik', 500))
     }
 
     return res.status(200).json({
@@ -186,11 +191,11 @@ exports.update = asyncHandler(async (req, res, next) => {
 // get profile 
 exports.getProfile = asyncHandler(async (req, res, next) => {
     let users = []
-    let user = await pool.query(`SELECT id, name, inn, budget, login, admin_status FROM users WHERE id = $1`, [req.user.id]);
+    let user = await pool.query(`SELECT id, login, admin_status FROM users WHERE id = $1`, [req.user.id]);
     user = user.rows[0]
 
     if (user.admin_status) {
-        users = await pool.query(`SELECT id, name, inn, budget, login FROM users WHERE user_id = $1 ORDER BY id`, [user.id])
+        users = await pool.query(`SELECT id, login FROM users WHERE user_id = $1 ORDER BY id`, [user.id])
         users = users.rows
     }
     return res.status(200).json({
@@ -217,80 +222,4 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
     } else {
         return next(new ErrorResponse('DELETE false', 500))
     }
-})
-
-
-// update requisite 
-exports.updateRequisite = asyncHandler(async (req, res, next) => {
-    const { bank_id, account_number_id, name, inn, budget, shot_id } = req.body
-    if (!shot_id || !bank_id || !account_number_id || !name || !inn || !budget) {
-        return next(new ErrorResponse('So`rovlar bosh qolmasligi kerak', 400))
-    }
-
-    if (typeof name !== 'string' || !Number.isInteger(inn) || typeof budget !== 'string' || !Number.isInteger(shot_id) || !Number.isInteger(bank_id)  || !Number.isInteger(account_number_id) ) {
-        return next(new ErrorResponse('Malumotlar to\'g\'ri kiritilishi kerak', 400));
-    }
-
-    const shot = await pool.query(`SELECT * FROM shots WHERE id = $1`, [shot_id])
-    const bank = await pool.query(`SELECT * FROM banks WHERE id = $1`, [bank_id])
-    const account_number = await pool.query(`SELECT * FROM account_numbers WHERE id = $1`, [account_number_id])
-
-    if (!shot.rows[0] || !bank.rows[0] || !account_number.rows[0]) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    const result = await pool.query(`UPDATE users SET name = $1, inn = $2, budget = $3
-        WHERE id = $4
-        RETURNING *`
-    , [name, inn, budget, req.user.id]);
-
-    await pool.query(`UPDATE banks SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
-    await pool.query(`UPDATE banks SET default_value = $1 WHERE id = $2 AND user_id = $3`, [true, bank_id, req.user.id])
-
-    await pool.query(`UPDATE shots SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
-    await pool.query(`UPDATE shots SET default_value = $1 WHERE id = $2 AND user_id = $3`, [true, shot_id, req.user.id])
-
-    await pool.query(`UPDATE account_numbers SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
-    await pool.query(`UPDATE account_numbers SET default_value = $1 WHERE id = $2 AND user_id = $3`, [true, account_number_id, req.user.id])
-
-    return res.status(200).json({
-        success: true,
-        data: "Default value has been created"
-    })
-})
-
-// for update requisite 
-exports.forUpdateRequisite = asyncHandler(async (req, res, next) => {
-    const user = await pool.query(`SELECT id, name, inn, budget FROM users WHERE id = $1`, [req.user.id])
-    const bank = await pool.query(`SELECT id, name, mfo FROM banks WHERE user_id = $1 ORDER BY default_value DESC`, [req.user.id])
-    const shot = await pool.query(`SELECT id, shot_number, shot_balance FROM shots WHERE user_id = $1 ORDER BY default_value DESC`, [req.user.id])
-    const account_number = await pool.query(`SELECT id, account_number FROM account_numbers WHERE user_id = $1 ORDER BY  default_value DESC`, [req.user.id])
-
-    res.status(200).json({
-        success: true,
-        data: {
-            user: user.rows[0],
-            bank: bank.rows,
-            shot: shot.rows,
-            account_number: account_number.rows
-        }
-    })
-})
-
-//  get default requisite 
-exports.getDefaultRequisite = asyncHandler(async (req, res, next) => {
-    const user = await pool.query(`SELECT id, name, inn, budget FROM users WHERE id = $1`, [req.user.id])
-    const bank = await pool.query(`SELECT id, name, mfo FROM banks WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
-    const shot = await pool.query(`SELECT id, shot_number, shot_balance FROM shots WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
-    const account_number = await pool.query(`SELECT id, account_number FROM account_numbers WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
-
-    res.status(200).json({
-        success: true,
-        data: {
-            user: user.rows[0],
-            bank: bank.rows[0],
-            shot: shot.rows[0],
-            account_number: account_number.rows[0]
-        }
-    })
 })

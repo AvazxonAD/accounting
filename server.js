@@ -14,13 +14,8 @@ const PORT = process.env.PORT || 3005
 
 
 app.use('/auth', require('./router/auth.router'))
-app.use('/storage/bank', require('./router/storage/bank.storage.router'))
-app.use('/storage/shot/number', require('./router/storage/shot.storage.router'))
-app.use('/storage/account/number', require('./router/storage/account.number.storage.router'))
-app.use('/storage/counterparties', require('./router/storage/counterparty.storage.router'))
-app.use('/contract', require('./router/contract.router'))
-app.use('/storage/goal', require('./router/storage/goal.storage.router'))
-app.use('/atchot', require('./router/result.router'))
+app.use('/requisite', require('./router/requisite.router'))
+
 
 app.use(require('./middleware/errorHandler'))
 
