@@ -153,7 +153,7 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
 
     return res.status(200).json({
         success: true,
-        data: result.rows[0]
+        data: "Muvaffaqiyatli pul otkazildi"
     });
 });
 
