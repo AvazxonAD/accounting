@@ -16,6 +16,8 @@ const PORT = process.env.PORT || 3005
 app.use('/auth', require('./router/auth.router'))
 app.use('/requisite', require('./router/requisite.router'))
 app.use('/spravichnik', require('./router/spravichnik.router'))
+app.use('/expense', require('./router/expence.router'))
+
 
 app.use(require('./middleware/errorHandler'))
 
