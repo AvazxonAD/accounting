@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncHandler = require("../middleware/asyncHandler");
-const ErrorResponse = require("../utils/errorResponse");
-const return_id = require('../utils/auth/return_id')
+const pool = require("../../config/db");
+const asyncHandler = require("../../middleware/asyncHandler");
+const ErrorResponse = require("../../utils/errorResponse");
+const return_id = require('../../utils/auth/return_id')
 
 // create requisite 
 exports.create_requsite = asyncHandler(async (req, res, next) => {
@@ -43,12 +43,29 @@ exports.get_all_requisites = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+
+    if (limit <= 0 || page <= 0) {
+        return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
+    }
+    const offset = (page - 1) * limit;
+
     let requisites = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget, balance
-        FROM requisites WHERE user_id = $1 ORDER BY default_value DESC`, [user_id]);
+        FROM requisites WHERE user_id = $1 ORDER BY default_value DESC OFFSET $2 LIMIT $3`, [user_id, offset, limit]);
     requisites = requisites.rows
+
+    const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM requisites WHERE user_id = $1`, [user_id]);
+    const total = parseInt(totalQuery.rows[0].total);
+    const pageCount = Math.ceil(total / limit);
 
     return res.status(200).json({
         success: true,
+        pageCount: pageCount,
+        count: total,
+        currentPage: page, 
+        nextPage: page >= pageCount ? null : page + 1,
+        backPage: page === 1 ? null : page - 1,
         data: requisites
     })
 })

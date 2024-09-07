@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncHandler = require("../middleware/asyncHandler");
-const ErrorResponse = require("../utils/errorResponse");
-const return_id = require('../utils/auth/return_id')
+const pool = require("../../config/db");
+const asyncHandler = require("../../middleware/asyncHandler");
+const ErrorResponse = require("../../utils/errorResponse");
+const return_id = require('../../utils/auth/return_id')
 
 // create partner 
 exports.create_partner = asyncHandler(async (req, res, next) => {
@@ -49,12 +49,29 @@ exports.get_all_partner = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+
+    if (limit <= 0 || page <= 0) {
+        return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
+    }
+    const offset = (page - 1) * limit;
+
     let partners = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget
-        FROM partners WHERE user_id = $1 ORDER BY id`, [user_id]);
-        partners = partners.rows
+        FROM partners WHERE user_id = $1 ORDER BY id OFFSET $2 LIMIT $3`, [user_id, offset, limit]);
+    partners = partners.rows
+
+    const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM partners WHERE user_id = $1`, [user_id]);
+    const total = parseInt(totalQuery.rows[0].total);
+    const pageCount = Math.ceil(total / limit);
 
     return res.status(200).json({
         success: true,
+        pageCount: pageCount,
+        count: total,
+        currentPage: page, 
+        nextPage: page >= pageCount ? null : page + 1,
+        backPage: page === 1 ? null : page - 1,
         data: partners
     })
 })
@@ -141,128 +158,4 @@ exports.search_partner_by_inn = asyncHandler(async (req, res, next) => {
         success: true,
         data: partner ? partner : null
     })
-})
-
-// goal create 
-exports.goal_create = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
-    }
-
-    const { name, short_name, schot, number, shot_status } = req.body;
-
-    if (!name || !short_name || !schot || !number || shot_status === undefined) {
-        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
-    }
-
-    if (typeof name !== "string" || typeof short_name !== "string" || typeof schot !== "string" || typeof number !== "number" || typeof shot_status !== "boolean") {
-        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
-    }
-    const goal = await pool.query(`
-            INSERT INTO goals (name, short_name, schot, number, shot_status, user_id) 
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING *     
-        `, [name, short_name, schot, number, shot_status, user_id]);
-
-    if (!goal.rows[0]) {
-        return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
-    }
-
-    return res.status(201).json({
-        success: true,
-        data: "Ma`lumot muvaffaqiyatli saqlandi"
-    });
-});
-
-// get all goal status true 
-exports.get_all_goal_status_true = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    let goals = await pool.query(`SELECT id, name, short_name, schot, number
-        FROM goals WHERE user_id = $1 AND shot_status = $2 ORDER BY id`, [user_id, true]);
-        goals = goals.rows
-
-    return res.status(200).json({
-        success: true,
-        data: goals
-    })
-})
-
-// get all goal status false
-exports.get_all_goal_status_false = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    let goals = await pool.query(`SELECT id, name, short_name, schot, number
-        FROM goals WHERE user_id = $1 AND shot_status = $2 ORDER BY id`, [user_id, false]);
-        goals = goals.rows
-
-    return res.status(200).json({
-        success: true,
-        data: goals
-    })
-})
-
-
-// update  goal
-exports.update_goal = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
-    }
-
-    const goal = await pool.query(`SELECT * FROM goals WHERE id = $1 AND user_id = $2`, [req.params.id, user_id])
-    if (!goal.rows[0]) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    const { name, short_name, schot, number, shot_status } = req.body;
-
-    if (!name || !short_name || !schot || !number || shot_status === undefined) {
-        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
-    }
-
-    if (typeof name !== "string" || typeof short_name !== "string" || typeof schot !== "string" || typeof number !== "number" || typeof shot_status !== "boolean") {
-        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
-    }
-
-    const result = await pool.query(`UPDATE goals SET name = $1, short_name = $2, schot = $3, number = $4, shot_status = $5 WHERE  id = $6
-        RETURNING *     
-    `, [name, short_name, schot, number, shot_status, req.params.id])
-
-    if (!result.rows[0]) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    return res.status(200).json({
-        success: true,
-        data: "Muvaffaqiyatli yangilandi"
-    })
-})
-
-// delete goal
-exports.delete_goal = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    const goal = await pool.query(`DELETE FROM goals WHERE id = $1 AND user_id = $2 RETURNING * `, [req.params.id, user_id])
-
-    if (!goal.rows[0]) {
-        return next(new ErrorResponse('DELETE FALSE', 500))
-    } else {
-        return res.status(200).json({
-            success: true,
-            data: "DELETE TRUE"
-        })
-    }
 })

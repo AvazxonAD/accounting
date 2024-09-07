@@ -1,7 +1,7 @@
 const {Router} = require('express') 
 const router = Router()
 
-const { protect } = require('../middleware/auth')
+const { protect } = require('../../middleware/auth')
 
 const {
     create_requsite,
@@ -10,7 +10,7 @@ const {
     delete_counterparty,
     default_value,
     get_default_value
-} = require('../controller/requisite.controller')
+} = require('../../controller/auth/requisite.controller')
 
 
 router.post('/create', protect, create_requsite)

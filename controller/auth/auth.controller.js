@@ -1,10 +1,10 @@
-const asyncHandler = require('../middleware/asyncHandler');
-const ErrorResponse = require('../utils/errorResponse');
-const pool = require('../config/db');
-const generateToken = require('../utils/auth/generate.token');
+const asyncHandler = require('../../middleware/asyncHandler');
+const ErrorResponse = require('../../utils/errorResponse');
+const pool = require('../../config/db');
+const generateToken = require('../../utils/auth/generate.token');
+const return_id = require('../../utils/auth/return_id')
 const bcrypt = require('bcrypt')
 
-const return_id = require('../utils/auth/return_id')
 
 // login 
 exports.login = asyncHandler(async (req, res, next) => {
@@ -235,15 +235,20 @@ exports.position_create = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
     }
 
-    const { position, fio, boss, manager, kadr, accountant, mib, inspector } = req.body;
+    const { position, fio, rol, boss, manager, kadr, accountant, mib, inspector } = req.body;
 
-    if (!position || !fio) {
+    if (!position || !fio || !rol) {
         return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
     }
    
-    if (typeof position !== "string" || typeof fio !== "string") {
+    if (typeof position !== "string" || typeof fio !== "string" || typeof rol !== "string") {
         return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
     }
+
+    if(rol === "Raxbar"){
+        
+    }
+
     const result = await pool.query(`
             INSERT INTO positions (position, fio, boss, manager, kadr, accountant, mib, inspector, user_id) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -267,7 +272,7 @@ exports.get_all_positions = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    let result = await pool.query(`SELECT id, position, fio user_id
+    let result = await pool.query(`SELECT id, position, fio
         FROM positions WHERE user_id = $1 ORDER BY id`, [user_id]);
 
     result = result.rows
@@ -277,7 +282,6 @@ exports.get_all_positions = asyncHandler(async (req, res, next) => {
         data: result
     })
 })
-
 
 // update  position
 exports.update_position = asyncHandler(async (req, res, next) => {

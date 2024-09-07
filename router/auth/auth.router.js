@@ -1,7 +1,7 @@
 const {Router} = require('express') 
 const router = Router()
 
-const { protect, adminProtect } = require('../middleware/auth')
+const { protect, adminProtect } = require('../../middleware/auth')
 
 const {
     login,
@@ -13,7 +13,7 @@ const {
     get_all_positions,
     update_position,
     delete_position
-} = require('../controller/auth.controller')
+} = require('../../controller/auth/auth.controller')
 
 
 router.post('/login', login)
