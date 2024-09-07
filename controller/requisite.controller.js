@@ -43,7 +43,7 @@ exports.get_all_requisites = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    let requisites = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget
+    let requisites = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget, balance
         FROM requisites WHERE user_id = $1 ORDER BY default_value DESC`, [user_id]);
     requisites = requisites.rows
 
@@ -139,7 +139,7 @@ exports.get_default_value = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
     
-    let requisite = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget
+    let requisite = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget, balance
         FROM requisites WHERE user_id = $1 AND default_value = $2`, [user_id, true]);
     requisite = requisite.rows[0]
 

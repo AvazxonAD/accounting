@@ -52,7 +52,7 @@ CREATE TABLE goals (
     short_name VARCHAR(100) NOT NULL,
     schot VARCHAR(30) NOT NULL,
     number BIGINT NOT NULL,
-    shot_status BOOLEAN NOT NULL,
+    shot_status BOOLEAN DEFAULT false,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -116,4 +116,42 @@ CREATE TABLE expenses (
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-)
+);
+
+CREATE TABLE revenues (
+    id BIGSERIAL PRIMARY KEY NOT NULL,
+    requisite_id INTEGER REFERENCES requisites(id) ON DELETE SET NULL,
+    inn VARCHAR(9) NOT NULL, 
+    name VARCHAR(200) NOT NULL, 
+    mfo VARCHAR(5) NOT NULL, 
+    bank_name VARCHAR(300) NOT NULL, 
+    account_number VARCHAR(20) NOT NULL, 
+    treasury_account_number VARCHAR(40) NOT NULL, 
+    shot_number INTEGER NOT NULL, 
+    budget VARCHAR(300) NOT NULL,
+    partner_id INTEGER REFERENCES partners(id) ON DELETE SET NULL,
+    partner_name VARCHAR(200) NOT NULL, 
+    partner_bank_name VARCHAR(300) NOT NULL, 
+    partner_account_number VARCHAR(20) NOT NULL, 
+    partner_treasury_account_number VARCHAR(40), 
+    partner_mfo VARCHAR(5) NOT NULL, 
+    partner_inn VARCHAR(9) NOT NULL, 
+    partner_smeta_number VARCHAR(50),
+    partner_contract_date DATE,
+    partner_contract_summa NUMERIC,
+    partner_budget VARCHAR(300) NOT NULL,
+    partner_address VARCHAR(300),
+    partner_boss VARCHAR(100),
+    partner_smeta_graph BOOLEAN,
+    goal_id INTEGER REFERENCES goals(id) ON DELETE SET NULL,
+    goal_info VARCHAR(200) NOT NULL,
+    goal_short_name VARCHAR(100) NOT NULL,
+    goal_schot VARCHAR(30) NOT NULL,
+    goal_number BIGINT NOT NULL,
+    contract_date DATE,
+    contract_summa NUMERIC NOT NULL,
+    contract_number VARCHAR(30),
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
