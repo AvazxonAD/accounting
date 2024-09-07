@@ -49,13 +49,13 @@ exports.get_all_partner = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    let requisites = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget
+    let partners = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget
         FROM partners WHERE user_id = $1 ORDER BY id`, [user_id]);
-    requisites = requisites.rows
+        partners = partners.rows
 
     return res.status(200).json({
         success: true,
-        data: requisites
+        data: partners
     })
 })
 
@@ -119,6 +119,28 @@ exports.delete_partner = asyncHandler(async (req, res, next) => {
             data: "DELETE TRUE"
         })
     }
+})
+
+// search partner by inn 
+exports.search_partner_by_inn = asyncHandler(async (req, res, next) => {
+    const { inn } = req.body
+    if(!inn){
+        return next(new ErrorResponse('So`rovlar bo`sh qolishi mumkin emas', 400))
+    }
+
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    let partner = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget
+        FROM partners WHERE user_id = $1 AND inn = $2`, [user_id, inn]);
+        partner = partner.rows[0]
+
+    return res.status(200).json({
+        success: true,
+        data: partner ? partner : null
+    })
 })
 
 // goal create 

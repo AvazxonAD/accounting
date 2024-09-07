@@ -8,6 +8,7 @@ const {
     get_all_partner,
     update_partner,
     delete_partner,
+    search_partner_by_inn,
     goal_create,
     get_all_goal_status_true,
     get_all_goal_status_false,
@@ -25,6 +26,7 @@ router.post('/partner/create', protect, create_partner)
 router.get('/partner/get/all', protect, get_all_partner)
 router.put('/partner/update/:id', protect, update_partner)
 router.delete('/partner/delete/:id', protect, delete_partner)
+router.post('/partner/search/by/inn', protect, search_partner_by_inn)
 
 
 module.exports = router

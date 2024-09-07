@@ -44,7 +44,7 @@ exports.get_all_requisites = asyncHandler(async (req, res, next) => {
     }
 
     let requisites = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget
-        FROM requisites WHERE user_id = $1 ORDER BY id`, [user_id]);
+        FROM requisites WHERE user_id = $1 ORDER BY default_value DESC`, [user_id]);
     requisites = requisites.rows
 
     return res.status(200).json({
