@@ -73,7 +73,7 @@ CREATE TABLE positions (
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE expense (
+CREATE TABLE expenses (
     id BIGSERIAL PRIMARY KEY NOT NULL,
     requisite_id INTEGER REFERENCES requisites(id) ON DELETE SET NULL,
     inn VARCHAR(9) NOT NULL, 
@@ -81,10 +81,8 @@ CREATE TABLE expense (
     mfo VARCHAR(5) NOT NULL, 
     bank_name VARCHAR(300) NOT NULL, 
     account_number VARCHAR(20) NOT NULL, 
-    balance NUMERIC DEFAULT 0,
     treasury_account_number VARCHAR(40) NOT NULL, 
     shot_number INTEGER NOT NULL, 
-    default_value BOOLEAN,
     budget VARCHAR(300) NOT NULL,
     partner_id INTEGER REFERENCES partners(id) ON DELETE SET NULL,
     partner_name VARCHAR(200) NOT NULL, 
@@ -93,7 +91,6 @@ CREATE TABLE expense (
     partner_treasury_account_number VARCHAR(40), 
     partner_mfo VARCHAR(5) NOT NULL, 
     partner_inn VARCHAR(9) NOT NULL, 
-    partner_contract_number VARCHAR(30),
     partner_smeta_number VARCHAR(50),
     partner_contract_date DATE,
     partner_contract_summa NUMERIC,
@@ -115,6 +112,7 @@ CREATE TABLE expense (
     date1 DATE,
     date2 DATE,
     contract_summa NUMERIC NOT NULL,
+    contract_number VARCHAR(30),
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
