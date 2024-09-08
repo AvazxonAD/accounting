@@ -113,6 +113,7 @@ CREATE TABLE expenses (
     date2 DATE,
     contract_summa NUMERIC NOT NULL,
     contract_number VARCHAR(30),
+    task_number INTEGER NOT NULL,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

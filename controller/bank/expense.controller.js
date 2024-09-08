@@ -11,13 +11,13 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500));
     }
 
-    const { requisite_id, partner_id, date1, date2, contract_summa, contract_number, goal_info, goal_id, position_id_1, position_id_2 } = req.body;
+    const { requisite_id, partner_id, date1, date2, contract_summa, contract_number, goal_info, goal_id, position_id_1, position_id_2, task_number } = req.body;
 
-    if (!requisite_id || !partner_id || !date1 || !date2 || !contract_summa || !contract_number || !goal_info || !position_id_1 || !position_id_2) {
+    if (!requisite_id || !partner_id || !date1 || !date2 || !contract_summa || !contract_number || !goal_info || !position_id_1 || !position_id_2 || !task_number) {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400));
     }
 
-    if (typeof requisite_id !== "number" || typeof partner_id !== "number" || typeof date1 !== "string" || typeof date2 !== "string" || typeof contract_summa !== "number" || typeof contract_number !== "string" || typeof goal_info !== "string" || typeof position_id_1 !== "number" || typeof position_id_2 !== "number") {
+    if (typeof requisite_id !== "number" || typeof partner_id !== "number" || typeof date1 !== "string" || typeof date2 !== "string" || typeof contract_summa !== "number" || typeof contract_number !== "string" || typeof goal_info !== "string" || typeof position_id_1 !== "number" || typeof position_id_2 !== "number" || typeof task_number !== "string") {
         return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
     }
 
@@ -101,9 +101,10 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
             date1, 
             date2, 
             contract_summa, 
-            user_id
+            user_id,
+            task_number
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40) 
         RETURNING *`, 
     [
         requisite.id, 
@@ -144,7 +145,8 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         date_1, 
         date_2, 
         contract_summa, 
-        user_id
+        user_id,
+        task_number
     ]);
 
     if(result.rows[0]){

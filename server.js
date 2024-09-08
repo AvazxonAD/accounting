@@ -20,6 +20,7 @@ app.use('/spravichnik', require('./router/storage/partner.router'))
 app.use('/expense', require('./router/bank/expence.router'))
 app.use('/revenue', require('./router/bank/revenue.router'))
 app.use('/bank', require('./router/bank/bank.result.router'))
+app.use('/bank/restr', require('./router/bank/restr.router'))
 
 app.use(require('./middleware/errorHandler'))
 
