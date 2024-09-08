@@ -7,31 +7,32 @@ const { returnDate } = require('../../utils/date.function')
 
 // create revenue
 exports.create_revenue = asyncHandler(async (req, res, next) => {
+    console.log(req.user)
     const user_id = await return_id(req.user);
     if (!user_id) {
         return next(new ErrorResponse('Server xatolik', 500));
     }
-    const { revenues } = req.body;
+    const { revenues, requisite_id } = req.body;
+
+    let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [requisite_id, user_id]);
+    requisite = requisite.rows[0];
+    if (!requisite) {
+        return next(new ErrorResponse('Requisite topilmadi', 404));
+    }
 
     for(let revenue of revenues){
     
-        if (!revenue.requisite_id || !revenue.partner_id || !revenue.contract_date || !revenue.contract_summa || !revenue.contract_number || !revenue.goal_info || !revenue.goal_id) {
+        if ( !revenue.partner_id || !revenue.contract_date || !revenue.contract_summa || !revenue.contract_number || !revenue.goal_info || !revenue.goal_id) {
             return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400));
         }
     
-        if (typeof revenue.requisite_id !== "number" || typeof revenue.partner_id !== "number" || typeof revenue.contract_date !== "string" || typeof revenue.contract_summa !== "number" || typeof revenue.goal_id !== "number" || typeof revenue.contract_number !== "string" || typeof revenue.goal_info !== "string") {
+        if (typeof revenue.partner_id !== "number" || typeof revenue.contract_date !== "string" || typeof revenue.contract_summa !== "number" || typeof revenue.goal_id !== "number" || typeof revenue.contract_number !== "string" || typeof revenue.goal_info !== "string") {
             return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
         }
     
         const date = returnDate(revenue.contract_date);
         if (!date) {
             return next(new ErrorResponse('Sana formati noto`g`ri kiritildi. To`g`ri format: kun.oy.yil', 400));
-        }
-    
-        let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [revenue.requisite_id, user_id]);
-        requisite = requisite.rows[0];
-        if (!requisite) {
-            return next(new ErrorResponse('Requisite topilmadi', 404));
         }
     
         let partner = await pool.query(`SELECT * FROM partners WHERE id = $1 AND user_id = $2`, [revenue.partner_id, user_id]);
@@ -49,9 +50,6 @@ exports.create_revenue = asyncHandler(async (req, res, next) => {
 
     for(let revenue of revenues){
         const date = returnDate(revenue.contract_date);
-    
-        let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [revenue.requisite_id, user_id]);
-        requisite = requisite.rows[0];
     
         let partner = await pool.query(`SELECT * FROM partners WHERE id = $1 AND user_id = $2`, [revenue.partner_id, user_id]);
         partner = partner.rows[0];
