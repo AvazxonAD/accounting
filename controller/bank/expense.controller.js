@@ -21,12 +21,6 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
     }
 
-    const date_1 = returnDate(date1);
-    const date_2 = returnDate(date2);
-    if (!date_1 || !date_2) {
-        return next(new ErrorResponse('Sana formati noto`g`ri kiritildi. To`g`ri format: kun.oy.yil', 400));
-    }
-
     let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [requisite_id, user_id]);
     requisite = requisite.rows[0];
     if (!requisite) {
@@ -142,8 +136,8 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         position_2.id, 
         position_2.position, 
         position_2.fio, 
-        date_1, 
-        date_2, 
+        date1, 
+        date2, 
         contract_summa, 
         user_id,
         task_number
