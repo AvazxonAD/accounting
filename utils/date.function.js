@@ -1,9 +1,8 @@
 // return date 
 exports.returnDate = (date) => {
-    let part = date.split('.');
-    let topshiriqSana = new Date(`${part[2]}-${part[1]}-${part[0]}`);
-    if (isNaN(Date.parse(topshiriqSana)) || part.length !== 3 ) return false
-    return topshiriqSana
+    const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+    
+    return isoDatePattern.test(value);
 }
 
 // return string  date 

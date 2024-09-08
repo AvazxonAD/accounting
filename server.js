@@ -24,7 +24,6 @@ app.use('/bank/restr', require('./router/bank/restr.router'))
 
 app.use(require('./middleware/errorHandler'))
 
-
 app.listen(PORT, () => {
     console.log(`server runing on port : ${PORT}`.blue)
 })

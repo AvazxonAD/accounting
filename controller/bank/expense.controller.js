@@ -21,6 +21,7 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
     }
 
+    console.log(returnDate(date1))
     let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [requisite_id, user_id]);
     requisite = requisite.rows[0];
     if (!requisite) {

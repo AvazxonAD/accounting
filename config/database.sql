@@ -60,7 +60,7 @@ CREATE TABLE goals (
 
 CREATE TABLE positions (
     id BIGSERIAL PRIMARY KEY NOT NULL,
-    position VARCHAR(200) NOT NULL,
+    position_name VARCHAR(200) NOT NULL,
     fio VARCHAR(50) NOT NULL,
     boss BOOLEAN,
     manager BOOLEAN,

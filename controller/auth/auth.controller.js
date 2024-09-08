@@ -229,31 +229,42 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
 
 // position create 
 exports.position_create = asyncHandler(async (req, res, next) => {
+    console.log(req.body)
     const user_id = await return_id(req.user);
 
     if (!user_id) {
         return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
     }
 
-    const { position, fio, rol, boss, manager, kadr, accountant, mib, inspector } = req.body;
+    const { position_name, fio, rol } = req.body;
 
-    if (!position || !fio || !rol) {
+    if (!position_name || !fio || !rol) {
         return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
     }
    
-    if (typeof position !== "string" || typeof fio !== "string" || typeof rol !== "string") {
+    if (typeof position_name !== "string" || typeof fio !== "string" || typeof rol !== "string") {
         return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
     }
 
-    if(rol === "Raxbar"){
-        
+    let workerColumn = '';
+    if (rol === "Raxbar") {
+        workerColumn = 'boss';
+    } else if (rol === 'Bosh hisobchi') {
+        workerColumn = 'accountant';
+    } else if (rol === 'Kadrlar boshlugi') {
+        workerColumn = 'kadr';
+    } else {
+        return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
     }
 
-    const result = await pool.query(`
-            INSERT INTO positions (position, fio, boss, manager, kadr, accountant, mib, inspector, user_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING *     
-        `, [ position, fio, boss, manager, kadr, accountant, mib, inspector, user_id]);
+    // Dinamik ravishda ustun nomini tanlash (SQL injektsiya xavfidan himoya qilish uchun)
+    const query = `
+        INSERT INTO positions (position_name, fio, ${workerColumn}, user_id) 
+        VALUES ($1, $2, true, $3)
+        RETURNING *
+    `;
+
+    const result = await pool.query(query, [position_name, fio, user_id]);
 
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
@@ -265,6 +276,7 @@ exports.position_create = asyncHandler(async (req, res, next) => {
     });
 });
 
+
 // get all positions
 exports.get_all_positions = asyncHandler(async (req, res, next) => {
     const user_id = await return_id(req.user)
@@ -272,7 +284,7 @@ exports.get_all_positions = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
-    let result = await pool.query(`SELECT id, position, fio
+    let result = await pool.query(`SELECT id, position_name, fio
         FROM positions WHERE user_id = $1 ORDER BY id`, [user_id]);
 
     result = result.rows
