@@ -322,23 +322,30 @@ exports.update_position = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
     }
 
-    await pool.query(`UPDATE positions SET boss = $1, manager = $2, kadr = $3, accountant = $4, mib = $5, inspector = $6 
-        WHERE  id = $7 AND user_id = $8
-    `, [false, false, false, false, false, false, req.params.id, user_id])
+    // Barcha worker ustunlarini tozalash
+    await pool.query(`
+        UPDATE positions 
+        SET boss = $1, manager = $2, kadr = $3, accountant = $4, mib = $5, inspector = $6
+        WHERE id = $7 AND user_id = $8
+    `, [false, false, false, false, false, false, req.params.id, user_id]);
 
-    const result = await pool.query(`UPDATE positions SET position_name = $1, fio = $2, ${workerColumn} = true
-        WHERE  id = $3 AND user_id = $4
-        RETRUNING * 
-    `, [position_name, fio, req.params.id, user_id])
+    // Yangilangan ma'lumotlarni saqlash
+    const result = await pool.query(`
+        UPDATE positions 
+        SET position_name = $1, fio = $2, ${workerColumn} = true
+        WHERE id = $3 AND user_id = $4
+        RETURNING *
+    `, [position_name, fio, req.params.id, user_id]);
+
     if (!result.rows[0]) {
-        return next(new ErrorResponse('Server xatolik', 500))
+        return next(new ErrorResponse('Server xatolik: Yangilash amalga oshmadi', 500));
     }
 
     return res.status(200).json({
         success: true,
         data: "Muvaffaqiyatli yangilandi"
-    })
-})
+    });
+});
 
 // delete position
 exports.delete_position = asyncHandler(async (req, res, next) => {
