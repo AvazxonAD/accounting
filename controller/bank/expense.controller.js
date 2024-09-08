@@ -21,7 +21,6 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
     }
 
-    console.log(returnDate(date1))
     let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [requisite_id, user_id]);
     requisite = requisite.rows[0];
     if (!requisite) {
@@ -169,7 +168,7 @@ exports.for_create_page = asyncHandler(async (req, res, next) => {
         FROM requisites WHERE user_id = $1 AND default_value = $2`, [user_id, true])
     requisite = requisite.rows[0]
 
-    let positions = await pool.query(`SELECT id, position, fio FROM positions WHERE user_id = $1`, [user_id])
+    let positions = await pool.query(`SELECT id, position_name, fio FROM positions WHERE user_id = $1`, [user_id])
     positions = positions.rows
 
     let goals = await pool.query(`SELECT id, name, short_name, schot, number FROM goals WHERE user_id = $1 AND shot_status = $2`, [user_id, false])

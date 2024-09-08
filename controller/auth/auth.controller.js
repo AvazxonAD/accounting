@@ -229,7 +229,6 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
 
 // position create 
 exports.position_create = asyncHandler(async (req, res, next) => {
-    console.log(req.body)
     const user_id = await return_id(req.user);
 
     if (!user_id) {
@@ -257,7 +256,6 @@ exports.position_create = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
     }
 
-    // Dinamik ravishda ustun nomini tanlash (SQL injektsiya xavfidan himoya qilish uchun)
     const query = `
         INSERT INTO positions (position_name, fio, ${workerColumn}, user_id) 
         VALUES ($1, $2, true, $3)
@@ -303,25 +301,35 @@ exports.update_position = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
     }
 
-    const test = await pool.query(`SELECT * FROM positions WHERE id = $1 AND user_id = $2`, [req.params.id, user_id])
-    if (!test.rows[0]) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
+    const { position_name, fio, rol } = req.body;
 
-    const { position, fio, boss, manager, kadr, accountant, mib, inspector } = req.body;
-
-    if (!position || !fio) {
+    if (!position_name || !fio || !rol) {
         return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
     }
    
-    if (typeof position !== "string" || typeof fio !== "string") {
+    if (typeof position_name !== "string" || typeof fio !== "string" || typeof rol !== "string") {
         return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
     }
 
-    const result = await pool.query(`UPDATE positions SET position = $1, fio = $2, boss = $3, manager = $4, kadr = $5, accountant = $6, mib = $7, inspector = $8 WHERE  id = $9
-        RETURNING *     
-    `, [position, fio, boss, manager, kadr, accountant, mib, inspector, user_id])
+    let workerColumn = '';
+    if (rol === "Raxbar") {
+        workerColumn = 'boss';
+    } else if (rol === 'Bosh hisobchi') {
+        workerColumn = 'accountant';
+    } else if (rol === 'Kadrlar boshlugi') {
+        workerColumn = 'kadr';
+    } else {
+        return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
+    }
 
+    await pool.query(`UPDATE positions SET boss = $1, manager = $2, kadr = $3, accountant = $4, mib = $5, inspector = $6 
+        WHERE  id = $7 AND user_id = $8
+    `, [false, false, false, false, false, false, req.params.id, user_id])
+
+    const result = await pool.query(`UPDATE positions SET position_name = $1, fio = $2, ${workerColumn} = true
+        WHERE  id = $3 AND user_id = $4
+        RETRUNING * 
+    `, [position_name, fio, req.params.id, user_id])
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
