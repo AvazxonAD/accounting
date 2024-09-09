@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3005
 app.use(express.static('./public'))
 
 app.use('/auth', require('./router/auth/auth.router'))
+app.use('/auth', require('./router/auth/position.router'))
 app.use('/requisite', require('./router/auth/requisite.router'))
 app.use('/spravichnik', require('./router/storage/goal.router'))
 app.use('/spravichnik', require('./router/storage/partner.router'))

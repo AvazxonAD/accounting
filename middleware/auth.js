@@ -41,7 +41,8 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
 
 exports.adminProtect = asyncHandler(async (req, res, next) => {
-    if (!req.user.admin_status) {
+    console.log(req.user)
+    if (!req.user.admin && !req.user.super_admin) {
         return next(new ErrorResponse("Siz admin emassiz", 403));
     }
     

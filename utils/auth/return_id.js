@@ -1,16 +1,16 @@
 const pool = require("../../config/db")
 
 module.exports = async ( user ) => {
-    let user_id = null
-    if(user.admin_status){
-        user_id = user.id
+    let id = null
+    if(user.admin || user.super_admin){
+        id = user.id
     }else{
-        const result = await pool.query(`SELECT user_id FROM users WHERE id = $1 AND admin_status = $2`, [user.id, false])
+        const result = await pool.query(`SELECT id FROM users WHERE id = $1 AND (admin = true or super_admin = true)`, [user.user_id])
         if(!result.rows[0]){
             return false
         }
-        user_id = result.rows[0].user_id
+        id = result.rows[0].id
     }
 
-    return user_id
+    return id
 }

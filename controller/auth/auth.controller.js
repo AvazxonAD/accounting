@@ -2,7 +2,6 @@ const asyncHandler = require('../../middleware/asyncHandler');
 const ErrorResponse = require('../../utils/errorResponse');
 const pool = require('../../config/db');
 const generateToken = require('../../utils/auth/generate.token');
-const return_id = require('../../utils/auth/return_id')
 const bcrypt = require('bcrypt')
 
 
@@ -42,8 +41,8 @@ exports.login = asyncHandler(async (req, res, next) => {
 
 // create users 
 exports.createUsers = asyncHandler(async (req, res, next) => {
-
     const { login, password } = req.body;
+    let newUser = null
 
     if (!login || !password) {
         return next(new ErrorResponse("So'rovlar bo'sh qolishi mumkin emas", 400));
@@ -61,9 +60,23 @@ exports.createUsers = asyncHandler(async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password.trim(), 10)
 
-    const newUser = await pool.query(`INSERT INTO users(login, password, user_id) 
-        VALUES($1, $2, $3)
-    `, [login.trim(), hashedPassword, req.user.id]);
+    if (req.user.super_admin) {
+        newUser = await pool.query(`INSERT INTO users(login, password, user_id, admin) 
+            VALUES($1, $2, $3, $4)
+            RETURNING * 
+        `, [login.trim(), hashedPassword, req.user.id, true]);
+    }
+
+    if (req.user.admin) {
+        newUser = await pool.query(`INSERT INTO users(login, password, user_id) 
+            VALUES($1, $2, $3)
+            RETURNING * 
+        `, [login.trim(), hashedPassword, req.user.id]);
+    }
+
+    if (!newUser.rows[0]) {
+        return next(new ErrorResponse(`Server xatolik. User kiritilmadi`, 500))
+    }
 
     return res.status(200).json({
         success: true,
@@ -81,21 +94,21 @@ exports.update = asyncHandler(async (req, res, next) => {
             console.log(2)
             return next(new ErrorResponse('Server error: Administrator or user required, but not both or none', 400));
         }
-        if(admin){
+        if (admin) {
             if (admin !== undefined && typeof admin !== "boolean") {
                 return next(new ErrorResponse('Server error: Admin status must be boolean', 400));
             }
         }
-        if(user){
+        if (user) {
             if (user !== undefined && typeof user !== "boolean") {
                 return next(new ErrorResponse('Server error: User status must be boolean', 400));
             }
-        }        
+        }
 
         if (user) {
-            const { login, newPassword, user_id} = req.body
+            const { login, newPassword, user_id } = req.body
 
-            
+
             if (!user_id) {
                 return next(new ErrorResponse('Server error id is not defined', 400))
             }
@@ -155,7 +168,7 @@ exports.update = asyncHandler(async (req, res, next) => {
             updateUser = await pool.query(`UPDATE users SET login = $1, password = $2 WHERE id = $3 RETURNING * 
                 `, [login, hashedPassword, req.user.id]);
         }
-    } else if( !req.user.admin_status ) {
+    } else if (!req.user.admin_status) {
         let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
         user = user.rows[0]
         const { oldPassword, newPassword } = req.body;
@@ -179,7 +192,7 @@ exports.update = asyncHandler(async (req, res, next) => {
         `, [hashedPassword, req.user.id]);
     }
 
-    if(!updateUser.rows[0]){
+    if (!updateUser.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
 
@@ -193,10 +206,10 @@ exports.update = asyncHandler(async (req, res, next) => {
 // get profile 
 exports.getProfile = asyncHandler(async (req, res, next) => {
     let users = []
-    let user = await pool.query(`SELECT id, login, admin_status FROM users WHERE id = $1`, [req.user.id]);
+    let user = await pool.query(`SELECT id, login, super_admin, admin FROM users WHERE id = $1`, [req.user.id]);
     user = user.rows[0]
 
-    if (user.admin_status) {
+    if (user.admin || user.super_admin) {
         users = await pool.query(`SELECT id, login FROM users WHERE user_id = $1 ORDER BY id`, [user.id])
         users = users.rows
     }
@@ -225,143 +238,3 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('DELETE false', 500))
     }
 })
-
-
-// position create 
-exports.position_create = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
-    }
-
-    const { position_name, fio, rol } = req.body;
-
-    if (!position_name || !fio || !rol) {
-        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
-    }
-   
-    if (typeof position_name !== "string" || typeof fio !== "string" || typeof rol !== "string") {
-        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
-    }
-
-    let workerColumn = '';
-    if (rol === "Raxbar") {
-        workerColumn = 'boss';
-    } else if (rol === 'Bosh hisobchi') {
-        workerColumn = 'accountant';
-    } else if (rol === 'Kadrlar boshlugi') {
-        workerColumn = 'kadr';
-    } else {
-        return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
-    }
-
-    const query = `
-        INSERT INTO positions (position_name, fio, ${workerColumn}, user_id) 
-        VALUES ($1, $2, true, $3)
-        RETURNING *
-    `;
-
-    const result = await pool.query(query, [position_name, fio, user_id]);
-
-    if (!result.rows[0]) {
-        return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
-    }
-
-    return res.status(201).json({
-        success: true,
-        data: "Ma`lumot muvaffaqiyatli saqlandi"
-    });
-});
-
-
-// get all positions
-exports.get_all_positions = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    let result = await pool.query(`SELECT id, position_name, fio
-        FROM positions WHERE user_id = $1 ORDER BY id`, [user_id]);
-
-    result = result.rows
-
-    return res.status(200).json({
-        success: true,
-        data: result
-    })
-})
-
-// update  position
-exports.update_position = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
-    }
-
-    const { position_name, fio, rol } = req.body;
-
-    if (!position_name || !fio || !rol) {
-        return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
-    }
-   
-    if (typeof position_name !== "string" || typeof fio !== "string" || typeof rol !== "string") {
-        return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
-    }
-
-    let workerColumn = '';
-    if (rol === "Raxbar") {
-        workerColumn = 'boss';
-    } else if (rol === 'Bosh hisobchi') {
-        workerColumn = 'accountant';
-    } else if (rol === 'Kadrlar boshlugi') {
-        workerColumn = 'kadr';
-    } else {
-        return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
-    }
-
-    // Barcha worker ustunlarini tozalash
-    await pool.query(`
-        UPDATE positions 
-        SET boss = $1, manager = $2, kadr = $3, accountant = $4, mib = $5, inspector = $6
-        WHERE id = $7 AND user_id = $8
-    `, [false, false, false, false, false, false, req.params.id, user_id]);
-
-    // Yangilangan ma'lumotlarni saqlash
-    const result = await pool.query(`
-        UPDATE positions 
-        SET position_name = $1, fio = $2, ${workerColumn} = true
-        WHERE id = $3 AND user_id = $4
-        RETURNING *
-    `, [position_name, fio, req.params.id, user_id]);
-
-    if (!result.rows[0]) {
-        return next(new ErrorResponse('Server xatolik: Yangilash amalga oshmadi', 500));
-    }
-
-    return res.status(200).json({
-        success: true,
-        data: "Muvaffaqiyatli yangilandi"
-    });
-});
-
-// delete position
-exports.delete_position = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    const position = await pool.query(`DELETE FROM positions WHERE id = $1 AND user_id = $2 RETURNING * `, [req.params.id, user_id])
-
-    if (!position.rows[0]) {
-        return next(new ErrorResponse('DELETE FALSE', 500))
-    } else {
-        return res.status(200).json({
-            success: true,
-            data: "DELETE TRUE"
-        })
-    }
-})   

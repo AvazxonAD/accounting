@@ -8,8 +8,8 @@ const {
     get_all_requisites,
     update_requisite,
     delete_counterparty,
-    default_value,
-    get_default_value
+    change_requisite_by_id,
+    get_default_requisite
 } = require('../../controller/auth/requisite.controller')
 
 
@@ -17,7 +17,7 @@ router.post('/create', protect, create_requsite)
 router.get('/get/all', protect, get_all_requisites)
 router.put('/update/:id', protect, update_requisite)
 router.delete('/delete/:id', protect, delete_counterparty)
-router.put('/default/value/:id', protect, default_value)
-router.get('/get/default/value', protect, get_default_value)
+router.put('/change/requisite/by/id/:id', protect, change_requisite_by_id)
+router.get('/get/default/requisite', protect, get_default_requisite)
 
 module.exports = router
