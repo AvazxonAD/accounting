@@ -30,10 +30,10 @@ exports.create_revenue = asyncHandler(async (req, res, next) => {
             return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
         }
     
-        const date = returnDate(revenue.contract_date);
-        if (!date) {
-            return next(new ErrorResponse('Sana formati noto`g`ri kiritildi. To`g`ri format: kun.oy.yil', 400));
-        }
+        // const date = returnDate(revenue.contract_date);
+        // if (!date) {
+        //     return next(new ErrorResponse('Sana formati noto`g`ri kiritildi. To`g`ri format: kun.oy.yil', 400));
+        // }
     
         let partner = await pool.query(`SELECT * FROM partners WHERE id = $1 AND user_id = $2`, [revenue.partner_id, user_id]);
         partner = partner.rows[0];
@@ -49,7 +49,6 @@ exports.create_revenue = asyncHandler(async (req, res, next) => {
     }
 
     for(let revenue of revenues){
-        const date = returnDate(revenue.contract_date);
     
         let partner = await pool.query(`SELECT * FROM partners WHERE id = $1 AND user_id = $2`, [revenue.partner_id, user_id]);
         partner = partner.rows[0];
@@ -124,7 +123,7 @@ exports.create_revenue = asyncHandler(async (req, res, next) => {
             goal.short_name, 
             goal.schot, 
             goal.number,
-            date, 
+            revenue.contract_date, 
             revenue.contract_summa, 
             user_id
         ]);

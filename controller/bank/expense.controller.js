@@ -55,6 +55,7 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Goal topilmadi', 404));
     }
 
+
     const result = await pool.query(`
         INSERT INTO expenses(
             requisite_id, 
@@ -131,10 +132,10 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
         goal.schot, 
         goal.number, 
         position_1.id, 
-        position_1.position, 
+        position_1.position_name, 
         position_1.fio, 
         position_2.id, 
-        position_2.position, 
+        position_2.position_name, 
         position_2.fio, 
         date1, 
         date2, 
