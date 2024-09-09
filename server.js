@@ -6,12 +6,15 @@ const cors = require('cors')
 app.use(express.json())
 app.use(cors())
 
-require('colors')
-require('dotenv').config()
-require('./utils/auth/create.user')()
+const colors = require('colors');
+const dotenv = require('dotenv');
+dotenv.config();
+const createUser = require('./utils/auth/create.user');
+createUser().catch(console.error);
 
 const PORT = process.env.PORT || 3005
 
+app.use(express.static('./public'))
 
 app.use('/auth', require('./router/auth/auth.router'))
 app.use('/requisite', require('./router/auth/requisite.router'))
@@ -22,7 +25,7 @@ app.use('/revenue', require('./router/bank/revenue.router'))
 app.use('/bank', require('./router/bank/bank.result.router'))
 app.use('/bank/restr', require('./router/bank/restr.router'))
 
-app.use(require('./middleware/errorHandler'))
+app.use(require('./middleware/errorHandler'));
 
 app.listen(PORT, () => {
     console.log(`server runing on port : ${PORT}`.blue)

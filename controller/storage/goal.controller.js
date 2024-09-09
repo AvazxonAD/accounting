@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const return_id = require('../../utils/auth/return_id')
+const xlsx = require('xlsx')
 
 // goal create 
 exports.goal_create = asyncHandler(async (req, res, next) => {
@@ -63,7 +64,7 @@ exports.get_all_goal_status_true = asyncHandler(async (req, res, next) => {
         success: true,
         pageCount: pageCount,
         count: total,
-        currentPage: page, 
+        currentPage: page,
         nextPage: page >= pageCount ? null : page + 1,
         backPage: page === 1 ? null : page - 1,
         data: goals
@@ -97,7 +98,7 @@ exports.get_all_goal_status_false = asyncHandler(async (req, res, next) => {
         success: true,
         pageCount: pageCount,
         count: total,
-        currentPage: page, 
+        currentPage: page,
         nextPage: page >= pageCount ? null : page + 1,
         backPage: page === 1 ? null : page - 1,
         data: goals
@@ -159,4 +160,104 @@ exports.delete_goal = asyncHandler(async (req, res, next) => {
             data: "DELETE TRUE"
         })
     }
+})
+
+// import to excel status true 
+exports.importToExcelStatusTrue = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    if (!req.file) {
+        return next(new ErrorResponse("Fayl yuklanmadi", 400));
+    }
+    const filePath = req.file.path
+
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rowData = xlsx.utils.sheet_to_json(sheet, { defval: null }).map(row => {
+        const newRow = {};
+        for (const key in row) {
+            newRow[key.trim()] = row[key] !== undefined ? row[key] : null;
+        }
+        return newRow;
+    });
+
+    for (let data of rowData) {
+        if (!data.name || !data.short_name || !data.schot || !data.number) {
+            return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
+        }
+
+        if (typeof data.name !== "string" || typeof data.short_name !== "string" || typeof data.schot !== "string" || typeof data.number !== "number") {
+            return next(new ErrorResponse('Kiritilgan ma`lumotlar noto`g`ri formatda', 400));
+        }
+    }
+
+    for (let data of rowData) {
+        const goal = await pool.query(`
+            INSERT INTO goals (name, short_name, schot, number, shot_status, user_id) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *     
+        `, [data.name, data.short_name, data.schot, data.number, true, user_id]);
+
+        if (!goal.rows[0]) {
+            return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
+        }
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: 'Muvaffaqiyatli kiritildi'
+    })
+})
+
+// import to excel status false 
+exports.importToExcelStatusFalse = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    if (!req.file) {
+        return next(new ErrorResponse("Fayl yuklanmadi", 400));
+    }
+    const filePath = req.file.path
+
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rowData = xlsx.utils.sheet_to_json(sheet, { defval: null }).map(row => {
+        const newRow = {};
+        for (const key in row) {
+            newRow[key.trim()] = row[key] !== undefined ? row[key] : null;
+        }
+        return newRow;
+    });
+
+    for (let data of rowData) {
+        if (!data.name || !data.short_name || !data.schot || !data.number) {
+            return next(new ErrorResponse('Iltimos, barcha maydonlarni to`ldiring', 400));
+        }
+    }
+
+    for (let data of rowData) {
+        const goal = await pool.query(`
+            INSERT INTO goals (name, short_name, schot, number, shot_status, user_id) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *     
+        `, [data.name, data.short_name, data.schot, data.number, true, user_id]);
+
+        if (!goal.rows[0]) {
+            return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
+        }
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: 'Muvaffaqiyatli kiritildi'
+    })
 })

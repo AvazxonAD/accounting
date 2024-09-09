@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const return_id = require('../../utils/auth/return_id')
+const xlsx = require('xlsx')
 
 // create partner 
 exports.create_partner = asyncHandler(async (req, res, next) => {
@@ -16,8 +17,12 @@ exports.create_partner = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
     }
 
-    if (typeof inn !== "string" || inn.length !== 9 || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string" || typeof smeta_graph !== "boolean" || typeof budget !== "string") {
+    if (typeof inn !== "string" || typeof name !== "string" || typeof mfo !== "string" || typeof bank_name !== "string" || typeof account_number !== "string" || typeof smeta_graph !== "boolean" || typeof budget !== "string") {
         return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400))
+    }
+
+    if (data.inn.length !== 9) {
+        return next(new ErrorResponse('Inn raqami 9 xonalik bolishi kerak', 400))
     }
 
     const test = await pool.query(`SELECT * FROM partners WHERE user_id = $1 AND inn = $2`, [user_id, inn])
@@ -26,15 +31,14 @@ exports.create_partner = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Bu kontragent avval kiritilgan', 400))
     }
 
-    const requisite = await pool.query(`INSERT INTO partners(inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget, user_id) 
+    const partner = await pool.query(`INSERT INTO partners(inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget, user_id) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING *     
     `, [inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget, user_id])
 
-    if (!requisite.rows[0]) {
+    if (!partner.rows[0]) {
         return next(new ErrorResponse('Server xatolik', 500))
     }
-
 
     return res.status(200).json({
         success: true,
@@ -69,7 +73,7 @@ exports.get_all_partner = asyncHandler(async (req, res, next) => {
         success: true,
         pageCount: pageCount,
         count: total,
-        currentPage: page, 
+        currentPage: page,
         nextPage: page >= pageCount ? null : page + 1,
         backPage: page === 1 ? null : page - 1,
         data: partners
@@ -141,7 +145,7 @@ exports.delete_partner = asyncHandler(async (req, res, next) => {
 // search partner by inn 
 exports.search_partner_by_inn = asyncHandler(async (req, res, next) => {
     const { inn } = req.body
-    if(!inn){
+    if (!inn) {
         return next(new ErrorResponse('So`rovlar bo`sh qolishi mumkin emas', 400))
     }
 
@@ -152,10 +156,76 @@ exports.search_partner_by_inn = asyncHandler(async (req, res, next) => {
 
     let partner = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget
         FROM partners WHERE user_id = $1 AND inn = $2`, [user_id, inn]);
-        partner = partner.rows[0]
+    partner = partner.rows[0]
 
     return res.status(200).json({
         success: true,
         data: partner ? partner : null
+    })
+})
+
+// import to excel 
+exports.importToExcel = asyncHandler(async (req, res, next) => {
+    const user_id = await return_id(req.user)
+    if (!user_id) {
+        return next(new ErrorResponse('Server xatolik', 500))
+    }
+
+    if (!req.file) {
+        return next(new ErrorResponse("Fayl yuklanmadi", 400));
+    }
+    const filePath = req.file.path
+
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rowData = xlsx.utils.sheet_to_json(sheet, { defval: null }).map(row => {
+        const newRow = {};
+        for (const key in row) {
+            newRow[key.trim()] = row[key] !== undefined ? row[key] : null;
+        }
+        return newRow;
+    });
+
+    for (let data of rowData) {
+        if (!data.inn || !data.name || !data.mfo || !data.bank_name || !data.account_number || data.smeta_graph === undefined || !data.budget) {
+            return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
+        }
+
+        if (typeof data.inn !== "number" || typeof data.name !== "string" || typeof data.mfo !== "string" || typeof data.bank_name !== "string" || typeof data.account_number !== "string" || typeof data.smeta_graph !== "boolean" || typeof data.budget !== "string") {
+            return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400))
+        }
+
+        if (String(data.inn).length !== 9) {
+            return next(new ErrorResponse('Inn raqami 9 xonalik bolishi kerak', 400))
+        } 
+
+        if (String(data.account_number).length !== 20) {
+            return next(new ErrorResponse('Xisob raqami 20 xonalik bolishi kerak', 400))
+        }
+
+        const test = await pool.query(`SELECT * FROM partners WHERE user_id = $1 AND inn = $2`, [user_id, data.inn])
+
+        if (test.rows[0]) {
+            return next(new ErrorResponse('Bu kontragent avval kiritilgan', 400))
+        }
+    }
+
+    for(let data of rowData){
+        
+        const partner = await pool.query(`INSERT INTO partners(inn, name, mfo, bank_name, account_number, treasury_account_number, contract_date, contract_number, contract_summa, smeta_number, address, partner_boss, smeta_graph, budget, user_id) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            RETURNING *     
+        `, [data.inn, data.name, data.mfo, data.bank_name, data.account_number, data.treasury_account_number, data.contract_date, data.contract_number, data.contract_summa, data.smeta_number, data.address, data.partner_boss, data.smeta_graph, data.budget, user_id])
+
+        if (!partner.rows[0]) {
+            return next(new ErrorResponse('Server xatolik', 500))
+        }
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: 'Muvaffaqiyatli kiritildi'
     })
 })
