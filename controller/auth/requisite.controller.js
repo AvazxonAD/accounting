@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const findRequisites = require('../../utils/auth/find_requisite')
+const client = require('../../config/redis.db')
 
 // create requisite 
 exports.create_requsite = asyncHandler(async (req, res, next) => {
@@ -112,10 +113,29 @@ exports.delete_counterparty = asyncHandler(async (req, res, next) => {
 })
 
 // get default requisite 
-exports.get_default_requisite = asyncHandler(async (req, res, next) => {    
+exports.get_default_requisite = asyncHandler(async (req, res, next) => {   
+    await client.connect()
+
+    const key = `requisite:${req.user.id}`
+
+    const redisRequisite = await client.get(key)
+    if(redisRequisite){
+        const result = JSON.parse(redisRequisite)
+        await client.disconnect()
+        return res.status(200).json({
+            success: true, 
+            data: result
+        })    
+    }
     let requisite = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget, balance
         FROM requisites WHERE user_id = $1 AND default_value = $2`, [req.user.id, true]);
     requisite = requisite.rows[0]
+
+    if(requisite){
+        await client.set(key, JSON.stringify(requisite))
+    }
+
+    await client.disconnect()
 
     return res.status(200).json({
         success: true,
@@ -131,7 +151,18 @@ exports.change_requisite_by_id = asyncHandler(async (req, res, next) => {
     }
 
     await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
-    await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3`, [true, req.user.id, req.params.id])
+    let result = await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3 RETURNING * `, [true, req.user.id, req.params.id])
+    result = result.rows[0]
+    if(!result){
+        return next(new ErrorResponse('Server xatolik malumot yangilanmadi', 500))
+    }
+
+    await client.connect()
+
+    const key = `requisite:${req.user.id}`
+    await client.set(key, JSON.stringify(result))
+    await client.disconnect()
+    
     return res.status(200).json({
         success: true,
         data: "Muvaffaqiyatli yangilandi"
@@ -162,11 +193,75 @@ exports.change_requisite_by_button = asyncHandler(async (req, res, next) => {
     }
 
     await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
-    await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3`, [true, req.user.id, requisite.id])
+    let result = await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3 RETURNING * 
+    `, [true, req.user.id, requisite.id])
+    result = result.rows[0]
+
+    if(!result){
+        return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500))
+    }
     
+    await client.connect()
+
+    const key = `requisite:${req.user.id}`
+    await client.set(key, JSON.stringify(result))
+    await client.disconnect()
+
     return res.status(200).json({
         success: true,
         data: "Muvaffaqiyatli yangilandi"
     })
 
 })
+
+// get  date 
+exports.get_date = asyncHandler(async (req, res, next) => {
+    await client.connect()
+    const key = `date:${req.user.id}`
+    const data = await client.get(key)
+    await client.disconnect()
+    if(data){
+        const result = JSON.parse(data)
+        return res.status(200).json({
+            success: true,
+            data: result
+        })
+    }else {
+        return res.status(200).json({
+            success: true,
+            data: new Date()
+        })
+    }
+})
+
+// set date 
+exports.set_date = asyncHandler(async (req, res, next) => {
+    const { date } = req.body;
+    
+    if (!date) {
+        return next(new ErrorResponse('So`rovlar bo`sh qolishi mumkin emas', 400));
+    }
+
+    if (typeof date !== "string") {
+        return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400));
+    }
+
+    const result = { date };
+
+    const key = `date:${req.user.id}`;
+
+    await client.connect();
+
+    const response = await client.set(key, JSON.stringify(result));
+
+    if (!response) {
+        return next(new ErrorResponse('Serverga saqlashda xatolik', 500));
+    }
+
+    await client.disconnect();
+
+    return res.status(200).json({
+        success: true,
+        data: "Muvaffaqiyatli saqlandi"
+    });
+});

@@ -10,7 +10,8 @@ const {
     delete_counterparty,
     change_requisite_by_id,
     get_default_requisite,
-    change_requisite_by_button
+    change_requisite_by_button,
+    get_date
 } = require('../../controller/auth/requisite.controller')
 
 
@@ -21,5 +22,6 @@ router.delete('/delete/:id', protect, delete_counterparty)
 router.put('/change/requisite/by/id/:id', protect, change_requisite_by_id)
 router.get('/get/default/requisite', protect, get_default_requisite)
 router.put('/change/requisite/by/button/:id', protect, change_requisite_by_button)
+router.get('/get/date', protect, get_date)
 
 module.exports = router

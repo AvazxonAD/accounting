@@ -91,7 +91,7 @@ CREATE TABLE expenses (
     position_name_1 VARCHAR(200) NOT NULL,
     position_fio_1 VARCHAR(50) NOT NULL,
     position_id_2 INTEGER REFERENCES positions(id) ON DELETE SET NULL,
-    position__name_2 VARCHAR(200) NOT NULL,
+    position_name_2 VARCHAR(200) NOT NULL,
     position_fio_2 VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
     contract_summa NUMERIC NOT NULL,
