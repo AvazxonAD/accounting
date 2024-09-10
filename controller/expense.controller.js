@@ -1,27 +1,21 @@
-const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
-const ErrorResponse = require("../../utils/errorResponse");
-const return_id = require('../../utils/auth/return_id')
-const { returnDate } = require('../../utils/date.function')
+const pool = require("../config/db");
+const asyncHandler = require("../middleware/asyncHandler");
+const ErrorResponse = require("../utils/errorResponse");
+const return_id = require('../utils/auth/return_id')
 
 // create  expense 
 exports.create_expense = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-    if(!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500));
-    }
+    const { partner_id, date, contract_summa, contract_number, goal_info, goal_id, position_id_1, position_id_2 } = req.body;
 
-    const { requisite_id, partner_id, date1, date2, contract_summa, contract_number, goal_info, goal_id, position_id_1, position_id_2, task_number } = req.body;
-
-    if (!requisite_id || !partner_id || !date1 || !date2 || !contract_summa || !contract_number || !goal_info || !position_id_1 || !position_id_2 || !task_number) {
+    if (!partner_id || !date || !contract_summa || !contract_number || !goal_info || !position_id_1 || !position_id_2) {
         return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400));
     }
 
-    if (typeof requisite_id !== "number" || typeof partner_id !== "number" || typeof date1 !== "string" || typeof date2 !== "string" || typeof contract_summa !== "number" || typeof contract_number !== "string" || typeof goal_info !== "string" || typeof position_id_1 !== "number" || typeof position_id_2 !== "number" || typeof task_number !== "string") {
+    if (typeof partner_id !== "number" || typeof date !== "string" || typeof contract_summa !== "number" || typeof contract_number !== "string" || typeof goal_info !== "string" || typeof position_id_1 !== "number" || typeof position_id_2 !== "number" || typeof goal_id !== "number") {
         return next(new ErrorResponse('Ma`lumotlar to`g`ri kiritilishi kerak', 400));
     }
 
-    let requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [requisite_id, user_id]);
+    let requisite = await pool.query(`SELECT * FROM requisites WHERE default_value = $1 AND user_id = $2`, [true, req.user.id]);
     requisite = requisite.rows[0];
     if (!requisite) {
         return next(new ErrorResponse('Requisite topilmadi', 404));
@@ -54,7 +48,6 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
     if (!goal) {
         return next(new ErrorResponse('Goal topilmadi', 404));
     }
-
 
     const result = await pool.query(`
         INSERT INTO expenses(
@@ -156,34 +149,24 @@ exports.create_expense = asyncHandler(async (req, res, next) => {
 
 // for create page 
 exports.for_create_page = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if(!user_id){
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    let requisites = await pool.query(`SELECT id, name, inn, bank_name, mfo, treasury_account_number, account_number, balance, shot_number, budget 
-        FROM requisites WHERE user_id = $1 ORDER BY default_value DESC`, [user_id])
-    requisites = requisites.rows
-
-    let requisite = await pool.query(`SELECT id, name, inn, bank_name, mfo, treasury_account_number, account_number, balance, shot_number, budget 
-        FROM requisites WHERE user_id = $1 AND default_value = $2`, [user_id, true])
+    let requisite = await pool.query(`SELECT id, name, inn, bank_name, mfo, account_number, shot_number, budget 
+        FROM requisites WHERE user_id = $1 AND default_value = $2`, [req.user.id, true])
     requisite = requisite.rows[0]
 
-    let positions = await pool.query(`SELECT id, position_name, fio FROM positions WHERE user_id = $1`, [user_id])
+    let positions = await pool.query(`SELECT id, position_name, fio FROM positions WHERE user_id = $1`, [req.user.id])
     positions = positions.rows
 
-    let goals = await pool.query(`SELECT id, name, short_name, schot, number FROM goals WHERE user_id = $1 AND shot_status = $2`, [user_id, false])
+    let goals = await pool.query(`SELECT id, name, short_name, schot, number FROM goals WHERE user_id = $1 AND shot_status = $2`, [req.user.id, false])
     goals = goals.rows
     
-    let partners = await pool.query(`SELECT id, name, inn, bank_name, mfo, treasury_account_number, account_number, budget, contract_number, contract_date, contract_summa, smeta_number 
-        FROM partners WHERE user_id = $1`, [user_id])
+    let partners = await pool.query(`SELECT id, name, inn, bank_name, mfo, account_number 
+        FROM partners WHERE user_id = $1`, [req.user.id])
     partners = partners.rows
 
     return res.status(200).json({
         success: true,
         data: {
             requisite,
-            requisites,
             positions,
             goals,
             partners

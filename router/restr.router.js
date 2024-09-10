@@ -1,12 +1,12 @@
 const {Router} = require('express') 
 const router = Router()
 
-const { protect } = require('../../middleware/auth')
+const { protect } = require('../middleware/auth')
 
 const {
     for_revenue_restr_page,
     get_revenue_restr
-} = require('../../controller/bank/restr.controller')
+} = require('../controller/restr.controller')
 
 
 router.get('/for/revenue/page', protect, for_revenue_restr_page )

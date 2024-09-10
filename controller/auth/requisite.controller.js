@@ -1,6 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
+const findRequisites = require('../../utils/auth/find_requisite')
 
 // create requisite 
 exports.create_requsite = asyncHandler(async (req, res, next) => {
@@ -45,7 +46,7 @@ exports.get_all_requisites = asyncHandler(async (req, res, next) => {
     const offset = (page - 1) * limit;
 
     let requisites = await pool.query(`SELECT id, inn, name, mfo, bank_name, account_number, treasury_account_number, shot_number, budget, balance
-        FROM requisites WHERE user_id = $1 ORDER BY default_value DESC OFFSET $2 LIMIT $3`, [req.user.id, offset, limit]);
+        FROM requisites WHERE user_id = $1 ORDER BY id OFFSET $2 LIMIT $3`, [req.user.id, offset, limit]);
     requisites = requisites.rows
 
     const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM requisites WHERE user_id = $1`, [req.user.id]);
@@ -131,7 +132,6 @@ exports.change_requisite_by_id = asyncHandler(async (req, res, next) => {
 
     await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
     await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3`, [true, req.user.id, req.params.id])
-
     return res.status(200).json({
         success: true,
         data: "Muvaffaqiyatli yangilandi"
@@ -141,17 +141,32 @@ exports.change_requisite_by_id = asyncHandler(async (req, res, next) => {
 // change requisite by button
 exports.change_requisite_by_button = asyncHandler(async (req, res, next) => {
     const {right, left} = req.body
-    const requisite = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2`, [req.params.id, req.user.id])
-    if(!requisite.rows[0]){
-        return next(new ErrorResponse('Server xatolik', 500))
+    if(!right && !left){
+        return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
+    }
+
+    if(typeof right !== "boolean" || typeof left !== "boolean"){
+        return next (new ErrorResponse('Malumotlar tog`ri formatda kiritilishi kerak', 400))
+    }
+
+    const old = await pool.query(`SELECT * FROM requisites WHERE id = $1 AND user_id = $2 AND default_value = $3
+    `, [req.params.id, req.user.id, true])
+    if(!old.rows[0]){
+        return next(new ErrorResponse('Server xatolik. Rewkvizit topilmadi', 500))
+    }
+
+    const requisite = await findRequisites(right, left, old.rows[0].id, req.user.id)
+
+    if(!requisite){
+        return next(new ErrorResponse('Rekvizit topilmadi', 500))
     }
 
     await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2`, [false, req.user.id])
-
-    await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3`, [true, req.user.id, req.params.id])
-
+    await pool.query(`UPDATE requisites SET default_value = $1 WHERE user_id = $2 AND id = $3`, [true, req.user.id, requisite.id])
+    
     return res.status(200).json({
         success: true,
         data: "Muvaffaqiyatli yangilandi"
     })
+
 })

@@ -4,12 +4,6 @@ const pool = require('../../config/db');
 
 // position create 
 exports.position_create = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
-    }
-
     const { position_name, fio, rol } = req.body;
 
     if (!position_name || !fio || !rol) {
@@ -25,7 +19,7 @@ exports.position_create = asyncHandler(async (req, res, next) => {
         workerColumn = 'boss';
     } else if (rol === 'Bosh hisobchi') {
         workerColumn = 'accountant';
-    } else if (rol === 'Kadrlar boshlugi') {
+    } else if (rol === 'Kadrlar boshligi') {
         workerColumn = 'kadr';
     } else {
         return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
@@ -37,7 +31,7 @@ exports.position_create = asyncHandler(async (req, res, next) => {
         RETURNING *
     `;
 
-    const result = await pool.query(query, [position_name, fio, user_id]);
+    const result = await pool.query(query, [position_name, fio, req.user.id]);
 
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik: Ma`lumotlar saqlanmadi', 500));
@@ -49,16 +43,10 @@ exports.position_create = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all positions
 exports.get_all_positions = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
     let result = await pool.query(`SELECT id, position_name, fio
-        FROM positions WHERE user_id = $1 ORDER BY id`, [user_id]);
+        FROM positions WHERE user_id = $1 ORDER BY id`, [req.user.id]);
 
     result = result.rows
 
@@ -70,12 +58,6 @@ exports.get_all_positions = asyncHandler(async (req, res, next) => {
 
 // update  position
 exports.update_position = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user);
-
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik: foydalanuvchi aniqlanmadi', 500));
-    }
-
     const { position_name, fio, rol } = req.body;
 
     if (!position_name || !fio || !rol) {
@@ -97,20 +79,18 @@ exports.update_position = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Noto`g`ri rol kiritildi', 400));
     }
 
-    // Barcha worker ustunlarini tozalash
     await pool.query(`
         UPDATE positions 
         SET boss = $1, manager = $2, kadr = $3, accountant = $4, mib = $5, inspector = $6
         WHERE id = $7 AND user_id = $8
-    `, [false, false, false, false, false, false, req.params.id, user_id]);
+    `, [false, false, false, false, false, false, req.params.id, req.user.id]);
 
-    // Yangilangan ma'lumotlarni saqlash
     const result = await pool.query(`
         UPDATE positions 
         SET position_name = $1, fio = $2, ${workerColumn} = true
         WHERE id = $3 AND user_id = $4
         RETURNING *
-    `, [position_name, fio, req.params.id, user_id]);
+    `, [position_name, fio, req.params.id, req.user.id]);
 
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik: Yangilash amalga oshmadi', 500));
@@ -124,12 +104,7 @@ exports.update_position = asyncHandler(async (req, res, next) => {
 
 // delete position
 exports.delete_position = asyncHandler(async (req, res, next) => {
-    const user_id = await return_id(req.user)
-    if (!user_id) {
-        return next(new ErrorResponse('Server xatolik', 500))
-    }
-
-    const position = await pool.query(`DELETE FROM positions WHERE id = $1 AND user_id = $2 RETURNING * `, [req.params.id, user_id])
+    const position = await pool.query(`DELETE FROM positions WHERE id = $1 AND user_id = $2 RETURNING * `, [req.params.id, req.user.id])
 
     if (!position.rows[0]) {
         return next(new ErrorResponse('DELETE FALSE', 500))

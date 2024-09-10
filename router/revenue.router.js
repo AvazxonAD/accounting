@@ -1,15 +1,15 @@
 const {Router} = require('express') 
 const router = Router()
 
-const { protect } = require('../../middleware/auth')
+const { protect } = require('../middleware/auth')
 
 const {
-    create_expense,
+    create_revenue,
     for_create_page
-} = require('../../controller/bank/expense.controller')
+} = require('../controller/revenue.controller')
 
 
-router.post('/create', protect, create_expense)
+router.post('/create', protect, create_revenue)
 router.get('/for/create/page', protect, for_create_page )
 router.get('/get/all', protect, )
 router.put('/update/:id', protect, )
