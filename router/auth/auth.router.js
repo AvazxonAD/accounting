@@ -8,14 +8,16 @@ const {
     createUsers,
     update,
     getProfile,
-    deleteUser
+    deleteUser,
+    createRegion
 } = require('../../controller/auth/auth.controller')
 
 
 router.post('/login', login)
-router.post("/create", protect, adminProtect, createUsers)
+router.post("/user/create", protect, adminProtect, createUsers)
 router.put('/update', protect, update)
 router.get("/get", protect, getProfile)
 router.delete("/delete/:id", protect, deleteUser)
+router.post('/create/region', protect, createRegion)
 
 module.exports = router

@@ -17,7 +17,12 @@ exports.login = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Malumotlar tog`ri fromatda kiritilishi kerak', 400))
     }
 
-    let user = await pool.query(`SELECT * FROM users WHERE login = $1`, [login.trim()]);
+    let user = await pool.query(`
+        SELECT users.id, role.name AS role_name, users.name, users.fio, password
+        FROM users 
+        LEFT JOIN role ON users.role_id = role.id
+        WHERE login = $1
+    `, [login.trim()]);
     user = user.rows[0]
     if (!user) {
         return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
@@ -38,6 +43,39 @@ exports.login = asyncHandler(async (req, res, next) => {
         },
     });
 });
+
+// create region 
+exports.createRegion = asyncHandler(async (req, res, next) => {
+    if(req.user.role_name !== 'super_admin'){
+        return next(new ErrorResponse('Siz uchun ushbu amal ruhsat etilmagan', 400))
+    }
+
+    let { name } = req.body 
+    if(!name){
+        return next(new ErrorResponse('So`rovlar bosh qolishi mumkin emas', 400))
+    }
+
+    if(typeof name !== "string"){
+        return next(new ErrorResponse('Malumotlar tog`ri kiritilishi kerak', 400))
+    }
+    name = name.trim()
+
+    const test = await pool.query(`SELECT * FROM regions WHERE name = $1`, [name])
+    if(test.rows[0]){
+        return next(new ErrorResponse('Ushbu viloyat avval kiritilgan', 400))
+    }
+
+    const region = await pool.query(`INSERT INTO regions(name) VALUES($1) RETURNING *`, [name])
+    if(!region.rows[0]){
+        return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: "Muvafaqyatli kiritildi"
+    })
+})
+
 
 // create users 
 exports.createUsers = asyncHandler(async (req, res, next) => {

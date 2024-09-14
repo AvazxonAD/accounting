@@ -1,115 +1,198 @@
--- Rollar jadvali
+-- bank
+CREATE TABLE regions (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
 CREATE TABLE role (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL, -- Maksimal uzunlik belgilandi
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  name VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Foydalanuvchilar jadvali
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
-  user_id INT REFERENCES users(id),
-  login VARCHAR(255) NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  fio VARCHAR(255),
-  role_id INT REFERENCES role(id),
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  role_id SMALLINT REFERENCES role(id),
+  region_id BIGINT,
+  name VARCHAR(200),
+  fio VARCHAR(200),
+  login VARCHAR(200) UNIQUE,
+  password VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Rekvizitlar jadvali
-CREATE TABLE requisite (
-  iid BIGSERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  bank_name VARCHAR(255),
-  bank_mfo VARCHAR(255),
-  user_id INT UNIQUE REFERENCES users(id),
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+
+CREATE TABLE spravochnik_podotchet_litso (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  rayon VARCHAR(200),
+  user_id INT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Asosiy hisoblar jadvali
+CREATE TABLE spravochnik_podrazdelenie (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  rayon VARCHAR(200),
+  user_id INT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE spravochnik_sostav (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  rayon VARCHAR(200),
+  user_id INT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE spravochnik_type_operatsii (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  rayon VARCHAR(200),
+  user_id INT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE spravochnik_organization (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  okonx VARCHAR(200),
+  bank_klient VARCHAR(200),
+  raschet_schet VARCHAR(200),
+  raschet_schet_gazna VARCHAR(200),
+  mfo VARCHAR(200),
+  inn VARCHAR(200),
+  user_id INT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE spravochnik_operatsii (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  schet VARCHAR(200),
+  sub_schet VARCHAR(200),
+  type_schet VARCHAR(200), -- tolov yoki ushlanma
+  user_id INT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
 CREATE TABLE main_schet (
-  id BIGINT PRIMARY KEY,
-  shot_number INT,
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200),
   account_number INT,
-  budget VARCHAR(255),
-  balance DOUBLE PRECISION,
-  user_id INT REFERENCES users(id),
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  user_id BIGINT REFERENCES regions(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Hamkorlar jadvali
-CREATE TABLE partner (
+CREATE TABLE bank_rasxod (
   id BIGSERIAL PRIMARY KEY,
-  inn BIGINT,
-  name VARCHAR(255),
-  bank_name VARCHAR(255),
-  bank_mfo VARCHAR(255),
-  account_number BIGINT,
-  user_id INT REFERENCES users(id),
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  doc_num VARCHAR(200),
+  doc_date DATE,
+  user_id INT REFERENCES regions(id),
+  summa DOUBLE PRECISION,
+  opisanie VARCHAR(200),
+  id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
+  id_shartnomalar_organization INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Maqsad jadvali
-CREATE TABLE target (
+CREATE TABLE bank_rasxod_child (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(255),
-  short_name VARCHAR(255),
-  shot_number INT,
-  smeta_number INT,
-  payment_status BOOLEAN,
-  user_id INT REFERENCES users(id),
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  id_spravochnik_operatsii INT,
+  summa DOUBLE PRECISION,
+  id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
+  id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
+  id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
+  id_bank_rasxod INT REFERENCES bank_rasxod(id),
+  own_schet VARCHAR(200),
+  own_subschet VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Xarajatlar jadvali
-CREATE TABLE rasxod (
+CREATE TABLE bank_prixod (
   id BIGSERIAL PRIMARY KEY,
-  doc_number INT,
-  date1 DATE,
-  date2 DATE,
-  user_id INT REFERENCES users(id),
-  partner_id INT REFERENCES partner(id),
-  contract_summa DOUBLE PRECISION,
-  contract_string_summa DOUBLE PRECISION,
-  target_id INT REFERENCES target(id),
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  doc_num VARCHAR(200),
+  doc_date DATE,
+  summa DOUBLE PRECISION,
+  provodki_boolean BOOLEAN,
+  dop_provodki_boolean BOOLEAN,
+  opisanie VARCHAR(200),
+  id_spravochnik_organization INT REFERENCES spravochnik_type_operatsii(id),
+  id_shartnomalar_organization INT REFERENCES spravochnik_organization(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Kelib tushgan mablag'lar jadvali
-CREATE TABLE prixod (
-  id BIGSERIAL PRIMARY KEY,
-  doc_number INT,
-  date DATE,
-  user_id INT REFERENCES users(id),
-  partner_id INT REFERENCES partner(id),
-  contract_summa DOUBLE PRECISION,
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+CREATE TABLE bank_prixod_child (
+  id INT PRIMARY KEY,
+  id_spravochnik_operatsii INT REFERENCES spravochnik_type_operatsii(id),
+  summa DOUBLE PRECISION,
+  id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
+  id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
+  id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
+  id_spravochnik_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
+  id_bank_prixod INT REFERENCES bank_prixod(id),
+  own_schet VARCHAR(200),
+  own_subschet VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
 
--- Mablag'lar kelib tushgan maqsadlar jadvali
-CREATE TABLE target_of_prixod (
+-- KASSA
+CREATE TABLE kassa_prixod_rasxod (
   id BIGSERIAL PRIMARY KEY,
-  target_id INT REFERENCES target(id),
-  prixod_id INT REFERENCES prixod(id),
-  user_id INT REFERENCES users(id),
+  doc_num VARCHAR(200),
+  doc_date DATE,
+  opisaine VARCHAR(200),
   prixod_summa DOUBLE PRECISION,
-  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+  rasxod_summa DOUBLE PRECISION,
+  id_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
+  user_id INT REFERENCES users(id),
+  main_schet_id INT REFERENCES main_schet(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE kassa_prixod_rasxod_child (
+  id BIGSERIAL PRIMARY KEY,
+  id_spravochnik_operatsii INT,
+  summa DOUBLE PRECISION,
+  id_spravochnik_podrazdelenie INT,
+  id_spravochnik_sostav INT,
+  id_spravochnik_type_operatsii INT,
+  id_kassa_prixod_rasxod INT,
+  own_schet VARCHAR(200),
+  own_subschet VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );
