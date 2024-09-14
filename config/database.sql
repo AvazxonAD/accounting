@@ -1,129 +1,115 @@
+-- Rollar jadvali
+CREATE TABLE role (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL, -- Maksimal uzunlik belgilandi
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- Foydalanuvchilar jadvali
 CREATE TABLE users (
-    id BIGSERIAL NOT NULL PRIMARY KEY,
-    login VARCHAR(80) NOT NULL UNIQUE,
-    password VARCHAR(100) NOT NULL,
-    super_admin BOOLEAN DEFAULT false,
-    admin BOOLEAN DEFAULT false,
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+  id BIGSERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  login VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  fio VARCHAR(255),
+  role_id INT REFERENCES role(id),
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE requisites (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    inn VARCHAR(9) NOT NULL, 
-    name VARCHAR(200) NOT NULL, 
-    mfo VARCHAR(5) NOT NULL, 
-    bank_name VARCHAR(300) NOT NULL, 
-    account_number VARCHAR(20) NOT NULL, 
-    balance NUMERIC DEFAULT 0,
-    treasury_account_number VARCHAR(40) NOT NULL, 
-    shot_number INTEGER NOT NULL, 
-    default_value BOOLEAN,
-    budget VARCHAR(300) NOT NULL,
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+-- Rekvizitlar jadvali
+CREATE TABLE requisite (
+  iid BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  bank_name VARCHAR(255),
+  bank_mfo VARCHAR(255),
+  user_id INT UNIQUE REFERENCES users(id),
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE partners (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    inn VARCHAR(9) NOT NULL, 
-    name VARCHAR(200) NOT NULL, 
-    mfo VARCHAR(5) NOT NULL, 
-    bank_name VARCHAR(300) NOT NULL, 
-    account_number VARCHAR(20) NOT NULL, 
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+-- Asosiy hisoblar jadvali
+CREATE TABLE main_schet (
+  id BIGINT PRIMARY KEY,
+  shot_number INT,
+  account_number INT,
+  budget VARCHAR(255),
+  balance DOUBLE PRECISION,
+  user_id INT REFERENCES users(id),
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE goals (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    name VARCHAR(200) NOT NULL,
-    short_name VARCHAR(100) NOT NULL,
-    schot VARCHAR(30) NOT NULL,
-    number BIGINT NOT NULL,
-    shot_status BOOLEAN DEFAULT false,
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+-- Hamkorlar jadvali
+CREATE TABLE partner (
+  id BIGSERIAL PRIMARY KEY,
+  inn BIGINT,
+  name VARCHAR(255),
+  bank_name VARCHAR(255),
+  bank_mfo VARCHAR(255),
+  account_number BIGINT,
+  user_id INT REFERENCES users(id),
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE positions (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    position_name VARCHAR(200) NOT NULL,
-    fio VARCHAR(50) NOT NULL,
-    boss BOOLEAN,
-    manager BOOLEAN,
-    kadr BOOLEAN,
-    accountant BOOLEAN,
-    mib BOOLEAN,
-    inspector BOOLEAN,
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+-- Maqsad jadvali
+CREATE TABLE target (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  short_name VARCHAR(255),
+  shot_number INT,
+  smeta_number INT,
+  payment_status BOOLEAN,
+  user_id INT REFERENCES users(id),
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE expenses (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    requisite_id INTEGER REFERENCES requisites(id) ON DELETE SET NULL,
-    inn VARCHAR(9) NOT NULL, 
-    name VARCHAR(200) NOT NULL, 
-    mfo VARCHAR(5) NOT NULL, 
-    bank_name VARCHAR(300) NOT NULL, 
-    account_number VARCHAR(20) NOT NULL, 
-    treasury_account_number VARCHAR(40) NOT NULL, 
-    shot_number INTEGER NOT NULL, 
-    budget VARCHAR(300) NOT NULL,
-    partner_id INTEGER REFERENCES partners(id) ON DELETE SET NULL,
-    partner_name VARCHAR(200) NOT NULL, 
-    partner_bank_name VARCHAR(300) NOT NULL, 
-    partner_account_number VARCHAR(20) NOT NULL, 
-    partner_mfo VARCHAR(5) NOT NULL, 
-    partner_inn VARCHAR(9) NOT NULL, 
-    goal_id INTEGER REFERENCES goals(id) ON DELETE SET NULL,
-    goal_info VARCHAR(200) NOT NULL,
-    goal_short_name VARCHAR(100) NOT NULL,
-    goal_schot VARCHAR(30) NOT NULL,
-    goal_number BIGINT NOT NULL,
-    position_id_1 INTEGER REFERENCES positions(id) ON DELETE SET NULL,
-    position_name_1 VARCHAR(200) NOT NULL,
-    position_fio_1 VARCHAR(50) NOT NULL,
-    position_id_2 INTEGER REFERENCES positions(id) ON DELETE SET NULL,
-    position_name_2 VARCHAR(200) NOT NULL,
-    position_fio_2 VARCHAR(50) NOT NULL,
-    date DATE NOT NULL,
-    contract_summa NUMERIC NOT NULL,
-    contract_number VARCHAR(30),
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+-- Xarajatlar jadvali
+CREATE TABLE rasxod (
+  id BIGSERIAL PRIMARY KEY,
+  doc_number INT,
+  date1 DATE,
+  date2 DATE,
+  user_id INT REFERENCES users(id),
+  partner_id INT REFERENCES partner(id),
+  contract_summa DOUBLE PRECISION,
+  contract_string_summa DOUBLE PRECISION,
+  target_id INT REFERENCES target(id),
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE revenues (
-    id BIGSERIAL PRIMARY KEY NOT NULL,
-    requisite_id INTEGER REFERENCES requisites(id) ON DELETE SET NULL,
-    inn VARCHAR(9) NOT NULL, 
-    name VARCHAR(200) NOT NULL, 
-    mfo VARCHAR(5) NOT NULL, 
-    bank_name VARCHAR(300) NOT NULL, 
-    account_number VARCHAR(20) NOT NULL, 
-    treasury_account_number VARCHAR(40) NOT NULL, 
-    shot_number INTEGER NOT NULL, 
-    budget VARCHAR(300) NOT NULL,
-    partner_id INTEGER REFERENCES partners(id) ON DELETE SET NULL,
-    partner_name VARCHAR(200) NOT NULL, 
-    partner_bank_name VARCHAR(300) NOT NULL, 
-    partner_account_number VARCHAR(20) NOT NULL, 
-    partner_mfo VARCHAR(5) NOT NULL, 
-    partner_inn VARCHAR(9) NOT NULL, 
-    goals JSONB[],
-    goal_info VARCHAR(200) NOT NULL,
-    contract_date DATE,
-    contract_summa NUMERIC NOT NULL,
-    contract_number VARCHAR(30),
-    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+-- Kelib tushgan mablag'lar jadvali
+CREATE TABLE prixod (
+  id BIGSERIAL PRIMARY KEY,
+  doc_number INT,
+  date DATE,
+  user_id INT REFERENCES users(id),
+  partner_id INT REFERENCES partner(id),
+  contract_summa DOUBLE PRECISION,
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- Mablag'lar kelib tushgan maqsadlar jadvali
+CREATE TABLE target_of_prixod (
+  id BIGSERIAL PRIMARY KEY,
+  target_id INT REFERENCES target(id),
+  prixod_id INT REFERENCES prixod(id),
+  user_id INT REFERENCES users(id),
+  prixod_summa DOUBLE PRECISION,
+  createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN NOT NULL DEFAULT FALSE
 );

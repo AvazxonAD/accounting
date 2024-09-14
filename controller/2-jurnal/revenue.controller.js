@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncHandler = require("../middleware/asyncHandler");
-const ErrorResponse = require("../utils/errorResponse");
-const return_id = require('../utils/auth/return_id')
+const pool = require("../../config/db");
+const asyncHandler = require("../../middleware/asyncHandler");
+const ErrorResponse = require("../../utils/errorResponse");
+const return_id = require('../../utils/auth/return_id')
 
 
 // create revenue

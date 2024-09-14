@@ -1,8 +1,8 @@
-const pool = require("../config/db");
-const asyncHandler = require("../middleware/asyncHandler");
-const ErrorResponse = require("../utils/errorResponse");
-const return_id = require('../utils/auth/return_id')
-const { returnDate } = require('../utils/date.function')
+const pool = require("../../config/db");
+const asyncHandler = require("../../middleware/asyncHandler");
+const ErrorResponse = require("../../utils/errorResponse");
+const return_id = require('../../utils/auth/return_id')
+const { returnDate } = require('../../utils/date.function')
 
 // get revenue restr 
 exports.get_revenue_restr = asyncHandler(async (req, res, next) => {

@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncHandler = require("../middleware/asyncHandler");
-const ErrorResponse = require("../utils/errorResponse");
-const returnSumma = require('../utils/returnSumma')
+const pool = require("../../config/db");
+const asyncHandler = require("../../middleware/asyncHandler");
+const ErrorResponse = require("../../utils/errorResponse");
+const returnSumma = require('../../utils/returnSumma')
 
 // create_expense function
 exports.create_expense = asyncHandler(async (req, res, next) => {
