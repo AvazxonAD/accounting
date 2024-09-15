@@ -1,0 +1,19 @@
+const {Router} = require('express') 
+const router = Router()
+
+const { protect } = require('../../middleware/auth')
+
+const {
+    createUser,
+    getAllUsers,
+    updateUser,
+    deleteUser
+} = require('../../controller/auth/user.controller')
+
+
+router.post('/create', protect, createUser)
+router.get('/get/all/:id',  protect, getAllUsers)
+router.put('/update/:id', protect, updateUser)
+router.delete('/delete/:id', protect, deleteUser)
+
+module.exports = router 

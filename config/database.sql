@@ -17,11 +17,10 @@ CREATE TABLE role (
 
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
-  role_id SMALLINT REFERENCES role(id),
+  role_id SMALLINT REFERENCES roles(id),
   region_id BIGINT,
-  name VARCHAR(200),
   fio VARCHAR(200),
-  login VARCHAR(200) UNIQUE,
+  login VARCHAR(200),
   password VARCHAR(200),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -96,11 +95,13 @@ CREATE TABLE spravochnik_operatsii (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
+
 CREATE TABLE main_schet (
   id BIGSERIAL PRIMARY KEY,
-  name VARCHAR(200),
   account_number INT,
-  user_id BIGINT REFERENCES regions(id),
+  balance DECIMAL DEFAULT 0,
+  default_value BOOLEAN DEFAULT false,
+  user_id INT REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

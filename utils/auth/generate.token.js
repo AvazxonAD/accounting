@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const generateToken = (user) => {
     const payload = {
         id: user.id,
-        role_name: user.role_name
+        role_id: user.role_id
     };
 
     const secret = process.env.JWT_SECRET; 
