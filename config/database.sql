@@ -98,9 +98,8 @@ CREATE TABLE spravochnik_operatsii (
 
 CREATE TABLE main_schet (
   id BIGSERIAL PRIMARY KEY,
-  account_number INT,
+  account_number VARCHAR(20),
   balance DECIMAL DEFAULT 0,
-  default_value BOOLEAN DEFAULT false,
   user_id INT REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -144,8 +143,8 @@ CREATE TABLE bank_prixod (
   provodki_boolean BOOLEAN,
   dop_provodki_boolean BOOLEAN,
   opisanie VARCHAR(200),
-  id_spravochnik_organization INT REFERENCES spravochnik_type_operatsii(id),
-  id_shartnomalar_organization INT REFERENCES spravochnik_organization(id),
+  id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
+  id_main_schet INT REFERENCES main_schet(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

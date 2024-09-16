@@ -8,13 +8,13 @@ const { checkNotNull, checkValueString } = require('../../utils/check.functions'
 
 // login 
 exports.login = asyncHandler(async (req, res, next) => {
-    const { login, password } = req.body;
+    const { login, password, main_schet_id } = req.body;
 
     checkNotNull(next, login, password)
     checkValueString(next, login, password)
 
     let user = await pool.query(`
-        SELECT users.id, users.fio, users.password, users.login, users.role_id, role.name AS role_name 
+        SELECT users.id, users.fio, users.password, users.login, users.region_id, users.role_id, role.name AS role_name 
         FROM users 
         INNER JOIN role ON role.id = users.role_id 
         WHERE login = $1
@@ -29,13 +29,22 @@ exports.login = asyncHandler(async (req, res, next) => {
     if (!matchPassword) {
         return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
     }
+    let main_schet = null
 
-    const role = await pool.query(`SELECT id, name FROM role WHERE id = $1`,[ user.role_id])
+    if(main_schet_id){
+        main_schet = await pool.query(`SELECT id,  account_number, balance FROM main_schet WHERE user_id = $1 AND id = $2`, [user.region_id, main_schet_id])
+        main_schet = main_schet.rows[0]
+        if(!main_schet){
+            return next(new ErrorResponse('Xisob raqami notog`ri kir111itildi', 400))
+        }
+    }
+
     const token = generateToken(user);
     return res.status(200).json({
         success: true,
         data: {
             user,
+            main_schet,
             token
         },
     });
