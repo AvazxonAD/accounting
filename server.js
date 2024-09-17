@@ -9,8 +9,6 @@ app.use(cors())
 const colors = require('colors');
 const dotenv = require('dotenv');
 dotenv.config();
-const createUser = require('./utils/auth/create.user');
-createUser().catch(console.error);
 
 const PORT = process.env.PORT || 3005
 

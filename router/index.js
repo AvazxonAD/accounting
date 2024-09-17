@@ -1,10 +1,6 @@
 // ./router/index.js
 const express = require('express');
 const authRouter = require('./auth/auth.router');
-const expenseRouter = require('./2-jurnal/expence.router');
-const revenueRouter = require('./2-jurnal/revenue.router');
-const bankResultRouter = require('./2-jurnal/bank.result.router');
-const restrRouter = require('./2-jurnal/restr.router');
 const regionRouter = require('./auth/region.router');
 const roleRouter = require('./auth/role.router');
 const userRouter = require('./auth/user.router');
@@ -13,15 +9,12 @@ const spravochnik_podrazdelenieRouter = require('./spravochnik/podrazdelenie.rou
 const spravochnik_type_operatsiiRouter = require('./spravochnik/type_operatsii.router');
 const spravochnik_organizationRouter = require('./spravochnik/organization.router');
 const spravochnik_operatsiiRouter = require('./spravochnik/operatsii.router');
-const main_schetRouter = require('./spravochnik/main_schet.router'); // Yo'lni to'g'rilang
+const main_schetRouter = require('./spravochnik/main_schet.router');
+const budjet_nameRouter = require('./spravochnik/budjet_name.router')
 
 const router = express.Router();
 
 router.use('/auth', authRouter);
-router.use('/expense', expenseRouter);
-router.use('/revenue', revenueRouter);
-router.use('/bank', bankResultRouter);
-router.use('/bank/restr', restrRouter);
 router.use('/region', regionRouter);
 router.use('/role', roleRouter);
 router.use('/user', userRouter);
@@ -31,5 +24,6 @@ router.use('/spravochnik_type_operatsii', spravochnik_type_operatsiiRouter);
 router.use('/spravochnik_organization', spravochnik_organizationRouter);
 router.use('/spravochnik_operatsii', spravochnik_operatsiiRouter);
 router.use('/main_schet', main_schetRouter);
+router.use('/budjet_name', budjet_nameRouter)
 
 module.exports = router;

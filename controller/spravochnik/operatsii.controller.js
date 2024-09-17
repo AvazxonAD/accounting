@@ -19,17 +19,17 @@ exports.create = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`type_schet notog'ri jonatildi shablonlar: kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod`, 400))
     }
 
-    const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND user_id = $3
-    `, [name, type_schet, req.user.region_id]);
+    const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2
+    `, [name, type_schet]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
     const result = await pool.query(`INSERT INTO spravochnik_operatsii(
-        name,  schet, sub_schet, type_schet, user_id
-        ) VALUES($1, $2, $3, $4, $5) 
+        name,  schet, sub_schet, type_schet
+        ) VALUES($1, $2, $3, $4) 
         RETURNING *
-    `, [name,  schet, sub_schet, type_schet, req.user.region_id]);
+    `, [name,  schet, sub_schet, type_schet]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
     }
@@ -53,8 +53,8 @@ exports.getAll = asyncHandler(async (req, res, next) => {
     
     const result = await pool.query(`SELECT id, name, schet, sub_schet 
         FROM spravochnik_operatsii  
-        WHERE isdeleted = false AND user_id = $1 AND type_schet = $2 ORDER BY id
-    `, [req.user.region_id, query])
+        WHERE isdeleted = false AND type_schet = $1 ORDER BY id
+    `, [query])
     return res.status(200).json({
         success: true,
         data: result.rows
@@ -77,17 +77,17 @@ exports.update = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`type_schet notog'ri jonatildi shablonlar: kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod`, 400))
     }
 
-    const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND user_id = $3
-    `, [name, type_schet, req.user.region_id]);
+    const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2
+    `, [name, type_schet]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
     const result = await pool.query(`UPDATE spravochnik_operatsii 
         SET name = $1, schet = $2, sub_schet = $3, type_schet = $4
-        WHERE user_id = $5 AND id = $6
+        WHERE id = $5
         RETURNING *
-    `, [name, schet, sub_schet, type_schet, req.user.region_id, req.params.id]);
+    `, [name, schet, sub_schet, type_schet,req.params.id]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot Yangilanmadi', 500));
     }
@@ -100,8 +100,8 @@ exports.update = asyncHandler(async (req, res, next) => {
 
 // delete value
 exports.deleteValue = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false AND user_id = $2
-    `, [req.params.id, req.user.region_id])
+    let value = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
+    `, [req.params.id])
     value = value.rows[0]
     if(!value){
         return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))

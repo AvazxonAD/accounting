@@ -18,7 +18,7 @@ CREATE TABLE role (
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   role_id SMALLINT REFERENCES roles(id),
-  region_id BIGINT,
+  region_id SMALLINT REFERENCES regions(id),
   fio VARCHAR(200),
   login VARCHAR(200),
   password VARCHAR(200),
@@ -89,22 +89,38 @@ CREATE TABLE spravochnik_operatsii (
   schet VARCHAR(200),
   sub_schet VARCHAR(200),
   type_schet VARCHAR(200), -- tolov yoki ushlanma
-  user_id INT REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE spravochnik_budjet_name (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(200),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
 
 CREATE TABLE main_schet (
-  id BIGSERIAL PRIMARY KEY,
-  account_number VARCHAR(20),
-  balance DECIMAL DEFAULT 0,
-  user_id INT REFERENCES regions(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
+    id BIGSERIAL PRIMARY KEY,
+    spravochnik_budjet_name_id INT REFERENCES spravochnik_budjet_name(id),
+    tashkilot_nomi VARCHAR(255),
+    tashkilot_bank VARCHAR(255),
+    tashkilot_mfo VARCHAR(50),
+    tashkilot_inn INT,
+    account_number VARCHAR(20),
+    account_name VARCHAR(255),
+    jur1_schet VARCHAR(255),
+    jur2_schet VARCHAR(255),
+    jur3_schet VARCHAR(255),
+    jur4_schet VARCHAR(255),
+    user_id BIGINT REFERENCES regions(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
 );
+
 
 CREATE TABLE bank_rasxod (
   id BIGSERIAL PRIMARY KEY,
@@ -144,7 +160,7 @@ CREATE TABLE bank_prixod (
   dop_provodki_boolean BOOLEAN,
   opisanie VARCHAR(200),
   id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
-  id_main_schet INT REFERENCES main_schet(id),
+  id_main_schet  INT REFERENCES main_schet(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
