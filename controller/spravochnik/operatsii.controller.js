@@ -51,7 +51,7 @@ exports.getAll = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
     
-    const result = await pool.query(`SELECT id, name, schet, sub_schet 
+    const result = await pool.query(`SELECT id, name, schet, sub_schet, type_schet 
         FROM spravochnik_operatsii  
         WHERE isdeleted = false AND type_schet = $1 ORDER BY id
     `, [query])

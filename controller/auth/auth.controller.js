@@ -57,7 +57,7 @@ exports.login = asyncHandler(async (req, res, next) => {
         `, [main_schet_id, user.region_id]);
         main_schet = main_schet.rows[0]
         if(!main_schet){
-            return next(new ErrorResponse('Xisob raqami notog`ri kir111itildi', 400))
+            return next(new ErrorResponse('Shot raqami raqami notog`ri kir111itildi', 400))
         }
     }
 
@@ -141,3 +141,9 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
         data: user
     });
 });
+
+
+// select budget 
+exports.select_budget = asyncHandler(async (req, res, next) => {
+    const { budget_id } = req.body
+})
