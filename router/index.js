@@ -11,6 +11,7 @@ const spravochnik_organizationRouter = require('./spravochnik/organization.route
 const spravochnik_operatsiiRouter = require('./spravochnik/operatsii.router');
 const main_schetRouter = require('./spravochnik/main_schet.router');
 const budjet_nameRouter = require('./spravochnik/budjet_name.router')
+const spravochnik_sostavRouter = require('./spravochnik/sostav.router')
 
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router.use('/spravochnik_organization', spravochnik_organizationRouter);
 router.use('/spravochnik_operatsii', spravochnik_operatsiiRouter);
 router.use('/main_schet', main_schetRouter);
 router.use('/budjet_name', budjet_nameRouter)
+router.use('/spravochnik_sostav', spravochnik_sostavRouter)
 
 module.exports = router;

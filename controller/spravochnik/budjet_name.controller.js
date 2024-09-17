@@ -6,15 +6,10 @@ const { checkNotNull, checkValueString } = require('../../utils/check.functions'
 // create
 exports.create = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
-    console.log(name)
 
-    checkNotNull(next, name);
-    checkValueString(next, name)
+    checkNotNull(name);
+    checkValueString(name)
     name = name.trim();
-
-    if(name !== 'Respublika budjet' && name !== 'Mahalliy budjet' && name !== 'Viloyat budjet'){
-        return next(new ErrorResponse("Budjet nomi notog`ri jonatildi", 400))
-    }
 
     const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE name = $1 AND isdeleted = false`, [name]);
     if (test.rows.length > 0) {
@@ -52,16 +47,12 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     let { name } = req.body 
 
-    checkNotNull(next, name)
-    checkValueString(next, name)
+    checkNotNull(name)
+    checkValueString(name)
     name = name.trim()
 
-    if(name !== 'Respublika budjet' && name !== 'Mahalliy budjet' &&  name !== 'Viloyat budjet'){
-        return next(new ErrorResponse("Budjet nomi notog`ri jonatildi", 400))
-    }
-
     if(value.name !== name){
-        const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE name = $1`, [name])
+        const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE name = $1 AND isdeleted = false`, [name])
         if(test.rows[0]){
             return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409))
         }

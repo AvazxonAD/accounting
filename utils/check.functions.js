@@ -1,35 +1,36 @@
 // utils/check.functions.js
 const ErrorResponse = require('./errorResponse');
 
-exports.checkNotNull = (next, ...args) => {
-    const hasNullOrUndefined = args.some(arg => arg === null || arg === undefined);
-    if (hasNullOrUndefined) {
-        return next(new ErrorResponse(`Sorovlar bo'sh qolishi mumkin emas`, 400));
-    } 
-    return;
-}
+exports.checkNotNull = (...args) => {
+    args.some(arg => {
+        if (arg === null || arg === undefined) {
+            throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
+        }
+    });
+};
 
-exports.checkValueString = (next, ...args) => {
-    const hasNullOrUndefined = args.some(arg => typeof arg !== "string");
-    if (hasNullOrUndefined) {
-        return next(new ErrorResponse(`Malumotlar tog'ri kiritilishi kerak`, 400));
-    } 
-    return;
-}
+// utils/check.functions.js
+exports.checkValueString = (...args) => {
+    args.some(arg => {
+        if (typeof arg !== "string") {
+            console.log(typeof arg)
+            throw new Error('Malumotlar to`g`ri  turida bo`lishi kerak');
+        }
+    });
+};
 
 exports.checkValueNumber = (next, ...args) => {
-    const hasNullOrUndefined = args.some(arg => typeof arg !== "number");
-    if (hasNullOrUndefined) {
-        return next(new ErrorResponse(`Malumotlar tog'ri kiritilishi kerak`, 400));
-    } 
-    return;
-}
+    args.some(arg => {
+        if (typeof arg !== "number") {
+            throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
+        }
+    });
+};
 
 exports.checkValueBoolean = (next, ...args) => {
-    const hasNullOrUndefined = args.some(arg => typeof arg !== "boolean");
-    if (hasNullOrUndefined) {
-        return next(new ErrorResponse(`Malumotlar tog'ri kiritilishi kerak`, 400));
-    } 
-    return;
-}
-
+    args.some(arg => {
+        if (typeof arg !== 'boolean') {
+            throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
+        }
+    });
+};

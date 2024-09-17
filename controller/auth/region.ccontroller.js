@@ -7,11 +7,11 @@ const { checkNotNull, checkValueString } = require('../../utils/check.functions'
 exports.createRegion = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
     
-    checkNotNull(next, name);
-    checkValueString(next, name)
+    checkNotNull(name);
+    checkValueString(name)
     name = name.trim();
 
-    const test = await pool.query(`SELECT * FROM regions WHERE name = $1`, [name]);
+    const test = await pool.query(`SELECT * FROM regions WHERE name = $1 AND isdeleted = false`, [name]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu viloyat avval kiritilgan', 409));
     }
@@ -47,14 +47,14 @@ exports.updateRegion = asyncHandler(async (req, res, next) => {
 
     let { name } = req.body 
 
-    checkNotNull(next, name)
-    checkValueString(next, name)
+    checkNotNull(name)
+    checkValueString(name)
     name = name.trim()
 
     
 
     if(region.name !== name){
-        const test = await pool.query(`SELECT * FROM regions WHERE name = $1`, [name])
+        const test = await pool.query(`SELECT * FROM regions WHERE name = $1 AND isdeleted = false`, [name])
         if(test.rows[0]){
             return next(new ErrorResponse('Ushbu viloyat avval kiritilgan', 409))
         }

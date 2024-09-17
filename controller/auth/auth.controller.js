@@ -10,8 +10,8 @@ const { checkNotNull, checkValueString, checkValueNumber } = require('../../util
 exports.login = asyncHandler(async (req, res, next) => {
     const { login, password, main_schet_id } = req.body;
 
-    checkNotNull(next, login, password)
-    checkValueString(next, login, password)
+    checkNotNull(login, password)
+    checkValueString(login, password)
 
     let user = await pool.query(`
         SELECT users.id, users.fio, users.password, users.login, users.region_id, users.role_id, role.name AS role_name 
@@ -43,9 +43,13 @@ exports.login = asyncHandler(async (req, res, next) => {
                 main_schet.tashkilot_inn, 
                 main_schet.account_name, 
                 main_schet.jur1_schet, 
+                main_schet.jur1_subschet,
                 main_schet.jur2_schet, 
-                main_schet.jur3_schet, 
-                main_schet.jur4_schet, 
+                main_schet.jur2_subschet,
+                main_schet.jur3_schet,
+                main_schet.jur3_subschet, 
+                main_schet.jur4_schet,
+                main_schet.jur4_subschet, 
                 spravochnik_budjet_name.name AS budjet_name
             FROM main_schet
             JOIN spravochnik_budjet_name 
@@ -81,8 +85,8 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     // Faqat mavjud bo'lgan maydonlarni tekshirish
     if (oldPassword || newPassword) {
-        checkNotNull(next, oldPassword, newPassword);
-        checkValueString(next, oldPassword, newPassword);
+        checkNotNull(oldPassword, newPassword);
+        checkValueString(oldPassword, newPassword);
         
         oldPassword = oldPassword.trim();
         newPassword = newPassword.trim();
@@ -105,7 +109,7 @@ exports.update = asyncHandler(async (req, res, next) => {
     if (login) {
         login = login.trim();
         if (login !== user.login) {
-            const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login]);
+            const test = await pool.query(`SELECT * FROM users WHERE login = $1 AND isdeleted = false`, [login]);
             if (test.rows[0]) {
                 return next(new ErrorResponse('Login avval ishlatilgan', 400));
             }

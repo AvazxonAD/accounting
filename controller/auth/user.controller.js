@@ -48,7 +48,7 @@ exports.createUser = asyncHandler(async (req, res, next) => {
     fio = fio.trim()
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login]);
+    const test = await pool.query(`SELECT * FROM users WHERE login = $1 AND isdeleted = false`, [login]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu login avval kiritilgan', 409));
     }
@@ -159,7 +159,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     if(oldUser.login !== login){
-        const test = await pool.query(`SELECT * FROM users WHERE login = $1`, [login]);
+        const test = await pool.query(`SELECT * FROM users WHERE login = $1 AND isdeleted = false`, [login]);
         if (test.rows.length > 0) {
             return next(new ErrorResponse('Ushbu login avval kiritilgan', 409));
         }

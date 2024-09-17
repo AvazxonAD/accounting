@@ -216,3 +216,28 @@ CREATE TABLE kassa_prixod_rasxod_child (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
+
+
+CREATE TABLE shartnomalar_organization (
+    id BIGSERIAL PRIMARY KEY,
+    doc_num VARCHAR(255) NOT NULL,
+    doc_date DATE NOT NULL,
+    summa DOUBLE PRECISION NOT NULL,
+    opisanie TEXT,
+    smeta_id INT REFERENCES smeta(id),
+    user_id BIGINT REFERENCES regions(id),
+    smeta_2 VARCHAR(255),
+    spravochnik_organization_id INT REFERENCES spravochnik_organization(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE smeta (
+    id BIGSERIAL PRIMARY KEY,
+    smeta_name VARCHAR(255) NOT NULL,
+    smeta_number INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);

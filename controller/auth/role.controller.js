@@ -7,15 +7,15 @@ const { checkNotNull, checkValueString } = require('../../utils/check.functions'
 exports.createRole = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
 
-    checkNotNull(next, name);
-    checkValueString(next, name)
+    checkNotNull(name);
+    checkValueString(name)
     name = name.trim();
 
     if(name !== 'super_admin' && name !== 'region_admin' && name !== 'Bugalter' && name !== "Kassir"){
         return next(new ErrorResponse("Rol nomi notog`ri jonatildi", 400))
     }
 
-    const test = await pool.query(`SELECT * FROM role WHERE name = $1`, [name]);
+    const test = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = false`, [name]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
@@ -51,8 +51,8 @@ exports.updateRole = asyncHandler(async (req, res, next) => {
 
     let { name } = req.body 
 
-    checkNotNull(next, name)
-    checkValueString(next, name)
+    checkNotNull(name)
+    checkValueString(name)
     name = name.trim()
 
     if(name !== 'super_admin' && name !== 'region_admin' && name !== 'Bugalter' && name !== "Kassir"){
@@ -60,7 +60,7 @@ exports.updateRole = asyncHandler(async (req, res, next) => {
     }
 
     if(role.name !== name){
-        const test = await pool.query(`SELECT * FROM role WHERE name = $1`, [name])
+        const test = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = false`, [name])
         if(test.rows[0]){
             return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409))
         }

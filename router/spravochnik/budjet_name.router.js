@@ -9,8 +9,8 @@ const {
     deleteValue
 } = require('../../controller/spravochnik/budjet_name.controller')
 
-router.post('/create', create)
-router.get('/get/all', protect, getAll)
+router.post('/create', protect, create)
+router.get('/get/all', getAll)
 router.put('/update/:id', protect, update)
 router.delete('/delete/:id', protect, deleteValue)
 

@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString } = require('../../utils/check.functions');
+const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions');
 const xlsx = require('xlsx')
 
 // create 
@@ -10,12 +10,13 @@ exports.create = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
 
-    let { name, rayon } = req.body;
+    let { smeta_name, smeta_number } = req.body;
     
-    checkNotNull(name, rayon);
-    checkValueString(name, rayon)
-    name = name.trim();
-    rayon = rayon.trim()
+    checkNotNull(smeta_number, smeta_name);
+    checkValueString(smeta_name)
+    checkValueNumber(smeta_number)
+
+    smeta_name = name.trim();
 
     const test = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
     `, [name, rayon, req.user.region_id]);
@@ -122,53 +123,5 @@ exports.deleteValue = asyncHandler(async (req, res, next) => {
     return res.status(200).json({
         success: true, 
         data: "Muvaffaqiyatli ochirildi"
-    })
-})
-
-// import to excel 
-exports.importToExcel = asyncHandler(async (req, res, next) => {
-    if (!req.file) {
-        return next(new ErrorResponse("Fayl yuklanmadi", 400));
-    }
-    
-    const filePath = req.file.path;
-    
-    const workbook = xlsx.readFile(filePath);
-    
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    
-    const data = xlsx.utils.sheet_to_json(sheet).map(row => {
-        const newRow = {};
-        for (const key in row) {
-            newRow[key.trim()] = row[key];
-        }
-        return newRow;
-    });
-
-    for (const rowData of data) {
-        checkNotNull(rowData.name, rowData.rayon)
-        checkValueString(rowData.name, rowData.rayon)
-        const name = rowData.name.trim()
-        const rayon = rowData.rayon.trim()
-
-        const test = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE user_id = $1 AND name = $2 AND rayon = $3 AND isdeleted = false`, [req.user.region_id, name, rayon])
-        if (test.rows[0]) {
-            return next(new ErrorResponse(`Ushbu malumot kiritilgan: ${name}`, 400));
-        }
-
-    }
-
-    for(let rowData of data){
-        const result = await pool.query(`INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
-        `, [rowData.name, rowData.rayon, req.user.region_id]);
-        if (!result.rows[0]) {
-            return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
-        }
-    }
-
-    return res.status(200).json({
-        success: true,
-        data: "Muvaffaqiyatli kiritildi"
     })
 })
