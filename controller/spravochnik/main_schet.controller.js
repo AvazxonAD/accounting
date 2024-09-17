@@ -15,6 +15,10 @@ exports.create = asyncHandler(async (req, res, next) => {
     checkValueString(account_number, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, account_name, jur1_schet, jur2_schet, jur3_schet, jur4_schet)
     checkValueNumber(tashkilot_inn, spravochnik_budjet_name_id)
 
+    if(tashkilot_inn.toString().length !== 9){
+        return next(new ErrorResponse('Inn raqami 9 xonalik raqam bolishi kerak', 400))
+    }
+
     const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [spravochnik_budjet_name_id])
     if(!test.rows[0]){
         return next(new ErrorResponse('Server xatolik. Budjet topilmadi', 404))
@@ -84,6 +88,10 @@ exports.update = asyncHandler(async (req, res, next) => {
     checkNotNull(account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet);
     checkValueString(account_number, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, account_name, jur1_schet, jur2_schet, jur3_schet, jur4_schet)
     checkValueNumber(tashkilot_inn, spravochnik_budjet_name_id)
+    
+    if(tashkilot_inn.toString().length !== 9){
+        return next(new ErrorResponse('Inn raqami 9 xonalik raqam bolishi kerak', 400))
+    }
 
     const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [spravochnik_budjet_name_id])
     if(!test.rows[0]){

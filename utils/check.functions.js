@@ -13,7 +13,6 @@ exports.checkNotNull = (...args) => {
 exports.checkValueString = (...args) => {
     args.some(arg => {
         if (typeof arg !== "string") {
-            console.log(typeof arg)
             throw new Error('Malumotlar to`g`ri  turida bo`lishi kerak');
         }
     });

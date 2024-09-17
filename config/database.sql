@@ -241,3 +241,41 @@ CREATE TABLE smeta (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE shartnomalar_organization (
+  id BIGSERIAL PRIMARY KEY,
+  doc_num VARCHAR(255),
+  doc_date DATE,
+  summa DOUBLE PRECISION,
+  opisanie TEXT,
+  smeta_id INT REFERENCES smeta(id),
+  user_id BIGINT REFERENCES regions(id),
+  smeta_2 VARCHAR(255),
+  spravochnik_organization_id INT REFERENCES spravochnik_organization(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+
+CREATE TABLE shartnoma_grafik (
+  id BIGSERIAL PRIMARY KEY,
+  id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
+  user_id BIGINT REFERENCES regions(id),
+  oy_1 DECIMAL DEFAULT 0,
+  oy_2 DECIMAL DEFAULT 0,
+  oy_3 DECIMAL DEFAULT 0,
+  oy_4 DECIMAL DEFAULT 0,
+  oy_5 DECIMAL DEFAULT 0,
+  oy_6 DECIMAL DEFAULT 0,
+  oy_7 DECIMAL DEFAULT 0,
+  oy_8 DECIMAL DEFAULT 0,
+  oy_9 DECIMAL DEFAULT 0,
+  oy_10 DECIMAL DEFAULT 0,
+  oy_11 DECIMAL DEFAULT 0,
+  oy_12 DECIMAL DEFAULT 0,
+  year INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);

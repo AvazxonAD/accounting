@@ -2,7 +2,6 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions');
-const xlsx = require('xlsx')
 
 // create 
 exports.create = asyncHandler(async (req, res, next) => {
@@ -16,16 +15,16 @@ exports.create = asyncHandler(async (req, res, next) => {
     checkValueString(smeta_name)
     checkValueNumber(smeta_number)
 
-    smeta_name = name.trim();
+    smeta_name = smeta_name.trim();
 
-    const test = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
-    `, [name, rayon, req.user.region_id]);
+    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false
+    `, [smeta_name, smeta_number]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
-    `, [name, rayon, req.user.region_id]);
+    const result = await pool.query(`INSERT INTO smeta(smeta_name, smeta_number) VALUES($1, $2) RETURNING *
+    `, [smeta_name, smeta_number]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
     }
@@ -51,13 +50,13 @@ exports.getAll = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
     
-    const result = await pool.query(`SELECT id, name, rayon FROM spravochnik_podotchet_litso  
-        WHERE isdeleted = false AND user_id = $1 ORDER BY id
-        OFFSET $2 
-        LIMIT $3 
-    `, [req.user.region_id, offset, limit])
+    const result = await pool.query(`SELECT id, smeta_name, smeta_number FROM smeta  
+        WHERE isdeleted = false ORDER BY id
+        OFFSET $1 
+        LIMIT $2
+    `, [offset, limit])
 
-    const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM spravochnik_podotchet_litso WHERE isdeleted = false AND user_id = $1`, [req.user.region_id]);
+    const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM smeta WHERE isdeleted = false`);
     const total = parseInt(totalQuery.rows[0].total);
     const pageCount = Math.ceil(total / limit);
 
@@ -78,23 +77,23 @@ exports.update = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
 
-    let { name, rayon } = req.body;
+    let { smeta_name, smeta_number } = req.body;
     
-    checkNotNull(name, rayon);
-    checkValueString(name, rayon)
-    name = name.trim();
-    rayon = rayon.trim()
+    checkNotNull(smeta_name, smeta_number);
+    checkValueString(smeta_name)
+    checkValueNumber(smeta_number)
+    smeta_name = smeta_name.trim();
 
-    const test = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
-    `, [name, rayon, req.user.region_id]);
+    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false
+    `, [smeta_name, smeta_number]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2
-        WHERE user_id = $3 AND id = $4
+    const result = await pool.query(`UPDATE  smeta SET smeta_name = $1, smeta_number = $2
+        WHERE  id = $3
         RETURNING *
-    `, [name, rayon, req.user.region_id, req.params.id]);
+    `, [smeta_name, smeta_number, req.params.id]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot Yangilanmadi', 500));
     }
@@ -107,14 +106,14 @@ exports.update = asyncHandler(async (req, res, next) => {
 
 // delete value
 exports.deleteValue = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND isdeleted = false AND user_id = $2
-    `, [req.params.id, req.user.region_id])
+    let value = await pool.query(`SELECT * FROM smeta WHERE id = $1 AND isdeleted = false
+    `, [req.params.id])
     value = value.rows[0]
     if(!value){
         return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
     }
 
-    const deleteValue = await pool.query(`UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
+    const deleteValue = await pool.query(`UPDATE smeta SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
 
     if(!deleteValue.rows[0]){
         return next(new ErrorResponse('Server xatolik. Malumot ochirilmadi', 500))
