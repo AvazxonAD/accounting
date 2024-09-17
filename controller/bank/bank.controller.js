@@ -13,6 +13,6 @@ exports.bank_prixod = asyncHandler(async (req, res, next) => {
     if(!organization.rows[0]){
         return next(new ErrorResponse('Hamkor korxona topilmadi', 404))
     }
-
+    
     
 })

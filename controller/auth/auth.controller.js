@@ -3,7 +3,7 @@ const ErrorResponse = require('../../utils/errorResponse');
 const pool = require('../../config/db');
 const generateToken = require('../../utils/auth/generate.token');
 const bcrypt = require('bcrypt')
-const { checkNotNull, checkValueString } = require('../../utils/check.functions')
+const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions')
 
 
 // login 
@@ -146,4 +146,14 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
 // select budget 
 exports.select_budget = asyncHandler(async (req, res, next) => {
     const { budget_id } = req.body
+
+    checkNotNull(budget_id)
+    checkValueNumber(budget_id)
+
+    const main_schets = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [budget_id])
+
+    return res.status(200).json({
+        success: true,
+        data: main_schets.rows
+    })
 })
