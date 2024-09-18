@@ -14,7 +14,7 @@ const {
 router.post('/login', login)
 router.patch('/update', protect, update)
 router.get("/get", protect, getProfile)
-router.post('/select/budjet', protect, select_budget)
+router.get('/select/budjet/:id', select_budget)
 
 
 module.exports = router

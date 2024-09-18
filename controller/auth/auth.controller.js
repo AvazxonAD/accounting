@@ -149,12 +149,9 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
 
 // select budget 
 exports.select_budget = asyncHandler(async (req, res, next) => {
-    const { budget_id } = req.body
+    checkNotNull(req.params.id)
 
-    checkNotNull(budget_id)
-    checkValueNumber(budget_id)
-
-    const main_schets = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [budget_id])
+    const main_schets = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [req.params.id])
 
     return res.status(200).json({
         success: true,
