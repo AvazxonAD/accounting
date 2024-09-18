@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions');
+const {checkValueString, checkValueNumber } = require('../../utils/check.functions');
 const bcrypt = require('bcrypt')
 
 // create user
@@ -24,7 +24,6 @@ exports.createUser = asyncHandler(async (req, res, next) => {
     
     }
 
-    checkNotNull(login, password, fio, role_id);
     checkValueString(login, password, fio)
     checkValueNumber(role_id)
 
@@ -134,7 +133,6 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik. User topilmadi', 404))
     }
 
-    checkNotNull(login, password, fio, role_id);
     checkValueString(login, password, fio)
     checkValueNumber(role_id)
 

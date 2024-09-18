@@ -3,14 +3,13 @@ const ErrorResponse = require('../../utils/errorResponse');
 const pool = require('../../config/db');
 const generateToken = require('../../utils/auth/generate.token');
 const bcrypt = require('bcrypt')
-const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions')
+const {checkValueString, checkValueNumber } = require('../../utils/check.functions')
 
 
 // login 
 exports.login = asyncHandler(async (req, res, next) => {
     const { login, password, main_schet_id } = req.body;
 
-    checkNotNull(login, password)
     checkValueString(login, password)
 
     let user = await pool.query(`
@@ -85,7 +84,6 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     // Faqat mavjud bo'lgan maydonlarni tekshirish
     if (oldPassword || newPassword) {
-        checkNotNull(oldPassword, newPassword);
         checkValueString(oldPassword, newPassword);
         
         oldPassword = oldPassword.trim();
@@ -149,8 +147,6 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
 
 // select budget 
 exports.select_budget = asyncHandler(async (req, res, next) => {
-    checkNotNull(req.params.id)
-
     const main_schets = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [req.params.id])
 
     return res.status(200).json({

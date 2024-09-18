@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString } = require('../../utils/check.functions');
+const {  checkValueString } = require('../../utils/check.functions');
 const xlsx = require('xlsx')
 
 // create 
@@ -12,7 +12,6 @@ exports.create = asyncHandler(async (req, res, next) => {
 
     let { name, rayon } = req.body;
     
-    checkNotNull(name, rayon);
     checkValueString(name, rayon)
     name = name.trim();
     rayon = rayon.trim()
@@ -79,7 +78,6 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     let { name, rayon } = req.body;
     
-    checkNotNull(name, rayon);
     checkValueString(name, rayon)
     name = name.trim();
     rayon = rayon.trim()
@@ -147,7 +145,6 @@ exports.importToExcel = asyncHandler(async (req, res, next) => {
     });
 
     for (const rowData of data) {
-        checkNotNull(rowData.name, rowData.rayon)
         checkValueString(rowData.name, rowData.rayon)
         const name = rowData.name.trim()
         const rayon = rowData.rayon.trim()

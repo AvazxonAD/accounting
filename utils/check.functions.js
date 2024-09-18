@@ -1,26 +1,14 @@
-// utils/check.functions.js
-const ErrorResponse = require('./errorResponse');
-
-exports.checkNotNull = (...args) => {
-    args.some(arg => {
-        if (arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
-        }
-    });
-};
-
-// utils/check.functions.js
 exports.checkValueString = (...args) => {
     args.some(arg => {
-        if (typeof arg !== "string") {
-            throw new Error('Malumotlar to`g`ri  turida bo`lishi kerak');
+        if (typeof arg !== "string" || arg === null || arg === undefined) {
+            throw new Error('Malumotlar to`g`ri  formatda kiritilishi kerak');
         }
     });
 };
 
 exports.checkValueNumber = (...args) => {
     args.some(arg => {
-        if (typeof arg !== 'string' && typeof arg !== 'number') {
+        if (typeof arg !== 'string' && typeof arg !== 'number' || arg === null || arg === undefined) {
             return false;
         }
 
@@ -30,22 +18,22 @@ exports.checkValueNumber = (...args) => {
             return true;
         }
 
-        throw new Error('Malumotlar to`g`ri kiritilishi kerak');
+        throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak');
     });
 };
 
 exports.checkValueBoolean = (...args) => {
     args.some(arg => {
-        if (typeof arg !== "boolean") {
-            throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
+        if (typeof arg !== "boolean" || arg === null || arg === undefined) {
+            throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak');
         }
     });
 };
 
-exports.checkValueObject = (next, ...args) => {
+exports.checkValueObject = (...args) => {
     args.some(arg => {
-        if (typeof arg !== "object") {
-            throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
+        if (typeof arg !== "object" || arg === null || arg === undefined) {
+            throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak');
         }
     });
 };

@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString } = require('../../utils/check.functions');
+const {checkValueString } = require('../../utils/check.functions');
 const xlsx = require('xlsx')
 
 // create 
@@ -12,7 +12,6 @@ exports.create = asyncHandler(async (req, res, next) => {
 
     let { name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx} = req.body;
     
-    checkNotNull(name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn);
     checkValueString(name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn)
     name = name.trim();
     bank_klient = bank_klient.trim()
@@ -84,7 +83,6 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     let { name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn , okonx} = req.body;
     
-    checkNotNull(name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn);
     checkValueString(name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn)
     name = name.trim();
     bank_klient = bank_klient.trim()
@@ -158,8 +156,6 @@ exports.importToExcel = asyncHandler(async (req, res, next) => {
     });
 
     for (const rowData of data) {
-        checkNotNull(rowData.name, rowData.bank_klient, rowData.raschet_schet, rowData.raschet_schet_gazna, rowData.mfo, rowData.inn);
-
         const test = await pool.query(`SELECT * FROM spravochnik_organization WHERE inn = $1 AND user_id = $2 AND isdeleted = false`, [rowData.inn, req.user.region_id]);
         if (test.rows.length > 0) {
             return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));

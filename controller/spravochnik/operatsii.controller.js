@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString } = require('../../utils/check.functions');
+const { checkValueString } = require('../../utils/check.functions');
 const xlsx  = require('xlsx')
 // create 
 exports.create = asyncHandler(async (req, res, next) => {
@@ -11,7 +11,6 @@ exports.create = asyncHandler(async (req, res, next) => {
 
     let { name, schet, sub_schet, type_schet } = req.body;
     
-    checkNotNull(name,  schet, sub_schet, type_schet);
     checkValueString(name,  schet, sub_schet, type_schet)
     name = name.trim();
     
@@ -89,7 +88,6 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     let { name, schet, sub_schet, type_schet } = req.body;
     
-    checkNotNull(name,  schet, sub_schet, type_schet);
     checkValueString(name,  schet, sub_schet, type_schet)
     name = name.trim();
     
@@ -161,7 +159,6 @@ exports.importToExcel = asyncHandler(async (req, res, next) => {
     });
 
     for (const rowData of data) {
-        checkNotNull(rowData.name, rowData.schet, rowData.sub_schet, rowData.type_schet)
 
         const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false
         `, [rowData.name, rowData.type_schet]);

@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions');
+const { checkValueString, checkValueNumber } = require('../../utils/check.functions');
 
 exports.create = asyncHandler(async (req, res, next) => {
     if (!req.user.region_id) {
@@ -10,7 +10,6 @@ exports.create = asyncHandler(async (req, res, next) => {
 
     let { doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id } = req.body;
 
-    checkNotNull(doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id);
     checkValueString(doc_num, doc_date, opisanie, smeta_2);
     checkValueNumber(summa, spravochnik_organization_id);
 

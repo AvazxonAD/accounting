@@ -1,13 +1,12 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString } = require('../../utils/check.functions');
+const {checkValueString } = require('../../utils/check.functions');
 
 // create role 
 exports.createRole = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
 
-    checkNotNull(name);
     checkValueString(name)
     name = name.trim();
 
@@ -51,7 +50,6 @@ exports.updateRole = asyncHandler(async (req, res, next) => {
 
     let { name } = req.body 
 
-    checkNotNull(name)
     checkValueString(name)
     name = name.trim()
 

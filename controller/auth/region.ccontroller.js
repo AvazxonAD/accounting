@@ -1,13 +1,12 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString } = require('../../utils/check.functions');
+const {checkValueString } = require('../../utils/check.functions');
 
 // create region 
 exports.createRegion = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
     
-    checkNotNull(name);
     checkValueString(name)
     name = name.trim();
 
@@ -47,7 +46,6 @@ exports.updateRegion = asyncHandler(async (req, res, next) => {
 
     let { name } = req.body 
 
-    checkNotNull(name)
     checkValueString(name)
     name = name.trim()
 

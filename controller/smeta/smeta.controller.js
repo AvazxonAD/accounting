@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString, checkValueNumber } = require('../../utils/check.functions');
+const { checkValueString, checkValueNumber } = require('../../utils/check.functions');
 
 // create 
 exports.create = asyncHandler(async (req, res, next) => {
@@ -11,7 +11,6 @@ exports.create = asyncHandler(async (req, res, next) => {
 
     let { smeta_name, smeta_number } = req.body;
     
-    checkNotNull(smeta_number, smeta_name);
     checkValueString(smeta_name)
     checkValueNumber(smeta_number)
 
@@ -79,7 +78,6 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     let { smeta_name, smeta_number } = req.body;
     
-    checkNotNull(smeta_name, smeta_number);
     checkValueString(smeta_name)
     checkValueNumber(smeta_number)
     smeta_name = smeta_name.trim();

@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkNotNull, checkValueString, checkValueNumber} = require('../../utils/check.functions');
+const {checkValueString, checkValueNumber} = require('../../utils/check.functions');
 
 // create 
 exports.create = asyncHandler(async (req, res, next) => {
@@ -11,7 +11,6 @@ exports.create = asyncHandler(async (req, res, next) => {
 
     let { account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet } = req.body;
     
-    checkNotNull(account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet);
     checkValueString(account_number, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, account_name, jur1_schet, jur2_schet, jur3_schet, jur4_schet)
     checkValueNumber(tashkilot_inn, spravochnik_budjet_name_id)
 
@@ -85,7 +84,6 @@ exports.update = asyncHandler(async (req, res, next) => {
 
     let { account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet } = req.body;
     
-    checkNotNull(account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet);
     checkValueString(account_number, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, account_name, jur1_schet, jur2_schet, jur3_schet, jur4_schet)
     checkValueNumber(tashkilot_inn, spravochnik_budjet_name_id)
     
