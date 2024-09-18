@@ -125,99 +125,6 @@ CREATE TABLE main_schet (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-
-CREATE TABLE bank_rasxod (
-  id BIGSERIAL PRIMARY KEY,
-  doc_num VARCHAR(200),
-  doc_date DATE,
-  user_id INT REFERENCES regions(id),
-  summa DOUBLE PRECISION,
-  opisanie VARCHAR(200),
-  id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
-  id_shartnomalar_organization INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE bank_rasxod_child (
-  id BIGSERIAL PRIMARY KEY,
-  id_spravochnik_operatsii INT,
-  summa DOUBLE PRECISION,
-  id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
-  id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
-  id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
-  id_bank_rasxod INT REFERENCES bank_rasxod(id),
-  own_schet VARCHAR(200),
-  own_subschet VARCHAR(200),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE bank_prixod (
-  id BIGSERIAL PRIMARY KEY,
-  doc_num VARCHAR(200),
-  doc_date DATE,
-  summa DOUBLE PRECISION,
-  provodki_boolean BOOLEAN,
-  dop_provodki_boolean BOOLEAN,
-  opisanie VARCHAR(200),
-  id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
-  id_main_schet  INT REFERENCES main_schet(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE bank_prixod_child (
-  id INT PRIMARY KEY,
-  id_spravochnik_operatsii INT REFERENCES spravochnik_type_operatsii(id),
-  summa DOUBLE PRECISION,
-  id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
-  id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
-  id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
-  id_spravochnik_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
-  id_bank_prixod INT REFERENCES bank_prixod(id),
-  own_schet VARCHAR(200),
-  own_subschet VARCHAR(200),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
--- KASSA
-CREATE TABLE kassa_prixod_rasxod (
-  id BIGSERIAL PRIMARY KEY,
-  doc_num VARCHAR(200),
-  doc_date DATE,
-  opisaine VARCHAR(200),
-  prixod_summa DOUBLE PRECISION,
-  rasxod_summa DOUBLE PRECISION,
-  id_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
-  user_id INT REFERENCES users(id),
-  main_schet_id INT REFERENCES main_schet(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE kassa_prixod_rasxod_child (
-  id BIGSERIAL PRIMARY KEY,
-  id_spravochnik_operatsii INT,
-  summa DOUBLE PRECISION,
-  id_spravochnik_podrazdelenie INT,
-  id_spravochnik_sostav INT,
-  id_spravochnik_type_operatsii INT,
-  id_kassa_prixod_rasxod INT,
-  own_schet VARCHAR(200),
-  own_subschet VARCHAR(200),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
-
 CREATE TABLE shartnomalar_organization (
     id BIGSERIAL PRIMARY KEY,
     doc_num VARCHAR(255) NOT NULL,
@@ -242,22 +149,6 @@ CREATE TABLE smeta (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE shartnomalar_organization (
-  id BIGSERIAL PRIMARY KEY,
-  doc_num VARCHAR(255),
-  doc_date DATE,
-  summa DOUBLE PRECISION,
-  opisanie TEXT,
-  smeta_id INT REFERENCES smeta(id),
-  user_id BIGINT REFERENCES regions(id),
-  smeta_2 VARCHAR(255),
-  spravochnik_organization_id INT REFERENCES spravochnik_organization(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
-);
-
-
 CREATE TABLE shartnoma_grafik (
   id BIGSERIAL PRIMARY KEY,
   id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
@@ -275,6 +166,41 @@ CREATE TABLE shartnoma_grafik (
   oy_11 DECIMAL DEFAULT 0,
   oy_12 DECIMAL DEFAULT 0,
   year INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE bank_prixod (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT REFERENCES regions(id),
+  doc_num VARCHAR(255),
+  doc_date DATE,
+  summa DECIMAL,
+  provodki_boolean BOOLEAN,
+  dop_provodki_boolean BOOLEAN,
+  opisanie VARCHAR(255),
+  id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
+  id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
+  main_schet_id INT REFERENCES main_schet(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE bank_prixod_child (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT REFERENCES regions(id),
+  summa DECIMAL,
+  spravochnik_operatsii_id INT REFERENCES spravochnik_operatsii(id),
+  id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
+  id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
+  id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
+  id_spravochnik_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
+  id_bank_prixod INT REFERENCES bank_prixod(id),
+  own_schet VARCHAR(200),
+  own_subschet VARCHAR(200),
+  main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

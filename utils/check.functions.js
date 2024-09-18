@@ -18,17 +18,33 @@ exports.checkValueString = (...args) => {
     });
 };
 
-exports.checkValueNumber = (next, ...args) => {
+exports.checkValueNumber = (...args) => {
     args.some(arg => {
-        if (typeof arg !== "number") {
+        if (typeof arg !== 'string' && typeof arg !== 'number') {
+            return false;
+        }
+
+        arg = arg.toString();
+
+        if (/^\d+(\.\d+)?$/.test(arg)) {
+            return true;
+        }
+
+        throw new Error('Malumotlar to`g`ri kiritilishi kerak');
+    });
+};
+
+exports.checkValueBoolean = (...args) => {
+    args.some(arg => {
+        if (typeof arg !== "boolean") {
             throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
         }
     });
 };
 
-exports.checkValueBoolean = (next, ...args) => {
+exports.checkValueObject = (next, ...args) => {
     args.some(arg => {
-        if (typeof arg !== 'boolean') {
+        if (typeof arg !== "object") {
             throw new Error('Malumotlar to`g`ri kiritlishi  kerak');
         }
     });
