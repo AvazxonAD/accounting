@@ -7,7 +7,8 @@ const {
     getAll, 
     update,
     deleteValue,
-    importToExcel
+    importToExcel,
+    getElementById
 } = require('../../controller/spravochnik/type_operatsii.controller')
 
 
@@ -18,6 +19,7 @@ router.get('/get/all', protect, getAll)
 router.put('/update/:id', protect, update)
 router.delete('/delete/:id', protect, deleteValue)
 router.post('/import/excel', protect, upload.single('file'), importToExcel)
+router.get('/get/element/by/:id', protect, getElementById)
 
 
 module.exports = router

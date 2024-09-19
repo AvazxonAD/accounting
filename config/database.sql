@@ -1,6 +1,6 @@
 -- bank
 CREATE TABLE regions (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -8,7 +8,7 @@ CREATE TABLE regions (
 );
 
 CREATE TABLE role (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -16,7 +16,7 @@ CREATE TABLE role (
 );
 
 CREATE TABLE users (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   role_id SMALLINT REFERENCES roles(id),
   region_id SMALLINT REFERENCES regions(id),
   fio VARCHAR(200),
@@ -27,9 +27,8 @@ CREATE TABLE users (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
-
 CREATE TABLE spravochnik_podotchet_litso (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
   user_id INT REFERENCES regions(id),
@@ -39,7 +38,7 @@ CREATE TABLE spravochnik_podotchet_litso (
 );
 
 CREATE TABLE spravochnik_podrazdelenie (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
   user_id INT REFERENCES regions(id),
@@ -49,7 +48,7 @@ CREATE TABLE spravochnik_podrazdelenie (
 );
 
 CREATE TABLE spravochnik_sostav (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
   user_id INT REFERENCES regions(id),
@@ -59,7 +58,7 @@ CREATE TABLE spravochnik_sostav (
 );
 
 CREATE TABLE spravochnik_type_operatsii (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
   user_id INT REFERENCES regions(id),
@@ -69,7 +68,7 @@ CREATE TABLE spravochnik_type_operatsii (
 );
 
 CREATE TABLE spravochnik_organization (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   okonx VARCHAR(200),
   bank_klient VARCHAR(200),
@@ -84,7 +83,7 @@ CREATE TABLE spravochnik_organization (
 );
 
 CREATE TABLE spravochnik_operatsii (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   schet VARCHAR(200),
   sub_schet VARCHAR(200),
@@ -95,7 +94,7 @@ CREATE TABLE spravochnik_operatsii (
 );
 
 CREATE TABLE spravochnik_budjet_name (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name VARCHAR(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -103,7 +102,7 @@ CREATE TABLE spravochnik_budjet_name (
 );
 
 CREATE TABLE main_schet (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     spravochnik_budjet_name_id INT REFERENCES spravochnik_budjet_name(id),
     tashkilot_nomi VARCHAR(255),
     tashkilot_bank VARCHAR(255),
@@ -126,7 +125,7 @@ CREATE TABLE main_schet (
 );
 
 CREATE TABLE shartnomalar_organization (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     doc_num VARCHAR(255) NOT NULL,
     doc_date DATE NOT NULL,
     summa DOUBLE PRECISION NOT NULL,
@@ -141,7 +140,7 @@ CREATE TABLE shartnomalar_organization (
 );
 
 CREATE TABLE smeta (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     smeta_name VARCHAR(255) NOT NULL,
     smeta_number INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -150,7 +149,7 @@ CREATE TABLE smeta (
 );
 
 CREATE TABLE shartnoma_grafik (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
   user_id BIGINT REFERENCES regions(id),
   oy_1 DECIMAL DEFAULT 0,
@@ -172,7 +171,7 @@ CREATE TABLE shartnoma_grafik (
 );
 
 CREATE TABLE bank_prixod (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   user_id BIGINT REFERENCES regions(id),
   doc_num VARCHAR(255),
   doc_date DATE,
@@ -189,7 +188,7 @@ CREATE TABLE bank_prixod (
 );
 
 CREATE TABLE bank_prixod_child (
-  id BIGSERIAL PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   user_id BIGINT REFERENCES regions(id),
   summa DECIMAL,
   spravochnik_operatsii_id INT REFERENCES spravochnik_operatsii(id),
@@ -204,4 +203,51 @@ CREATE TABLE bank_prixod_child (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE bank_rasxod (
+    id INTEGER PRIMARY KEY,
+    doc_num VARCHAR(255),
+    doc_date DATE,
+    user_id INT REFERENCES regions(id),
+    summa DECIMAL,
+    opisanie VARCHAR(255),
+    id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
+    id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
+    main_schet_id INT REFERENCES main_schet(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE bank_rasxod_child (
+    id INTEGER PRIMARY KEY,
+    spravochnik_operatsii_id INT REFERENCES spravochnik_operatsii(id),
+    summa DECIMAL,
+    id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
+    id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
+    id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
+    id_bank_rasxod INT REFERENCES bank_rasxod(id),
+    user_id INT REFERENCES regions(id),
+    main_schet_id INT REFERENCES main_schet(id),
+    own_schet VARCHAR(200),
+    own_subschet VARCHAR(200),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE kassa_prixod_rasxod (
+    id INTEGER PRIMARY KEY,
+    doc_num VARCHAR(255),
+    doc_date DATE,
+    opisaine VARCHAR(255),
+    prixod_summa DECIMAL,
+    rasxod_summa DECIMAL,
+    id_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
+    user_id INT REFERENCES users(id),
+    main_schet_id INT REFERENCES main_schet(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
 );

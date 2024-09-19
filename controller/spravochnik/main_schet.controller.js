@@ -23,6 +23,14 @@ exports.create = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik. Budjet topilmadi', 404))
     }
 
+    if(jur1_schet.length > 5 || jur2_schet.length > 5 || jur3_schet.length > 5 || jur4_schet.length > 5){
+        return next(new ErrorResponse('Schet raqamining xonalari soni 5 tadan oshmasligi kerak', 400))
+    }
+
+    if(jur1_subschet.length > 7 || jur2_subschet.length > 7 || jur3_subschet.length > 7 || jur4_subschet.length > 7){
+        return next(new ErrorResponse('Sub schet raqamining xonalari soni 5 tadan oshmasligi kerak', 400))
+    }
+
     const result = await pool.query(`INSERT INTO main_schet(account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, user_id) 
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
     `, [account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, req.user.region_id]);
@@ -91,6 +99,14 @@ exports.update = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Inn raqami 9 xonalik raqam bolishi kerak', 400))
     }
 
+    if(jur1_schet.length > 5 || jur2_schet.length > 5 || jur3_schet.length > 5 || jur4_schet.length > 5){
+        return next(new ErrorResponse('Schet raqamining xonalari soni 5 tadan oshmasligi kerak', 400))
+    }
+
+    if(jur1_subschet.length > 7 || jur2_subschet.length > 7 || jur3_subschet.length > 7 || jur4_subschet.length > 7){
+        return next(new ErrorResponse('Sub schet raqamining xonalari soni 5 tadan oshmasligi kerak', 400))
+    }
+
     const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [spravochnik_budjet_name_id])
     if(!test.rows[0]){
         return next(new ErrorResponse('Server xatolik. Budjet topilmadi', 404))
@@ -143,5 +159,19 @@ exports.deleteValue = asyncHandler(async (req, res, next) => {
     return res.status(200).json({
         success: true, 
         data: "Muvaffaqiyatli ochirildi"
+    })
+})
+
+// get element by id 
+exports.getElementById = asyncHandler(async (req, res, next) => {
+    let value = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2`, [req.params.id, req.user.region_id])
+    value = value.rows[0]
+    if(!value){
+        return next(new ErrorResponse('Server error. Malumot topilmadi'))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: value
     })
 })

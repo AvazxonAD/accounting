@@ -86,3 +86,17 @@ exports.deleteValue = asyncHandler(async (req, res, next) => {
         data: "Muvaffaqiyatli ochirildi"
     })
 })
+
+// get element by id 
+exports.getElementById = asyncHandler(async (req, res, next) => {
+    let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1`, [req.params.id])
+    value = value.rows[0]
+    if(!value){
+        return next(new ErrorResponse('Server error. Malumot topilmadi'))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: value
+    })
+})

@@ -15,6 +15,7 @@ const spravochnik_sostavRouter = require('./spravochnik/sostav.router')
 const smetaRouter = require('./smeta/smeta.router')
 const shartnomaRouter = require('./shartnoma/shartnoma.router')
 const bankRouter = require('./bank/bank.router')
+const kassaRouter  = require('./kassa/kassa.router')
 
 const router = express.Router();
 
@@ -33,5 +34,7 @@ router.use('/spravochnik_sostav', spravochnik_sostavRouter)
 router.use('/smeta', smetaRouter)
 router.use('/shartnoma', shartnomaRouter)
 router.use('/bank', bankRouter)
+router.use('/kassa', kassaRouter)
+
 
 module.exports = router;
