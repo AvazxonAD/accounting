@@ -335,8 +335,8 @@ exports.bank_prixod_update = asyncHandler(async (req, res, next) => {
             dop_provodki_boolean = $5, 
             opisanie = $6, 
             id_spravochnik_organization = $7, 
-            id_shartnomalar_organization = $8, 
-        WHERE id = $10 AND 
+            id_shartnomalar_organization = $8
+        WHERE id = $9
         RETURNING *
         `, [
             doc_num, 
@@ -347,15 +347,14 @@ exports.bank_prixod_update = asyncHandler(async (req, res, next) => {
             opisanie, 
             id_spravochnik_organization, 
             id_shartnomalar_organization, 
-            main_schet_id
+            req.params.id
         ]
     );
 
     if(!prixod.rows[0]){
         return next(new ErrorResponse('Server xatolik. Malumot Yangilanmadi', 500));
     }
-
-    await pool.query(`DELETE FROM bank_prixod_child WHERE bank_prixod_id = $1`, [ bank_prixod.id])
+    await pool.query(`DELETE FROM bank_prixod_child WHERE id_bank_prixod = $1`, [ bank_prixod.id])
 
     for(let child of childs){
         const bank_child = await pool.query(`
@@ -369,8 +368,9 @@ exports.bank_prixod_update = asyncHandler(async (req, res, next) => {
                 own_schet,
                 own_subschet,
                 main_schet_id,
-                id_bank_prixod
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`, [
+                id_bank_prixod,
+                user_id
+            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`, [
                 child.spravochnik_operatsii_id,
                 child.summa, 
                 child.id_spravochnik_podrazdelenie,
@@ -380,7 +380,8 @@ exports.bank_prixod_update = asyncHandler(async (req, res, next) => {
                 own_schet,
                 own_subschet,
                 main_schet.id,
-                bank_prixod.id
+                bank_prixod.id,
+                req.user.region_id
             ]
         );
         if(!bank_child.rows[0]){
@@ -453,5 +454,34 @@ exports.getAllBankPrixod = asyncHandler(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         data: resultArray
+    })
+})
+
+// delete bank_prixod 
+exports.delete_bank_prixod = asyncHandler(async (req, res, next) => {
+    const main_schet_id = req.query.main_schet_id
+    const main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1, user_id = $2 AND isdeleted = false
+    `, [main_schet_id, req.user.region_id])
+    if(!main_schet.rows[0]){
+        return next(new ErrorResponse('Server xatolik. Main schet topilmadi', 500))
+    }
+
+    const childs = await pool.query(`DELETE FROM bank_prixod_child 
+        WHERE user_id = $1 AND id_bank_prixod = $2 AND isdeleted = false AND main_schet_id = $3 
+        RETURNING * 
+    `, [req.user.region_id, req.params.id])
+    if(childs.rows.length === 0){
+        return next(new ErrorResponse('Server xatolik. Bank child ochirilmadi', 500))
+    }
+
+    const bank_prixod = await pool.query(`DELETE FROM bank_prixod WHERE user_id = $1 AND id = $2 AND isdeleted = false
+    `, [req.user.region_id, req.params.id])
+    if(!bank_prixod.rows.length === 0){
+        return next(new ErrorResponse('Server xatolik. Bank prixod topilmadi', 500))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: "Muvaffaqiyatli ochirildi"
     })
 })
