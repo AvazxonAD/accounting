@@ -31,7 +31,7 @@ CREATE TABLE spravochnik_podotchet_litso (
   id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
-  user_id INT REFERENCES regions(id),
+  user_id INTEGER REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -41,7 +41,7 @@ CREATE TABLE spravochnik_podrazdelenie (
   id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
-  user_id INT REFERENCES regions(id),
+  user_id INTEGER REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -51,7 +51,7 @@ CREATE TABLE spravochnik_sostav (
   id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
-  user_id INT REFERENCES regions(id),
+  user_id INTEGER REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -61,7 +61,7 @@ CREATE TABLE spravochnik_type_operatsii (
   id INTEGER PRIMARY KEY,
   name VARCHAR(200),
   rayon VARCHAR(200),
-  user_id INT REFERENCES regions(id),
+  user_id INTEGER REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -76,7 +76,7 @@ CREATE TABLE spravochnik_organization (
   raschet_schet_gazna VARCHAR(200),
   mfo VARCHAR(200),
   inn VARCHAR(200),
-  user_id INT REFERENCES regions(id),
+  user_id INTEGER REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -103,11 +103,11 @@ CREATE TABLE spravochnik_budjet_name (
 
 CREATE TABLE main_schet (
     id INTEGER PRIMARY KEY,
-    spravochnik_budjet_name_id INT REFERENCES spravochnik_budjet_name(id),
+    spravochnik_budjet_name_id INTEGER REFERENCES spravochnik_budjet_name(id),
     tashkilot_nomi VARCHAR(255),
     tashkilot_bank VARCHAR(255),
     tashkilot_mfo VARCHAR(50),
-    tashkilot_inn INT,
+    tashkilot_inn INTEGER,
     account_number VARCHAR(20),
     account_name VARCHAR(255),
     jur1_schet VARCHAR(255),
@@ -118,7 +118,7 @@ CREATE TABLE main_schet (
     jur3_subschet VARCHAR(255),
     jur4_schet VARCHAR(255),
     jur4_subschet VARCHAR(255),
-    user_id BIGINT REFERENCES regions(id),
+    user_id INTEGER REFERENCES regions(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
@@ -130,10 +130,10 @@ CREATE TABLE shartnomalar_organization (
     doc_date DATE NOT NULL,
     summa DOUBLE PRECISION NOT NULL,
     opisanie TEXT,
-    smeta_id INT REFERENCES smeta(id),
-    user_id BIGINT REFERENCES regions(id),
+    smeta_id INTEGER REFERENCES smeta(id),
+    user_id INTEGER REFERENCES regions(id),
     smeta_2 VARCHAR(255),
-    spravochnik_organization_id INT REFERENCES spravochnik_organization(id),
+    spravochnik_organization_id INTEGER REFERENCES spravochnik_organization(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
@@ -142,7 +142,7 @@ CREATE TABLE shartnomalar_organization (
 CREATE TABLE smeta (
     id INTEGER PRIMARY KEY,
     smeta_name VARCHAR(255) NOT NULL,
-    smeta_number INT NOT NULL,
+    smeta_number INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
@@ -150,8 +150,8 @@ CREATE TABLE smeta (
 
 CREATE TABLE shartnoma_grafik (
   id INTEGER PRIMARY KEY,
-  id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
-  user_id BIGINT REFERENCES regions(id),
+  id_shartnomalar_organization INTEGER REFERENCES shartnomalar_organization(id),
+  user_id INTEGER REFERENCES regions(id),
   oy_1 DECIMAL DEFAULT 0,
   oy_2 DECIMAL DEFAULT 0,
   oy_3 DECIMAL DEFAULT 0,
@@ -164,7 +164,7 @@ CREATE TABLE shartnoma_grafik (
   oy_10 DECIMAL DEFAULT 0,
   oy_11 DECIMAL DEFAULT 0,
   oy_12 DECIMAL DEFAULT 0,
-  year INT DEFAULT 0,
+  year INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -172,16 +172,16 @@ CREATE TABLE shartnoma_grafik (
 
 CREATE TABLE bank_prixod (
   id INTEGER PRIMARY KEY,
-  user_id BIGINT REFERENCES regions(id),
+  user_id INTEGER REFERENCES regions(id),
   doc_num VARCHAR(255),
   doc_date DATE,
   summa DECIMAL,
   provodki_boolean BOOLEAN,
   dop_provodki_boolean BOOLEAN,
   opisanie VARCHAR(255),
-  id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
-  id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
-  main_schet_id INT REFERENCES main_schet(id),
+  id_spravochnik_organization INTEGER REFERENCES spravochnik_organization(id),
+  id_shartnomalar_organization INTEGER REFERENCES shartnomalar_organization(id),
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -189,17 +189,18 @@ CREATE TABLE bank_prixod (
 
 CREATE TABLE bank_prixod_child (
   id INTEGER PRIMARY KEY,
-  user_id BIGINT REFERENCES regions(id),
+  user_id INTEGER
+  REFERENCES regions(id),
   summa DECIMAL,
-  spravochnik_operatsii_id INT REFERENCES spravochnik_operatsii(id),
-  id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
-  id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
-  id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
-  id_spravochnik_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
-  id_bank_prixod INT REFERENCES bank_prixod(id),
+  spravochnik_operatsii_id INTEGER REFERENCES spravochnik_operatsii(id),
+  id_spravochnik_podrazdelenie INTEGER REFERENCES spravochnik_podrazdelenie(id),
+  id_spravochnik_sostav INTEGER REFERENCES spravochnik_sostav(id),
+  id_spravochnik_type_operatsii INTEGER REFERENCES spravochnik_type_operatsii(id),
+  id_spravochnik_podotchet_litso INTEGER REFERENCES spravochnik_podotchet_litso(id),
+  id_bank_prixod INTEGER REFERENCES bank_prixod(id),
   own_schet VARCHAR(200),
   own_subschet VARCHAR(200),
-  main_schet_id INT REFERENCES main_schet(id),
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -209,12 +210,12 @@ CREATE TABLE bank_rasxod (
     id INTEGER PRIMARY KEY,
     doc_num VARCHAR(255),
     doc_date DATE,
-    user_id INT REFERENCES regions(id),
+    user_id INTEGER REFERENCES regions(id),
     summa DECIMAL,
     opisanie VARCHAR(255),
-    id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
-    id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
-    main_schet_id INT REFERENCES main_schet(id),
+    id_spravochnik_organization INTEGER REFERENCES spravochnik_organization(id),
+    id_shartnomalar_organization INTEGER REFERENCES shartnomalar_organization(id),
+    main_schet_id INTEGER REFERENCES main_schet(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
@@ -222,14 +223,14 @@ CREATE TABLE bank_rasxod (
 
 CREATE TABLE bank_rasxod_child (
     id INTEGER PRIMARY KEY,
-    spravochnik_operatsii_id INT REFERENCES spravochnik_operatsii(id),
+    spravochnik_operatsii_id INTEGER REFERENCES spravochnik_operatsii(id),
     summa DECIMAL,
-    id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
-    id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
-    id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
-    id_bank_rasxod INT REFERENCES bank_rasxod(id),
-    user_id INT REFERENCES regions(id),
-    main_schet_id INT REFERENCES main_schet(id),
+    id_spravochnik_podrazdelenie INTEGER REFERENCES spravochnik_podrazdelenie(id),
+    id_spravochnik_sostav INTEGER REFERENCES spravochnik_sostav(id),
+    id_spravochnik_type_operatsii INTEGER REFERENCES spravochnik_type_operatsii(id),
+    id_bank_rasxod INTEGER REFERENCES bank_rasxod(id),
+    user_id INTEGER REFERENCES regions(id),
+    main_schet_id INTEGER REFERENCES main_schet(id),
     own_schet VARCHAR(200),
     own_subschet VARCHAR(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -238,16 +239,33 @@ CREATE TABLE bank_rasxod_child (
 );
 
 CREATE TABLE kassa_prixod_rasxod (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     doc_num VARCHAR(255),
     doc_date DATE,
-    opisaine VARCHAR(255),
+    opisanie VARCHAR(255),
     prixod_summa DECIMAL,
     rasxod_summa DECIMAL,
-    id_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
-    user_id INT REFERENCES users(id),
-    main_schet_id INT REFERENCES main_schet(id),
+    id_podotchet_litso INTEGER REFERENCES spravochnik_podotchet_litso(id),
+    user_id INTEGER REFERENCES regions(id),
+    main_schet_id INTEGER REFERENCES main_schet(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE kassa_prixod_rasxod_child (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER REFERENCES regions(id),
+  spravochnik_operatsii_id INTEGER REFERENCES spravochnik_operatsii(id),
+  summa DECIMAL,
+  id_spravochnik_podrazdelenie INTEGER REFERENCES spravochnik_podrazdelenie(id),
+  id_spravochnik_sostav INTEGER REFERENCES spravochnik_sostav(id),
+  id_spravochnik_type_operatsii INTEGER REFERENCES spravochnik_type_operatsii(id),
+  kassa_prixod_rasxod_id INTEGER REFERENCES kassa_prixod_rasxod(id),
+  main_schet_id INTEGER REFERENCES main_schet(id),
+  own_schet VARCHAR(200),
+  own_subschet VARCHAR(200),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
 );

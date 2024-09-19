@@ -466,9 +466,6 @@ exports.getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
     })
 })
 
-
-
-
 // bank rasxod
 exports.bank_rasxod = asyncHandler(async (req, res, next) => {
     const {
