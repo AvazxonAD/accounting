@@ -4,7 +4,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 const {checkValueString } = require('../../utils/check.functions');
 
 // create region 
-exports.createRegion = asyncHandler(async (req, res, next) => {
+const createRegion = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
     
     checkValueString(name)
@@ -26,9 +26,8 @@ exports.createRegion = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all regions 
-exports.getAllReegions = asyncHandler(async (req, res, next) => {
+const getAllReegions = asyncHandler(async (req, res, next) => {
     const regions = await pool.query(`SELECT id, name FROM regions WHERE isdeleted = false ORDER BY id`)
     return res.status(200).json({
         success: true,
@@ -37,7 +36,7 @@ exports.getAllReegions = asyncHandler(async (req, res, next) => {
 })
 
 // update region 
-exports.updateRegion = asyncHandler(async (req, res, next) => {
+const updateRegion = asyncHandler(async (req, res, next) => {
     let region = await pool.query(`SELECT * FROM regions WHERE id = $1`, [req.params.id])
     region = region.rows[0]
     if(!region){
@@ -70,7 +69,7 @@ exports.updateRegion = asyncHandler(async (req, res, next) => {
 })
 
 // delete region 
-exports.deleteRegion = asyncHandler(async (req, res, next) => {
+const deleteRegion = asyncHandler(async (req, res, next) => {
     let region = await pool.query(`SELECT * FROM regions WHERE id = $1 AND isdeleted = false`, [req.params.id])
     region = region.rows[0]
     if(!region){
@@ -88,3 +87,10 @@ exports.deleteRegion = asyncHandler(async (req, res, next) => {
         data: "Muvaffaqiyatli ochirildi"
     })
 })
+
+module.exports = {
+    createRegion,
+    getAllReegions,
+    updateRegion,
+    deleteRegion
+}

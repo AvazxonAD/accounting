@@ -4,7 +4,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 const {checkValueString } = require('../../utils/check.functions');
 
 // create
-exports.create = asyncHandler(async (req, res, next) => {
+const create = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
 
     checkValueString(name)
@@ -28,7 +28,7 @@ exports.create = asyncHandler(async (req, res, next) => {
 });
 
 // get all 
-exports.getAll = asyncHandler(async (req, res, next) => {
+const getAll = asyncHandler(async (req, res, next) => {
     const result = await pool.query(`SELECT id, name FROM spravochnik_budjet_name WHERE isdeleted = false ORDER BY id`)
     return res.status(200).json({
         success: true,
@@ -37,7 +37,7 @@ exports.getAll = asyncHandler(async (req, res, next) => {
 })
 
 // update
-exports.update = asyncHandler(async (req, res, next) => {
+const update = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1`, [req.params.id])
     value = value.rows[0]
     if(!value){
@@ -68,7 +68,7 @@ exports.update = asyncHandler(async (req, res, next) => {
 })
 
 // delete value 
-exports.deleteValue = asyncHandler(async (req, res, next) => {
+const deleteValue = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [req.params.id])
     value = value.rows[0]
     if(!value){
@@ -88,7 +88,7 @@ exports.deleteValue = asyncHandler(async (req, res, next) => {
 })
 
 // get element by id 
-exports.getElementById = asyncHandler(async (req, res, next) => {
+const getElementById = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1`, [req.params.id])
     value = value.rows[0]
     if(!value){
@@ -100,3 +100,12 @@ exports.getElementById = asyncHandler(async (req, res, next) => {
         data: value
     })
 })
+
+
+module.exports = {
+    getElementById,
+    create, 
+    getAll, 
+    deleteValue,
+    update
+}

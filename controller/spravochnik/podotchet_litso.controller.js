@@ -5,7 +5,7 @@ const { checkValueString } = require('../../utils/check.functions');
 const xlsx = require('xlsx')
 
 // create 
-exports.create = asyncHandler(async (req, res, next) => {
+const create = asyncHandler(async (req, res, next) => {
     if(!req.user.region_id){
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
@@ -34,9 +34,8 @@ exports.create = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all
-exports.getAll = asyncHandler(async (req, res, next) => {
+const getAll = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
 
@@ -71,7 +70,7 @@ exports.getAll = asyncHandler(async (req, res, next) => {
 })
 
 // update
-exports.update = asyncHandler(async (req, res, next) => {
+const update = asyncHandler(async (req, res, next) => {
     if(!req.user.region_id){
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
@@ -103,7 +102,7 @@ exports.update = asyncHandler(async (req, res, next) => {
 })
 
 // delete value
-exports.deleteValue = asyncHandler(async (req, res, next) => {
+const deleteValue = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND isdeleted = false AND user_id = $2
     `, [req.params.id, req.user.region_id])
     value = value.rows[0]
@@ -124,7 +123,7 @@ exports.deleteValue = asyncHandler(async (req, res, next) => {
 })
 
 // import to excel 
-exports.importToExcel = asyncHandler(async (req, res, next) => {
+const importToExcel = asyncHandler(async (req, res, next) => {
     if (!req.file) {
         return next(new ErrorResponse("Fayl yuklanmadi", 400));
     }
@@ -171,7 +170,7 @@ exports.importToExcel = asyncHandler(async (req, res, next) => {
 })
 
 // get element by id 
-exports.getElementById = asyncHandler(async (req, res, next) => {
+const getElementById = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_podotchet_litso  WHERE id = $1 AND user_id = $2`, [req.params.id, req.user.region_id])
     value = value.rows[0]
     if(!value){
@@ -183,3 +182,13 @@ exports.getElementById = asyncHandler(async (req, res, next) => {
         data: value
     })
 })
+
+
+module.exports = {
+    getElementById,
+    create, 
+    getAll, 
+    deleteValue,
+    update,
+    importToExcel
+}

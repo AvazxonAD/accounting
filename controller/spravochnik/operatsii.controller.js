@@ -4,7 +4,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 const { checkValueString } = require('../../utils/check.functions');
 const xlsx  = require('xlsx')
 // create 
-exports.create = asyncHandler(async (req, res, next) => {
+const create = asyncHandler(async (req, res, next) => {
     if(!req.user.region_id){
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
@@ -40,7 +40,7 @@ exports.create = asyncHandler(async (req, res, next) => {
 });
 
 // get all
-exports.getAll = asyncHandler(async (req, res, next) => {
+const getAll = asyncHandler(async (req, res, next) => {
     const query = req.query.type_schet
     if(!query){
         return next(new ErrorResponse('Type_schet topilmadi', 400))
@@ -81,7 +81,7 @@ exports.getAll = asyncHandler(async (req, res, next) => {
 })
 
 // update
-exports.update = asyncHandler(async (req, res, next) => {
+const update = asyncHandler(async (req, res, next) => {
     if(!req.user.region_id){
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
@@ -117,7 +117,7 @@ exports.update = asyncHandler(async (req, res, next) => {
 })
 
 // delete value
-exports.deleteValue = asyncHandler(async (req, res, next) => {
+const deleteValue = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
     `, [req.params.id])
     value = value.rows[0]
@@ -138,7 +138,7 @@ exports.deleteValue = asyncHandler(async (req, res, next) => {
 })
 
 // import to excel 
-exports.importToExcel = asyncHandler(async (req, res, next) => {
+const importToExcel = asyncHandler(async (req, res, next) => {
     if (!req.file) {
         return next(new ErrorResponse("Fayl yuklanmadi", 400));
     }
@@ -186,7 +186,7 @@ exports.importToExcel = asyncHandler(async (req, res, next) => {
 })
 
 // get element by id 
-exports.getElementById = asyncHandler(async (req, res, next) => {
+const getElementById = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_operatsii  WHERE id = $1`, [req.params.id])
     value = value.rows[0]
     if(!value){
@@ -198,3 +198,13 @@ exports.getElementById = asyncHandler(async (req, res, next) => {
         data: value
     })
 })
+
+
+module.exports = {
+    getElementById,
+    create, 
+    getAll, 
+    deleteValue,
+    update,
+    importToExcel
+}

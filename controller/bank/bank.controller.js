@@ -5,7 +5,7 @@ const pool = require('../../config/db')
 
 
 // bank prixod 
-exports.bank_prixod = asyncHandler(async (req, res, next) => {
+const bank_prixod = asyncHandler(async (req, res, next) => {
     const {
         doc_num, 
         doc_date, 
@@ -151,7 +151,7 @@ exports.bank_prixod = asyncHandler(async (req, res, next) => {
 });
 
 // select shartnoma 
-exports.select_shartnoma = asyncHandler(async (req, res, next) => {
+const select_shartnoma = asyncHandler(async (req, res, next) => {
     const contracts = await pool.query(`
         SELECT 
             id, doc_num, doc_date, summa, opisanie, smeta_id, user_id, smeta_2 
@@ -166,7 +166,7 @@ exports.select_shartnoma = asyncHandler(async (req, res, next) => {
 })
 
 // bank prixod update 
-exports.bank_prixod_update = asyncHandler(async (req, res, next) => {
+const bank_prixod_update = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
 
     let bank_prixod = await pool.query(`SELECT * FROM bank_prixod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3
@@ -316,7 +316,7 @@ exports.bank_prixod_update = asyncHandler(async (req, res, next) => {
 })
 
 // get all bank prixod 
-exports.getAllBankPrixod = asyncHandler(async (req, res, next) => {
+const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     let all_prixod = await pool.query(`
         SELECT 
             id,
@@ -377,7 +377,7 @@ exports.getAllBankPrixod = asyncHandler(async (req, res, next) => {
 })
 
 // delete bank_prixod 
-exports.delete_bank_prixod = asyncHandler(async (req, res, next) => {
+const delete_bank_prixod = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
     const main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND  user_id = $2 AND isdeleted = false
     `, [main_schet_id, req.user.region_id])
@@ -406,7 +406,7 @@ exports.delete_bank_prixod = asyncHandler(async (req, res, next) => {
 })
 
 // get element by id bank prixod 
-exports.getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
+const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
     let all_prixod = await pool.query(`
         SELECT 
             id,
@@ -467,7 +467,7 @@ exports.getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
 })
 
 // bank rasxod
-exports.bank_rasxod = asyncHandler(async (req, res, next) => {
+const bank_rasxod = asyncHandler(async (req, res, next) => {
     const {
         doc_num, 
         doc_date, 
@@ -597,7 +597,7 @@ exports.bank_rasxod = asyncHandler(async (req, res, next) => {
 });
 
 // bank rasxod update 
-exports.bank_rasxod_update = asyncHandler(async (req, res, next) => {
+const bank_rasxod_update = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
 
     let bank_rasxod = await pool.query(`SELECT * FROM bank_prixod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3
@@ -741,7 +741,7 @@ exports.bank_rasxod_update = asyncHandler(async (req, res, next) => {
 })
 
 // get all bank rasxod 
-exports.getAllBankRasxod = asyncHandler(async (req, res, next) => {
+const getAllBankRasxod = asyncHandler(async (req, res, next) => {
     let all_rasxod = await pool.query(`
         SELECT 
             id,
@@ -797,7 +797,7 @@ exports.getAllBankRasxod = asyncHandler(async (req, res, next) => {
 })
 
 // get element by id bank rasxod 
-exports.getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
+const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
     let all_rasxod = await pool.query(`
         SELECT 
             id,
@@ -853,7 +853,7 @@ exports.getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
 })
 
 // delete bank_rasxod
-exports.delete_bank_rasxod = asyncHandler(async (req, res, next) => {
+const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
     const main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND  user_id = $2 AND isdeleted = false
     `, [main_schet_id, req.user.region_id])
@@ -880,3 +880,18 @@ exports.delete_bank_rasxod = asyncHandler(async (req, res, next) => {
         data: "Muvaffaqiyatli ochirildi"
     })
 })
+
+
+module.exports = {
+    bank_prixod,
+    select_shartnoma,
+    delete_bank_rasxod,
+    getElementByIdBankRasxod,
+    getAllBankRasxod,
+    bank_rasxod,
+    bank_rasxod_update,
+    getElementByIdBankPrixod,
+    bank_prixod_update,
+    getAllBankPrixod,
+    delete_bank_prixod
+}

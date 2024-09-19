@@ -5,7 +5,7 @@ const {checkValueString, checkValueNumber } = require('../../utils/check.functio
 const bcrypt = require('bcrypt')
 
 // create user
-exports.createUser = asyncHandler(async (req, res, next) => {
+const createUser = asyncHandler(async (req, res, next) => {
 
     let { login, password, fio, region_id, role_id } = req.body;
     
@@ -65,9 +65,8 @@ exports.createUser = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all users
-exports.getAllUsers = asyncHandler(async (req, res, next) => {
+const getAllUsers = asyncHandler(async (req, res, next) => {
     let user = await pool.query(`SELECT users.id, users.region_id, users.role_id, role.name AS role_name 
         FROM users 
         JOIN role ON role.id = users.role_id
@@ -109,7 +108,7 @@ exports.getAllUsers = asyncHandler(async (req, res, next) => {
 })
 
 // update user 
-exports.updateUser = asyncHandler(async (req, res, next) => {
+const updateUser = asyncHandler(async (req, res, next) => {
     let { login, password, fio, region_id, role_id } = req.body;
     
     let user = await pool.query(`SELECT users.id, users.region_id, users.role_id, role.name AS role_name 
@@ -178,7 +177,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 })
 
 // delete user
-exports.deleteUser = asyncHandler(async (req, res, next) => {
+const deleteUser = asyncHandler(async (req, res, next) => {
     let user = await pool.query(`SELECT users.id, users.region_id, users.role_id, role.name AS role_name 
         FROM users 
         JOIN role ON role.id = users.role_id
@@ -213,3 +212,10 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
         data: "Muvaffaqiyatli ochirildi"
     })
 })
+
+module.exports = {
+    createUser,
+    getAllUsers,
+    updateUser,
+    deleteUser
+}

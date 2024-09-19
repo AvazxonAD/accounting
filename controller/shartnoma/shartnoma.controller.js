@@ -3,7 +3,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { checkValueString, checkValueNumber } = require('../../utils/check.functions');
 
-exports.create = asyncHandler(async (req, res, next) => {
+const create = asyncHandler(async (req, res, next) => {
     if (!req.user.region_id) {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403));
     }
@@ -48,9 +48,8 @@ exports.create = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all
-exports.getAll = asyncHandler(async (req, res, next) => {
+const getAll = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
 
@@ -111,3 +110,8 @@ exports.getAll = asyncHandler(async (req, res, next) => {
         data: result.rows
     })
 })
+
+module.exports = {
+    create, 
+    getAll
+}

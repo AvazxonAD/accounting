@@ -7,7 +7,7 @@ const {checkValueString, checkValueNumber } = require('../../utils/check.functio
 
 
 // login 
-exports.login = asyncHandler(async (req, res, next) => {
+const login = asyncHandler(async (req, res, next) => {
     const { login, password, main_schet_id } = req.body;
 
     checkValueString(login, password)
@@ -76,7 +76,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 // update
-exports.update = asyncHandler(async (req, res, next) => {
+const update = asyncHandler(async (req, res, next) => {
     let { fio, login, oldPassword, newPassword } = req.body;
 
     let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
@@ -126,7 +126,7 @@ exports.update = asyncHandler(async (req, res, next) => {
 });
 
 // get profile 
-exports.getProfile = asyncHandler(async (req, res, next) => {
+const getProfile = asyncHandler(async (req, res, next) => {
     let user = await pool.query(`SELECT users.id, role.id AS role_id, role.name AS role_name, users.fio, users.login
         FROM users 
         LEFT JOIN role ON users.role_id = role.id
@@ -146,7 +146,7 @@ exports.getProfile = asyncHandler(async (req, res, next) => {
 
 
 // select budget 
-exports.select_budget = asyncHandler(async (req, res, next) => {
+const select_budget = asyncHandler(async (req, res, next) => {
     const main_schets = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [req.params.id])
 
     return res.status(200).json({
@@ -154,3 +154,10 @@ exports.select_budget = asyncHandler(async (req, res, next) => {
         data: main_schets.rows
     })
 })
+
+module.exports = {
+    login,
+    update,
+    getProfile,
+    select_budget
+}

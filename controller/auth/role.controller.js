@@ -4,7 +4,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 const {checkValueString } = require('../../utils/check.functions');
 
 // create role 
-exports.createRole = asyncHandler(async (req, res, next) => {
+const createRole = asyncHandler(async (req, res, next) => {
     let { name } = req.body;
 
     checkValueString(name)
@@ -32,7 +32,7 @@ exports.createRole = asyncHandler(async (req, res, next) => {
 });
 
 // get all role 
-exports.getAllRole = asyncHandler(async (req, res, next) => {
+const getAllRole = asyncHandler(async (req, res, next) => {
     const role = await pool.query(`SELECT id, name FROM role WHERE isdeleted = false ORDER BY id`)
     return res.status(200).json({
         success: true,
@@ -41,7 +41,7 @@ exports.getAllRole = asyncHandler(async (req, res, next) => {
 })
 
 // update role 
-exports.updateRole = asyncHandler(async (req, res, next) => {
+const updateRole = asyncHandler(async (req, res, next) => {
     let role = await pool.query(`SELECT * FROM role WHERE id = $1`, [req.params.id])
     role = role.rows[0]
     if(!role){
@@ -76,7 +76,7 @@ exports.updateRole = asyncHandler(async (req, res, next) => {
 })
 
 // delete role 
-exports.deleteRole = asyncHandler(async (req, res, next) => {
+const deleteRole = asyncHandler(async (req, res, next) => {
     let role = await pool.query(`SELECT * FROM role WHERE id = $1 AND isdeleted = false`, [req.params.id])
     role = role.rows[0]
     if(!role){
@@ -94,3 +94,10 @@ exports.deleteRole = asyncHandler(async (req, res, next) => {
         data: "Muvaffaqiyatli ochirildi"
     })
 })
+
+module.exports = {
+    createRole,
+    updateRole,
+    deleteRole,
+    getAllRole
+}
