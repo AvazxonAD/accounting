@@ -3,20 +3,20 @@ const {checkValueString, checkValueNumber, checkValueBoolean, checkValueArray } 
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require('../../config/db')
 
-// kassa prixod and rasxod
-const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
+// jur_3 create 
+const jur_3_create = asyncHandler(async (req, res, next) => {
     const {
         doc_num, 
         doc_date, 
-        prixod_summa,
-        rasxod_summa, 
+        summa,
         opisanie, 
-        id_podotchet_litso, 
+        id_spravochnik_organization, 
+        shartnomalar_organization_id,
         childs
     } = req.body;
 
     checkValueString(doc_date, doc_num, opisanie);
-    checkValueNumber(id_podotchet_litso, rasxod_summa, prixod_summa);
+    checkValueNumber(summa, id_spravochnik_organization, shartnomalar_organization_id);
     checkValueArray(childs);
 
     const main_schet_id = req.query.main_schet_id
@@ -26,10 +26,16 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
 
-    let podotchet_litso = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2`, [id_podotchet_litso, req.user.region_id]);
-    podotchet_litso = podotchet_litso.rows[0];
-    if(!podotchet_litso){
-        return next(new ErrorResponse('podotchet_litso topilmadi', 404));
+    let organization = await pool.query(`SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [id_spravochnik_organization, req.user.region_id]);
+    organization = organization.rows[0];
+    if(!organization){
+        return next(new ErrorResponse('spravochnik_organization topilmadi', 404));
+    }
+
+    let shartnoma = await pool.query(`SELECT * FROM shartnomalar_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [shartnomalar_organization_id, req.user.region_id]);
+    shartnoma = shartnoma.rows[0];
+    if(!shartnoma){
+        return next(new ErrorResponse('shartnomalar_organization topilmadi', 404));
     }
 
     for(let child of childs){    
@@ -63,14 +69,14 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
     }
 
     const result = await pool.query(`
-        INSERT INTO kassa_prixod_rasxod(
+        INSERT INTO bajarilgan_ishlar_jur3(
             doc_num, 
             doc_date, 
             opisanie, 
-            prixod_summa, 
-            rasxod_summa,
-            id_podotchet_litso, 
-            main_schet_id, 
+            summa, 
+            id_spravochnik_organization, 
+            shartnomalar_organization_id, 
+            main_schet_id,
             user_id
         ) 
         VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
@@ -79,9 +85,9 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
             doc_num, 
             doc_date, 
             opisanie, 
-            prixod_summa,
-            rasxod_summa, 
-            id_podotchet_litso,
+            summa,
+            id_spravochnik_organization, 
+            shartnomalar_organization_id,
             main_schet_id, 
             req.user.region_id
         ]
@@ -93,7 +99,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
 
     for(let child of childs){
         const result_child = await pool.query(`
-            INSERT INTO kassa_prixod_rasxod_child(
+            INSERT INTO bajarilgan_ishlar_jur3_child(
                 spravochnik_operatsii_id,
                 summa,
                 id_spravochnik_podrazdelenie,
@@ -102,7 +108,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
                 own_schet,
                 own_subschet,
                 main_schet_id,
-                kassa_prixod_rasxod_id,
+                bajarilgan_ishlar_jur3_id,
                 user_id
             ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`, [
                 child.spravochnik_operatsii_id,
@@ -128,7 +134,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
     });
 });
 
-// get all kassa prixod  rasxod
+// jur_3 get all
 const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
     let results = await pool.query(` SELECT id, doc_num, doc_date, opisanie, prixod_summa, rasxod_summa, id_podotchet_litso 
         FROM kassa_prixod_rasxod 
@@ -391,9 +397,5 @@ const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
 })
 
 module.exports = {
-    kassa_prixod_and_rasxod,
-    getAllKassaPrixodRasxod,
-    updateKassaPrixodBank,
-    deleteKassaPrixodRasxod,
-    getElementByIdKassaPrixodRasxod
+    jur_3_create
 }

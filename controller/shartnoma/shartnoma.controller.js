@@ -4,10 +4,6 @@ const ErrorResponse = require("../../utils/errorResponse");
 const { checkValueString, checkValueNumber } = require('../../utils/check.functions');
 
 const create = asyncHandler(async (req, res, next) => {
-    if (!req.user.region_id) {
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403));
-    }
-
     let { doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id } = req.body;
 
     checkValueString(doc_num, doc_date, opisanie, smeta_2);
@@ -110,6 +106,63 @@ const getAll = asyncHandler(async (req, res, next) => {
         data: result.rows
     })
 })
+
+
+// update shartnoma 
+const update_shartnoma = asyncHandler(async (req, res, next) => {
+
+    const shartnoma = await pool.query(`SELECT * FROM shartnomalar_organization WHERE user_id = $1 AND id = $2`, [req.user.region_id, req.params.id])
+    if(!shartnoma.rows[0]){
+        return next(new ErrorResponse('Server xatolik. Shartnoma topilmadi', 500))
+    }
+
+    let { doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id } = req.body;
+
+    checkValueString(doc_num, doc_date, opisanie, smeta_2);
+    checkValueNumber(summa, spravochnik_organization_id);
+
+    const test_smeta = await pool.query(`SELECT * FROM smeta WHERE id = $1 AND isdeleted = false`, [smeta_id]);
+    if (!test_smeta.rows[0]) {
+        return next(new ErrorResponse('Smeta topilmadi', 500));
+    }
+
+    const test_organization = await pool.query(
+        `SELECT * FROM spravochnik_organization WHERE id = $1 AND isdeleted = false AND user_id = $2`,
+        [spravochnik_organization_id, req.user.region_id]
+    );
+    if (!test_organization.rows[0]) {
+        return next(new ErrorResponse('Hamkor topilmadi', 500));
+    }
+
+    let updateShartnoma = await pool.query(
+        `UPDATE shartnomalar_organization SET 
+            doc_num = $1, 
+            doc_date $2, 
+            summa = $3, 
+            opisanie = $4, 
+            smeta_id = $5, 
+            smeta_2 = $6, 
+            spravochnik_organization_id = $7
+        WHERE id = $8
+        RETURNING *`,
+        [doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id, req.params.id]
+    );
+    if (!updateShartnoma.rows[0]) {
+        return next(new ErrorResponse('Malumot kiritilmadi', 500));
+    }
+
+    await pool.query(
+        `INSERT INTO shartnoma_grafik(id_shartnomalar_organization, user_id) VALUES($1, $2)`,
+        [shartnoma.id, req.user.region_id]
+    );
+
+    return res.status(201).json({
+        success: true,
+        data: 'Muvafaqiyatli kiritildi'
+    });
+})
+
+
 
 module.exports = {
     create, 

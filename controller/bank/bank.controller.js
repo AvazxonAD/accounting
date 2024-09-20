@@ -1,5 +1,5 @@
 const asyncHandler = require("../../middleware/asyncHandler");
-const {checkValueString, checkValueNumber, checkValueBoolean, checkValueObject } = require("../../utils/check.functions");
+const {checkValueString, checkValueNumber, checkValueBoolean, checkValueArray } = require("../../utils/check.functions");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require('../../config/db')
 
@@ -21,16 +21,16 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     checkValueString(doc_date, doc_num, opisanie);
     checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
     checkValueBoolean(provodki_boolean, dop_provodki_boolean);
-    checkValueObject(childs);
+    checkValueArray(childs);
 
     const main_schet_id = req.query.main_schet_id
-    let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2`, [main_schet_id, req.user.region_id]);
+    let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
     main_schet = main_schet.rows[0];
     if(!main_schet){
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
 
-    let organization = await pool.query(`SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2`, [id_spravochnik_organization, req.user.region_id]);
+    let organization = await pool.query(`SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [id_spravochnik_organization, req.user.region_id]);
     organization = organization.rows[0];
     if(!organization){
         return next(new ErrorResponse('Hamkor korxona topilmadi', 404));
@@ -193,7 +193,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
     checkValueString(doc_date, doc_num, opisanie);
     checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization,  own_subschet, own_schet);
     checkValueBoolean(provodki_boolean, dop_provodki_boolean);
-    checkValueObject(childs);
+    checkValueArray(childs);
 
     let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
     main_schet = main_schet.rows[0];
@@ -481,15 +481,15 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
 
     checkValueString(doc_date, doc_num, opisanie);
     checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization, main_schet_id);
-    checkValueObject(childs);
+    checkValueArray(childs);
 
-    let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2`, [main_schet_id, req.user.region_id]);
+    let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
     main_schet = main_schet.rows[0];
     if(!main_schet){
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
 
-    let organization = await pool.query(`SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2`, [id_spravochnik_organization, req.user.region_id]);
+    let organization = await pool.query(`SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [id_spravochnik_organization, req.user.region_id]);
     organization = organization.rows[0];
     if(!organization){
         return next(new ErrorResponse('Hamkor korxona topilmadi', 404));
@@ -621,7 +621,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 
     checkValueString(doc_date, doc_num, opisanie);
     checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
-    checkValueObject(childs);
+    checkValueArray(childs);
 
     let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
     main_schet = main_schet.rows[0];

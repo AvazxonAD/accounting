@@ -1,15 +1,15 @@
 exports.checkValueString = (...args) => {
-    args.some(arg => {
+    args.forEach(arg => {
         if (typeof arg !== "string" || arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri  formatda kiritilishi kerak');
+            throw new Error('Malumotlar to`g`ri  formatda kiritilishi kerak. String');
         }
     });
 };
 
 exports.checkValueNumber = (...args) => {
-    args.some(arg => {
-        if (typeof arg !== 'string' && typeof arg !== 'number' || arg === null || arg === undefined) {
-            return false;
+    args.forEach(arg => {
+        if (typeof arg !== 'number' || arg === null || arg === undefined) {
+            throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak. Number');
         }
 
         arg = arg.toString();
@@ -18,22 +18,22 @@ exports.checkValueNumber = (...args) => {
             return true;
         }
 
-        throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak');
+        throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak. Number');
     });
 };
 
 exports.checkValueBoolean = (...args) => {
-    args.some(arg => {
+    args.forEach(arg => {
         if (typeof arg !== "boolean" || arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak');
+            throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak. Boolean');
         }
     });
 };
 
-exports.checkValueObject = (...args) => {
-    args.some(arg => {
-        if (typeof arg !== "object" || arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak');
+exports.checkValueArray = (...args) => {
+    args.forEach(arg => {
+        if (!Array.isArray(arg)) {
+            throw new Error('Malumotlar to\'g\'ri formatda kiritilishi kerak. Array bo\'lishi lozim.');
         }
     });
 };

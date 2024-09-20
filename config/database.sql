@@ -141,6 +141,7 @@ CREATE TABLE shartnomalar_organization (
 
 CREATE TABLE smeta (
     id INTEGER PRIMARY KEY,
+    father_smeta_name VARCHAR(255),
     smeta_name VARCHAR(255) NOT NULL,
     smeta_number INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -268,4 +269,60 @@ CREATE TABLE kassa_prixod_rasxod_child (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE smeta_grafik (
+  id SERIAL PRIMARY KEY,
+  smeta_id INTEGER REFERENCES smeta(id),
+  spravochnik_budjet_name_id INTEGER REFERENCES spravochnik_budjet_name(id),
+  user_id INTEGER REFERENCES regions(id),
+  itogo DECIMAL DEFAULT 0,
+  oy_1 DECIMAL DEFAULT 0,
+  oy_2 DECIMAL DEFAULT 0,
+  oy_3 DECIMAL DEFAULT 0,
+  oy_4 DECIMAL DEFAULT 0,
+  oy_5 DECIMAL DEFAULT 0,
+  oy_6 DECIMAL DEFAULT 0,
+  oy_7 DECIMAL DEFAULT 0,
+  oy_8 DECIMAL DEFAULT 0,
+  oy_9 DECIMAL DEFAULT 0,
+  oy_10 DECIMAL DEFAULT 0,
+  oy_11 DECIMAL DEFAULT 0,
+  oy_12 DECIMAL DEFAULT 0,
+  year INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE bajarilgan_ishlar_jur3 (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES regions(id),
+    doc_num VARCHAR(255),
+    doc_date DATE,
+    summa DECIMAL,
+    opisanie VARCHAR(255),
+    id_spravochnik_organization INT REFERENCES spravochnik_organization(id),
+    shartnomalar_organization_id INT REFERENCES shartnomalar_organization(id),
+    main_schet_id INT REFERENCES main_schet(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE bajarilgan_ishlar_jur3_child (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES regions(id),
+    spravochnik_operatsii_id INT REFERENCES spravochnik_operatsii(id),
+    summa DECIMAL,
+    id_spravochnik_podrazdelenie INT REFERENCES spravochnik_podrazdelenie(id),
+    id_spravochnik_sostav INT REFERENCES spravochnik_sostav(id),
+    id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
+    bajarilgan_ishlar_jur3_id INT REFERENCES bajarilgan_ishlar_jur3(id),
+    main_schet_id INT REFERENCES main_schet(id),
+    own_schet VARCHAR(200),
+    own_subschet VARCHAR(200),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
 );

@@ -16,6 +16,8 @@ const smetaRouter = require('./smeta/smeta.router')
 const shartnomaRouter = require('./shartnoma/shartnoma.router')
 const bankRouter = require('./bank/bank.router')
 const kassaRouter  = require('./kassa/kassa.router')
+const smetaGarfik = require('./smeta/smeta.grafik.router')
+const bajarilgan_ishlarRouter = require('./bajarilgan_ishlar/jur_3.router')
 
 const router = express.Router();
 
@@ -35,6 +37,7 @@ router.use('/smeta', smetaRouter)
 router.use('/shartnoma', shartnomaRouter)
 router.use('/bank', bankRouter)
 router.use('/kassa', kassaRouter)
-
+router.use('/smeta/grafik', smetaGarfik)
+router.use('/bajarilgan_ishlar/jur_3', bajarilgan_ishlarRouter)
 
 module.exports = router;

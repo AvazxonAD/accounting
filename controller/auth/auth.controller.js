@@ -3,7 +3,7 @@ const ErrorResponse = require('../../utils/errorResponse');
 const pool = require('../../config/db');
 const generateToken = require('../../utils/auth/generate.token');
 const bcrypt = require('bcrypt')
-const {checkValueString, checkValueNumber } = require('../../utils/check.functions')
+const {checkValueString } = require('../../utils/check.functions')
 
 
 // login 

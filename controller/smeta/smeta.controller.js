@@ -5,25 +5,22 @@ const { checkValueString, checkValueNumber } = require('../../utils/check.functi
 
 // create 
 const create = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
-
-    let { smeta_name, smeta_number } = req.body;
+    let { smeta_name, smeta_number, father_smeta_name} = req.body;
     
-    checkValueString(smeta_name)
+    checkValueString(smeta_name, father_smeta_name)
     checkValueNumber(smeta_number)
 
     smeta_name = smeta_name.trim();
+    father_smeta_name = father_smeta_name.trim()
 
-    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false
-    `, [smeta_name, smeta_number]);
+    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false AND father_smeta_name = $3
+    `, [smeta_name, smeta_number, father_smeta_name]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`INSERT INTO smeta(smeta_name, smeta_number) VALUES($1, $2) RETURNING *
-    `, [smeta_name, smeta_number]);
+    const result = await pool.query(`INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name) VALUES($1, $2, $3) RETURNING *
+    `, [smeta_name, smeta_number, father_smeta_name]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
     }
@@ -49,7 +46,7 @@ const getAll = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
     
-    const result = await pool.query(`SELECT id, smeta_name, smeta_number FROM smeta  
+    const result = await pool.query(`SELECT id, smeta_name, smeta_number, father_smeta_name FROM smeta  
         WHERE isdeleted = false ORDER BY id
         OFFSET $1 
         LIMIT $2
@@ -76,22 +73,23 @@ const update = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
 
-    let { smeta_name, smeta_number } = req.body;
+    let { smeta_name, smeta_number, father_smeta_name } = req.body;
     
-    checkValueString(smeta_name)
+    checkValueString(smeta_name, father_smeta_name)
     checkValueNumber(smeta_number)
     smeta_name = smeta_name.trim();
+    father_smeta_name = father_smeta_name.trim()
 
-    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false
-    `, [smeta_name, smeta_number]);
+    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false AND father_smeta_name = $3
+    `, [smeta_name, smeta_number, father_smeta_name]);
     if (test.rows.length > 0) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`UPDATE  smeta SET smeta_name = $1, smeta_number = $2
-        WHERE  id = $3
+    const result = await pool.query(`UPDATE  smeta SET smeta_name = $1, smeta_number = $2, father_smeta_name = $3
+        WHERE  id = $4
         RETURNING *
-    `, [smeta_name, smeta_number, req.params.id]);
+    `, [smeta_name, smeta_number, father_smeta_name, req.params.id]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot Yangilanmadi', 500));
     }
