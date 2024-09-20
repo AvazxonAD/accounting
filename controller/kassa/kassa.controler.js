@@ -176,7 +176,6 @@ const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
     })
 })
 
-
 // kassa prixod rasxod update 
 const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     const {
