@@ -45,6 +45,7 @@ const getAll = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     let inn = null
+    let totalQuery = null
     if(req.query.inn){
         inn = Number(req.query.inn)
         checkValueNumber(inn)
@@ -66,6 +67,7 @@ const getAll = asyncHandler(async (req, res, next) => {
             OFFSET $3
             LIMIT $4
         `, [req.user.region_id, Number(req.query.inn), offset, limit])
+        totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM spravochnik_organization WHERE isdeleted = false AND user_id = $1 AND inn = $2`, [req.user.region_id, inn]);
     }else{
         result = await pool.query(`SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx
             FROM spravochnik_organization  
@@ -73,9 +75,9 @@ const getAll = asyncHandler(async (req, res, next) => {
             OFFSET $2
             LIMIT $3
         `, [req.user.region_id, offset, limit])
+        totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM spravochnik_organization WHERE isdeleted = false AND user_id = $1`, [req.user.region_id]);
     }
 
-    const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM spravochnik_organization WHERE isdeleted = false AND user_id = $1`, [req.user.region_id]);
     const total = parseInt(totalQuery.rows[0].total);
     const pageCount = Math.ceil(total / limit);
 
