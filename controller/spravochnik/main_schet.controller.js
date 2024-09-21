@@ -169,7 +169,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [req.params.id, req.user.region_id])
     value = value.rows[0]
     if(!value){
-        return next(new ErrorResponse('Server error. Malumot topilmadi'))
+        return next(new ErrorResponse('Server error. main_schet topilmadi'))
     }
 
     return res.status(200).json({

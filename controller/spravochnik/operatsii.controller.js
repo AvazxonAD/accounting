@@ -50,9 +50,6 @@ const getAll = asyncHandler(async (req, res, next) => {
     }
 
     const offset = (page - 1) * limit;
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
     
     const result = await pool.query(`SELECT id, name, schet, sub_schet, type_schet 
         FROM spravochnik_operatsii  

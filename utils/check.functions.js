@@ -1,4 +1,4 @@
-exports.checkValueString = (...args) => {
+const checkValueString = (...args) => {
     args.forEach(arg => {
         if (typeof arg !== "string" || arg === null || arg === undefined) {
             throw new Error('Malumotlar to`g`ri  formatda kiritilishi kerak. String');
@@ -6,7 +6,7 @@ exports.checkValueString = (...args) => {
     });
 };
 
-exports.checkValueNumber = (...args) => {
+const checkValueNumber = (...args) => {
     args.forEach(arg => {
         if (typeof arg !== 'number' || arg === null || arg === undefined) {
             throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak. Number');
@@ -22,7 +22,7 @@ exports.checkValueNumber = (...args) => {
     });
 };
 
-exports.checkValueBoolean = (...args) => {
+const checkValueBoolean = (...args) => {
     args.forEach(arg => {
         if (typeof arg !== "boolean" || arg === null || arg === undefined) {
             throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak. Boolean');
@@ -30,10 +30,26 @@ exports.checkValueBoolean = (...args) => {
     });
 };
 
-exports.checkValueArray = (...args) => {
+const checkValueArray = (...args) => {
     args.forEach(arg => {
         if (!Array.isArray(arg)) {
             throw new Error('Malumotlar to\'g\'ri formatda kiritilishi kerak. Array bo\'lishi lozim.');
         }
     });
 };
+
+const isValidDate = (dateString) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        throw new Error("Ma'lumotlar to'g'ri formatda kiritilishi kerak. Sana emas.");
+    }
+};
+
+module.exports = {
+    checkValueArray,
+    checkValueString,
+    checkValueNumber,
+    checkValueBoolean,
+    isValidDate
+}
+

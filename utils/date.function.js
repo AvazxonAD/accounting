@@ -1,12 +1,5 @@
-// return date 
-exports.returnDate = (value) => {
-    const isoDatePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-    
-    return isoDatePattern.test(value);
-}
-
 // return string  date 
-exports.returnStringDate = (date) => {
+const returnStringDate = (date) => {
     const day = date.getDate().toString().padStart(2, '0'); // "05"
     let  month = (date.getMonth() + 1).toString().padStart(2, '0'); // "01"
     const year = date.getFullYear().toString(); // "2024"
@@ -48,9 +41,14 @@ function getMonth (month) {
 
 
 // return local date 
-exports.returnLocalDate = (date) => {
+const returnLocalDate = (date) => {
     const day = date.getDate().toString().padStart(2, '0'); // "05"
     const  month = (date.getMonth() + 1).toString().padStart(2, '0'); // "01"
     const year = date.getFullYear().toString(); // "2024"
     return topshiriqSana = `${day}.${month}.${year}`;
+}
+
+module.exports = {
+    returnLocalDate,
+    returnStringDate
 }

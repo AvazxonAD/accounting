@@ -13,7 +13,7 @@ const {
     getAllBankRasxod,
     delete_bank_rasxod,
     getElementByIdBankPrixod,
-    getElementByIdBankRasxod
+    getElementByIdBankRasxod,
 } = require('../../controller/bank/bank.controller')
 
 router.post('/prixod', protect, bank_prixod)
@@ -22,7 +22,6 @@ router.put('/prixod/update/:id', protect, bank_prixod_update)
 router.get('/get/all/prixod', protect, getAllBankPrixod)
 router.delete('/delete/bank/prixod/:id', protect, delete_bank_prixod)
 router.get('/get/element/prixod/by/:id', protect, getElementByIdBankPrixod)
-
 
 router.post('/rasxod', protect, bank_rasxod)
 router.put('/rasxod/update/:id', protect, bank_rasxod_update)
