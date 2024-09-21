@@ -429,7 +429,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
 
     checkValueString(doc_date, doc_num, opisanie);
-    checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization, main_schet_id);
+    checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
     checkValueArray(childs);
 
     let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);

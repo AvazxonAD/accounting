@@ -188,7 +188,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_operatsii  WHERE id = $1`, [req.params.id])
     value = value.rows[0]
     if(!value){
-        return next(new ErrorResponse('Server error. Malumot topilmadi'))
+        return next(new ErrorResponse('Server error. spravochnik_operatsii topilmadi'))
     }
 
     return res.status(200).json({

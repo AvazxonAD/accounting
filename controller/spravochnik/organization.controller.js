@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {checkValueString } = require('../../utils/check.functions');
+const {checkValueString, checkValueNumber } = require('../../utils/check.functions');
 const xlsx = require('xlsx')
 
 // create 
@@ -41,8 +41,14 @@ const create = asyncHandler(async (req, res, next) => {
 
 // get all
 const getAll = asyncHandler(async (req, res, next) => {
+    let result = null
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
+    let inn = null
+    if(req.query.inn){
+        inn = Number(req.query.inn)
+        checkValueNumber(inn)
+    }
 
     if (limit <= 0 || page <= 0) {
         return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
@@ -52,13 +58,22 @@ const getAll = asyncHandler(async (req, res, next) => {
     if(!req.user.region_id){
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
-    
-    const result = await pool.query(`SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx
-        FROM spravochnik_organization  
-        WHERE isdeleted = false AND user_id = $1 ORDER BY id
-        OFFSET $2
-        LIMIT $3
-    `, [req.user.region_id, offset, limit])
+
+    if(inn){
+        result = await pool.query(`SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx
+            FROM spravochnik_organization  
+            WHERE isdeleted = false AND user_id = $1 AND inn = $2
+            OFFSET $3
+            LIMIT $4
+        `, [req.user.region_id, Number(req.query.inn), offset, limit])
+    }else{
+        result = await pool.query(`SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx
+            FROM spravochnik_organization  
+            WHERE isdeleted = false AND user_id = $1 ORDER BY id
+            OFFSET $2
+            LIMIT $3
+        `, [req.user.region_id, offset, limit])
+    }
 
     const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM spravochnik_organization WHERE isdeleted = false AND user_id = $1`, [req.user.region_id]);
     const total = parseInt(totalQuery.rows[0].total);
