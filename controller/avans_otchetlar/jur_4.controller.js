@@ -3,20 +3,19 @@ const {checkValueString, checkValueNumber, checkValueBoolean, checkValueArray } 
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require('../../config/db')
 
-// kassa prixod and rasxod
-const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
+// jur 4 create 
+const jur_4_create = asyncHandler(async (req, res, next) => {
     const {
         doc_num, 
         doc_date, 
-        prixod_summa,
-        rasxod_summa, 
+        summa,
         opisanie, 
-        id_podotchet_litso, 
+        spravochnik_podotchet_litso_id, 
         childs
     } = req.body;
 
     checkValueString(doc_date, doc_num, opisanie);
-    checkValueNumber(id_podotchet_litso, rasxod_summa, prixod_summa);
+    checkValueNumber(spravochnik_podotchet_litso_id, summa);
     checkValueArray(childs);
 
     const main_schet_id = req.query.main_schet_id
@@ -26,7 +25,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
 
-    let podotchet_litso = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [id_podotchet_litso, req.user.region_id]);
+    let podotchet_litso = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [spravochnik_podotchet_litso_id, req.user.region_id]);
     podotchet_litso = podotchet_litso.rows[0];
     if(!podotchet_litso){
         return next(new ErrorResponse('podotchet_litso topilmadi', 404));
@@ -41,7 +40,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
             child.id_spravochnik_type_operatsii
         );
 
-        const spravochnik_operatsii = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`, ['kassa_prixod_rasxod', child.spravochnik_operatsii_id]);
+        const spravochnik_operatsii = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`, ['bank_prixod', child.spravochnik_operatsii_id]);
         if(!spravochnik_operatsii.rows[0]){
             return next(new ErrorResponse('spravochnik_operatsii topilmadi', 404));
         }
@@ -63,25 +62,23 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
     }
 
     const result = await pool.query(`
-        INSERT INTO kassa_prixod_rasxod(
+        INSERT INTO avans_otchetlar_jur4(
             doc_num, 
             doc_date, 
             opisanie, 
-            prixod_summa, 
-            rasxod_summa,
-            id_podotchet_litso, 
+            summa,
+            spravochnik_podotchet_litso_id, 
             main_schet_id, 
             user_id
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
+        VALUES($1, $2, $3, $4, $5, $6, $7) 
         RETURNING *
         `, [
             doc_num, 
             doc_date, 
             opisanie, 
-            prixod_summa,
-            rasxod_summa, 
-            id_podotchet_litso,
+            summa,
+            spravochnik_podotchet_litso_id,
             main_schet_id, 
             req.user.region_id
         ]
@@ -93,7 +90,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
 
     for(let child of childs){
         const result_child = await pool.query(`
-            INSERT INTO kassa_prixod_rasxod_child(
+            INSERT INTO avans_otchetlar_jur4_child(
                 spravochnik_operatsii_id,
                 summa,
                 id_spravochnik_podrazdelenie,
@@ -102,7 +99,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
                 own_schet,
                 own_subschet,
                 main_schet_id,
-                kassa_prixod_rasxod_id,
+                avans_otchetlar_jur4_id,
                 user_id
             ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`, [
                 child.spravochnik_operatsii_id,
@@ -128,48 +125,44 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
     });
 });
 
-// get all kassa prixod  rasxod
-const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
+// jur 4 get all
+const getAllJur_4 = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
     let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
     main_schet = main_schet.rows[0];
     if(!main_schet){
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
-    
-    let results = await pool.query(` SELECT id, doc_num, doc_date, opisanie, prixod_summa, rasxod_summa, id_podotchet_litso 
-        FROM kassa_prixod_rasxod 
+
+    let results = await pool.query(` SELECT id, doc_num, doc_date, opisanie, summa, spravochnik_podotchet_litso_id 
+        FROM avans_otchetlar_jur4 
         WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
     `, [main_schet_id, req.user.region_id])
     results = results.rows
-
-    if(results.length === 0){
-        return next(new ErrorResponse('Server xatolik. Prixod documentlar topilmadi', [404]))
-    }
 
     const resultArray = []
 
     for(let result of results){
         const prixod_child = await pool.query(`
             SELECT  
-                kassa_prixod_rasxod_child.id,
-                kassa_prixod_rasxod_child.spravochnik_operatsii_id,
+                avans_otchetlar_jur4_child.id,
+                avans_otchetlar_jur4_child.spravochnik_operatsii_id,
                 spravochnik_operatsii.name AS spravochnik_operatsii_name,
-                kassa_prixod_rasxod_child.summa,
-                kassa_prixod_rasxod_child.id_spravochnik_podrazdelenie,
+                avans_otchetlar_jur4_child.summa,
+                avans_otchetlar_jur4_child.id_spravochnik_podrazdelenie,
                 spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
-                kassa_prixod_rasxod_child.id_spravochnik_sostav,
+                avans_otchetlar_jur4_child.id_spravochnik_sostav,
                 spravochnik_sostav.name AS spravochnik_sostav_name,
-                kassa_prixod_rasxod_child.id_spravochnik_type_operatsii,
+                avans_otchetlar_jur4_child.id_spravochnik_type_operatsii,
                 spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
-                kassa_prixod_rasxod_child.own_schet,
-                kassa_prixod_rasxod_child.own_subschet
-            FROM kassa_prixod_rasxod_child 
-            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = kassa_prixod_rasxod_child.spravochnik_operatsii_id
-            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = kassa_prixod_rasxod_child.id_spravochnik_podrazdelenie
-            JOIN spravochnik_sostav ON spravochnik_sostav.id = kassa_prixod_rasxod_child.id_spravochnik_sostav
-            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = kassa_prixod_rasxod_child.id_spravochnik_type_operatsii
-            WHERE kassa_prixod_rasxod_child.user_id = $1 AND kassa_prixod_rasxod_child.isdeleted = false AND kassa_prixod_rasxod_child.kassa_prixod_rasxod_id = $2
+                avans_otchetlar_jur4_child.own_schet,
+                avans_otchetlar_jur4_child.own_subschet
+            FROM avans_otchetlar_jur4_child 
+            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = avans_otchetlar_jur4_child.spravochnik_operatsii_id
+            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = avans_otchetlar_jur4_child.id_spravochnik_podrazdelenie
+            JOIN spravochnik_sostav ON spravochnik_sostav.id = avans_otchetlar_jur4_child.id_spravochnik_sostav
+            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = avans_otchetlar_jur4_child.id_spravochnik_type_operatsii
+            WHERE avans_otchetlar_jur4_child.user_id = $1 AND avans_otchetlar_jur4_child.isdeleted = false AND avans_otchetlar_jur4_child.avans_otchetlar_jur4_id = $2
         `, [req.user.region_id, result.id])
 
         let object = {...result}
@@ -183,20 +176,19 @@ const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
     })
 })
 
-// kassa prixod rasxod update 
-const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
+// jur 4 update
+const jur_4_update = asyncHandler(async (req, res, next) => {
     const {
         doc_num, 
         doc_date, 
-        prixod_summa,
-        rasxod_summa, 
+        summa,
         opisanie, 
-        id_podotchet_litso, 
+        spravochnik_podotchet_litso_id, 
         childs
     } = req.body;
 
     checkValueString(doc_date, doc_num, opisanie);
-    checkValueNumber(id_podotchet_litso, rasxod_summa, prixod_summa);
+    checkValueNumber(spravochnik_podotchet_litso_id, summa);
     checkValueArray(childs);
 
     const main_schet_id = req.query.main_schet_id
@@ -207,14 +199,14 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     }
 
     let value  = await pool.query(`SELECT * 
-        FROM kassa_prixod_rasxod 
+        FROM avans_otchetlar_jur4 
         WHERE user_id = $1 AND main_schet_id = $2 AND isdeleted = false AND id = $3
     `, [req.user.region_id, main_schet_id, req.params.id])
     if(!value.rows[0]){
         return next(new ErrorResponse('Server xatolik. Kassa document topilmadi', 404))
     }
 
-    let podotchet_litso = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [id_podotchet_litso, req.user.region_id]);
+    let podotchet_litso = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [spravochnik_podotchet_litso_id, req.user.region_id]);
     podotchet_litso = podotchet_litso.rows[0];
     if(!podotchet_litso){
         return next(new ErrorResponse('podotchet_litso topilmadi', 404));
@@ -229,7 +221,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
             child.id_spravochnik_type_operatsii
         );
 
-        const spravochnik_operatsii = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`, ['kassa_prixod_rasxod', child.spravochnik_operatsii_id]);
+        const spravochnik_operatsii = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`, ['bank_prixod', child.spravochnik_operatsii_id]);
         if(!spravochnik_operatsii.rows[0]){
             return next(new ErrorResponse('spravochnik_operatsii topilmadi', 404));
         }
@@ -250,22 +242,20 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
         }
     }
 
-    const updateValue = await pool.query(`UPDATE kassa_prixod_rasxod SET
+    const updateValue = await pool.query(`UPDATE avans_otchetlar_jur4 SET
             doc_num = $1, 
             doc_date = $2, 
             opisanie = $3, 
-            prixod_summa = $4, 
-            rasxod_summa = $5,
-            id_podotchet_litso = $6
-        WHERE id = $7
+            summa = $4, 
+            spravochnik_podotchet_litso_id = $5
+        WHERE id = $6
         RETURNING * 
         `, [
             doc_num, 
             doc_date, 
             opisanie, 
-            prixod_summa,
-            rasxod_summa, 
-            id_podotchet_litso,
+            summa,
+            spravochnik_podotchet_litso_id,
             req.params.id
         ]
     )
@@ -274,11 +264,11 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Server xatolik. Malumot yangilamadi', 500))
     }
 
-    await pool.query(`DELETE FROM kassa_prixod_rasxod_child WHERE kassa_prixod_rasxod_id = $1`, [req.params.id])
+    await pool.query(`DELETE FROM avans_otchetlar_jur4_child WHERE avans_otchetlar_jur4_id = $1`, [req.params.id])
 
     for(let child of childs){
         const result_child = await pool.query(`
-            INSERT INTO kassa_prixod_rasxod_child(
+            INSERT INTO avans_otchetlar_jur4_child(
                 spravochnik_operatsii_id,
                 summa,
                 id_spravochnik_podrazdelenie,
@@ -287,7 +277,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
                 own_schet,
                 own_subschet,
                 main_schet_id,
-                kassa_prixod_rasxod_id,
+                avans_otchetlar_jur4_id,
                 user_id
             ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`, [
                 child.spravochnik_operatsii_id,
@@ -314,8 +304,8 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
 
 })
 
-// delete kassa prixod rasxod 
-const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
+// delete jur 4
+const delete_jur_4 = asyncHandler(async (req, res, next) => {
     const main_schet_id = req.query.main_schet_id
     let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
     main_schet = main_schet.rows[0];
@@ -323,9 +313,9 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
 
-    const childs = await pool.query(`UPDATE kassa_prixod_rasxod_child 
+    const childs = await pool.query(`UPDATE avans_otchetlar_jur4_child 
         SET isdeleted = true
-        WHERE kassa_prixod_rasxod_id = $1 AND isdeleted = false AND  user_id = $2 AND main_schet_id = $3
+        WHERE avans_otchetlar_jur4_id = $1 AND isdeleted = false AND  user_id = $2 AND main_schet_id = $3
         RETURNING * 
     `, [req.params.id, req.user.region_id, main_schet_id])
 
@@ -333,7 +323,7 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500))
     }
 
-    const result = await pool.query(`UPDATE kassa_prixod_rasxod
+    const result = await pool.query(`UPDATE avans_otchetlar_jur4
         SET isdeleted = true
         WHERE id = $1 AND isdeleted = false AND  user_id = $2 AND main_schet_id = $3
         RETURNING * 
@@ -349,16 +339,23 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
     })
 })
 
-// get element by id bank prixod
-const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
-    let results = await pool.query(` SELECT id, doc_num, doc_date, opisanie, prixod_summa, rasxod_summa, id_podotchet_litso 
-        FROM kassa_prixod_rasxod 
+// get element by id jur 4 
+const getElementByIdjur_4 = asyncHandler(async (req, res, next) => {
+    const main_schet_id = req.query.main_schet_id
+    let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
+    main_schet = main_schet.rows[0];
+    if(!main_schet){
+        return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
+    }
+
+    let results = await pool.query(` SELECT id, doc_num, doc_date, opisanie, summa, spravochnik_podotchet_litso_id 
+        FROM avans_otchetlar_jur4 
         WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
-    `, [req.query.main_schet_id, req.user.region_id, req.params.id])
+    `, [main_schet_id, req.user.region_id, req.params.id])
     results = results.rows
 
     if(results.length === 0){
-        return next(new ErrorResponse('Server xatolik. Prixod document topilmadi', [404]))
+        return next(new ErrorResponse('Server xatolik. Prixod documentlar topilmadi', [404]))
     }
 
     const resultArray = []
@@ -366,24 +363,24 @@ const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
     for(let result of results){
         const prixod_child = await pool.query(`
             SELECT  
-                kassa_prixod_rasxod_child.id,
-                kassa_prixod_rasxod_child.spravochnik_operatsii_id,
+                avans_otchetlar_jur4_child.id,
+                avans_otchetlar_jur4_child.spravochnik_operatsii_id,
                 spravochnik_operatsii.name AS spravochnik_operatsii_name,
-                kassa_prixod_rasxod_child.summa,
-                kassa_prixod_rasxod_child.id_spravochnik_podrazdelenie,
+                avans_otchetlar_jur4_child.summa,
+                avans_otchetlar_jur4_child.id_spravochnik_podrazdelenie,
                 spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
-                kassa_prixod_rasxod_child.id_spravochnik_sostav,
+                avans_otchetlar_jur4_child.id_spravochnik_sostav,
                 spravochnik_sostav.name AS spravochnik_sostav_name,
-                kassa_prixod_rasxod_child.id_spravochnik_type_operatsii,
+                avans_otchetlar_jur4_child.id_spravochnik_type_operatsii,
                 spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
-                kassa_prixod_rasxod_child.own_schet,
-                kassa_prixod_rasxod_child.own_subschet
-            FROM kassa_prixod_rasxod_child 
-            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = kassa_prixod_rasxod_child.spravochnik_operatsii_id
-            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = kassa_prixod_rasxod_child.id_spravochnik_podrazdelenie
-            JOIN spravochnik_sostav ON spravochnik_sostav.id = kassa_prixod_rasxod_child.id_spravochnik_sostav
-            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = kassa_prixod_rasxod_child.id_spravochnik_type_operatsii
-            WHERE kassa_prixod_rasxod_child.user_id = $1 AND kassa_prixod_rasxod_child.isdeleted = false AND kassa_prixod_rasxod_child.kassa_prixod_rasxod_id = $2
+                avans_otchetlar_jur4_child.own_schet,
+                avans_otchetlar_jur4_child.own_subschet
+            FROM avans_otchetlar_jur4_child 
+            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = avans_otchetlar_jur4_child.spravochnik_operatsii_id
+            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = avans_otchetlar_jur4_child.id_spravochnik_podrazdelenie
+            JOIN spravochnik_sostav ON spravochnik_sostav.id = avans_otchetlar_jur4_child.id_spravochnik_sostav
+            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = avans_otchetlar_jur4_child.id_spravochnik_type_operatsii
+            WHERE avans_otchetlar_jur4_child.user_id = $1 AND avans_otchetlar_jur4_child.isdeleted = false AND avans_otchetlar_jur4_child.avans_otchetlar_jur4_id = $2
         `, [req.user.region_id, result.id])
 
         let object = {...result}
@@ -398,9 +395,9 @@ const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
 })
 
 module.exports = {
-    kassa_prixod_and_rasxod,
-    getAllKassaPrixodRasxod,
-    updateKassaPrixodBank,
-    deleteKassaPrixodRasxod,
-    getElementByIdKassaPrixodRasxod
+    jur_4_create,
+    getAllJur_4,
+    jur_4_update,
+    delete_jur_4,
+    getElementByIdjur_4
 }
