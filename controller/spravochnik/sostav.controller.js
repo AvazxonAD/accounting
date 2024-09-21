@@ -34,7 +34,6 @@ const create = asyncHandler(async (req, res, next) => {
     });
 });
 
-
 // get all
 const getAll = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
@@ -82,11 +81,20 @@ const update = asyncHandler(async (req, res, next) => {
     name = name.trim();
     rayon = rayon.trim()
 
-    const test = await pool.query(`SELECT * FROM spravochnik_sostav WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
-    `, [name, rayon, req.user.region_id]);
-    if (test.rows.length > 0) {
-        return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+    let sostav = await pool.query(`SELECT * FROM spravochnik_sostav WHERE user_id = $1 AND id = $2`, [req.user.region_id, req.params.id])
+    sostav = sostav.rows[0]
+    if(!sostav){
+        return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404))
     }
+
+    if(sostav.name !== name || sostav.rayon !== rayon){
+        const test = await pool.query(`SELECT * FROM spravochnik_sostav WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
+        `, [name, rayon, req.user.region_id]);
+        if (test.rows.length > 0) {
+            return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+        }
+    }
+
 
     const result = await pool.query(`UPDATE  spravochnik_sostav SET name = $1, rayon = $2
         WHERE user_id = $3 AND id = $4

@@ -89,7 +89,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id 
 const getElementById = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1`, [req.params.id])
+    let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [req.params.id])
     value = value.rows[0]
     if(!value){
         return next(new ErrorResponse('Server error. Malumot topilmadi'))

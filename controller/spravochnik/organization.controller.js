@@ -12,7 +12,7 @@ const create = asyncHandler(async (req, res, next) => {
 
     let { name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx} = req.body;
     
-    checkValueString(name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn)
+    checkValueString(name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx)
     name = name.trim();
     bank_klient = bank_klient.trim()
 

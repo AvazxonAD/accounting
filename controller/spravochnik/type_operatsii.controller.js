@@ -82,10 +82,18 @@ const update = asyncHandler(async (req, res, next) => {
     name = name.trim();
     rayon = rayon.trim()
 
-    const test = await pool.query(`SELECT * FROM spravochnik_type_operatsii WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
-    `, [name, rayon, req.user.region_id]);
-    if (test.rows.length > 0) {
-        return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+    let type_operatsii = await pool.query(`SELECT * FROM spravochnik_type_operatsii WHERE user_id = $1 AND id = $2`, [req.user.region_id, req.params.id])
+    type_operatsii = type_operatsii.rows[0]
+    if(!type_operatsii){
+        return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404))
+    }
+
+    if(type_operatsii.name !== name || type_operatsii.rayon !== rayon){
+        const test = await pool.query(`SELECT * FROM spravochnik_type_operatsii WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
+        `, [name, rayon, req.user.region_id]);
+        if (test.rows.length > 0) {
+            return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+        }
     }
 
     const result = await pool.query(`UPDATE  spravochnik_type_operatsii SET name = $1, rayon = $2

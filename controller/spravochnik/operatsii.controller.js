@@ -5,10 +5,6 @@ const { checkValueString } = require('../../utils/check.functions');
 const xlsx  = require('xlsx')
 // create 
 const create = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
-
     let { name, schet, sub_schet, type_schet } = req.body;
     
     checkValueString(name,  schet, sub_schet, type_schet)
@@ -82,10 +78,6 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
-
     let { name, schet, sub_schet, type_schet } = req.body;
     
     checkValueString(name,  schet, sub_schet, type_schet)
@@ -95,10 +87,19 @@ const update = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`type_schet notog'ri jonatildi shablonlar: kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod`, 400))
     }
 
-    const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false
-    `, [name, type_schet]);
-    if (test.rows.length > 0) {
-        return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+    let operatsii = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
+        `, [req.params.id]);
+    operatsii = operatsii.rows[0]
+    if(!operatsii){
+        return next(new ErrorResponse("Server xatolik. Operatsi topilmadi", 404))
+    }
+
+    if(operatsii.name !== name || operatsii.type_schet !== type_schet){
+        const test = await pool.query(`SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false
+        `, [name, type_schet]);
+        if (test.rows.length > 0) {
+            return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+        }
     }
 
     const result = await pool.query(`UPDATE spravochnik_operatsii 

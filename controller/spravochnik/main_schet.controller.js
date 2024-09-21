@@ -28,7 +28,7 @@ const create = asyncHandler(async (req, res, next) => {
     }
 
     if(jur1_subschet.length > 7 || jur2_subschet.length > 7 || jur3_subschet.length > 7 || jur4_subschet.length > 7){
-        return next(new ErrorResponse('Sub schet raqamining xonalari soni 5 tadan oshmasligi kerak', 400))
+        return next(new ErrorResponse('Sub schet raqamining xonalari soni 7 tadan oshmasligi kerak', 400))
     }
 
     const result = await pool.query(`INSERT INTO main_schet(account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, user_id) 
@@ -86,8 +86,10 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
+
+    const testMain_schet = await pool.query(`SELECT * FROM main_schet WHERE user_id = $1 AND id = $2 AND isdeleted = false`)
+    if(!testMain_schet.rows[0]){
+        return next(new ErrorResponse("Server xatolik. Schet topilmadi", 404))
     }
 
     let { account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet } = req.body;
@@ -104,7 +106,7 @@ const update = asyncHandler(async (req, res, next) => {
     }
 
     if(jur1_subschet.length > 7 || jur2_subschet.length > 7 || jur3_subschet.length > 7 || jur4_subschet.length > 7){
-        return next(new ErrorResponse('Sub schet raqamining xonalari soni 5 tadan oshmasligi kerak', 400))
+        return next(new ErrorResponse('Sub schet raqamining xonalari soni 7 tadan oshmasligi kerak', 400))
     }
 
     const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [spravochnik_budjet_name_id])
@@ -128,9 +130,9 @@ const update = asyncHandler(async (req, res, next) => {
         jur3_subschet = $13, 
         jur4_subschet = $14, 
         jur4_schet = $15
-        WHERE user_id = $16 AND id = $17
+        WHERE id = $16
         RETURNING *
-    `, [account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, req.user.region_id, req.params.id]);
+    `, [account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, req.params.id]);
     if (!result.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot Yangilanmadi', 500));
     }

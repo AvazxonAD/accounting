@@ -6,12 +6,12 @@ const xlsx = require('xlsx')
 
 // create 
 const create = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
+    if (!req.user.region_id) {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
 
     let { name, rayon } = req.body;
-    
+
     checkValueString(name, rayon)
     name = name.trim();
     rayon = rayon.trim()
@@ -44,10 +44,10 @@ const getAll = asyncHandler(async (req, res, next) => {
     }
 
     const offset = (page - 1) * limit;
-    if(!req.user.region_id){
+    if (!req.user.region_id) {
         return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
     }
-    
+
     const result = await pool.query(`SELECT id, name, rayon FROM spravochnik_podotchet_litso  
         WHERE isdeleted = false AND user_id = $1 ORDER BY id
         OFFSET $2 
@@ -62,7 +62,7 @@ const getAll = asyncHandler(async (req, res, next) => {
         success: true,
         pageCount: pageCount,
         count: total,
-        currentPage: page, 
+        currentPage: page,
         nextPage: page >= pageCount ? null : page + 1,
         backPage: page === 1 ? null : page - 1,
         data: result.rows
@@ -71,20 +71,25 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
-
     let { name, rayon } = req.body;
-    
+
     checkValueString(name, rayon)
     name = name.trim();
     rayon = rayon.trim()
 
-    const test = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
-    `, [name, rayon, req.user.region_id]);
-    if (test.rows.length > 0) {
-        return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+    let podotchet_litso = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE user_id = $1 AND id = $2`, [req.user.region_id, req.params.id])
+    podotchet_litso = podotchet_litso.rows[0]
+    if(!podotchet_litso){
+        return next(new ErrorResponse("Server xatolik. Podotchet_litso topilmadi", 404))
+    }
+
+    if(podotchet_litso.name !== name || podotchet_litso.rayon !== rayon){
+        const test = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
+            `, [name, rayon, req.user.region_id]);
+        console.log(test.rows)
+        if (test.rows.length > 0) {
+            return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+        }
     }
 
     const result = await pool.query(`UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2
@@ -106,18 +111,18 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND isdeleted = false AND user_id = $2
     `, [req.params.id, req.user.region_id])
     value = value.rows[0]
-    if(!value){
+    if (!value) {
         return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
     }
 
     const deleteValue = await pool.query(`UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
 
-    if(!deleteValue.rows[0]){
+    if (!deleteValue.rows[0]) {
         return next(new ErrorResponse('Server xatolik. Malumot ochirilmadi', 500))
     }
 
     return res.status(200).json({
-        success: true, 
+        success: true,
         data: "Muvaffaqiyatli ochirildi"
     })
 })
@@ -127,14 +132,14 @@ const importToExcel = asyncHandler(async (req, res, next) => {
     if (!req.file) {
         return next(new ErrorResponse("Fayl yuklanmadi", 400));
     }
-    
+
     const filePath = req.file.path;
-    
+
     const workbook = xlsx.readFile(filePath);
-    
+
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
-    
+
     const data = xlsx.utils.sheet_to_json(sheet).map(row => {
         const newRow = {};
         for (const key in row) {
@@ -155,7 +160,7 @@ const importToExcel = asyncHandler(async (req, res, next) => {
 
     }
 
-    for(let rowData of data){
+    for (let rowData of data) {
         const result = await pool.query(`INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
         `, [rowData.name, rowData.rayon, req.user.region_id]);
         if (!result.rows[0]) {
@@ -173,7 +178,7 @@ const importToExcel = asyncHandler(async (req, res, next) => {
 const getElementById = asyncHandler(async (req, res, next) => {
     let value = await pool.query(`SELECT * FROM spravochnik_podotchet_litso  WHERE id = $1 AND user_id = $2`, [req.params.id, req.user.region_id])
     value = value.rows[0]
-    if(!value){
+    if (!value) {
         return next(new ErrorResponse('Server error. Malumot topilmadi'))
     }
 
@@ -186,8 +191,8 @@ const getElementById = asyncHandler(async (req, res, next) => {
 
 module.exports = {
     getElementById,
-    create, 
-    getAll, 
+    create,
+    getAll,
     deleteValue,
     update,
     importToExcel
