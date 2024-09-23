@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { checkValueString, checkValueNumber } = require('../../utils/check.functions');
+const { getByAllSmeta, createSmeta, getAllSmeta, getTotalSmeta, getByIdSmeta, updateSmeta, deleteSmeta } = require("../../service/smeta.db");
 
 // create 
 const create = asyncHandler(async (req, res, next) => {
@@ -13,15 +14,13 @@ const create = asyncHandler(async (req, res, next) => {
     smeta_name = smeta_name.trim();
     father_smeta_name = father_smeta_name.trim()
 
-    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false AND father_smeta_name = $3
-    `, [smeta_name, smeta_number, father_smeta_name]);
-    if (test.rows.length > 0) {
+    const test = await getByAllSmeta(smeta_name, smeta_number, father_smeta_name)
+    if (test) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name) VALUES($1, $2, $3) RETURNING *
-    `, [smeta_name, smeta_number, father_smeta_name]);
-    if (!result.rows[0]) {
+    const result = await createSmeta(smeta_name, smeta_number, father_smeta_name)
+    if (!result) {
         return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
     }
 
@@ -42,18 +41,11 @@ const getAll = asyncHandler(async (req, res, next) => {
     }
 
     const offset = (page - 1) * limit;
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
     
-    const result = await pool.query(`SELECT id, smeta_name, smeta_number, father_smeta_name FROM smeta  
-        WHERE isdeleted = false ORDER BY id
-        OFFSET $1 
-        LIMIT $2
-    `, [offset, limit])
+    const result = await getAllSmeta(offset, limit)
 
-    const totalQuery = await pool.query(`SELECT COUNT(id) AS total FROM smeta WHERE isdeleted = false`);
-    const total = parseInt(totalQuery.rows[0].total);
+    const totalQuery = await getTotalSmeta()
+    const total = parseInt(totalQuery.total);
     const pageCount = Math.ceil(total / limit);
 
     return res.status(200).json({
@@ -63,34 +55,47 @@ const getAll = asyncHandler(async (req, res, next) => {
         currentPage: page, 
         nextPage: page >= pageCount ? null : page + 1,
         backPage: page === 1 ? null : page - 1,
-        data: result.rows
+        data: result
+    })
+})
+
+// get element by id 
+const getElementById = asyncHandler(async (req, res, next) => {
+    const result = await getByIdSmeta(req.params.id)
+    if(!result){
+        return next(new ErrorResponse("Server xatolik. Smeta topilmadi", 404))
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: result
     })
 })
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-    if(!req.user.region_id){
-        return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
-    }
-
     let { smeta_name, smeta_number, father_smeta_name } = req.body;
-    
+    const id = req.params.id
+        
     checkValueString(smeta_name, father_smeta_name)
     checkValueNumber(smeta_number)
     smeta_name = smeta_name.trim();
     father_smeta_name = father_smeta_name.trim()
 
-    const test = await pool.query(`SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false AND father_smeta_name = $3
-    `, [smeta_name, smeta_number, father_smeta_name]);
-    if (test.rows.length > 0) {
-        return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+    const smeta = await getByIdSmeta(id)
+    if(!smeta){
+        return next(new ErrorResponse("Server xatolik. Smeta topilmadi", 404))
     }
 
-    const result = await pool.query(`UPDATE  smeta SET smeta_name = $1, smeta_number = $2, father_smeta_name = $3
-        WHERE  id = $4
-        RETURNING *
-    `, [smeta_name, smeta_number, father_smeta_name, req.params.id]);
-    if (!result.rows[0]) {
+    if(smeta.smeta_name !== smeta_name || smeta.smeta_number !== smeta_number || smeta.father_smeta_name !== father_smeta_name){
+        const test = await getByAllSmeta(smeta_name, smeta_number, father_smeta_name)
+        if (test) {
+            return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+        }
+    }
+
+    const result = await updateSmeta(smeta_name, smeta_number, father_smeta_name, id)
+    if (!result) {
         return next(new ErrorResponse('Server xatolik. Malumot Yangilanmadi', 500));
     }
 
@@ -102,16 +107,14 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM smeta WHERE id = $1 AND isdeleted = false
-    `, [req.params.id])
-    value = value.rows[0]
+    const id = req.params.id
+    const value = await getByIdSmeta(id)
     if(!value){
         return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
     }
 
-    const deleteValue = await pool.query(`UPDATE smeta SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
-
-    if(!deleteValue.rows[0]){
+    const deleteValue = await deleteSmeta(id)
+    if(!deleteValue){
         return next(new ErrorResponse('Server xatolik. Malumot ochirilmadi', 500))
     }
 
@@ -125,5 +128,6 @@ module.exports = {
     create, 
     getAll, 
     deleteValue,
-    update
+    update,
+    getElementById
 }

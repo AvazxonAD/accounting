@@ -4,11 +4,14 @@ const {
     checkValueNumber,
     checkValueBoolean,
     checkValueArray,
-    isValidDate
+    isValidDate,
+    checkNotNull
 } = require("../../utils/check.functions");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require('../../config/db')
 
+const { getByIdMainSchet } = require('../../service/main.schet.db')
+const { getByIdOrganization } = require('../../service/organization.db')
 
 // bank prixod 
 const bank_prixod = asyncHandler(async (req, res, next) => {
@@ -24,28 +27,29 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
         childs
     } = req.body;
 
+    const user_id = req.user.region_id
+
+    checkNotNull(id_spravochnik_organization)
     checkValueString(doc_date, doc_num, opisanie);
     checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
     checkValueBoolean(provodki_boolean, dop_provodki_boolean);
     checkValueArray(childs);
 
     const main_schet_id = req.query.main_schet_id
-    let main_schet = await pool.query(`SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [main_schet_id, req.user.region_id]);
-    main_schet = main_schet.rows[0];
+    const main_schet = await getByIdMainSchet(user_id, main_schet_id)
     if (!main_schet) {
         return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
     }
 
-    let organization = await pool.query(`SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`, [id_spravochnik_organization, req.user.region_id]);
-    organization = organization.rows[0];
+    const organization = await getByIdOrganization(user_id, id_spravochnik_organization)
     if (!organization) {
         return next(new ErrorResponse('Hamkor korxona topilmadi', 404));
     }
 
-    let contract = await pool.query(`SELECT * FROM shartnomalar_organization WHERE user_id = $1 AND spravochnik_organization_id = $2 AND id = $3`, [req.user.region_id, id_spravochnik_organization, id_shartnomalar_organization]);
-    contract = contract.rows[0];
-    if (!contract) {
-        return next(new ErrorResponse('Shartnoma topilmadi', 404));
+    if(id_shartnomalar_organization){
+        if (!contract) {
+            return next(new ErrorResponse('Shartnoma topilmadi', 404));
+        }
     }
 
     for (let child of childs) {

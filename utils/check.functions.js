@@ -1,44 +1,65 @@
 const checkValueString = (...args) => {
     args.forEach(arg => {
-        if (typeof arg !== "string" || arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri  formatda kiritilishi kerak. String');
+        if (arg === null || arg === undefined) {
+            return;
+        }
+        if (typeof arg !== "string") {
+            throw new Error('Ma`lumotlar to`g`ri formatda kiritilishi kerak. String');
+        }
+    });
+};
+
+const checkNotNull = (...args) => {
+    args.forEach(arg => {
+        if (arg === null || arg === undefined) {
+            throw new Error('Not null');
         }
     });
 };
 
 const checkValueNumber = (...args) => {
     args.forEach(arg => {
-        if (typeof arg !== 'number' || arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak. Number');
+        if (arg === null || arg === undefined) {
+            return;
+        }
+        if (typeof arg !== 'number') {
+            throw new Error(`Ma'lumotlar to'g'ri formatda kiritilishi kerak. Number: ${arg}`);
         }
 
-        arg = arg.toString();
+        const argStr = arg.toString();
 
-        if (/^\d+(\.\d+)?$/.test(arg)) {
-            return true;
+        if (!/^\d+(\.\d+)?$/.test(argStr)) {
+            throw new Error('Ma`lumotlar to`g`ri formatda kiritilishi kerak. Number');
         }
-
-        throw new Error('Malumotlar to`g`ri formatda kiritilishi kerak. Number');
     });
 };
 
 const checkValueBoolean = (...args) => {
     args.forEach(arg => {
-        if (typeof arg !== "boolean" || arg === null || arg === undefined) {
-            throw new Error('Malumotlar to`g`ri formatda kiritlishi  kerak. Boolean');
+        if (arg === null || arg === undefined) {
+            return;
+        }
+        if (typeof arg !== "boolean") {
+            throw new Error('Ma`lumotlar to`g`ri formatda kiritilishi kerak. Boolean');
         }
     });
 };
 
 const checkValueArray = (...args) => {
     args.forEach(arg => {
+        if (arg === null || arg === undefined) {
+            return; 
+        }
         if (!Array.isArray(arg)) {
-            throw new Error('Malumotlar to\'g\'ri formatda kiritilishi kerak. Array bo\'lishi lozim.');
+            throw new Error('Ma`lumotlar to`g`ri formatda kiritilishi kerak. Array bo`lishi lozim.');
         }
     });
 };
 
 const isValidDate = (dateString) => {
+    if (dateString === null || dateString === undefined) {
+        return; 
+    }
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
         throw new Error("Ma'lumotlar to'g'ri formatda kiritilishi kerak. Sana emas.");
@@ -50,6 +71,6 @@ module.exports = {
     checkValueString,
     checkValueNumber,
     checkValueBoolean,
-    isValidDate
-}
-
+    isValidDate, 
+    checkNotNull
+};
