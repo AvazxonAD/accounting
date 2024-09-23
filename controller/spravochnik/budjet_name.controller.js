@@ -1,7 +1,15 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {checkValueString } = require('../../utils/check.functions');
+const {checkValueString, checkValueNumber } = require('../../utils/check.functions');
+const {
+    getByNameBudjet,
+    createBudjet,
+    getAllBudjet,
+    getByIdBudjet,
+    updateBudjet,
+    deleteBudjet
+} = require('../../service/budjet.name.db')
 
 // create
 const create = asyncHandler(async (req, res, next) => {
@@ -10,15 +18,14 @@ const create = asyncHandler(async (req, res, next) => {
     checkValueString(name)
     name = name.trim();
 
-    const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE name = $1 AND isdeleted = false`, [name]);
-    if (test.rows.length > 0) {
-        return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
+    const test = await getByNameBudjet(name)
+    if (test) {
+        return next(new ErrorResponse('Ushbu budjet nomi avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`INSERT INTO spravochnik_budjet_name(name) 
-        VALUES($1) RETURNING *`, [name]);
-    if (!result.rows[0]) {
-        return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
+    const result = createBudjet(name)
+    if (!result) {
+        return next(new ErrorResponse('Server xatolik. Budjet kiritilmadi', 500));
     }
 
     return res.status(201).json({
@@ -29,19 +36,21 @@ const create = asyncHandler(async (req, res, next) => {
 
 // get all 
 const getAll = asyncHandler(async (req, res, next) => {
-    const result = await pool.query(`SELECT id, name FROM spravochnik_budjet_name WHERE isdeleted = false ORDER BY id`)
+    const result = await getAllBudjet()
     return res.status(200).json({
         success: true,
-        data: result.rows
+        data: result
     })
 })
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1`, [req.params.id])
-    value = value.rows[0]
-    if(!value){
-        return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
+    const id = Number(req.params.id)
+    checkValueNumber(id)
+
+    let oldBudjet = await getByIdBudjet(req.params.id)
+    if(!oldBudjet){
+        return next(new ErrorResponse('Server xatolik. Budjet topilmadi', 404))
     }
 
     let { name } = req.body 
@@ -49,16 +58,16 @@ const update = asyncHandler(async (req, res, next) => {
     checkValueString(name)
     name = name.trim()
 
-    if(value.name !== name){
-        const test = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE name = $1 AND isdeleted = false`, [name])
-        if(test.rows[0]){
-            return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409))
+    if(oldBudjet.name !== name){
+        const test_name = await getByNameBudjet(name)
+        if(test_name){
+            return next(new ErrorResponse('Ushbu budjet nomi avval kiritilgan', 409))
         }
     }
 
-    const result = await pool.query(`UPDATE spravochnik_budjet_name SET name = $1 WHERE id = $2 RETURNING *`, [name, req.params.id])
-    if(!result.rows[0]){
-        return next(new ErrorResponse('Server xatolik. Malumot yangilanmadi', 500))
+    const result = await updateBudjet(name, id)
+    if(!result){
+        return next(new ErrorResponse('Server xatolik. Budjet yangilanmadi', 500))
     }
 
     return res.status(200).json({
@@ -69,16 +78,18 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value 
 const deleteValue = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [req.params.id])
-    value = value.rows[0]
-    if(!value){
-        return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
+    const id = Number(req.params.id)
+    checkValueNumber(id)
+
+    const oldBudjet = await getByIdBudjet(id)
+    if(!oldBudjet){
+        return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404))
     }
 
-    const deleteValue = await pool.query(`UPDATE spravochnik_budjet_name SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
+    const deleteValue = await deleteBudjet(id)
 
-    if(!deleteValue.rows[0]){
-        return next(new ErrorResponse('Server xatolik. Malumot ochirilmadi', 500))
+    if(!deleteValue){
+        return next(new ErrorResponse('Server xatolik. Budjet ochirilmadi', 500))
     }
 
     return res.status(200).json({
@@ -89,15 +100,17 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id 
 const getElementById = asyncHandler(async (req, res, next) => {
-    let value = await pool.query(`SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`, [req.params.id])
-    value = value.rows[0]
-    if(!value){
+    const id = Number(req.params.id)
+    checkValueNumber(id)
+
+    let result = await getByIdBudjet(id)
+    if(!result){
         return next(new ErrorResponse('Server error. spravochnik_budjet_name topilmadi'))
     }
 
     return res.status(200).json({
         success: true,
-        data: value
+        data: result
     })
 })
 
