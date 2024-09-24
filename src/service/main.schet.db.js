@@ -2,7 +2,31 @@ const pool = require('../config/db')
 const asyncFunctionHandler = require('../middleware/asyncFunctionHandler')
 
 const getByIdMainSchet = asyncFunctionHandler(async (user_id, id) => {
-    const result = await pool.query(`SELECT * FROM main_schet WHERE user_id = $1 AND id = $2 AND isdeleted = false`, [user_id, id])
+    const result = await pool.query(`SELECT 
+                main_schet.id, 
+                main_schet.account_number, 
+                main_schet.spravochnik_budjet_name_id, 
+                main_schet.tashkilot_nomi, 
+                main_schet.tashkilot_bank, 
+                main_schet.tashkilot_mfo, 
+                main_schet.tashkilot_inn, 
+                main_schet.account_name, 
+                main_schet.jur1_schet, 
+                main_schet.jur1_subschet,
+                main_schet.jur2_schet, 
+                main_schet.jur2_subschet,
+                main_schet.jur3_schet,
+                main_schet.jur3_subschet, 
+                main_schet.jur4_schet,
+                main_schet.jur4_subschet, 
+                spravochnik_budjet_name.name AS budjet_name
+            FROM main_schet
+            JOIN spravochnik_budjet_name 
+                ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
+            WHERE main_schet.isdeleted = false 
+                AND main_schet.user_id = $1 
+                AND main_schet.id = $2
+    `, [user_id, id])
     return result.rows[0]
 });
 

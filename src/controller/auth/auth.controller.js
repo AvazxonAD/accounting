@@ -3,7 +3,9 @@ const ErrorResponse = require('../../utils/errorResponse');
 const pool = require('../../config/db');
 const generateToken = require('../../utils/auth/generate.token');
 const bcrypt = require('bcrypt')
-const {checkValueString } = require('../../utils/check.functions')
+const {checkValueString } = require('../../utils/check.functions');
+const { getByLoginAuth } = require('../../service/auth.db');
+const { getByIdMainSchet } = require('../../service/main.schet.db');
 
 
 // login 
@@ -12,13 +14,7 @@ const login = asyncHandler(async (req, res, next) => {
 
     checkValueString(login, password)
 
-    let user = await pool.query(`
-        SELECT users.id, users.fio, users.password, users.login, users.region_id, users.role_id, role.name AS role_name 
-        FROM users 
-        INNER JOIN role ON role.id = users.role_id 
-        WHERE login = $1 AND (users.isdeleted IS NULL OR users.isdeleted = false)
-    `, [login.trim()]);
-    user = user.rows[0]
+    const user = await getByLoginAuth(login)
 
     if (!user) {
         return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
@@ -31,34 +27,7 @@ const login = asyncHandler(async (req, res, next) => {
     let main_schet = null
 
     if(main_schet_id){
-        main_schet = await pool.query(`
-            SELECT 
-                main_schet.id, 
-                main_schet.account_number, 
-                main_schet.spravochnik_budjet_name_id, 
-                main_schet.tashkilot_nomi, 
-                main_schet.tashkilot_bank, 
-                main_schet.tashkilot_mfo, 
-                main_schet.tashkilot_inn, 
-                main_schet.account_name, 
-                main_schet.jur1_schet, 
-                main_schet.jur1_subschet,
-                main_schet.jur2_schet, 
-                main_schet.jur2_subschet,
-                main_schet.jur3_schet,
-                main_schet.jur3_subschet, 
-                main_schet.jur4_schet,
-                main_schet.jur4_subschet, 
-                spravochnik_budjet_name.name AS budjet_name
-            FROM main_schet
-            JOIN spravochnik_budjet_name 
-                ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
-            WHERE main_schet.isdeleted = false 
-                AND main_schet.id = $1
-                AND main_schet.user_id = $2 
-            ORDER BY main_schet.id
-        `, [main_schet_id, user.region_id]);
-        main_schet = main_schet.rows[0]
+        main_schet = await getByIdMainSchet(user.region_id, main_schet_id)
         if(!main_schet){
             return next(new ErrorResponse('Shot raqami raqami notog`ri kir111itildi', 400))
         }
