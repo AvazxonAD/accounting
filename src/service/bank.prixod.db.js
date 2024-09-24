@@ -1,6 +1,4 @@
-const pool = require('../config/db')
-const asyncFunctionHandler = require('../middleware/asyncFunctionHandler')
+const pool = require("../config/db");
+const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
 
-const getAllBankPrixod = asyncFunctionHandler(async () => {
-
-});
+const getAllBankPrixod = asyncFunctionHandler(async () => {});

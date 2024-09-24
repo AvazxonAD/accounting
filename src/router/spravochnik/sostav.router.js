@@ -1,23 +1,23 @@
-const {Router} = require('express') 
-const router = Router()
+const { Router } = require("express");
+const router = Router();
 
-const { protect } = require('../../middleware/auth')
+const { protect } = require("../../middleware/auth");
 const {
-    create,
-    getAll, 
-    update,
-    deleteValue,
-    importToExcel,
-    getElementById
-} = require('../../controller/spravochnik/sostav.controller')
+  create,
+  getAll,
+  update,
+  deleteValue,
+  importToExcel,
+  getElementById,
+} = require("../../controller/spravochnik/sostav.controller");
 
-const upload = require('../../utils/protect.file')
+const upload = require("../../utils/protect.file");
 
-router.post('/create', protect, create)
-router.get('/get/all', protect, getAll)
-router.put('/update/:id', protect, update)
-router.delete('/delete/:id', protect, deleteValue)
-router.post('/import/excel', protect, upload.single('file'), importToExcel)
-router.get('/get/element/by/:id', protect, getElementById)
+router.post("/create", protect, create);
+router.get("/get/all", protect, getAll);
+router.put("/update/:id", protect, update);
+router.delete("/delete/:id", protect, deleteValue);
+router.post("/import/excel", protect, upload.single("file"), importToExcel);
+router.get("/get/element/by/:id", protect, getElementById);
 
-module.exports = router
+module.exports = router;

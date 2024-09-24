@@ -1,8 +1,10 @@
-const pool = require('../config/db')
-const asyncFunctionHandler = require('../middleware/asyncFunctionHandler')
+const pool = require("../config/db");
+const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const { handleServiceError } = require("../middleware/service.handle");
 
 const getByIdMainSchet = asyncFunctionHandler(async (user_id, id) => {
-    const result = await pool.query(`SELECT 
+  const result = await pool.query(
+    `SELECT 
                 main_schet.id, 
                 main_schet.account_number, 
                 main_schet.spravochnik_budjet_name_id, 
@@ -26,20 +28,42 @@ const getByIdMainSchet = asyncFunctionHandler(async (user_id, id) => {
             WHERE main_schet.isdeleted = false 
                 AND main_schet.user_id = $1 
                 AND main_schet.id = $2
-    `, [user_id, id])
-    return result.rows[0]
+    `,
+    [user_id, id],
+  );
+  return result.rows[0];
 });
 
-
-const createMain_schet = asyncFunctionHandler(async (account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, user_id) => {
-    const result = await pool.query(`INSERT INTO main_schet(account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, user_id) 
+const createMain_schet = handleServiceError(async (object) => {
+  const result = await pool.query(
+    `INSERT INTO main_schet(account, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, user_id) 
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
-    `, [account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, user_id]);
-    return result.rows[0]
-})
+    `,
+    [
+      object.account_number,
+      object.spravochnik_budjet_name_id,
+      object.tashkilot_nomi,
+      object.tashkilot_bank,
+      object.tashkilot_mfo,
+      object.tashkilot_inn,
+      object.account_name,
+      object.jur1_schet,
+      object.jur1_subschet,
+      object.jur2_schet,
+      object.jur2_subschet,
+      object.jur3_schet,
+      object.jur3_subschet,
+      object.jur4_subschet,
+      object.jur4_schet,
+      object.user_id,
+    ],
+  );
+  return result.rows[0];
+});
 
 const getAllMain_schet = asyncFunctionHandler(async (user_id) => {
-    const result = await pool.query(`
+  const result = await pool.query(
+    `
         SELECT 
             main_schet.id, 
             main_schet.account_number, 
@@ -65,12 +89,33 @@ const getAllMain_schet = asyncFunctionHandler(async (user_id) => {
         WHERE main_schet.isdeleted = false 
             AND main_schet.user_id = $1 
         ORDER BY main_schet.id
-    `, [user_id]);
-    return result.rows
-})
+    `,
+    [user_id],
+  );
+  return result.rows;
+});
 
-const updateMain_schet = asyncFunctionHandler(async (account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, id) => {
-    const result = await pool.query(`UPDATE  main_schet SET 
+const updateMain_schet = asyncFunctionHandler(
+  async (
+    account_number,
+    spravochnik_budjet_name_id,
+    tashkilot_nomi,
+    tashkilot_bank,
+    tashkilot_mfo,
+    tashkilot_inn,
+    account_name,
+    jur1_schet,
+    jur1_subschet,
+    jur2_schet,
+    jur2_subschet,
+    jur3_schet,
+    jur3_subschet,
+    jur4_subschet,
+    jur4_schet,
+    id,
+  ) => {
+    const result = await pool.query(
+      `UPDATE  main_schet SET 
         account_number = $1, 
         spravochnik_budjet_name_id = $2, 
         tashkilot_nomi = $3, 
@@ -88,25 +133,51 @@ const updateMain_schet = asyncFunctionHandler(async (account_number, spravochnik
         jur4_schet = $15
         WHERE id = $16
         RETURNING *
-    `, [account_number, spravochnik_budjet_name_id, tashkilot_nomi, tashkilot_bank, tashkilot_mfo, tashkilot_inn, account_name, jur1_schet, jur1_subschet, jur2_schet, jur2_subschet, jur3_schet, jur3_subschet, jur4_subschet, jur4_schet, id]);
-    return result.rows[0]
-})
+    `,
+      [
+        account_number,
+        spravochnik_budjet_name_id,
+        tashkilot_nomi,
+        tashkilot_bank,
+        tashkilot_mfo,
+        tashkilot_inn,
+        account_name,
+        jur1_schet,
+        jur1_subschet,
+        jur2_schet,
+        jur2_subschet,
+        jur3_schet,
+        jur3_subschet,
+        jur4_subschet,
+        jur4_schet,
+        id,
+      ],
+    );
+    return result.rows[0];
+  },
+);
 
 const deleteMain_schet = asyncFunctionHandler(async (id) => {
-    const deleteValue = await pool.query(`UPDATE main_schet SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, id])
-    return deleteValue.rows[0]
-})
+  const deleteValue = await pool.query(
+    `UPDATE main_schet SET isdeleted = $1 WHERE id = $2 RETURNING *`,
+    [true, id],
+  );
+  return deleteValue.rows[0];
+});
 
 const getByBudjet_idMain_schet = asyncFunctionHandler(async (id) => {
-    const result = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [id])
-    return result.rows
-})
+  const result = await pool.query(
+    `SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`,
+    [id],
+  );
+  return result.rows;
+});
 
 module.exports = {
-    getByIdMainSchet,
-    createMain_schet,
-    getAllMain_schet,
-    updateMain_schet,
-    deleteMain_schet,
-    getByBudjet_idMain_schet
-}
+  getByIdMainSchet,
+  createMain_schet,
+  getAllMain_schet,
+  updateMain_schet,
+  deleteMain_schet,
+  getByBudjet_idMain_schet,
+};

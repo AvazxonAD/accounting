@@ -1,20 +1,39 @@
-const pool = require('../config/db')
-const asyncFunctionHandler = require('../middleware/asyncFunctionHandler')
+const pool = require("../config/db");
+const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
 
-
-
-const createShartnoma = asyncFunctionHandler(async (user_id, doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id) => {
+const createShartnoma = asyncFunctionHandler(
+  async (
+    user_id,
+    doc_num,
+    doc_date,
+    summa,
+    opisanie,
+    smeta_id,
+    smeta_2,
+    spravochnik_organization_id,
+  ) => {
     const result = await pool.query(
-        `INSERT INTO shartnomalar_organization(doc_num, doc_date, summa, opisanie, smeta_id, user_id, smeta_2, spravochnik_organization_id)
+      `INSERT INTO shartnomalar_organization(doc_num, doc_date, summa, opisanie, smeta_id, user_id, smeta_2, spravochnik_organization_id)
          VALUES($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
-        [doc_num, doc_date, summa, opisanie, smeta_id, user_id, smeta_2, spravochnik_organization_id]
+      [
+        doc_num,
+        doc_date,
+        summa,
+        opisanie,
+        smeta_id,
+        user_id,
+        smeta_2,
+        spravochnik_organization_id,
+      ],
     );
-    return result.rows[0]
-})
+    return result.rows[0];
+  },
+);
 
 const getAllShartnoma = asyncFunctionHandler(async (user_id, offset, limit) => {
-    const result = await pool.query(`
+  const result = await pool.query(
+    `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -46,17 +65,23 @@ const getAllShartnoma = asyncFunctionHandler(async (user_id, offset, limit) => {
             shartnomalar_organization.id
         OFFSET $1 
         LIMIT $2
-    `, [offset, limit, user_id]);
-    return result.rows
-})
+    `,
+    [offset, limit, user_id],
+  );
+  return result.rows;
+});
 
 const getTotalShartnoma = asyncFunctionHandler(async (user_id) => {
-    const result = await pool.query(`SELECT COUNT(id) AS total FROM shartnomalar_organization WHERE isdeleted = false AND  user_id = $1`, [user_id]);
-    return result.rows[0]
-})
+  const result = await pool.query(
+    `SELECT COUNT(id) AS total FROM shartnomalar_organization WHERE isdeleted = false AND  user_id = $1`,
+    [user_id],
+  );
+  return result.rows[0];
+});
 
 const getByIdShartnoma = asyncFunctionHandler(async (user_id, id) => {
-    const result = await pool.query(`
+  const result = await pool.query(
+    `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -87,14 +112,25 @@ const getByIdShartnoma = asyncFunctionHandler(async (user_id, id) => {
             AND shartnomalar_organization.id = $2
         ORDER BY 
             shartnomalar_organization.id
-    `, [user_id, id]);
-    return result.rows[0]
-})
+    `,
+    [user_id, id],
+  );
+  return result.rows[0];
+});
 
-
-const updateShartnoma = asyncFunctionHandler(async (id, doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id) => {
+const updateShartnoma = asyncFunctionHandler(
+  async (
+    id,
+    doc_num,
+    doc_date,
+    summa,
+    opisanie,
+    smeta_id,
+    smeta_2,
+    spravochnik_organization_id,
+  ) => {
     let result = await pool.query(
-        `UPDATE shartnomalar_organization SET 
+      `UPDATE shartnomalar_organization SET 
             doc_num = $1, 
             doc_date = $2, 
             summa = $3, 
@@ -104,21 +140,36 @@ const updateShartnoma = asyncFunctionHandler(async (id, doc_num, doc_date, summa
             spravochnik_organization_id = $7
         WHERE id = $8
         RETURNING *
-    `,[doc_num, doc_date, summa, opisanie, smeta_id, smeta_2, spravochnik_organization_id, id]);
-    return result.rows[0]
-})
+    `,
+      [
+        doc_num,
+        doc_date,
+        summa,
+        opisanie,
+        smeta_id,
+        smeta_2,
+        spravochnik_organization_id,
+        id,
+      ],
+    );
+    return result.rows[0];
+  },
+);
 
 const deleteShartnoma = asyncFunctionHandler(async () => {
-    const grafik = await pool.query(`UPDATE shartnoma_grafik SET isdeleted = $1 WHERE id_shartnomalar_organization = $2 AND isdeleted = false RETURNING * 
-    `, [true, id_shartnomalar_organization])
-    
-    const result = await pool.query(`UPDATE SET `)
-})
+  const grafik = await pool.query(
+    `UPDATE shartnoma_grafik SET isdeleted = $1 WHERE id_shartnomalar_organization = $2 AND isdeleted = false RETURNING * 
+    `,
+    [true, id_shartnomalar_organization],
+  );
+
+  const result = await pool.query(`UPDATE SET `);
+});
 
 module.exports = {
-    createShartnoma,
-    getAllShartnoma,
-    getTotalShartnoma,
-    getByIdShartnoma,
-    updateShartnoma
-}
+  createShartnoma,
+  getAllShartnoma,
+  getTotalShartnoma,
+  getByIdShartnoma,
+  updateShartnoma,
+};

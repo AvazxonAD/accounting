@@ -1,29 +1,39 @@
-const pool = require('../config/db')
-const asyncFunctionHandler = require('../middleware/asyncFunctionHandler')
+const pool = require("../config/db");
+const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
 
-const create_user = asyncFunctionHandler(async (login, password, fio, role_id, region_id) => {
-    const result = await pool.query(`INSERT INTO users(login, password, fio, role_id, region_id) 
+const create_user = asyncFunctionHandler(
+  async (login, password, fio, role_id, region_id) => {
+    const result = await pool.query(
+      `INSERT INTO users(login, password, fio, role_id, region_id) 
         VALUES($1, $2, $3, $4, $5) RETURNING *
-    `, [login, password, fio, role_id, region_id]);
-    return result.rows[0]
-})
+    `,
+      [login, password, fio, role_id, region_id],
+    );
+    return result.rows[0];
+  },
+);
 
 const getByIdUser = asyncFunctionHandler(async (id) => {
-    let result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id])
-    return result.rows[0]
-})
+  let result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
+  return result.rows[0];
+});
 
-const update_user = asyncFunctionHandler(async (login, password, fio, role_id, region_id, id) => {
-    const result = await pool.query(`UPDATE users SET login = $1, password = $2, fio = $3, role_id =$4, region_id = $5
+const update_user = asyncFunctionHandler(
+  async (login, password, fio, role_id, region_id, id) => {
+    const result = await pool.query(
+      `UPDATE users SET login = $1, password = $2, fio = $3, role_id =$4, region_id = $5
         WHERE id = $6
         RETURNING *
-    `, [login, password, fio, role_id, region_id, id]);
-    return result.rows[0]
-})
-
+    `,
+      [login, password, fio, role_id, region_id, id],
+    );
+    return result.rows[0];
+  },
+);
 
 const getAllRegionUsers = asyncFunctionHandler(async (region_id) => {
-    const result = await pool.query(`SELECT 
+  const result = await pool.query(
+    `SELECT 
             users.id, 
             users.role_id, 
             users.region_id, 
@@ -35,15 +45,15 @@ const getAllRegionUsers = asyncFunctionHandler(async (region_id) => {
             JOIN role ON role.id = users.role_id
             JOIN regions ON regions.id = users.region_id
             WHERE region_id = $1 AND users.isdeleted = false
-    `, [region_id])
-    return result.rows
-})
-
-
+    `,
+    [region_id],
+  );
+  return result.rows;
+});
 
 module.exports = {
-    create_user,
-    getAllRegionUsers,
-    getByIdUser,
-    update_user
-}
+  create_user,
+  getAllRegionUsers,
+  getByIdUser,
+  update_user,
+};
