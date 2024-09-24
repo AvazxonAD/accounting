@@ -4,8 +4,8 @@ const pool = require('../../config/db');
 const generateToken = require('../../utils/auth/generate.token');
 const bcrypt = require('bcrypt')
 const {checkValueString } = require('../../utils/check.functions');
-const { getByLoginAuth } = require('../../service/auth.db');
-const { getByIdMainSchet } = require('../../service/main.schet.db');
+const { getByLoginAuth, getByIdAuth, updateAuth, getProfileAuth } = require('../../service/auth.db');
+const { getByIdMainSchet, getByBudjet_idMain_schet } = require('../../service/main.schet.db');
 
 
 // login 
@@ -47,11 +47,10 @@ const login = asyncHandler(async (req, res, next) => {
 // update
 const update = asyncHandler(async (req, res, next) => {
     let { fio, login, oldPassword, newPassword } = req.body;
+    const id = req.user.id
 
-    let user = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.user.id]);
-    user = user.rows[0];
+    const user = await getByIdAuth(id)
 
-    // Faqat mavjud bo'lgan maydonlarni tekshirish
     if (oldPassword || newPassword) {
         checkValueString(oldPassword, newPassword);
         
@@ -64,7 +63,6 @@ const update = asyncHandler(async (req, res, next) => {
         }
         const newHashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Yangilash faqat yangi parolni qo‘shadi
         user.password = newHashedPassword;
     }
 
@@ -76,17 +74,18 @@ const update = asyncHandler(async (req, res, next) => {
     if (login) {
         login = login.trim();
         if (login !== user.login) {
-            const test = await pool.query(`SELECT * FROM users WHERE login = $1 AND isdeleted = false`, [login]);
-            if (test.rows[0]) {
+            const test = await getByLoginAuth(login)
+            if (test) {
                 return next(new ErrorResponse('Login avval ishlatilgan', 400));
             }
             user.login = login;
         }
     }
 
-    // Yangilangan ma'lumotlarni saqlash
-    await pool.query(`UPDATE users SET login = $1, password = $2, fio = $3 WHERE id = $4 RETURNING *`, 
-        [user.login, user.password, user.fio, req.user.id]);
+    const result = await updateAuth(user.login, user.password, user.fio, id)
+    if(!result){
+        return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500))
+    }
 
     return res.status(200).json({
         success: true,
@@ -96,12 +95,7 @@ const update = asyncHandler(async (req, res, next) => {
 
 // get profile 
 const getProfile = asyncHandler(async (req, res, next) => {
-    let user = await pool.query(`SELECT users.id, role.id AS role_id, role.name AS role_name, users.fio, users.login
-        FROM users 
-        LEFT JOIN role ON users.role_id = role.id
-        WHERE users.id = $1
-    `, [req.user.id])
-    user = user.rows[0]
+    const user = await getProfileAuth(req.user.id)
 
     if(!user){
         return next(new ErrorResponse('Server xatolik. Foydalanuvchi topilmadi', 404))
@@ -116,11 +110,11 @@ const getProfile = asyncHandler(async (req, res, next) => {
 
 // select budget 
 const select_budget = asyncHandler(async (req, res, next) => {
-    const main_schets = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [req.params.id])
+    const result = await getByBudjet_idMain_schet(req.params.id)
 
     return res.status(200).json({
         success: true,
-        data: main_schets.rows
+        data: result
     })
 })
 

@@ -7,13 +7,15 @@ const {
     createRegion,
     getAllReegions,
     updateRegion,
-    deleteRegion
+    deleteRegion,
+    getElementById
 } = require('../../controller/auth/region.ccontroller')
 
 
-router.post('/create', protect, check_super_admin, createRegion)
-router.get('/get/all', protect, check_super_admin, getAllReegions)
-router.put('/update/:id', protect, check_super_admin, updateRegion)
-router.delete('/delete/:id', protect, check_super_admin, deleteRegion)
+router.post('/create', protect, createRegion)
+router.get('/get/all', protect, getAllReegions)
+router.put('/update/:id', protect, updateRegion)
+router.delete('/delete/:id', protect, deleteRegion)
+router.get('/get/element/by/:id', protect, getElementById)
 
 module.exports = router

@@ -97,10 +97,16 @@ const deleteMain_schet = asyncFunctionHandler(async (id) => {
     return deleteValue.rows[0]
 })
 
+const getByBudjet_idMain_schet = asyncFunctionHandler(async (id) => {
+    const result = await pool.query(`SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`, [id])
+    return result.rows
+})
+
 module.exports = {
     getByIdMainSchet,
     createMain_schet,
     getAllMain_schet,
     updateMain_schet,
-    deleteMain_schet
+    deleteMain_schet,
+    getByBudjet_idMain_schet
 }

@@ -1,7 +1,8 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {checkValueString } = require('../../utils/check.functions');
+const { checkValueString } = require('../../utils/check.functions');
+const { getByNameRegion, create_region, get_all_region, getByIdRegion, update_region, delete_region } = require("../../service/region.db");
 
 // create region 
 const createRegion = asyncHandler(async (req, res, next) => {
@@ -10,13 +11,13 @@ const createRegion = asyncHandler(async (req, res, next) => {
     checkValueString(name)
     name = name.trim();
 
-    const test = await pool.query(`SELECT * FROM regions WHERE name = $1 AND isdeleted = false`, [name]);
-    if (test.rows.length > 0) {
+    const test = await getByNameRegion(name)
+    if (test) {
         return next(new ErrorResponse('Ushbu viloyat avval kiritilgan', 409));
     }
 
-    const region = await pool.query(`INSERT INTO regions(name) VALUES($1) RETURNING *`, [name]);
-    if (!region.rows[0]) {
+    const result = await create_region(name)
+    if (!result) {
         return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
     }
 
@@ -28,17 +29,17 @@ const createRegion = asyncHandler(async (req, res, next) => {
 
 // get all regions 
 const getAllReegions = asyncHandler(async (req, res, next) => {
-    const regions = await pool.query(`SELECT id, name FROM regions WHERE isdeleted = false ORDER BY id`)
+    const result = await get_all_region()
     return res.status(200).json({
         success: true,
-        data: regions.rows
+        data: result
     })
 })
 
 // update region 
 const updateRegion = asyncHandler(async (req, res, next) => {
-    let region = await pool.query(`SELECT * FROM regions WHERE id = $1`, [req.params.id])
-    region = region.rows[0]
+    const id = req.params.id
+    const region = getByIdRegion(id)
     if(!region){
         return next(new ErrorResponse('Server xatolik. Viloyat topilmadi', 404))
     }
@@ -51,14 +52,14 @@ const updateRegion = asyncHandler(async (req, res, next) => {
     
 
     if(region.name !== name){
-        const test = await pool.query(`SELECT * FROM regions WHERE name = $1 AND isdeleted = false`, [name])
-        if(test.rows[0]){
+        const test = await getByNameRegion(name)
+        if(test){
             return next(new ErrorResponse('Ushbu viloyat avval kiritilgan', 409))
         }
     }
 
-    const updateRegion = await pool.query(`UPDATE regions SET name = $1 WHERE id = $2 RETURNING *`, [name, req.params.id])
-    if(!updateRegion.rows[0]){
+    const result = await update_region(id, name)
+    if(!result){
         return next(new ErrorResponse('Server xatolik. Malumot yangilamadi', 500))
     }
 
@@ -70,15 +71,15 @@ const updateRegion = asyncHandler(async (req, res, next) => {
 
 // delete region 
 const deleteRegion = asyncHandler(async (req, res, next) => {
-    let region = await pool.query(`SELECT * FROM regions WHERE id = $1 AND isdeleted = false`, [req.params.id])
-    region = region.rows[0]
+    const id = req.params.id
+    const region = await getByIdRegion(id)
     if(!region){
         return next(new ErrorResponse('Server xatolik. Viloyat topilmadi', 404))
     }
 
-    const deleteRegion = await pool.query(`UPDATE regions SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
+    const deleteRegion = await delete_region(id)
 
-    if(!deleteRegion.rows[0]){
+    if(!deleteRegion){
         return next(new ErrorResponse('Server xatolik. Viloyat ochirilmadi', 500))
     }
 
@@ -88,9 +89,21 @@ const deleteRegion = asyncHandler(async (req, res, next) => {
     })
 })
 
+const getElementById = asyncHandler(async (req, res, next) => {
+    const region = await getByIdRegion(req.params.id)
+    if(!region){
+        return next(new ErrorResponse('Server xatolik. Region topilmadi', 404))
+    }
+    return res.status(200).json({
+        success: true, 
+        data: region
+    })
+})
+
 module.exports = {
     createRegion,
     getAllReegions,
     updateRegion,
-    deleteRegion
+    deleteRegion,
+    getElementById
 }

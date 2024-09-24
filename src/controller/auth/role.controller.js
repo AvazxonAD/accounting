@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const {checkValueString } = require('../../utils/check.functions');
+const { getByNameRole, create_role, get_all_role, getByIdRole, update_role, delete_role } = require("../../service/role.db");
 
 // create role 
 const createRole = asyncHandler(async (req, res, next) => {
@@ -14,14 +15,13 @@ const createRole = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("Rol nomi notog`ri jonatildi", 400))
     }
 
-    const test = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = false`, [name]);
-    if (test.rows.length > 0) {
+    const test = await getByNameRole(name)
+    if (test) {
         return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409));
     }
 
-    const result = await pool.query(`INSERT INTO role(name) 
-        VALUES($1) RETURNING *`, [name]);
-    if (!result.rows[0]) {
+    const result = await create_role(name)
+    if (!result) {
         return next(new ErrorResponse('Server xatolik. Malumot kiritilmadi', 500));
     }
 
@@ -33,17 +33,17 @@ const createRole = asyncHandler(async (req, res, next) => {
 
 // get all role 
 const getAllRole = asyncHandler(async (req, res, next) => {
-    const role = await pool.query(`SELECT id, name FROM role WHERE isdeleted = false ORDER BY id`)
+    const roles = await get_all_role()
     return res.status(200).json({
         success: true,
-        data: role.rows
+        data: roles
     })
 })
 
 // update role 
 const updateRole = asyncHandler(async (req, res, next) => {
-    let role = await pool.query(`SELECT * FROM role WHERE id = $1`, [req.params.id])
-    role = role.rows[0]
+    const id = req.params.id
+    const role = await getByIdRole(id)
     if(!role){
         return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
     }
@@ -58,14 +58,14 @@ const updateRole = asyncHandler(async (req, res, next) => {
     }
 
     if(role.name !== name){
-        const test = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = false`, [name])
-        if(test.rows[0]){
+        const test = await getByNameRole(name)
+        if(test){
             return next(new ErrorResponse('Ushbu malumot avval kiritilgan', 409))
         }
     }
 
-    const updateRegion = await pool.query(`UPDATE role SET name = $1 WHERE id = $2 RETURNING *`, [name, req.params.id])
-    if(!updateRegion.rows[0]){
+    const result = await update_role(id, name)
+    if(!result){
         return next(new ErrorResponse('Server xatolik. Malumot yangilanmadi', 500))
     }
 
@@ -77,15 +77,15 @@ const updateRole = asyncHandler(async (req, res, next) => {
 
 // delete role 
 const deleteRole = asyncHandler(async (req, res, next) => {
-    let role = await pool.query(`SELECT * FROM role WHERE id = $1 AND isdeleted = false`, [req.params.id])
-    role = role.rows[0]
+    const id = req.params.id
+    const role = await getByIdRole(id)
     if(!role){
         return next(new ErrorResponse('Server xatolik. Malumot topilmadi', 404))
     }
 
-    const deleteRegion = await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2 RETURNING *`, [true, req.params.id])
+    const deleteRole = await delete_role(id)
 
-    if(!deleteRegion.rows[0]){
+    if(!deleteRole){
         return next(new ErrorResponse('Server xatolik. Malumot ochirilmadi', 500))
     }
 
@@ -95,9 +95,21 @@ const deleteRole = asyncHandler(async (req, res, next) => {
     })
 })
 
+const getElementById = asyncHandler(async (req, res, next) => {
+    const role = await getByIdRole(req.params.id)
+    if(!role){
+        return next(new ErrorResponse('Server xatolik. Role topilmadi', 404))
+    }
+    return res.status(200).json({
+        success: true, 
+        data: role
+    })
+})
+
 module.exports = {
     createRole,
     updateRole,
     deleteRole,
-    getAllRole
+    getAllRole,
+    getElementById
 }
