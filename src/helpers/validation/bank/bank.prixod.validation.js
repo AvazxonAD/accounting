@@ -20,7 +20,17 @@ const bankPrixodChildValidation = Joi.object({
     id_spravochnik_podotchet_litso: Joi.number(),
 })
 
+const getAllPrixodValidation = Joi.object({
+    main_schet_id: Joi.number(), 
+    limit: Joi.number(), 
+    page: Joi.number(),
+    from: Joi.date(),
+    to: Joi.date()
+})
+
+
 module.exports = {
     bankPrixodValidator,
-    bankPrixodChildValidation
+    bankPrixodChildValidation,
+    getAllPrixodValidation
 };

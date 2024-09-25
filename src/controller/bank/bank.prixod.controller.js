@@ -1,7 +1,7 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
-const { bankPrixodValidator, bankPrixodChildValidation } = require('../../helpers/validation/bank/bank.prixod.validation')
+const { bankPrixodValidator, bankPrixodChildValidation, getAllPrixodValidation } = require('../../helpers/validation/bank/bank.prixod.validation')
 
 const { getByIdShartnoma } = require('../../service/shartnoma/shartnoma.db')
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
@@ -11,16 +11,30 @@ const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.
 const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
 const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
 const { getByIdPodotchet } = require("../../service/spravochnik/podotchet_lito.db");
-const { createBankPrixod, createBankPrixodChild } = require('../../service/bank/bank.prixod.db')
+const {
+  createBankPrixod,
+  createBankPrixodChild,
+  getByIdBankPrixod,
+  bankPrixodUpdate,
+  deleteBankPrixodChild,
+  getAllPrixod,
+  getAllPrixodChild,
+  prixodTotalQuery,
+  getAllPrixodByFrom,
+  getAllPrixodByTo,
+  getAllPrixodByFromAndTo,
+  getElementByIdPrixod
+} = require('../../service/bank/bank.prixod.db')
 
 // bank prixod
 const bank_prixod = asyncHandler(async (req, res, next) => {
+  const main_schet_id = req.query.main_schet_id;
+  const user_id = req.user.region_id;
+
   const { error, value } = bankPrixodValidator.validate(req.body)
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
-  const main_schet_id = req.query.main_schet_id;
-  const user_id = req.user.region_id;
 
   const main_schet = await getByIdMainSchet(user_id, main_schet_id);
   if (!main_schet) {
@@ -46,7 +60,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
   for (let child of value.childs) {
     const { error, value } = bankPrixodChildValidation.validate(child)
-    if(error){
+    if (error) {
       return next(new ErrorResponse(error.details[0].message, 406))
     }
 
@@ -92,7 +106,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
         user_id,
         value.id_spravochnik_podotchet_litso,
       );
-      
+
       if (!spravochnik_podotchet_litso) {
         return next(
           new ErrorResponse("spravochnik_podotchet_litso topilmadi", 404),
@@ -102,7 +116,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
   }
   const prixod = await createBankPrixod({
     ...value,
-    main_schet_id, 
+    main_schet_id,
     user_id,
     provodki_boolean: true
   })
@@ -128,187 +142,115 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 // bank prixod update
 const bank_prixod_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
+  const id = req.params.id
+  const user_id = req.user.region_id
 
-  let bank_prixod = await pool.query(
-    `SELECT * FROM bank_prixod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3
-    `,
-    [req.params.id, req.user.region_id, main_schet_id],
-  );
-  bank_prixod = bank_prixod.rows[0];
+  const bank_prixod = await getByIdBankPrixod(user_id, main_schet_id, id)
   if (!bank_prixod) {
     return next(new ErrorResponse("Prixod document topilmadi", 404));
   }
 
-  const {
-    doc_num,
-    doc_date,
-    summa,
-    provodki_boolean,
-    dop_provodki_boolean,
-    opisanie,
-    id_spravochnik_organization,
-    id_shartnomalar_organization,
-    childs,
-  } = req.body;
+  const { error, value } = bankPrixodValidator.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message), 406);
+  }
 
-  checkValueString(doc_date, doc_num, opisanie);
-  checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
-  checkValueBoolean(provodki_boolean, dop_provodki_boolean);
-  checkValueArray(childs);
-
-  let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [main_schet_id, req.user.region_id],
-  );
-  main_schet = main_schet.rows[0];
+  const main_schet = await getByIdMainSchet(user_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  let organization = await pool.query(
-    `SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [id_spravochnik_organization, req.user.region_id],
-  );
-  organization = organization.rows[0];
+  const organization = await getByIdOrganization(user_id, value.id_spravochnik_organization);
   if (!organization) {
     return next(new ErrorResponse("Hamkor korxona topilmadi", 404));
   }
 
-  let contract = await pool.query(
-    `SELECT * FROM shartnomalar_organization WHERE user_id = $1 AND spravochnik_organization_id = $2 AND id = $3  AND isdeleted = false`,
-    [
-      req.user.region_id,
-      id_spravochnik_organization,
-      id_shartnomalar_organization,
-    ],
-  );
-  contract = contract.rows[0];
-  if (!contract) {
-    return next(new ErrorResponse("Shartnoma topilmadi", 404));
+  if (value.id_shartnomalar_organization) {
+    const contract = await getByIdShartnoma(user_id, value.id_shartnomalar_organization)
+    if (!contract) {
+      return next(new ErrorResponse("Shartnoma topilmadi", 404));
+    }
   }
 
-  for (let child of childs) {
-    checkValueNumber(
-      child.summa,
-      child.spravochnik_operatsii_id,
-      child.id_spravochnik_podrazdelenie,
-      child.id_spravochnik_sostav,
-      child.id_spravochnik_type_operatsii,
-      child.id_spravochnik_podotchet_litso,
-    );
+  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(value.spravochnik_operatsii_own_id);
+  if (!spravochnik_operatsii_own_id_test) {
+    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404));
+  }
 
-    const spravochnik_operatsii = await pool.query(
-      `SELECT id, name, schet, sub_schet FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`,
-      ["bank_prixod", child.spravochnik_operatsii_id],
-    );
-    if (!spravochnik_operatsii.rows[0]) {
+  for (let child of value.childs) {
+    const { error, value } = bankPrixodChildValidation.validate(child)
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 406))
+    }
+
+    const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_id);
+    if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
-
-    const spravochnik_podrazdelenie = await pool.query(
-      `SELECT id, name, rayon FROM spravochnik_podrazdelenie WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_podrazdelenie],
-    );
-    if (!spravochnik_podrazdelenie.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404),
+    if (value.id_spravochnik_podrazdelenie) {
+      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+        user_id,
+        value.id_spravochnik_podrazdelenie,
       );
+      if (!spravochnik_podrazdelenie) {
+        return next(
+          new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404),
+        );
+      }
+    }
+    if (value.id_spravochnik_sostav) {
+      const spravochnik_sostav = await getByIdSostav(
+        user_id,
+        value.id_spravochnik_sostav,
+      );
+      if (!spravochnik_sostav) {
+        return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404));
+      }
     }
 
-    const spravochnik_sostav = await pool.query(
-      `SELECT id, name FROM spravochnik_sostav WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_sostav],
-    );
-    if (!spravochnik_sostav.rows[0]) {
-      return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+    if (value.id_spravochnik_type_operatsii) {
+      const spravochnik_type_operatsii = getByIdtype_operatsii(
+        user_id,
+        value.id_spravochnik_type_operatsii,
+      );
+      if (!spravochnik_type_operatsii) {
+        return next(
+          new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
+        );
+      }
     }
 
-    const spravochnik_type_operatsii = await pool.query(
-      `SELECT id, name FROM spravochnik_type_operatsii WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_type_operatsii],
-    );
-    if (!spravochnik_type_operatsii.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
+    if (value.id_spravochnik_podotchet_litso) {
+      const spravochnik_podotchet_litso = await getByIdPodotchet(
+        user_id,
+        value.id_spravochnik_podotchet_litso,
       );
-    }
 
-    const spravochnik_podotchet_litso = await pool.query(
-      `SELECT id, name FROM spravochnik_podotchet_litso WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_podotchet_litso],
-    );
-    if (!spravochnik_podotchet_litso.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_podotchet_litso topilmadi", 404),
-      );
+      if (!spravochnik_podotchet_litso) {
+        return next(
+          new ErrorResponse("spravochnik_podotchet_litso topilmadi", 404),
+        );
+      }
     }
   }
 
-  const prixod = await pool.query(
-    `
-        UPDATE bank_prixod SET 
-            doc_num = $1, 
-            doc_date = $2, 
-            summa = $3, 
-            provodki_boolean = $4, 
-            dop_provodki_boolean = $5, 
-            opisanie = $6, 
-            id_spravochnik_organization = $7, 
-            id_shartnomalar_organization = $8
-        WHERE id = $9
-        RETURNING *
-        `,
-    [
-      doc_num,
-      doc_date,
-      summa,
-      provodki_boolean,
-      dop_provodki_boolean,
-      opisanie,
-      id_spravochnik_organization,
-      id_shartnomalar_organization,
-      req.params.id,
-    ],
-  );
+  await bankPrixodUpdate({
+    ...value,
+    id
+  })
 
-  if (!prixod.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
-  await pool.query(`DELETE FROM bank_prixod_child WHERE id_bank_prixod = $1`, [
-    bank_prixod.id,
-  ]);
+  await deleteBankPrixodChild(id)
 
-  for (let child of childs) {
-    const bank_child = await pool.query(
-      `
-            INSERT INTO bank_prixod_child(
-                spravochnik_operatsii_id,
-                summa,
-                id_spravochnik_podrazdelenie,
-                id_spravochnik_sostav,
-                id_spravochnik_type_operatsii,
-                id_spravochnik_podotchet_litso,
-                main_schet_id,
-                id_bank_prixod,
-                user_id
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [
-        child.spravochnik_operatsii_id,
-        child.summa,
-        child.id_spravochnik_podrazdelenie,
-        child.id_spravochnik_sostav,
-        child.id_spravochnik_type_operatsii,
-        child.id_spravochnik_podotchet_litso,
-        main_schet.id,
-        bank_prixod.id,
-        req.user.region_id,
-      ],
-    );
-    if (!bank_child.rows[0]) {
-      return next(
-        new ErrorResponse("Server xatolik. Child yozuv kiritilmadi", 500),
-      );
-    }
+  for (let child of value.childs) {
+    await createBankPrixodChild({
+      ...child,
+      jur2_schet: main_schet.jur2_schet,
+      jur2_subschet: main_schet.jur2_subschet,
+      main_schet_id: main_schet.id,
+      bank_prixod_id: id,
+      user_id,
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
+    })
   }
 
   return res.status(200).json({
@@ -358,99 +300,47 @@ const delete_bank_prixod = asyncHandler(async (req, res, next) => {
 // get element by id bank prixod
 const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  if (!id) {
-    return next(new ErrorResponse("Server xatyolik. ID topilmadi", 404));
-  }
-  let all_prixod = await pool.query(
-    `
-        SELECT 
-            id,
-            doc_num, 
-            doc_date, 
-            summa, 
-            provodki_boolean, 
-            dop_provodki_boolean, 
-            opisanie, 
-            id_spravochnik_organization, 
-            id_shartnomalar_organization
-        FROM bank_prixod
-        WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
-    `,
-    [req.query.main_schet_id, req.user.region_id, id],
-  );
-  all_prixod = all_prixod.rows;
+  const main_schet_id = req.query.main_schet_id
+  const user_id = req.user.region_id
 
-  if (all_prixod.length === 0) {
+  const prixod = await getElementByIdPrixod(user_id, main_schet_id, id)
+
+  if (!prixod) {
     return next(
       new ErrorResponse("Server xatolik. Rasxod documentlar topilmadi", [404]),
     );
   }
 
-  const resultArray = [];
-
-  for (let prixod of all_prixod) {
-    const prixod_child = await pool.query(
-      `
-            SELECT  
-                bank_prixod_child.id,
-                bank_prixod_child.spravochnik_operatsii_id,
-                spravochnik_operatsii.name AS spravochnik_operatsii_name,
-                bank_prixod_child.summa,
-                bank_prixod_child.id_spravochnik_podrazdelenie,
-                spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
-                bank_prixod_child.id_spravochnik_sostav,
-                spravochnik_sostav.name AS spravochnik_sostav_name,
-                bank_prixod_child.id_spravochnik_type_operatsii,
-                spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
-                bank_prixod_child.id_spravochnik_podotchet_litso,
-                spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
-                bank_prixod_child.own_schet,
-                bank_prixod_child.own_subschet
-            FROM bank_prixod_child 
-            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = bank_prixod_child.spravochnik_operatsii_id
-            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_prixod_child.id_spravochnik_podrazdelenie
-            JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_prixod_child.id_spravochnik_sostav
-            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_prixod_child.id_spravochnik_type_operatsii
-            JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = bank_prixod_child.id_spravochnik_podotchet_litso
-            WHERE bank_prixod_child.user_id = $1 AND bank_prixod_child.isdeleted = false AND bank_prixod_child.id_bank_prixod = $2
-        `,
-      [req.user.region_id, prixod.id],
-    );
-
-    let object = { ...prixod };
-    object.summa = Number(object.summa);
-    object.childs = prixod_child.rows.map((item) => {
-      let result = { ...item };
-      result.summa = Number(result.summa);
-      return result;
-    });
-    resultArray.push(object);
-  }
+  const prixod_child = await getAllPrixodChild(user_id, prixod.id)
+  
+  let object = { ...prixod };
+  object.summa = Number(object.summa);
+  object.childs = prixod_child.map((item) => {
+  let result = { ...item };
+    result.summa = Number(result.summa);
+    return result;
+  });
 
   return res.status(200).json({
     success: true,
-    data: resultArray[0],
+    data: object,
   });
 });
 
 // get all bank prixod
 const getAllBankPrixod = asyncHandler(async (req, res, next) => {
-  let all_prixod = null;
-  let summaBankPrixod = 0;
-  let totalQuery = 0;
+  let all_prixod = null
+  let totalQuery = null
+  let summa = null
 
   const user_id = req.user.region_id;
-  let { main_schet_id, limit, page, from, to } = req.query;
-  const main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND isdeleted = false AND user_id = $2`,
-    [main_schet_id, user_id],
-  );
-  if (!main_schet.rows[0]) {
-    return next(new ErrorResponse("Schet topilmadi", 404));
+  const { error, value } = getAllPrixodValidation.validate(req.query)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message), 406);
   }
 
-  limit = parseInt(req.query.limit) || 10;
-  page = parseInt(req.query.page) || 1;
+  limit = parseInt(value.limit) || 10;
+  page = parseInt(value.page) || 1;
   const offset = (page - 1) * limit;
 
   if (limit <= 0 || page <= 0) {
@@ -459,102 +349,33 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     );
   }
 
-  if (from && to) {
-    isValidDate(from, to);
-    from = new Date(from);
-    to = new Date(to);
-    all_prixod = await pool.query(
-      `
-            SELECT 
-                id,
-                doc_num, 
-                doc_date, 
-                summa, 
-                provodki_boolean, 
-                dop_provodki_boolean, 
-                opisanie, 
-                id_spravochnik_organization, 
-                id_shartnomalar_organization
-            FROM bank_prixod 
-            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date BETWEEN $3 AND $4
-            OFFSET $5
-            LIMIT $6
-        `,
-      [main_schet_id, user_id, from, to, offset, limit],
-    );
-    all_prixod = all_prixod.rows;
-    summaBankPrixod = await pool.query(
-      `
-            SELECT SUM(summa)
-            FROM bank_prixod 
-            WHERE main_schet_id = $1 
-            AND user_id = $2 
-            AND isdeleted = false 
-            AND doc_date BETWEEN $3 AND $4
-        `,
-      [main_schet_id, user_id, from, to],
-    );
-    summaBankPrixod = Number(summaBankPrixod.rows[0].sum);
-    totalQuery = await pool.query(
-      `SELECT COUNT(id) AS total FROM bank_prixod WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date BETWEEN $3 AND $4
-        `,
-      [main_schet_id, user_id, from, to],
-    );
-  } else {
-    all_prixod = await pool.query(
-      `
-            SELECT 
-                id,
-                doc_num, 
-                doc_date, 
-                summa, 
-                provodki_boolean, 
-                dop_provodki_boolean, 
-                opisanie, 
-                id_spravochnik_organization, 
-                id_shartnomalar_organization
-            FROM bank_prixod 
-            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
-            OFFSET $3
-            LIMIT $4
-        `,
-      [main_schet_id, user_id, offset, limit],
-    );
-    all_prixod = all_prixod.rows;
+  const main_schet = await getByIdMainSchet(user_id, value.main_schet_id)
+  if (!main_schet) {
+    return next(new ErrorResponse("Schet topilmadi", 404));
   }
 
+  if(value.from && !value.to){
+    all_prixod = await getAllPrixodByFrom(user_id, value.main_schet_id, value.offset, value.limit, req.body.from)
+  }
+
+  if(!value.from && value.to){
+    all_prixod = await getAllPrixodByTo(user_id, value.main_schet_id, value.offset, req.body.to)
+  }
+
+  if(value.from && value.to){
+    all_prixod = await getAllPrixodByFromAndTo(user_id, value.main_schet_id, value.offset, req.body.from, req.body.to)
+  }
+
+  all_prixod = await getAllPrixod(user_id, value.main_schet_id, value.offset, value.limit)
+  summa = Number(all_prixod.summa)
+  
   const resultArray = [];
 
-  for (let prixod of all_prixod) {
-    const prixod_child = await pool.query(
-      `
-            SELECT  
-                bank_prixod_child.id,
-                bank_prixod_child.spravochnik_operatsii_id,
-                spravochnik_operatsii.name AS spravochnik_operatsii_name,
-                bank_prixod_child.summa,
-                bank_prixod_child.id_spravochnik_podrazdelenie,
-                spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
-                bank_prixod_child.id_spravochnik_sostav,
-                spravochnik_sostav.name AS spravochnik_sostav_name,
-                bank_prixod_child.id_spravochnik_type_operatsii,
-                spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
-                bank_prixod_child.id_spravochnik_podotchet_litso,
-                spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name
-            FROM bank_prixod_child 
-            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = bank_prixod_child.spravochnik_operatsii_id
-            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_prixod_child.id_spravochnik_podrazdelenie
-            JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_prixod_child.id_spravochnik_sostav
-            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_prixod_child.id_spravochnik_type_operatsii
-            JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = bank_prixod_child.id_spravochnik_podotchet_litso
-            WHERE bank_prixod_child.user_id = $1 AND bank_prixod_child.isdeleted = false AND bank_prixod_child.id_bank_prixod = $2
-        `,
-      [user_id, prixod.id],
-    );
-
+  for (let prixod of all_prixod.prixod_rows) {
+    const prixod_child = await getAllPrixodChild(user_id, prixod.id)
     let object = { ...prixod };
     object.summa = Number(object.summa);
-    object.childs = prixod_child.rows.map((item) => {
+    object.childs = prixod_child.map((item) => {
       let result = { ...item };
       result.summa = Number(result.summa);
       return result;
@@ -562,24 +383,21 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     resultArray.push(object);
   }
 
-  totalQuery = await pool.query(
-    `SELECT COUNT(id) AS total FROM bank_prixod WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
-    `,
-    [main_schet_id, user_id],
-  );
+  totalQuery = await prixodTotalQuery(user_id, value.main_schet_id)
 
-  const total = parseInt(totalQuery.rows[0].total);
-  const pageCount = Math.ceil(total / limit);
+  const pageCount = Math.ceil(totalQuery.total / limit);
 
   return res.status(200).json({
     success: true,
     pageCount: pageCount,
-    count: total,
+    count: totalQuery.total,
     currentPage: page,
     nextPage: page >= pageCount ? null : page + 1,
     backPage: page === 1 ? null : page - 1,
-    summa: summaBankPrixod,
-    data: resultArray,
+    data: {
+      summa,
+      result: resultArray  
+    },
   });
 });
 
