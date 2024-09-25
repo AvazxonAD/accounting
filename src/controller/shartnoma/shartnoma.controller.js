@@ -13,6 +13,7 @@ const {
   getTotalShartnoma,
   updateShartnoma,
   getByIdShartnoma,
+  getByIdOrganizationShartnoma
 } = require("../../service/shartnoma/shartnoma.db");
 const { createGrafik } = require("../../service/shartnoma/shartnoma.grafik.db");
 
@@ -218,9 +219,19 @@ exports.deleteShartnoma = asyncHandler(async (req, res, next) => {
   }
 });
 
+// get by organization id shartnoama
+const getByIdOrganization_Shartnoma = asyncHandler(async (req, res, next) => {
+  const result = await getByIdOrganizationShartnoma(req.user.region_id, req.params.id)
+  return res.status(200).json({
+    sucess: true,
+    data: result
+  })
+})
+
 module.exports = {
   create,
   getAll,
   getElementById,
   update_shartnoma,
+  getByIdOrganization_Shartnoma
 };

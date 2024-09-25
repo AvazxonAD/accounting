@@ -236,7 +236,8 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
   await bankPrixodUpdate({
     ...value,
-    id
+    id,
+    provodki_boolean: true
   })
 
   await deleteBankPrixodChild(id)
@@ -307,7 +308,7 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
 
   if (!prixod) {
     return next(
-      new ErrorResponse("Server xatolik. Rasxod documentlar topilmadi", [404]),
+      new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", [404]),
     );
   }
 

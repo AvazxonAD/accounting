@@ -14,7 +14,7 @@ const {
   bankRasxodValidation,
   bankRasxodChildValidation
 } = require('../../helpers/validation/bank/bank.rasxod.validation');
-const { createBankRasxodDb } = require("../../service/bank/bank.rasxod.db");
+const { createBankRasxodDb, createBankRasxodChild, getByIdRasxod, updateRasxod } = require("../../service/bank/bank.rasxod.db");
 
 // bank rasxod
 const bank_rasxod = asyncHandler(async (req, res, next) => {
@@ -38,7 +38,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(user_id, id)
+    const contract = await getByIdShartnoma(user_id, value.id_shartnomalar_organization)
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
     }
@@ -75,7 +75,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
     }
     if (value.id_spravochnik_type_operatsii) {
       const spravochnik_type_operatsii = await getByIdtype_operatsii(user_id, value.id_spravochnik_type_operatsii)
-      if (!spravochnik_type_operatsii.rows[0]) {
+      if (!spravochnik_type_operatsii) {
         return next(
           new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
         );
@@ -90,7 +90,15 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
   })
 
   for (let child of value.childs) {
-    
+    await createBankRasxodChild({
+      ...child,
+      jur2_schet: main_schet.jur2_schet,
+      jur2_subschet: main_schet.jur2_subschet,
+      main_schet_id,
+      rasxod_id: rasxod.id,
+      user_id,
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
+    })
   }
 
   res.status(201).json({
@@ -102,137 +110,81 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
 // bank rasxod update
 const bank_rasxod_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
+  const user_id = req.user.region_id
+  const id = req.params.id
 
-  let bank_rasxod = await pool.query(
-    `SELECT * FROM bank_prixod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3
-    `,
-    [req.params.id, req.user.region_id, main_schet_id],
-  );
-  bank_rasxod = bank_rasxod.rows[0];
+  const bank_rasxod = await getByIdRasxod(user_id, main_schet_id, id)
   if (!bank_rasxod) {
     return next(new ErrorResponse("Prixod document topilmadi", 404));
   }
 
-  const {
-    doc_num,
-    doc_date,
-    summa,
-    provodki_boolean,
-    dop_provodki_boolean,
-    opisanie,
-    id_spravochnik_organization,
-    id_shartnomalar_organization,
-    childs,
-  } = req.body;
-
-  checkValueString(doc_date, doc_num, opisanie);
-  checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
-  checkValueArray(childs);
-
-  let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [main_schet_id, req.user.region_id],
-  );
-  main_schet = main_schet.rows[0];
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
+  const { error, value } = bankRasxodValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
   }
 
-  let organization = await pool.query(
-    `SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [id_spravochnik_organization, req.user.region_id],
-  );
-  organization = organization.rows[0];
+
+  const main_schet = await getByIdMainSchet(user_id, main_schet_id)
+  if (!main_schet) {
+    return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
+  }
+
+  const organization = await getByIdOrganization(user_id, value.id_spravochnik_organization)
   if (!organization) {
     return next(new ErrorResponse("Hamkor korxona topilmadi", 404));
   }
 
-  let contract = await pool.query(
-    `SELECT * FROM shartnomalar_organization WHERE user_id = $1 AND spravochnik_organization_id = $2 AND id = $3  AND isdeleted = false`,
-    [
-      req.user.region_id,
-      id_spravochnik_organization,
-      id_shartnomalar_organization,
-    ],
-  );
-  contract = contract.rows[0];
-  if (!contract) {
-    return next(new ErrorResponse("Shartnoma topilmadi", 404));
+  if (value.id_shartnomalar_organization) {
+    const contract = await getByIdShartnoma(user_id, value.id_shartnomalar_organization)
+    if (!contract) {
+      return next(new ErrorResponse("Shartnoma topilmadi", 404));
+    }
   }
 
-  for (let child of childs) {
-    checkValueNumber(
-      child.summa,
-      child.spravochnik_operatsii_id,
-      child.id_spravochnik_podrazdelenie,
-      child.id_spravochnik_sostav,
-      child.id_spravochnik_type_operatsii,
-      child.id_spravochnik_podotchet_litso,
-    );
+  const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_own_id)
+  if(!spravochnik_operatsii){
+    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own  topilmadi", 404))
+  }
 
-    const spravochnik_operatsii = await pool.query(
-      `SELECT id, name, schet, sub_schet FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`,
-      ["bank_prixod", child.spravochnik_operatsii_id],
-    );
-    if (!spravochnik_operatsii.rows[0]) {
+  for (let child of value.childs) {
+    const { error, value } = bankRasxodChildValidation.validate(child)
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 406))
+    }
+
+    const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_id)
+    if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
-
-    const spravochnik_podrazdelenie = await pool.query(
-      `SELECT id, name, rayon FROM spravochnik_podrazdelenie WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_podrazdelenie],
-    );
-    if (!spravochnik_podrazdelenie.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404),
-      );
+    if (value.id_spravochnik_podrazdelenie) {
+      const spravochnik_podrazdelenie = await getByIdPodrazlanie(user_id, value.id_spravochnik_podrazdelenie)
+      if (!spravochnik_podrazdelenie) {
+        return next(
+          new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404),
+        );
+      }
     }
-
-    const spravochnik_sostav = await pool.query(
-      `SELECT id, name FROM spravochnik_sostav WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_sostav],
-    );
-    if (!spravochnik_sostav.rows[0]) {
-      return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+    if (value.id_spravochnik_sostav) {
+      const spravochnik_sostav = await getByIdSostav(user_id, value.id_spravochnik_sostav)
+      if (!spravochnik_sostav) {
+        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+      }
     }
-
-    const spravochnik_type_operatsii = await pool.query(
-      `SELECT id, name FROM spravochnik_type_operatsii WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_type_operatsii],
-    );
-    if (!spravochnik_type_operatsii.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
-      );
+    if (value.id_spravochnik_type_operatsii) {
+      const spravochnik_type_operatsii = await getByIdtype_operatsii(user_id, value.id_spravochnik_type_operatsii)
+      if (!spravochnik_type_operatsii) {
+        return next(
+          new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
+        );
+      }
     }
   }
 
-  const prixod = await pool.query(
-    `
-        UPDATE bank_prixod SET 
-            doc_num = $1, 
-            doc_date = $2, 
-            summa = $3, 
-            provodki_boolean = $4, 
-            dop_provodki_boolean = $5, 
-            opisanie = $6, 
-            id_spravochnik_organization = $7, 
-            id_shartnomalar_organization = $8
-        WHERE id = $9
-        RETURNING *
-        `,
-    [
-      doc_num,
-      doc_date,
-      summa,
-      provodki_boolean,
-      dop_provodki_boolean,
-      opisanie,
-      id_spravochnik_organization,
-      id_shartnomalar_organization,
-      req.params.id,
-    ],
-  );
+  await updateRasxod({
+    ...value,
+    id,
+    procod
+  })
 
   if (!prixod.rows[0]) {
     return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));

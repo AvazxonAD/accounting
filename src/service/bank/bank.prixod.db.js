@@ -251,6 +251,7 @@ const getAllPrixodChild = handleServiceError(async (user_id, prixod_id) => {
                   bank_prixod_child.spravochnik_operatsii_id,
                   spravochnik_operatsii.name AS spravochnik_operatsii_name,
                   bank_prixod_child.summa,
+                  bank_prixod_child.spravochnik_operatsii_own_id,
                   bank_prixod_child.id_spravochnik_podrazdelenie,
                   spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
                   bank_prixod_child.id_spravochnik_sostav,

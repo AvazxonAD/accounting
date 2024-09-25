@@ -45,8 +45,9 @@ const createBankRasxodChild = handleServiceError(async (object) => {
                   own_subschet,
                   main_schet_id,
                   id_bank_rasxod,
-                  user_id
-              ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+                  user_id,
+                  spravochnik_operatsii_own_id
+              ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
         [
           object.spravochnik_operatsii_id,
           object.summa,
@@ -56,12 +57,51 @@ const createBankRasxodChild = handleServiceError(async (object) => {
           object.jur2_schet,
           object.jur2_subschet,
           object.main_schet_id,
-          rasxod.rows[0].id,
+          object.rasxod_id,
           object.user_id,
+          object.spravochnik_operatsii_own_id
+        ],
+    );
+})
+
+const getByIdRasxod = handleServiceError(async (user_id, main_schet_id, id) => {
+    const result = await pool.query(
+        `SELECT * FROM bank_prixod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3
+        `,
+        [id, user_id, main_schet_id],
+    );
+    return result.rows[0]
+})
+
+const updateRasxod = handleServiceError(async (object) => {
+    await pool.query(
+        `
+            UPDATE bank_prixod SET 
+                doc_num = $1, 
+                doc_date = $2, 
+                summa = $3, 
+                provodki_boolean = $4, 
+                opisanie = $5, 
+                id_spravochnik_organization = $6, 
+                id_shartnomalar_organization = $7
+            WHERE id = $8
+            `,
+        [
+          object.doc_num,
+          object.doc_date,
+          object.summa,
+          object.provodki_boolean,
+          object.opisanie,
+          object.id_spravochnik_organization,
+          object.id_shartnomalar_organization,
+          object.id,
         ],
     );
 })
 
 module.exports = {
-    createBankRasxodDb
+    createBankRasxodDb,
+    createBankRasxodChild,
+    getByIdRasxod,
+    updateRasxod
 }
