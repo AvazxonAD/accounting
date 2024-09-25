@@ -10,11 +10,10 @@ const getByNameBudjet = handleServiceError(async (name) => {
 });
 
 const createBudjet = handleServiceError(async (name) => {
-  const result = await pool.query(
-    `INSERT INTO spravochnik_budjet_name(name) VALUES($1) RETURNING *`,
+  await pool.query(
+    `INSERT INTO spravochnik_budjet_name(name) VALUES($1)`,
     [name],
   );
-  return result.rows[0];
 });
 
 const getAllBudjet = handleServiceError(async () => {
@@ -26,26 +25,24 @@ const getAllBudjet = handleServiceError(async () => {
 
 const getByIdBudjet = handleServiceError(async (id) => {
   let result = await pool.query(
-    `SELECT * FROM spravochnik_budjet_name WHERE id = $1`,
+    `SELECT id, name FROM spravochnik_budjet_name WHERE id = $1`,
     [id],
   );
   return result.rows[0];
 });
 
 const updateBudjet = handleServiceError(async (name, id) => {
-  const result = await pool.query(
-    `UPDATE spravochnik_budjet_name SET name = $1 WHERE id = $2 RETURNING *`,
+  await pool.query(
+    `UPDATE spravochnik_budjet_name SET name = $1 WHERE id = $2 `,
     [name, id],
   );
-  return result.rows[0];
 });
 
 const deleteBudjet = handleServiceError(async (id) => {
-  const result = await pool.query(
-    `UPDATE spravochnik_budjet_name SET isdeleted = $1 WHERE id = $2 RETURNING *`,
-    [true, req.params.id],
+  await pool.query(
+    `UPDATE spravochnik_budjet_name SET isdeleted = $1 WHERE id = $2`,
+    [true, id],
   );
-  return result[0];
 });
 
 module.exports = {

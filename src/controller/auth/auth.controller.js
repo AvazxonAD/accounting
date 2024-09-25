@@ -2,7 +2,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const generateToken = require("../../utils/auth/generate.token");
 const bcrypt = require("bcrypt");
-const { authValidation } = require('../../helpers/validation/auth/auth.validation')
+const { authValidation, authUpdateValidation } = require('../../helpers/validation/auth/auth.validation')
 
 const {
   getByLoginAuth,
@@ -51,16 +51,15 @@ const login = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  let { fio, login, oldPassword, newPassword } = req.body;
+  const { error, value} = authUpdateValidation.validate(req.body)
   const id = req.user.id;
 
   const user = await getByIdAuth(id);
 
-  if (oldPassword || newPassword) {
-    checkValueString(oldPassword, newPassword);
+  if (value.oldPassword || value.newPassword) {
 
-    oldPassword = oldPassword.trim();
-    newPassword = newPassword.trim();
+    const oldPassword = value.oldPassword.trim();
+    const newPassword = value.newPassword.trim();
 
     const matchPassword = await bcrypt.compare(oldPassword, user.password);
     if (!matchPassword) {
@@ -71,13 +70,13 @@ const update = asyncHandler(async (req, res, next) => {
     user.password = newHashedPassword;
   }
 
-  if (fio) {
-    fio = fio.trim();
+  if (value.fio) {
+    const fio = value.fio.trim();
     user.fio = fio;
   }
 
-  if (login) {
-    login = login.trim();
+  if (value.login) {
+    const login = value.login.trim();
     if (login !== user.login) {
       const test = await getByLoginAuth(login);
       if (test) {
@@ -87,10 +86,7 @@ const update = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const result = await updateAuth(user.login, user.password, user.fio, id);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500));
-  }
+  await updateAuth(user.login, user.password, user.fio, id);
 
   return res.status(200).json({
     success: true,

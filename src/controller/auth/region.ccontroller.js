@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkValueString } = require("../../utils/check.functions");
+const { regionValidation } = require("../../helpers/validation/auth/region.validation");
 const {
   getByNameRegion,
   create_region,
@@ -13,20 +13,17 @@ const {
 
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {
-  let { name } = req.body;
+  const  { error, value } = regionValidation.validate(req.body);
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  checkValueString(name);
-  name = name.trim();
-
-  const test = await getByNameRegion(name);
+  const test = await getByNameRegion(value.name);
   if (test) {
     return next(new ErrorResponse("Ushbu viloyat avval kiritilgan", 409));
   }
 
-  const result = await create_region(name);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await create_region(value.name);
 
   return res.status(201).json({
     success: true,
@@ -46,27 +43,21 @@ const getAllReegions = asyncHandler(async (req, res, next) => {
 // update region
 const updateRegion = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const region = getByIdRegion(id);
+  const region = await getByIdRegion(id);
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
 
-  let { name } = req.body;
+  const { error, value } = regionValidation.validate(req.body)
 
-  checkValueString(name);
-  name = name.trim();
-
-  if (region.name !== name) {
-    const test = await getByNameRegion(name);
+  if (region.name !== value.name.trim()) {
+    const test = await getByNameRegion(value.name);
     if (test) {
       return next(new ErrorResponse("Ushbu viloyat avval kiritilgan", 409));
     }
   }
 
-  const result = await update_region(id, name);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot yangilamadi", 500));
-  }
+  await update_region(id, value.name.trim());
 
   return res.status(200).json({
     success: true,
@@ -82,11 +73,7 @@ const deleteRegion = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
 
-  const deleteRegion = await delete_region(id);
-
-  if (!deleteRegion) {
-    return next(new ErrorResponse("Server xatolik. Viloyat ochirilmadi", 500));
-  }
+  await delete_region(id);
 
   return res.status(200).json({
     success: true,
@@ -99,6 +86,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Region topilmadi", 404));
   }
+  
   return res.status(200).json({
     success: true,
     data: region,

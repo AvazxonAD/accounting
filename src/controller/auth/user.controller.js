@@ -1,27 +1,28 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {
-  checkValueString,
-  checkValueNumber,
-} = require("../../utils/check.functions");
 const bcrypt = require("bcrypt");
 const { getByIdRole } = require("../../service/auth/role.db");
 const { getByIdRegion } = require("../../service/auth/region.db");
 const { getByLoginAuth } = require("../../service/auth/auth.db");
+const { userValidation } = require('../../helpers/validation/auth/user.validation')
+
 const {
   create_user,
   getAllRegionUsers,
   getByIdUser,
   update_user,
+  deleteUserDb,
 } = require("../../service/auth/user.db");
 
 // create user
 const createUser = asyncHandler(async (req, res, next) => {
-  let { login, password, fio, region_id, role_id } = req.body;
+  const { error, value } = userValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  checkValueString(login, password, fio);
-  checkValueNumber(role_id);
+  let { login, password, fio, region_id, role_id } = value
 
   const role = await getByIdRole(role_id);
   if (!role) {
@@ -29,7 +30,6 @@ const createUser = asyncHandler(async (req, res, next) => {
   }
 
   if (region_id) {
-    checkValueNumber(region_id);
     const region = await getByIdRegion(region_id);
     if (!region) {
       return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
@@ -41,23 +41,20 @@ const createUser = asyncHandler(async (req, res, next) => {
   login = login.trim();
   password = password.trim();
   fio = fio.trim();
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(value.password, 10);
 
-  const test = await getByLoginAuth(login);
+  const test = await getByLoginAuth(value.login);
   if (test) {
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
   }
 
-  const result = await create_user(
+  await create_user(
     login,
     hashedPassword,
     fio,
     role_id,
-    region_id,
+    region_id
   );
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
 
   return res.status(201).json({
     success: true,
@@ -88,16 +85,18 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 
 // update user
 const updateUser = asyncHandler(async (req, res, next) => {
-  let { login, password, fio, region_id, role_id } = req.body;
   const id = req.params.id;
-
   const oldUser = await getByIdUser(id);
   if (!oldUser) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
+  
+  const { error, value } = userValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  checkValueString(login, password, fio);
-  checkValueNumber(role_id);
+  let { login, password, fio, region_id, role_id } = value
 
   const role = await getByIdRole(role_id);
   if (!role) {
@@ -105,7 +104,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
   }
 
   if (region_id) {
-    checkValueNumber(region_id);
     const region = await getByIdRegion(region_id);
     if (!region) {
       return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
@@ -117,7 +115,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
   login = login.trim();
   password = password.trim();
   fio = fio.trim();
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(value.password, 10);
 
   if (oldUser.login !== login) {
     const test = await getByLoginAuth(login);
@@ -126,7 +124,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const updateUser = await update_user(
+  await update_user(
     login,
     hashedPassword,
     fio,
@@ -134,9 +132,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
     region_id,
     id,
   );
-  if (!updateUser) {
-    return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500));
-  }
 
   return res.status(201).json({
     success: true,
@@ -146,46 +141,13 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
 // delete user
 const deleteUser = asyncHandler(async (req, res, next) => {
-  let user = await pool.query(
-    `SELECT users.id, users.region_id, users.role_id, role.name AS role_name 
-        FROM users 
-        JOIN role ON role.id = users.role_id
-        WHERE users.id = $1`,
-    [req.user.id],
-  );
-  user = user.rows[0];
-
-  if (user.role_name !== "super_admin" && user.role_name !== "region_admin") {
-    return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
-  }
-
-  let deleteUser = null;
-  if (!user.region_id) {
-    deleteUser = await pool.query(
-      `SELECT * FROM users WHERE id = $1 AND isdeleted = false`,
-      [req.params.id],
-    );
-    deleteUser = deleteUser.rows[0];
-  } else {
-    deleteUser = await pool.query(
-      `SELECT * FROM users WHERE id = $1 AND isdeleted = false AND region_id = $2`,
-      [req.params.id, user.region_id],
-    );
-    deleteUser = deleteUser.rows[0];
-  }
-
+  const id = req.params.id
+  const deleteUser = await getByIdUser(id)
   if (!deleteUser) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
 
-  const deleteRegion = await pool.query(
-    `UPDATE users SET isdeleted = $1 WHERE id = $2 RETURNING *`,
-    [true, req.params.id],
-  );
-
-  if (!deleteRegion.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. User ochirilmadi", 500));
-  }
+  await deleteUserDb(id)
 
   return res.status(200).json({
     success: true,

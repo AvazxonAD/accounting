@@ -1,10 +1,8 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {
-  checkValueString,
-  checkValueNumber,
-} = require("../../utils/check.functions");
+const { budjetValidation } = require('../../helpers/validation/spravochnik/budejet.validation')
+
 const {
   getByNameBudjet,
   createBudjet,
@@ -16,20 +14,17 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  let { name } = req.body;
+  const { error, value } = budjetValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0], 406))
+  }
 
-  checkValueString(name);
-  name = name.trim();
-
-  const test = await getByNameBudjet(name);
+  const test = await getByNameBudjet(value.name);
   if (test) {
     return next(new ErrorResponse("Ushbu budjet nomi avval kiritilgan", 409));
   }
 
-  const result = createBudjet(name);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Budjet kiritilmadi", 500));
-  }
+  await createBudjet(value.name);
 
   return res.status(201).json({
     success: true,
@@ -48,30 +43,24 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const id = Number(req.params.id);
-  checkValueNumber(id);
+  const id = req.params.id
+  
 
   let oldBudjet = await getByIdBudjet(req.params.id);
   if (!oldBudjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }
 
-  let { name } = req.body;
+  const { error, value } = budjetValidation.validate(req.body)
 
-  checkValueString(name);
-  name = name.trim();
-
-  if (oldBudjet.name !== name) {
-    const test_name = await getByNameBudjet(name);
+  if (oldBudjet.name !== value.name) {
+    const test_name = await getByNameBudjet(value.name);
     if (test_name) {
       return next(new ErrorResponse("Ushbu budjet nomi avval kiritilgan", 409));
     }
   }
 
-  const result = await updateBudjet(name, id);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Budjet yangilanmadi", 500));
-  }
+  await updateBudjet(value.name, id);
 
   return res.status(200).json({
     success: true,
@@ -81,19 +70,14 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const id = Number(req.params.id);
-  checkValueNumber(id);
+  const id = req.params.id 
 
   const oldBudjet = await getByIdBudjet(id);
   if (!oldBudjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }
 
-  const deleteValue = await deleteBudjet(id);
-
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Budjet ochirilmadi", 500));
-  }
+  await deleteBudjet(id);
 
   return res.status(200).json({
     success: true,
@@ -103,10 +87,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const id = Number(req.params.id);
-  checkValueNumber(id);
-
-  let result = await getByIdBudjet(id);
+  let result = await getByIdBudjet(req.params.id);
   if (!result) {
     return next(
       new ErrorResponse("Server error. spravochnik_budjet_name topilmadi"),

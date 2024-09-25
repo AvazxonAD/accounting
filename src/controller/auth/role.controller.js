@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkValueString } = require("../../utils/check.functions");
+const { roleValidation } = require("../../helpers/validation/auth/role.validation");
 const {
   getByNameRole,
   create_role,
@@ -13,29 +13,16 @@ const {
 
 // create role
 const createRole = asyncHandler(async (req, res, next) => {
-  let { name } = req.body;
-
-  checkValueString(name);
-  name = name.trim();
-
-  if (
-    name !== "super_admin" &&
-    name !== "region_admin" &&
-    name !== "Bugalter" &&
-    name !== "Kassir"
-  ) {
-    return next(new ErrorResponse("Rol nomi notog`ri jonatildi", 400));
+  const { error, value} = roleValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
   }
-
-  const test = await getByNameRole(name);
+  const test = await getByNameRole(value.name);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await create_role(name);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await create_role(value.name);
 
   return res.status(201).json({
     success: true,
@@ -60,31 +47,19 @@ const updateRole = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  let { name } = req.body;
-
-  checkValueString(name);
-  name = name.trim();
-
-  if (
-    name !== "super_admin" &&
-    name !== "region_admin" &&
-    name !== "Bugalter" &&
-    name !== "Kassir"
-  ) {
-    return next(new ErrorResponse("Rol nomi notog`ri jonatildi", 400));
+  const { error, value } = roleValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
   }
 
-  if (role.name !== name) {
-    const test = await getByNameRole(name);
+  if (role.name !== value.name.trim()) {
+    const test = await getByNameRole(value.name.trim());
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  const result = await update_role(id, name);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot yangilanmadi", 500));
-  }
+  await update_role(id, value.name);
 
   return res.status(200).json({
     success: true,
@@ -100,11 +75,7 @@ const deleteRole = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteRole = await delete_role(id);
-
-  if (!deleteRole) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await delete_role(id);
 
   return res.status(200).json({
     success: true,

@@ -13,9 +13,10 @@ const createBankRasxodDb = handleServiceError(async (object) => {
                 id_spravochnik_organization, 
                 id_shartnomalar_organization, 
                 main_schet_id, 
-                user_id
+                user_id,
+                spravochnik_operatsii_own_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *
             `,
         [
@@ -26,7 +27,8 @@ const createBankRasxodDb = handleServiceError(async (object) => {
           object.id_spravochnik_organization,
           object.id_shartnomalar_organization,
           object.main_schet_id,
-          object.user_id
+          object.user_id,
+          object.spravochnik_operatsii_own_id
         ],
     );
     return result.rows[0]
@@ -99,7 +101,7 @@ const updateRasxod = handleServiceError(async (object) => {
     );
 })
 
-const getAllBankRasxodDb = handleServiceError(async ( main_schet_id, region_id, offset, limit ) => {
+const getAllBankRasxodDb = handleServiceError(async ( user_id, main_schet_id, offset, limit ) => {
     let result = await pool.query(
         `
             SELECT 
@@ -114,9 +116,78 @@ const getAllBankRasxodDb = handleServiceError(async ( main_schet_id, region_id, 
             WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
             OFFSET $3 
             LIMIT $4
-    `,[main_schet_id, region_id, offset, limit]);
+    `,[main_schet_id, user_id, offset, limit]);
     return result.rows        
 })
+
+const getAllBankRasxodByFrom = handleServiceError(async (user_id, main_schet_id, offset, limit, from) => {
+    let result = await pool.query(
+        `
+            SELECT 
+                id,
+                doc_num, 
+                doc_date, 
+                summa, 
+                opisanie, 
+                id_spravochnik_organization, 
+                id_shartnomalar_organization
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 
+                AND user_id = $2 
+                AND isdeleted = false 
+                AND doc_date > $5
+            OFFSET $3 
+            LIMIT $4
+        `, [main_schet_id, user_id, offset, limit, from]);
+
+    return result.rows;
+});
+
+const getAllBankRasxodByFromAndTo = handleServiceError(async (user_id, main_schet_id, offset, limit, from, to) => {
+    let result = await pool.query(
+        `
+            SELECT 
+                id,
+                doc_num, 
+                doc_date, 
+                summa, 
+                opisanie, 
+                id_spravochnik_organization, 
+                id_shartnomalar_organization
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 
+                AND user_id = $2 
+                AND isdeleted = false 
+                AND doc_date BETWEEN $5 AND $6
+            OFFSET $3 
+            LIMIT $4
+        `, [main_schet_id, user_id, offset, limit, from, to]);
+
+    return result.rows;
+});
+
+const getAllBankRasxodByTo = handleServiceError(async (user_id, main_schet_id, offset, limit, to) => {
+    let result = await pool.query(
+        `
+            SELECT 
+                id,
+                doc_num, 
+                doc_date, 
+                summa, 
+                opisanie, 
+                id_spravochnik_organization, 
+                id_shartnomalar_organization
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 
+                AND user_id = $2 
+                AND isdeleted = false 
+                AND doc_date < $5
+            OFFSET $3 
+            LIMIT $4
+        `, [main_schet_id, user_id, offset, limit, to]);
+
+    return result.rows;
+});
 
 const getAllRasxodChildDb = handleServiceError(async (user_id, rasxod_id) => {
     const result = await pool.query(
@@ -146,11 +217,69 @@ const getAllRasxodChildDb = handleServiceError(async (user_id, rasxod_id) => {
     return result.rows
 })
 
+const getElemenByIdRasxod = handleServiceError(async (user_id, main_schet_id, id) => {
+    let result = await pool.query(
+        `
+            SELECT 
+                id,
+                doc_num, 
+                doc_date, 
+                summa, 
+                opisanie, 
+                id_spravochnik_organization, 
+                id_shartnomalar_organization
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
+        `,
+        [main_schet_id, user_id, id],
+    );
+    return result.rows[0]
+})
+
+const getElemenByIdRasxodChild = handleServiceError(async (user_id, rasxod_id) => {
+    const result = await pool.query(
+        `SELECT  
+            id,
+            spravochnik_operatsii_id,
+            summa,
+            id_spravochnik_podrazdelenie,
+            id_spravochnik_sostav,
+            id_spravochnik_type_operatsii
+        FROM bank_rasxod_child 
+        WHERE user_id = $1 AND isdeleted = false AND id_bank_rasxod = $2
+    `,[user_id, rasxod_id],)
+    return result.rows
+})
+
+const deleteRasxodChild = handleServiceError(async (user_id, main_schet_id, id) => {
+    await pool.query(
+        `DELETE FROM bank_rasxod_child 
+            WHERE user_id = $1 AND id_bank_rasxod = $2 AND isdeleted = false AND main_schet_id = $3 
+        `,
+        [user_id, id, main_schet_id],
+    );
+})
+
+const deleteBankRasxod = handleServiceError(async (user_id, main_schet_id, id) => {
+    await pool.query(
+        `DELETE FROM bank_rasxod WHERE user_id = $1 AND id = $2 AND isdeleted = false AND main_schet_id = $3
+        `,
+        [user_id, id, main_schet_id],
+      );
+})
+
 module.exports = {
     createBankRasxodDb,
     createBankRasxodChild,
     getByIdRasxod,
     updateRasxod,
     getAllBankRasxodDb,
-    getAllRasxodChildDb
+    getAllRasxodChildDb,
+    getAllBankRasxodByFrom,
+    getAllBankRasxodByTo,
+    getAllBankRasxodByFromAndTo,
+    getElemenByIdRasxod,
+    getElemenByIdRasxodChild,
+    deleteRasxodChild,
+    deleteBankRasxod
 }

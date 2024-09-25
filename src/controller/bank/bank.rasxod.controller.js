@@ -14,7 +14,23 @@ const {
   bankRasxodValidation,
   bankRasxodChildValidation
 } = require('../../helpers/validation/bank/bank.rasxod.validation');
-const { createBankRasxodDb, createBankRasxodChild, getByIdRasxod, updateRasxod, getAllBankRasxodDb, getAllRasxodChildDb } = require("../../service/bank/bank.rasxod.db");
+const {
+  createBankRasxodDb,
+  createBankRasxodChild,
+  getByIdRasxod,
+  updateRasxod,
+  getAllBankRasxodDb,
+  getAllRasxodChildDb,
+  getAllBankRasxodByFrom,
+  getAllBankRasxodByFromAndTo,
+  getElemenByIdRasxod,
+  getElemenByIdRasxodChild,
+  deleteRasxodChild,
+  deleteBankRasxod
+} = require("../../service/bank/bank.rasxod.db");
+
+const { queryValidationBank } = require('../../helpers/validation/bank/bank.prixod.validation')
+
 
 // bank rasxod
 const bank_rasxod = asyncHandler(async (req, res, next) => {
@@ -45,7 +61,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
   }
 
   const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_own_id)
-  if(!spravochnik_operatsii){
+  if (!spravochnik_operatsii) {
     return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own  topilmadi", 404))
   }
 
@@ -142,7 +158,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
   }
 
   const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_own_id)
-  if(!spravochnik_operatsii){
+  if (!spravochnik_operatsii) {
     return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own  topilmadi", 404))
   }
 
@@ -237,10 +253,17 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 // get all bank rasxod
 const getAllBankRasxod = asyncHandler(async (req, res, next) => {
   const user_id = req.user.region_id
-  const main_schet_id = req.query.main_schet_id
+  let summa = null
+  let all_rasxod = null
 
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
+  const { error, value } = queryValidationBank.validate(req.query)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+
+
+  const limit = parseInt(value.limit) || 10;
+  const page = parseInt(value.page) || 1;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -250,7 +273,17 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const all_rasxod = await getAllBankRasxodDb(user_id, main_schet_id, offset, limit)
+  if (value.from && !value.to) {
+    all_rasxod = await getAllBankRasxodByFrom(user_id, value.main_schet_id, offset, limit, value.from)
+  }
+  if (!value.from && value.to) {
+    all_rasxod = await getAllBankRasxodByFrom(user_id, value.main_schet_id, offset, limit, value.to)
+  }
+  if (value.from && value.to) {
+    all_rasxod = await getAllBankRasxodByFromAndTo(user_id, value.main_schet_id, offset, limit, value.from, value.to)
+  }
+
+  all_rasxod = await getAllBankRasxodDb(user_id, value.main_schet_id, offset, limit)
 
   const resultArray = [];
 
@@ -259,7 +292,7 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
     let object = { ...rasxod };
     object.summa = Number(object.summa);
-    object.childs = rasxod_child.rows.map((item) => {
+    object.childs = rasxod_child.map((item) => {
       let result = { ...item };
       result.summa = Number(result.summa);
       return result;
@@ -275,108 +308,43 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
 // get element by id bank rasxod
 const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
-  let all_rasxod = await pool.query(
-    `
-        SELECT 
-            id,
-            doc_num, 
-            doc_date, 
-            summa, 
-            opisanie, 
-            id_spravochnik_organization, 
-            id_shartnomalar_organization
-        FROM bank_rasxod 
-        WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
-    `,
-    [req.query.main_schet_id, req.user.region_id, req.params.id],
-  );
-  all_rasxod = all_rasxod.rows;
-
-  if (all_rasxod.length === 0) {
+  const main_schet_id = req.query.main_schet_id
+  const id = req.params.id
+  const user_id = req.user.region_id
+  const rasxod = await getElemenByIdRasxod(user_id, main_schet_id, id)
+  if (!rasxod) {
     return next(
-      new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", [404]),
+      new ErrorResponse("Server xatolik. Rasxod document topilmadi", [404]),
     );
   }
-
-  const resultArray = [];
-
-  for (let rasxod of all_rasxod) {
-    const rasxod_child = await pool.query(
-      `
-            SELECT  
-                bank_rasxod_child.id,
-                bank_rasxod_child.spravochnik_operatsii_id,
-                spravochnik_operatsii.name AS spravochnik_operatsii_name,
-                bank_rasxod_child.summa,
-                bank_rasxod_child.id_spravochnik_podrazdelenie,
-                spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
-                bank_rasxod_child.id_spravochnik_sostav,
-                spravochnik_sostav.name AS spravochnik_sostav_name,
-                bank_rasxod_child.id_spravochnik_type_operatsii,
-                spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
-                bank_rasxod_child.own_schet,
-                bank_rasxod_child.own_subschet
-            FROM bank_rasxod_child 
-            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = bank_rasxod_child.spravochnik_operatsii_id
-            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_rasxod_child.id_spravochnik_podrazdelenie
-            JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_rasxod_child.id_spravochnik_sostav
-            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_rasxod_child.id_spravochnik_type_operatsii
-            WHERE bank_rasxod_child.user_id = $1 AND bank_rasxod_child.isdeleted = false AND bank_rasxod_child.id_bank_rasxod = $2
-        `,
-      [req.user.region_id, rasxod.id],
-    );
-
-    let object = { ...rasxod };
-    object.summa = Number(object.summa);
-    object.childs = rasxod_child.rows.map((item) => {
-      let result = { ...item };
-      result.summa = Number(result.summa);
-      return result;
-    });
-    resultArray.push(object);
-  }
+  
+  const rasxod_child = await getElemenByIdRasxodChild(user_id, rasxod.id)
+  let object = { ...rasxod };
+  object.summa = Number(object.summa);
+  object.childs = rasxod_child.map((item) => {
+    let result = { ...item };
+    result.summa = Number(result.summa);
+    return result;
+  });
 
   return res.status(200).json({
     success: true,
-    data: resultArray,
+    data: object,
   });
 });
 
 // delete bank_rasxod
 const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  const main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND  user_id = $2 AND isdeleted = false
-    `,
-    [main_schet_id, req.user.region_id],
-  );
-  if (!main_schet.rows[0]) {
+  const user_id = req.user.region_id
+  const id = req.params.id
+  const main_schet = await getByIdMainSchet(user_id, main_schet_id)
+  if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }
 
-  const childs = await pool.query(
-    `DELETE FROM bank_rasxod_child 
-        WHERE user_id = $1 AND id_bank_rasxod = $2 AND isdeleted = false AND main_schet_id = $3 
-        RETURNING * 
-    `,
-    [req.user.region_id, req.params.id, main_schet_id],
-  );
-  if (childs.rows.length === 0) {
-    return next(
-      new ErrorResponse("Server xatolik. Bank child ochirilmadi", 500),
-    );
-  }
-
-  const bank_rasxod = await pool.query(
-    `DELETE FROM bank_rasxod WHERE user_id = $1 AND id = $2 AND isdeleted = false
-    `,
-    [req.user.region_id, req.params.id],
-  );
-  if (!bank_rasxod.rows.length === 0) {
-    return next(
-      new ErrorResponse("Server xatolik. Bank prixod topilmadi", 500),
-    );
-  }
+  await deleteRasxodChild(user_id, main_schet_id, id)
+  await deleteBankRasxod(user_id, main_schet_id, id)
 
   return res.status(200).json({
     success: true,

@@ -3,13 +3,12 @@ const { handleServiceError } = require("../../middleware/service.handle");
 
 const create_user = handleServiceError(
   async (login, password, fio, role_id, region_id) => {
-    const result = await pool.query(
+    await pool.query(
       `INSERT INTO users(login, password, fio, role_id, region_id) 
-        VALUES($1, $2, $3, $4, $5) RETURNING *
+        VALUES($1, $2, $3, $4, $5)
     `,
       [login, password, fio, role_id, region_id],
     );
-    return result.rows[0];
   },
 );
 
@@ -20,14 +19,12 @@ const getByIdUser = handleServiceError(async (id) => {
 
 const update_user = handleServiceError(
   async (login, password, fio, role_id, region_id, id) => {
-    const result = await pool.query(
+    await pool.query(
       `UPDATE users SET login = $1, password = $2, fio = $3, role_id =$4, region_id = $5
         WHERE id = $6
-        RETURNING *
     `,
       [login, password, fio, role_id, region_id, id],
     );
-    return result.rows[0];
   },
 );
 
@@ -51,9 +48,17 @@ const getAllRegionUsers = handleServiceError(async (region_id) => {
   return result.rows;
 });
 
+const deleteUserDb = handleServiceError(async ( id ) => {
+  await pool.query(
+    `UPDATE users SET isdeleted = $1 WHERE id = $2`,
+    [true, id],
+  );
+})
+
 module.exports = {
   create_user,
   getAllRegionUsers,
   getByIdUser,
   update_user,
+  deleteUserDb
 };

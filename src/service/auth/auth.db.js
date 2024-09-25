@@ -23,12 +23,11 @@ const getByIdAuth = handleServiceError(async (id) => {
 });
 
 const updateAuth = handleServiceError(async (login, password, fio, id) => {
-  const result = await pool.query(
+  await pool.query(
     `UPDATE users SET login = $1, password = $2, fio = $3 WHERE id = $4 RETURNING *
     `,
     [login, password, fio, id],
   );
-  return result.rows[0];
 });
 
 const getProfileAuth = handleServiceError(async (id) => {

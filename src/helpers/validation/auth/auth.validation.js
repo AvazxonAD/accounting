@@ -6,6 +6,14 @@ const authValidation = Joi.object({
     main_schet_id: Joi.number()
 });
 
+const authUpdateValidation = Joi.object({
+    fio: Joi.string().required(),
+    login: Joi.string().required(),
+    oldPassword: Joi.string().required(),
+    newPassword: Joi.string().required()
+})
+
 module.exports = {
     authValidation,
+    authUpdateValidation
 };

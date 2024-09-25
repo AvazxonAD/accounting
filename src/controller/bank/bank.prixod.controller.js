@@ -1,7 +1,7 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
-const { bankPrixodValidator, bankPrixodChildValidation, getAllPrixodValidation } = require('../../helpers/validation/bank/bank.prixod.validation')
+const { bankPrixodValidator, bankPrixodChildValidation, queryValidationBank } = require('../../helpers/validation/bank/bank.prixod.validation')
 
 const { getByIdShartnoma } = require('../../service/shartnoma/shartnoma.db')
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
@@ -337,7 +337,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   let summa = null
   
   const user_id = req.user.region_id;
-  const { error, value } = getAllPrixodValidation.validate(req.query)
+  const { error, value } = queryValidationBank.validate(req.query)
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
