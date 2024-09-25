@@ -26,7 +26,7 @@ const {
   getElementByIdPrixod
 } = require('../../service/bank/bank.prixod.db')
 
-// bank prixod
+// bank prixod create 
 const bank_prixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const user_id = req.user.region_id;
@@ -114,6 +114,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
       }
     }
   }
+
   const prixod = await createBankPrixod({
     ...value,
     main_schet_id,
@@ -356,15 +357,15 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   }
 
   if(value.from && !value.to){
-    all_prixod = await getAllPrixodByFrom(user_id, value.main_schet_id, value.offset, value.limit, req.body.from)
+    all_prixod = await getAllPrixodByFrom(user_id, value.main_schet_id, value.offset, value.limit, new Date(req.query.from))
   }
 
   if(!value.from && value.to){
-    all_prixod = await getAllPrixodByTo(user_id, value.main_schet_id, value.offset, req.body.to)
+    all_prixod = await getAllPrixodByTo(user_id, value.main_schet_id, value.offset, value.limit,  new Date(req.query.to))
   }
 
   if(value.from && value.to){
-    all_prixod = await getAllPrixodByFromAndTo(user_id, value.main_schet_id, value.offset, req.body.from, req.body.to)
+    all_prixod = await getAllPrixodByFromAndTo(user_id, value.main_schet_id, value.offset, value.limit, new Date(req.query.from), new Date(req.query.to))
   }
 
   all_prixod = await getAllPrixod(user_id, value.main_schet_id, value.offset, value.limit)

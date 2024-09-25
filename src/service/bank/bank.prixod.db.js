@@ -13,9 +13,10 @@ const createBankPrixod = handleServiceError(async (object) => {
                 id_spravochnik_organization, 
                 id_shartnomalar_organization, 
                 main_schet_id, 
-                user_id
+                user_id,
+                spravochnik_operatsii_own_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING * 
             `,
         [
@@ -28,6 +29,7 @@ const createBankPrixod = handleServiceError(async (object) => {
             object.id_shartnomalar_organization,
             object.main_schet_id,
             object.user_id,
+            object.spravochnik_operatsii_own_id
         ],
     );
     return result.rows[0]
@@ -87,8 +89,9 @@ const bankPrixodUpdate = handleServiceError(async (object) => {
                 provodki_boolean = $4, 
                 opisanie = $5, 
                 id_spravochnik_organization = $6, 
-                id_shartnomalar_organization = $7
-            WHERE id = $8
+                id_shartnomalar_organization = $7,
+                spravochnik_operatsii_own_id = $8
+            WHERE id = $9
             `,
         [
             object.doc_num,
@@ -98,6 +101,7 @@ const bankPrixodUpdate = handleServiceError(async (object) => {
             object.opisanie,
             object.id_spravochnik_organization,
             object.id_shartnomalar_organization,
+            object.spravochnik_operatsii_own_id,
             object.id
         ],
     );
@@ -113,19 +117,28 @@ const getAllPrixod = handleServiceError(async (user_id, main_schet_id, offset, l
     const result = await pool.query(
         `
             SELECT 
-              id,
-              doc_num, 
-              doc_date, 
-              summa, 
-              provodki_boolean, 
-              dop_provodki_boolean, 
-              opisanie, 
-              id_spravochnik_organization, 
-              id_shartnomalar_organization
-            FROM bank_prixod 
-            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
+                bank_prixod.id,
+                bank_prixod.doc_num, 
+                bank_prixod.doc_date, 
+                bank_prixod.summa, 
+                bank_prixod.provodki_boolean, 
+                bank_prixod.dop_provodki_boolean, 
+                bank_prixod.opisanie, 
+                bank_prixod.id_spravochnik_organization, 
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn,
+                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
+                bank_prixod.spravochnik_operatsii_own_id
+            FROM bank_prixod
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization 
+            WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.user_id = $2 AND bank_prixod.isdeleted = false
             OFFSET $3
-            LIMIT $4
+            LIMIT $4;
           `,
         [main_schet_id, user_id, offset, limit],
     );
@@ -143,18 +156,27 @@ const getAllPrixod = handleServiceError(async (user_id, main_schet_id, offset, l
 const getAllPrixodByFrom = handleServiceError(async (user_id, main_schet_id, offset, limit, from) => {
     const result = await pool.query(
         `
-            SELECT 
-              id,
-              doc_num, 
-              doc_date, 
-              summa, 
-              provodki_boolean, 
-              dop_provodki_boolean, 
-              opisanie, 
-              id_spravochnik_organization, 
-              id_shartnomalar_organization
-            FROM bank_prixod 
-            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date > $3
+            SELECT       
+                bank_prixod.id,
+                bank_prixod.doc_num, 
+                bank_prixod.doc_date, 
+                bank_prixod.summa, 
+                bank_prixod.provodki_boolean, 
+                bank_prixod.dop_provodki_boolean, 
+                bank_prixod.opisanie, 
+                bank_prixod.id_spravochnik_organization, 
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn,
+                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
+                bank_prixod.spravochnik_operatsii_own_id
+            FROM bank_prixod
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization
+            WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.user_id = $2 AND bank_prixod.isdeleted = false AND bank_prixod.doc_date > $3
             OFFSET $4
             LIMIT $5
           `,
@@ -172,20 +194,31 @@ const getAllPrixodByFrom = handleServiceError(async (user_id, main_schet_id, off
 })
 
 const getAllPrixodByTo = handleServiceError(async (user_id, main_schet_id, offset, limit, to) => {
+    console.log(to)
+
     const result = await pool.query(
         `
-            SELECT 
-              id,
-              doc_num, 
-              doc_date, 
-              summa, 
-              provodki_boolean, 
-              dop_provodki_boolean, 
-              opisanie, 
-              id_spravochnik_organization, 
-              id_shartnomalar_organization
-            FROM bank_prixod 
-            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date < $3
+            SELECT       
+                bank_prixod.id,
+                bank_prixod.doc_num, 
+                bank_prixod.doc_date, 
+                bank_prixod.summa, 
+                bank_prixod.provodki_boolean, 
+                bank_prixod.dop_provodki_boolean, 
+                bank_prixod.opisanie, 
+                bank_prixod.id_spravochnik_organization, 
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn,
+                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
+                bank_prixod.spravochnik_operatsii_own_id
+            FROM bank_prixod
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization
+            WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.user_id = $2 AND bank_prixod.isdeleted = false AND bank_prixod.doc_date < $3
             OFFSET $4
             LIMIT $5
           `,
@@ -214,7 +247,8 @@ const getAllPrixodByFromAndTo = handleServiceError(async (user_id, main_schet_id
             dop_provodki_boolean, 
             opisanie, 
             id_spravochnik_organization, 
-            id_shartnomalar_organization
+            id_shartnomalar_organization,
+            spravochnik_operatsii_own_id
           FROM bank_prixod 
           WHERE main_schet_id = $1 
             AND user_id = $2 
@@ -294,7 +328,8 @@ const getElementByIdPrixod = handleServiceError(async (user_id, main_schet_id, i
                 dop_provodki_boolean, 
                 opisanie, 
                 id_spravochnik_organization, 
-                id_shartnomalar_organization
+                id_shartnomalar_organization,
+                spravochnik_operatsii_own_id
             FROM bank_prixod
             WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
         `,
