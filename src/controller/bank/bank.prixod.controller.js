@@ -332,7 +332,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   let all_prixod = null
   let totalQuery = null
   let summa = null
-
+  
   const user_id = req.user.region_id;
   const { error, value } = getAllPrixodValidation.validate(req.query)
   if (error) {
@@ -394,10 +394,10 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     currentPage: page,
     nextPage: page >= pageCount ? null : page + 1,
     backPage: page === 1 ? null : page - 1,
-    data: {
-      summa,
-      result: resultArray  
+    meta: {
+      summa
     },
+    data: resultArray
   });
 });
 
