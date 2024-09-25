@@ -14,7 +14,7 @@ const {
   getByIdOrganization,
   updateOrganization,
   deleteOrganization,
-} = require("../../service/organization.db");
+} = require("../../service/spravochnik/organization.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

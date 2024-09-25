@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByInnOrganization = asyncFunctionHandler(async (inn, user_id) => {
+const getByInnOrganization = handleServiceError(async (inn, user_id) => {
   const result = await pool.query(
     `SELECT * FROM spravochnik_organization WHERE inn = $1 AND user_id = $2 AND isdeleted = false
     `,
@@ -10,7 +10,7 @@ const getByInnOrganization = asyncFunctionHandler(async (inn, user_id) => {
   return result.rows[0];
 });
 
-const createOrganization = asyncFunctionHandler(
+const createOrganization = handleServiceError(
   async (
     name,
     bank_klient,
@@ -43,7 +43,7 @@ const createOrganization = asyncFunctionHandler(
   },
 );
 
-const getAllOrganization = asyncFunctionHandler(
+const getAllOrganization = handleServiceError(
   async (user_id, offset, limit) => {
     result = await pool.query(
       `SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx
@@ -58,7 +58,7 @@ const getAllOrganization = asyncFunctionHandler(
   },
 );
 
-const totalOrganization = asyncFunctionHandler(async (user_id) => {
+const totalOrganization = handleServiceError(async (user_id) => {
   const result = await pool.query(
     `SELECT COUNT(id) AS total FROM spravochnik_organization WHERE isdeleted = false AND user_id = $1`,
     [user_id],
@@ -66,7 +66,7 @@ const totalOrganization = asyncFunctionHandler(async (user_id) => {
   return result.rows[0];
 });
 
-const getByIdOrganization = asyncFunctionHandler(async (user_id, id) => {
+const getByIdOrganization = handleServiceError(async (user_id, id) => {
   const result = await pool.query(
     `SELECT * FROM spravochnik_organization WHERE  user_id = $1 AND id = $2 AND isdeleted = false `,
     [user_id, id],
@@ -74,7 +74,7 @@ const getByIdOrganization = asyncFunctionHandler(async (user_id, id) => {
   return result.rows[0];
 });
 
-const updateOrganization = asyncFunctionHandler(
+const updateOrganization = handleServiceError(
   async (
     name,
     bank_klient,
@@ -108,7 +108,7 @@ const updateOrganization = asyncFunctionHandler(
   },
 );
 
-const deleteOrganization = asyncFunctionHandler(async (id) => {
+const deleteOrganization = handleServiceError(async (id) => {
   const result = await pool.query(
     `UPDATE spravochnik_organization SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],

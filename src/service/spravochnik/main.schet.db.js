@@ -1,8 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
-const { handleServiceError } = require("../middleware/service.handle");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByIdMainSchet = asyncFunctionHandler(async (user_id, id) => {
+const getByIdMainSchet = handleServiceError(async (user_id, id) => {
   const result = await pool.query(
     `SELECT 
                 main_schet.id, 
@@ -61,7 +60,7 @@ const createMain_schet = handleServiceError(async (object) => {
   return result.rows[0];
 });
 
-const getAllMain_schet = asyncFunctionHandler(async (user_id) => {
+const getAllMain_schet = handleServiceError(async (user_id) => {
   const result = await pool.query(
     `
         SELECT 
@@ -95,7 +94,7 @@ const getAllMain_schet = asyncFunctionHandler(async (user_id) => {
   return result.rows;
 });
 
-const updateMain_schet = asyncFunctionHandler(
+const updateMain_schet = handleServiceError(
   async (
     account_number,
     spravochnik_budjet_name_id,
@@ -157,7 +156,7 @@ const updateMain_schet = asyncFunctionHandler(
   },
 );
 
-const deleteMain_schet = asyncFunctionHandler(async (id) => {
+const deleteMain_schet = handleServiceError(async (id) => {
   const deleteValue = await pool.query(
     `UPDATE main_schet SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],
@@ -165,7 +164,7 @@ const deleteMain_schet = asyncFunctionHandler(async (id) => {
   return deleteValue.rows[0];
 });
 
-const getByBudjet_idMain_schet = asyncFunctionHandler(async (id) => {
+const getByBudjet_idMain_schet = handleServiceError(async (id) => {
   const result = await pool.query(
     `SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`,
     [id],

@@ -15,7 +15,7 @@ const mainSchetValidator = Joi.object({
   jur3_schet: Joi.string().length(5).required(),
   jur3_subschet: Joi.string().length(7).required(),
   jur4_schet: Joi.string().length(5).required(),
-  jur4_subschet: Joi.string().length(7).required(),
+  jur4_subschet: Joi.string().length(7).required()
 });
 
 module.exports = {

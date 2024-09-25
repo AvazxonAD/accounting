@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByLoginAuth = asyncFunctionHandler(async (login) => {
+const getByLoginAuth = handleServiceError(async (login) => {
   const result = await pool.query(
     `
         SELECT users.id, users.fio, users.password, users.login, users.region_id, users.role_id, role.name AS role_name 
@@ -14,7 +14,7 @@ const getByLoginAuth = asyncFunctionHandler(async (login) => {
   return result.rows[0];
 });
 
-const getByIdAuth = asyncFunctionHandler(async (id) => {
+const getByIdAuth = handleServiceError(async (id) => {
   const result = await pool.query(
     `SELECT * FROM users WHERE id = $1 AND isdeleted = false`,
     [id],
@@ -22,7 +22,7 @@ const getByIdAuth = asyncFunctionHandler(async (id) => {
   return result.rows[0];
 });
 
-const updateAuth = asyncFunctionHandler(async (login, password, fio, id) => {
+const updateAuth = handleServiceError(async (login, password, fio, id) => {
   const result = await pool.query(
     `UPDATE users SET login = $1, password = $2, fio = $3 WHERE id = $4 RETURNING *
     `,
@@ -31,7 +31,7 @@ const updateAuth = asyncFunctionHandler(async (login, password, fio, id) => {
   return result.rows[0];
 });
 
-const getProfileAuth = asyncFunctionHandler(async (id) => {
+const getProfileAuth = handleServiceError(async (id) => {
   const result = await pool.query(
     `SELECT users.id, role.id AS role_id, role.name AS role_name, users.fio, users.login
         FROM users 

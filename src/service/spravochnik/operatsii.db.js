@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const createOperatsii = asyncFunctionHandler(
+const createOperatsii = handleServiceError(
   async (name, schet, sub_schet, type_schet) => {
     const result = await pool.query(
       `INSERT INTO spravochnik_operatsii(
@@ -15,7 +15,7 @@ const createOperatsii = asyncFunctionHandler(
   },
 );
 
-const getByNameAndSchetOperatsii = asyncFunctionHandler(
+const getByNameAndSchetOperatsii = handleServiceError(
   async (name, type_schet) => {
     const result = await pool.query(
       `SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false
@@ -26,7 +26,7 @@ const getByNameAndSchetOperatsii = asyncFunctionHandler(
   },
 );
 
-const getAllOperatsii = asyncFunctionHandler(async (query, offset, limit) => {
+const getAllOperatsii = handleServiceError(async (query, offset, limit) => {
   const result = await pool.query(
     `SELECT id, name, schet, sub_schet, type_schet 
         FROM spravochnik_operatsii  
@@ -39,7 +39,7 @@ const getAllOperatsii = asyncFunctionHandler(async (query, offset, limit) => {
   return result.rows;
 });
 
-const totalOperatsii = asyncFunctionHandler(async (query) => {
+const totalOperatsii = handleServiceError(async (query) => {
   const result = await pool.query(
     `SELECT COUNT(id) AS total FROM spravochnik_operatsii WHERE isdeleted = false AND type_schet = $1`,
     [query],
@@ -47,7 +47,7 @@ const totalOperatsii = asyncFunctionHandler(async (query) => {
   return result.rows[0];
 });
 
-const getByIdOperatsii = asyncFunctionHandler(async (id) => {
+const getByIdOperatsii = handleServiceError(async (id) => {
   let result = await pool.query(
     `SELECT * FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
     `,
@@ -56,7 +56,7 @@ const getByIdOperatsii = asyncFunctionHandler(async (id) => {
   return result.rows[0];
 });
 
-const updateOperatsii = asyncFunctionHandler(
+const updateOperatsii = handleServiceError(
   async (name, schet, sub_schet, type_schet, id) => {
     const result = await pool.query(
       `UPDATE spravochnik_operatsii 
@@ -70,7 +70,7 @@ const updateOperatsii = asyncFunctionHandler(
   },
 );
 
-const deleteOperatsii = asyncFunctionHandler(async (id) => {
+const deleteOperatsii = handleServiceError(async (id) => {
   const result = await pool.query(
     `UPDATE spravochnik_operatsii SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],

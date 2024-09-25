@@ -6,15 +6,15 @@ const {
   checkValueNumber,
 } = require("../../utils/check.functions");
 const bcrypt = require("bcrypt");
-const { getByIdRole } = require("../../service/role.db");
-const { getByIdRegion } = require("../../service/region.db");
-const { getByLoginAuth } = require("../../service/auth.db");
+const { getByIdRole } = require("../../service/auth/role.db");
+const { getByIdRegion } = require("../../service/auth/region.db");
+const { getByLoginAuth } = require("../../service/auth/auth.db");
 const {
   create_user,
   getAllRegionUsers,
   getByIdUser,
   update_user,
-} = require("../../service/user.db");
+} = require("../../service/auth/user.db");
 
 // create user
 const createUser = asyncHandler(async (req, res, next) => {

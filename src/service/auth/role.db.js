@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByNameRole = asyncFunctionHandler(async (name) => {
+const getByNameRole = handleServiceError(async (name) => {
   const result = await pool.query(
     `SELECT * FROM role WHERE name = $1 AND isdeleted = false`,
     [name],
@@ -9,7 +9,7 @@ const getByNameRole = asyncFunctionHandler(async (name) => {
   return result.rows[0];
 });
 
-const create_role = asyncFunctionHandler(async (name) => {
+const create_role = handleServiceError(async (name) => {
   const result = await pool.query(
     `INSERT INTO role(name) VALUES($1) RETURNING *`,
     [name],
@@ -17,14 +17,14 @@ const create_role = asyncFunctionHandler(async (name) => {
   return result.rows[0];
 });
 
-const get_all_role = asyncFunctionHandler(async () => {
+const get_all_role = handleServiceError(async () => {
   const result = await pool.query(
     `SELECT id, name FROM role WHERE isdeleted = false ORDER BY id`,
   );
   return result.rows;
 });
 
-const getByIdRole = asyncFunctionHandler(async (id) => {
+const getByIdRole = handleServiceError(async (id) => {
   const result = await pool.query(
     `SELECT id, name FROM role WHERE isdeleted = false AND id = $1`,
     [id],
@@ -32,7 +32,7 @@ const getByIdRole = asyncFunctionHandler(async (id) => {
   return result.rows[0];
 });
 
-const update_role = asyncFunctionHandler(async (id, name) => {
+const update_role = handleServiceError(async (id, name) => {
   const result = await pool.query(
     `UPDATE role SET name = $1 WHERE id = $2 RETURNING *`,
     [name, id],
@@ -40,7 +40,7 @@ const update_role = asyncFunctionHandler(async (id, name) => {
   return result.rows[0];
 });
 
-const delete_role = asyncFunctionHandler(async (id) => {
+const delete_role = handleServiceError(async (id) => {
   const result = await pool.query(
     `UPDATE role SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],

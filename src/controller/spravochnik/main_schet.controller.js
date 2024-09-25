@@ -5,26 +5,24 @@ const {
   checkValueString,
   checkValueNumber,
 } = require("../../utils/check.functions");
-const { getByIdBudjet } = require("../../service/budjet.name.db");
+const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.db");
 const {
   createMain_schet,
   getByIdMainSchet,
   getAllMain_schet,
   updateMain_schet,
   deleteMain_schet,
-} = require("../../service/main.schet.db");
-const { mainSchetValidator } = require("../../helpers/main_schet.validation");
+} = require("../../service/spravochnik/main.schet.db");
+const { mainSchetValidator } = require("../../helpers/validation/spravochnik/main_schet.validation");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
   const { error, value } = mainSchetValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error), 406);
+    return next(new ErrorResponse(error.details[0].message), 406);
   }
   if (value.tashkilot_inn.toString().length !== 9) {
-    return next(
-      new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400),
-    );
+    return next(new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400));
   }
   const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
   if (!test_budjet) {

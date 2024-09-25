@@ -11,7 +11,7 @@ const {
   getByIdSostav,
   updateSostav,
   deleteSostav,
-} = require("../../service/sostav.db");
+} = require("../../service/spravochnik/sostav.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

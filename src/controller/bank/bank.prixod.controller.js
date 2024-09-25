@@ -1,101 +1,63 @@
 const asyncHandler = require("../../middleware/asyncHandler");
-const {
-  checkValueString,
-  checkValueNumber,
-  checkValueBoolean,
-  checkValueArray,
-  isValidDate,
-  checkNotNull,
-} = require("../../utils/check.functions");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
+const { bankPrixodValidator, bankPrixodChildValidation } = require('../../helpers/validation/bank/bank.prixod.validation')
 
-const { getByIdMainSchet } = require("../../service/main.schet.db");
-const { getByIdOrganization } = require("../../service/organization.db");
-const { getByIdOperatsii } = require("../../service/operatsii.db");
-const { getByIdPodrazlanie } = require("../../service/podrazdelenie.db");
-const { getByIdSostav } = require("../../service/sostav.db");
-const { getByIdtype_operatsii } = require("../../service/type_operatsii.db");
-const { getByIdPodotchet } = require("../../service/podotchet_lito.db");
+const { getByIdShartnoma } = require('../../service/shartnoma/shartnoma.db')
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getByIdOrganization } = require("../../service/spravochnik/organization.db");
+const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
+const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.db");
+const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
+const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
+const { getByIdPodotchet } = require("../../service/spravochnik/podotchet_lito.db");
+const { createBankPrixod, createBankPrixodChild } = require('../../service/bank/bank.prixod.db')
 
 // bank prixod
 const bank_prixod = asyncHandler(async (req, res, next) => {
-  const {
-    doc_num,
-    doc_date,
-    summa,
-    provodki_boolean,
-    dop_provodki_boolean,
-    opisanie,
-    id_spravochnik_organization,
-    id_shartnomalar_organization,
-    spravochnik_operatsii_own_id,
-    childs,
-  } = req.body;
-
+  const { error, value } = bankPrixodValidator.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message), 406);
+  }
+  const main_schet_id = req.query.main_schet_id;
   const user_id = req.user.region_id;
 
-  checkNotNull(id_spravochnik_organization, spravochnik_operatsii_own_id);
-  checkValueString(doc_date, doc_num, opisanie);
-  checkValueNumber(id_spravochnik_organization, id_shartnomalar_organization);
-  checkValueBoolean(provodki_boolean, dop_provodki_boolean);
-  checkValueArray(childs);
-
-  const main_schet_id = req.query.main_schet_id;
   const main_schet = await getByIdMainSchet(user_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const organization = await getByIdOrganization(
-    user_id,
-    id_spravochnik_organization,
-  );
+  const organization = await getByIdOrganization(user_id, value.id_spravochnik_organization);
   if (!organization) {
     return next(new ErrorResponse("Hamkor korxona topilmadi", 404));
   }
 
-  if (id_shartnomalar_organization) {
+  if (value.id_shartnomalar_organization) {
+    const contract = await getByIdShartnoma(user_id, value.id_shartnomalar_organization)
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
     }
   }
 
-  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
-    spravochnik_operatsii_own_id,
-  );
+  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(value.spravochnik_operatsii_own_id);
   if (!spravochnik_operatsii_own_id_test) {
-    return next(
-      new ErrorResponse(
-        "Server xatolik. spravochnik_operatsii_own topilmadi",
-        404,
-      ),
-    );
+    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404));
   }
 
-  for (let child of childs) {
-    checkNotNull(child.spravochnik_operatsii_id);
-    checkValueNumber(
-      child.summa,
-      child.spravochnik_operatsii_id,
-      child.id_spravochnik_podrazdelenie,
-      child.id_spravochnik_sostav,
-      child.id_spravochnik_type_operatsii,
-      child.id_spravochnik_podotchet_litso,
-    );
-
-    if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsii(
-        child.spravochnik_operatsii_id,
-      );
-      if (!spravochnik_operatsii) {
-        return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
-      }
+  for (let child of value.childs) {
+    const { error, value } = bankPrixodChildValidation.validate(child)
+    if(error){
+      return next(new ErrorResponse(error.details[0].message, 406))
     }
-    if (child.id_spravochnik_podrazdelenie) {
+
+    const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_id);
+    if (!spravochnik_operatsii) {
+      return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
+    }
+    if (value.id_spravochnik_podrazdelenie) {
       const spravochnik_podrazdelenie = await getByIdPodrazlanie(
         user_id,
-        child.d_spravochnik_podrazdelenie,
+        value.id_spravochnik_podrazdelenie,
       );
       if (!spravochnik_podrazdelenie) {
         return next(
@@ -103,20 +65,20 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
         );
       }
     }
-    if (child.id_spravochnik_sostav) {
+    if (value.id_spravochnik_sostav) {
       const spravochnik_sostav = await getByIdSostav(
         user_id,
-        child.id_spravochnik_sostav,
+        value.id_spravochnik_sostav,
       );
       if (!spravochnik_sostav) {
         return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404));
       }
     }
 
-    if (child.id_spravochnik_type_operatsii) {
+    if (value.id_spravochnik_type_operatsii) {
       const spravochnik_type_operatsii = getByIdtype_operatsii(
         user_id,
-        child.id_spravochnik_type_operatsii,
+        value.id_spravochnik_type_operatsii,
       );
       if (!spravochnik_type_operatsii) {
         return next(
@@ -125,89 +87,36 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
       }
     }
 
-    if (child.id_spravochnik_podotchet_litso) {
+    if (value.id_spravochnik_podotchet_litso) {
       const spravochnik_podotchet_litso = await getByIdPodotchet(
         user_id,
-        id_spravochnik_podotchet_litso,
+        value.id_spravochnik_podotchet_litso,
       );
-      if (!spravochnik_podotchet_litso.rows[0]) {
+      
+      if (!spravochnik_podotchet_litso) {
         return next(
           new ErrorResponse("spravochnik_podotchet_litso topilmadi", 404),
         );
       }
     }
   }
+  const prixod = await createBankPrixod({
+    ...value,
+    main_schet_id, 
+    user_id,
+    provodki_boolean: true
+  })
 
-  const prixod = await pool.query(
-    `
-        INSERT INTO bank_prixod(
-            doc_num, 
-            doc_date, 
-            summa, 
-            provodki_boolean, 
-            dop_provodki_boolean, 
-            opisanie, 
-            id_spravochnik_organization, 
-            id_shartnomalar_organization, 
-            main_schet_id, 
-            user_id
-        ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-        RETURNING *
-        `,
-    [
-      doc_num,
-      doc_date,
-      summa,
-      provodki_boolean,
-      dop_provodki_boolean,
-      opisanie,
-      id_spravochnik_organization,
-      id_shartnomalar_organization,
-      main_schet_id,
-      req.user.region_id,
-    ],
-  );
-
-  if (!prixod.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
-
-  for (let child of childs) {
-    const bank_child = await pool.query(
-      `
-            INSERT INTO bank_prixod_child(
-                spravochnik_operatsii_id,
-                summa,
-                id_spravochnik_podrazdelenie,
-                id_spravochnik_sostav,
-                id_spravochnik_type_operatsii,
-                id_spravochnik_podotchet_litso,
-                own_schet,
-                own_subschet,
-                main_schet_id,
-                id_bank_prixod,
-                user_id
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [
-        child.spravochnik_operatsii_id,
-        child.summa,
-        child.id_spravochnik_podrazdelenie,
-        child.id_spravochnik_sostav,
-        child.id_spravochnik_type_operatsii,
-        child.id_spravochnik_podotchet_litso,
-        main_schet.jur2_schet,
-        main_schet.jur2_subschet,
-        main_schet.id,
-        prixod.rows[0].id,
-        req.user.region_id,
-      ],
-    );
-    if (!bank_child.rows[0]) {
-      return next(
-        new ErrorResponse("Server xatolik. Child yozuv kiritilmadi", 500),
-      );
-    }
+  for (let child of value.childs) {
+    await createBankPrixodChild({
+      ...child,
+      jur2_schet: main_schet.jur2_schet,
+      jur2_subschet: main_schet.jur2_subschet,
+      main_schet_id: main_schet.id,
+      bank_prixod_id: prixod.id,
+      user_id,
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
+    })
   }
 
   res.status(201).json({

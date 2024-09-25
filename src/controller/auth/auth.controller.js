@@ -1,47 +1,43 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const pool = require("../../config/db");
 const generateToken = require("../../utils/auth/generate.token");
 const bcrypt = require("bcrypt");
-const { checkValueString } = require("../../utils/check.functions");
+const { authValidation } = require('../../helpers/validation/auth/auth.validation')
+
 const {
   getByLoginAuth,
   getByIdAuth,
   updateAuth,
   getProfileAuth,
-} = require("../../service/auth.db");
+} = require("../../service/auth/auth.db");
+
 const {
   getByIdMainSchet,
   getByBudjet_idMain_schet,
-} = require("../../service/main.schet.db");
+} = require("../../service/spravochnik/main.schet.db");
 
 // login
 const login = asyncHandler(async (req, res, next) => {
-  const { login, password, main_schet_id } = req.body;
-
-  checkValueString(login, password);
-
-  const user = await getByLoginAuth(login);
-
+  const { error, value } = authValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message), 406);
+  }
+  const user = await getByLoginAuth(value.login);
   if (!user) {
     return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
   }
-
-  const matchPassword = await bcrypt.compare(password, user.password);
+  const matchPassword = await bcrypt.compare(value.password, user.password);
   if (!matchPassword) {
     return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
   }
   let main_schet = null;
 
-  if (main_schet_id) {
-    main_schet = await getByIdMainSchet(user.region_id, main_schet_id);
+  if (value.main_schet_id) {
+    main_schet = await getByIdMainSchet(user.region_id, value.main_schet_id);
     if (!main_schet) {
-      return next(
-        new ErrorResponse("Shot raqami raqami notog`ri kir111itildi", 400),
-      );
+      return next(new ErrorResponse("Shot raqami raqami notog`ri kir111itildi", 400));
     }
   }
-
   const token = generateToken(user);
   return res.status(200).json({
     success: true,

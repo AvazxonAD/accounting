@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByNameBudjet = asyncFunctionHandler(async (name) => {
+const getByNameBudjet = handleServiceError(async (name) => {
   const result = await pool.query(
     `SELECT id, name FROM spravochnik_budjet_name WHERE name = $1 AND isdeleted = false`,
     [name],
@@ -9,7 +9,7 @@ const getByNameBudjet = asyncFunctionHandler(async (name) => {
   return result.rows[0];
 });
 
-const createBudjet = asyncFunctionHandler(async (name) => {
+const createBudjet = handleServiceError(async (name) => {
   const result = await pool.query(
     `INSERT INTO spravochnik_budjet_name(name) VALUES($1) RETURNING *`,
     [name],
@@ -17,14 +17,14 @@ const createBudjet = asyncFunctionHandler(async (name) => {
   return result.rows[0];
 });
 
-const getAllBudjet = asyncFunctionHandler(async () => {
+const getAllBudjet = handleServiceError(async () => {
   const result = await pool.query(
     `SELECT id, name FROM spravochnik_budjet_name WHERE isdeleted = false ORDER BY id`,
   );
   return result.rows;
 });
 
-const getByIdBudjet = asyncFunctionHandler(async (id) => {
+const getByIdBudjet = handleServiceError(async (id) => {
   let result = await pool.query(
     `SELECT * FROM spravochnik_budjet_name WHERE id = $1`,
     [id],
@@ -32,7 +32,7 @@ const getByIdBudjet = asyncFunctionHandler(async (id) => {
   return result.rows[0];
 });
 
-const updateBudjet = asyncFunctionHandler(async (name, id) => {
+const updateBudjet = handleServiceError(async (name, id) => {
   const result = await pool.query(
     `UPDATE spravochnik_budjet_name SET name = $1 WHERE id = $2 RETURNING *`,
     [name, id],
@@ -40,7 +40,7 @@ const updateBudjet = asyncFunctionHandler(async (name, id) => {
   return result.rows[0];
 });
 
-const deleteBudjet = asyncFunctionHandler(async (id) => {
+const deleteBudjet = handleServiceError(async (id) => {
   const result = await pool.query(
     `UPDATE spravochnik_budjet_name SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, req.params.id],

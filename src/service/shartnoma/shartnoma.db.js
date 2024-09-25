@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const createShartnoma = asyncFunctionHandler(
+const createShartnoma = handleServiceError(
   async (
     user_id,
     doc_num,
@@ -31,7 +31,7 @@ const createShartnoma = asyncFunctionHandler(
   },
 );
 
-const getAllShartnoma = asyncFunctionHandler(async (user_id, offset, limit) => {
+const getAllShartnoma = handleServiceError(async (user_id, offset, limit) => {
   const result = await pool.query(
     `
         SELECT 
@@ -71,7 +71,7 @@ const getAllShartnoma = asyncFunctionHandler(async (user_id, offset, limit) => {
   return result.rows;
 });
 
-const getTotalShartnoma = asyncFunctionHandler(async (user_id) => {
+const getTotalShartnoma = handleServiceError(async (user_id) => {
   const result = await pool.query(
     `SELECT COUNT(id) AS total FROM shartnomalar_organization WHERE isdeleted = false AND  user_id = $1`,
     [user_id],
@@ -79,7 +79,7 @@ const getTotalShartnoma = asyncFunctionHandler(async (user_id) => {
   return result.rows[0];
 });
 
-const getByIdShartnoma = asyncFunctionHandler(async (user_id, id) => {
+const getByIdShartnoma = handleServiceError(async (user_id, id) => {
   const result = await pool.query(
     `
         SELECT 
@@ -118,7 +118,7 @@ const getByIdShartnoma = asyncFunctionHandler(async (user_id, id) => {
   return result.rows[0];
 });
 
-const updateShartnoma = asyncFunctionHandler(
+const updateShartnoma = handleServiceError(
   async (
     id,
     doc_num,
@@ -156,7 +156,7 @@ const updateShartnoma = asyncFunctionHandler(
   },
 );
 
-const deleteShartnoma = asyncFunctionHandler(async () => {
+const deleteShartnoma = handleServiceError(async () => {
   const grafik = await pool.query(
     `UPDATE shartnoma_grafik SET isdeleted = $1 WHERE id_shartnomalar_organization = $2 AND isdeleted = false RETURNING * 
     `,

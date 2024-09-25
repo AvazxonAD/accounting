@@ -5,16 +5,16 @@ const {
   checkValueString,
   checkValueNumber,
 } = require("../../utils/check.functions");
-const { getByIdSmeta } = require("../../service/smeta.db");
-const { getByIdOrganization } = require("../../service/organization.db");
+const { getByIdSmeta } = require("../../service/smeta/smeta.db");
+const { getByIdOrganization } = require("../../service//spravochnik/organization.db");
 const {
   createShartnoma,
   getAllShartnoma,
   getTotalShartnoma,
   updateShartnoma,
   getByIdShartnoma,
-} = require("../../service/shartnoma.db");
-const { createGrafik } = require("../../service/shartnoma.grafik.db");
+} = require("../../service/shartnoma/shartnoma.db");
+const { createGrafik } = require("../../service/shartnoma/shartnoma.grafik.db");
 
 const create = asyncHandler(async (req, res, next) => {
   let {

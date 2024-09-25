@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByAllSmeta = asyncFunctionHandler(
+const getByAllSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name) => {
     const result = await pool.query(
       `SELECT * FROM smeta WHERE smeta_name = $1 AND smeta_number = $2 AND isdeleted = false AND father_smeta_name = $3
@@ -12,7 +12,7 @@ const getByAllSmeta = asyncFunctionHandler(
   },
 );
 
-const createSmeta = asyncFunctionHandler(
+const createSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name) => {
     const result = await pool.query(
       `INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name) VALUES($1, $2, $3) RETURNING *
@@ -23,7 +23,7 @@ const createSmeta = asyncFunctionHandler(
   },
 );
 
-const getAllSmeta = asyncFunctionHandler(async (offset, limit) => {
+const getAllSmeta = handleServiceError(async (offset, limit) => {
   const result = await pool.query(
     `SELECT id, smeta_name, smeta_number, father_smeta_name FROM smeta  
         WHERE isdeleted = false ORDER BY id
@@ -35,14 +35,14 @@ const getAllSmeta = asyncFunctionHandler(async (offset, limit) => {
   return result.rows;
 });
 
-const getTotalSmeta = asyncFunctionHandler(async () => {
+const getTotalSmeta = handleServiceError(async () => {
   const result = await pool.query(
     `SELECT COUNT(id) AS total FROM smeta WHERE isdeleted = false`,
   );
   return result.rows[0];
 });
 
-const getByIdSmeta = asyncFunctionHandler(async (id) => {
+const getByIdSmeta = handleServiceError(async (id) => {
   const result = await pool.query(
     `SELECT id, smeta_name, smeta_number, father_smeta_name FROM smeta  
         WHERE isdeleted = false AND id = $1
@@ -52,7 +52,7 @@ const getByIdSmeta = asyncFunctionHandler(async (id) => {
   return result.rows[0];
 });
 
-const updateSmeta = asyncFunctionHandler(
+const updateSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name, id) => {
     const result = await pool.query(
       `UPDATE  smeta SET smeta_name = $1, smeta_number = $2, father_smeta_name = $3
@@ -65,7 +65,7 @@ const updateSmeta = asyncFunctionHandler(
   },
 );
 
-const deleteSmeta = asyncFunctionHandler(async (id) => {
+const deleteSmeta = handleServiceError(async (id) => {
   const deleteValue = await pool.query(
     `UPDATE smeta SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],

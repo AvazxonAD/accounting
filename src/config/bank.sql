@@ -22,6 +22,7 @@ CREATE TABLE bank_prixod_child (
   REFERENCES regions(id),
   summa DECIMAL,
   spravochnik_operatsii_id INTEGER REFERENCES spravochnik_operatsii(id),
+  spravochnik_operatsii_own_id INTEGER REFERENCES spravochnik_operatsii(id),
   id_spravochnik_podrazdelenie INTEGER REFERENCES spravochnik_podrazdelenie(id),
   id_spravochnik_sostav INTEGER REFERENCES spravochnik_sostav(id),
   id_spravochnik_type_operatsii INTEGER REFERENCES spravochnik_type_operatsii(id),

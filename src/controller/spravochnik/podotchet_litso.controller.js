@@ -11,7 +11,7 @@ const {
   getByIdPodotchet,
   updatePodotchet,
   deletePodotchet,
-} = require("../../service/podotchet_lito.db");
+} = require("../../service/spravochnik/podotchet_lito.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

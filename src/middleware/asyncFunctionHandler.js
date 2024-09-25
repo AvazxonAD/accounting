@@ -1,4 +1,4 @@
-const asyncFunctionHandler = (fn) => {
+const handleServiceError = (fn) => {
   return (...args) => {
     return Promise.resolve(fn(...args)).catch((error) => {
       throw new Error(error);
@@ -6,4 +6,4 @@ const asyncFunctionHandler = (fn) => {
   };
 };
 
-module.exports = asyncFunctionHandler;
+module.exports = handleServiceError;

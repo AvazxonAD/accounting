@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const router = require('./src/router/index')
+const router = require('./router/index')
 
 app.use(express.json())
 app.use(cors())
@@ -16,7 +16,7 @@ app.use(express.static('./public'))
 
 app.use(router)
 
-app.use(require('./src/middleware/errorHandler'));
+app.use(require('./middleware/errorHandler'));
 
 
 app.listen(PORT, () => {

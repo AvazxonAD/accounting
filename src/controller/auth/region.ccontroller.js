@@ -9,7 +9,7 @@ const {
   getByIdRegion,
   update_region,
   delete_region,
-} = require("../../service/region.db");
+} = require("../../service/auth/region.db");
 
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {

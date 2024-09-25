@@ -1,7 +1,7 @@
-const pool = require("../config/db");
-const asyncFunctionHandler = require("../middleware/asyncFunctionHandler");
+const pool = require("../../config/db");
+const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByAllPodotChet = asyncFunctionHandler(async (name, rayon, user_id) => {
+const getByAllPodotChet = handleServiceError(async (name, rayon, user_id) => {
   const result = await pool.query(
     `SELECT * FROM spravochnik_podotchet_litso WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
     `,
@@ -10,7 +10,7 @@ const getByAllPodotChet = asyncFunctionHandler(async (name, rayon, user_id) => {
   return result.rows[0];
 });
 
-const createPodotChet = asyncFunctionHandler(async (name, rayon, user_id) => {
+const createPodotChet = handleServiceError(async (name, rayon, user_id) => {
   const result = await pool.query(
     `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
     `,
@@ -19,7 +19,7 @@ const createPodotChet = asyncFunctionHandler(async (name, rayon, user_id) => {
   return result.rows[0];
 });
 
-const getAllPodotChet = asyncFunctionHandler(async (user_id, offset, limit) => {
+const getAllPodotChet = handleServiceError(async (user_id, offset, limit) => {
   const result = await pool.query(
     `SELECT id, name, rayon FROM spravochnik_podotchet_litso  
         WHERE isdeleted = false AND user_id = $1 ORDER BY id
@@ -31,7 +31,7 @@ const getAllPodotChet = asyncFunctionHandler(async (user_id, offset, limit) => {
   return result;
 });
 
-const totalPodotChet = asyncFunctionHandler(async (user_id) => {
+const totalPodotChet = handleServiceError(async (user_id) => {
   const result = await pool.query(
     `SELECT COUNT(id) AS total FROM spravochnik_podotchet_litso WHERE isdeleted = false AND user_id = $1`,
     [user_id],
@@ -39,7 +39,7 @@ const totalPodotChet = asyncFunctionHandler(async (user_id) => {
   return result.rows[0];
 });
 
-const getByIdPodotchet = asyncFunctionHandler(async (user_id, id) => {
+const getByIdPodotchet = handleServiceError(async (user_id, id) => {
   const result = await pool.query(
     `SELECT * FROM spravochnik_podotchet_litso  WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
     [id, user_id],
@@ -47,7 +47,7 @@ const getByIdPodotchet = asyncFunctionHandler(async (user_id, id) => {
   return result.rows[0];
 });
 
-const updatePodotchet = asyncFunctionHandler(
+const updatePodotchet = handleServiceError(
   async (name, rayon, user_id, id) => {
     const result = await pool.query(
       `UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2
@@ -60,7 +60,7 @@ const updatePodotchet = asyncFunctionHandler(
   },
 );
 
-const deletePodotchet = asyncFunctionHandler(async (id) => {
+const deletePodotchet = handleServiceError(async (id) => {
   const result = await pool.query(
     `UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 AND isdeleted = false RETURNING *`,
     [true, id],

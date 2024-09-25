@@ -9,7 +9,7 @@ const {
   getByIdRole,
   update_role,
   delete_role,
-} = require("../../service/role.db");
+} = require("../../service/auth/role.db");
 
 // create role
 const createRole = asyncHandler(async (req, res, next) => {

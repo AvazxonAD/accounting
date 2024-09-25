@@ -11,7 +11,7 @@ const {
   getByIdOperatsii,
   updateOperatsii,
   deleteOperatsii,
-} = require("../../service/operatsii.db");
+} = require("../../service/spravochnik/operatsii.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

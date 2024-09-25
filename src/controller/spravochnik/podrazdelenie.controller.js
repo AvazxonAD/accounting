@@ -11,7 +11,7 @@ const {
   getByIdPodrazlanie,
   updatePodrazlanie,
   deletePodrazlanie,
-} = require("../../service/podrazdelenie.db");
+} = require("../../service/spravochnik/podrazdelenie.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
