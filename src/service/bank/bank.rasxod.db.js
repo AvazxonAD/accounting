@@ -99,9 +99,58 @@ const updateRasxod = handleServiceError(async (object) => {
     );
 })
 
+const getAllBankRasxodDb = handleServiceError(async ( main_schet_id, region_id, offset, limit ) => {
+    let result = await pool.query(
+        `
+            SELECT 
+                id,
+                doc_num, 
+                doc_date, 
+                summa, 
+                opisanie, 
+                id_spravochnik_organization, 
+                id_shartnomalar_organization
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
+            OFFSET $3 
+            LIMIT $4
+    `,[main_schet_id, region_id, offset, limit]);
+    return result.rows        
+})
+
+const getAllRasxodChildDb = handleServiceError(async (user_id, rasxod_id) => {
+    const result = await pool.query(
+        `
+              SELECT  
+                  bank_rasxod_child.id,
+                  bank_rasxod_child.spravochnik_operatsii_id,
+                  spravochnik_operatsii.name AS spravochnik_operatsii_name,
+                  bank_rasxod_child.summa,
+                  bank_rasxod_child.id_spravochnik_podrazdelenie,
+                  spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
+                  bank_rasxod_child.id_spravochnik_sostav,
+                  spravochnik_sostav.name AS spravochnik_sostav_name,
+                  bank_rasxod_child.id_spravochnik_type_operatsii,
+                  spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
+                  bank_rasxod_child.own_schet,
+                  bank_rasxod_child.own_subschet
+              FROM bank_rasxod_child 
+              JOIN spravochnik_operatsii ON spravochnik_operatsii.id = bank_rasxod_child.spravochnik_operatsii_id
+              JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_rasxod_child.id_spravochnik_podrazdelenie
+              JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_rasxod_child.id_spravochnik_sostav
+              JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_rasxod_child.id_spravochnik_type_operatsii
+              WHERE bank_rasxod_child.user_id = $1 AND bank_rasxod_child.isdeleted = false AND bank_rasxod_child.id_bank_rasxod = $2
+          `,
+        [user_id, rasxod_id],
+    );
+    return result.rows
+})
+
 module.exports = {
     createBankRasxodDb,
     createBankRasxodChild,
     getByIdRasxod,
-    updateRasxod
+    updateRasxod,
+    getAllBankRasxodDb,
+    getAllRasxodChildDb
 }

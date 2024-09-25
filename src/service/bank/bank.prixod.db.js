@@ -338,6 +338,26 @@ const getElementByIdPrixod = handleServiceError(async (user_id, main_schet_id, i
     return result.rows[0]
 })
 
+const getElementByIdBankPrixodChild = handleServiceError(async (user_id, prixod_id) => {
+    const result = await pool.query(
+        `
+              SELECT  
+                  id,
+                  spravochnik_operatsii_id,
+                  summa,
+                  id_spravochnik_podrazdelenie,
+                  id_spravochnik_sostav,
+                  id_spravochnik_type_operatsii,
+                  id_spravochnik_podotchet_litso
+              FROM bank_prixod_child 
+              WHERE user_id = $1 AND isdeleted = false AND id_bank_prixod = $2
+          `,
+        [user_id, prixod_id],
+    );
+    return result.rows
+})
+
+
 module.exports = {
     createBankPrixod,
     createBankPrixodChild,
@@ -350,5 +370,6 @@ module.exports = {
     getAllPrixodByFrom,
     getAllPrixodByTo,
     getAllPrixodByFromAndTo,
-    getElementByIdPrixod
+    getElementByIdPrixod,
+    getElementByIdBankPrixodChild
 }

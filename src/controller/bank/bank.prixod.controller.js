@@ -23,7 +23,8 @@ const {
   getAllPrixodByFrom,
   getAllPrixodByTo,
   getAllPrixodByFromAndTo,
-  getElementByIdPrixod
+  getElementByIdPrixod,
+  getElementByIdBankPrixodChild
 } = require('../../service/bank/bank.prixod.db')
 
 // bank prixod create 
@@ -313,7 +314,7 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
     );
   }
 
-  const prixod_child = await getAllPrixodChild(user_id, prixod.id)
+  const prixod_child = await getElementByIdBankPrixodChild(user_id, prixod.id)
   
   let object = { ...prixod };
   object.summa = Number(object.summa);

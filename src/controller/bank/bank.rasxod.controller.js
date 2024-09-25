@@ -14,7 +14,7 @@ const {
   bankRasxodValidation,
   bankRasxodChildValidation
 } = require('../../helpers/validation/bank/bank.rasxod.validation');
-const { createBankRasxodDb, createBankRasxodChild, getByIdRasxod, updateRasxod } = require("../../service/bank/bank.rasxod.db");
+const { createBankRasxodDb, createBankRasxodChild, getByIdRasxod, updateRasxod, getAllBankRasxodDb, getAllRasxodChildDb } = require("../../service/bank/bank.rasxod.db");
 
 // bank rasxod
 const bank_rasxod = asyncHandler(async (req, res, next) => {
@@ -236,6 +236,9 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 
 // get all bank rasxod
 const getAllBankRasxod = asyncHandler(async (req, res, next) => {
+  const user_id = req.user.region_id
+  const main_schet_id = req.query.main_schet_id
+
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
 
@@ -247,56 +250,12 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  let all_rasxod = await pool.query(
-    `
-        SELECT 
-            id,
-            doc_num, 
-            doc_date, 
-            summa, 
-            opisanie, 
-            id_spravochnik_organization, 
-            id_shartnomalar_organization
-        FROM bank_rasxod 
-        WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
-    `,
-    [req.query.main_schet_id, req.user.region_id],
-  );
-  all_rasxod = all_rasxod.rows;
-
-  if (all_rasxod.length === 0) {
-    return next(
-      new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", [404]),
-    );
-  }
+  const all_rasxod = await getAllBankRasxodDb(user_id, main_schet_id, offset, limit)
 
   const resultArray = [];
 
   for (let rasxod of all_rasxod) {
-    const rasxod_child = await pool.query(
-      `
-            SELECT  
-                bank_rasxod_child.id,
-                bank_rasxod_child.spravochnik_operatsii_id,
-                spravochnik_operatsii.name AS spravochnik_operatsii_name,
-                bank_rasxod_child.summa,
-                bank_rasxod_child.id_spravochnik_podrazdelenie,
-                spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
-                bank_rasxod_child.id_spravochnik_sostav,
-                spravochnik_sostav.name AS spravochnik_sostav_name,
-                bank_rasxod_child.id_spravochnik_type_operatsii,
-                spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
-                bank_rasxod_child.own_schet,
-                bank_rasxod_child.own_subschet
-            FROM bank_rasxod_child 
-            JOIN spravochnik_operatsii ON spravochnik_operatsii.id = bank_rasxod_child.spravochnik_operatsii_id
-            JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_rasxod_child.id_spravochnik_podrazdelenie
-            JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_rasxod_child.id_spravochnik_sostav
-            JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_rasxod_child.id_spravochnik_type_operatsii
-            WHERE bank_rasxod_child.user_id = $1 AND bank_rasxod_child.isdeleted = false AND bank_rasxod_child.id_bank_rasxod = $2
-        `,
-      [req.user.region_id, rasxod.id],
-    );
+    const rasxod_child = await getAllRasxodChildDb(user_id, rasxod.id)
 
     let object = { ...rasxod };
     object.summa = Number(object.summa);
