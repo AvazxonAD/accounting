@@ -19,7 +19,6 @@ const {
   deleteBankPrixodChild,
   getAllPrixod,
   getAllPrixodChild,
-  prixodTotalQuery,
   getAllPrixodByFrom,
   getAllPrixodByTo,
   getAllPrixodByFromAndTo,
@@ -156,7 +155,6 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
-
   const main_schet = await getByIdMainSchet(user_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
@@ -315,11 +313,11 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
   }
 
   const prixod_child = await getElementByIdBankPrixodChild(user_id, prixod.id)
-  
+
   let object = { ...prixod };
   object.summa = Number(object.summa);
   object.childs = prixod_child.map((item) => {
-  let result = { ...item };
+    let result = { ...item };
     result.summa = Number(result.summa);
     return result;
   });
@@ -335,43 +333,52 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   let all_prixod = null
   let totalQuery = null
   let summa = null
-  
+
   const user_id = req.user.region_id;
   const { error, value } = queryValidationBank.validate(req.query)
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
 
-  limit = parseInt(value.limit) || 10;
-  page = parseInt(value.page) || 1;
-  const offset = (page - 1) * limit;
-
+  const limit = parseInt(value.limit) || 10;
+  const page = parseInt(value.page) || 1;
+  
   if (limit <= 0 || page <= 0) {
     return next(
       new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
     );
   }
-
+  
+  const offset = (page - 1) * limit;
   const main_schet = await getByIdMainSchet(user_id, value.main_schet_id)
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
   }
 
-  if(value.from && !value.to){
-    all_prixod = await getAllPrixodByFrom(user_id, value.main_schet_id, value.offset, value.limit, new Date(req.query.from))
+  if (value.from && !value.to) {
+    all_prixod = await getAllPrixodByFrom(user_id, value.main_schet_id, offset, limit, new Date(req.query.from))
+    summa = Number(all_prixod.summa)
+    totalQuery = all_prixod.totalQuery
   }
 
-  if(!value.from && value.to){
-    all_prixod = await getAllPrixodByTo(user_id, value.main_schet_id, value.offset, value.limit,  new Date(req.query.to))
+  if (!value.from && value.to) {
+    all_prixod = await getAllPrixodByTo(user_id, value.main_schet_id, offset, limit, new Date(req.query.to))
+    summa = Number(all_prixod.summa)
+    totalQuery = all_prixod.totalQuery
   }
 
-  if(value.from && value.to){
-    all_prixod = await getAllPrixodByFromAndTo(user_id, value.main_schet_id, value.offset, value.limit, new Date(req.query.from), new Date(req.query.to))
+  if (value.from && value.to) {
+    all_prixod = await getAllPrixodByFromAndTo(user_id, value.main_schet_id, offset, limit, new Date(req.query.from), new Date(req.query.to))
+    summa = Number(all_prixod.summa)
+    totalQuery = all_prixod.totalQuery
   }
 
-  all_prixod = await getAllPrixod(user_id, value.main_schet_id, value.offset, value.limit)
-  summa = Number(all_prixod.summa)
-  
+  if (!value.from && !value.to) {
+    all_prixod = await getAllPrixod(user_id, value.main_schet_id, offset, limit)
+    summa = Number(all_prixod.summa)
+    totalQuery = all_prixod.totalQuery
+  }
+
   const resultArray = [];
 
   for (let prixod of all_prixod.prixod_rows) {
@@ -385,19 +392,16 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     });
     resultArray.push(object);
   }
-
-  totalQuery = await prixodTotalQuery(user_id, value.main_schet_id)
-
-  const pageCount = Math.ceil(totalQuery.total / limit);
-
+  const total = Number(totalQuery.total)
+  const pageCount = Math.ceil(total / limit);
   return res.status(200).json({
     success: true,
-    pageCount: pageCount,
-    count: totalQuery.total,
-    currentPage: page,
-    nextPage: page >= pageCount ? null : page + 1,
-    backPage: page === 1 ? null : page - 1,
     meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
       summa
     },
     data: resultArray

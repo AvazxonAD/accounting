@@ -20,15 +20,15 @@ const createBankRasxodDb = handleServiceError(async (object) => {
             RETURNING *
             `,
         [
-          object.doc_num,
-          object.doc_date,
-          object.summa,
-          object.opisanie,
-          object.id_spravochnik_organization,
-          object.id_shartnomalar_organization,
-          object.main_schet_id,
-          object.user_id,
-          object.spravochnik_operatsii_own_id
+            object.doc_num,
+            object.doc_date,
+            object.summa,
+            object.opisanie,
+            object.id_spravochnik_organization,
+            object.id_shartnomalar_organization,
+            object.main_schet_id,
+            object.user_id,
+            object.spravochnik_operatsii_own_id
         ],
     );
     return result.rows[0]
@@ -51,17 +51,17 @@ const createBankRasxodChild = handleServiceError(async (object) => {
                   spravochnik_operatsii_own_id
               ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
         [
-          object.spravochnik_operatsii_id,
-          object.summa,
-          object.id_spravochnik_podrazdelenie,
-          object.id_spravochnik_sostav,
-          object.id_spravochnik_type_operatsii,
-          object.jur2_schet,
-          object.jur2_subschet,
-          object.main_schet_id,
-          object.rasxod_id,
-          object.user_id,
-          object.spravochnik_operatsii_own_id
+            object.spravochnik_operatsii_id,
+            object.summa,
+            object.id_spravochnik_podrazdelenie,
+            object.id_spravochnik_sostav,
+            object.id_spravochnik_type_operatsii,
+            object.jur2_schet,
+            object.jur2_subschet,
+            object.main_schet_id,
+            object.rasxod_id,
+            object.user_id,
+            object.spravochnik_operatsii_own_id
         ],
     );
 })
@@ -89,20 +89,20 @@ const updateRasxod = handleServiceError(async (object) => {
             WHERE id = $8
             `,
         [
-          object.doc_num,
-          object.doc_date,
-          object.summa,
-          object.provodki_boolean,
-          object.opisanie,
-          object.id_spravochnik_organization,
-          object.id_shartnomalar_organization,
-          object.id,
+            object.doc_num,
+            object.doc_date,
+            object.summa,
+            object.provodki_boolean,
+            object.opisanie,
+            object.id_spravochnik_organization,
+            object.id_shartnomalar_organization,
+            object.id,
         ],
     );
 })
 
-const getAllBankRasxodDb = handleServiceError(async ( user_id, main_schet_id, offset, limit ) => {
-    let result = await pool.query(
+const getAllBankRasxodDb = handleServiceError(async (user_id, main_schet_id, offset, limit) => {
+    const result = await pool.query(
         `
             SELECT 
                 id,
@@ -116,8 +116,20 @@ const getAllBankRasxodDb = handleServiceError(async ( user_id, main_schet_id, of
             WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
             OFFSET $3 
             LIMIT $4
-    `,[main_schet_id, user_id, offset, limit]);
-    return result.rows        
+    `, [main_schet_id, user_id, offset, limit]);
+    const summa = await pool.query(
+        `
+            SELECT SUM(summa)
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
+    `, [main_schet_id, user_id]);
+    const totalQuery = await pool.query(
+        `
+            SELECT COUNT(id)
+            FROM bank_rasxod 
+            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
+    `, [main_schet_id, user_id]);
+    return { rasxod_rows: result.rows, summa: summa.rows[0].sum, totalQuery: totalQuery.rows[0] }
 })
 
 const getAllBankRasxodByFrom = handleServiceError(async (user_id, main_schet_id, offset, limit, from) => {
@@ -140,7 +152,19 @@ const getAllBankRasxodByFrom = handleServiceError(async (user_id, main_schet_id,
             LIMIT $4
         `, [main_schet_id, user_id, offset, limit, from]);
 
-    return result.rows;
+    const summa = await pool.query(
+        `
+                SELECT SUM(summa)
+                FROM bank_rasxod 
+                WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date > $3
+        `, [main_schet_id, user_id, from]);
+    const totalQuery = await pool.query(
+        `
+                SELECT COUNT(id)
+                FROM bank_rasxod 
+                WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date > $3
+        `, [main_schet_id, user_id, from]);
+    return { rasxod_rows: result.rows, summa: summa.rows[0].sum, totalQuery: totalQuery.rows[0] }
 });
 
 const getAllBankRasxodByFromAndTo = handleServiceError(async (user_id, main_schet_id, offset, limit, from, to) => {
@@ -247,7 +271,7 @@ const getElemenByIdRasxodChild = handleServiceError(async (user_id, rasxod_id) =
             id_spravochnik_type_operatsii
         FROM bank_rasxod_child 
         WHERE user_id = $1 AND isdeleted = false AND id_bank_rasxod = $2
-    `,[user_id, rasxod_id],)
+    `, [user_id, rasxod_id],)
     return result.rows
 })
 
@@ -265,7 +289,7 @@ const deleteBankRasxod = handleServiceError(async (user_id, main_schet_id, id) =
         `DELETE FROM bank_rasxod WHERE user_id = $1 AND id = $2 AND isdeleted = false AND main_schet_id = $3
         `,
         [user_id, id, main_schet_id],
-      );
+    );
 })
 
 module.exports = {

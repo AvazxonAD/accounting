@@ -6,7 +6,7 @@ const userValidation = Joi.object({
     fio: Joi.string().required(),
     role_id: Joi.number().required(),
     region_id: Joi.number()
-});
+}).options({ stripUnknown: true })
 
 module.exports = {
     userValidation

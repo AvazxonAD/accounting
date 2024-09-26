@@ -253,14 +253,14 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 // get all bank rasxod
 const getAllBankRasxod = asyncHandler(async (req, res, next) => {
   const user_id = req.user.region_id
-  let summa = null
   let all_rasxod = null
+  let totalQuery = null
+  let summa = null
 
   const { error, value } = queryValidationBank.validate(req.query)
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406))
   }
-
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
@@ -273,8 +273,15 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
+  if(!value.from && !value.to){
+    all_rasxod = await getAllBankRasxodDb(user_id, value.main_schet_id, offset, limit)
+    totalQuery = all_rasxod.totalQuery
+    summa = all_rasxod.summa
+  }
   if (value.from && !value.to) {
     all_rasxod = await getAllBankRasxodByFrom(user_id, value.main_schet_id, offset, limit, value.from)
+    totalQuery = all_rasxod.totalQuery
+    summa = all_rasxod.summa
   }
   if (!value.from && value.to) {
     all_rasxod = await getAllBankRasxodByFrom(user_id, value.main_schet_id, offset, limit, value.to)
@@ -283,11 +290,9 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
     all_rasxod = await getAllBankRasxodByFromAndTo(user_id, value.main_schet_id, offset, limit, value.from, value.to)
   }
 
-  all_rasxod = await getAllBankRasxodDb(user_id, value.main_schet_id, offset, limit)
-
   const resultArray = [];
 
-  for (let rasxod of all_rasxod) {
+  for (let rasxod of all_rasxod.rasxod_rows) {
     const rasxod_child = await getAllRasxodChildDb(user_id, rasxod.id)
 
     let object = { ...rasxod };
@@ -299,9 +304,19 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
     });
     resultArray.push(object);
   }
-
+  
+  const total = Number(totalQuery.count)
+  const pageCount = Math.ceil(total / limit);
   return res.status(200).json({
     success: true,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+      summa
+    },
     data: resultArray,
   });
 });

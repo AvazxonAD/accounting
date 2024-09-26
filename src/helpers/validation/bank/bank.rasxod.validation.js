@@ -10,7 +10,7 @@ const bankRasxodValidation = Joi.object({
     spravochnik_operatsii_own_id: Joi.number().required(),
     id_shartnomalar_organization: Joi.number(),
     childs: Joi.array().required()
-})
+}).options({ stripUnknown: true })
 
 const bankRasxodChildValidation = Joi.object({
     summa: Joi.number().required(),
@@ -18,7 +18,7 @@ const bankRasxodChildValidation = Joi.object({
     id_spravochnik_podrazdelenie: Joi.number(),
     id_spravochnik_sostav: Joi.number(),
     id_spravochnik_type_operatsii: Joi.number(),
-})
+}).options({ stripUnknown: true })
 
 module.exports = {
     bankRasxodValidation,

@@ -9,7 +9,7 @@ const bankPrixodValidator = Joi.object({
     id_shartnomalar_organization: Joi.number(),
     spravochnik_operatsii_own_id: Joi.number().required(),
     childs: Joi.array().required(),
-});
+}).options({ stripUnknown: true })
 
 const bankPrixodChildValidation = Joi.object({
     summa: Joi.number().required(),
@@ -18,7 +18,7 @@ const bankPrixodChildValidation = Joi.object({
     id_spravochnik_sostav: Joi.number(),
     id_spravochnik_type_operatsii: Joi.number(),
     id_spravochnik_podotchet_litso: Joi.number(),
-})
+}).options({ stripUnknown: true })
 
 const queryValidationBank = Joi.object({
     main_schet_id: Joi.number(), 
