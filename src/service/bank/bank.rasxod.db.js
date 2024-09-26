@@ -68,7 +68,7 @@ const createBankRasxodChild = handleServiceError(async (object) => {
 
 const getByIdRasxod = handleServiceError(async (user_id, main_schet_id, id) => {
     const result = await pool.query(
-        `SELECT * FROM bank_prixod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3
+        `SELECT * FROM bank_rasxod WHERE id = $1 AND user_id = $2 AND main_schet_id = $3 AND isdeleted = false
         `,
         [id, user_id, main_schet_id],
     );
@@ -85,7 +85,8 @@ const updateRasxod = handleServiceError(async (object) => {
                 provodki_boolean = $4, 
                 opisanie = $5, 
                 id_spravochnik_organization = $6, 
-                id_shartnomalar_organization = $7
+                id_shartnomalar_organization = $7,
+                spravochnik_operatsii_own_id = $9
             WHERE id = $8
             `,
         [
@@ -97,6 +98,7 @@ const updateRasxod = handleServiceError(async (object) => {
             object.id_spravochnik_organization,
             object.id_shartnomalar_organization,
             object.id,
+            object.spravochnik_operatsii_own_id
         ],
     );
 })
@@ -105,15 +107,23 @@ const getAllBankRasxodDb = handleServiceError(async (user_id, main_schet_id, off
     const result = await pool.query(
         `
             SELECT 
-                id,
-                doc_num, 
-                doc_date, 
-                summa, 
-                opisanie, 
-                id_spravochnik_organization, 
-                id_shartnomalar_organization
+                bank_rasxod.id,
+                bank_rasxod.doc_num, 
+                bank_rasxod.doc_date, 
+                bank_rasxod.summa, 
+                bank_rasxod.opisanie, 
+                bank_rasxod.id_spravochnik_organization,
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn, 
+                bank_rasxod.id_shartnomalar_organization
             FROM bank_rasxod 
-            WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization 
+            WHERE bank_rasxod.main_schet_id = $1 AND bank_rasxod.user_id = $2 AND bank_rasxod.isdeleted = false
             OFFSET $3 
             LIMIT $4
     `, [main_schet_id, user_id, offset, limit]);
@@ -135,19 +145,27 @@ const getAllBankRasxodDb = handleServiceError(async (user_id, main_schet_id, off
 const getAllBankRasxodByFrom = handleServiceError(async (user_id, main_schet_id, offset, limit, from) => {
     let result = await pool.query(
         `
-            SELECT 
-                id,
-                doc_num, 
-                doc_date, 
-                summa, 
-                opisanie, 
-                id_spravochnik_organization, 
-                id_shartnomalar_organization
+            SELECT
+                bank_rasxod.id,
+                bank_rasxod.doc_num, 
+                bank_rasxod.doc_date, 
+                bank_rasxod.summa, 
+                bank_rasxod.opisanie, 
+                bank_rasxod.id_spravochnik_organization,
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn, 
+                bank_rasxod.id_shartnomalar_organization
             FROM bank_rasxod 
-            WHERE main_schet_id = $1 
-                AND user_id = $2 
-                AND isdeleted = false 
-                AND doc_date > $5
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization 
+            WHERE bank_rasxod.main_schet_id = $1 
+                AND bank_rasxod.user_id = $2 
+                AND bank_rasxod.isdeleted = false 
+                AND bank_rasxod.doc_date > $5
             OFFSET $3 
             LIMIT $4
         `, [main_schet_id, user_id, offset, limit, from]);
@@ -170,47 +188,87 @@ const getAllBankRasxodByFrom = handleServiceError(async (user_id, main_schet_id,
 const getAllBankRasxodByFromAndTo = handleServiceError(async (user_id, main_schet_id, offset, limit, from, to) => {
     let result = await pool.query(
         `
-            SELECT 
-                id,
-                doc_num, 
-                doc_date, 
-                summa, 
-                opisanie, 
-                id_spravochnik_organization, 
-                id_shartnomalar_organization
+            SELECT
+                bank_rasxod.id,
+                bank_rasxod.doc_num, 
+                bank_rasxod.doc_date, 
+                bank_rasxod.summa, 
+                bank_rasxod.opisanie, 
+                bank_rasxod.id_spravochnik_organization,
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn, 
+                bank_rasxod.id_shartnomalar_organization
             FROM bank_rasxod 
-            WHERE main_schet_id = $1 
-                AND user_id = $2 
-                AND isdeleted = false 
-                AND doc_date BETWEEN $5 AND $6
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization
+            WHERE bank_rasxod.main_schet_id = $1 
+                AND bank_rasxod.user_id = $2 
+                AND bank_rasxod.isdeleted = false 
+                AND bank_rasxod.doc_date BETWEEN $5 AND $6
             OFFSET $3 
             LIMIT $4
         `, [main_schet_id, user_id, offset, limit, from, to]);
 
-    return result.rows;
+    const summa = await pool.query(
+        `
+                    SELECT SUM(summa)
+                    FROM bank_rasxod 
+                    WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date BETWEEN $3 AND $4
+            `, [main_schet_id, user_id, from, to]);
+    const totalQuery = await pool.query(
+        `
+                    SELECT COUNT(id)
+                    FROM bank_rasxod 
+                    WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date BETWEEN $3 AND $4
+            `, [main_schet_id, user_id, from, to]);
+    return { rasxod_rows: result.rows, summa: summa.rows[0].sum, totalQuery: totalQuery.rows[0] }
 });
 
 const getAllBankRasxodByTo = handleServiceError(async (user_id, main_schet_id, offset, limit, to) => {
     let result = await pool.query(
         `
-            SELECT 
-                id,
-                doc_num, 
-                doc_date, 
-                summa, 
-                opisanie, 
-                id_spravochnik_organization, 
-                id_shartnomalar_organization
+             SELECT
+                bank_rasxod.id,
+                bank_rasxod.doc_num, 
+                bank_rasxod.doc_date, 
+                bank_rasxod.summa, 
+                bank_rasxod.opisanie, 
+                bank_rasxod.id_spravochnik_organization,
+                spravochnik_organization.name AS spravochnik_organization_name,
+                spravochnik_organization.okonx AS spravochnik_organization_okonx,
+                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                spravochnik_organization.mfo AS spravochnik_organization_mfo,
+                spravochnik_organization.inn AS spravochnik_organization_inn, 
+                bank_rasxod.id_shartnomalar_organization
             FROM bank_rasxod 
-            WHERE main_schet_id = $1 
-                AND user_id = $2 
-                AND isdeleted = false 
-                AND doc_date < $5
+            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization
+            WHERE bank_rasxod.main_schet_id = $1 
+                AND bank_rasxod.user_id = $2 
+                AND bank_rasxod.isdeleted = false 
+                AND bank_rasxod.doc_date < $5
             OFFSET $3 
             LIMIT $4
         `, [main_schet_id, user_id, offset, limit, to]);
 
-    return result.rows;
+    const summa = await pool.query(
+        `
+                    SELECT SUM(summa)
+                    FROM bank_rasxod 
+                    WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date < $3
+            `, [main_schet_id, user_id, to]);
+    const totalQuery = await pool.query(
+        `
+                    SELECT COUNT(id)
+                    FROM bank_rasxod 
+                    WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND doc_date < $3
+            `, [main_schet_id, user_id, to]);
+    return { rasxod_rows: result.rows, summa: summa.rows[0].sum, totalQuery: totalQuery.rows[0] }
 });
 
 const getAllRasxodChildDb = handleServiceError(async (user_id, rasxod_id) => {
@@ -251,7 +309,8 @@ const getElemenByIdRasxod = handleServiceError(async (user_id, main_schet_id, id
                 summa, 
                 opisanie, 
                 id_spravochnik_organization, 
-                id_shartnomalar_organization
+                id_shartnomalar_organization,
+                spravochnik_operatsii_own_id
             FROM bank_rasxod 
             WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
         `,
@@ -263,7 +322,6 @@ const getElemenByIdRasxod = handleServiceError(async (user_id, main_schet_id, id
 const getElemenByIdRasxodChild = handleServiceError(async (user_id, rasxod_id) => {
     const result = await pool.query(
         `SELECT  
-            id,
             spravochnik_operatsii_id,
             summa,
             id_spravochnik_podrazdelenie,

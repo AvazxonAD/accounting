@@ -26,7 +26,8 @@ const {
   getElemenByIdRasxod,
   getElemenByIdRasxodChild,
   deleteRasxodChild,
-  deleteBankRasxod
+  deleteBankRasxod,
+  getAllBankRasxodByTo
 } = require("../../service/bank/bank.rasxod.db");
 
 const { queryValidationBank } = require('../../helpers/validation/bank/bank.prixod.validation')
@@ -128,7 +129,6 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const user_id = req.user.region_id
   const id = req.params.id
-
   const bank_rasxod = await getByIdRasxod(user_id, main_schet_id, id)
   if (!bank_rasxod) {
     return next(new ErrorResponse("Prixod document topilmadi", 404));
@@ -198,50 +198,21 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 
   await updateRasxod({
     ...value,
-    id,
-    procod
+    id
   })
 
-  if (!prixod.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
-  await pool.query(`DELETE FROM bank_rasxod_child WHERE id_bank_rasxod = $1`, [
-    bank_rasxod.id,
-  ]);
+  await deleteRasxodChild(user_id, main_schet_id, id)
 
-  for (let child of childs) {
-    const bank_child = await pool.query(
-      `
-            INSERT INTO bank_rasxod_child(
-                spravochnik_operatsii_id,
-                summa,
-                id_spravochnik_podrazdelenie,
-                id_spravochnik_sostav,
-                id_spravochnik_type_operatsii,
-                main_schet_id,
-                id_bank_rasxod,
-                user_id,
-                own_schet,
-                own_subschet
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [
-        child.spravochnik_operatsii_id,
-        child.summa,
-        child.id_spravochnik_podrazdelenie,
-        child.id_spravochnik_sostav,
-        child.id_spravochnik_type_operatsii,
-        main_schet.id,
-        bank_rasxod.id,
-        req.user.region_id,
-        main_schet.jur2_schet,
-        main_schet.jur2_subschet,
-      ],
-    );
-    if (!bank_child.rows[0]) {
-      return next(
-        new ErrorResponse("Server xatolik. Child yozuv kiritilmadi", 500),
-      );
-    }
+  for (let child of value.childs) {
+    await createBankRasxodChild({
+      ...child,
+      jur2_schet: main_schet.jur2_schet,
+      jur2_subschet: main_schet.jur2_subschet,
+      main_schet_id,
+      rasxod_id: id,
+      user_id,
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
+    })
   }
 
   return res.status(200).json({
@@ -276,18 +247,23 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
   if(!value.from && !value.to){
     all_rasxod = await getAllBankRasxodDb(user_id, value.main_schet_id, offset, limit)
     totalQuery = all_rasxod.totalQuery
-    summa = all_rasxod.summa
+    summa = Number(all_rasxod.summa)
   }
   if (value.from && !value.to) {
     all_rasxod = await getAllBankRasxodByFrom(user_id, value.main_schet_id, offset, limit, value.from)
     totalQuery = all_rasxod.totalQuery
-    summa = all_rasxod.summa
+    summa = Number(all_rasxod.summa)
+
   }
   if (!value.from && value.to) {
-    all_rasxod = await getAllBankRasxodByFrom(user_id, value.main_schet_id, offset, limit, value.to)
+    all_rasxod = await getAllBankRasxodByTo(user_id, value.main_schet_id, offset, limit, value.to)
+    totalQuery = all_rasxod.totalQuery
+    summa = Number(all_rasxod.summa)
   }
   if (value.from && value.to) {
     all_rasxod = await getAllBankRasxodByFromAndTo(user_id, value.main_schet_id, offset, limit, value.from, value.to)
+    totalQuery = all_rasxod.totalQuery
+    summa = Number(all_rasxod.summa)
   }
 
   const resultArray = [];
