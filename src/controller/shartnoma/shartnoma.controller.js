@@ -1,10 +1,6 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {
-  checkValueString,
-  checkValueNumber,
-} = require("../../utils/check.functions");
 const { getByIdSmeta } = require("../../service/smeta/smeta.db");
 const { getByIdOrganization } = require("../../service//spravochnik/organization.db");
 const {

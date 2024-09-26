@@ -1,8 +1,8 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkValueString } = require("../../utils/check.functions");
 const xlsx = require("xlsx");
+const { sostavValidation } = require('../../helpers/validation/spravochnik/sostav.validation')
 const {
   getAllSostav,
   getByAllSostav,
@@ -15,22 +15,20 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  let { name, rayon } = req.body;
   const user_id = req.user.region_id;
 
-  checkValueString(name, rayon);
-  name = name.trim();
-  rayon = rayon.trim();
+  const { error, value } = sostavValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+  const { name, rayon } = value
 
   const test = await getByAllSostav(user_id, name, rayon);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await createSostav(user_id, name, rayon);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await createSostav(user_id, name, rayon);
 
   return res.status(201).json({
     success: true,
@@ -60,28 +58,32 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    pageCount: pageCount,
-    count: total,
-    currentPage: page,
-    nextPage: page >= pageCount ? null : page + 1,
-    backPage: page === 1 ? null : page - 1,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    },
     data: result,
   });
 });
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  let { name, rayon } = req.body;
   const user_id = req.user.region_id;
   const id = req.params.id;
-
-  checkValueString(name, rayon);
 
   let sostav = await getByIdSostav(user_id, id);
   if (!sostav) {
     return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404));
   }
 
+  const { error, value } = sostavValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+  const { name, rayon } = value
   if (sostav.name !== name || sostav.rayon !== rayon) {
     const test = await getByAllSostav(user_id, name, rayon);
     if (test) {
@@ -89,10 +91,7 @@ const update = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const result = await updateSostav(user_id, id, name, rayon);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
+  await updateSostav(user_id, id, name, rayon);
 
   return res.status(201).json({
     success: true,
@@ -109,11 +108,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteValue = await deleteSostav(id);
-
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await deleteSostav(id);
 
   return res.status(200).json({
     success: true,

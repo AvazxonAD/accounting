@@ -52,6 +52,9 @@ const update = asyncHandler(async (req, res, next) => {
   }
 
   const { error, value } = budjetValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
   if (oldBudjet.name !== value.name) {
     const test_name = await getByNameBudjet(value.name);

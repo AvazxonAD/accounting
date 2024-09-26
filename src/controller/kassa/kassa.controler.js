@@ -1,44 +1,23 @@
 const asyncHandler = require("../../middleware/asyncHandler");
-const {
-  checkValueString,
-  checkValueNumber,
-  checkValueBoolean,
-  checkValueArray,
-} = require("../../utils/check.functions");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
+const { kassaValidation } = require('../../helpers/validation/kassa/kassa.validation')
+
+const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.db')
+const { getByIdPodotchet } = require('../../service/spravochnik/podotchet.litso.db')
 
 // kassa prixod and rasxod
 const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
-  const {
-    doc_num,
-    doc_date,
-    prixod_summa,
-    rasxod_summa,
-    opisanie,
-    id_podotchet_litso,
-    childs,
-  } = req.body;
-
-  checkValueString(doc_date, doc_num, opisanie);
-  checkValueNumber(id_podotchet_litso, rasxod_summa, prixod_summa);
-  checkValueArray(childs);
-
+  const { error, value } = kassaValidation.validate(req.body)
   const main_schet_id = req.query.main_schet_id;
-  let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [main_schet_id, req.user.region_id],
-  );
-  main_schet = main_schet.rows[0];
+  const user_id = req.user.region_id
+
+  const main_schet = await getByIdMainSchet(user_id, main_schet_id)
   if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
+    return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
 
-  let podotchet_litso = await pool.query(
-    `SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [id_podotchet_litso, req.user.region_id],
-  );
-  podotchet_litso = podotchet_litso.rows[0];
+  const podotchet_litso = await getByIdPodotchet(user_id, value.id_podotchet_litso)
   if (!podotchet_litso) {
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }

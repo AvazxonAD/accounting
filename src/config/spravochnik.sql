@@ -46,7 +46,7 @@ CREATE TABLE spravochnik_organization (
   raschet_schet VARCHAR(200),
   raschet_schet_gazna VARCHAR(200),
   mfo VARCHAR(200),
-  inn VARCHAR(200),
+  cccc,
   user_id INTEGER REFERENCES regions(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

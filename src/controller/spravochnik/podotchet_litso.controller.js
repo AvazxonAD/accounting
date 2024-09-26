@@ -1,36 +1,33 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkValueString } = require("../../utils/check.functions");
 const xlsx = require("xlsx");
+const { podotchetLitsoValidation } = require('../../helpers/validation/spravochnik/podotchet.litso.validation')
 const {
-  getByAllPodotChet,
   createPodotChet,
-  getAllPodotChet,
-  totalPodotChet,
-  getByIdPodotchet,
   updatePodotchet,
   deletePodotchet,
-} = require("../../service/spravochnik/podotchet_lito.db");
+  getByAllPodotChet,
+  getAllPodotChet,
+  totalPodotChet,
+  getByIdPodotchet
+} = require('../../service/spravochnik/podotchet.litso.db')
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  let { name, rayon } = req.body;
   const user_id = req.user.region_id;
 
-  checkValueString(name, rayon);
-  name = name.trim();
-  rayon = rayon.trim();
+  const { error, value } = podotchetLitsoValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  const test = await getByAllPodotChet(name, rayon, user_id);
+  const test = await getByAllPodotChet(value.name, value.rayon, user_id);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await createPodotChet(name, rayon, user_id);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await createPodotChet({ ...value, user_id });
 
   return res.status(201).json({
     success: true,
@@ -60,23 +57,19 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    pageCount: pageCount,
-    count: total,
-    currentPage: page,
-    nextPage: page >= pageCount ? null : page + 1,
-    backPage: page === 1 ? null : page - 1,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    },
     data: result.rows,
   });
 });
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  let { name, rayon } = req.body;
-
-  checkValueString(name, rayon);
-  name = name.trim();
-  rayon = rayon.trim();
-
   const user_id = req.user.region_id;
   const id = req.params.id;
 
@@ -87,17 +80,16 @@ const update = asyncHandler(async (req, res, next) => {
     );
   }
 
-  if (podotchet_litso.name !== name || podotchet_litso.rayon !== rayon) {
-    const test = await getByAllPodotChet(name, rayon, user_id);
+  const { error, value } = podotchetLitsoValidation.validate(req.body)
+
+  if (podotchet_litso.name !== value.name || podotchet_litso.rayon !== value.rayon) {
+    const test = await getByAllPodotChet(value.name, value.rayon, user_id);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  const result = await updatePodotchet(name, rayon, user_id, id);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
+  await updatePodotchet({ ...value, user_id, id })
 
   return res.status(201).json({
     success: true,
@@ -115,11 +107,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteValue = await deletePodotchet(id);
-
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await deletePodotchet(id);
 
   return res.status(200).json({
     success: true,

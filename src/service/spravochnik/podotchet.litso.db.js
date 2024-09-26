@@ -10,13 +10,12 @@ const getByAllPodotChet = handleServiceError(async (name, rayon, user_id) => {
   return result.rows[0];
 });
 
-const createPodotChet = handleServiceError(async (name, rayon, user_id) => {
-  const result = await pool.query(
-    `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
+const createPodotChet = handleServiceError(async (object) => {
+  await pool.query(
+    `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3)
     `,
-    [name, rayon, user_id],
+    [object.name, object.rayon, object.user_id],
   );
-  return result.rows[0];
 });
 
 const getAllPodotChet = handleServiceError(async (user_id, offset, limit) => {
@@ -41,31 +40,27 @@ const totalPodotChet = handleServiceError(async (user_id) => {
 
 const getByIdPodotchet = handleServiceError(async (user_id, id) => {
   const result = await pool.query(
-    `SELECT * FROM spravochnik_podotchet_litso  WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
+    `SELECT id, name, rayon FROM spravochnik_podotchet_litso  WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
     [id, user_id],
   );
   return result.rows[0];
 });
 
-const updatePodotchet = handleServiceError(
-  async (name, rayon, user_id, id) => {
-    const result = await pool.query(
+const updatePodotchet = handleServiceError(async (object) => {
+    await pool.query(
       `UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2
         WHERE user_id = $3 AND id = $4 AND isdeleted = false
-        RETURNING *
     `,
-      [name, rayon, user_id, id],
+      [object.name, object.rayon, object.user_id, object.id],
     );
-    return result.rows[0];
   },
 );
 
 const deletePodotchet = handleServiceError(async (id) => {
-  const result = await pool.query(
-    `UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 AND isdeleted = false RETURNING *`,
+  await pool.query(
+    `UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`,
     [true, id],
   );
-  return result.rows[0];
 });
 
 module.exports = {

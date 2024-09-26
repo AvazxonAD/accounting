@@ -14,12 +14,11 @@ const getByAllPodrazdelenie = handleServiceError(
 
 const createPodrazdelenie = handleServiceError(
   async (user_id, name, rayon) => {
-    const result = await pool.query(
-      `INSERT INTO spravochnik_podrazdelenie(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
+    await pool.query(
+      `INSERT INTO spravochnik_podrazdelenie(name, rayon, user_id) VALUES($1, $2, $3) 
     `,
       [name, rayon, user_id],
     );
-    return result.rows[0];
   },
 );
 
@@ -47,7 +46,7 @@ const getTotalPodrazlanie = handleServiceError(async (user_id) => {
 
 const getByIdPodrazlanie = handleServiceError(async (user_id, id) => {
   const result = await pool.query(
-    `SELECT * FROM spravochnik_podrazdelenie   WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
+    `SELECT id, name, rayon  FROM spravochnik_podrazdelenie   WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
     [id, user_id],
   );
   return result.rows[0];
@@ -55,23 +54,20 @@ const getByIdPodrazlanie = handleServiceError(async (user_id, id) => {
 
 const updatePodrazlanie = handleServiceError(
   async (user_id, id, name, rayon) => {
-    const result = await pool.query(
+    await pool.query(
       `UPDATE  spravochnik_podrazdelenie SET name = $1, rayon = $2
         WHERE user_id = $3 AND id = $4
-        RETURNING *
     `,
       [name, rayon, user_id, id],
     );
-    return result.rows[0];
   },
 );
 
 const deletePodrazlanie = handleServiceError(async (id) => {
-  const result = await pool.query(
+  await pool.query(
     `UPDATE spravochnik_podrazdelenie SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],
   );
-  return result.rows[0];
 });
 
 module.exports = {

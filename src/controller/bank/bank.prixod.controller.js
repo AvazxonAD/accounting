@@ -3,6 +3,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
 const { bankPrixodValidator, bankPrixodChildValidation, queryValidationBank } = require('../../helpers/validation/bank/bank.prixod.validation')
 
+const { returnAllChildSumma } = require('../../utils/returnSumma')
 const { getByIdShartnoma } = require('../../service/shartnoma/shartnoma.db')
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
 const { getByIdOrganization } = require("../../service/spravochnik/organization.db");
@@ -10,7 +11,7 @@ const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
 const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.db");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
 const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
-const { getByIdPodotchet } = require("../../service/spravochnik/podotchet_lito.db");
+const { getByIdPodotchet } = require("../../service/spravochnik/podotchet.litso.db");
 const {
   createBankPrixod,
   createBankPrixodChild,
@@ -115,11 +116,14 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     }
   }
 
+  const summa = returnAllChildSumma(value.childs)
+
   const prixod = await createBankPrixod({
     ...value,
     main_schet_id,
     user_id,
-    provodki_boolean: true
+    provodki_boolean: true,
+    summa
   })
 
   for (let child of value.childs) {
@@ -233,11 +237,13 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
       }
     }
   }
+  const summa = returnAllChildSumma(value.childs)
 
   await bankPrixodUpdate({
     ...value,
     id,
-    provodki_boolean: true
+    provodki_boolean: true,
+    summa
   })
 
   await deleteBankPrixodChild(id)

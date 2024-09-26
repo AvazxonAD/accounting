@@ -2,16 +2,14 @@ const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
 const createOperatsii = handleServiceError(
-  async (name, schet, sub_schet, type_schet) => {
-    const result = await pool.query(
+  async (object) => {
+    await pool.query(
       `INSERT INTO spravochnik_operatsii(
         name,  schet, sub_schet, type_schet
         ) VALUES($1, $2, $3, $4) 
-        RETURNING *
     `,
-      [name, schet, sub_schet, type_schet],
+      [object.name, object.schet, object.sub_schet, object.type_schet],
     );
-    return result.rows[0];
   },
 );
 
@@ -49,33 +47,35 @@ const totalOperatsii = handleServiceError(async (query) => {
 
 const getByIdOperatsii = handleServiceError(async (id) => {
   let result = await pool.query(
-    `SELECT * FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
+    `SELECT id, name, schet, sub_schet, type_schet FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
     `,
     [id],
   );
   return result.rows[0];
 });
 
-const updateOperatsii = handleServiceError(
-  async (name, schet, sub_schet, type_schet, id) => {
-    const result = await pool.query(
-      `UPDATE spravochnik_operatsii 
+const updateOperatsii = handleServiceError(async (object) => {
+  await pool.query(
+    `UPDATE spravochnik_operatsii 
         SET name = $1, schet = $2, sub_schet = $3, type_schet = $4
         WHERE id = $5
-        RETURNING *
     `,
-      [name, schet, sub_schet, type_schet, id],
-    );
-    return result.rows[0];
-  },
+    [
+      object.name,
+      object.schet,
+      object.sub_schet,
+      object.type_schet,
+      object.id
+    ],
+  );
+},
 );
 
 const deleteOperatsii = handleServiceError(async (id) => {
-  const result = await pool.query(
-    `UPDATE spravochnik_operatsii SET isdeleted = $1 WHERE id = $2 RETURNING *`,
+  await pool.query(
+    `UPDATE spravochnik_operatsii SET isdeleted = $1 WHERE id = $2`,
     [true, id],
   );
-  return result.rows[0];
 });
 
 module.exports = {

@@ -1,10 +1,6 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {
-  checkValueString,
-  checkValueNumber,
-} = require("../../utils/check.functions");
 const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.db");
 const {
   createMain_schet,
@@ -13,7 +9,7 @@ const {
   updateMain_schet,
   deleteMain_schet,
 } = require("../../service/spravochnik/main.schet.db");
-const { mainSchetValidator } = require("../../helpers/validation/spravochnik/main_schet.validation");
+const { mainSchetValidator, queryMainSchetValidation } = require("../../helpers/validation/spravochnik/main_schet.validation");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
@@ -30,7 +26,7 @@ const create = asyncHandler(async (req, res, next) => {
   }
   await createMain_schet({
     ...value,
-    user_region_id: req.user.region_id,
+    user_id: req.user.region_id,
   });
   return res.status(201).json({
     success: true,
@@ -40,11 +36,36 @@ const create = asyncHandler(async (req, res, next) => {
 
 // get all
 const getAll = asyncHandler(async (req, res, next) => {
-  const result = await getAllMain_schet(req.user.region_id);
+  const { error, value } = queryMainSchetValidation.validate(req.query)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+
+  const limit = parseInt(value.limit) || 10;
+  const page = parseInt(value.page) || 1;
+  const offset = (page - 1) * limit;
+
+  if (limit <= 0 || page <= 0) {
+    return next(
+      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
+    );
+  }
+
+  const result = await getAllMain_schet(req.user.region_id, offset, limit);
+
+  const total = Number(result.totalQuery.count)
+  const pageCount = Math.ceil(total / limit);
 
   return res.status(200).send({
     success: true,
-    data: result,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    },
+    data: result.main_schet_rows
   });
 });
 
@@ -58,97 +79,20 @@ const update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Schet topilmadi", 404));
   }
 
-  let {
-    account_number,
-    spravochnik_budjet_name_id,
-    tashkilot_nomi,
-    tashkilot_bank,
-    tashkilot_mfo,
-    tashkilot_inn,
-    account_name,
-    jur1_schet,
-    jur1_subschet,
-    jur2_schet,
-    jur2_subschet,
-    jur3_schet,
-    jur3_subschet,
-    jur4_subschet,
-    jur4_schet,
-  } = req.body;
+  const { error, value } = mainSchetValidator.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }  
 
-  checkValueString(
-    account_number,
-    tashkilot_nomi,
-    tashkilot_bank,
-    tashkilot_mfo,
-    account_name,
-    jur1_schet,
-    jur2_schet,
-    jur3_schet,
-    jur4_schet,
-  );
-  checkValueNumber(tashkilot_inn, spravochnik_budjet_name_id);
-
-  if (tashkilot_inn.toString().length !== 9) {
-    return next(
-      new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400),
-    );
-  }
-
-  if (
-    jur1_schet.length > 5 ||
-    jur2_schet.length > 5 ||
-    jur3_schet.length > 5 ||
-    jur4_schet.length > 5
-  ) {
-    return next(
-      new ErrorResponse(
-        "Schet raqamining xonalari soni 5 tadan oshmasligi kerak",
-        400,
-      ),
-    );
-  }
-
-  if (
-    jur1_subschet.length > 7 ||
-    jur2_subschet.length > 7 ||
-    jur3_subschet.length > 7 ||
-    jur4_subschet.length > 7
-  ) {
-    return next(
-      new ErrorResponse(
-        "Sub schet raqamining xonalari soni 7 tadan oshmasligi kerak",
-        400,
-      ),
-    );
-  }
-
-  const test_budjet = await getByIdBudjet(spravochnik_budjet_name_id);
+  const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }
 
-  const result = updateMain_schet(
-    account_number,
-    spravochnik_budjet_name_id,
-    tashkilot_nomi,
-    tashkilot_bank,
-    tashkilot_mfo,
-    tashkilot_inn,
-    account_name,
-    jur1_schet,
-    jur1_subschet,
-    jur2_schet,
-    jur2_subschet,
-    jur3_schet,
-    jur3_subschet,
-    jur4_subschet,
-    jur4_schet,
-    id,
-  );
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
+  await updateMain_schet({
+    ...value,
+    id
+  });
 
   return res.status(201).json({
     success: true,
@@ -166,10 +110,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteValue = await deleteMain_schet(id);
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await deleteMain_schet(id);
 
   return res.status(200).json({
     success: true,

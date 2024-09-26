@@ -14,6 +14,9 @@ const {
   bankRasxodValidation,
   bankRasxodChildValidation
 } = require('../../helpers/validation/bank/bank.rasxod.validation');
+
+const { returnAllChildSumma } = require('../../utils/returnSumma')
+
 const {
   createBankRasxodDb,
   createBankRasxodChild,
@@ -100,10 +103,12 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
     }
   }
 
+  const summa = returnAllChildSumma(value.childs)
   const rasxod = await createBankRasxodDb({
     ...value,
     main_schet_id,
-    user_id
+    user_id,
+    summa
   })
 
   for (let child of value.childs) {
@@ -195,10 +200,11 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
       }
     }
   }
-
+  const summa = returnAllChildSumma(value.childs)
   await updateRasxod({
     ...value,
-    id
+    id,
+    summa
   })
 
   await deleteRasxodChild(user_id, main_schet_id, id)
@@ -244,7 +250,7 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  if(!value.from && !value.to){
+  if (!value.from && !value.to) {
     all_rasxod = await getAllBankRasxodDb(user_id, value.main_schet_id, offset, limit)
     totalQuery = all_rasxod.totalQuery
     summa = Number(all_rasxod.summa)
@@ -280,7 +286,7 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
     });
     resultArray.push(object);
   }
-  
+
   const total = Number(totalQuery.count)
   const pageCount = Math.ceil(total / limit);
   return res.status(200).json({
@@ -308,7 +314,7 @@ const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
       new ErrorResponse("Server xatolik. Rasxod document topilmadi", [404]),
     );
   }
-  
+
   const rasxod_child = await getElemenByIdRasxodChild(user_id, rasxod.id)
   let object = { ...rasxod };
   object.summa = Number(object.summa);

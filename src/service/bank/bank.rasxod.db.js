@@ -78,30 +78,30 @@ const getByIdRasxod = handleServiceError(async (user_id, main_schet_id, id) => {
 const updateRasxod = handleServiceError(async (object) => {
     await pool.query(
         `
-            UPDATE bank_prixod SET 
+            UPDATE bank_rasxod SET 
                 doc_num = $1, 
                 doc_date = $2, 
                 summa = $3, 
-                provodki_boolean = $4, 
-                opisanie = $5, 
-                id_spravochnik_organization = $6, 
-                id_shartnomalar_organization = $7,
-                spravochnik_operatsii_own_id = $9
+                opisanie = $4, 
+                id_spravochnik_organization = $5, 
+                id_shartnomalar_organization = $6,
+                spravochnik_operatsii_own_id = $7
             WHERE id = $8
+            RETURNING * 
             `,
         [
             object.doc_num,
             object.doc_date,
             object.summa,
-            object.provodki_boolean,
             object.opisanie,
             object.id_spravochnik_organization,
             object.id_shartnomalar_organization,
-            object.id,
-            object.spravochnik_operatsii_own_id
+            object.spravochnik_operatsii_own_id,
+            object.id
         ],
-    );
-})
+    );    
+
+});
 
 const getAllBankRasxodDb = handleServiceError(async (user_id, main_schet_id, offset, limit) => {
     const result = await pool.query(

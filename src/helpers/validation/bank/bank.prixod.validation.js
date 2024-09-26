@@ -3,7 +3,6 @@ const Joi = require("joi");
 const bankPrixodValidator = Joi.object({
     doc_num: Joi.string(),
     doc_date: Joi.date(),
-    summa: Joi.number(),
     opisanie: Joi.string(),
     id_spravochnik_organization: Joi.number().required(),
     id_shartnomalar_organization: Joi.number(),
@@ -26,7 +25,7 @@ const queryValidationBank = Joi.object({
     page: Joi.number(),
     from: Joi.date(),
     to: Joi.date()
-})
+}).options({ stripUnknown: true })
 
 
 module.exports = {

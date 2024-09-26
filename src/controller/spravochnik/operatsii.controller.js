@@ -1,8 +1,8 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { checkValueString } = require("../../utils/check.functions");
 const xlsx = require("xlsx");
+const { operatsiiValidation } = require('../../helpers/validation/spravochnik/operatsii.validation')
 const {
   getByNameAndSchetOperatsii,
   createOperatsii,
@@ -15,34 +15,17 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  let { name, schet, sub_schet, type_schet } = req.body;
-
-  checkValueString(name, schet, sub_schet, type_schet);
-  name = name.trim();
-
-  if (
-    type_schet !== "kassa_prixod" &&
-    type_schet !== "kassa_rasxod" &&
-    type_schet !== "bank_prixod" &&
-    type_schet !== "bank_rasxod"
-  ) {
-    return next(
-      new ErrorResponse(
-        `type_schet notog'ri jonatildi shablonlar: kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod`,
-        400,
-      ),
-    );
+  const { error, value } = operatsiiValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
   }
 
-  const test = await getByNameAndSchetOperatsii(name, type_schet);
+  const test = await getByNameAndSchetOperatsii(value.name, value.type_schet);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await createOperatsii(name, schet, sub_schet, type_schet);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await createOperatsii({ ...value });
 
   return res.status(201).json({
     success: true,
@@ -76,53 +59,39 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    pageCount: pageCount,
-    count: total,
-    currentPage: page,
-    nextPage: page >= pageCount ? null : page + 1,
-    backPage: page === 1 ? null : page - 1,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    },
     data: result,
   });
 });
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  let { name, schet, sub_schet, type_schet } = req.body;
   const id = req.params.id;
-
-  checkValueString(name, schet, sub_schet, type_schet);
-  name = name.trim();
-
-  if (
-    type_schet !== "kassa_prixod" &&
-    type_schet !== "kassa_rasxod" &&
-    type_schet !== "bank_prixod" &&
-    type_schet !== "bank_rasxod"
-  ) {
-    return next(
-      new ErrorResponse(
-        `type_schet notog'ri jonatildi shablonlar: kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod`,
-        400,
-      ),
-    );
-  }
-
   const operatsii = await getByIdOperatsii(id);
   if (!operatsii) {
     return next(new ErrorResponse("Server xatolik. Operatsi topilmadi", 404));
   }
 
-  if (operatsii.name !== name || operatsii.type_schet !== type_schet) {
-    const test = await getByNameAndSchetOperatsii(name, type_schet);
+  const { error, value } = operatsiiValidation.validate(req.body)
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+
+  if (operatsii.name !== value.name || operatsii.type_schet !== value.type_schet) {
+    const test = await getByNameAndSchetOperatsii(value.name, value.type_schet);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
-  const result = await updateOperatsii(name, schet, sub_schet, type_schet, id);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
 
+  await updateOperatsii({ ...value, id});
+  
   return res.status(201).json({
     success: true,
     data: "Muvafaqyatli yangilandi",
@@ -137,11 +106,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteValue = await deleteOperatsii(id);
-
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await deleteOperatsii(id);
 
   return res.status(200).json({
     success: true,

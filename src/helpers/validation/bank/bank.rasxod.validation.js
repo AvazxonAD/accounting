@@ -4,7 +4,6 @@ const Joi = require('joi')
 const bankRasxodValidation = Joi.object({
     doc_num: Joi.string(),
     doc_date: Joi.date(),
-    summa: Joi.number(),
     opisanie: Joi.string(),
     id_spravochnik_organization: Joi.number().required(),
     spravochnik_operatsii_own_id: Joi.number().required(),

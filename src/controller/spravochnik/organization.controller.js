@@ -1,10 +1,6 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const {
-  checkValueString,
-  checkValueNumber,
-} = require("../../utils/check.functions");
 const xlsx = require("xlsx");
 const {
   getByInnOrganization,
@@ -16,52 +12,21 @@ const {
   deleteOrganization,
 } = require("../../service/spravochnik/organization.db");
 
+const { organizationValidation } = require('../../helpers/validation/spravochnik/organization.validation')
 // create
 const create = asyncHandler(async (req, res, next) => {
-  if (!req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
+  const user_id = req.user.region_id
+  const { error, value } = organizationValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
   }
 
-  let {
-    name,
-    bank_klient,
-    raschet_schet,
-    raschet_schet_gazna,
-    mfo,
-    inn,
-    okonx,
-  } = req.body;
-
-  checkValueString(
-    name,
-    bank_klient,
-    raschet_schet,
-    raschet_schet_gazna,
-    mfo,
-    inn,
-    okonx,
-  );
-  name = name.trim();
-  bank_klient = bank_klient.trim();
-
-  const test = await getByInnOrganization(inn, req.user.region_id);
+  const test = await getByInnOrganization(value.inn, user_id);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await createOrganization(
-    name,
-    bank_klient,
-    raschet_schet,
-    raschet_schet_gazna,
-    mfo,
-    inn,
-    req.user.region_id,
-    okonx,
-  );
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await createOrganization({ ...value, user_id });
 
   return res.status(201).json({
     success: true,
@@ -77,11 +42,6 @@ const getAll = asyncHandler(async (req, res, next) => {
   let inn = null;
   let totalQuery = null;
   const user_id = req.user.region_id;
-
-  if (req.query.inn) {
-    inn = Number(req.query.inn);
-    checkValueNumber(inn);
-  }
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -106,64 +66,40 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    pageCount: pageCount,
-    count: total,
-    currentPage: page,
-    nextPage: page >= pageCount ? null : page + 1,
-    backPage: page === 1 ? null : page - 1,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    },
     data: result,
   });
 });
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  let {
-    name,
-    bank_klient,
-    raschet_schet,
-    raschet_schet_gazna,
-    mfo,
-    inn,
-    okonx,
-  } = req.body;
   const id = req.params.id;
   const user_id = req.user.region_id;
-
-  checkValueString(
-    name,
-    bank_klient,
-    raschet_schet,
-    raschet_schet_gazna,
-    mfo,
-    inn,
-  );
 
   const partner = await getByIdOrganization(user_id, id);
   if (!partner) {
     return next(new ErrorResponse("Server xatolik. Hamkor topilmadi", 500));
   }
 
-  if (partner.inn !== inn) {
-    const test = await getByInnOrganization(inn, user_id);
+  const { error, value } = organizationValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+
+  if (partner.inn !== value.inn) {
+    const test = await getByInnOrganization(value.inn, user_id);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  const result = await updateOrganization(
-    name,
-    bank_klient,
-    raschet_schet,
-    raschet_schet_gazna,
-    mfo,
-    inn,
-    user_id,
-    id,
-    okonx,
-  );
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
+  await updateOrganization({ ...value, id, user_id });
 
   return res.status(201).json({
     success: true,
@@ -180,11 +116,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteValue = await deleteOrganization(id);
-
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await deleteOrganization(id);
 
   return res.status(200).json({
     success: true,

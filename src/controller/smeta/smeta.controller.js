@@ -2,10 +2,6 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const {
-  checkValueString,
-  checkValueNumber,
-} = require("../../utils/check.functions");
-const {
   getByAllSmeta,
   createSmeta,
   getAllSmeta,

@@ -1,10 +1,4 @@
 const asyncHandler = require("../../middleware/asyncHandler");
-const {
-  checkValueString,
-  checkValueNumber,
-  checkValueBoolean,
-  checkValueArray,
-} = require("../../utils/check.functions");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
 
