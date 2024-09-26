@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { sum } = require("../../utils/need.functions");
+const { sum } = require("../../utils/returnSumma");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

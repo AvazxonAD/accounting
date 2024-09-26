@@ -2,7 +2,6 @@ const { Router } = require("express");
 const router = Router();
 
 const { protect } = require("../../middleware/auth");
-const { check_super_admin } = require("../../utils/auth/check.role");
 const {
   createRegion,
   getAllReegions,
