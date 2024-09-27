@@ -1,23 +1,30 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
-const { kassaValidation } = require('../../helpers/validation/kassa/kassa.validation')
+const {
+  kassaValidation,
+} = require("../../helpers/validation/kassa/kassa.validation");
 
-const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.db')
-const { getByIdPodotchet } = require('../../service/spravochnik/podotchet.litso.db')
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const {
+  getByIdPodotchet,
+} = require("../../service/spravochnik/podotchet.litso.db");
 
 // kassa prixod and rasxod
 const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
-  const { error, value } = kassaValidation.validate(req.body)
+  const { error, value } = kassaValidation.validate(req.body);
   const main_schet_id = req.query.main_schet_id;
-  const user_id = req.user.region_id
+  const user_id = req.user.region_id;
 
-  const main_schet = await getByIdMainSchet(user_id, main_schet_id)
+  const main_schet = await getByIdMainSchet(user_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
 
-  const podotchet_litso = await getByIdPodotchet(user_id, value.id_podotchet_litso)
+  const podotchet_litso = await getByIdPodotchet(
+    user_id,
+    value.id_podotchet_litso,
+  );
   if (!podotchet_litso) {
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }

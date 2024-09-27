@@ -1,7 +1,9 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { regionValidation } = require("../../helpers/validation/auth/region.validation");
+const {
+  regionValidation,
+} = require("../../helpers/validation/auth/region.validation");
 const {
   getByNameRegion,
   create_region,
@@ -13,9 +15,9 @@ const {
 
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {
-  const  { error, value } = regionValidation.validate(req.body);
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = regionValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   const test = await getByNameRegion(value.name);
@@ -48,7 +50,7 @@ const updateRegion = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
 
-  const { error, value } = regionValidation.validate(req.body)
+  const { error, value } = regionValidation.validate(req.body);
 
   if (region.name !== value.name.trim()) {
     const test = await getByNameRegion(value.name);
@@ -86,7 +88,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Region topilmadi", 404));
   }
-  
+
   return res.status(200).json({
     success: true,
     data: region,

@@ -10,10 +10,9 @@ const getByNameBudjet = handleServiceError(async (name) => {
 });
 
 const createBudjet = handleServiceError(async (name) => {
-  await pool.query(
-    `INSERT INTO spravochnik_budjet_name(name) VALUES($1)`,
-    [name],
-  );
+  await pool.query(`INSERT INTO spravochnik_budjet_name(name) VALUES($1)`, [
+    name,
+  ]);
 });
 
 const getAllBudjet = handleServiceError(async () => {

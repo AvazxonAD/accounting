@@ -2,7 +2,9 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { operatsiiValidation } = require('../../helpers/validation/spravochnik/operatsii.validation')
+const {
+  operatsiiValidation,
+} = require("../../helpers/validation/spravochnik/operatsii.validation");
 const {
   getByNameAndSchetOperatsii,
   createOperatsii,
@@ -15,9 +17,9 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const { error, value } = operatsiiValidation.validate(req.body)
+  const { error, value } = operatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   const test = await getByNameAndSchetOperatsii(value.name, value.type_schet);
@@ -64,7 +66,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
+      backPage: page === 1 ? null : page - 1,
     },
     data: result,
   });
@@ -78,20 +80,23 @@ const update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Operatsi topilmadi", 404));
   }
 
-  const { error, value } = operatsiiValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = operatsiiValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
-  if (operatsii.name !== value.name || operatsii.type_schet !== value.type_schet) {
+  if (
+    operatsii.name !== value.name ||
+    operatsii.type_schet !== value.type_schet
+  ) {
     const test = await getByNameAndSchetOperatsii(value.name, value.type_schet);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updateOperatsii({ ...value, id});
-  
+  await updateOperatsii({ ...value, id });
+
   return res.status(201).json({
     success: true,
     data: "Muvafaqyatli yangilandi",

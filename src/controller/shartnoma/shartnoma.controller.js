@@ -2,14 +2,16 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { getByIdSmeta } = require("../../service/smeta/smeta.db");
-const { getByIdOrganization } = require("../../service//spravochnik/organization.db");
+const {
+  getByIdOrganization,
+} = require("../../service//spravochnik/organization.db");
 const {
   createShartnoma,
   getAllShartnoma,
   getTotalShartnoma,
   updateShartnoma,
   getByIdShartnoma,
-  getByIdOrganizationShartnoma
+  getByIdOrganizationShartnoma,
 } = require("../../service/shartnoma/shartnoma.db");
 const { createGrafik } = require("../../service/shartnoma/shartnoma.grafik.db");
 
@@ -217,17 +219,20 @@ exports.deleteShartnoma = asyncHandler(async (req, res, next) => {
 
 // get by organization id shartnoama
 const getByIdOrganization_Shartnoma = asyncHandler(async (req, res, next) => {
-  const result = await getByIdOrganizationShartnoma(req.user.region_id, req.params.id)
+  const result = await getByIdOrganizationShartnoma(
+    req.user.region_id,
+    req.params.id,
+  );
   return res.status(200).json({
     sucess: true,
-    data: result
-  })
-})
+    data: result,
+  });
+});
 
 module.exports = {
   create,
   getAll,
   getElementById,
   update_shartnoma,
-  getByIdOrganization_Shartnoma
+  getByIdOrganization_Shartnoma,
 };

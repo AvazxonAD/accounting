@@ -166,8 +166,10 @@ const deleteShartnoma = handleServiceError(async () => {
   const result = await pool.query(`UPDATE SET `);
 });
 
-const getByIdOrganizationShartnoma = handleServiceError(async (user_id, organization_id) => {
-  const result = await pool.query(`
+const getByIdOrganizationShartnoma = handleServiceError(
+  async (user_id, organization_id) => {
+    const result = await pool.query(
+      `
           SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -198,9 +200,12 @@ const getByIdOrganizationShartnoma = handleServiceError(async (user_id, organiza
             AND shartnomalar_organization.spravochnik_organization_id = $2
         ORDER BY 
             shartnomalar_organization.id
-  `, [user_id, organization_id])
-  return result.rows
-})
+  `,
+      [user_id, organization_id],
+    );
+    return result.rows;
+  },
+);
 
 module.exports = {
   createShartnoma,
@@ -208,5 +213,5 @@ module.exports = {
   getTotalShartnoma,
   getByIdShartnoma,
   updateShartnoma,
-  getByIdOrganizationShartnoma
+  getByIdOrganizationShartnoma,
 };

@@ -2,7 +2,9 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { podotchetLitsoValidation } = require('../../helpers/validation/spravochnik/podotchet.litso.validation')
+const {
+  podotchetLitsoValidation,
+} = require("../../helpers/validation/spravochnik/podotchet.litso.validation");
 const {
   createPodotChet,
   updatePodotchet,
@@ -10,19 +12,20 @@ const {
   getByAllPodotChet,
   getAllPodotChet,
   totalPodotChet,
-  getByIdPodotchet
-} = require('../../service/spravochnik/podotchet.litso.db')
+  getByIdPodotchet,
+} = require("../../service/spravochnik/podotchet.litso.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
 
-  const { error, value } = podotchetLitsoValidation.validate(req.body)
+  const { error, value } = podotchetLitsoValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
-  const test = await getByAllPodotChet(value.name, value.rayon, user_id);
+  const test = await getByAllPodotChet(value.name, value.rayon, region_id);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
@@ -39,7 +42,7 @@ const create = asyncHandler(async (req, res, next) => {
 const getAll = asyncHandler(async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -49,9 +52,9 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const result = await getAllPodotChet(user_id, offset, limit);
+  const result = await getAllPodotChet(region_id, offset, limit);
 
-  const totalQuery = await totalPodotChet(user_id);
+  const totalQuery = await totalPodotChet(region_id);
   const total = parseInt(totalQuery.total);
   const pageCount = Math.ceil(total / limit);
 
@@ -62,7 +65,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
+      backPage: page === 1 ? null : page - 1,
     },
     data: result.rows,
   });
@@ -70,26 +73,32 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const podotchet_litso = await getByIdPodotchet(user_id, id);
+  const podotchet_litso = await getByIdPodotchet(region_id, id);
   if (!podotchet_litso) {
     return next(
       new ErrorResponse("Server xatolik. Podotchet_litso topilmadi", 404),
     );
   }
 
-  const { error, value } = podotchetLitsoValidation.validate(req.body)
+  const { error, value } = podotchetLitsoValidation.validate(req.body);
+  if(error){
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  if (podotchet_litso.name !== value.name || podotchet_litso.rayon !== value.rayon) {
-    const test = await getByAllPodotChet(value.name, value.rayon, user_id);
+  if (
+    podotchet_litso.name !== value.name ||
+    podotchet_litso.rayon !== value.rayon
+  ) {
+    const test = await getByAllPodotChet(value.name, value.rayon, region_id);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updatePodotchet({ ...value, user_id, id })
+  await updatePodotchet({ ...value, id });
 
   return res.status(201).json({
     success: true,
@@ -99,10 +108,10 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const value = await getByIdPodotchet(user_id, id);
+  const value = await getByIdPodotchet(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }

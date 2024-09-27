@@ -1,10 +1,10 @@
 CREATE TABLE main_schet (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     spravochnik_budjet_name_id INTEGER REFERENCES spravochnik_budjet_name(id),
     tashkilot_nomi VARCHAR(255),
     tashkilot_bank VARCHAR(255),
     tashkilot_mfo VARCHAR(50),
-    tashkilot_inn INTEGER,
+    tashkilot_inn VARCHAR(20),
     account_number VARCHAR(20),
     account_name VARCHAR(255),
     jur1_schet VARCHAR(255),
@@ -15,7 +15,7 @@ CREATE TABLE main_schet (
     jur3_subschet VARCHAR(255),
     jur4_schet VARCHAR(255),
     jur4_subschet VARCHAR(255),
-    user_id INTEGER REFERENCES regions(id),
+    user_id INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

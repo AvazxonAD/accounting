@@ -2,7 +2,9 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { podrazdelenieValidation } = require('../../helpers/validation/spravochnik/porazdelenie.validation')
+const {
+  podrazdelenieValidation,
+} = require("../../helpers/validation/spravochnik/porazdelenie.validation");
 const {
   getByAllPodrazdelenie,
   createPodrazdelenie,
@@ -15,13 +17,14 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
-  const { error, value } = podrazdelenieValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
+  const { error, value } = podrazdelenieValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
-  const test = await getByAllPodrazdelenie(user_id, value.name, value.rayon);
+  const test = await getByAllPodrazdelenie(region_id, value.name, value.rayon);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
@@ -38,7 +41,7 @@ const create = asyncHandler(async (req, res, next) => {
 const getAll = asyncHandler(async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -48,9 +51,9 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const result = await getAllPodrazdelenie(user_id, offset, limit);
+  const result = await getAllPodrazdelenie(region_id, offset, limit);
 
-  const totalQuery = await getTotalPodrazlanie(user_id);
+  const totalQuery = await getTotalPodrazlanie(region_id);
   const total = parseInt(totalQuery.total);
   const pageCount = Math.ceil(total / limit);
 
@@ -61,7 +64,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
+      backPage: page === 1 ? null : page - 1,
     },
     data: result,
   });
@@ -69,29 +72,29 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const podrazdelenie = await getByIdPodrazlanie(user_id, id);
+  const podrazdelenie = await getByIdPodrazlanie(region_id, id);
   if (!podrazdelenie) {
     return next(
       new ErrorResponse("Server xatolik. Podrazdelenie topilmadi", 404),
     );
   }
-  const { error, value } = podrazdelenieValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = podrazdelenieValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
-  const {name, rayon} = value
+  const { name, rayon } = value;
 
   if (podrazdelenie.name !== name || podrazdelenie.rayon !== rayon) {
-    const test = await getByAllPodrazdelenie(user_id, name, rayon);
+    const test = await getByAllPodrazdelenie(region_id, name, rayon);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updatePodrazlanie(user_id, id, name, rayon);
+  await updatePodrazlanie(id, name, rayon);
 
   return res.status(201).json({
     success: true,
@@ -101,10 +104,10 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const value = await getByIdPodrazlanie(user_id, id);
+  const value = await getByIdPodrazlanie(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
@@ -113,7 +116,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    data: "Muvaff2aqiyatli ochirildi",
+    data: "Muvaffaqiyatli ochirildi",
   });
 });
 

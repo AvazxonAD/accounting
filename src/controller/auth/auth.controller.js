@@ -2,7 +2,10 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const generateToken = require("../../utils/auth/generate.token");
 const bcrypt = require("bcrypt");
-const { authValidation, authUpdateValidation } = require('../../helpers/validation/auth/auth.validation')
+const {
+  authValidation,
+  authUpdateValidation,
+} = require("../../helpers/validation/auth/auth.validation");
 
 const {
   getByLoginAuth,
@@ -18,7 +21,7 @@ const {
 
 // login
 const login = asyncHandler(async (req, res, next) => {
-  const { error, value } = authValidation.validate(req.body)
+  const { error, value } = authValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
@@ -35,7 +38,9 @@ const login = asyncHandler(async (req, res, next) => {
   if (value.main_schet_id) {
     main_schet = await getByIdMainSchet(user.region_id, value.main_schet_id);
     if (!main_schet) {
-      return next(new ErrorResponse("Shot raqami raqami notog`ri kir111itildi", 400));
+      return next(
+        new ErrorResponse("Shot raqami raqami notog`ri kiritildi", 400),
+      );
     }
   }
   const token = generateToken(user);
@@ -51,13 +56,12 @@ const login = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const { error, value} = authUpdateValidation.validate(req.body)
+  const { error, value } = authUpdateValidation.validate(req.body);
   const id = req.user.id;
 
   const user = await getByIdAuth(id);
 
   if (value.oldPassword || value.newPassword) {
-
     const oldPassword = value.oldPassword.trim();
     const newPassword = value.newPassword.trim();
 

@@ -1,7 +1,7 @@
 
 
 CREATE TABLE shartnomalar_organization (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     doc_num VARCHAR(255) NOT NULL,
     doc_date DATE NOT NULL,
     summa DOUBLE PRECISION NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE shartnomalar_organization (
 );
 
 CREATE TABLE shartnoma_grafik (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   id_shartnomalar_organization INTEGER REFERENCES shartnomalar_organization(id),
   user_id INTEGER REFERENCES regions(id),
   oy_1 DECIMAL DEFAULT 0,

@@ -11,14 +11,13 @@ const returnStringSumma = (num) => {
   return parts.join(" ");
 };
 
-
-const returnAllChildSumma = ( array ) => {
-  let sum = 0
-  for(let child of array){
-    sum += child.summa
+const returnAllChildSumma = (array) => {
+  let sum = 0;
+  for (let child of array) {
+    sum += child.summa;
   }
-  return sum
-}
+  return sum;
+};
 
 const sum = (...args) => {
   let sum = 0;
@@ -30,8 +29,7 @@ module.exports = {
   sum,
 };
 
-
 module.exports = {
   returnAllChildSumma,
-  returnStringSumma
-}
+  returnStringSumma,
+};

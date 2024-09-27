@@ -12,16 +12,19 @@ const {
   deleteOrganization,
 } = require("../../service/spravochnik/organization.db");
 
-const { organizationValidation } = require('../../helpers/validation/spravochnik/organization.validation')
+const {
+  organizationValidation,
+} = require("../../helpers/validation/spravochnik/organization.validation");
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id
-  const { error, value } = organizationValidation.validate(req.body)
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
+  const { error, value } = organizationValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
-  const test = await getByInnOrganization(value.inn, user_id);
+  const test = await getByInnOrganization(value.inn, region_id);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
@@ -41,7 +44,7 @@ const getAll = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   let inn = null;
   let totalQuery = null;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -52,13 +55,13 @@ const getAll = asyncHandler(async (req, res, next) => {
   const offset = (page - 1) * limit;
 
   if (inn) {
-    result = await getByInnOrganization(inn, user_id);
+    result = await getByInnOrganization(inn, region_id);
     totalQuery = { total: 1 };
   }
 
   if (!inn) {
-    result = await getAllOrganization(user_id, offset, limit);
-    totalQuery = await totalOrganization(user_id);
+    result = await getAllOrganization(region_id, offset, limit);
+    totalQuery = await totalOrganization(region_id);
   }
 
   const total = parseInt(totalQuery.total);
@@ -71,7 +74,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
+      backPage: page === 1 ? null : page - 1,
     },
     data: result,
   });
@@ -80,26 +83,26 @@ const getAll = asyncHandler(async (req, res, next) => {
 // update
 const update = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
 
-  const partner = await getByIdOrganization(user_id, id);
+  const partner = await getByIdOrganization(region_id, id);
   if (!partner) {
     return next(new ErrorResponse("Server xatolik. Hamkor topilmadi", 500));
   }
 
-  const { error, value } = organizationValidation.validate(req.body)
+  const { error, value } = organizationValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   if (partner.inn !== value.inn) {
-    const test = await getByInnOrganization(value.inn, user_id);
+    const test = await getByInnOrganization(value.inn, region_id);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updateOrganization({ ...value, id, user_id });
+  await updateOrganization({ ...value, id});
 
   return res.status(201).json({
     success: true,
@@ -110,8 +113,8 @@ const update = asyncHandler(async (req, res, next) => {
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const user_id = req.user.region_id;
-  const value = await getByIdOrganization(user_id, id);
+  const region_id = req.user.region_id;
+  const value = await getByIdOrganization(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }

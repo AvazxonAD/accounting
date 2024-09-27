@@ -1,17 +1,29 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
-const { bankPrixodValidator, bankPrixodChildValidation, queryValidationBank } = require('../../helpers/validation/bank/bank.prixod.validation')
+const {
+  bankPrixodValidator,
+  bankPrixodChildValidation,
+  queryValidationBank,
+} = require("../../helpers/validation/bank/bank.prixod.validation");
 
-const { returnAllChildSumma } = require('../../utils/returnSumma')
-const { getByIdShartnoma } = require('../../service/shartnoma/shartnoma.db')
+const { returnAllChildSumma } = require("../../utils/returnSumma");
+const { getByIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
-const { getByIdOrganization } = require("../../service/spravochnik/organization.db");
+const {
+  getByIdOrganization,
+} = require("../../service/spravochnik/organization.db");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
-const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.db");
+const {
+  getByIdPodrazlanie,
+} = require("../../service/spravochnik/podrazdelenie.db");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
-const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
-const { getByIdPodotchet } = require("../../service/spravochnik/podotchet.litso.db");
+const {
+  getByIdtype_operatsii,
+} = require("../../service/spravochnik/type_operatsii.db");
+const {
+  getByIdPodotchet,
+} = require("../../service/spravochnik/podotchet.litso.db");
 const {
   createBankPrixod,
   createBankPrixodChild,
@@ -24,54 +36,72 @@ const {
   getAllPrixodByTo,
   getAllPrixodByFromAndTo,
   getElementByIdPrixod,
-  getElementByIdBankPrixodChild
-} = require('../../service/bank/bank.prixod.db')
+  getElementByIdBankPrixodChild,
+  deleteBankPrixod,
+} = require("../../service/bank/bank.prixod.db");
 
-// bank prixod create 
+// bank prixod create
 const bank_prixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
 
-  const { error, value } = bankPrixodValidator.validate(req.body)
+  const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
+  console.log(value)
 
-  const main_schet = await getByIdMainSchet(user_id, main_schet_id);
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const organization = await getByIdOrganization(user_id, value.id_spravochnik_organization);
+  const organization = await getByIdOrganization(
+    region_id,
+    value.id_spravochnik_organization,
+  );
   if (!organization) {
     return next(new ErrorResponse("Hamkor korxona topilmadi", 404));
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(user_id, value.id_shartnomalar_organization)
+    const contract = await getByIdShartnoma(
+      region_id,
+      value.id_shartnomalar_organization,
+    );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
     }
   }
 
-  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(value.spravochnik_operatsii_own_id);
+  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
+    value.spravochnik_operatsii_own_id,
+  );
   if (!spravochnik_operatsii_own_id_test) {
-    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404));
+    return next(
+      new ErrorResponse(
+        "Server xatolik. spravochnik_operatsii_own topilmadi",
+        404,
+      ),
+    );
   }
 
   for (let child of value.childs) {
-    const { error, value } = bankPrixodChildValidation.validate(child)
+    const { error, value } = bankPrixodChildValidation.validate(child);
     if (error) {
-      return next(new ErrorResponse(error.details[0].message, 406))
+      return next(new ErrorResponse(error.details[0].message, 406));
     }
 
-    const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_id);
+    const spravochnik_operatsii = await getByIdOperatsii(
+      value.spravochnik_operatsii_id,
+    );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
     if (value.id_spravochnik_podrazdelenie) {
       const spravochnik_podrazdelenie = await getByIdPodrazlanie(
-        user_id,
+        region_id,
         value.id_spravochnik_podrazdelenie,
       );
       if (!spravochnik_podrazdelenie) {
@@ -82,7 +112,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     }
     if (value.id_spravochnik_sostav) {
       const spravochnik_sostav = await getByIdSostav(
-        user_id,
+        region_id,
         value.id_spravochnik_sostav,
       );
       if (!spravochnik_sostav) {
@@ -92,7 +122,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
     if (value.id_spravochnik_type_operatsii) {
       const spravochnik_type_operatsii = getByIdtype_operatsii(
-        user_id,
+        region_id,
         value.id_spravochnik_type_operatsii,
       );
       if (!spravochnik_type_operatsii) {
@@ -104,7 +134,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
     if (value.id_spravochnik_podotchet_litso) {
       const spravochnik_podotchet_litso = await getByIdPodotchet(
-        user_id,
+        region_id,
         value.id_spravochnik_podotchet_litso,
       );
 
@@ -116,15 +146,15 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const summa = returnAllChildSumma(value.childs)
-
+  const summa = returnAllChildSumma(value.childs);
+  console.log(value)
   const prixod = await createBankPrixod({
     ...value,
     main_schet_id,
     user_id,
     provodki_boolean: true,
-    summa
-  })
+    summa,
+  });
 
   for (let child of value.childs) {
     await createBankPrixodChild({
@@ -134,8 +164,8 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
       main_schet_id: main_schet.id,
       bank_prixod_id: prixod.id,
       user_id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
-    })
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
+    });
   }
 
   res.status(201).json({
@@ -147,53 +177,69 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 // bank prixod update
 const bank_prixod_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  const id = req.params.id
-  const user_id = req.user.region_id
+  const id = req.params.id;
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
 
-  const bank_prixod = await getByIdBankPrixod(user_id, main_schet_id, id)
+  const bank_prixod = await getByIdBankPrixod(region_id, main_schet_id, id);
   if (!bank_prixod) {
     return next(new ErrorResponse("Prixod document topilmadi", 404));
   }
 
-  const { error, value } = bankPrixodValidator.validate(req.body)
+  const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
-  const main_schet = await getByIdMainSchet(user_id, main_schet_id);
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const organization = await getByIdOrganization(user_id, value.id_spravochnik_organization);
+  const organization = await getByIdOrganization(
+    region_id,
+    value.id_spravochnik_organization,
+  );
   if (!organization) {
     return next(new ErrorResponse("Hamkor korxona topilmadi", 404));
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(user_id, value.id_shartnomalar_organization)
+    const contract = await getByIdShartnoma(
+      region_id,
+      value.id_shartnomalar_organization,
+    );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
     }
   }
 
-  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(value.spravochnik_operatsii_own_id);
+  const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
+    value.spravochnik_operatsii_own_id,
+  );
   if (!spravochnik_operatsii_own_id_test) {
-    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404));
+    return next(
+      new ErrorResponse(
+        "Server xatolik. spravochnik_operatsii_own topilmadi",
+        404,
+      ),
+    );
   }
 
   for (let child of value.childs) {
-    const { error, value } = bankPrixodChildValidation.validate(child)
+    const { error, value } = bankPrixodChildValidation.validate(child);
     if (error) {
-      return next(new ErrorResponse(error.details[0].message, 406))
+      return next(new ErrorResponse(error.details[0].message, 406));
     }
 
-    const spravochnik_operatsii = await getByIdOperatsii(value.spravochnik_operatsii_id);
+    const spravochnik_operatsii = await getByIdOperatsii(
+      value.spravochnik_operatsii_id,
+    );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
     if (value.id_spravochnik_podrazdelenie) {
       const spravochnik_podrazdelenie = await getByIdPodrazlanie(
-        user_id,
+        region_id,
         value.id_spravochnik_podrazdelenie,
       );
       if (!spravochnik_podrazdelenie) {
@@ -204,7 +250,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
     }
     if (value.id_spravochnik_sostav) {
       const spravochnik_sostav = await getByIdSostav(
-        user_id,
+        region_id,
         value.id_spravochnik_sostav,
       );
       if (!spravochnik_sostav) {
@@ -214,7 +260,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
     if (value.id_spravochnik_type_operatsii) {
       const spravochnik_type_operatsii = getByIdtype_operatsii(
-        user_id,
+        region_id,
         value.id_spravochnik_type_operatsii,
       );
       if (!spravochnik_type_operatsii) {
@@ -226,7 +272,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
     if (value.id_spravochnik_podotchet_litso) {
       const spravochnik_podotchet_litso = await getByIdPodotchet(
-        user_id,
+        region_id,
         value.id_spravochnik_podotchet_litso,
       );
 
@@ -237,16 +283,16 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
       }
     }
   }
-  const summa = returnAllChildSumma(value.childs)
+  const summa = returnAllChildSumma(value.childs);
 
   await bankPrixodUpdate({
     ...value,
     id,
     provodki_boolean: true,
-    summa
-  })
+    summa,
+  });
 
-  await deleteBankPrixodChild(id)
+  await deleteBankPrixodChild(id);
 
   for (let child of value.childs) {
     await createBankPrixodChild({
@@ -256,8 +302,8 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
       main_schet_id: main_schet.id,
       bank_prixod_id: id,
       user_id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
-    })
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
+    });
   }
 
   return res.status(200).json({
@@ -269,34 +315,21 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 // delete bank_prixod
 const delete_bank_prixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  const main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND  user_id = $2 AND isdeleted = false
-    `,
-    [main_schet_id, req.user.region_id],
-  );
-  if (!main_schet.rows[0]) {
+  const region_id = req.user.region_id
+  const id = req.params.id
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id)
+  if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }
 
-  const childs = await pool.query(
-    `Update bank_prixod_child SET isdeleted = true
-        WHERE user_id = $1 AND id_bank_prixod = $2 AND isdeleted = false AND main_schet_id = $3 
-        RETURNING * 
-    `,
-    [req.user.region_id, req.params.id, main_schet_id],
-  );
-
-  const bank_prixod = await pool.query(
-    `UPDATE bank_prixod SET isdeleted = true 
-        WHERE user_id = $1 AND id = $2 AND isdeleted = false
-    `,
-    [req.user.region_id, req.params.id],
-  );
-  if (!bank_prixod.rows.length === 0) {
-    return next(
-      new ErrorResponse("Server xatolik. Bank prixod topilmadi", 500),
-    );
+  const bank_prixod = await getByIdBankPrixod(region_id, main_schet_id, id)
+  if(!bank_prixod){
+    return next(new ErrorResponse("Server xatolik. Prixod doc topilmadi", 404))
   }
+
+  await deleteBankPrixod(id)
+
+  await deleteBankPrixodChild(id)
 
   return res.status(200).json({
     success: true,
@@ -307,18 +340,18 @@ const delete_bank_prixod = asyncHandler(async (req, res, next) => {
 // get element by id bank prixod
 const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const main_schet_id = req.query.main_schet_id
-  const user_id = req.user.region_id
+  const main_schet_id = req.query.main_schet_id;
+  const region_id = req.user.region_id;
 
-  const prixod = await getElementByIdPrixod(user_id, main_schet_id, id)
+  const prixod = await getElementByIdPrixod(region_id, main_schet_id, id);
 
   if (!prixod) {
     return next(
-      new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", [404]),
+      new ErrorResponse("Server xatolik. Prixod document topilmadi", [404]),
     );
   }
 
-  const prixod_child = await getElementByIdBankPrixodChild(user_id, prixod.id)
+  const prixod_child = await getElementByIdBankPrixodChild(region_id, prixod.id);
 
   let object = { ...prixod };
   object.summa = Number(object.summa);
@@ -336,59 +369,83 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
 
 // get all bank prixod
 const getAllBankPrixod = asyncHandler(async (req, res, next) => {
-  let all_prixod = null
-  let totalQuery = null
-  let summa = null
+  let all_prixod = null;
+  let totalQuery = null;
+  let summa = null;
 
-  const user_id = req.user.region_id;
-  const { error, value } = queryValidationBank.validate(req.query)
+  const region_id = req.user.region_id;
+  const { error, value } = queryValidationBank.validate(req.query);
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
-  
+
   if (limit <= 0 || page <= 0) {
     return next(
       new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
     );
   }
-  
+
   const offset = (page - 1) * limit;
-  const main_schet = await getByIdMainSchet(user_id, value.main_schet_id)
+  const main_schet = await getByIdMainSchet(region_id, value.main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
   }
 
   if (value.from && !value.to) {
-    all_prixod = await getAllPrixodByFrom(user_id, value.main_schet_id, offset, limit, new Date(req.query.from))
-    summa = Number(all_prixod.summa)
-    totalQuery = all_prixod.totalQuery
+    all_prixod = await getAllPrixodByFrom(
+      region_id,
+      value.main_schet_id,
+      offset,
+      limit,
+      new Date(req.query.from),
+    );
+    summa = Number(all_prixod.summa);
+    totalQuery = all_prixod.totalQuery;
   }
 
   if (!value.from && value.to) {
-    all_prixod = await getAllPrixodByTo(user_id, value.main_schet_id, offset, limit, new Date(req.query.to))
-    summa = Number(all_prixod.summa)
-    totalQuery = all_prixod.totalQuery
+    all_prixod = await getAllPrixodByTo(
+      region_id,
+      value.main_schet_id,
+      offset,
+      limit,
+      new Date(req.query.to),
+    );
+    summa = Number(all_prixod.summa);
+    totalQuery = all_prixod.totalQuery;
   }
 
   if (value.from && value.to) {
-    all_prixod = await getAllPrixodByFromAndTo(user_id, value.main_schet_id, offset, limit, new Date(req.query.from), new Date(req.query.to))
-    summa = Number(all_prixod.summa)
-    totalQuery = all_prixod.totalQuery
+    all_prixod = await getAllPrixodByFromAndTo(
+      region_id,
+      value.main_schet_id,
+      offset,
+      limit,
+      new Date(req.query.from),
+      new Date(req.query.to),
+    );
+    summa = Number(all_prixod.summa);
+    totalQuery = all_prixod.totalQuery;
   }
 
   if (!value.from && !value.to) {
-    all_prixod = await getAllPrixod(user_id, value.main_schet_id, offset, limit)
-    summa = Number(all_prixod.summa)
-    totalQuery = all_prixod.totalQuery
+    all_prixod = await getAllPrixod(
+      region_id,
+      value.main_schet_id,
+      offset,
+      limit,
+    );
+    summa = Number(all_prixod.summa);
+    totalQuery = all_prixod.totalQuery;
   }
 
   const resultArray = [];
 
   for (let prixod of all_prixod.prixod_rows) {
-    const prixod_child = await getAllPrixodChild(user_id, prixod.id)
+    const prixod_child = await getAllPrixodChild(region_id, prixod.id);
     let object = { ...prixod };
     object.summa = Number(object.summa);
     object.childs = prixod_child.map((item) => {
@@ -398,7 +455,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     });
     resultArray.push(object);
   }
-  const total = Number(totalQuery.total)
+  const total = Number(totalQuery.total);
   const pageCount = Math.ceil(total / limit);
   return res.status(200).json({
     success: true,
@@ -408,9 +465,9 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      summa
+      summa,
     },
-    data: resultArray
+    data: resultArray,
   });
 });
 

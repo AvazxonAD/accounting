@@ -1,5 +1,5 @@
 CREATE TABLE smeta (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     father_smeta_name VARCHAR(255),
     smeta_name VARCHAR(255) NOT NULL,
     smeta_number INTEGER NOT NULL,

@@ -10,10 +10,7 @@ const getByNameRole = handleServiceError(async (name) => {
 });
 
 const create_role = handleServiceError(async (name) => {
-  await pool.query(
-    `INSERT INTO role(name) VALUES($1)`,
-    [name],
-  );
+  await pool.query(`INSERT INTO role(name) VALUES($1)`, [name]);
 });
 
 const get_all_role = handleServiceError(async () => {
@@ -32,17 +29,11 @@ const getByIdRole = handleServiceError(async (id) => {
 });
 
 const update_role = handleServiceError(async (id, name) => {
-  await pool.query(
-    `UPDATE role SET name = $1 WHERE id = $2`,
-    [name, id],
-  );
+  await pool.query(`UPDATE role SET name = $1 WHERE id = $2`, [name, id]);
 });
 
 const delete_role = handleServiceError(async (id) => {
-  await pool.query(
-    `UPDATE role SET isdeleted = $1 WHERE id = $2`,
-    [true, id],
-  );
+  await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2`, [true, id]);
 });
 
 module.exports = {

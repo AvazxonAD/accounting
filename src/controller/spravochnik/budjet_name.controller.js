@@ -1,7 +1,9 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { budjetValidation } = require('../../helpers/validation/spravochnik/budejet.validation')
+const {
+  budjetValidation,
+} = require("../../helpers/validation/spravochnik/budejet.validation");
 
 const {
   getByNameBudjet,
@@ -14,9 +16,9 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const { error, value } = budjetValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0], 406))
+  const { error, value } = budjetValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0], 406));
   }
 
   const test = await getByNameBudjet(value.name);
@@ -43,17 +45,16 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const id = req.params.id
-  
+  const id = req.params.id;
 
   let oldBudjet = await getByIdBudjet(req.params.id);
   if (!oldBudjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }
 
-  const { error, value } = budjetValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = budjetValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   if (oldBudjet.name !== value.name) {
@@ -73,7 +74,7 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const id = req.params.id 
+  const id = req.params.id;
 
   const oldBudjet = await getByIdBudjet(id);
   if (!oldBudjet) {

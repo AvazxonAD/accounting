@@ -2,7 +2,9 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { sostavValidation } = require('../../helpers/validation/spravochnik/sostav.validation')
+const {
+  sostavValidation,
+} = require("../../helpers/validation/spravochnik/sostav.validation");
 const {
   getAllSostav,
   getByAllSostav,
@@ -15,15 +17,16 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
 
-  const { error, value } = sostavValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = sostavValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
-  const { name, rayon } = value
+  const { name, rayon } = value;
 
-  const test = await getByAllSostav(user_id, name, rayon);
+  const test = await getByAllSostav(region_id, name, rayon);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
@@ -40,7 +43,7 @@ const create = asyncHandler(async (req, res, next) => {
 const getAll = asyncHandler(async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -50,9 +53,9 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const result = await getAllSostav(user_id, offset, limit);
+  const result = await getAllSostav(region_id, offset, limit);
 
-  const totalQuery = await getTotalSostav(user_id);
+  const totalQuery = await getTotalSostav(region_id);
   const total = parseInt(totalQuery.total);
   const pageCount = Math.ceil(total / limit);
 
@@ -63,7 +66,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
+      backPage: page === 1 ? null : page - 1,
     },
     data: result,
   });
@@ -71,27 +74,27 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  let sostav = await getByIdSostav(user_id, id);
+  let sostav = await getByIdSostav(region_id, id);
   if (!sostav) {
     return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404));
   }
 
-  const { error, value } = sostavValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = sostavValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
-  const { name, rayon } = value
+  const { name, rayon } = value;
   if (sostav.name !== name || sostav.rayon !== rayon) {
-    const test = await getByAllSostav(user_id, name, rayon);
+    const test = await getByAllSostav(region_id, name, rayon);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updateSostav(user_id, id, name, rayon);
+  await updateSostav(id, name, rayon);
 
   return res.status(201).json({
     success: true,
@@ -101,9 +104,9 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
-  const value = await getByIdSostav(user_id, id);
+  const value = await getByIdSostav(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }

@@ -10,10 +10,7 @@ const getByNameRegion = handleServiceError(async (name) => {
 });
 
 const create_region = handleServiceError(async (name) => {
-  await pool.query(
-    `INSERT INTO regions(name) VALUES($1) RETURNING *`,
-    [name],
-  );
+  await pool.query(`INSERT INTO regions(name) VALUES($1) RETURNING *`, [name]);
 });
 
 const get_all_region = handleServiceError(async () => {
@@ -32,10 +29,10 @@ const getByIdRegion = handleServiceError(async (id) => {
 });
 
 const update_region = handleServiceError(async (id, name) => {
-  await pool.query(
-    `UPDATE regions SET name = $1 WHERE id = $2 RETURNING *`,
-    [name, id],
-  );
+  await pool.query(`UPDATE regions SET name = $1 WHERE id = $2 RETURNING *`, [
+    name,
+    id,
+  ]);
 });
 
 const delete_region = handleServiceError(async (id) => {

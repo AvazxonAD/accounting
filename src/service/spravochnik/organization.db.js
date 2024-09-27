@@ -1,11 +1,16 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByInnOrganization = handleServiceError(async (inn, user_id) => {
+const getByInnOrganization = handleServiceError(async (inn, region_id) => {
   const result = await pool.query(
-    `SELECT * FROM spravochnik_organization WHERE inn = $1 AND user_id = $2 AND isdeleted = false
+    `SELECT * 
+    FROM spravochnik_organization
+    JOIN users ON spravochnik_organization.user_id = users.id
+    JOIN regions ON users.region_id = regions.id 
+    WHERE spravochnik_organization.inn = $1 AND 
+    regions.id = $2 AND spravochnik_organization.isdeleted = false
     `,
-    [inn, user_id],
+    [inn, region_id],
   );
   return result.rows[0];
 });
@@ -30,36 +35,66 @@ const createOrganization = handleServiceError(async (object) => {
     ],
   );
   return result.rows[0];
-},
-);
+});
 
 const getAllOrganization = handleServiceError(
-  async (user_id, offset, limit) => {
+  async (region_id, offset, limit) => {
     result = await pool.query(
-      `SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx
+      `SELECT 
+          spravochnik_organization.id, 
+          spravochnik_organization.name, 
+          spravochnik_organization.bank_klient, 
+          spravochnik_organization.raschet_schet, 
+          spravochnik_organization.raschet_schet_gazna, 
+          spravochnik_organization.mfo, 
+          spravochnik_organization.inn, 
+          spravochnik_organization.okonx 
         FROM spravochnik_organization  
-        WHERE isdeleted = false AND user_id = $1 ORDER BY id
+        JOIN users ON spravochnik_organization.user_id = users.id
+        JOIN regions ON users.region_id = regions.id 
+        WHERE spravochnik_organization.isdeleted = false 
+          AND regions.id = $1 
+          ORDER BY id
         OFFSET $2
         LIMIT $3
     `,
-      [user_id, offset, limit],
+      [region_id, offset, limit],
     );
     return result.rows;
   },
 );
 
-const totalOrganization = handleServiceError(async (user_id) => {
+const totalOrganization = handleServiceError(async (region_id) => {
   const result = await pool.query(
-    `SELECT COUNT(id) AS total FROM spravochnik_organization WHERE isdeleted = false AND user_id = $1`,
-    [user_id],
+    `SELECT COUNT(spravochnik_organization.id) AS total 
+    FROM spravochnik_organization 
+    JOIN users ON spravochnik_organization.user_id = users.id
+    JOIN regions ON users.region_id = regions.id
+    WHERE spravochnik_organization.isdeleted = false 
+    AND regions.id = $1`,
+    [region_id],
   );
   return result.rows[0];
 });
 
-const getByIdOrganization = handleServiceError(async (user_id, id) => {
+const getByIdOrganization = handleServiceError(async (region_id, id) => {
   const result = await pool.query(
-    `SELECT id, name, bank_klient, raschet_schet, raschet_schet_gazna, mfo, inn, okonx FROM spravochnik_organization WHERE  user_id = $1 AND id = $2 AND isdeleted = false `,
-    [user_id, id],
+    `SELECT 
+          spravochnik_organization.id, 
+          spravochnik_organization.name, 
+          spravochnik_organization.bank_klient, 
+          spravochnik_organization.raschet_schet, 
+          spravochnik_organization.raschet_schet_gazna, 
+          spravochnik_organization.mfo, 
+          spravochnik_organization.inn, 
+          spravochnik_organization.okonx  
+      FROM spravochnik_organization 
+      JOIN users ON spravochnik_organization.user_id = users.id
+      JOIN regions ON users.region_id = regions.id 
+      WHERE  regions.id = $1 
+        AND spravochnik_organization.id = $2 
+        AND spravochnik_organization.isdeleted = false `,
+    [region_id, id],
   );
   return result.rows[0];
 });
@@ -67,8 +102,8 @@ const getByIdOrganization = handleServiceError(async (user_id, id) => {
 const updateOrganization = handleServiceError(async (object) => {
   await pool.query(
     `UPDATE spravochnik_organization 
-        SET name = $1, bank_klient = $2, raschet_schet = $3, raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $9
-        WHERE user_id = $7 AND id = $8
+        SET name = $1, bank_klient = $2, raschet_schet = $3, raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $7
+        WHERE id = $8 AND isdeleted = false
     `,
     [
       object.name,
@@ -77,13 +112,11 @@ const updateOrganization = handleServiceError(async (object) => {
       object.raschet_schet_gazna,
       object.mfo,
       object.inn,
-      object.user_id,
-      object.id,
       object.okonx,
+      object.id
     ],
   );
-},
-);
+});
 
 const deleteOrganization = handleServiceError(async (id) => {
   await pool.query(

@@ -1,11 +1,18 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByAllSostav = handleServiceError(async (user_id, name, rayon) => {
+const getByAllSostav = handleServiceError(async (region_id, name, rayon) => {
   const test = await pool.query(
-    `SELECT * FROM spravochnik_sostav WHERE name = $1 AND rayon = $2 AND user_id = $3 AND isdeleted = false
+    ` SELECT spravochnik_sostav.* 
+      FROM spravochnik_sostav 
+      JOIN users ON spravochnik_sostav.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE spravochnik_sostav.name = $1 
+        AND spravochnik_sostav.rayon = $2 
+        AND regions.id = $3 
+        AND spravochnik_sostav.isdeleted = false
     `,
-    [name, rayon, user_id],
+    [name, rayon, region_id],
   );
   return test.rows[0];
 });
@@ -18,40 +25,57 @@ const createSostav = handleServiceError(async (user_id, name, rayon) => {
   );
 });
 
-const getAllSostav = handleServiceError(async (user_id, offset, limit) => {
+const getAllSostav = handleServiceError(async (region_id, offset, limit) => {
   const result = await pool.query(
-    `SELECT id, name, rayon FROM spravochnik_sostav  
-        WHERE isdeleted = false AND user_id = $1 ORDER BY id
-        OFFSET $2 
-        LIMIT $3 
+    ` SELECT spravochnik_sostav.id, spravochnik_sostav.name, spravochnik_sostav.rayon 
+      FROM spravochnik_sostav
+      JOIN users ON spravochnik_sostav.user_id = users.id
+      JOIN regions ON users.region_id = regions.id  
+      WHERE spravochnik_sostav.isdeleted = false 
+        AND regions.id = $1 
+      ORDER BY id
+      OFFSET $2 
+      LIMIT $3 
     `,
-    [user_id, offset, limit],
+    [region_id, offset, limit],
   );
   return result.rows;
 });
 
-const getTotalSostav = handleServiceError(async (user_id) => {
+const getTotalSostav = handleServiceError(async (region_id) => {
   const result = await pool.query(
-    `SELECT COUNT(id) AS total FROM spravochnik_sostav WHERE isdeleted = false AND user_id = $1`,
-    [user_id],
+    `SELECT COUNT(spravochnik_sostav.id) AS total
+      FROM spravochnik_sostav
+      JOIN users ON spravochnik_sostav.user_id = users.id
+      JOIN regions ON users.region_id = regions.id  
+      WHERE spravochnik_sostav.isdeleted = false 
+        AND regions.id = $1`,
+    [region_id],
   );
   return result.rows[0];
 });
 
-const getByIdSostav = handleServiceError(async (user_id, id) => {
+const getByIdSostav = handleServiceError(async (region_id, id) => {
   const result = await pool.query(
-    `SELECT id, name, rayon FROM spravochnik_sostav   WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [id, user_id],
+    `SELECT spravochnik_sostav.id, spravochnik_sostav.name, spravochnik_sostav.rayon 
+      FROM spravochnik_sostav
+      JOIN users ON spravochnik_sostav.user_id = users.id
+      JOIN regions ON users.region_id = regions.id  
+      WHERE spravochnik_sostav.isdeleted = false 
+        AND regions.id = $1
+        AND spravochnik_sostav.id = $2
+    `,
+    [region_id, id],
   );
   return result.rows[0];
 });
 
-const updateSostav = handleServiceError(async (user_id, id, name, rayon) => {
+const updateSostav = handleServiceError(async (id, name, rayon) => {
   await pool.query(
     `UPDATE  spravochnik_sostav SET name = $1, rayon = $2
-        WHERE user_id = $3 AND id = $4
+        WHERE id = $3
     `,
-    [name, rayon, user_id, id],
+    [name, rayon, id],
   );
 });
 

@@ -1,7 +1,9 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { roleValidation } = require("../../helpers/validation/auth/role.validation");
+const {
+  roleValidation,
+} = require("../../helpers/validation/auth/role.validation");
 const {
   getByNameRole,
   create_role,
@@ -13,9 +15,9 @@ const {
 
 // create role
 const createRole = asyncHandler(async (req, res, next) => {
-  const { error, value} = roleValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = roleValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
   const test = await getByNameRole(value.name);
   if (test) {
@@ -47,9 +49,9 @@ const updateRole = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const { error, value } = roleValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = roleValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   if (role.name !== value.name.trim()) {

@@ -2,7 +2,9 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { typeOperatsiiValidation } = require('../../helpers/validation/spravochnik/type_operatsii.validation')
+const {
+  typeOperatsiiValidation,
+} = require("../../helpers/validation/spravochnik/type_operatsii.validation");
 const {
   getByAlltype_operatsii,
   createtype_operatsii,
@@ -11,21 +13,24 @@ const {
   getByIdtype_operatsii,
   updatetype_operatsii,
 } = require("../../service/spravochnik/type_operatsii.db");
-const { deletetype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
+const {
+  deletetype_operatsii,
+} = require("../../service/spravochnik/type_operatsii.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
-  const { error, value } = typeOperatsiiValidation.validate(req.body)
+  const region_id = req.user.region_id;
+  const user_id = req.user.id
+  const { error, value } = typeOperatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
-  const { name, rayon } = value
-  const test = await getByAlltype_operatsii(user_id, name, rayon);
+  const { name, rayon } = value;
+  const test = await getByAlltype_operatsii(region_id, name, rayon);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
-
+  
   await createtype_operatsii(user_id, name, rayon);
 
   return res.status(201).json({
@@ -38,7 +43,7 @@ const create = asyncHandler(async (req, res, next) => {
 const getAll = asyncHandler(async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -48,9 +53,9 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const result = await getAlltype_operatsii(user_id, offset, limit);
+  const result = await getAlltype_operatsii(region_id, offset, limit);
 
-  const totalQuery = await getTotaltype_operatsii(user_id);
+  const totalQuery = await getTotaltype_operatsii(region_id);
   const total = parseInt(totalQuery.total);
   const pageCount = Math.ceil(total / limit);
 
@@ -69,28 +74,28 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const type_operatsii = await getByIdtype_operatsii(user_id, id);
+  const type_operatsii = await getByIdtype_operatsii(region_id, id);
   if (!type_operatsii) {
     return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404));
   }
 
-  const { error, value } = typeOperatsiiValidation.validate(req.body)
+  const { error, value } = typeOperatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
-  const { name, rayon } = value
+  const { name, rayon } = value;
 
   if (type_operatsii.name !== name || type_operatsii.rayon !== rayon) {
-    const test = await getByAlltype_operatsii(user_id, name, rayon);
+    const test = await getByAlltype_operatsii(region_id, name, rayon);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updatetype_operatsii(user_id, id, name, rayon);
+  await updatetype_operatsii(id, name, rayon);
 
   return res.status(201).json({
     success: true,
@@ -100,10 +105,10 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const value = await getByIdtype_operatsii(user_id, id);
+  const value = await getByIdtype_operatsii(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
@@ -158,7 +163,7 @@ const importToExcel = asyncHandler(async (req, res, next) => {
     const rayon = rowData.rayon.trim();
 
     const test = await pool.query(
-      `SELECT * FROM spravochnik_type_operatsii WHERE user_id = $1 AND name = $2 AND rayon = $3 AND isdeleted = false`,
+      `SELECT * FROM spravochnik_type_operatsii WHERE region_id = $1 AND name = $2 AND rayon = $3 AND isdeleted = false`,
       [req.user.region_id, name, rayon],
     );
     if (test.rows[0]) {
@@ -168,7 +173,7 @@ const importToExcel = asyncHandler(async (req, res, next) => {
 
   for (let rowData of data) {
     const result = await pool.query(
-      `INSERT INTO spravochnik_type_operatsii(name, rayon, user_id) VALUES($1, $2, $3) RETURNING *
+      `INSERT INTO spravochnik_type_operatsii(name, rayon, region_id) VALUES($1, $2, $3) RETURNING *
         `,
       [rowData.name, rowData.rayon, req.user.region_id],
     );

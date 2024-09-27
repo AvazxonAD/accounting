@@ -10,7 +10,7 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
     summa,
     opisanie,
     spravochnik_podotchet_litso_id,
-    childs
+    childs,
   } = req.body;
 
   checkValueString(doc_date, doc_num, opisanie);

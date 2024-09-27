@@ -26,7 +26,7 @@ const create = asyncHandler(async (req, res, next) => {
   }
   await createMain_schet({
     ...value,
-    user_id: req.user.region_id,
+    user_id: req.user.id,
   });
   return res.status(201).json({
     success: true,
@@ -53,7 +53,7 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const result = await getAllMain_schet(req.user.region_id, offset, limit);
 
-  const total = Number(result.totalQuery.count)
+  const total = Number(result.total.count)
   const pageCount = Math.ceil(total / limit);
 
   return res.status(200).send({
@@ -71,10 +71,10 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const testMain_schet = await getByIdMainSchet(user_id, id);
+  const testMain_schet = await getByIdMainSchet(region_id, id);
   if (!testMain_schet) {
     return next(new ErrorResponse("Server xatolik. Schet topilmadi", 404));
   }
@@ -102,10 +102,10 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
+  const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const value = await getByIdMainSchet(user_id, id);
+  const value = await getByIdMainSchet(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }

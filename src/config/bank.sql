@@ -1,6 +1,6 @@
 
 CREATE TABLE bank_prixod (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES regions(id),
   doc_num VARCHAR(255),
   doc_date DATE,
@@ -18,7 +18,7 @@ CREATE TABLE bank_prixod (
 );
 
 CREATE TABLE bank_prixod_child (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   user_id INTEGER
   REFERENCES regions(id),
   summa DECIMAL,
@@ -38,7 +38,7 @@ CREATE TABLE bank_prixod_child (
 );
 
 CREATE TABLE bank_rasxod (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     doc_num VARCHAR(255),
     doc_date DATE,
     user_id INTEGER REFERENCES regions(id),
@@ -54,7 +54,7 @@ CREATE TABLE bank_rasxod (
 );
 
 CREATE TABLE bank_rasxod_child (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     spravochnik_operatsii_id INTEGER REFERENCES spravochnik_operatsii(id),
     summa DECIMAL,
     spravochnik_operatsii_own_id INTEGER REFERENCES spravochnik_operatsii(id),

@@ -48,17 +48,14 @@ const getAllRegionUsers = handleServiceError(async (region_id) => {
   return result.rows;
 });
 
-const deleteUserDb = handleServiceError(async ( id ) => {
-  await pool.query(
-    `UPDATE users SET isdeleted = $1 WHERE id = $2`,
-    [true, id],
-  );
-})
+const deleteUserDb = handleServiceError(async (id) => {
+  await pool.query(`UPDATE users SET isdeleted = $1 WHERE id = $2`, [true, id]);
+});
 
 module.exports = {
   create_user,
   getAllRegionUsers,
   getByIdUser,
   update_user,
-  deleteUserDb
+  deleteUserDb,
 };
