@@ -20,9 +20,11 @@ const kassaRouter = require("./kassa/kassa.router");
 const smetaGarfik = require("./smeta/smeta.grafik.router");
 const bajarilgan_ishlar_jur3Router = require("./bajarilgan_ishlar/jur_3.router");
 const avans_otchetlar_jur4Router = require("./avans_otchetlar/jur_4.router");
+const bankMonitoring = require('./bank/bank.monitoring')
 
 const router = express.Router();
 
+router.use("/bank/monitoring", bankMonitoring);
 router.use("/auth", authRouter);
 router.use("/region", regionRouter);
 router.use("/role", roleRouter);
@@ -43,5 +45,6 @@ router.use("/kassa", kassaRouter);
 router.use("/smeta/grafik", smetaGarfik);
 router.use("/bajarilgan_ishlar", bajarilgan_ishlar_jur3Router);
 router.use("/avans_otchetlar", avans_otchetlar_jur4Router);
+
 
 module.exports = router;

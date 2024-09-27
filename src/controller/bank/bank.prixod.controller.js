@@ -50,7 +50,6 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
-  console.log(value)
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
