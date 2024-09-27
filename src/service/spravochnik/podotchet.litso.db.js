@@ -20,8 +20,10 @@ const createPodotChet = handleServiceError(async (object) => {
 
 const getAllPodotChet = handleServiceError(async (user_id, offset, limit) => {
   const result = await pool.query(
-    `SELECT id, name, rayon FROM spravochnik_podotchet_litso  
-        WHERE isdeleted = false AND user_id = $1 ORDER BY id
+    `SELECT users.id, users.fio, spravochnik_podotchet_litso.name 
+    FROM users   
+    WHERE users.isdeleted = false AND users.region_id = $1 AND spravochnik_podotchet_litso.isdeleted = false
+    ORDER BY id
         OFFSET $2 
         LIMIT $3 
     `,
