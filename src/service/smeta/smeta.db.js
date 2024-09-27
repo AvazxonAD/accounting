@@ -14,12 +14,11 @@ const getByAllSmeta = handleServiceError(
 
 const createSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name) => {
-    const result = await pool.query(
-      `INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name) VALUES($1, $2, $3) RETURNING *
+    await pool.query(
+      `INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name) VALUES($1, $2, $3) 
     `,
       [smeta_name, smeta_number, father_smeta_name],
     );
-    return result.rows[0];
   },
 );
 
@@ -54,23 +53,20 @@ const getByIdSmeta = handleServiceError(async (id) => {
 
 const updateSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name, id) => {
-    const result = await pool.query(
+    await pool.query(
       `UPDATE  smeta SET smeta_name = $1, smeta_number = $2, father_smeta_name = $3
         WHERE  id = $4
-        RETURNING *
     `,
       [smeta_name, smeta_number, father_smeta_name, id],
     );
-    return result.rows[0];
   },
 );
 
 const deleteSmeta = handleServiceError(async (id) => {
-  const deleteValue = await pool.query(
-    `UPDATE smeta SET isdeleted = $1 WHERE id = $2 RETURNING *`,
+  await pool.query(
+    `UPDATE smeta SET isdeleted = $1 WHERE id = $2`,
     [true, id],
   );
-  return deleteValue.rows[0];
 });
 
 module.exports = {

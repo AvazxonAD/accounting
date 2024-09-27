@@ -1,6 +1,8 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
+const { smetaValidation } = require('../../helpers/validation/smeta/smeta.validation')
+
 const {
   getByAllSmeta,
   createSmeta,
@@ -13,23 +15,19 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  let { smeta_name, smeta_number, father_smeta_name } = req.body;
+  const { error, value } = smetaValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  checkValueString(smeta_name, father_smeta_name);
-  checkValueNumber(smeta_number);
-
-  smeta_name = smeta_name.trim();
-  father_smeta_name = father_smeta_name.trim();
+  const { smeta_name, smeta_number, father_smeta_name } = value
 
   const test = await getByAllSmeta(smeta_name, smeta_number, father_smeta_name);
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await createSmeta(smeta_name, smeta_number, father_smeta_name);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await createSmeta(smeta_name, smeta_number, father_smeta_name);
 
   return res.status(201).json({
     success: true,
@@ -58,11 +56,13 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   return res.status(200).json({
     success: true,
-    pageCount: pageCount,
-    count: total,
-    currentPage: page,
-    nextPage: page >= pageCount ? null : page + 1,
-    backPage: page === 1 ? null : page - 1,
+    meta: {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    },
     data: result,
   });
 });
@@ -82,13 +82,12 @@ const getElementById = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  let { smeta_name, smeta_number, father_smeta_name } = req.body;
   const id = req.params.id;
-
-  checkValueString(smeta_name, father_smeta_name);
-  checkValueNumber(smeta_number);
-  smeta_name = smeta_name.trim();
-  father_smeta_name = father_smeta_name.trim();
+  const { error, value } = smetaValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+  const { smeta_name, smeta_number, father_smeta_name } = value
 
   const smeta = await getByIdSmeta(id);
   if (!smeta) {
@@ -110,15 +109,12 @@ const update = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const result = await updateSmeta(
+  await updateSmeta(
     smeta_name,
     smeta_number,
     father_smeta_name,
     id,
   );
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Malumot Yangilanmadi", 500));
-  }
 
   return res.status(201).json({
     success: true,
@@ -134,10 +130,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const deleteValue = await deleteSmeta(id);
-  if (!deleteValue) {
-    return next(new ErrorResponse("Server xatolik. Malumot ochirilmadi", 500));
-  }
+  await deleteSmeta(id);
 
   return res.status(200).json({
     success: true,

@@ -3,8 +3,8 @@ CREATE TABLE smeta (
     father_smeta_name VARCHAR(255),
     smeta_name VARCHAR(255) NOT NULL,
     smeta_number INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
@@ -26,8 +26,8 @@ CREATE TABLE smeta_grafik (
   oy_10 DECIMAL DEFAULT 0,
   oy_11 DECIMAL DEFAULT 0,
   oy_12 DECIMAL DEFAULT 0,
-  year INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  year INT DEFAULT 0,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );

@@ -5,7 +5,6 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
     const queryParts = [];
     const params = [region_id, main_schet_id];
 
-    // Base query
     const baseQuery = `
         SELECT 
             bank_prixod.id, 
@@ -32,7 +31,6 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
 
     queryParts.push(baseQuery);
 
-    // from va to parametrlarini qo'shish
     if (from) {
         queryParts.push(` AND bank_prixod.doc_date > $${params.length + 1}`);
         params.push(from);
@@ -43,7 +41,6 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         params.push(to);
     }
 
-    // UNION ALL uchun ikkinchi qism
     const secondPart = `
         UNION ALL
         SELECT 
@@ -71,7 +68,6 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
 
     queryParts.push(secondPart);
 
-    // from va to uchun shartlarni qo'shish
     if (from) {
         queryParts.push(` AND bank_rasxod.doc_date > $${params.length + 1}`);
         params.push(from);
@@ -82,13 +78,10 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         params.push(to);
     }
 
-    // Barcha qismlarni birlashtirish
     const finalQuery = queryParts.join(' ');
 
-    // OFFSET va LIMIT qo'shish
     const result = await pool.query(`${finalQuery} ORDER BY combined_date DESC OFFSET $${params.length + 1} LIMIT $${params.length + 2}`, [...params, offset, limit]);
 
-    // Total query (from va to parametrlarisiz)
     const totalQueryParams = [region_id, main_schet_id];
     
     let totalQueryBase = `
@@ -141,7 +134,6 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
 
     totalQueryPart1 += `) AS combined_counts`;
 
-    // Total so'rovini bajarish
     const totalQuery = await pool.query(totalQueryPart1, totalQueryParams);
 
     const data = result.rows.map(row => ({
