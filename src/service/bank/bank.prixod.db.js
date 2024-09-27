@@ -205,7 +205,7 @@ const getAllPrixodByFrom = handleServiceError(
                 spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
                 spravochnik_organization.mfo AS spravochnik_organization_mfo,
                 spravochnik_organization.inn AS spravochnik_organization_inn,
-                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
+                bank_prixod.id_shartnomalar_organization,
                 bank_prixod.spravochnik_operatsii_own_id
             FROM bank_prixod
             JOIN users ON bank_prixod.user_id = users.id
@@ -252,7 +252,6 @@ const getAllPrixodByFrom = handleServiceError(
 
 const getAllPrixodByTo = handleServiceError(
   async (region_id, main_schet_id, offset, limit, to) => {
-    console.log(to);
 
     const result = await pool.query(
       `

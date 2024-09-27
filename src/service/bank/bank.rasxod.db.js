@@ -257,33 +257,35 @@ const getAllBankRasxodByFromAndTo = handleServiceError(
             WHERE bank_rasxod.main_schet_id = $1 
                 AND regions.id = $2 
                 AND bank_rasxod.isdeleted = false 
-                AND bank_rasxod.doc_date BETWEEN $5 AND $6
-            OFFSET $3 
-            LIMIT $4
+                AND bank_rasxod.doc_date BETWEEN $3 AND $4
+            OFFSET $5 
+            LIMIT $6
         `,
-      [main_schet_id, region_id, offset, limit, from, to],
+      [main_schet_id, region_id, from, to, offset, limit], // $3: from, $4: to
     );
 
     const summa = await pool.query(
       `
-                SELECT SUM(bank_rasxod.summa)
+                SELECT SUM(bank_rasxod.summa) AS sum
                 FROM bank_rasxod 
                 JOIN users ON bank_rasxod.user_id = users.id
                 JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date BETWEEN $5 AND $6
+                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date BETWEEN $3 AND $4
         `,
-      [main_schet_id, region_id, from, to],
+      [main_schet_id, region_id, from, to], // $3: from, $4: to
     );
+
     const totalQuery = await pool.query(
       `
-                SELECT COUNT(bank_rasxod.id)
+                SELECT COUNT(bank_rasxod.id) AS count
                 FROM bank_rasxod 
                 JOIN users ON bank_rasxod.user_id = users.id
                 JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date BETWEEN $5 AND $6
+                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date BETWEEN $3 AND $4
         `,
-      [main_schet_id, region_id, from, to],
+      [main_schet_id, region_id, from, to], // $3: from, $4: to
     );
+
     return {
       rasxod_rows: result.rows,
       summa: summa.rows[0].sum,
