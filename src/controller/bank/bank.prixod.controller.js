@@ -146,7 +146,6 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
   }
 
   const summa = returnAllChildSumma(value.childs);
-  console.log(value)
   const prixod = await createBankPrixod({
     ...value,
     main_schet_id,
