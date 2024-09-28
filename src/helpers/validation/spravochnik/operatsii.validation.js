@@ -5,6 +5,7 @@ const operatsiiValidation = Joi.object({
   schet: Joi.string().required(),
   sub_schet: Joi.string().required(),
   type_schet: Joi.string().required(),
+  smeta_id: Joi.number().required(),
 }).options({ stripUnknown: true });
 
 module.exports = {

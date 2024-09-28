@@ -4,19 +4,18 @@ const { handleServiceError } = require("../../middleware/service.handle");
 const createOperatsii = handleServiceError(async (object) => {
   await pool.query(
     `INSERT INTO spravochnik_operatsii(
-        name,  schet, sub_schet, type_schet
-        ) VALUES($1, $2, $3, $4) 
+        name,  schet, sub_schet, type_schet, smeta_id
+        ) VALUES($1, $2, $3, $4, $5) 
     `,
-    [object.name, object.schet, object.sub_schet, object.type_schet],
+    [object.name, object.schet, object.sub_schet, object.type_schet, object.smeta_id],
   );
 });
 
 const getByNameAndSchetOperatsii = handleServiceError(
-  async (name, type_schet) => {
+  async (name, type_schet, smeta_id) => {
     const result = await pool.query(
-      `SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false
-    `,
-      [name, type_schet],
+      `SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false AND smeta_id = $3`,
+      [name, type_schet, smeta_id],
     );
     return result.rows[0];
   },
@@ -24,7 +23,7 @@ const getByNameAndSchetOperatsii = handleServiceError(
 
 const getAllOperatsii = handleServiceError(async (query, offset, limit) => {
   const result = await pool.query(
-    `SELECT id, name, schet, sub_schet, type_schet 
+    `SELECT id, name, schet, sub_schet, type_schet, smeta_id
         FROM spravochnik_operatsii  
         WHERE isdeleted = false AND type_schet = $1 ORDER BY id
         OFFSET $2
@@ -45,7 +44,7 @@ const totalOperatsii = handleServiceError(async (query) => {
 
 const getByIdOperatsii = handleServiceError(async (id) => {
   let result = await pool.query(
-    `SELECT id, name, schet, sub_schet, type_schet FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
+    `SELECT id, name, schet, sub_schet, type_schet, smeta_id FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
     `,
     [id],
   );
@@ -55,10 +54,10 @@ const getByIdOperatsii = handleServiceError(async (id) => {
 const updateOperatsii = handleServiceError(async (object) => {
   await pool.query(
     `UPDATE spravochnik_operatsii 
-        SET name = $1, schet = $2, sub_schet = $3, type_schet = $4
-        WHERE id = $5
+        SET name = $1, schet = $2, sub_schet = $3, type_schet = $4, smeta_id = $5
+        WHERE id = $6
     `,
-    [object.name, object.schet, object.sub_schet, object.type_schet, object.id],
+    [object.name, object.schet, object.sub_schet, object.type_schet, object.smeta_id, object.id],
   );
 });
 

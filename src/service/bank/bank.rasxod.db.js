@@ -1,4 +1,3 @@
-const { object } = require("joi");
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
@@ -109,128 +108,6 @@ const updateRasxod = handleServiceError(async (object) => {
   );
 });
 
-const getAllBankRasxodDb = handleServiceError(
-  async (region_id, main_schet_id, offset, limit) => {
-    const result = await pool.query(
-      `
-            SELECT 
-                bank_rasxod.id,
-                bank_rasxod.doc_num, 
-                bank_rasxod.doc_date, 
-                bank_rasxod.summa, 
-                bank_rasxod.opisanie, 
-                bank_rasxod.id_spravochnik_organization,
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn, 
-                bank_rasxod.id_shartnomalar_organization
-            FROM bank_rasxod 
-            JOIN users ON bank_rasxod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization 
-            WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false
-            OFFSET $3 
-            LIMIT $4
-      `,
-      [main_schet_id, region_id, offset, limit],
-    );
-
-    const summa = await pool.query(
-      `
-            SELECT SUM(bank_rasxod.summa)
-            FROM bank_rasxod 
-            JOIN users ON bank_rasxod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false
-      `,
-      [main_schet_id, region_id],
-    );
-
-    const totalQuery = await pool.query(
-      `
-            SELECT COUNT(bank_rasxod.id)
-            FROM bank_rasxod 
-            JOIN users ON bank_rasxod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false
-      `,
-      [main_schet_id, region_id],
-    );
-
-    return {
-      rasxod_rows: result.rows,
-      summa: summa.rows[0].sum,
-      totalQuery: totalQuery.rows[0],
-    };
-  }
-);
-
-
-const getAllBankRasxodByFrom = handleServiceError(
-  async (region_id, main_schet_id, offset, limit, from) => {
-    const result = await pool.query(
-      `
-            SELECT
-                bank_rasxod.id,
-                bank_rasxod.doc_num, 
-                bank_rasxod.doc_date, 
-                bank_rasxod.summa, 
-                bank_rasxod.opisanie, 
-                bank_rasxod.id_spravochnik_organization,
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn, 
-                bank_rasxod.id_shartnomalar_organization
-            FROM bank_rasxod 
-            JOIN users ON bank_rasxod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization 
-            WHERE bank_rasxod.main_schet_id = $1 
-                AND regions.id = $2 
-                AND bank_rasxod.isdeleted = false 
-                AND bank_rasxod.doc_date > $5
-            OFFSET $3 
-            LIMIT $4
-        `,
-      [main_schet_id, region_id, offset, limit, from],
-    );
-
-    const summa = await pool.query(
-      `
-                SELECT SUM(bank_rasxod.summa)
-                FROM bank_rasxod 
-                JOIN users ON bank_rasxod.user_id = users.id
-                JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date > $3
-        `,
-      [main_schet_id, region_id, from],
-    );
-    const totalQuery = await pool.query(
-      `
-                SELECT COUNT(bank_rasxod.id)
-                FROM bank_rasxod 
-                JOIN users ON bank_rasxod.user_id = users.id
-                JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date > $3
-        `,
-      [main_schet_id, region_id, from],
-    );
-    return {
-      rasxod_rows: result.rows,
-      summa: summa.rows[0].sum,
-      totalQuery: totalQuery.rows[0],
-    };
-  },
-);
-
 const getAllBankRasxodByFromAndTo = handleServiceError(
   async (region_id, main_schet_id, offset, limit, from, to) => {
     const result = await pool.query(
@@ -286,67 +163,6 @@ const getAllBankRasxodByFromAndTo = handleServiceError(
       [main_schet_id, region_id, from, to], // $3: from, $4: to
     );
 
-    return {
-      rasxod_rows: result.rows,
-      summa: summa.rows[0].sum,
-      totalQuery: totalQuery.rows[0],
-    };
-  },
-);
-
-const getAllBankRasxodByTo = handleServiceError(
-  async (region_id, main_schet_id, offset, limit, to) => {
-    const result = await pool.query(
-      `
-            SELECT
-                bank_rasxod.id,
-                bank_rasxod.doc_num, 
-                bank_rasxod.doc_date, 
-                bank_rasxod.summa, 
-                bank_rasxod.opisanie, 
-                bank_rasxod.id_spravochnik_organization,
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn, 
-                bank_rasxod.id_shartnomalar_organization
-            FROM bank_rasxod 
-            JOIN users ON bank_rasxod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_rasxod.id_spravochnik_organization 
-            WHERE bank_rasxod.main_schet_id = $1 
-                AND regions.id = $2 
-                AND bank_rasxod.isdeleted = false 
-                AND bank_rasxod.doc_date < $5
-            OFFSET $3 
-            LIMIT $4
-        `,
-      [main_schet_id, region_id, offset, limit, to],
-    );
-
-    const summa = await pool.query(
-      `
-                SELECT SUM(bank_rasxod.summa)
-                FROM bank_rasxod 
-                JOIN users ON bank_rasxod.user_id = users.id
-                JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date < $3
-        `,
-      [main_schet_id, region_id, to],
-    );
-    const totalQuery = await pool.query(
-      `
-                SELECT COUNT(bank_rasxod.id)
-                FROM bank_rasxod 
-                JOIN users ON bank_rasxod.user_id = users.id
-                JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.isdeleted = false AND bank_rasxod.doc_date < $3
-        `,
-      [main_schet_id, region_id, to],
-    );
     return {
       rasxod_rows: result.rows,
       summa: summa.rows[0].sum,
@@ -465,10 +281,7 @@ module.exports = {
   createBankRasxodChild,
   getByIdRasxod,
   updateRasxod,
-  getAllBankRasxodDb,
   getAllRasxodChildDb,
-  getAllBankRasxodByFrom,
-  getAllBankRasxodByTo,
   getAllBankRasxodByFromAndTo,
   getElemenByIdRasxod,
   getElemenByIdRasxodChild,

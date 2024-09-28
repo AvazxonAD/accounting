@@ -1,143 +1,78 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
-const {
-  kassaValidation,
-} = require("../../helpers/validation/kassa/kassa.validation");
+const { kassaValidation } = require("../../helpers/validation/kassa/kassa.validation");
 
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
-const {
-  getByIdPodotchet,
-} = require("../../service/spravochnik/podotchet.litso.db");
+const { getByIdPodotchet } = require("../../service/spravochnik/podotchet.litso.db");
+const { getByIdOperatsii } = require('../../service/spravochnik/operatsii.db')
+const { getByIdPodrazlanie } = require('../../service/spravochnik/podrazdelenie.db');
+const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
+const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
+const { kassaPrixoidCreateDB } = require("../../service/kassa/kassa.prixod.db");
+const { returnAllChildSumma } = require('../../utils/returnSumma')
 
-// kassa prixod and rasxod
-const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
-  const { error, value } = kassaValidation.validate(req.body);
+// kassa prixod rasxod
+const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  const user_id = req.user.region_id;
+  const user_id = req.user.id;
+  const region_id = req.user.region_id
+  let summa = 0
 
-  const main_schet = await getByIdMainSchet(user_id, main_schet_id);
+  const { error, value } = kassaValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
+
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
-
-  const podotchet_litso = await getByIdPodotchet(
-    user_id,
-    value.id_podotchet_litso,
-  );
-  if (!podotchet_litso) {
-    return next(new ErrorResponse("podotchet_litso topilmadi", 404));
+  
+  const spravochnik_operatsii_own = await getByIdOperatsii(value.spravochnik_operatsii_own_id)
+  if (spravochnik_operatsii_own) {
+    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404))
+  }
+  if (value.id_podotchet_litso) {
+    const podotchet_litso = await getByIdPodotchet( region_id, value.id_podotchet_litso );
+    if (!podotchet_litso) {
+      return next(new ErrorResponse("podotchet_litso topilmadi", 404));
+    }
   }
 
-  for (let child of childs) {
-    checkValueNumber(
-      child.spravochnik_operatsii_id,
-      child.summa,
-      child.id_spravochnik_podrazdelenie,
-      child.id_spravochnik_sostav,
-      child.id_spravochnik_type_operatsii,
-    );
-
-    const spravochnik_operatsii = await pool.query(
-      `SELECT * FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`,
-      ["kassa_prixod_rasxod", child.spravochnik_operatsii_id],
-    );
-    if (!spravochnik_operatsii.rows[0]) {
+  for (let child of value.childs) {
+    const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id)
+    if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
 
-    const spravochnik_podrazdelenie = await pool.query(
-      `SELECT * FROM spravochnik_podrazdelenie WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_podrazdelenie],
-    );
-    if (!spravochnik_podrazdelenie.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404),
-      );
+    if (child.id_spravochnik_podrazdelenie) {
+      const spravochnik_podrazdelenie = await getByIdPodrazlanie(region_id, child.id_spravochnik_podrazdelenie)
+      if (!spravochnik_podrazdelenie) {
+        return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
+      }
     }
-
-    const spravochnik_sostav = await pool.query(
-      `SELECT * FROM spravochnik_sostav WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_sostav],
-    );
-    if (!spravochnik_sostav.rows[0]) {
-      return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+    if (child.id_spravochnik_sostav) {
+      const spravochnik_sostav = await getByIdSostav(region_id, child.id_spravochnik_sostav)
+      if (!spravochnik_sostav) {
+        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+      }
     }
-
-    const spravochnik_type_operatsii = await pool.query(
-      `SELECT * FROM spravochnik_type_operatsii WHERE isdeleted = false AND id = $1 AND user_id = $2`,
-      [child.id_spravochnik_type_operatsii, req.user.region_id],
-    );
-    if (!spravochnik_type_operatsii.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
-      );
+    if (child.id_spravochnik_type_operatsii) {
+      const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, child.id_spravochnik_type_operatsii)
+      if (!spravochnik_type_operatsii) {
+        return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
+      }
     }
   }
+  summa = returnAllChildSumma(value.childs)
 
-  const result = await pool.query(
-    `
-        INSERT INTO kassa_prixod_rasxod(
-            doc_num, 
-            doc_date, 
-            opisanie, 
-            prixod_summa, 
-            rasxod_summa,
-            id_podotchet_litso, 
-            main_schet_id, 
-            user_id
-        ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
-        RETURNING *
-        `,
-    [
-      doc_num,
-      doc_date,
-      opisanie,
-      prixod_summa,
-      rasxod_summa,
-      id_podotchet_litso,
-      main_schet_id,
-      req.user.region_id,
-    ],
-  );
+  await kassaPrixoidCreateDB({...value, user_id, main_schet_id, summa})
 
-  if (!result.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
-
-  for (let child of childs) {
-    const result_child = await pool.query(
-      `
-            INSERT INTO kassa_prixod_rasxod_child(
-                spravochnik_operatsii_id,
-                summa,
-                id_spravochnik_podrazdelenie,
-                id_spravochnik_sostav,
-                id_spravochnik_type_operatsii,
-                own_schet,
-                own_subschet,
-                main_schet_id,
-                kassa_prixod_rasxod_id,
-                user_id
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [
-        child.spravochnik_operatsii_id,
-        child.summa,
-        child.id_spravochnik_podrazdelenie,
-        child.id_spravochnik_sostav,
-        child.id_spravochnik_type_operatsii,
-        main_schet.jur2_schet,
-        main_schet.jur2_subschet,
-        main_schet.id,
-        result.rows[0].id,
-        req.user.region_id,
-      ],
-    );
+  for (let child of value.childs) {
+    
     if (!result_child.rows[0]) {
-      return next(
-        new ErrorResponse("Server xatolik. Child yozuv kiritilmadi", 500),
-      );
+      return next(new ErrorResponse("Server xatolik. Child yozuv kiritilmadi", 500));
     }
   }
 
@@ -151,7 +86,7 @@ const kassa_prixod_and_rasxod = asyncHandler(async (req, res, next) => {
 const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
+    `SELECT * FROM main_schet WHERE id = $1 AND region_id = $2 AND isdeleted = false`,
     [main_schet_id, req.user.region_id],
   );
   main_schet = main_schet.rows[0];
@@ -162,7 +97,7 @@ const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   let results = await pool.query(
     ` SELECT id, doc_num, doc_date, opisanie, prixod_summa, rasxod_summa, id_podotchet_litso 
         FROM kassa_prixod_rasxod 
-        WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false
+        WHERE main_schet_id = $1 AND region_id = $2 AND isdeleted = false
     `,
     [main_schet_id, req.user.region_id],
   );
@@ -197,7 +132,7 @@ const getAllKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
             JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = kassa_prixod_rasxod_child.id_spravochnik_podrazdelenie
             JOIN spravochnik_sostav ON spravochnik_sostav.id = kassa_prixod_rasxod_child.id_spravochnik_sostav
             JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = kassa_prixod_rasxod_child.id_spravochnik_type_operatsii
-            WHERE kassa_prixod_rasxod_child.user_id = $1 AND kassa_prixod_rasxod_child.isdeleted = false AND kassa_prixod_rasxod_child.kassa_prixod_rasxod_id = $2
+            WHERE kassa_prixod_rasxod_child.region_id = $1 AND kassa_prixod_rasxod_child.isdeleted = false AND kassa_prixod_rasxod_child.kassa_prixod_rasxod_id = $2
         `,
       [req.user.region_id, result.id],
     );
@@ -231,7 +166,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
 
   const main_schet_id = req.query.main_schet_id;
   let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
+    `SELECT * FROM main_schet WHERE id = $1 AND region_id = $2 AND isdeleted = false`,
     [main_schet_id, req.user.region_id],
   );
   main_schet = main_schet.rows[0];
@@ -242,7 +177,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   let value = await pool.query(
     `SELECT * 
         FROM kassa_prixod_rasxod 
-        WHERE user_id = $1 AND main_schet_id = $2 AND isdeleted = false AND id = $3
+        WHERE region_id = $1 AND main_schet_id = $2 AND isdeleted = false AND id = $3
     `,
     [req.user.region_id, main_schet_id, req.params.id],
   );
@@ -253,7 +188,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   }
 
   let podotchet_litso = await pool.query(
-    `SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
+    `SELECT * FROM spravochnik_podotchet_litso WHERE id = $1 AND region_id = $2 AND isdeleted = false`,
     [id_podotchet_litso, req.user.region_id],
   );
   podotchet_litso = podotchet_litso.rows[0];
@@ -279,7 +214,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     }
 
     const spravochnik_podrazdelenie = await pool.query(
-      `SELECT * FROM spravochnik_podrazdelenie WHERE user_id = $1 AND isdeleted = false AND id = $2`,
+      `SELECT * FROM spravochnik_podrazdelenie WHERE region_id = $1 AND isdeleted = false AND id = $2`,
       [req.user.region_id, child.id_spravochnik_podrazdelenie],
     );
     if (!spravochnik_podrazdelenie.rows[0]) {
@@ -289,7 +224,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     }
 
     const spravochnik_sostav = await pool.query(
-      `SELECT * FROM spravochnik_sostav WHERE user_id = $1 AND isdeleted = false AND id = $2`,
+      `SELECT * FROM spravochnik_sostav WHERE region_id = $1 AND isdeleted = false AND id = $2`,
       [req.user.region_id, child.id_spravochnik_sostav],
     );
     if (!spravochnik_sostav.rows[0]) {
@@ -297,7 +232,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     }
 
     const spravochnik_type_operatsii = await pool.query(
-      `SELECT * FROM spravochnik_type_operatsii WHERE isdeleted = false AND id = $1 AND user_id = $2`,
+      `SELECT * FROM spravochnik_type_operatsii WHERE isdeleted = false AND id = $1 AND region_id = $2`,
       [child.id_spravochnik_type_operatsii, req.user.region_id],
     );
     if (!spravochnik_type_operatsii.rows[0]) {
@@ -351,7 +286,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
                 own_subschet,
                 main_schet_id,
                 kassa_prixod_rasxod_id,
-                user_id
+                region_id
             ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
       [
         child.spravochnik_operatsii_id,
@@ -383,7 +318,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
 const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
+    `SELECT * FROM main_schet WHERE id = $1 AND region_id = $2 AND isdeleted = false`,
     [main_schet_id, req.user.region_id],
   );
   main_schet = main_schet.rows[0];
@@ -394,7 +329,7 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   const childs = await pool.query(
     `UPDATE kassa_prixod_rasxod_child 
         SET isdeleted = true
-        WHERE kassa_prixod_rasxod_id = $1 AND isdeleted = false AND  user_id = $2 AND main_schet_id = $3
+        WHERE kassa_prixod_rasxod_id = $1 AND isdeleted = false AND  region_id = $2 AND main_schet_id = $3
         RETURNING * 
     `,
     [req.params.id, req.user.region_id, main_schet_id],
@@ -407,7 +342,7 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   const result = await pool.query(
     `UPDATE kassa_prixod_rasxod
         SET isdeleted = true
-        WHERE id = $1 AND isdeleted = false AND  user_id = $2 AND main_schet_id = $3
+        WHERE id = $1 AND isdeleted = false AND  region_id = $2 AND main_schet_id = $3
         RETURNING * 
     `,
     [req.params.id, req.user.region_id, main_schet_id],
@@ -428,7 +363,7 @@ const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   let results = await pool.query(
     ` SELECT id, doc_num, doc_date, opisanie, prixod_summa, rasxod_summa, id_podotchet_litso 
         FROM kassa_prixod_rasxod 
-        WHERE main_schet_id = $1 AND user_id = $2 AND isdeleted = false AND id = $3
+        WHERE main_schet_id = $1 AND region_id = $2 AND isdeleted = false AND id = $3
     `,
     [req.query.main_schet_id, req.user.region_id, req.params.id],
   );
@@ -463,7 +398,7 @@ const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
             JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = kassa_prixod_rasxod_child.id_spravochnik_podrazdelenie
             JOIN spravochnik_sostav ON spravochnik_sostav.id = kassa_prixod_rasxod_child.id_spravochnik_sostav
             JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = kassa_prixod_rasxod_child.id_spravochnik_type_operatsii
-            WHERE kassa_prixod_rasxod_child.user_id = $1 AND kassa_prixod_rasxod_child.isdeleted = false AND kassa_prixod_rasxod_child.kassa_prixod_rasxod_id = $2
+            WHERE kassa_prixod_rasxod_child.region_id = $1 AND kassa_prixod_rasxod_child.isdeleted = false AND kassa_prixod_rasxod_child.kassa_prixod_rasxod_id = $2
         `,
       [req.user.region_id, result.id],
     );
@@ -480,7 +415,7 @@ const getElementByIdKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
-  kassa_prixod_and_rasxod,
+  kassaPrixodCreate,
   getAllKassaPrixodRasxod,
   updateKassaPrixodBank,
   deleteKassaPrixodRasxod,

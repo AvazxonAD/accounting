@@ -58,7 +58,8 @@ CREATE TABLE spravochnik_operatsii (
   name VARCHAR(200),
   schet VARCHAR(200),
   sub_schet VARCHAR(200),
-  type_schet VARCHAR(200), -- tolov yoki ushlanma
+  type_schet VARCHAR(200),
+  smeta_id INTEGER REFERENCES smeta(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

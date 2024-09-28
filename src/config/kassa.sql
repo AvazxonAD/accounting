@@ -1,22 +1,21 @@
 
-CREATE TABLE kassa_prixod_rasxod (
+CREATE TABLE kassa_prixod (
     id SERIAL PRIMARY KEY,
     doc_num VARCHAR(255),
     doc_date DATE,
     opisanie VARCHAR(255),
-    prixod_summa DECIMAL,
-    rasxod_summa DECIMAL,
+    summa DECIMAL DEFAULT 0,
     id_podotchet_litso INTEGER REFERENCES spravochnik_podotchet_litso(id),
-    user_id INTEGER REFERENCES regions(id),
+    user_id INTEGER REFERENCES users(id),
     main_schet_id INTEGER REFERENCES main_schet(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE kassa_prixod_rasxod_child (
+CREATE TABLE kassa_prixod_child (
   id INTEGER PRIMARY KEY,
-  user_id INTEGER REFERENCES regions(id),
+  user_id INTEGER REFERENCES users(id),
   spravochnik_operatsii_id INTEGER REFERENCES spravochnik_operatsii(id),
   summa DECIMAL,
   id_spravochnik_podrazdelenie INTEGER REFERENCES spravochnik_podrazdelenie(id),
@@ -26,7 +25,7 @@ CREATE TABLE kassa_prixod_rasxod_child (
   main_schet_id INTEGER REFERENCES main_schet(id),
   own_schet VARCHAR(200),
   own_subschet VARCHAR(200),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );

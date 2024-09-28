@@ -23,8 +23,8 @@ const queryValidationBank = Joi.object({
   main_schet_id: Joi.number().required(),
   limit: Joi.number(),
   page: Joi.number(),
-  from: Joi.date(),
-  to: Joi.date(),
+  from: Joi.date().required(),
+  to: Joi.date().required(),
 }).options({ stripUnknown: true });
 
 module.exports = {

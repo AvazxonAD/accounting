@@ -32,9 +32,6 @@ const {
   deleteBankPrixodChild,
   getAllPrixod,
   getAllPrixodChild,
-  getAllPrixodByFrom,
-  getAllPrixodByTo,
-  getAllPrixodByFromAndTo,
   getElementByIdPrixod,
   getElementByIdBankPrixodChild,
   deleteBankPrixod,
@@ -322,7 +319,7 @@ const delete_bank_prixod = asyncHandler(async (req, res, next) => {
   }
 
   const bank_prixod = await getByIdBankPrixod(region_id, main_schet_id, id)
-  if(!bank_prixod){
+  if (!bank_prixod) {
     return next(new ErrorResponse("Server xatolik. Prixod doc topilmadi", 404))
   }
 
@@ -381,66 +378,32 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
-
+  const from = value.from
+  const to = value.to
+  
   if (limit <= 0 || page <= 0) {
     return next(
       new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
     );
   }
-
   const offset = (page - 1) * limit;
+
+  
   const main_schet = await getByIdMainSchet(region_id, value.main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
   }
 
-  if (value.from && !value.to) {
-    all_prixod = await getAllPrixodByFrom(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-      new Date(req.query.from),
-    );
-    summa = Number(all_prixod.summa);
-    totalQuery = all_prixod.totalQuery;
-  }
-
-  if (!value.from && value.to) {
-    all_prixod = await getAllPrixodByTo(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-      new Date(req.query.to),
-    );
-    summa = Number(all_prixod.summa);
-    totalQuery = all_prixod.totalQuery;
-  }
-
-  if (value.from && value.to) {
-    all_prixod = await getAllPrixodByFromAndTo(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-      new Date(req.query.from),
-      new Date(req.query.to),
-    );
-    summa = Number(all_prixod.summa);
-    totalQuery = all_prixod.totalQuery;
-  }
-
-  if (!value.from && !value.to) {
-    all_prixod = await getAllPrixod(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-    );
-    summa = Number(all_prixod.summa);
-    totalQuery = all_prixod.totalQuery;
-  }
+  all_prixod = await getAllPrixod(
+    region_id,
+    value.main_schet_id,
+    offset,
+    limit,
+    from,
+    to
+  );
+  summa = Number(all_prixod.summa);
+  totalQuery = all_prixod.totalQuery;
 
   const resultArray = [];
 

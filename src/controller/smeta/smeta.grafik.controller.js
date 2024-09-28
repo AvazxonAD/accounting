@@ -12,6 +12,7 @@ const {
 
 // create
 const create = asyncHandler(async (req, res, next) => {
+  const region_id = req.user.region_id
   const { error, value } = smetaGrafikValidation.validate(req.body)
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406))

@@ -39,15 +39,45 @@ function getMonth(month) {
   }
 }
 
-// return local date
+//     return local date
 const returnLocalDate = (date) => {
-  const day = date.getDate().toString().padStart(2, "0"); // "05"
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
-  const year = date.getFullYear().toString(); // "2024"
+  const day = date.getDate().toString().padStart(2, "0"); 
+  const month = (date.getMonth() + 1).toString().padStart(2, "0"); 
+  const year = date.getFullYear().toString(); 
   return (topshiriqSana = `${day}.${month}.${year}`);
 };
+
+const returnLocalAllDate = (date) => {
+  const day = date.getDate().toString().padStart(2, "0"); 
+  const month = (date.getMonth() + 1).toString().padStart(2, "0"); 
+  const year = date.getFullYear().toString(); 
+
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+};
+
+const  newDate = () => {
+  const hozirgiVaqt = new Date();
+  const uzbekistanVaqti = new Date(hozirgiVaqt.getTime() + 5 * 60 * 60 * 1000); // UTC+5
+
+  const yil = uzbekistanVaqti.getFullYear();
+  const oy = String(uzbekistanVaqti.getMonth() + 1).padStart(2, '0');
+  const kun = String(uzbekistanVaqti.getDate()).padStart(2, '0');
+  const soat = String(uzbekistanVaqti.getHours()).padStart(2, '0');
+  const daqiqa = String(uzbekistanVaqti.getMinutes()).padStart(2, '0');
+  const soniya = String(uzbekistanVaqti.getSeconds()).padStart(2, '0');
+  const millisekundlar = String(uzbekistanVaqti.getMilliseconds()).padStart(6, '0');
+
+  return `${yil}-${oy}-${kun} ${soat}:${daqiqa}:${soniya}.${millisekundlar}`;
+}
+
+
 
 module.exports = {
   returnLocalDate,
   returnStringDate,
+  newDate,
+  returnLocalAllDate
 };

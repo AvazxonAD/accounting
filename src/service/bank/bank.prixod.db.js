@@ -119,264 +119,61 @@ const deleteBankPrixodChild = handleServiceError(async (bank_prixod_id) => {
   await pool.query(`
       UPDATE bank_prixod_child SET isdeleted = $1 
       WHERE id_bank_prixod = $2 AND isdeleted = false
-    `, [ true, bank_prixod_id ]);
+    `, [true, bank_prixod_id]);
 });
 
 const getAllPrixod = handleServiceError(
-  async (region_id, main_schet_id, offset, limit) => {
-    const result = await pool.query(
-      `
-            SELECT 
-                bank_prixod.id,
-                bank_prixod.doc_num, 
-                bank_prixod.doc_date, 
-                bank_prixod.summa, 
-                bank_prixod.provodki_boolean, 
-                bank_prixod.dop_provodki_boolean, 
-                bank_prixod.opisanie, 
-                bank_prixod.id_spravochnik_organization, 
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn,
-                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
-                bank_prixod.spravochnik_operatsii_own_id
-            FROM bank_prixod
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization 
-            WHERE bank_prixod.main_schet_id = $1 
-              AND regions.id = $2 
-              AND bank_prixod.isdeleted = false
-            OFFSET $3
-            LIMIT $4;
-          `,
-      [main_schet_id, region_id, offset, limit],
-    );
-    const summa = await pool.query(
-      `
+  async (region_id, main_schet_id, offset, limit, from, to) => {
+    const result = await pool.query(` SELECT 
+            bank_prixod.id,
+            bank_prixod.doc_num, 
+            bank_prixod.doc_date, 
+            bank_prixod.summa, 
+            bank_prixod.provodki_boolean, 
+            bank_prixod.dop_provodki_boolean, 
+            bank_prixod.opisanie, 
+            bank_prixod.id_spravochnik_organization, 
+            spravochnik_organization.name AS spravochnik_organization_name,
+            spravochnik_organization.okonx AS spravochnik_organization_okonx,
+            spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
+            spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+            spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+            spravochnik_organization.mfo AS spravochnik_organization_mfo,
+            spravochnik_organization.inn AS spravochnik_organization_inn,
+            bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
+            bank_prixod.spravochnik_operatsii_own_id
+        FROM bank_prixod
+        JOIN users ON bank_prixod.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization 
+        WHERE bank_prixod.main_schet_id = $1 
+          AND regions.id = $2 
+          AND bank_prixod.isdeleted = false AND doc_date BETWEEN $3 AND $4
+          OFFSET $5 
+          LIMIT $6
+    `, [main_schet_id, region_id, from, to, offset, limit])
+    
+    const summa = await  pool.query(`   
             SELECT SUM(bank_prixod.summa)
             FROM bank_prixod 
             JOIN users ON bank_prixod.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 AND regions.id = $2 AND bank_prixod.isdeleted = false
-          `,
-      [main_schet_id, region_id],
-    );
-    const totalQuery = await pool.query(
-      ` SELECT COUNT(bank_prixod.id) AS total 
+            WHERE bank_prixod.main_schet_id = $1 
+              AND regions.id = $2 
+              AND bank_prixod.isdeleted = false
+              AND doc_date BETWEEN $3 AND $4
+    `, [main_schet_id, region_id, from, to])
+
+    const totalQuery = await pool.query(` SELECT COUNT(bank_prixod.id) AS total 
         FROM bank_prixod 
         JOIN users ON bank_prixod.user_id = users.id
         JOIN regions ON users.region_id = regions.id
         WHERE bank_prixod.main_schet_id = $1 
           AND regions.id = $2 
           AND bank_prixod.isdeleted = false
-      `,
-      [main_schet_id, region_id],
-    );
-    return {
-      prixod_rows: result.rows,
-      summa: summa.rows[0].sum,
-      totalQuery: totalQuery.rows[0],
-    };
-  },
-);
-
-const getAllPrixodByFrom = handleServiceError(
-  async (region_id, main_schet_id, offset, limit, from) => {
-    const result = await pool.query(
-      `
-            SELECT       
-                bank_prixod.id,
-                bank_prixod.doc_num, 
-                bank_prixod.doc_date, 
-                bank_prixod.summa, 
-                bank_prixod.provodki_boolean, 
-                bank_prixod.dop_provodki_boolean, 
-                bank_prixod.opisanie, 
-                bank_prixod.id_spravochnik_organization, 
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn,
-                bank_prixod.id_shartnomalar_organization,
-                bank_prixod.spravochnik_operatsii_own_id
-            FROM bank_prixod
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization
-            WHERE bank_prixod.main_schet_id = $1 AND regions.id = $2 AND bank_prixod.isdeleted = false AND bank_prixod.doc_date > $3
-            OFFSET $4
-            LIMIT $5
-          `,
-      [main_schet_id, region_id, from, offset, limit],
-    );
-    const summa = await pool.query(
-      `
-        SELECT SUM(bank_prixod.summa) 
-        FROM bank_prixod
-        JOIN users ON bank_prixod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE bank_prixod.main_schet_id = $1 
-        AND regions.id = $2
-        AND bank_prixod.isdeleted = false 
-        AND bank_prixod.doc_date > $3
-      `,
-      [main_schet_id, region_id, from],
-    );
-    const totalQuery = await pool.query(
-      ` 
-        SELECT COUNT(bank_prixod.id) AS total 
-        FROM bank_prixod 
-        JOIN users ON bank_prixod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE bank_prixod.main_schet_id = $1 
-        AND regions.id = $2 
-        AND bank_prixod.isdeleted = false 
-        AND bank_prixod.doc_date > $3
-      `,
-      [main_schet_id, region_id, from],
-    );
-    return {
-      prixod_rows: result.rows,
-      summa: summa.rows[0].sum,
-      totalQuery: totalQuery.rows[0],
-    };
-  },
-);
-
-const getAllPrixodByTo = handleServiceError(
-  async (region_id, main_schet_id, offset, limit, to) => {
-
-    const result = await pool.query(
-      `
-            SELECT       
-                bank_prixod.id,
-                bank_prixod.doc_num, 
-                bank_prixod.doc_date, 
-                bank_prixod.summa, 
-                bank_prixod.provodki_boolean, 
-                bank_prixod.dop_provodki_boolean, 
-                bank_prixod.opisanie, 
-                bank_prixod.id_spravochnik_organization, 
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn,
-                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
-                bank_prixod.spravochnik_operatsii_own_id
-            FROM bank_prixod
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization
-            WHERE bank_prixod.main_schet_id = $1 AND regions.id = $2 AND bank_prixod.isdeleted = false AND bank_prixod.doc_date < $3
-            OFFSET $4
-            LIMIT $5
-          `,
-      [main_schet_id, region_id, to, offset, limit],
-    );
-    const summa = await pool.query(
-      `
-            SELECT SUM(bank_prixod.summa)
-            FROM bank_prixod 
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 
-              AND regions.id = $2 
-              AND bank_prixod.isdeleted = false 
-              AND bank_prixod.doc_date < $3
-          `,
-      [main_schet_id, region_id, to],
-    );
-    const totalQuery = await pool.query(
-      ` SELECT COUNT(bank_prixod.id) AS total 
-        FROM bank_prixod 
-        JOIN users ON bank_prixod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE bank_prixod.main_schet_id = $1 
-          AND regions.id = $2 
-          AND bank_prixod.isdeleted = false 
-          AND bank_prixod.doc_date < $3
-      `,
-      [main_schet_id, region_id, to],
-    );
-    return {
-      prixod_rows: result.rows,
-      summa: summa.rows[0].sum,
-      totalQuery: totalQuery.rows[0],
-    };
-  },
-);
-
-const getAllPrixodByFromAndTo = handleServiceError(
-  async (region_id, main_schet_id, offset, limit, from, to) => {
-    const result = await pool.query(
-      `
-            SELECT       
-                bank_prixod.id,
-                bank_prixod.doc_num, 
-                bank_prixod.doc_date, 
-                bank_prixod.summa, 
-                bank_prixod.provodki_boolean, 
-                bank_prixod.dop_provodki_boolean, 
-                bank_prixod.opisanie, 
-                bank_prixod.id_spravochnik_organization, 
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.okonx AS spravochnik_organization_okonx,
-                spravochnik_organization.bank_klient AS spravochnik_organization_bank_klient,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                spravochnik_organization.mfo AS spravochnik_organization_mfo,
-                spravochnik_organization.inn AS spravochnik_organization_inn,
-                bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
-                bank_prixod.spravochnik_operatsii_own_id
-            FROM bank_prixod
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bank_prixod.id_spravochnik_organization 
-            WHERE bank_prixod.main_schet_id = $1 
-                AND regions.id = $2 
-                AND bank_prixod.isdeleted = false 
-                AND bank_prixod.doc_date BETWEEN $3 AND $4
-            OFFSET $5
-            LIMIT $6
-        `,
-      [main_schet_id, region_id, from, to, offset, limit],
-    );
-    const summa = await pool.query(
-      `
-            SELECT SUM(bank_prixod.summa)
-            FROM bank_prixod 
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 
-              AND regions.id = $2 
-              AND bank_prixod.isdeleted = false
-              AND bank_prixod.doc_date BETWEEN $3 And $4
-          `,
-      [main_schet_id, region_id, from, to],
-    );
-    const totalQuery = await pool.query(
-      ` SELECT COUNT(bank_prixod.id) AS total 
-        FROM bank_prixod 
-        JOIN users ON bank_prixod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE bank_prixod.main_schet_id = $1 
-          AND regions.id = $2 
-          AND bank_prixod.isdeleted = false 
-          AND bank_prixod.doc_date BETWEEN $3 And $4
-        `,
-      [main_schet_id, region_id, from, to],
-    );
+          AND doc_date BETWEEN $3 AND $4
+    `, [main_schet_id, region_id, from, to])
+    
     return {
       prixod_rows: result.rows,
       summa: summa.rows[0].sum,
@@ -487,9 +284,6 @@ module.exports = {
   deleteBankPrixodChild,
   getAllPrixod,
   getAllPrixodChild,
-  getAllPrixodByFrom,
-  getAllPrixodByTo,
-  getAllPrixodByFromAndTo,
   getElementByIdPrixod,
   getElementByIdBankPrixodChild,
   deleteBankPrixod

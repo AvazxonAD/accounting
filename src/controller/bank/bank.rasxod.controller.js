@@ -29,15 +29,12 @@ const {
   createBankRasxodChild,
   getByIdRasxod,
   updateRasxod,
-  getAllBankRasxodDb,
   getAllRasxodChildDb,
-  getAllBankRasxodByFrom,
   getAllBankRasxodByFromAndTo,
   getElemenByIdRasxod,
   getElemenByIdRasxodChild,
   deleteRasxodChild,
   deleteBankRasxod,
-  getAllBankRasxodByTo,
 } = require("../../service/bank/bank.rasxod.db");
 
 const {
@@ -297,6 +294,8 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
+  const from = value.from
+  const to = value.to
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -306,50 +305,16 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  if (!value.from && !value.to) {
-    all_rasxod = await getAllBankRasxodDb(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-    );
-    totalQuery = all_rasxod.totalQuery;
-    summa = Number(all_rasxod.summa);
-  }
-  if (value.from && !value.to) {
-    all_rasxod = await getAllBankRasxodByFrom(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-      value.from,
-    );
-    totalQuery = all_rasxod.totalQuery;
-    summa = Number(all_rasxod.summa);
-  }
-  if (!value.from && value.to) {
-    all_rasxod = await getAllBankRasxodByTo(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-      value.to,
-    );
-    totalQuery = all_rasxod.totalQuery;
-    summa = Number(all_rasxod.summa);
-  }
-  if (value.from && value.to) {
-    all_rasxod = await getAllBankRasxodByFromAndTo(
-      region_id,
-      value.main_schet_id,
-      offset,
-      limit,
-      value.from,
-      value.to,
-    );
-    totalQuery = all_rasxod.totalQuery;
-    summa = Number(all_rasxod.summa);
-  }
+  all_rasxod = await getAllBankRasxodByFromAndTo(
+    region_id,
+    value.main_schet_id,
+    offset,
+    limit,
+    from,
+    to,
+  );
+  totalQuery = all_rasxod.totalQuery;
+  summa = Number(all_rasxod.summa);
 
   const resultArray = [];
 
