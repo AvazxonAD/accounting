@@ -22,6 +22,7 @@ const {
 } = require("../../helpers/validation/bank/bank.rasxod.validation");
 
 const { returnAllChildSumma } = require("../../utils/returnSumma");
+const { returnLocalDate } = require('../../utils/date.function')
 
 const {
   createBankRasxodDb,
@@ -357,6 +358,7 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
     let object = { ...rasxod };
     object.summa = Number(object.summa);
+    object.doc_date = returnLocalDate(object.doc_date)
     object.childs = rasxod_child.map((item) => {
       let result = { ...item };
       result.summa = Number(result.summa);
@@ -396,6 +398,7 @@ const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
   const rasxod_child = await getElemenByIdRasxodChild(region_id, rasxod.id);
   let object = { ...rasxod };
   object.summa = Number(object.summa);
+  object.doc_date = returnLocalDate(object.doc_date)
   object.childs = rasxod_child.map((item) => {
     let result = { ...item };
     result.summa = Number(result.summa);
@@ -419,7 +422,7 @@ const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
   }
 
   const test = await getElemenByIdRasxod(region_id, main_schet_id, id)
-  if(!test){
+  if (!test) {
     return next(new ErrorResponse("Server xatolik. Rasxod doc topilmadi", 404))
   }
 

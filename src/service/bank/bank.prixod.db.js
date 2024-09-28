@@ -219,19 +219,20 @@ const getAllPrixodByFrom = handleServiceError(
     );
     const summa = await pool.query(
       `
-            SELECT SUM(bank_prixod.summa)
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            FROM bank_prixod 
-            WHERE bank_prixod.main_schet_id = $1 
-              AND regions.id = $2 
-              AND bank_prixod.isdeleted = false 
-              AND bank_prixod.doc_date > $3
-          `,
+        SELECT SUM(bank_prixod.summa) 
+        FROM bank_prixod
+        JOIN users ON bank_prixod.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        WHERE bank_prixod.main_schet_id = $1 
+        AND regions.id = $2
+        AND bank_prixod.isdeleted = false 
+        AND bank_prixod.doc_date > $3
+      `,
       [main_schet_id, region_id, from],
     );
     const totalQuery = await pool.query(
-      ` SELECT COUNT(bank_prixod.id) AS total 
+      ` 
+        SELECT COUNT(bank_prixod.id) AS total 
         FROM bank_prixod 
         JOIN users ON bank_prixod.user_id = users.id
         JOIN regions ON users.region_id = regions.id
@@ -239,7 +240,7 @@ const getAllPrixodByFrom = handleServiceError(
         AND regions.id = $2 
         AND bank_prixod.isdeleted = false 
         AND bank_prixod.doc_date > $3
-        `,
+      `,
       [main_schet_id, region_id, from],
     );
     return {
