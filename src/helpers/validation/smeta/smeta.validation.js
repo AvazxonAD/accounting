@@ -6,7 +6,14 @@ const smetaValidation = Joi.object({
     father_smeta_name: Joi.string().required()
 })
 
+const smetaGrafikValidation = Joi.object({
+    smeta_id: Joi.number().required(), 
+    spravochnik_budjet_name_id: Joi.number().required(), 
+    year: Joi.number().required()
+})
+
 
 module.exports = { 
-    smetaValidation
+    smetaValidation,
+    smetaGrafikValidation
  }

@@ -26,7 +26,7 @@ CREATE TABLE smeta_grafik (
   oy_10 DECIMAL DEFAULT 0,
   oy_11 DECIMAL DEFAULT 0,
   oy_12 DECIMAL DEFAULT 0,
-  year INT DEFAULT 0,
+  year INT,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

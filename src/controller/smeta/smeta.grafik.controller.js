@@ -2,47 +2,39 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { sum } = require("../../utils/returnSumma");
+const { smetaGrafikValidation } = require('../../helpers/validation/smeta/smeta.validation')
+const { getByIdSmeta } = require('../../service/smeta/smeta.db')
+const { getByIdBudjet } = require('../../service/spravochnik/budjet.name.db')
+const {
+  getByAllSmetaGarfik,
+  createSmetaGrafik
+} = require('../../service/smeta/smeta.grafik.db')
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  let { smeta_id, spravochnik_budjet_name_id, year } = req.body;
+  const { error, value } = smetaGrafikValidation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
-  checkValueNumber(smeta_id, spravochnik_budjet_name_id, year);
+  let { smeta_id, spravochnik_budjet_name_id, year } = value;
 
-  const smeta = await pool.query(
-    `SELECT * FROM smeta WHERE id = $1 AND isdeleted = false`,
-    [smeta_id],
-  );
-  if (!smeta.rows[0]) {
+  const smeta = await getByIdSmeta(smeta_id)
+  if (!smeta) {
     return next(new ErrorResponse("Server xatolik smeta topilmadi", 500));
   }
 
-  const budjet = await pool.query(
-    `SELECT * FROM spravochnik_budjet_name WHERE id = $1 AND isdeleted = false`,
-    [spravochnik_budjet_name_id],
-  );
-  if (!budjet.rows[0]) {
+  const budjet = await getByIdBudjet(spravochnik_budjet_name_id)
+  if (!budjet) {
     return next(new ErrorResponse("Server xatolik budjet topilmadi", 500));
   }
 
-  const test = await pool.query(
-    `SELECT * FROM smeta_grafik 
-        WHERE smeta_id = $1 AND spravochnik_budjet_name_id = $2 AND isdeleted = false AND user_id = $3 AND year = $4
-    `,
-    [smeta_id, spravochnik_budjet_name_id, req.user.region_id, year],
-  );
-  if (test.rows.length > 0) {
+  const test = await getByAllSmetaGarfik(region_id, smeta_id, spravochnik_budjet_name_id, year)
+  if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  const result = await pool.query(
-    `INSERT INTO smeta_grafik(smeta_id, spravochnik_budjet_name_id, user_id, year) VALUES($1, $2, $3, $4) RETURNING *
-    `,
-    [smeta_id, spravochnik_budjet_name_id, req.user.region_id, year],
-  );
-  if (!result.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
+  await createSmetaGrafik(user_id, smeta_id, spravochnik_budjet_name_id, year)
 
   return res.status(201).json({
     success: true,
@@ -63,36 +55,6 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const result = await pool.query(
-    `SELECT 
-            smeta_grafik.id, 
-            smeta_grafik.smeta_id, 
-            smeta.smeta_name,
-            smeta_grafik.spravochnik_budjet_name_id,
-            spravochnik_budjet_name.name AS budjet_name,
-            smeta_grafik.itogo,
-            smeta_grafik.oy_1,
-            smeta_grafik.oy_2,
-            smeta_grafik.oy_3,
-            smeta_grafik.oy_4,
-            smeta_grafik.oy_5,
-            smeta_grafik.oy_6,
-            smeta_grafik.oy_7,
-            smeta_grafik.oy_8,
-            smeta_grafik.oy_9,
-            smeta_grafik.oy_10,
-            smeta_grafik.oy_11,
-            smeta_grafik.oy_12,
-            smeta_grafik.year
-        FROM smeta_grafik  
-        JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = smeta_grafik.spravochnik_budjet_name_id
-        JOIN smeta ON smeta.id = smeta_grafik.smeta_id
-        WHERE smeta_grafik.isdeleted = false AND smeta_grafik.user_id = $1
-        OFFSET $2
-        LIMIT $3
-    `,
-    [req.user.region_id, offset, limit],
-  );
 
   const formattedResult = result.rows.map((row) => ({
     ...row,
