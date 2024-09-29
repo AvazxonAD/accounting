@@ -5,16 +5,16 @@ const { protect } = require("../../middleware/auth");
 
 const {
   kassaPrixodCreate,
-  getAllKassaPrixodRasxod,
+  getAllKassaPrixod,
   updateKassaPrixodBank,
   deleteKassaPrixodRasxod,
-  getElementByIdKassaPrixodRasxod,
+  getElementByIdKassaPrixod,
 } = require("../../controller/kassa/kassa.prixod.controler");
 
 router.post("/create", protect, kassaPrixodCreate);
-router.get("/get/all/", protect, getAllKassaPrixodRasxod);
+router.get("/get/all/", protect, getAllKassaPrixod);
 router.put("/update/:id", protect, updateKassaPrixodBank);
 router.delete("/delete/:id", protect, deleteKassaPrixodRasxod);
-router.get("/get/element/by/:id", protect, getElementByIdKassaPrixodRasxod);
+router.get("/get/element/by/:id", protect, getElementByIdKassaPrixod);
 
 module.exports = router;

@@ -442,7 +442,7 @@ const getElementByIdjur_4 = asyncHandler(async (req, res, next) => {
 
   if (results.length === 0) {
     return next(
-      new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", [404]),
+      new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", 404),
     );
   }
 

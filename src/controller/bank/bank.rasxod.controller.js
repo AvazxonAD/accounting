@@ -356,7 +356,7 @@ const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
   const rasxod = await getElemenByIdRasxod(region_id, main_schet_id, id);
   if (!rasxod) {
     return next(
-      new ErrorResponse("Server xatolik. Rasxod document topilmadi", [404]),
+      new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404),
     );
   }
 

@@ -343,7 +343,7 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
 
   if (!prixod) {
     return next(
-      new ErrorResponse("Server xatolik. Prixod document topilmadi", [404]),
+      new ErrorResponse("Server xatolik. Prixod document topilmadi", 404),
     );
   }
 
