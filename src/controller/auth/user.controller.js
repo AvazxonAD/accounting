@@ -73,7 +73,7 @@ const getRegionAllUsers = asyncHandler(async (req, res, next) => {
   if(req.user.region_id){
     return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
   }
-  
+
   users = await getAllRegionUsers(region_id);
 
   return res.status(200).json({
@@ -107,8 +107,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
     if (!region) {
       return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
     }
-  } else {
-    region_id = req.user.region_id;
   }
 
   login = login.trim();
