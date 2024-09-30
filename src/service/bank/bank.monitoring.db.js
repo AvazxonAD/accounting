@@ -3,112 +3,117 @@ const { handleServiceError } = require("../../middleware/service.handle");
 const { returnLocalDate } = require('../../utils/date.function');
 
 const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, offset, limit, from, to) => {
-    const params = [region_id, main_schet_id, from, to, offset, limit];
-
-
     const data = await pool.query(`
         SELECT 
-            bank_prixod.id, 
-            bank_prixod.doc_num,
-            bank_prixod.doc_date,
-            bank_prixod.summa AS prixod_sum,
+            bp.id, 
+            bp.doc_num,
+            bp.doc_date,
+            bp.summa AS prixod_sum,
             0 AS rasxod_sum,
-            bank_prixod.id_spravochnik_organization,
-            spravochnik_organization.name AS spravochnik_organization_name,
-            spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-            spravochnik_organization.inn AS spravochnik_organization_inn,
-            bank_prixod.id_shartnomalar_organization,
-            shartnomalar_organization.doc_num AS shartnomalar_doc_num,
-            shartnomalar_organization.doc_date AS shartnomalar_doc_date,
-            bank_prixod.opisanie,
-            bank_prixod.doc_date AS combined_date
-        FROM bank_prixod
-        JOIN users ON bank_prixod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        JOIN spravochnik_organization ON bank_prixod.id_spravochnik_organization = spravochnik_organization.id
-        LEFT JOIN shartnomalar_organization ON bank_prixod.id_shartnomalar_organization = shartnomalar_organization.id
-        WHERE regions.id = $1 AND bank_prixod.main_schet_id = $2 AND bank_prixod.isdeleted = false
-        AND bank_prixod.doc_date BETWEEN $3 AND $4
-
+            bp.id_spravochnik_organization,
+            so.name AS spravochnik_organization_name,
+            so.raschet_schet AS spravochnik_organization_raschet_schet,
+            so.inn AS spravochnik_organization_inn,
+            bp.id_shartnomalar_organization,
+            so2.doc_num AS shartnomalar_doc_num,
+            so2.doc_date AS shartnomalar_doc_date,
+            bp.opisanie,
+            bp.doc_date AS combined_date
+        FROM bank_prixod bp
+        JOIN users u ON bp.user_id = u.id
+        JOIN regions r ON u.region_id = r.id
+        JOIN spravochnik_organization so ON bp.id_spravochnik_organization = so.id
+        LEFT JOIN shartnomalar_organization so2 ON bp.id_shartnomalar_organization = so2.id
+        WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
+        AND bp.doc_date BETWEEN $3 AND $4
+        
         UNION ALL
-
+        
         SELECT 
-            bank_rasxod.id, 
-            bank_rasxod.doc_num,
-            bank_rasxod.doc_date,
+            br.id, 
+            br.doc_num,
+            br.doc_date,
             0 AS prixod_sum,
-            bank_rasxod.summa AS rasxod_sum,
-            bank_rasxod.id_spravochnik_organization,
-            spravochnik_organization.name AS spravochnik_organization_name,
-            spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-            spravochnik_organization.inn AS spravochnik_organization_inn,
-            bank_rasxod.id_shartnomalar_organization,
-            shartnomalar_organization.doc_num AS shartnomalar_doc_num,
-            shartnomalar_organization.doc_date AS shartnomalar_doc_date,
-            bank_rasxod.opisanie,
-            bank_rasxod.doc_date AS combined_date
-        FROM bank_rasxod
-        JOIN users ON bank_rasxod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        JOIN spravochnik_organization ON bank_rasxod.id_spravochnik_organization = spravochnik_organization.id
-        LEFT JOIN shartnomalar_organization ON bank_rasxod.id_shartnomalar_organization = shartnomalar_organization.id
-        WHERE regions.id = $1 AND bank_rasxod.main_schet_id = $2 AND bank_rasxod.isdeleted = false
-        AND bank_rasxod.doc_date BETWEEN $3 AND $4
+            br.summa AS rasxod_sum,
+            br.id_spravochnik_organization,
+            so.name AS spravochnik_organization_name,
+            so.raschet_schet AS spravochnik_organization_raschet_schet,
+            so.inn AS spravochnik_organization_inn,
+            br.id_shartnomalar_organization,
+            so2.doc_num AS shartnomalar_doc_num,
+            so2.doc_date AS shartnomalar_doc_date,
+            br.opisanie,
+            br.doc_date AS combined_date
+        FROM bank_rasxod br
+        JOIN users u ON br.user_id = u.id
+        JOIN regions r ON u.region_id = r.id
+        JOIN spravochnik_organization so ON br.id_spravochnik_organization = so.id
+        LEFT JOIN shartnomalar_organization so2 ON br.id_shartnomalar_organization = so2.id
+        WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
+        AND br.doc_date BETWEEN $3 AND $4
         ORDER BY combined_date DESC
         OFFSET $5 LIMIT $6;
-    `, params )
+    `, [region_id, main_schet_id, from, to, offset, limit]);
 
+    const total = await pool.query(`
+        SELECT 
+        COALESCE((SELECT COUNT(br.id) 
+                FROM bank_rasxod br
+                JOIN users u ON br.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND br.main_schet_id = $2 
+                AND br.isdeleted = false
+                AND br.doc_date BETWEEN $3 AND $4), 0) +
+        COALESCE((SELECT COUNT(bp.id) 
+                FROM bank_prixod bp
+                JOIN users u ON bp.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND bp.main_schet_id = $2 
+                AND bp.isdeleted = false
+                AND bp.doc_date BETWEEN $3 AND $4), 0) AS total_count
+    `, [region_id, main_schet_id, from, to])    
 
-    const totalQuery = `
-    SELECT COUNT(*) AS total_count, 
-           COALESCE(SUM(bp.summa), 0) AS all_prixod_sum,
-           COALESCE(SUM(br.summa), 0) AS all_rasxod_sum
-    FROM (
-        SELECT bp.summa
+    const prixod_sum = await pool.query(`
+        SELECT SUM(bp.summa) AS all_prixod_sum
         FROM bank_prixod bp
         JOIN users u ON bp.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         WHERE r.id = $1 AND bp.main_schet_id = $2 
         AND bp.isdeleted = false
         AND bp.doc_date BETWEEN $3 AND $4
+    `, [region_id, main_schet_id, from, to])
 
-        UNION ALL 
-        
-        SELECT br.summa
+    const rasxod_sum = await pool.query(`
+        SELECT SUM(br.summa) AS all_rasxod_sum
         FROM bank_rasxod br
         JOIN users u ON br.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         WHERE r.id = $1 AND br.main_schet_id = $2 
         AND br.isdeleted = false
         AND br.doc_date BETWEEN $3 AND $4
-    ) AS combined;
-`;
-    const totalResult = await pool.query(totalQuery, [region_id, main_schet_id, from, to]);
-
-    const totalSumQuery = `
+    `, [region_id, main_schet_id, from, to])
+    
+    const SumQuery = `
         SELECT 
-        COALESCE((SELECT SUM(bank_prixod.summa) 
-                FROM bank_prixod
-                JOIN users ON bank_prixod.user_id = users.id
-                JOIN regions ON users.region_id = regions.id
-                WHERE regions.id = $1 AND bank_prixod.main_schet_id = $2 
-                AND bank_prixod.isdeleted = false
-                AND bank_prixod.doc_date <= $3), 0) - 
-        COALESCE((SELECT SUM(bank_rasxod.summa) 
-                FROM bank_rasxod
-                JOIN users ON bank_rasxod.user_id = users.id
-                JOIN regions ON users.region_id = regions.id
-                WHERE regions.id = $1 AND bank_rasxod.main_schet_id = $2 
-                AND bank_rasxod.isdeleted = false
-                AND bank_rasxod.doc_date <= $3), 0) AS total_sum
+        COALESCE((SELECT SUM(bp.summa) 
+                FROM bank_prixod bp
+                JOIN users u ON bp.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND bp.main_schet_id = $2 
+                AND bp.isdeleted = false
+                AND bp.doc_date < $3), 0) -
+        COALESCE((SELECT SUM(br.summa) 
+                FROM bank_rasxod br
+                JOIN users u ON br.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND br.main_schet_id = $2 
+                AND br.isdeleted = false
+                AND br.doc_date < $3 ), 0) AS total_sum
     `;
-    const fromSumParams = [region_id, main_schet_id, from];
-    const summaFrom = await pool.query(totalSumQuery, fromSumParams);
+    const summaFrom = await pool.query(SumQuery, [region_id, main_schet_id, from]);
+    const summaTo = await pool.query(SumQuery, [region_id, main_schet_id, to]);
 
-    const toSumParams = [region_id, main_schet_id, to];
-    const summaTo = await pool.query(totalSumQuery, toSumParams);
-
-    const result_data = result.rows.map(row => ({
+    const result_data = data.rows.map(row => ({
         id: row.id,
         doc_num: row.doc_num,
         doc_date: row.doc_date,
@@ -124,17 +129,15 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
     }));
 
     return {
-        rows: result_data,
-        total: {
-            total_count: Number(totalResult.rows[0].total_count),
-            all_prixod_sum: Number(totalResult.rows[0].all_prixod_sum),
-            all_rasxod_sum: Number(totalResult.rows[0].all_rasxod_sum),
-            summaFrom: summaFrom.rows[0].total_sum,
-            summaTo: summaTo.rows[0].total_sum
-        }
+        result_data,
+        total_count: total.rows[0].total_count,
+        all_prixod_sum: prixod_sum.rows[0].all_prixod_sum,
+        all_rasxod_sum: rasxod_sum.rows[0].all_rasxod_sum,
+        total_sum_from: summaFrom.rows[0].total_sum,
+        total_sum_to: summaTo.rows[0].total_sum,
     };
 });
 
 module.exports = {
-    getAllMonitoring,
-};
+    getAllMonitoring
+}

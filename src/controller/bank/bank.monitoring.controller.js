@@ -30,11 +30,11 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
     }
 
     const result = await getAllMonitoring(region_id, main_schet_id, offset, limit, from, to)
-    const total = Number(result.total.total_count);
-    const prixod_sum = Number(result.total.all_prixod_sum)
-    const rasxod_sum = Number(result.total.all_rasxod_sum)
-    const summaFrom = Number(result.total.summaFrom.total_sum)
-    const summaTo = Number(result.total.summaTo.total_sum)
+    const total = Number(result.total_count);
+    const prixod_sum = Number(result.all_prixod_sum)
+    const rasxod_sum = Number(result.all_rasxod_sum)
+    const summaFrom = Number(result.total_sum_from)
+    const summaTo = Number(result.total_sum_to)
     const pageCount = Math.ceil(total / limit);
     return res.status(200).json({
         success: true,
@@ -49,7 +49,7 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
             summaFrom,
             summaTo
         },
-        data: result.rows,
+        data: result.result_data,
     })
 })
 
