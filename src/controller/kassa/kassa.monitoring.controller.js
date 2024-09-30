@@ -1,10 +1,10 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { getAllMonitoring } = require('../../service/bank/bank.monitoring.db')
+const { getAllMonitoring } = require('../../service/kassa/kassa.monitoring.db')
 const { queryValidation } = require('../../helpers/validation/bank/bank.prixod.validation')
 const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.db')
 
-const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
+const getAllKassaMonitoring = asyncHandler(async (req, res, next) => {
     const { error, value } = queryValidation.validate(req.query)
     if (error) {
         return next(new ErrorResponse(error.details[0].message, 406))
@@ -54,5 +54,5 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
 })
 
 module.exports = {
-    getAllBankMonitoring
+    getAllKassaMonitoring
 }

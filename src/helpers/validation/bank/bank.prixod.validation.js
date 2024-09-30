@@ -19,7 +19,7 @@ const bankPrixodChildValidation = Joi.object({
   id_spravochnik_podotchet_litso: Joi.number().allow(null),
 }).options({ stripUnknown: true });
 
-const queryValidationBank = Joi.object({
+const queryValidation = Joi.object({
   main_schet_id: Joi.number().required(),
   limit: Joi.number(),
   page: Joi.number(),
@@ -30,5 +30,5 @@ const queryValidationBank = Joi.object({
 module.exports = {
   bankPrixodValidator,
   bankPrixodChildValidation,
-  queryValidationBank,
+  queryValidation,
 };

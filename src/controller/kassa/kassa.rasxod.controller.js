@@ -12,19 +12,19 @@ const { getByIdPodrazlanie } = require('../../service/spravochnik/podrazdelenie.
 const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
 const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
 const {
-  kassaPrixodCreateDB,
-  kassaPrixodChild,
-  getAllKassaPrixodDb,
-  getAllKassaPrixodChild,
+  kassaRasxodCreateDB,
+  kassaRasxodChild,
+  getAllKassaRasxodDb,
+  getAllKassaRasxodChild,
   getElementById,
-  updateKassaPrixodDB,
-  deleteKassaPrixodChild,
-  deleteKassaPrixodDB
-} = require("../../service/kassa/kassa.prixod.db");
+  updateKassaRasxodDB,
+  deleteKassaRasxodChild,
+  deleteKassaRasxodDB
+} = require("../../service/kassa/kassa.rasxod.db");
 const { returnAllChildSumma, sum } = require('../../utils/returnSumma')
 
-// kassa prixod rasxod
-const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
+// kassa rasxod rasxod
+const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const user_id = req.user.id;
   const region_id = req.user.region_id
@@ -77,7 +77,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
   }
   const summa = returnAllChildSumma(value.childs)
 
-  const kassa_prixod = await kassaPrixodCreateDB({
+  const kassa_rasxod = await kassaRasxodCreateDB({
     ...value,
     user_id,
     main_schet_id,
@@ -85,11 +85,11 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
   })
 
   for (let child of value.childs) {
-    await kassaPrixodChild({
+    await kassaRasxodChild({
       ...child,
       user_id,
       main_schet_id,
-      kassa_prixod_id: kassa_prixod.id,
+      kassa_rasxod_id: kassa_rasxod.id,
       spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
     })
   }
@@ -100,8 +100,8 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
   });
 });
 
-// get all kassa prixod 
-const getAllKassaPrixod = asyncHandler(async (req, res, next) => {
+// get all kassa rasxod 
+const getAllKassaRasxod = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query)
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406))
@@ -127,16 +127,16 @@ const getAllKassaPrixod = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const data = await getAllKassaPrixodDb(region_id, main_schet_id, from, to, offset, limit)
+  const data = await getAllKassaRasxodDb(region_id, main_schet_id, from, to, offset, limit)
 
   const resultArray = [];
 
   for (let result of data.rows) {
-    const prixod_child = await getAllKassaPrixodChild(region_id, main_schet_id, result.id)
+    const rasxod_child = await getAllKassaRasxodChild(region_id, main_schet_id, result.id)
     let object = { ...result };
     object.summa = Number(object.summa)
     object.doc_date = returnLocalDate(object.doc_date)
-    object.childs = prixod_child.map(item => {
+    object.childs = rasxod_child.map(item => {
       item.summa = Number(item.summa)
       return item
     })
@@ -161,8 +161,8 @@ const getAllKassaPrixod = asyncHandler(async (req, res, next) => {
   });
 });
 
-// kassa prixod update
-const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
+// kassa rasxod update
+const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id
   const id = req.params.id
@@ -170,7 +170,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   
   const result = await getElementById(region_id, main_schet_id, id)
   if (!result) {
-    return next(new ErrorResponse("Server xatolik. Prixod document topilmadi", 404));
+    return next(new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404));
   }
 
   const { error, value } = kassaValidation.validate(req.body);
@@ -221,16 +221,16 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   }
   const summa = returnAllChildSumma(value.childs)
 
-  await updateKassaPrixodDB({...value, id, summa})
+  await updateKassaRasxodDB({...value, id, summa})
 
-  await deleteKassaPrixodChild(id)
+  await deleteKassaRasxodChild(id)
 
   for (let child of value.childs) {
-    await kassaPrixodChild({
+    await kassaRasxodChild({
       ...child,
       user_id,
       main_schet_id,
-      kassa_prixod_id: id,
+      kassa_rasxod_id: id,
       spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
     })
   }
@@ -241,8 +241,8 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   });
 });
 
-// delete kassa prixod rasxod
-const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
+// delete kassa rasxod rasxod
+const deleteKassaRasxodRasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id
   const id = req.params.id
@@ -254,11 +254,11 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
 
   const test = await getElementById(region_id, main_schet_id, id)
   if (!test) {
-    return next(new ErrorResponse("Server xatolik. Prixod document topilmadi", 404));
+    return next(new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404));
   }
 
-  await deleteKassaPrixodChild(id)
-  await deleteKassaPrixodDB(id)
+  await deleteKassaRasxodChild(id)
+  await deleteKassaRasxodDB(id)
 
   return res.status(200).json({
     success: true,
@@ -266,23 +266,23 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   });
 });
 
-// get element by id kassa prixod
-const getElementByIdKassaPrixod = asyncHandler(async (req, res, next) => {
+// get element by id kassa rasxod
+const getElementByIdKassaRasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id
   const id = req.params.id
 
   const result = await getElementById(region_id, main_schet_id, id)
   if (!result) {
-    return next(new ErrorResponse("Server xatolik. Prixod document topilmadi", 404));
+    return next(new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404));
   }
 
-  const prixod_childs = await getAllKassaPrixodChild(region_id, main_schet_id, result.id)
+  const rasxod_childs = await getAllKassaRasxodChild(region_id, main_schet_id, result.id)
 
   let object = { ...result };
   object.summa = Number(object.summa)
   object.doc_date = returnLocalDate(object.doc_date)
-  object.childs = prixod_childs.map(item => {
+  object.childs = rasxod_childs.map(item => {
     item.summa = Number(item.summa)
     return item;
   })
@@ -295,9 +295,9 @@ const getElementByIdKassaPrixod = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
-  kassaPrixodCreate,
-  getAllKassaPrixod,
-  updateKassaPrixodBank,
-  deleteKassaPrixodRasxod,
-  getElementByIdKassaPrixod,
+  kassaRasxodCreate,
+  getAllKassaRasxod,
+  updateKassaRasxodBank,
+  deleteKassaRasxodRasxod,
+  getElementByIdKassaRasxod,
 };

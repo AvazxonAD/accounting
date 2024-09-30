@@ -38,7 +38,7 @@ const {
 } = require("../../service/bank/bank.rasxod.db");
 
 const {
-  queryValidationBank,
+  queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 
 // bank rasxod
@@ -287,7 +287,7 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
   let totalQuery = null;
   let summa = null;
 
-  const { error, value } = queryValidationBank.validate(req.query);
+  const { error, value } = queryValidation.validate(req.query);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406));
   }

@@ -4,7 +4,7 @@ const pool = require("../../config/db");
 const {
   bankPrixodValidator,
   bankPrixodChildValidation,
-  queryValidationBank,
+  queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 
 const { returnAllChildSumma } = require("../../utils/returnSumma");
@@ -371,7 +371,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   let summa = null;
 
   const region_id = req.user.region_id;
-  const { error, value } = queryValidationBank.validate(req.query);
+  const { error, value } = queryValidation.validate(req.query);
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
