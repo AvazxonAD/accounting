@@ -10,6 +10,8 @@ CREATE TABLE shartnomalar_organization (
     user_id INTEGER REFERENCES regions(id),
     smeta_2 VARCHAR(255),
     spravochnik_organization_id INTEGER REFERENCES spravochnik_organization(id),
+    pudratchi_bool BOOLEAN,
+    main_schet_id INTEGER REFERENCES main_schet(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

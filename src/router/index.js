@@ -23,6 +23,7 @@ const avans_otchetlar_jur4Router = require("./avans_otchetlar/jur_4.router");
 const bankMonitoring = require('./bank/bank.monitoring')
 const kassaRasxodRouter = require('./kassa/kassa.rasxod.router')
 const kassaMonitoringRouter = require('./kassa/kassa.monitoring.router')
+const shartnomaGrafikRouter = require('./shartnoma/shartnoma.grafik.router')
 
 const router = express.Router();
 
@@ -42,6 +43,7 @@ router.use("/budjet_name", budjet_nameRouter);
 router.use("/spravochnik_sostav", spravochnik_sostavRouter);
 router.use("/smeta", smetaRouter);
 router.use("/shartnoma", shartnomaRouter);
+router.use("/shartnoma/grafik", shartnomaGrafikRouter);
 router.use("/bank/prixod", bankPrixodRouter);
 router.use("/bank/rasxod", bankRasxodRouter);
 router.use("/kassa/prixod", kassaPrixodRouter);

@@ -15,6 +15,7 @@ const {
   getByIdUser,
   update_user,
   deleteUserDb,
+  getAllUsersDB,
 } = require("../../service/auth/user.db");
 
 // create user
@@ -29,15 +30,6 @@ const createUser = asyncHandler(async (req, res, next) => {
   const role = await getByIdRole(role_id);
   if (!role) {
     return next(new ErrorResponse("Server xatolik. Role topilmadi", 404));
-  }
-
-  if (region_id) {
-    const region = await getByIdRegion(region_id);
-    if (!region) {
-      return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
-    }
-  } else {
-    region_id = req.user.region_id;
   }
 
   login = login.trim();
@@ -60,18 +52,29 @@ const createUser = asyncHandler(async (req, res, next) => {
 
 // get all users
 const getAllUsers = asyncHandler(async (req, res, next) => {
-  let user_id = null;
   const region_id = req.user.region_id;
-  const id = req.params.id;
+  let users;
 
-  if (!region_id) {
-    checkValueNumber(Number(id));
-    user_id = id;
+  if(region_id){
+    users = await getAllRegionUsers(region_id);
   }
-  if (region_id) {
-    user_id = region_id;
+  if(!region_id){
+    users = await getAllUsersDB()
   }
-  users = await getAllRegionUsers(user_id);
+
+  return res.status(200).json({
+    success: true,
+    data: users,
+  });
+});
+
+const getRegionAllUsers = asyncHandler(async (req, res, next) => {
+  const region_id = Number(req.params.id);
+  if(req.user.region_id){
+    return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
+  }
+  
+  users = await getAllRegionUsers(region_id);
 
   return res.status(200).json({
     success: true,
@@ -161,4 +164,5 @@ module.exports = {
   updateUser,
   deleteUser,
   getElementById,
+  getRegionAllUsers
 };
