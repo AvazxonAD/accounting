@@ -135,7 +135,6 @@ const getAllKassaRasxod = asyncHandler(async (req, res, next) => {
     const rasxod_child = await getAllKassaRasxodChild(region_id, main_schet_id, result.id)
     let object = { ...result };
     object.summa = Number(object.summa)
-    object.doc_date = returnLocalDate(object.doc_date)
     object.childs = rasxod_child.map(item => {
       item.summa = Number(item.summa)
       return item
@@ -281,7 +280,6 @@ const getElementByIdKassaRasxod = asyncHandler(async (req, res, next) => {
 
   let object = { ...result };
   object.summa = Number(object.summa)
-  object.doc_date = returnLocalDate(object.doc_date)
   object.childs = rasxod_childs.map(item => {
     item.summa = Number(item.summa)
     return item;

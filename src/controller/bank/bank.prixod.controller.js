@@ -351,7 +351,6 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
 
   let object = { ...prixod };
   object.summa = Number(object.summa);
-  object.doc_date = returnLocalDate(object.doc_date)
   object.childs = prixod_child.map((item) => {
     let result = { ...item };
     result.summa = Number(result.summa);
@@ -411,7 +410,6 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     const prixod_child = await getAllPrixodChild(region_id, prixod.id);
     let object = { ...prixod };
     object.summa = Number(object.summa);
-    object.doc_date = returnLocalDate(object.doc_date)
     object.childs = prixod_child.map((item) => {
       let result = { ...item };
       result.summa = Number(result.summa);

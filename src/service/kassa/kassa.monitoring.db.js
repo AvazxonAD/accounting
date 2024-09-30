@@ -102,7 +102,7 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
     const data = result.rows.map(row => ({
         id: row.id,
         doc_num: row.doc_num,
-        doc_date: returnLocalDate(row.doc_date),
+        doc_date: row.doc_date,
         prixod_sum: Number(row.prixod_sum),
         rasxod_sum: Number(row.rasxod_sum),
         id_spravochnik_organization: row.id_spravochnik_organization,

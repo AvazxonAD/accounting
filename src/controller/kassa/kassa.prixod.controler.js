@@ -135,7 +135,6 @@ const getAllKassaPrixod = asyncHandler(async (req, res, next) => {
     const prixod_child = await getAllKassaPrixodChild(region_id, main_schet_id, result.id)
     let object = { ...result };
     object.summa = Number(object.summa)
-    object.doc_date = returnLocalDate(object.doc_date)
     object.childs = prixod_child.map(item => {
       item.summa = Number(item.summa)
       return item
@@ -281,7 +280,6 @@ const getElementByIdKassaPrixod = asyncHandler(async (req, res, next) => {
 
   let object = { ...result };
   object.summa = Number(object.summa)
-  object.doc_date = returnLocalDate(object.doc_date)
   object.childs = prixod_childs.map(item => {
     item.summa = Number(item.summa)
     return item;

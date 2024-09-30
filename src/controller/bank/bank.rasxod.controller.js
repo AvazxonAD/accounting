@@ -323,7 +323,6 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
     let object = { ...rasxod };
     object.summa = Number(object.summa);
-    object.doc_date = returnLocalDate(object.doc_date)
     object.childs = rasxod_child.map((item) => {
       let result = { ...item };
       result.summa = Number(result.summa);
@@ -363,7 +362,6 @@ const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
   const rasxod_child = await getElemenByIdRasxodChild(region_id, rasxod.id);
   let object = { ...rasxod };
   object.summa = Number(object.summa);
-  object.doc_date = returnLocalDate(object.doc_date)
   object.childs = rasxod_child.map((item) => {
     let result = { ...item };
     result.summa = Number(result.summa);
