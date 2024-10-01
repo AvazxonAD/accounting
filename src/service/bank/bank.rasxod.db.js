@@ -115,7 +115,7 @@ const getAllBankRasxodByFromAndTo = handleServiceError(
             SELECT
                 bank_rasxod.id,
                 bank_rasxod.doc_num, 
-                bank_rasxod.doc_date, 
+                TO_CHAR(bank_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 bank_rasxod.summa, 
                 bank_rasxod.opisanie, 
                 bank_rasxod.id_spravochnik_organization,
@@ -208,7 +208,7 @@ const getElemenByIdRasxod = handleServiceError(
             SELECT 
                 bank_rasxod.id,
                 bank_rasxod.doc_num, 
-                bank_rasxod.doc_date, 
+                TO_CHAR(bank_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 bank_rasxod.summa, 
                 bank_rasxod.opisanie, 
                 bank_rasxod.id_spravochnik_organization, 

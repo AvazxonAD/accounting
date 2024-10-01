@@ -7,7 +7,7 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         SELECT 
             kp.id, 
             kp.doc_num,
-            kp.doc_date,
+            TO_CHAR(kp.doc_date, 'YYYY-MM-DD') AS doc_date,
             kp.summa AS prixod_sum,
             0 AS rasxod_sum,
             kp.spravochnik_operatsii_own_id,
@@ -27,7 +27,7 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         SELECT 
             kr.id, 
             kr.doc_num,
-            kr.doc_date,
+            TO_CHAR(kr.doc_date, 'YYYY-MM-DD') AS doc_date,
             0 AS prixod_sum,
             kr.summa AS rasxod_sum,
             kr.spravochnik_operatsii_own_id,

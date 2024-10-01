@@ -104,7 +104,7 @@ const getAllKassaRasxodDb = handleServiceError(async (region_id, main_schet_id, 
             SELECT 
                 kassa_rasxod.id, 
                 kassa_rasxod.doc_num,
-                kassa_rasxod.doc_date, 
+                TO_CHAR(kassa_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 kassa_rasxod.opisaine, 
                 kassa_rasxod.summa, 
                 kassa_rasxod.id_podotchet_litso,
@@ -159,7 +159,7 @@ const getElementById = handleServiceError(async (region_id, main_schet_id, id) =
             SELECT 
                 kassa_rasxod.id, 
                 kassa_rasxod.doc_num,
-                kassa_rasxod.doc_date, 
+                TO_CHAR(kassa_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 kassa_rasxod.opisaine, 
                 kassa_rasxod.summa, 
                 kassa_rasxod.id_podotchet_litso,

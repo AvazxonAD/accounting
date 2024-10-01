@@ -127,7 +127,7 @@ const getAllPrixod = handleServiceError(
     const result = await pool.query(` SELECT 
             bank_prixod.id,
             bank_prixod.doc_num, 
-            bank_prixod.doc_date, 
+            TO_CHAR(bank_prixod.doc_date, 'YYYY-MM-DD') AS doc_date, 
             bank_prixod.summa, 
             bank_prixod.provodki_boolean, 
             bank_prixod.dop_provodki_boolean, 
@@ -221,7 +221,7 @@ const getElementByIdPrixod = handleServiceError(
             SELECT 
                 bank_prixod.id,
                 bank_prixod.doc_num, 
-                bank_prixod.doc_date, 
+                TO_CHAR(bank_prixod.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 bank_prixod.summa, 
                 bank_prixod.provodki_boolean, 
                 bank_prixod.dop_provodki_boolean, 
