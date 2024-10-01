@@ -20,7 +20,7 @@ const createRegion = asyncHandler(async (req, res, next) => {
   }
   const { error, value } = regionValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const test = await getByNameRegion(value.name);

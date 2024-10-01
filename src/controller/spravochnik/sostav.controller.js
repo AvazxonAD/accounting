@@ -22,7 +22,7 @@ const create = asyncHandler(async (req, res, next) => {
 
   const { error, value } = sostavValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const { name, rayon } = value;
 
@@ -84,7 +84,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = sostavValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const { name, rayon } = value;
   if (sostav.name !== name || sostav.rayon !== rayon) {

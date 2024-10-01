@@ -21,12 +21,12 @@ const { getByIdSmeta } = require("../../service/smeta/smeta.db");
 const create = asyncHandler(async (req, res, next) => {
   const { error, value } = operatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const smeta_test = await getByIdSmeta(value.smeta_id);
   if (!smeta_test) {
-    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 406));
+    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 400));
   }
   const test = await getByNameAndSchetOperatsii(
     value.name,
@@ -92,12 +92,12 @@ const update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = operatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const smeta_test = await getByIdSmeta(value.smeta_id);
   if (!smeta_test) {
-    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 406));
+    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 400));
   }
   if (
     operatsii.name !== value.name ||

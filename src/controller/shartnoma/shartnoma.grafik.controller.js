@@ -23,7 +23,7 @@ const updateShartnomaGrafik = asyncHandler(async (req, res, next) => {
 
   const { error, value } = shartnomaGarfikValidation.validate(req.body)
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 400))
   }
 
   const { oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, oy_7, oy_8, oy_9, oy_10, oy_11, oy_12 } = value

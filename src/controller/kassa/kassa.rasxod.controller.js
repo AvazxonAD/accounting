@@ -41,7 +41,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
 
   const { error, value } = kassaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -141,7 +141,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
 const getAllKassaRasxod = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet_id = value.main_schet_id;
@@ -224,7 +224,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
 
   const { error, value } = kassaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);

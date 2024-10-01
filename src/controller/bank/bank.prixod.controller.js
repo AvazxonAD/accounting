@@ -46,7 +46,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
   const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -90,7 +90,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const { error, value } = bankPrixodChildValidation.validate(child);
     if (error) {
-      return next(new ErrorResponse(error.details[0].message, 406));
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const spravochnik_operatsii = await getByIdOperatsii(
@@ -188,7 +188,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
@@ -231,7 +231,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const { error, value } = bankPrixodChildValidation.validate(child);
     if (error) {
-      return next(new ErrorResponse(error.details[0].message, 406));
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const spravochnik_operatsii = await getByIdOperatsii(
@@ -383,7 +383,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const { error, value } = queryValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
 
   const limit = parseInt(value.limit) || 10;

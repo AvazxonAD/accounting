@@ -23,7 +23,7 @@ const create = asyncHandler(async (req, res, next) => {
   const user_id = req.user.id;
   const { error, value } = typeOperatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const { name, rayon } = value;
   const test = await getByAlltype_operatsii(region_id, name, rayon);
@@ -84,7 +84,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = typeOperatsiiValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const { name, rayon } = value;
 

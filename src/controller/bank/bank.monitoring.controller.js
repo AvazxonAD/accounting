@@ -9,7 +9,7 @@ const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
 const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const region_id = req.user.region_id;
 

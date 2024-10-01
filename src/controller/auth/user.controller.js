@@ -22,7 +22,7 @@ const {
 const createUser = asyncHandler(async (req, res, next) => {
   const { error, value } = userValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const user_region_id = req.user.region_id
 
@@ -102,7 +102,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
   const { error, value } = userValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   let { login, password, fio, region_id, role_id } = value;

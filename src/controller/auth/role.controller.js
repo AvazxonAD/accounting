@@ -20,7 +20,7 @@ const createRole = asyncHandler(async (req, res, next) => {
   }
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const test = await getByNameRole(value.name);
   if (test) {
@@ -60,7 +60,7 @@ const updateRole = asyncHandler(async (req, res, next) => {
 
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   if (role.name !== value.name.trim()) {
