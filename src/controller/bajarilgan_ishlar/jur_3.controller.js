@@ -59,12 +59,6 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
       }
     }
-    if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdPodrazlanie(region_id, child.id_spravochnik_sostav)
-      if (!spravochnik_sostav) {
-        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
-      }
-    }
     if(child.id_spravochnik_sostav){
       const spravochnik_sostav = await getByIdSostav(region_id, child.id_spravochnik_sostav)
       if (!spravochnik_sostav) {
@@ -87,7 +81,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
       main_schet_id, 
       user_id, 
       spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
-      id: result.id
+      bajarilgan_ishlar_jur3_id: result.id
     })
   }
 
@@ -100,11 +94,9 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
 // jur_3 get all
 const jur_3_get_all = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [main_schet_id, req.user.region_id],
-  );
-  main_schet = main_schet.rows[0];
+  const region_id = req.user.region_id
+
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id)
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
