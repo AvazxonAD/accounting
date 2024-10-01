@@ -24,6 +24,7 @@ const createUser = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406));
   }
+  const user_region_id = req.user.region_id
 
   let { login, password, fio, region_id, role_id } = value;
 
@@ -40,6 +41,11 @@ const createUser = asyncHandler(async (req, res, next) => {
   const test = await getByLoginAuth(value.login);
   if (test) {
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
+  }
+  if(user_region_id){
+    if(user_region_id !== region_id){
+      return next(new ErrorResponse('region id notogri', 403))
+    }
   }
 
   await create_user(login, hashedPassword, fio, role_id, region_id);
@@ -69,12 +75,12 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 });
 
 const getRegionAllUsers = asyncHandler(async (req, res, next) => {
-  const region_id = Number(req.params.id);
-  if (req.user.region_id) {
+  const region_id = req.user.region_id
+  if (region_id) {
     return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
   }
 
-  users = await getAllRegionUsers(region_id);
+  const users = await getAllRegionUsers(region_id);
 
   return res.status(200).json({
     success: true,
@@ -85,7 +91,11 @@ const getRegionAllUsers = asyncHandler(async (req, res, next) => {
 // update user
 const updateUser = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const oldUser = await getByIdUser(id);
+  let user_region_id = req.user.region_id
+  if(!user_region_id){
+    user_region_id = req.query.region_id
+  }
+  const oldUser = await getByIdUser(id, user_region_id);
   if (!oldUser) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
@@ -102,12 +112,11 @@ const updateUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Role topilmadi", 404));
   }
 
-  if (region_id) {
-    const region = await getByIdRegion(region_id);
-    if (!region) {
-      return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
-    }
+  const region = await getByIdRegion(region_id);
+  if (!region) {
+    return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
+
 
   login = login.trim();
   password = password.trim();
@@ -146,10 +155,16 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 });
 
 const getElementById = asyncHandler(async (req, res, next) => {
-  const user = await getByIdUser(req.params.id);
+  let region_id = req.user.region_id
+  if(!region_id){
+    region_id = req.query.region_id
+  }
+
+  const user = await getByIdUser(req.params.id, region_id);
   if (!user) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
+
   return res.status(200).json({
     success: true,
     data: user,
