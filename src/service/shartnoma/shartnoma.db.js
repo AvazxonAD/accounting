@@ -157,7 +157,7 @@ const updateShartnomaDB = handleServiceError(async (object) => {
       object.smeta_2,
       object.spravochnik_organization_id,
       object.pudratchi_bool,
-      object.id,
+      object.id
     ],
   );
   await pool.query(`UPDATE shartnoma_grafik SET year = $1 WHERE id_shartnomalar_organization = $2`, [object.grafik_year, object.id])
