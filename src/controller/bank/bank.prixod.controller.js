@@ -74,6 +74,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
+    'bank_prixod'
   );
   if (!spravochnik_operatsii_own_id_test) {
     return next(
@@ -92,6 +93,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
     const spravochnik_operatsii = await getByIdOperatsii(
       value.spravochnik_operatsii_id,
+      'bank_prixod'
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -211,6 +213,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
+    'bank_prixod'
   );
   if (!spravochnik_operatsii_own_id_test) {
     return next(
@@ -229,6 +232,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
     const spravochnik_operatsii = await getByIdOperatsii(
       value.spravochnik_operatsii_id,
+      'bank_prixod'
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));

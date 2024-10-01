@@ -48,7 +48,16 @@ const totalOperatsii = handleServiceError(async (query) => {
   return result.rows[0];
 });
 
-const getByIdOperatsii = handleServiceError(async (id) => {
+const getByIdOperatsii = handleServiceError(async (id, type_schet) => {
+  let result = await pool.query(
+    `SELECT id, name, schet, sub_schet, type_schet, smeta_id FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false AND type_schet = $2
+    `,
+    [id, type_schet],
+  );
+  return result.rows[0];
+});
+
+const getByIDOperatsii = handleServiceError(async (id) => {
   let result = await pool.query(
     `SELECT id, name, schet, sub_schet, type_schet, smeta_id FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
     `,
@@ -56,6 +65,7 @@ const getByIdOperatsii = handleServiceError(async (id) => {
   );
   return result.rows[0];
 });
+
 
 const updateOperatsii = handleServiceError(async (object) => {
   await pool.query(
@@ -89,4 +99,5 @@ module.exports = {
   getByIdOperatsii,
   updateOperatsii,
   deleteOperatsii,
+  getByIDOperatsii
 };

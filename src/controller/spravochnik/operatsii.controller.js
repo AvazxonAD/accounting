@@ -10,7 +10,7 @@ const {
   createOperatsii,
   getAllOperatsii,
   totalOperatsii,
-  getByIdOperatsii,
+  getByIDOperatsii,
   updateOperatsii,
   deleteOperatsii,
 } = require("../../service/spravochnik/operatsii.db");
@@ -85,7 +85,7 @@ const getAll = asyncHandler(async (req, res, next) => {
 // update
 const update = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const operatsii = await getByIdOperatsii(id);
+  const operatsii = await getByIDOperatsii(id);
   if (!operatsii) {
     return next(new ErrorResponse("Server xatolik. Operatsi topilmadi", 404));
   }
@@ -124,7 +124,7 @@ const update = asyncHandler(async (req, res, next) => {
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  const value = await getByIdOperatsii(id);
+  const value = await getByIDOperatsii(id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
@@ -139,7 +139,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdOperatsii(req.params.id);
+  const value = await getByIDOperatsii(req.params.id);
   if (!value) {
     return next(
       new ErrorResponse("Server error. spravochnik_operatsii topilmadi"),

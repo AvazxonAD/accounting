@@ -51,8 +51,9 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
+    'kassa_rasxod'
   );
-  if (spravochnik_operatsii_own) {
+  if (!spravochnik_operatsii_own) {
     return next(
       new ErrorResponse(
         "Server xatolik. spravochnik_operatsii_own topilmadi",
@@ -73,6 +74,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const spravochnik_operatsii = await getByIdOperatsii(
       child.spravochnik_operatsii_id,
+      'kassa_rasxod'
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -232,6 +234,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
+    'kassa_rasxod'
   );
   if (spravochnik_operatsii_own) {
     return next(
@@ -254,6 +257,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const spravochnik_operatsii = await getByIdOperatsii(
       child.spravochnik_operatsii_id,
+      'kassa_rasxod'
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
