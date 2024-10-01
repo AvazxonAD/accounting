@@ -1,12 +1,11 @@
 const Joi = require("joi");
 
-const jur3Validation = Joi.object({
+const jur4Validation = Joi.object({
   doc_num: Joi.string(),
   doc_date: Joi.date(),
   opisanie: Joi.string(),
   spravochnik_operatsii_own_id: Joi.number().required(),
-  id_spravochnik_organization: Joi.number().required(),
-  shartnomalar_organization_id: Joi.number(),
+  spravochnik_podotchet_litso_id: Joi.number(),
   childs: Joi.array().items(
     Joi.object({
       spravochnik_operatsii_id: Joi.number().required(),
@@ -19,5 +18,5 @@ const jur3Validation = Joi.object({
 }).options({ stripUnknown: true });
 
 module.exports = {
-  jur3Validation,
+    jur4Validation
 };

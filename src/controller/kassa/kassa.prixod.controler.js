@@ -51,7 +51,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'kassa_prixod'
+    "kassa_prixod",
   );
   if (spravochnik_operatsii_own) {
     return next(
@@ -74,7 +74,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const spravochnik_operatsii = await getByIdOperatsii(
       child.spravochnik_operatsii_id,
-      'kassa_prixod'
+      "kassa_prixod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -234,7 +234,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'kassa_prixod'
+    "kassa_prixod",
   );
   if (spravochnik_operatsii_own) {
     return next(
@@ -257,7 +257,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const spravochnik_operatsii = await getByIdOperatsii(
       child.spravochnik_operatsii_id,
-      'kassa_prixod'
+      "kassa_prixod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));

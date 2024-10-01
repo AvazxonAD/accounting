@@ -1,9 +1,9 @@
 const { handleServiceError } = require("../../middleware/service.handle");
-const pool = require('../../config/db')
+const pool = require("../../config/db");
 
 const createJur3DB = handleServiceError(async (object) => {
-    const result = await pool.query(
-        `
+  const result = await pool.query(
+    `
             INSERT INTO bajarilgan_ishlar_jur3(
                 doc_num, 
                 doc_date, 
@@ -19,25 +19,25 @@ const createJur3DB = handleServiceError(async (object) => {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *
             `,
-        [
-            object.doc_num,
-            object.doc_date,
-            object.opisanie,
-            object.summa,
-            object.id_spravochnik_organization,
-            object.shartnomalar_organization_id,
-            object.main_schet_id,
-            object.user_id,
-            object.spravochnik_operatsii_own_id,
-            new Date()
-        ],
-    );
-    return result.rows[0]
-})
+    [
+      object.doc_num,
+      object.doc_date,
+      object.opisanie,
+      object.summa,
+      object.id_spravochnik_organization,
+      object.shartnomalar_organization_id,
+      object.main_schet_id,
+      object.user_id,
+      object.spravochnik_operatsii_own_id,
+      new Date(),
+    ],
+  );
+  return result.rows[0];
+});
 
 const createJur3ChildDB = handleServiceError(async (object) => {
-    await pool.query(
-        `
+  await pool.query(
+    `
               INSERT INTO bajarilgan_ishlar_jur3_child(
                   spravochnik_operatsii_id,
                   summa,
@@ -50,24 +50,25 @@ const createJur3ChildDB = handleServiceError(async (object) => {
                   spravochnik_operatsii_own_id,
                   created_at
               ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-        [
-            object.spravochnik_operatsii_id,
-            object.summa,
-            object.id_spravochnik_podrazdelenie,
-            object.id_spravochnik_sostav,
-            object.id_spravochnik_type_operatsii,
-            object.main_schet_id,
-            object.bajarilgan_ishlar_jur3_id,
-            object.user_id,
-            object.spravochnik_operatsii_own_id,
-            new Date()
-        ]
-    );
+    [
+      object.spravochnik_operatsii_id,
+      object.summa,
+      object.id_spravochnik_podrazdelenie,
+      object.id_spravochnik_sostav,
+      object.id_spravochnik_type_operatsii,
+      object.main_schet_id,
+      object.bajarilgan_ishlar_jur3_id,
+      object.user_id,
+      object.spravochnik_operatsii_own_id,
+      new Date(),
+    ],
+  );
 });
 
-const getAllJur3DB = handleServiceError(async (region_id, main_schet_id, from, to, offset, limit) => {
+const getAllJur3DB = handleServiceError(
+  async (region_id, main_schet_id, from, to, offset, limit) => {
     const result = await pool.query(
-        ` 
+      ` 
             SELECT 
                 bajarilgan_ishlar_jur3.id, 
                 bajarilgan_ishlar_jur3.doc_num,
@@ -93,10 +94,11 @@ const getAllJur3DB = handleServiceError(async (region_id, main_schet_id, from, t
             OFFSET $5
             LIMIT $6
         `,
-        [main_schet_id, region_id, from, to, offset, limit],
+      [main_schet_id, region_id, from, to, offset, limit],
     );
 
-    const total = await pool.query(`
+    const total = await pool.query(
+      `
         SELECT 
             COUNT(bajarilgan_ishlar_jur3.id)::INTEGER AS total
             FROM bajarilgan_ishlar_jur3 
@@ -106,9 +108,12 @@ const getAllJur3DB = handleServiceError(async (region_id, main_schet_id, from, t
                 AND regions.id = $2 
                 AND bajarilgan_ishlar_jur3.isdeleted = false
                 AND bajarilgan_ishlar_jur3.doc_date BETWEEN $3 AND $4
-    `, [main_schet_id, region_id, from, to])
-    
-    const summa = await pool.query(`
+    `,
+      [main_schet_id, region_id, from, to],
+    );
+
+    const summa = await pool.query(
+      `
         SELECT 
             SUM(bajarilgan_ishlar_jur3.summa)::FLOAT AS summa
             FROM bajarilgan_ishlar_jur3 
@@ -118,13 +123,22 @@ const getAllJur3DB = handleServiceError(async (region_id, main_schet_id, from, t
                 AND regions.id = $2 
                 AND bajarilgan_ishlar_jur3.isdeleted = false
                 AND bajarilgan_ishlar_jur3.doc_date BETWEEN $3 AND $4
-    `, [main_schet_id, region_id, from, to])
+    `,
+      [main_schet_id, region_id, from, to],
+    );
 
-    return { rows: result.rows, total: total.rows[0].total, summa: summa.rows[0].summa}
-})
+    return {
+      rows: result.rows,
+      total: total.rows[0].total,
+      summa: summa.rows[0].summa,
+    };
+  },
+);
 
-const getAllJur3ChildDB = handleServiceError(async (region_id, main_schet_id, jur3_id) => {
-    const result = await pool.query(`
+const getAllJur3ChildDB = handleServiceError(
+  async (region_id, main_schet_id, jur3_id) => {
+    const result = await pool.query(
+      `
         SELECT  
             b_i_j_ch.id,
             b_i_j_ch.spravochnik_operatsii_id,
@@ -147,14 +161,18 @@ const getAllJur3ChildDB = handleServiceError(async (region_id, main_schet_id, ju
             AND b_i_j_ch.isdeleted = false 
             AND b_i_j_ch.main_schet_id = $2
             AND b_i_j_ch.bajarilgan_ishlar_jur3_id = $3
-    `, [region_id, main_schet_id, jur3_id])
+    `,
+      [region_id, main_schet_id, jur3_id],
+    );
 
-    return result.rows
-})
+    return result.rows;
+  },
+);
 
-const getElementByIdJur_3DB = handleServiceError(async (region_id, main_schet_id, id) => {
+const getElementByIdJur_3DB = handleServiceError(
+  async (region_id, main_schet_id, id) => {
     const result = await pool.query(
-        ` 
+      ` 
             SELECT 
                 bajarilgan_ishlar_jur3.id, 
                 bajarilgan_ishlar_jur3.doc_num,
@@ -178,14 +196,15 @@ const getElementByIdJur_3DB = handleServiceError(async (region_id, main_schet_id
                 AND bajarilgan_ishlar_jur3.isdeleted = false
                 AND bajarilgan_ishlar_jur3.id = $3
         `,
-        [main_schet_id, region_id, id],
+      [main_schet_id, region_id, id],
     );
-    return result.rows[0]
-})
+    return result.rows[0];
+  },
+);
 
 const updateJur3DB = handleServiceError(async (object) => {
-    await pool.query(
-        `
+  await pool.query(
+    `
             UPDATE bajarilgan_ishlar_jur3
                 SET 
                     doc_num = $1, 
@@ -198,42 +217,48 @@ const updateJur3DB = handleServiceError(async (object) => {
                     updated_at = $8
                 WHERE id = $9
         `,
-        [
-            object.doc_num,
-            object.doc_date,
-            object.opisanie,
-            object.summa,
-            object.id_spravochnik_organization,
-            object.shartnomalar_organization_id,
-            object.spravochnik_operatsii_own_id,
-            new Date(),
-            object.id
-        ],
-    );
-})
+    [
+      object.doc_num,
+      object.doc_date,
+      object.opisanie,
+      object.summa,
+      object.id_spravochnik_organization,
+      object.shartnomalar_organization_id,
+      object.spravochnik_operatsii_own_id,
+      new Date(),
+      object.id,
+    ],
+  );
+});
 
 const deleteJur3ChildDB = handleServiceError(async (id) => {
-    await pool.query(`
+  await pool.query(
+    `
         UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true 
         WHERE bajarilgan_ishlar_jur3_id = $1 AND isdeleted = false
-    `, [id])
-}) 
+    `,
+    [id],
+  );
+});
 
 const deleteJur3DB = handleServiceError(async (id) => {
-    await pool.query(`
+  await pool.query(
+    `
         UPDATE bajarilgan_ishlar_jur3 
         SET  isdeleted = true
         WHERE id = $1
-    `, [id])
-})
+    `,
+    [id],
+  );
+});
 
 module.exports = {
-    createJur3DB,
-    createJur3ChildDB,
-    getAllJur3DB,
-    getAllJur3ChildDB,
-    getElementByIdJur_3DB,
-    deleteJur3ChildDB,
-    updateJur3DB,
-    deleteJur3DB
-}
+  createJur3DB,
+  createJur3ChildDB,
+  getAllJur3DB,
+  getAllJur3ChildDB,
+  getElementByIdJur_3DB,
+  deleteJur3ChildDB,
+  updateJur3DB,
+  deleteJur3DB,
+};

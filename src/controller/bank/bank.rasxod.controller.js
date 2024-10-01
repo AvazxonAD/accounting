@@ -6,7 +6,9 @@ const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
 const {
   getByIdOrganization,
 } = require("../../service/spravochnik/organization.db");
-const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
+const {
+  getByIdAndOrganizationIdShartnoma,
+} = require("../../service/shartnoma/shartnoma.db");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
 const {
   getByIdPodrazlanie,
@@ -69,7 +71,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
       region_id,
       main_schet_id,
       value.id_shartnomalar_organization,
-      value.id_spravochnik_organization
+      value.id_spravochnik_organization,
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
@@ -78,7 +80,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'bank_rasxod'
+    "bank_rasxod",
   );
   if (!spravochnik_operatsii) {
     return next(
@@ -97,7 +99,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
 
     const spravochnik_operatsii = await getByIdOperatsii(
       value.spravochnik_operatsii_id,
-      'bank_rasxod'
+      "bank_rasxod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -195,7 +197,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
       region_id,
       main_schet_id,
       value.id_shartnomalar_organization,
-      value.id_spravochnik_organization
+      value.id_spravochnik_organization,
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
@@ -204,7 +206,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'bank_rasxod'
+    "bank_rasxod",
   );
   if (!spravochnik_operatsii) {
     return next(
@@ -223,7 +225,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
 
     const spravochnik_operatsii = await getByIdOperatsii(
       value.spravochnik_operatsii_id,
-      'bank_rasxod'
+      "bank_rasxod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));

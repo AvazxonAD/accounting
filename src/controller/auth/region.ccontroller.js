@@ -15,8 +15,8 @@ const {
 
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const { error, value } = regionValidation.validate(req.body);
   if (error) {
@@ -38,8 +38,8 @@ const createRegion = asyncHandler(async (req, res, next) => {
 
 // get all regions
 const getAllReegions = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const result = await get_all_region();
   return res.status(200).json({
@@ -50,8 +50,8 @@ const getAllReegions = asyncHandler(async (req, res, next) => {
 
 // update region
 const updateRegion = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const id = req.params.id;
   const region = await getByIdRegion(id);
@@ -78,8 +78,8 @@ const updateRegion = asyncHandler(async (req, res, next) => {
 
 // delete region
 const deleteRegion = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const id = req.params.id;
   const region = await getByIdRegion(id);
@@ -96,8 +96,8 @@ const deleteRegion = asyncHandler(async (req, res, next) => {
 });
 
 const getElementById = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const region = await getByIdRegion(req.params.id);
   if (!region) {
