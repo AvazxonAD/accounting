@@ -18,7 +18,7 @@ const getAllMonitoring = handleServiceError(
             so.inn AS spravochnik_organization_inn,
             bp.id_shartnomalar_organization,
             so2.doc_num AS shartnomalar_doc_num,
-            so2.doc_date AS shartnomalar_doc_date,
+            TO_CHAR(so2.doc_date, 'YYYY-MM-DD') AS shartnomalar_doc_date,
             bp.opisanie,
             bp.doc_date AS combined_date
         FROM bank_prixod bp
@@ -43,7 +43,7 @@ const getAllMonitoring = handleServiceError(
             so.inn AS spravochnik_organization_inn,
             br.id_shartnomalar_organization,
             so2.doc_num AS shartnomalar_doc_num,
-            so2.doc_date AS shartnomalar_doc_date,
+            TO_CHAR(so2.doc_date, 'YYYY-MM-DD') AS shartnomalar_doc_date,
             br.opisanie,
             br.doc_date AS combined_date
         FROM bank_rasxod br

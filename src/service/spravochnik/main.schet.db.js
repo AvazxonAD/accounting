@@ -183,7 +183,7 @@ const deleteMain_schet = handleServiceError(async (id) => {
 
 const getByBudjet_idMain_schet = handleServiceError(async (id) => {
   const result = await pool.query(
-    `SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1`,
+    `SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1 AND isdeleted = false`,
     [id],
   );
   return result.rows;
