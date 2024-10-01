@@ -5,7 +5,7 @@ const jur4Validation = Joi.object({
   doc_date: Joi.date(),
   opisanie: Joi.string(),
   spravochnik_operatsii_own_id: Joi.number().required(),
-  spravochnik_podotchet_litso_id: Joi.number(),
+  spravochnik_podotchet_litso_id: Joi.number().required(),
   childs: Joi.array().items(
     Joi.object({
       spravochnik_operatsii_id: Joi.number().required(),
