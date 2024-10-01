@@ -15,6 +15,9 @@ const {
 
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {
+  if(req.user.region_id){
+    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  }
   const { error, value } = regionValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406));
@@ -35,6 +38,9 @@ const createRegion = asyncHandler(async (req, res, next) => {
 
 // get all regions
 const getAllReegions = asyncHandler(async (req, res, next) => {
+  if(req.user.region_id){
+    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  }
   const result = await get_all_region();
   return res.status(200).json({
     success: true,
@@ -44,6 +50,9 @@ const getAllReegions = asyncHandler(async (req, res, next) => {
 
 // update region
 const updateRegion = asyncHandler(async (req, res, next) => {
+  if(req.user.region_id){
+    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  }
   const id = req.params.id;
   const region = await getByIdRegion(id);
   if (!region) {
@@ -69,6 +78,9 @@ const updateRegion = asyncHandler(async (req, res, next) => {
 
 // delete region
 const deleteRegion = asyncHandler(async (req, res, next) => {
+  if(req.user.region_id){
+    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  }
   const id = req.params.id;
   const region = await getByIdRegion(id);
   if (!region) {
@@ -84,6 +96,9 @@ const deleteRegion = asyncHandler(async (req, res, next) => {
 });
 
 const getElementById = asyncHandler(async (req, res, next) => {
+  if(req.user.region_id){
+    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  }
   const region = await getByIdRegion(req.params.id);
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Region topilmadi", 404));
