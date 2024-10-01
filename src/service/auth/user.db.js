@@ -12,8 +12,8 @@ const create_user = handleServiceError(
   },
 );
 
-const getByIdUser = handleServiceError(async (id, region_id) => {
-  let result = await pool.query(`SELECT * FROM users WHERE id = $1 AND region_id = $2`, [id, region_id]);
+const getByIdUser = handleServiceError(async (id) => {
+  let result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
   return result.rows[0];
 });
 

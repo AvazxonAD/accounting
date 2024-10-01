@@ -95,7 +95,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
   if(!user_region_id){
     user_region_id = req.query.region_id
   }
-  const oldUser = await getByIdUser(id, user_region_id);
+  const oldUser = await getByIdUser(id);
   if (!oldUser) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
@@ -141,6 +141,11 @@ const updateUser = asyncHandler(async (req, res, next) => {
 // delete user
 const deleteUser = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
+  let region_id = req.user.region_id 
+  if(region_id){
+    region_id = req.query.region_id
+  }
+
   const deleteUser = await getByIdUser(id);
   if (!deleteUser) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
@@ -155,12 +160,8 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 });
 
 const getElementById = asyncHandler(async (req, res, next) => {
-  let region_id = req.user.region_id
-  if(!region_id){
-    region_id = req.query.region_id
-  }
+  const user = await getByIdUser(req.params.id);
 
-  const user = await getByIdUser(req.params.id, region_id);
   if (!user) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
