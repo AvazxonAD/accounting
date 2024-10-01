@@ -4,7 +4,7 @@ const smetaValidation = Joi.object({
   smeta_name: Joi.string().required(),
   smeta_number: Joi.number().required().required(),
   father_smeta_name: Joi.string().required(),
-});
+}).options({ stripUnknown: true });
 
 const smetaGrafikValidation = Joi.object({
   smeta_id: Joi.number().required().required(),

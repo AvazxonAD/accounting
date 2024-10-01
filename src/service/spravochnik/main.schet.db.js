@@ -181,9 +181,19 @@ const deleteMain_schet = handleServiceError(async (id) => {
   ]);
 });
 
-const getByBudjet_idMain_schet = handleServiceError(async (id) => {
+const getByBudjet_idMain_schet = handleServiceError(async (id, region_id) => {
   const result = await pool.query(
-    `SELECT id AS main_schet_id, account_number FROM main_schet WHERE spravochnik_budjet_name_id = $1 AND isdeleted = false`,
+    `
+      SELECT 
+        main_schet.id AS main_schet_id, 
+        main_schet.account_number 
+      FROM main_schet 
+      JOIN users ON main_schet.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE spravochnik_budjet_name_id = $1 
+        AND isdeleted = false
+    `,
+
     [id],
   );
   return result.rows;
