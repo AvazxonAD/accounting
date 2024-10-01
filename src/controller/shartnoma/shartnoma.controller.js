@@ -55,7 +55,7 @@ const create = asyncHandler(async (req, res, next) => {
 
   const shartnoma = await createShartnoma({ ...value, user_id, main_schet_id });
 
-  await createShartnomaGrafik(user_id, shartnoma.id);
+  await createShartnomaGrafik(user_id, shartnoma.id, main_schet_id, value.grafik_year);
 
   return res.status(201).json({
     success: true,

@@ -100,7 +100,7 @@ const getByIdShartnomaDB = handleServiceError(
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
-            shartnomalar_organization.doc_date, 
+            TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS doc_date, 
             shartnomalar_organization.summa,
             shartnomalar_organization.opisanie,
             shartnomalar_organization.smeta_id,
@@ -135,7 +135,7 @@ const getByIdShartnomaDB = handleServiceError(
 );
 
 const updateShartnomaDB = handleServiceError(async (object) => {
-  const shartnoma = await pool.query(
+  await pool.query(
     `UPDATE shartnomalar_organization 
       SET 
         doc_num = $1, 
@@ -160,7 +160,7 @@ const updateShartnomaDB = handleServiceError(async (object) => {
       object.id,
     ],
   );
-  return shartnoma.rows[0];
+  await pool.query(`UPDATE shartnoma_grafik SET year = $1 WHERE id_shartnomalar_organization = $2`, [object.grafik_year, object.id])
 });
 
 const deleteShartnomaDB = handleServiceError(async (id) => {
@@ -183,7 +183,7 @@ const getByIdOrganizationShartnoma = handleServiceError(
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
-            shartnomalar_organization.doc_date, 
+            TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS doc_date, 
             shartnomalar_organization.summa,
             shartnomalar_organization.opisanie,
             shartnomalar_organization.smeta_id,

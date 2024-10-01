@@ -24,9 +24,9 @@ const getByIdAuth = handleServiceError(async (id) => {
 
 const updateAuth = handleServiceError(async (login, password, fio, id) => {
   await pool.query(
-    `UPDATE users SET login = $1, password = $2, fio = $3 WHERE id = $4 RETURNING *
+    `UPDATE users SET login = $1, password = $2, fio = $3, updated_at = $5 WHERE id = $4
     `,
-    [login, password, fio, id],
+    [login, password, fio, id, new Date()],
   );
 });
 

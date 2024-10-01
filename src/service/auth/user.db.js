@@ -4,10 +4,10 @@ const { handleServiceError } = require("../../middleware/service.handle");
 const create_user = handleServiceError(
   async (login, password, fio, role_id, region_id) => {
     await pool.query(
-      `INSERT INTO users(login, password, fio, role_id, region_id) 
-        VALUES($1, $2, $3, $4, $5)
+      `INSERT INTO users(login, password, fio, role_id, region_id, created_at) 
+        VALUES($1, $2, $3, $4, $5, $6)
     `,
-      [login, password, fio, role_id, region_id],
+      [login, password, fio, role_id, region_id, new Date()],
     );
   },
 );
@@ -20,10 +20,10 @@ const getByIdUser = handleServiceError(async (id, region_id) => {
 const update_user = handleServiceError(
   async (login, password, fio, role_id, region_id, id) => {
     await pool.query(
-      `UPDATE users SET login = $1, password = $2, fio = $3, role_id =$4, region_id = $5
+      `UPDATE users SET login = $1, password = $2, fio = $3, role_id =$4, region_id = $5, updated_at = $7
         WHERE id = $6
     `,
-      [login, password, fio, role_id, region_id, id],
+      [login, password, fio, role_id, region_id, id, new Date()],
     );
   },
 );

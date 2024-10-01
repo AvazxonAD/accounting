@@ -26,10 +26,6 @@ const sum = (...args) => {
 };
 
 module.exports = {
-  sum,
-};
-
-module.exports = {
   returnAllChildSumma,
   returnStringSumma,
   sum,
