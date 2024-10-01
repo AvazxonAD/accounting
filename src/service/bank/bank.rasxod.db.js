@@ -65,9 +65,10 @@ const createBankRasxodChild = handleServiceError(async (object) => {
   );
 });
 
-const getByIdRasxod = handleServiceError(async (region_id, main_schet_id, id) => {
-  const result = await pool.query(
-    ` SELECT bank_rasxod.* 
+const getByIdRasxod = handleServiceError(
+  async (region_id, main_schet_id, id) => {
+    const result = await pool.query(
+      ` SELECT bank_rasxod.* 
       FROM bank_rasxod 
       JOIN users ON bank_rasxod.user_id = users.id
       JOIN regions ON users.region_id = regions.id
@@ -76,10 +77,11 @@ const getByIdRasxod = handleServiceError(async (region_id, main_schet_id, id) =>
         AND bank_rasxod.main_schet_id = $3 
         AND bank_rasxod.isdeleted = false
     `,
-    [id, region_id, main_schet_id],
-  );
-  return result.rows[0];
-});
+      [id, region_id, main_schet_id],
+    );
+    return result.rows[0];
+  },
+);
 
 const updateRasxod = handleServiceError(async (object) => {
   await pool.query(
@@ -251,30 +253,26 @@ const getElemenByIdRasxodChild = handleServiceError(
   },
 );
 
-const deleteRasxodChild = handleServiceError(
-  async (id) => {
-    await pool.query(
-      ` UPDATE  bank_rasxod_child
+const deleteRasxodChild = handleServiceError(async (id) => {
+  await pool.query(
+    ` UPDATE  bank_rasxod_child
         SET isdeleted = $2
         WHERE id_bank_rasxod = $1 AND isdeleted = false 
       `,
-      [id, true],
-    );
-  },
-);
+    [id, true],
+  );
+});
 
-const deleteBankRasxod = handleServiceError(
-  async (id) => {
-    await pool.query(
-      ` 
+const deleteBankRasxod = handleServiceError(async (id) => {
+  await pool.query(
+    ` 
         UPDATE bank_rasxod 
         SET isdeleted = $2
         WHERE id = $1 AND isdeleted = false 
       `,
-      [id, true],
-    );
-  },
-);
+    [id, true],
+  );
+});
 
 module.exports = {
   createBankRasxodDb,

@@ -2,45 +2,53 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { sum } = require("../../utils/returnSumma");
-const { smetaGrafikValidation, smetaGrafikUpdateValidation } = require('../../helpers/validation/smeta/smeta.validation')
-const { getByIdSmeta } = require('../../service/smeta/smeta.db')
-const { getByIdBudjet } = require('../../service/spravochnik/budjet.name.db')
+const {
+  smetaGrafikValidation,
+  smetaGrafikUpdateValidation,
+} = require("../../helpers/validation/smeta/smeta.validation");
+const { getByIdSmeta } = require("../../service/smeta/smeta.db");
+const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.db");
 const {
   getByAllSmetaGrafik,
   createSmetaGrafik,
   getAllSmetaGrafik,
   getElementByIdGrafik,
   updateSmetaGrafikDB,
-  deleteSmetaGrafik
-} = require('../../service/smeta/smeta.grafik.db')
+  deleteSmetaGrafik,
+} = require("../../service/smeta/smeta.grafik.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id
-  const user_id = req.user.id
-  const { error, value } = smetaGrafikValidation.validate(req.body)
+  const region_id = req.user.region_id;
+  const user_id = req.user.id;
+  const { error, value } = smetaGrafikValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   let { smeta_id, spravochnik_budjet_name_id, year } = value;
 
-  const smeta = await getByIdSmeta(smeta_id)
+  const smeta = await getByIdSmeta(smeta_id);
   if (!smeta) {
     return next(new ErrorResponse("Server xatolik smeta topilmadi", 500));
   }
 
-  const budjet = await getByIdBudjet(spravochnik_budjet_name_id)
+  const budjet = await getByIdBudjet(spravochnik_budjet_name_id);
   if (!budjet) {
     return next(new ErrorResponse("Server xatolik budjet topilmadi", 500));
   }
 
-  const test = await getByAllSmetaGrafik(region_id, smeta_id, spravochnik_budjet_name_id, year)
+  const test = await getByAllSmetaGrafik(
+    region_id,
+    smeta_id,
+    spravochnik_budjet_name_id,
+    year,
+  );
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
 
-  await createSmetaGrafik(user_id, smeta_id, spravochnik_budjet_name_id, year)
+  await createSmetaGrafik(user_id, smeta_id, spravochnik_budjet_name_id, year);
 
   return res.status(201).json({
     success: true,
@@ -50,7 +58,7 @@ const create = asyncHandler(async (req, res, next) => {
 
 // get all
 const getAll = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id
+  const region_id = req.user.region_id;
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
 
@@ -62,7 +70,7 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const offset = (page - 1) * limit;
 
-  const result = await getAllSmetaGrafik(region_id, offset, limit)
+  const result = await getAllSmetaGrafik(region_id, offset, limit);
 
   const formattedResult = result.map((row) => ({
     ...row,
@@ -103,30 +111,30 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // get elament by id
 const getElemnetById = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id
-  const id = req.params.id
+  const region_id = req.user.region_id;
+  const id = req.params.id;
 
-  const result = await getElementByIdGrafik(region_id, id)
+  const result = await getElementByIdGrafik(region_id, id);
 
   if (!result) {
     return next(new ErrorResponse("Server xatoilik. Grafik topilmadi", 500));
   }
 
-  const object = { ...result }
-  object.itogo = Number(object.itogo)
-  object.oy_1 = Number(object.oy_1)
-  object.oy_2 = Number(object.oy_2)
-  object.oy_3 = Number(object.oy_3)
-  object.oy_4 = Number(object.oy_4)
-  object.oy_5 = Number(object.oy_5)
-  object.oy_6 = Number(object.oy_6)
-  object.oy_7 = Number(object.oy_7)
-  object.oy_8 = Number(object.oy_8)
-  object.oy_9 = Number(object.oy_9)
-  object.oy_10 = Number(object.oy_10)
-  object.oy_11 = Number(object.oy_11)
-  object.oy_12 = Number(object.oy_12)
-  object.year = parseInt(object.year)
+  const object = { ...result };
+  object.itogo = Number(object.itogo);
+  object.oy_1 = Number(object.oy_1);
+  object.oy_2 = Number(object.oy_2);
+  object.oy_3 = Number(object.oy_3);
+  object.oy_4 = Number(object.oy_4);
+  object.oy_5 = Number(object.oy_5);
+  object.oy_6 = Number(object.oy_6);
+  object.oy_7 = Number(object.oy_7);
+  object.oy_8 = Number(object.oy_8);
+  object.oy_9 = Number(object.oy_9);
+  object.oy_10 = Number(object.oy_10);
+  object.oy_11 = Number(object.oy_11);
+  object.oy_12 = Number(object.oy_12);
+  object.year = parseInt(object.year);
 
   return res.status(200).json({
     success: true,
@@ -136,35 +144,35 @@ const getElemnetById = asyncHandler(async (req, res, next) => {
 
 // update
 const update = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id
-  const id = req.params.id
+  const region_id = req.user.region_id;
+  const id = req.params.id;
 
-  const test = await getElementByIdGrafik(region_id, id)
+  const test = await getElementByIdGrafik(region_id, id);
   if (!test) {
     return next(new ErrorResponse("Server xatolik. Grafik topilmadi", 500));
   }
 
-  const { error, value } = smetaGrafikUpdateValidation.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  const { error, value } = smetaGrafikUpdateValidation.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   const itogo = sum(
-      value.oy_1,
-      value.oy_2,
-      value.oy_3,
-      value.oy_4,
-      value.oy_5,
-      value.oy_6,
-      value.oy_7,
-      value.oy_8,
-      value.oy_9,
-      value.oy_10,
-      value.oy_11,
-      value.oy_12
-  )
+    value.oy_1,
+    value.oy_2,
+    value.oy_3,
+    value.oy_4,
+    value.oy_5,
+    value.oy_6,
+    value.oy_7,
+    value.oy_8,
+    value.oy_9,
+    value.oy_10,
+    value.oy_11,
+    value.oy_12,
+  );
 
- await updateSmetaGrafikDB({...value, id, itogo})
+  await updateSmetaGrafikDB({ ...value, id, itogo });
 
   return res.status(201).json({
     success: true,
@@ -174,15 +182,15 @@ const update = asyncHandler(async (req, res, next) => {
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id
-  const id = req.params.id
+  const region_id = req.user.region_id;
+  const id = req.params.id;
 
-  const test = await getElementByIdGrafik(region_id, id)
+  const test = await getElementByIdGrafik(region_id, id);
   if (!test) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  await deleteSmetaGrafik(id)
+  await deleteSmetaGrafik(id);
 
   return res.status(200).json({
     success: true,

@@ -42,7 +42,7 @@ const { returnLocalDate } = require("../../utils/date.function");
 const bank_prixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
 
   const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
@@ -175,7 +175,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
 
   const bank_prixod = await getByIdBankPrixod(region_id, main_schet_id, id);
   if (!bank_prixod) {
@@ -311,21 +311,21 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 // delete bank_prixod
 const delete_bank_prixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
-  const region_id = req.user.region_id
-  const id = req.params.id
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id)
+  const region_id = req.user.region_id;
+  const id = req.params.id;
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }
 
-  const bank_prixod = await getByIdBankPrixod(region_id, main_schet_id, id)
+  const bank_prixod = await getByIdBankPrixod(region_id, main_schet_id, id);
   if (!bank_prixod) {
-    return next(new ErrorResponse("Server xatolik. Prixod doc topilmadi", 404))
+    return next(new ErrorResponse("Server xatolik. Prixod doc topilmadi", 404));
   }
 
-  await deleteBankPrixod(id)
+  await deleteBankPrixod(id);
 
-  await deleteBankPrixodChild(id)
+  await deleteBankPrixodChild(id);
 
   return res.status(200).json({
     success: true,
@@ -347,7 +347,10 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
     );
   }
 
-  const prixod_child = await getElementByIdBankPrixodChild(region_id, prixod.id);
+  const prixod_child = await getElementByIdBankPrixodChild(
+    region_id,
+    prixod.id,
+  );
 
   let object = { ...prixod };
   object.summa = Number(object.summa);
@@ -377,9 +380,9 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
-  const from = value.from
-  const to = value.to
-  
+  const from = value.from;
+  const to = value.to;
+
   if (limit <= 0 || page <= 0) {
     return next(
       new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
@@ -387,7 +390,6 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   }
   const offset = (page - 1) * limit;
 
-  
   const main_schet = await getByIdMainSchet(region_id, value.main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
@@ -399,7 +401,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
     offset,
     limit,
     from,
-    to
+    to,
   );
   summa = Number(all_prixod.summa);
   totalQuery = all_prixod.totalQuery;

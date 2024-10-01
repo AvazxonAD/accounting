@@ -2,8 +2,8 @@ const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
 const kassaPrixodCreateDB = handleServiceError(async (object) => {
-    const result = await pool.query(
-        `
+  const result = await pool.query(
+    `
             INSERT INTO kassa_prixod(
                 doc_num, 
                 doc_date, 
@@ -19,24 +19,25 @@ const kassaPrixodCreateDB = handleServiceError(async (object) => {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING * 
         `,
-        [
-            object.doc_num,
-            object.doc_date,
-            object.opisanie,
-            object.summa,
-            object.id_podotchet_litso,
-            object.main_schet_id,
-            object.user_id,
-            new Date(),
-            new Date(),
-            object.spravochnik_operatsii_own_id
-        ],
-    );
-    return result.rows[0];
+    [
+      object.doc_num,
+      object.doc_date,
+      object.opisanie,
+      object.summa,
+      object.id_podotchet_litso,
+      object.main_schet_id,
+      object.user_id,
+      new Date(),
+      new Date(),
+      object.spravochnik_operatsii_own_id,
+    ],
+  );
+  return result.rows[0];
 });
 
 const kassaPrixodChild = handleServiceError(async (object) => {
-    await pool.query(`
+  await pool.query(
+    `
         INSERT INTO kassa_prixod_child (
             spravochnik_operatsii_id,
             summa,
@@ -51,24 +52,27 @@ const kassaPrixodChild = handleServiceError(async (object) => {
             updated_at
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-    `, [
-        object.spravochnik_operatsii_id,
-        object.summa,
-        object.id_spravochnik_podrazdelenie,
-        object.id_spravochnik_sostav,
-        object.id_spravochnik_type_operatsii,
-        object.spravochnik_operatsii_own_id,
-        object.kassa_prixod_id,
-        object.user_id,
-        object.main_schet_id,
-        new Date(),
-        new Date()
-    ])
+    `,
+    [
+      object.spravochnik_operatsii_id,
+      object.summa,
+      object.id_spravochnik_podrazdelenie,
+      object.id_spravochnik_sostav,
+      object.id_spravochnik_type_operatsii,
+      object.spravochnik_operatsii_own_id,
+      object.kassa_prixod_id,
+      object.user_id,
+      object.main_schet_id,
+      new Date(),
+      new Date(),
+    ],
+  );
 });
 
-const getAllKassaPrixodChild = handleServiceError(async (region_id, main_schet_id, kassa_prixod_id) => {
+const getAllKassaPrixodChild = handleServiceError(
+  async (region_id, main_schet_id, kassa_prixod_id) => {
     const kassa_prixod_child = await pool.query(
-        `
+      `
               SELECT  
                   kassa_prixod_child.id,
                   kassa_prixod_child.spravochnik_operatsii_id,
@@ -93,14 +97,16 @@ const getAllKassaPrixodChild = handleServiceError(async (region_id, main_schet_i
                 AND kassa_prixod_child.isdeleted = false 
                 AND kassa_prixod_child.kassa_prixod_id = $3
           `,
-        [region_id, main_schet_id, kassa_prixod_id],
+      [region_id, main_schet_id, kassa_prixod_id],
     );
-    return kassa_prixod_child.rows
-})
+    return kassa_prixod_child.rows;
+  },
+);
 
-const getAllKassaPrixodDb = handleServiceError(async (region_id, main_schet_id, from, to, offset, limit) => {
+const getAllKassaPrixodDb = handleServiceError(
+  async (region_id, main_schet_id, from, to, offset, limit) => {
     const results = await pool.query(
-        `   
+      `   
             SELECT 
                 kassa_prixod.id, 
                 kassa_prixod.doc_num,
@@ -119,10 +125,11 @@ const getAllKassaPrixodDb = handleServiceError(async (region_id, main_schet_id, 
                 OFFSET $5
                 LIMIT $6
         `,
-        [main_schet_id, region_id, from, to, offset, limit],
+      [main_schet_id, region_id, from, to, offset, limit],
     );
 
-    const summa = await pool.query(`
+    const summa = await pool.query(
+      `
         SELECT 
             COALESCE(SUM(kassa_prixod.summa), 0) AS summa
         FROM kassa_prixod
@@ -132,9 +139,12 @@ const getAllKassaPrixodDb = handleServiceError(async (region_id, main_schet_id, 
             AND regions.id = $2
             AND kassa_prixod.isdeleted = false
             AND kassa_prixod.doc_date BETWEEN $3 AND $4
-    `, [main_schet_id, region_id, from, to]);
+    `,
+      [main_schet_id, region_id, from, to],
+    );
 
-    const total = await pool.query(`
+    const total = await pool.query(
+      `
         SELECT 
             COALESCE(COUNT(kassa_prixod.id), 0) AS total_count 
         FROM kassa_prixod
@@ -144,18 +154,22 @@ const getAllKassaPrixodDb = handleServiceError(async (region_id, main_schet_id, 
             AND regions.id = $2
             AND kassa_prixod.isdeleted = false
             AND kassa_prixod.doc_date BETWEEN $3 AND $4
-    `, [main_schet_id, region_id, from, to]);
+    `,
+      [main_schet_id, region_id, from, to],
+    );
 
     return {
-        rows: results.rows,
-        summa: summa.rows[0].summa,
-        totalQuery: total.rows[0]
-    }
-})
+      rows: results.rows,
+      summa: summa.rows[0].summa,
+      totalQuery: total.rows[0],
+    };
+  },
+);
 
-const getElementById = handleServiceError(async (region_id, main_schet_id, id) => {
+const getElementById = handleServiceError(
+  async (region_id, main_schet_id, id) => {
     const result = await pool.query(
-        `   
+      `   
             SELECT 
                 kassa_prixod.id, 
                 kassa_prixod.doc_num,
@@ -172,14 +186,15 @@ const getElementById = handleServiceError(async (region_id, main_schet_id, id) =
                 AND kassa_prixod.isdeleted = false
                 AND kassa_prixod.id = $3
         `,
-        [main_schet_id, region_id, id],
+      [main_schet_id, region_id, id],
     );
-    return result.rows[0]
-})
+    return result.rows[0];
+  },
+);
 
 const updateKassaPrixodDB = handleServiceError(async (object) => {
-    await pool.query(
-        `
+  await pool.query(
+    `
             UPDATE kassa_prixod SET 
                 doc_num = $1, 
                 doc_date = $2, 
@@ -190,43 +205,43 @@ const updateKassaPrixodDB = handleServiceError(async (object) => {
                 spravochnik_operatsii_own_id = $7
             WHERE id = $8
         `,
-        [
-            object.doc_num,
-            object.doc_date,
-            object.opisanie,
-            object.summa,
-            object.id_podotchet_litso,
-            new Date(),
-            object.spravochnik_operatsii_own_id,
-            object.id
-        ],
-    );
-})
+    [
+      object.doc_num,
+      object.doc_date,
+      object.opisanie,
+      object.summa,
+      object.id_podotchet_litso,
+      new Date(),
+      object.spravochnik_operatsii_own_id,
+      object.id,
+    ],
+  );
+});
 
 const deleteKassaPrixodChild = handleServiceError(async (id) => {
-    await pool.query(
-        `UPDATE kassa_prixod_child SET isdeleted = $1 WHERE kassa_prixod_id = $2`,
-        [true, id],
-    );
-})
+  await pool.query(
+    `UPDATE kassa_prixod_child SET isdeleted = $1 WHERE kassa_prixod_id = $2`,
+    [true, id],
+  );
+});
 
 const deleteKassaPrixodDB = handleServiceError(async (id) => {
-    await pool.query(
-        `UPDATE kassa_prixod
+  await pool.query(
+    `UPDATE kassa_prixod
             SET isdeleted = true
             WHERE id = $1 AND isdeleted = false
         `,
-        [id],
-    );
-})
+    [id],
+  );
+});
 
 module.exports = {
-    kassaPrixodCreateDB,
-    kassaPrixodChild,
-    getAllKassaPrixodDb,
-    getAllKassaPrixodChild,
-    getElementById,
-    updateKassaPrixodDB,
-    deleteKassaPrixodChild,
-    deleteKassaPrixodDB
+  kassaPrixodCreateDB,
+  kassaPrixodChild,
+  getAllKassaPrixodDb,
+  getAllKassaPrixodChild,
+  getElementById,
+  updateKassaPrixodDB,
+  deleteKassaPrixodChild,
+  deleteKassaPrixodDB,
 };

@@ -1,9 +1,11 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
-const { returnLocalDate } = require('../../utils/date.function');
+const { returnLocalDate } = require("../../utils/date.function");
 
-const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, offset, limit, from, to) => {
-    const data = await pool.query(`
+const getAllMonitoring = handleServiceError(
+  async (region_id, main_schet_id, offset, limit, from, to) => {
+    const data = await pool.query(
+      `
         SELECT 
             kp.id, 
             kp.doc_num,
@@ -43,9 +45,12 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         AND kr.doc_date BETWEEN $3 AND $4
         ORDER BY combined_date DESC
         OFFSET $5 LIMIT $6;
-    `, [region_id, main_schet_id, from, to, offset, limit]);
+    `,
+      [region_id, main_schet_id, from, to, offset, limit],
+    );
 
-    const total = await pool.query(`
+    const total = await pool.query(
+      `
         SELECT 
         COALESCE((SELECT COUNT(kr.id) 
                 FROM kassa_rasxod kr
@@ -61,9 +66,12 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
                 WHERE r.id = $1 AND kp.main_schet_id = $2 
                 AND kp.isdeleted = false
                 AND kp.doc_date BETWEEN $3 AND $4), 0) AS total_count
-    `, [region_id, main_schet_id, from, to])    
+    `,
+      [region_id, main_schet_id, from, to],
+    );
 
-    const prixod_sum = await pool.query(`
+    const prixod_sum = await pool.query(
+      `
         SELECT SUM(kp.summa) AS all_prixod_sum
         FROM kassa_prixod kp
         JOIN users u ON kp.user_id = u.id
@@ -71,9 +79,12 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         WHERE r.id = $1 AND kp.main_schet_id = $2 
         AND kp.isdeleted = false
         AND kp.doc_date BETWEEN $3 AND $4
-    `, [region_id, main_schet_id, from, to])
+    `,
+      [region_id, main_schet_id, from, to],
+    );
 
-    const rasxod_sum = await pool.query(`
+    const rasxod_sum = await pool.query(
+      `
         SELECT SUM(kr.summa) AS all_rasxod_sum
         FROM kassa_rasxod kr
         JOIN users u ON kr.user_id = u.id
@@ -81,8 +92,10 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
         WHERE r.id = $1 AND kr.main_schet_id = $2 
         AND kr.isdeleted = false
         AND kr.doc_date BETWEEN $3 AND $4
-    `, [region_id, main_schet_id, from, to])
-    
+    `,
+      [region_id, main_schet_id, from, to],
+    );
+
     const SumQuery = `
         SELECT 
         COALESCE((SELECT SUM(kp.summa) 
@@ -100,30 +113,35 @@ const getAllMonitoring = handleServiceError(async (region_id, main_schet_id, off
                 AND kr.isdeleted = false
                 AND kr.doc_date < $3 ), 0) AS total_sum
     `;
-    const summaFrom = await pool.query(SumQuery, [region_id, main_schet_id, from]);
+    const summaFrom = await pool.query(SumQuery, [
+      region_id,
+      main_schet_id,
+      from,
+    ]);
     const summaTo = await pool.query(SumQuery, [region_id, main_schet_id, to]);
 
-    const result_data = data.rows.map(row => ({
-        id: row.id,
-        doc_num: row.doc_num,
-        doc_date: row.doc_date,
-        prixod_sum: Number(row.prixod_sum),
-        rasxod_sum: Number(row.rasxod_sum),
-        id_podotchet_litso: row.id_podotchet_litso,
-        spravochnik_podotchet_litso_name: row.spravochnik_podotchet_litso_name,
-        opisaine: row.opisaine
+    const result_data = data.rows.map((row) => ({
+      id: row.id,
+      doc_num: row.doc_num,
+      doc_date: row.doc_date,
+      prixod_sum: Number(row.prixod_sum),
+      rasxod_sum: Number(row.rasxod_sum),
+      id_podotchet_litso: row.id_podotchet_litso,
+      spravochnik_podotchet_litso_name: row.spravochnik_podotchet_litso_name,
+      opisaine: row.opisaine,
     }));
 
     return {
-        result_data,
-        total_count: total.rows[0].total_count,
-        all_prixod_sum: prixod_sum.rows[0].all_prixod_sum,
-        all_rasxod_sum: rasxod_sum.rows[0].all_rasxod_sum,
-        total_sum_from: summaFrom.rows[0].total_sum,
-        total_sum_to: summaTo.rows[0].total_sum,
+      result_data,
+      total_count: total.rows[0].total_count,
+      all_prixod_sum: prixod_sum.rows[0].all_prixod_sum,
+      all_rasxod_sum: rasxod_sum.rows[0].all_rasxod_sum,
+      total_sum_from: summaFrom.rows[0].total_sum,
+      total_sum_to: summaTo.rows[0].total_sum,
     };
-});
+  },
+);
 
 module.exports = {
-    getAllMonitoring
-}
+  getAllMonitoring,
+};

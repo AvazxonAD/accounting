@@ -20,15 +20,15 @@ const kassaPrixodRouter = require("./kassa/kassa.prixod.router");
 const smetaGarfik = require("./smeta/smeta.grafik.router");
 const bajarilgan_ishlar_jur3Router = require("./bajarilgan_ishlar/jur_3.router");
 const avans_otchetlar_jur4Router = require("./avans_otchetlar/jur_4.router");
-const bankMonitoring = require('./bank/bank.monitoring')
-const kassaRasxodRouter = require('./kassa/kassa.rasxod.router')
-const kassaMonitoringRouter = require('./kassa/kassa.monitoring.router')
-const shartnomaGrafikRouter = require('./shartnoma/shartnoma.grafik.router')
+const bankMonitoring = require("./bank/bank.monitoring");
+const kassaRasxodRouter = require("./kassa/kassa.rasxod.router");
+const kassaMonitoringRouter = require("./kassa/kassa.monitoring.router");
+const shartnomaGrafikRouter = require("./shartnoma/shartnoma.grafik.router");
 
 const router = express.Router();
 
 router.use("/bank/monitoring", bankMonitoring);
-router.use('/kassa/monitoring', kassaMonitoringRouter)
+router.use("/kassa/monitoring", kassaMonitoringRouter);
 router.use("/auth", authRouter);
 router.use("/region", regionRouter);
 router.use("/role", roleRouter);
@@ -50,6 +50,6 @@ router.use("/kassa/prixod", kassaPrixodRouter);
 router.use("/smeta/grafik", smetaGarfik);
 router.use("/bajarilgan_ishlar", bajarilgan_ishlar_jur3Router);
 router.use("/avans_otchetlar", avans_otchetlar_jur4Router);
-router.use('/kassa/rasxod', kassaRasxodRouter)
+router.use("/kassa/rasxod", kassaRasxodRouter);
 
 module.exports = router;

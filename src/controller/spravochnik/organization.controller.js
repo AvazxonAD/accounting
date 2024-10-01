@@ -18,7 +18,7 @@ const {
 // create
 const create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
   const { error, value } = organizationValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406));
@@ -102,7 +102,7 @@ const update = asyncHandler(async (req, res, next) => {
     }
   }
 
-  await updateOrganization({ ...value, id});
+  await updateOrganization({ ...value, id });
 
   return res.status(201).json({
     success: true,

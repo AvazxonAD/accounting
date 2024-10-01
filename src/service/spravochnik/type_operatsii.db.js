@@ -74,16 +74,14 @@ const getByIdtype_operatsii = handleServiceError(async (region_id, id) => {
   return result.rows[0];
 });
 
-const updatetype_operatsii = handleServiceError(
-  async (id, name, rayon) => {
-    await pool.query(
-      `UPDATE  spravochnik_type_operatsii SET name = $1, rayon = $2
+const updatetype_operatsii = handleServiceError(async (id, name, rayon) => {
+  await pool.query(
+    `UPDATE  spravochnik_type_operatsii SET name = $1, rayon = $2
         WHERE  id = $3
     `,
-      [name, rayon, id],
-    );
-  },
-);
+    [name, rayon, id],
+  );
+});
 
 const deletetype_operatsii = handleServiceError(async (id) => {
   await pool.query(

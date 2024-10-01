@@ -63,10 +63,7 @@ const updateSmeta = handleServiceError(
 );
 
 const deleteSmeta = handleServiceError(async (id) => {
-  await pool.query(
-    `UPDATE smeta SET isdeleted = $1 WHERE id = $2`,
-    [true, id],
-  );
+  await pool.query(`UPDATE smeta SET isdeleted = $1 WHERE id = $2`, [true, id]);
 });
 
 module.exports = {

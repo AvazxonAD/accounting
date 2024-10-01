@@ -9,7 +9,10 @@ const {
   updateMain_schet,
   deleteMain_schet,
 } = require("../../service/spravochnik/main.schet.db");
-const { mainSchetValidator, queryMainSchetValidation } = require("../../helpers/validation/spravochnik/main_schet.validation");
+const {
+  mainSchetValidator,
+  queryMainSchetValidation,
+} = require("../../helpers/validation/spravochnik/main_schet.validation");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
@@ -18,7 +21,9 @@ const create = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message), 406);
   }
   if (value.tashkilot_inn.toString().length !== 9) {
-    return next(new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400));
+    return next(
+      new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400),
+    );
   }
   const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
@@ -36,9 +41,9 @@ const create = asyncHandler(async (req, res, next) => {
 
 // get all
 const getAll = asyncHandler(async (req, res, next) => {
-  const { error, value } = queryMainSchetValidation.validate(req.query)
+  const { error, value } = queryMainSchetValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406))
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   const limit = parseInt(value.limit) || 10;
@@ -53,7 +58,7 @@ const getAll = asyncHandler(async (req, res, next) => {
 
   const result = await getAllMain_schet(req.user.region_id, offset, limit);
 
-  const total = Number(result.total.count)
+  const total = Number(result.total.count);
   const pageCount = Math.ceil(total / limit);
 
   return res.status(200).send({
@@ -65,7 +70,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     },
-    data: result.main_schet_rows
+    data: result.main_schet_rows,
   });
 });
 
@@ -79,10 +84,10 @@ const update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Schet topilmadi", 404));
   }
 
-  const { error, value } = mainSchetValidator.validate(req.body)
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
-  }  
+  const { error, value } = mainSchetValidator.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
+  }
 
   const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
@@ -91,7 +96,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   await updateMain_schet({
     ...value,
-    id
+    id,
   });
 
   return res.status(201).json({

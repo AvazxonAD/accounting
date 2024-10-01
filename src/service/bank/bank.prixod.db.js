@@ -116,15 +116,19 @@ const bankPrixodUpdate = handleServiceError(async (object) => {
 });
 
 const deleteBankPrixodChild = handleServiceError(async (bank_prixod_id) => {
-  await pool.query(`
+  await pool.query(
+    `
       UPDATE bank_prixod_child SET isdeleted = $1 
       WHERE id_bank_prixod = $2 AND isdeleted = false
-    `, [true, bank_prixod_id]);
+    `,
+    [true, bank_prixod_id],
+  );
 });
 
 const getAllPrixod = handleServiceError(
   async (region_id, main_schet_id, offset, limit, from, to) => {
-    const result = await pool.query(` SELECT 
+    const result = await pool.query(
+      ` SELECT 
             bank_prixod.id,
             bank_prixod.doc_num, 
             TO_CHAR(bank_prixod.doc_date, 'YYYY-MM-DD') AS doc_date, 
@@ -151,9 +155,12 @@ const getAllPrixod = handleServiceError(
           AND bank_prixod.isdeleted = false AND doc_date BETWEEN $3 AND $4
           OFFSET $5 
           LIMIT $6
-    `, [main_schet_id, region_id, from, to, offset, limit])
-    
-    const summa = await  pool.query(`   
+    `,
+      [main_schet_id, region_id, from, to, offset, limit],
+    );
+
+    const summa = await pool.query(
+      `   
             SELECT SUM(bank_prixod.summa)
             FROM bank_prixod 
             JOIN users ON bank_prixod.user_id = users.id
@@ -162,9 +169,12 @@ const getAllPrixod = handleServiceError(
               AND regions.id = $2 
               AND bank_prixod.isdeleted = false
               AND doc_date BETWEEN $3 AND $4
-    `, [main_schet_id, region_id, from, to])
+    `,
+      [main_schet_id, region_id, from, to],
+    );
 
-    const totalQuery = await pool.query(` SELECT COUNT(bank_prixod.id) AS total 
+    const totalQuery = await pool.query(
+      ` SELECT COUNT(bank_prixod.id) AS total 
         FROM bank_prixod 
         JOIN users ON bank_prixod.user_id = users.id
         JOIN regions ON users.region_id = regions.id
@@ -172,8 +182,10 @@ const getAllPrixod = handleServiceError(
           AND regions.id = $2 
           AND bank_prixod.isdeleted = false
           AND doc_date BETWEEN $3 AND $4
-    `, [main_schet_id, region_id, from, to])
-    
+    `,
+      [main_schet_id, region_id, from, to],
+    );
+
     return {
       prixod_rows: result.rows,
       summa: summa.rows[0].sum,
@@ -274,7 +286,7 @@ const deleteBankPrixod = handleServiceError(async (id) => {
     `,
     [true, id],
   );
-})
+});
 
 module.exports = {
   createBankPrixod,
@@ -286,5 +298,5 @@ module.exports = {
   getAllPrixodChild,
   getElementByIdPrixod,
   getElementByIdBankPrixodChild,
-  deleteBankPrixod
+  deleteBankPrixod,
 };

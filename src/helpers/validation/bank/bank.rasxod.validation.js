@@ -7,7 +7,7 @@ const bankRasxodValidation = Joi.object({
   id_spravochnik_organization: Joi.number().required(),
   spravochnik_operatsii_own_id: Joi.number().required(),
   id_shartnomalar_organization: Joi.number().allow(null),
-  childs: Joi.array().required()
+  childs: Joi.array().required(),
 }).options({ stripUnknown: true });
 
 const bankRasxodChildValidation = Joi.object({

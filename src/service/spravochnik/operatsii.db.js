@@ -7,7 +7,13 @@ const createOperatsii = handleServiceError(async (object) => {
         name,  schet, sub_schet, type_schet, smeta_id
         ) VALUES($1, $2, $3, $4, $5) 
     `,
-    [object.name, object.schet, object.sub_schet, object.type_schet, object.smeta_id],
+    [
+      object.name,
+      object.schet,
+      object.sub_schet,
+      object.type_schet,
+      object.smeta_id,
+    ],
   );
 });
 
@@ -57,7 +63,14 @@ const updateOperatsii = handleServiceError(async (object) => {
         SET name = $1, schet = $2, sub_schet = $3, type_schet = $4, smeta_id = $5
         WHERE id = $6
     `,
-    [object.name, object.schet, object.sub_schet, object.type_schet, object.smeta_id, object.id],
+    [
+      object.name,
+      object.schet,
+      object.sub_schet,
+      object.type_schet,
+      object.smeta_id,
+      object.id,
+    ],
   );
 });
 

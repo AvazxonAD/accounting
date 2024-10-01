@@ -3,9 +3,9 @@ const router = Router();
 
 const { protect } = require("../../middleware/auth");
 const {
-    getAllGrafik
+  getAllGrafik,
 } = require("../../controller/shartnoma/shartnoma.grafik.controller");
 
-router.get('/get/all', protect, getAllGrafik)
+router.get("/get/all", protect, getAllGrafik);
 
 module.exports = router;

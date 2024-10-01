@@ -3,7 +3,7 @@ const router = Router();
 
 const { protect } = require("../../middleware/auth");
 const {
-    getAllKassaMonitoring
+  getAllKassaMonitoring,
 } = require("../../controller/kassa/kassa.monitoring.controller");
 
 router.get("/get/all", protect, getAllKassaMonitoring);

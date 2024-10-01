@@ -78,9 +78,10 @@ const createMain_schet = handleServiceError(async (object) => {
   );
 });
 
-const getAllMain_schet = handleServiceError(async (region_id, offset, limit) => {
-  const result = await pool.query(
-    `
+const getAllMain_schet = handleServiceError(
+  async (region_id, offset, limit) => {
+    const result = await pool.query(
+      `
         SELECT 
             main_schet.id, 
             main_schet.user_id,
@@ -112,11 +113,11 @@ const getAllMain_schet = handleServiceError(async (region_id, offset, limit) => 
         OFFSET $2
         LIMIT $3
     `,
-    [region_id, offset, limit],
-  );
-  
-  const totalQuery = await pool.query(
-    `
+      [region_id, offset, limit],
+    );
+
+    const totalQuery = await pool.query(
+      `
         SELECT 
           COUNT(main_schet.id)
         FROM main_schet
@@ -125,11 +126,12 @@ const getAllMain_schet = handleServiceError(async (region_id, offset, limit) => 
         WHERE main_schet.isdeleted = false 
           AND regions.id = $1
     `,
-    [region_id],
-  );
-  
-  return { main_schet_rows: result.rows, total: totalQuery.rows[0] };
-});
+      [region_id],
+    );
+
+    return { main_schet_rows: result.rows, total: totalQuery.rows[0] };
+  },
+);
 
 const updateMain_schet = handleServiceError(async (object) => {
   await pool.query(

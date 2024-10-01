@@ -22,7 +22,7 @@ const {
 } = require("../../helpers/validation/bank/bank.rasxod.validation");
 
 const { returnAllChildSumma } = require("../../utils/returnSumma");
-const { returnLocalDate } = require('../../utils/date.function')
+const { returnLocalDate } = require("../../utils/date.function");
 
 const {
   createBankRasxodDb,
@@ -45,7 +45,7 @@ const {
 const bank_rasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
 
   const { error, value } = bankRasxodValidation.validate(req.body);
   if (error) {
@@ -162,7 +162,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
 const bank_rasxod_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
   const id = req.params.id;
   const bank_rasxod = await getByIdRasxod(region_id, main_schet_id, id);
   if (!bank_rasxod) {
@@ -294,8 +294,8 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
-  const from = value.from
-  const to = value.to
+  const from = value.from;
+  const to = value.to;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -384,9 +384,9 @@ const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }
 
-  const test = await getElemenByIdRasxod(region_id, main_schet_id, id)
+  const test = await getElemenByIdRasxod(region_id, main_schet_id, id);
   if (!test) {
-    return next(new ErrorResponse("Server xatolik. Rasxod doc topilmadi", 404))
+    return next(new ErrorResponse("Server xatolik. Rasxod doc topilmadi", 404));
   }
 
   await deleteRasxodChild(id);

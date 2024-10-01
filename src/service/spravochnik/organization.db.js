@@ -113,7 +113,7 @@ const updateOrganization = handleServiceError(async (object) => {
       object.mfo,
       object.inn,
       object.okonx,
-      object.id
+      object.id,
     ],
   );
 });

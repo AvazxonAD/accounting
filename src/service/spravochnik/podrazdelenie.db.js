@@ -73,16 +73,14 @@ const getByIdPodrazlanie = handleServiceError(async (region_id, id) => {
   return result.rows[0];
 });
 
-const updatePodrazlanie = handleServiceError(
-  async (id, name, rayon) => {
-    await pool.query(
-      `UPDATE  spravochnik_podrazdelenie SET name = $1, rayon = $2
+const updatePodrazlanie = handleServiceError(async (id, name, rayon) => {
+  await pool.query(
+    `UPDATE  spravochnik_podrazdelenie SET name = $1, rayon = $2
         WHERE id = $3
     `,
-      [name, rayon, id],
-    );
-  },
-);
+    [name, rayon, id],
+  );
+});
 
 const deletePodrazlanie = handleServiceError(async (id) => {
   await pool.query(

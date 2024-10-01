@@ -18,7 +18,7 @@ const {
 // create
 const create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
 
   const { error, value } = podotchetLitsoValidation.validate(req.body);
   if (error) {
@@ -84,8 +84,8 @@ const update = asyncHandler(async (req, res, next) => {
   }
 
   const { error, value } = podotchetLitsoValidation.validate(req.body);
-  if(error){
-    return next(new ErrorResponse(error.details[0].message, 406))
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406));
   }
 
   if (

@@ -1,17 +1,21 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const createShartnomaGrafik = handleServiceError(async (user_id, shartnoma_id) => {
-  const result = await pool.query(
-    `
+const createShartnomaGrafik = handleServiceError(
+  async (user_id, shartnoma_id) => {
+    const result = await pool.query(
+      `
       INSERT INTO shartnoma_grafik(id_shartnomalar_organization, user_id) VALUES($1, $2) 
     `,
-    [shartnoma_id, user_id],
-  );
-});
+      [shartnoma_id, user_id],
+    );
+  },
+);
 
-const getByIdGrafikDB = handleServiceError(async (region_id,  main_schet_id, id) => {
-  const result = await pool.query(`
+const getByIdGrafikDB = handleServiceError(
+  async (region_id, main_schet_id, id) => {
+    const result = await pool.query(
+      `
     SELECT 
       shartnoma_grafik.id_shartnomalar_organization,
       shartnomalar_organization.doc_num, 
@@ -40,13 +44,17 @@ const getByIdGrafikDB = handleServiceError(async (region_id,  main_schet_id, id)
         AND shartnoma_grafik.main_schet_id = $2
         AND shartnoma_grafik.id = $3
     ORDER BY shartnoma_grafik.id
-  `, [region_id,  main_schet_id, id] )
-  
-  return result.rows[0]
-})
+  `,
+      [region_id, main_schet_id, id],
+    );
 
-const getAllGrafikDB = handleServiceError(async (region_id,  main_schet_id) => {
-  const result = await pool.query(`
+    return result.rows[0];
+  },
+);
+
+const getAllGrafikDB = handleServiceError(async (region_id, main_schet_id) => {
+  const result = await pool.query(
+    `
     SELECT 
       shartnoma_grafik.id_shartnomalar_organization,
       shartnomalar_organization.doc_num, 
@@ -74,13 +82,15 @@ const getAllGrafikDB = handleServiceError(async (region_id,  main_schet_id) => {
         AND regions.id = $1
         AND shartnoma_grafik.main_schet_id = $2
     ORDER BY shartnoma_grafik.id
-  `, [region_id,  main_schet_id] )
-  
-  return result.rows
-})
+  `,
+    [region_id, main_schet_id],
+  );
+
+  return result.rows;
+});
 
 module.exports = {
   createShartnomaGrafik,
   getByIdGrafikDB,
-  getAllGrafikDB
+  getAllGrafikDB,
 };

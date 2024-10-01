@@ -55,11 +55,11 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   let users;
 
-  if(region_id){
+  if (region_id) {
     users = await getAllRegionUsers(region_id);
   }
-  if(!region_id){
-    users = await getAllUsersDB()
+  if (!region_id) {
+    users = await getAllUsersDB();
   }
 
   return res.status(200).json({
@@ -70,8 +70,8 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 
 const getRegionAllUsers = asyncHandler(async (req, res, next) => {
   const region_id = Number(req.params.id);
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat etilmagan', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
   }
 
   users = await getAllRegionUsers(region_id);
@@ -162,5 +162,5 @@ module.exports = {
   updateUser,
   deleteUser,
   getElementById,
-  getRegionAllUsers
+  getRegionAllUsers,
 };

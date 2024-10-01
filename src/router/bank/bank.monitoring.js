@@ -3,7 +3,7 @@ const router = Router();
 
 const { protect } = require("../../middleware/auth");
 const {
-    getAllBankMonitoring
+  getAllBankMonitoring,
 } = require("../../controller/bank/bank.monitoring.controller");
 
 router.get("/get/all", protect, getAllBankMonitoring);

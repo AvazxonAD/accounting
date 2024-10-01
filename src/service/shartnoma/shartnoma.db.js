@@ -2,8 +2,8 @@ const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
 const createShartnoma = handleServiceError(async (object) => {
-    const shartnoma = await pool.query(
-      `INSERT INTO shartnomalar_organization(
+  const shartnoma = await pool.query(
+    `INSERT INTO shartnomalar_organization(
         doc_num, 
         doc_date, 
         summa, 
@@ -18,26 +18,26 @@ const createShartnoma = handleServiceError(async (object) => {
       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
       `,
-      [
-        object.doc_num,
-        object.doc_date,
-        object.summa,
-        object.opisanie,
-        object.smeta_id,
-        object.user_id,
-        object.smeta_2,
-        object.spravochnik_organization_id,
-        object.pudratchi_bool,
-        object.main_schet_id
-      ],
-    );
-    return shartnoma.rows[0]
-  },
-);
+    [
+      object.doc_num,
+      object.doc_date,
+      object.summa,
+      object.opisanie,
+      object.smeta_id,
+      object.user_id,
+      object.smeta_2,
+      object.spravochnik_organization_id,
+      object.pudratchi_bool,
+      object.main_schet_id,
+    ],
+  );
+  return shartnoma.rows[0];
+});
 
-const getAllShartnoma = handleServiceError(async (region_id, main_schet_id, offset, limit) => {
-  const result = await pool.query(
-    `
+const getAllShartnoma = handleServiceError(
+  async (region_id, main_schet_id, offset, limit) => {
+    const result = await pool.query(
+      `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -70,13 +70,16 @@ const getAllShartnoma = handleServiceError(async (region_id, main_schet_id, offs
         OFFSET $1 
         LIMIT $2
     `,
-    [offset, limit, region_id, main_schet_id]);
-  return result.rows;
-});
+      [offset, limit, region_id, main_schet_id],
+    );
+    return result.rows;
+  },
+);
 
-const getTotalShartnoma = handleServiceError(async (region_id, main_schet_id) => {
-  const result = await pool.query(
-    `SELECT COUNT(shartnomalar_organization.id) AS total 
+const getTotalShartnoma = handleServiceError(
+  async (region_id, main_schet_id) => {
+    const result = await pool.query(
+      `SELECT COUNT(shartnomalar_organization.id) AS total 
       FROM shartnomalar_organization 
       JOIN users  ON shartnomalar_organization.user_id = users.id
       JOIN regions ON users.region_id = regions.id
@@ -84,14 +87,16 @@ const getTotalShartnoma = handleServiceError(async (region_id, main_schet_id) =>
         AND regions.id = $1
         AND shartnomalar_organization.main_schet_id = $2
     `,
-    [region_id, main_schet_id], 
-  );
-  return result.rows[0];
-});
+      [region_id, main_schet_id],
+    );
+    return result.rows[0];
+  },
+);
 
-const getByIdShartnomaDB = handleServiceError(async (region_id, main_schet_id, id) => {
-  const result = await pool.query(
-    `
+const getByIdShartnomaDB = handleServiceError(
+  async (region_id, main_schet_id, id) => {
+    const result = await pool.query(
+      `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -123,9 +128,11 @@ const getByIdShartnomaDB = handleServiceError(async (region_id, main_schet_id, i
             AND shartnomalar_organization.id = $3
         ORDER BY shartnomalar_organization.id
     `,
-    [region_id, main_schet_id, id]);
-  return result.rows[0];
-});
+      [region_id, main_schet_id, id],
+    );
+    return result.rows[0];
+  },
+);
 
 const updateShartnomaDB = handleServiceError(async (object) => {
   const shartnoma = await pool.query(
@@ -150,12 +157,11 @@ const updateShartnomaDB = handleServiceError(async (object) => {
       object.smeta_2,
       object.spravochnik_organization_id,
       object.pudratchi_bool,
-      object.id
+      object.id,
     ],
   );
-  return shartnoma.rows[0]
-},
-);
+  return shartnoma.rows[0];
+});
 
 const deleteShartnomaDB = handleServiceError(async (id) => {
   await pool.query(
@@ -164,12 +170,16 @@ const deleteShartnomaDB = handleServiceError(async (id) => {
     [true, id],
   );
 
-  await pool.query(`UPDATE shartnomalar_organization SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`, [true, id]);
+  await pool.query(
+    `UPDATE shartnomalar_organization SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`,
+    [true, id],
+  );
 });
 
-const getByIdOrganizationShartnoma = handleServiceError(async (region_id, main_schet_id, organization_id) => {
-  const result = await pool.query(
-    `
+const getByIdOrganizationShartnoma = handleServiceError(
+  async (region_id, main_schet_id, organization_id) => {
+    const result = await pool.query(
+      `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -201,9 +211,11 @@ const getByIdOrganizationShartnoma = handleServiceError(async (region_id, main_s
             AND shartnomalar_organization.spravochnik_organization_id = $3
         ORDER BY shartnomalar_organization.id
     `,
-    [region_id, main_schet_id, organization_id]);
-  return result.rows;
-});
+      [region_id, main_schet_id, organization_id],
+    );
+    return result.rows;
+  },
+);
 module.exports = {
   createShartnoma,
   getAllShartnoma,
@@ -211,5 +223,5 @@ module.exports = {
   getByIdShartnomaDB,
   updateShartnomaDB,
   getByIdOrganizationShartnoma,
-  deleteShartnomaDB
+  deleteShartnomaDB,
 };

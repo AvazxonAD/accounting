@@ -15,7 +15,7 @@ const {
   deleteOperatsii,
 } = require("../../service/spravochnik/operatsii.db");
 
-const { getByIdSmeta } = require('../../service/smeta/smeta.db')
+const { getByIdSmeta } = require("../../service/smeta/smeta.db");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
@@ -24,11 +24,15 @@ const create = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 406));
   }
 
-  const smeta_test = await getByIdSmeta(value.smeta_id)
+  const smeta_test = await getByIdSmeta(value.smeta_id);
   if (!smeta_test) {
-    return next(new ErrorResponse('Server xatolik. smeta topilmadi', 406))
+    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 406));
   }
-  const test = await getByNameAndSchetOperatsii(value.name, value.type_schet, value.smeta_id);
+  const test = await getByNameAndSchetOperatsii(
+    value.name,
+    value.type_schet,
+    value.smeta_id,
+  );
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
@@ -91,21 +95,25 @@ const update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 406));
   }
 
-  const smeta_test = await getByIdSmeta(value.smeta_id)
+  const smeta_test = await getByIdSmeta(value.smeta_id);
   if (!smeta_test) {
-    return next(new ErrorResponse('Server xatolik. smeta topilmadi', 406))
+    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 406));
   }
   if (
     operatsii.name !== value.name ||
     operatsii.type_schet !== value.type_schet
   ) {
-    const test = await getByNameAndSchetOperatsii(value.name, value.type_schet, value.smeta_id);
+    const test = await getByNameAndSchetOperatsii(
+      value.name,
+      value.type_schet,
+      value.smeta_id,
+    );
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updateOperatsii({ ...value, id});
+  await updateOperatsii({ ...value, id });
 
   return res.status(201).json({
     success: true,

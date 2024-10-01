@@ -9,7 +9,7 @@ const {
   updateUser,
   deleteUser,
   getElementById,
-  getRegionAllUsers
+  getRegionAllUsers,
 } = require("../../controller/auth/user.controller");
 
 router.post("/create", protect, createUser);

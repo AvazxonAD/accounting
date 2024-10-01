@@ -12,7 +12,7 @@ const getByAllPodotChet = handleServiceError(async (name, rayon, region_id) => {
         AND regions.id = $3 
         AND spravochnik_podotchet_litso.isdeleted = false
     `,
-    [name, rayon, region_id]
+    [name, rayon, region_id],
   );
   return result.rows[0];
 });

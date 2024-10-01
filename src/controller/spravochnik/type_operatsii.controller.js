@@ -20,7 +20,7 @@ const {
 // create
 const create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
-  const user_id = req.user.id
+  const user_id = req.user.id;
   const { error, value } = typeOperatsiiValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 406));
@@ -30,7 +30,7 @@ const create = asyncHandler(async (req, res, next) => {
   if (test) {
     return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
   }
-  
+
   await createtype_operatsii(user_id, name, rayon);
 
   return res.status(201).json({
