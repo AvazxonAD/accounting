@@ -190,11 +190,11 @@ const getByBudjet_idMain_schet = handleServiceError(async (id, region_id) => {
       FROM main_schet 
       JOIN users ON main_schet.user_id = users.id
       JOIN regions ON users.region_id = regions.id
-      WHERE spravochnik_budjet_name_id = $1 
-        AND isdeleted = false
+      WHERE main_schet.spravochnik_budjet_name_id = $1 
+        AND main_schet.isdeleted = false
+        AND regions.id = $2
     `,
-
-    [id],
+    [id, region_id],
   );
   return result.rows;
 });

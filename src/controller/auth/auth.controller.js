@@ -116,7 +116,8 @@ const getProfile = asyncHandler(async (req, res, next) => {
 
 // select budget
 const select_budget = asyncHandler(async (req, res, next) => {
-  const result = await getByBudjet_idMain_schet(req.params.id);
+  const region_id = req.query.region_id
+  const result = await getByBudjet_idMain_schet(req.params.id, region_id);
 
   return res.status(200).json({
     success: true,
