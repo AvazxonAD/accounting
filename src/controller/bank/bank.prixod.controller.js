@@ -8,7 +8,7 @@ const {
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 
 const { returnAllChildSumma } = require("../../utils/returnSumma");
-const { getByIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
+const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
 const {
   getByIdOrganization,
@@ -63,9 +63,11 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(
+    const contract = await getByIdAndOrganizationIdShartnoma(
       region_id,
+      main_schet_id,
       value.id_shartnomalar_organization,
+      value.id_spravochnik_organization
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
@@ -202,9 +204,11 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(
+    const contract = await getByIdAndOrganizationIdShartnoma(
       region_id,
+      main_schet_id,
       value.id_shartnomalar_organization,
+      value.id_spravochnik_organization
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));

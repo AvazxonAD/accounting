@@ -6,7 +6,7 @@ const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
 const {
   getByIdOrganization,
 } = require("../../service/spravochnik/organization.db");
-const { getByIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
+const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
 const {
   getByIdPodrazlanie,
@@ -22,7 +22,6 @@ const {
 } = require("../../helpers/validation/bank/bank.rasxod.validation");
 
 const { returnAllChildSumma } = require("../../utils/returnSumma");
-const { returnLocalDate } = require("../../utils/date.function");
 
 const {
   createBankRasxodDb,
@@ -66,9 +65,11 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(
+    const contract = await getByIdAndOrganizationIdShartnoma(
       region_id,
+      main_schet_id,
       value.id_shartnomalar_organization,
+      value.id_spravochnik_organization
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
@@ -190,9 +191,11 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
   }
 
   if (value.id_shartnomalar_organization) {
-    const contract = await getByIdShartnoma(
+    const contract = await getByIdAndOrganizationIdShartnoma(
       region_id,
+      main_schet_id,
       value.id_shartnomalar_organization,
+      value.id_spravochnik_organization
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));

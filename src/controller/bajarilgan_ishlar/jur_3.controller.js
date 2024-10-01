@@ -2,164 +2,93 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
 
+const { jur3Validation } = require('../../helpers/validation/bajarilgan_ishlar/jur_3.validation')
+const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.db')
+const { getByIdOrganization } = require('../../service/spravochnik/organization.db')
+const { getByIdShartnomaDB } = require('../../service/shartnoma/shartnoma.db')
+const { getByIdOperatsii } = require('../../service/spravochnik/operatsii.db')
+const { getByIdPodrazlanie } = require('../../service/spravochnik/podrazdelenie.db')
+const { getByIdSostav } = require('../../service/spravochnik/sostav.db')
+const { getByIdtype_operatsii } = require('../../service/spravochnik/type_operatsii.db')
+const {
+  createJur3DB,
+  createJur3ChildDB
+} = require('../../service/bajarilgan_ishlar/jur_3.db')
+
 // jur_3 create
 const jur_3_create = asyncHandler(async (req, res, next) => {
-  const {
-    doc_num,
-    doc_date,
-    summa,
-    opisanie,
-    id_spravochnik_organization,
-    shartnomalar_organization_id,
-    childs,
-  } = req.body;
 
-  checkValueString(doc_date, doc_num, opisanie);
-  checkValueNumber(
-    summa,
-    id_spravochnik_organization,
-    shartnomalar_organization_id,
-  );
-  checkValueArray(childs);
+  const { error, value } = jur3Validation.validate(req.body)
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 406))
+  }
 
+  const region_id = req.user.region_id
+  const user_id = req.user.id
   const main_schet_id = req.query.main_schet_id;
-  let main_schet = await pool.query(
-    `SELECT * FROM main_schet WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [main_schet_id, req.user.region_id],
-  );
-  main_schet = main_schet.rows[0];
+
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id)
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  let organization = await pool.query(
-    `SELECT * FROM spravochnik_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [id_spravochnik_organization, req.user.region_id],
-  );
-  organization = organization.rows[0];
+  const spravochnik_operatsii_own = await getByIdOperatsii(value.spravochnik_operatsii_own_id, 'Akt_priyom_peresdach')
+  if (!spravochnik_operatsii_own) {
+    return next(new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404))
+  }
+  const organization = await getByIdOrganization(region_id, value.id_spravochnik_organization)
   if (!organization) {
     return next(new ErrorResponse("spravochnik_organization topilmadi", 404));
   }
 
-  let shartnoma = await pool.query(
-    `SELECT * FROM shartnomalar_organization WHERE id = $1 AND user_id = $2 AND isdeleted = false`,
-    [shartnomalar_organization_id, req.user.region_id],
-  );
-  shartnoma = shartnoma.rows[0];
-  if (!shartnoma) {
-    return next(new ErrorResponse("shartnomalar_organization topilmadi", 404));
+  if (value.shartnomalar_organization_id) {
+    const shartnoma = await getByIdShartnomaDB(region_id, main_schet_id, value.shartnomalar_organization_id)
+    if (!shartnoma) {
+      return next(new ErrorResponse("shartnomalar_organization topilmadi", 404));
+    }
   }
 
-  for (let child of childs) {
-    checkValueNumber(
-      child.spravochnik_operatsii_id,
-      child.summa,
-      child.id_spravochnik_podrazdelenie,
-      child.id_spravochnik_sostav,
-      child.id_spravochnik_type_operatsii,
-    );
-
-    const spravochnik_operatsii = await pool.query(
-      `SELECT * FROM spravochnik_operatsii WHERE type_schet = $1 AND isdeleted = false AND id = $2`,
-      ["kassa_prixod_rasxod", child.spravochnik_operatsii_id],
-    );
-    if (!spravochnik_operatsii.rows[0]) {
+  for (let child of value.childs) {
+    const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'Akt_priyom_peresdach')
+    if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
-
-    const spravochnik_podrazdelenie = await pool.query(
-      `SELECT * FROM spravochnik_podrazdelenie WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_podrazdelenie],
-    );
-    if (!spravochnik_podrazdelenie.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404),
-      );
+    if (child.id_spravochnik_podrazdelenie) {
+      const spravochnik_podrazdelenie = await getByIdPodrazlanie(region_id, child.id_spravochnik_podrazdelenie)
+      if (!spravochnik_podrazdelenie) {
+        return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
+      }
     }
-
-    const spravochnik_sostav = await pool.query(
-      `SELECT * FROM spravochnik_sostav WHERE user_id = $1 AND isdeleted = false AND id = $2`,
-      [req.user.region_id, child.id_spravochnik_sostav],
-    );
-    if (!spravochnik_sostav.rows[0]) {
-      return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+    if (child.id_spravochnik_sostav) {
+      const spravochnik_sostav = await getByIdPodrazlanie(region_id, child.id_spravochnik_sostav)
+      if (!spravochnik_sostav) {
+        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+      }
     }
-
-    const spravochnik_type_operatsii = await pool.query(
-      `SELECT * FROM spravochnik_type_operatsii WHERE isdeleted = false AND id = $1 AND user_id = $2`,
-      [child.id_spravochnik_type_operatsii, req.user.region_id],
-    );
-    if (!spravochnik_type_operatsii.rows[0]) {
-      return next(
-        new ErrorResponse("spravochnik_type_operatsii topilmadi", 404),
-      );
+    if(child.id_spravochnik_sostav){
+      const spravochnik_sostav = await getByIdSostav(region_id, child.id_spravochnik_sostav)
+      if (!spravochnik_sostav) {
+        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
+      }
+    }
+    if(child.id_spravochnik_type_operatsii){
+      const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, child.id_spravochnik_type_operatsii)
+      if (!spravochnik_type_operatsii) {
+        return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
+      }
     }
   }
 
-  const result = await pool.query(
-    `
-        INSERT INTO bajarilgan_ishlar_jur3(
-            doc_num, 
-            doc_date, 
-            opisanie, 
-            summa, 
-            id_spravochnik_organization, 
-            shartnomalar_organization_id, 
-            main_schet_id,
-            user_id
-        ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
-        RETURNING *
-        `,
-    [
-      doc_num,
-      doc_date,
-      opisanie,
-      summa,
-      id_spravochnik_organization,
-      shartnomalar_organization_id,
-      main_schet_id,
-      req.user.region_id,
-    ],
-  );
+  const result = await createJur3DB({ ...value, main_schet_id, user_id})
 
-  if (!result.rows[0]) {
-    return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
-  }
-
-  for (let child of childs) {
-    const result_child = await pool.query(
-      `
-            INSERT INTO bajarilgan_ishlar_jur3_child(
-                spravochnik_operatsii_id,
-                summa,
-                id_spravochnik_podrazdelenie,
-                id_spravochnik_sostav,
-                id_spravochnik_type_operatsii,
-                own_schet,
-                own_subschet,
-                main_schet_id,
-                bajarilgan_ishlar_jur3_id,
-                user_id
-            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [
-        child.spravochnik_operatsii_id,
-        child.summa,
-        child.id_spravochnik_podrazdelenie,
-        child.id_spravochnik_sostav,
-        child.id_spravochnik_type_operatsii,
-        main_schet.jur2_schet,
-        main_schet.jur2_subschet,
-        main_schet.id,
-        result.rows[0].id,
-        req.user.region_id,
-      ],
-    );
-    if (!result_child.rows[0]) {
-      return next(
-        new ErrorResponse("Server xatolik. Child yozuv kiritilmadi", 500),
-      );
-    }
+  for (let child of value.childs) {
+    await createJur3ChildDB({
+      ...child, 
+      main_schet_id, 
+      user_id, 
+      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
+      id: result.id
+    })
   }
 
   res.status(201).json({

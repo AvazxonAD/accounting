@@ -126,7 +126,6 @@ const getByIdShartnomaDB = handleServiceError(
             AND regions.id = $1
             AND shartnomalar_organization.main_schet_id = $2
             AND shartnomalar_organization.id = $3
-        ORDER BY shartnomalar_organization.id
     `,
       [region_id, main_schet_id, id],
     );
@@ -216,6 +215,27 @@ const getByIdOrganizationShartnoma = handleServiceError(
     return result.rows;
   },
 );
+
+const getByIdAndOrganizationIdShartnoma = handleServiceError(async (region_id, main_schet_id, id, organization_id) => {
+  const result = await pool.query(
+      `
+        SELECT 
+            shartnomalar_organization.* 
+        FROM shartnomalar_organization
+        JOIN users  ON shartnomalar_organization.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        WHERE shartnomalar_organization.isdeleted = false 
+            AND regions.id = $1
+            AND shartnomalar_organization.main_schet_id = $2
+            AND shartnomalar_organization.id = $3
+            AND shartnomalar_organization.spravochnik_organization_id = $4
+    `,
+      [region_id, main_schet_id, id, organization_id],
+    );
+    return result.rows[0];
+  },
+)
+
 module.exports = {
   createShartnoma,
   getAllShartnoma,
@@ -224,4 +244,5 @@ module.exports = {
   updateShartnomaDB,
   getByIdOrganizationShartnoma,
   deleteShartnomaDB,
+  getByIdAndOrganizationIdShartnoma
 };
