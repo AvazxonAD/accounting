@@ -53,7 +53,7 @@ const getAllMonitoring = handleServiceError(
         LEFT JOIN shartnomalar_organization so2 ON br.id_shartnomalar_organization = so2.id
         WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
         AND br.doc_date BETWEEN $3 AND $4
-        ORDER BY combined_date DESC
+        ORDER BY combined_date
         OFFSET $5 LIMIT $6;
     `,
       [region_id, main_schet_id, from, to, offset, limit],
