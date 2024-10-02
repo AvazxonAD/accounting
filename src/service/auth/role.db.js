@@ -43,6 +43,11 @@ const delete_role = handleServiceError(async (id) => {
   await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2`, [true, id]);
 });
 
+const getAdminRole = handleServiceError(async () => {
+  const admin = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = $2`, ['region-admin', false])
+  return admin.rows[0]
+})
+
 module.exports = {
   getByNameRole,
   create_role,
@@ -50,4 +55,5 @@ module.exports = {
   getByIdRole,
   update_role,
   delete_role,
+  getAdminRole
 };

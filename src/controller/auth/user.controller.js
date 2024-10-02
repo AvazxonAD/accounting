@@ -2,7 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const bcrypt = require("bcrypt");
-const { getByIdRole } = require("../../service/auth/role.db");
+const { getByIdRole, getAdminRole } = require("../../service/auth/role.db");
 const { getByIdRegion } = require("../../service/auth/region.db");
 const { getByLoginAuth } = require("../../service/auth/auth.db");
 const {
@@ -17,20 +17,19 @@ const {
   getByIdUser,
   update_user,
   deleteUserDb,
-  getAllUsersDB,
+  getAllUsersForSuperAdminDB,
 } = require("../../service/auth/user.db");
 
-// create user
-const createUser = asyncHandler(async (req, res, next) => {
+// create user for super admin
+const createUserForSuperAdmin = asyncHandler(async (req, res, next) => {
   const { error, value } = userValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
   
-  const user_region_id = req.user.region_id;
-  let { login, password, fio, region_id, role_id } = value;
+  let { login, password, fio, region_id } = value;
   
-  const role = await getByIdRole(role_id);
+  const role = await getAdminRole();
   if (!role) {
     return next(new ErrorResponse("Server xatolik. Rol topilmadi", 404));
   }
@@ -44,12 +43,8 @@ const createUser = asyncHandler(async (req, res, next) => {
   if (test) {
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
   }
-  
-  if (user_region_id && user_region_id !== region_id) {
-    return next(new ErrorResponse("Region ID noto'g'ri", 403));
-  }
 
-  await create_user(login, hashedPassword, fio, role_id, region_id);
+  await create_user(login, hashedPassword, fio, role.id, region_id);
   const user_id = req.user.id;
   postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${user_id}`);
 
@@ -59,18 +54,10 @@ const createUser = asyncHandler(async (req, res, next) => {
   });
 });
 
-// get all users
-const getAllUsers = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  let users;
-
-  if (region_id) {
-    users = await getAllRegionUsers(region_id);
-    getLogger.info(`Region foydalanuvchilari olingan. Region ID: ${region_id}. Foydalanuvchi ID: ${req.user.id}`);
-  } else {
-    users = await getAllUsersDB();
-    getLogger.info(`Barcha foydalanuvchilar olingan. Foydalanuvchi ID: ${req.user.id}`);
-  }
+// get all users for super admin 
+const getAllUsersForSuperAdmin = asyncHandler(async (req, res, next) => {
+  const role = await getAdminRole()
+  const users = await getAllUsersForSuperAdminDB(role.id)
 
   return res.status(200).json({
     success: true,
@@ -192,8 +179,8 @@ const getElementById = asyncHandler(async (req, res, next) => {
 
 
 module.exports = {
-  createUser,
-  getAllUsers,
+  createUserForSuperAdmin,
+  getAllUsersForSuperAdmin,
   updateUser,
   deleteUser,
   getElementById,

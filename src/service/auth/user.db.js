@@ -48,7 +48,7 @@ const getAllRegionUsers = handleServiceError(async (region_id) => {
   return result.rows;
 });
 
-const getAllUsersDB = handleServiceError(async () => {
+const getAllUsersForSuperAdminDB = handleServiceError(async (role_id) => {
   const result = await pool.query(
     `SELECT 
             users.id, 
@@ -61,8 +61,8 @@ const getAllUsersDB = handleServiceError(async () => {
             FROM users 
             JOIN role ON role.id = users.role_id
             JOIN regions ON regions.id = users.region_id
-            WHERE users.isdeleted = false
-    `,
+            WHERE users.isdeleted = false AND role_id = $1
+    `, [role_id],
   );
   return result.rows;
 });
@@ -77,5 +77,5 @@ module.exports = {
   getByIdUser,
   update_user,
   deleteUserDb,
-  getAllUsersDB,
+  getAllUsersForSuperAdminDB,
 };
