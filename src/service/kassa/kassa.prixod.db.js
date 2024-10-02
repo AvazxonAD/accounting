@@ -76,22 +76,14 @@ const getAllKassaPrixodChild = handleServiceError(
               SELECT  
                   kassa_prixod_child.id,
                   kassa_prixod_child.spravochnik_operatsii_id,
-                  spravochnik_operatsii.name AS spravochnik_operatsii_name,
                   kassa_prixod_child.summa,
                   kassa_prixod_child.id_spravochnik_podrazdelenie,
-                  spravochnik_podrazdelenie.name AS spravochnik_podrazdelenie_name,
                   kassa_prixod_child.id_spravochnik_sostav,
-                  spravochnik_sostav.name AS spravochnik_sostav_name,
                   kassa_prixod_child.id_spravochnik_type_operatsii,
-                  spravochnik_type_operatsii.name AS spravochnik_type_operatsii_name,
                   kassa_prixod_child.spravochnik_operatsii_own_id
               FROM kassa_prixod_child 
               JOIN users ON users.id = kassa_prixod_child.user_id
               JOIN regions ON regions.id = users.region_id   
-              JOIN spravochnik_operatsii ON spravochnik_operatsii.id = kassa_prixod_child.spravochnik_operatsii_id
-              JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = kassa_prixod_child.id_spravochnik_podrazdelenie
-              JOIN spravochnik_sostav ON spravochnik_sostav.id = kassa_prixod_child.id_spravochnik_sostav
-              JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = kassa_prixod_child.id_spravochnik_type_operatsii
               WHERE regions.id = $1 
                 AND kassa_prixod_child.main_schet_id = $2 
                 AND kassa_prixod_child.isdeleted = false 
