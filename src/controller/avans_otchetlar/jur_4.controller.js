@@ -22,6 +22,8 @@ const {
   deleteJur4DB
 } = require('../../service/avans_otchetlar/jur4.db')
 
+const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
+
 // jur 4 create
 const jur_4_create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
@@ -30,52 +32,61 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
+    putLogger.error(`Server xatolik. Schet topilmadi. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const { error, value } = jur4Validation.validate(req.body)
+  const { error, value } = jur4Validation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400))
+    putLogger.error(`Validation xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${user_id}`);
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
-  const podotchet_litso = await getByIdPodotchet(region_id, value.spravochnik_podotchet_litso_id)
+  const podotchet_litso = await getByIdPodotchet(region_id, value.spravochnik_podotchet_litso_id);
   if (!podotchet_litso) {
+    putLogger.error(`Podotchet_litso topilmadi. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }
-  const spravochnik_operatsii_own = await getByIdOperatsii(value.spravochnik_operatsii_own_id, 'avans_otchet')
+
+  const spravochnik_operatsii_own = await getByIdOperatsii(value.spravochnik_operatsii_own_id, 'avans_otchet');
   if (!spravochnik_operatsii_own) {
-    return next(new ErrorResponse('Server xatolik. spravochnik_operatsii_own topilmadi', 404))
+    putLogger.error(`Server xatolik. spravochnik_operatsii_own topilmadi. Foydalanuvchi ID: ${user_id}`);
+    return next(new ErrorResponse('Server xatolik. spravochnik_operatsii_own topilmadi', 404));
   }
 
   for (let child of value.childs) {
     if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'avans_otchet')
+      const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'avans_otchet');
       if (!spravochnik_operatsii) {
+        putLogger.error(`spravochnik_operatsii topilmadi. Foydalanuvchi ID: ${user_id}`);
         return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
       }
     }
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(region_id, child.id_spravochnik_podrazdelenie)
+      const spravochnik_podrazdelenie = await getByIdPodrazlanie(region_id, child.id_spravochnik_podrazdelenie);
       if (!spravochnik_podrazdelenie) {
+        putLogger.error(`spravochnik_podrazdelenie topilmadi. Foydalanuvchi ID: ${user_id}`);
         return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
       }
     }
     if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(region_id, child.id_spravochnik_sostav)
+      const spravochnik_sostav = await getByIdSostav(region_id, child.id_spravochnik_sostav);
       if (!spravochnik_sostav) {
+        putLogger.error(`spravochnik_sostav topilmadi. Foydalanuvchi ID: ${user_id}`);
         return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, child.id_spravochnik_type_operatsii)
+      const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, child.id_spravochnik_type_operatsii);
       if (!spravochnik_type_operatsii) {
+        putLogger.error(`spravochnik_type_operatsii topilmadi. Foydalanuvchi ID: ${user_id}`);
         return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
       }
     }
   }
 
-  const summa = returnAllChildSumma(value.childs)
-  const result = await createJur4DB({ ...value, main_schet_id, user_id, summa })
+  const summa = returnAllChildSumma(value.childs);
+  const result = await createJur4DB({ ...value, main_schet_id, user_id, summa });
 
   for (let child of value.childs) {
     await createJur4ChildDB({
@@ -84,14 +95,17 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
       main_schet_id,
       avans_otchetlar_jur4_id: result.id,
       spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
-    })
+    });
   }
 
-  res.status(201).json({
+  putLogger.info(`Muvaffaqyatli kiritildi. Foydalanuvchi ID: ${user_id}`);
+
+  return res.status(201).json({
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
 });
+
 
 // jur 4 get all
 const getAllJur_4 = asyncHandler(async (req, res, next) => {
@@ -100,31 +114,34 @@ const getAllJur_4 = asyncHandler(async (req, res, next) => {
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
+    getLogger.error(`Server xatolik. Schet topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
   const { error, value } = queryValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 400);
+    getLogger.error(`Validation xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${req.user.id}`);
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const limit = parseInt(value.limit) || 10;
   const page = parseInt(value.page) || 1;
   const from = value.from;
   const to = value.to;
+  
   if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
+    getLogger.error(`Limit yoki page musbat sonlar bo'lishi kerak. Foydalanuvchi ID: ${req.user.id}`);
+    return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
   }
+  
   const offset = (page - 1) * limit;
 
-  const results = await getAllJur4DB(region_id, main_schet_id, from, to, offset, limit)
+  const results = await getAllJur4DB(region_id, main_schet_id, from, to, offset, limit);
 
   const resultArray = [];
 
   for (let result of results.rows) {
-    const prixod_child = await getAllJur4ChildDB(region_id, main_schet_id, result.id)
+    const prixod_child = await getAllJur4ChildDB(region_id, main_schet_id, result.id);
 
     let object = { ...result };
     object.childs = prixod_child;
@@ -134,6 +151,8 @@ const getAllJur_4 = asyncHandler(async (req, res, next) => {
   const total = results.total;
   const pageCount = Math.ceil(total / limit);
   const summa = results.summa;
+
+  getLogger.info(`Muvaffaqiyatli ma'lumotlar olindi. Foydalanuvchi ID: ${req.user.id}, Sahifa: ${page}`);
 
   return res.status(200).json({
     success: true,

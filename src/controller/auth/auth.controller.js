@@ -24,19 +24,19 @@ const { get_all_region } = require('../../service/auth/region.db');
 const login = asyncHandler(async (req, res, next) => {
   const { error, value } = authValidation.validate(req.body);
   if (error) {
-    postLogger.error(`Validation error: ${error.details[0].message}. UserId: ${req.user.id}`);
+    postLogger.error(`Tekshiruv xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse(error.details[0].message), 400);
   }
   
   const user = await getByLoginAuth(value.login);
   if (!user) {
-    postLogger.error(`User not found. Login attempt: ${value.login}`);
+    postLogger.error(`Foydalanuvchi topilmadi. Kirish urini: ${value.login}`);
     return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
   }
   
   const matchPassword = await bcrypt.compare(value.password, user.password);
   if (!matchPassword) {
-    postLogger.error(`Incorrect password attempt. UserId: ${user.id}`);
+    postLogger.error(`Noto'g'ri parol urinish. Foydalanuvchi ID: ${user.id}`);
     return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
   }
 
@@ -44,13 +44,13 @@ const login = asyncHandler(async (req, res, next) => {
   if (value.main_schet_id) {
     main_schet = await getByIdMainSchet(user.region_id, value.main_schet_id);
     if (!main_schet) {
-      postLogger.warn(`Invalid main_schet_id provided. UserId: ${user.id}`);
-      return next(new ErrorResponse("Shot raqami raqami notog`ri kiritildi", 400));
+      postLogger.warn(`Noto'g'ri main_schet_id kiritildi. Foydalanuvchi ID: ${user.id}`);
+      return next(new ErrorResponse("Shot raqami noto'g'ri kiritildi", 400));
     }
   }
   
   const token = generateToken(user);
-  postLogger.info(`Foydalanuvchi muvaffaqiyatli tizimga kirdi. UserId: ${user.id}`);
+  postLogger.info(`Foydalanuvchi muvaffaqiyatli tizimga kirdi. Foydalanuvchi ID: ${user.id}`);
   
   return res.status(200).json({
     success: true,
@@ -62,6 +62,7 @@ const login = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // update
 const update = asyncHandler(async (req, res, next) => {
   const { error, value } = authUpdateValidation.validate(req.body);
@@ -69,7 +70,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   const user = await getByIdAuth(id);
   if (!user) {
-    putLogger.error(`User not found. UserId: ${id}`);
+    putLogger.error(`Foydalanuvchi topilmadi. Foydalanuvchi ID: ${id}`);
     return next(new ErrorResponse("Foydalanuvchi topilmadi", 404));
   }
 
@@ -79,7 +80,7 @@ const update = asyncHandler(async (req, res, next) => {
 
     const matchPassword = await bcrypt.compare(oldPassword, user.password);
     if (!matchPassword) {
-      putLogger.error(`Old password incorrect. UserId: ${req.user.id}`);
+      putLogger.error(`Eski parol noto'g'ri. Foydalanuvchi ID: ${req.user.id}`);
       return next(new ErrorResponse("Eski parol xato kiritildi", 403));
     }
     const newHashedPassword = await bcrypt.hash(newPassword, 10);
@@ -96,7 +97,7 @@ const update = asyncHandler(async (req, res, next) => {
     if (login !== user.login) {
       const test = await getByLoginAuth(login);
       if (test) {
-        putLogger.warn(`Login already in use. UserId: ${req.user.id}`);
+        putLogger.warn(`Login allaqachon ishlatilgan. Foydalanuvchi ID: ${req.user.id}`);
         return next(new ErrorResponse("Login avval ishlatilgan", 400));
       }
       user.login = login;
@@ -104,11 +105,11 @@ const update = asyncHandler(async (req, res, next) => {
   }
 
   await updateAuth(user.login, user.password, user.fio, id);
-  putLogger.info(`User profile updated. UserId: ${req.user.id}`);
+  putLogger.info(`Foydalanuvchi profili yangilandi. Foydalanuvchi ID: ${req.user.id}`);
   
   return res.status(200).json({
     success: true,
-    data: "Muvaffaqyatli yangilandi",
+    data: "Muvaffaqiyatli yangilandi",
   });
 });
 
@@ -117,11 +118,11 @@ const getProfile = asyncHandler(async (req, res, next) => {
   const user = await getProfileAuth(req.user.id);
   
   if (!user) {
-    getLogger.error(`Profile not found. UserId: ${req.user.id}`);
+    getLogger.error(`Profil topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. Foydalanuvchi topilmadi", 404));
   }
 
-  getLogger.info(`User profile retrieved. UserId: ${req.user.id}`);
+  getLogger.info(`Foydalanuvchi profili olindi. Foydalanuvchi ID: ${req.user.id}`);
   
   return res.status(200).json({
     success: true,
@@ -135,11 +136,11 @@ const select_budget = asyncHandler(async (req, res, next) => {
   const result = await getByBudjet_idMain_schet(req.params.id, region_id);
   
   if (!result) {
-    getLogger.error(`Budget not found. UserId: ${req.user.id}`);
+    getLogger.error(`Budjet topilmadi`);
     return next(new ErrorResponse("Budjet topilmadi", 404));
   }
 
-  getLogger.info(`Budget selected. UserId: ${req.user.id}`);
+  getLogger.info(`Budjet tanlandi`);
   
   return res.status(200).json({
     success: true,
@@ -147,18 +148,20 @@ const select_budget = asyncHandler(async (req, res, next) => {
   });
 });
 
+
 // for login
 const forLogin = asyncHandler(async (req, res, next) => {
   const all_budjet = await getAllBudjet();
   const all_region = await get_all_region();
   
-  getLogger.info(`All budgets and regions retrieved. UserId: ${req.user.id}`);
+  getLogger.info(`Barcha budjetlar va mintaqalar olindi`);
   
   return res.status(200).json({
     success: true,
     data: { all_budjet, all_region }
   });
 });
+
 
 module.exports = {
   login,

@@ -18,37 +18,37 @@ const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helper
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {
   if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
+    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
   }
   const { error, value } = regionValidation.validate(req.body);
   if (error) {
-    postLogger.error(`Validation error: ${error.details[0].message}. UserId: ${req.user.id}`);
+    postLogger.error(`Tasdiqlash xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const test = await getByNameRegion(value.name);
   if (test) {
-    postLogger.warn(`Region already exists: ${value.name}. UserId: ${req.user.id}`);
+    postLogger.warn(`Viloyat allaqachon mavjud: ${value.name}. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Ushbu viloyat avval kiritilgan", 409));
   }
 
   await create_region(value.name);
-  postLogger.info(`Region created: ${value.name}. UserId: ${req.user.id}`);
-  getLogger.info(`Region creation request successful. RegionName: ${value.name}, UserId: ${req.user.id}`);
+  postLogger.info(`Viloyat yaratildi: ${value.name}. Foydalanuvchi ID: ${req.user.id}`);
+  getLogger.info(`Viloyat yaratish so'rovi muvaffaqiyatli. Viloyat nomi: ${value.name}, Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(201).json({
     success: true,
-    data: "Muvafaqyatli kiritildi",
+    data: "Muvaffaqiyatli kiritildi",
   });
 });
 
 // get all regions
 const getAllReegions = asyncHandler(async (req, res, next) => {
   if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
+    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
   }
   const result = await get_all_region();
-  getLogger.info(`All regions retrieved. UserId: ${req.user.id}`);
+  getLogger.info(`Barcha mintaqalar olindi. Foydalanuvchi ID: ${req.user.id}`);
   
   return res.status(200).json({
     success: true,
@@ -59,7 +59,7 @@ const getAllReegions = asyncHandler(async (req, res, next) => {
 // update region
 const updateRegion = asyncHandler(async (req, res, next) => {
   if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
+    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
   }
   const id = req.params.id;
   const region = await getByIdRegion(id);
@@ -69,32 +69,32 @@ const updateRegion = asyncHandler(async (req, res, next) => {
 
   const { error, value } = regionValidation.validate(req.body);
   if (error) {
-    putLogger.error(`Validation error: ${error.details[0].message}. UserId: ${req.user.id}`);
+    putLogger.error(`Tasdiqlash xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   if (region.name !== value.name.trim()) {
     const test = await getByNameRegion(value.name);
     if (test) {
-      putLogger.warn(`Region already exists: ${value.name}. UserId: ${req.user.id}`);
+      putLogger.warn(`Viloyat allaqachon mavjud: ${value.name}. Foydalanuvchi ID: ${req.user.id}`);
       return next(new ErrorResponse("Ushbu viloyat avval kiritilgan", 409));
     }
   }
 
   await update_region(id, value.name.trim());
-  putLogger.info(`Region updated: ${value.name}. UserId: ${req.user.id}`);
-  getLogger.info(`Region update request successful. RegionId: ${id}, NewName: ${value.name.trim()}, UserId: ${req.user.id}`);
+  putLogger.info(`Viloyat yangilandi: ${value.name}. Foydalanuvchi ID: ${req.user.id}`);
+  getLogger.info(`Viloyat yangilash so'rovi muvaffaqiyatli. Viloyat ID: ${id}, Yangi nom: ${value.name.trim()}, Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(200).json({
     success: true,
-    data: "Muvafaqyatli yangilandi",
+    data: "Muvaffaqiyatli yangilandi",
   });
 });
 
 // delete region
 const deleteRegion = asyncHandler(async (req, res, next) => {
   if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
+    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
   }
   const id = req.params.id;
   const region = await getByIdRegion(id);
@@ -103,33 +103,35 @@ const deleteRegion = asyncHandler(async (req, res, next) => {
   }
 
   await delete_region(id);
-  deleteLogger.info(`Region deleted. RegionId: ${id}. UserId: ${req.user.id}`);
-  getLogger.info(`Region deletion request successful. RegionId: ${id}, UserId: ${req.user.id}`);
+  deleteLogger.info(`Viloyat o'chirildi. Viloyat ID: ${id}. Foydalanuvchi ID: ${req.user.id}`);
+  getLogger.info(`Viloyatni o'chirish so'rovi muvaffaqiyatli. Viloyat ID: ${id}, Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(200).json({
     success: true,
-    data: "Muvaffaqyatli ochirildi",
+    data: "Muvaffaqiyatli o'chirildi",
   });
 });
+
 
 // get region by ID
 const getElementById = asyncHandler(async (req, res, next) => {
   if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
+    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
   }
   const region = await getByIdRegion(req.params.id);
   if (!region) {
-    getLogger.error(`Region not found. RegionId: ${req.params.id}. UserId: ${req.user.id}`);
-    return next(new ErrorResponse("Server xatolik. Region topilmadi", 404));
+    getLogger.error(`Viloyat topilmadi. Viloyat ID: ${req.params.id}. Foydalanuvchi ID: ${req.user.id}`);
+    return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
 
-  getLogger.info(`Region retrieved. RegionId: ${req.params.id}. UserId: ${req.user.id}`);
+  getLogger.info(`Viloyat olindi. Viloyat ID: ${req.params.id}. Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(200).json({
     success: true,
     data: region,
   });
 });
+
 
 module.exports = {
   createRegion,
