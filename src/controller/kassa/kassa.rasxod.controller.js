@@ -236,7 +236,8 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
     value.spravochnik_operatsii_own_id,
     "kassa_rasxod",
   );
-  if (spravochnik_operatsii_own) {
+  console.log(spravochnik_operatsii_own)
+  if (!spravochnik_operatsii_own) {
     return next(
       new ErrorResponse(
         "Server xatolik. spravochnik_operatsii_own topilmadi",
