@@ -37,8 +37,9 @@ const getAllKassaMonitoring = asyncHandler(async (req, res, next) => {
     offset,
     limit,
     from,
-    to,
+    to
   );
+  
   const total = Number(result.total_count);
   const prixod_sum = Number(result.all_prixod_sum);
   const rasxod_sum = Number(result.all_rasxod_sum);

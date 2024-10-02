@@ -216,7 +216,7 @@ const checkMainSchetDB = handleServiceError(async (id) => {
       return false
     }
   }
-  return true;
+  return true
 })
 
 module.exports = {
