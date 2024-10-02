@@ -199,6 +199,26 @@ const getByBudjet_idMain_schet = handleServiceError(async (id, region_id) => {
   return result.rows;
 });
 
+const checkMainSchetDB = handleServiceError(async (id) => {
+  const tables = await pool.query(`
+      SELECT 
+          conrelid::regclass AS name
+      FROM 
+          pg_constraint
+      WHERE 
+          confrelid = 'main_schet'::regclass;
+  `)
+  for(let table of tables.rows){
+    const test = await pool.query(`
+      SELECT * FROM ${table.name} WHERE main_schet_id = $1 AND isdeleted = false
+    `, [id])
+    if(test.rows.length > 0){
+      return false
+    }
+  }
+  return true;
+})
+
 module.exports = {
   getByIdMainSchet,
   createMain_schet,
@@ -206,4 +226,5 @@ module.exports = {
   updateMain_schet,
   deleteMain_schet,
   getByBudjet_idMain_schet,
+  checkMainSchetDB
 };

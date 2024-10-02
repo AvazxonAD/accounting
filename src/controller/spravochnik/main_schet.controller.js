@@ -8,6 +8,7 @@ const {
   getAllMain_schet,
   updateMain_schet,
   deleteMain_schet,
+  checkMainSchetDB
 } = require("../../service/spravochnik/main.schet.db");
 const {
   mainSchetValidator,
@@ -115,6 +116,10 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
+  const test = await checkMainSchetDB(id)
+  if(!test){
+    return next(new ErrorResponse('Ushbu schetga boglangan documentlar bor', 400))
+  }
   await deleteMain_schet(id);
 
   return res.status(200).json({
