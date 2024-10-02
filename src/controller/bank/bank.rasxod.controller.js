@@ -41,6 +41,7 @@ const {
 const {
   queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
+const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
 // bank rasxod
 const bank_rasxod = asyncHandler(async (req, res, next) => {
@@ -157,7 +158,8 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
     });
   }
 
-  res.status(201).json({
+  postLogger.info(`Bank rasxod doc kiritildi. UserId: ${req.user.id}`)
+  return res.status(201).json({
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
@@ -283,6 +285,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
     });
   }
 
+  putLogger.info(`Bank rasxod doc yangilandi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     data: "Muvaffaqiyatli yangilandi",
@@ -377,6 +380,7 @@ const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
     return result;
   });
 
+  getLogger.info(`Bank rasxod doclar olindi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     data: object,

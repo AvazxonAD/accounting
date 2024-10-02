@@ -6,7 +6,7 @@ const {
   bankPrixodChildValidation,
   queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
-
+const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const {
   getByIdAndOrganizationIdShartnoma,
@@ -170,7 +170,8 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     });
   }
 
-  res.status(201).json({
+  postLogger.info(`Bank prixod doc yaratildi. UserId: ${req.user.id}`)
+  return res.status(201).json({
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
@@ -312,6 +313,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
     });
   }
 
+  putLogger.info(`Bank prixod doc yangilandi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     data: "Muvaffaqiyatli yangilandi",
@@ -337,6 +339,7 @@ const delete_bank_prixod = asyncHandler(async (req, res, next) => {
 
   await deleteBankPrixodChild(id);
 
+  deleteLogger.info(`Bank prixod doc ochirildi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     data: "Muvaffaqiyatli ochirildi",
@@ -370,6 +373,7 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
     return result;
   });
 
+  postLogger.info(`Bank prixod doc olindi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     data: object,
@@ -431,6 +435,8 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   }
   const total = Number(totalQuery.total);
   const pageCount = Math.ceil(total / limit);
+
+  getLogger.info(`Bank prixod doclar olindi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     meta: {

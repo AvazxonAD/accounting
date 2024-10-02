@@ -24,8 +24,6 @@ const {
 const createUser = asyncHandler(async (req, res, next) => {
   const { error, value } = userValidation.validate(req.body);
   if (error) {
-    const user_id = req.user.id;
-    postLogger.error(`Tekshirish xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse(error.details[0].message, 400));
   }
   
@@ -34,8 +32,6 @@ const createUser = asyncHandler(async (req, res, next) => {
   
   const role = await getByIdRole(role_id);
   if (!role) {
-    const user_id = req.user.id;
-    postLogger.error(`Server xatolik. Rol topilmadi. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Server xatolik. Rol topilmadi", 404));
   }
 
@@ -46,14 +42,10 @@ const createUser = asyncHandler(async (req, res, next) => {
 
   const test = await getByLoginAuth(value.login);
   if (test) {
-    const user_id = req.user.id;
-    postLogger.error(`Ushbu login avval kiritilgan: ${value.login}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
   }
   
   if (user_region_id && user_region_id !== region_id) {
-    const user_id = req.user.id;
-    postLogger.error(`Region ID noto'g'ri: ${region_id}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Region ID noto'g'ri", 403));
   }
 
@@ -66,8 +58,6 @@ const createUser = asyncHandler(async (req, res, next) => {
     data: "Muvafaqyatli kiritildi",
   });
 });
-
-
 
 // get all users
 const getAllUsers = asyncHandler(async (req, res, next) => {
@@ -93,7 +83,6 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 const getRegionAllUsers = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   if (!region_id) {
-    putLogger.error(`Siz uchun ruhsat etilmagan. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
   }
 
@@ -118,13 +107,11 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
   const oldUser = await getByIdUser(id);
   if (!oldUser) {
-    putLogger.error(`Server xatolik. User topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
 
   const { error, value } = userValidation.validate(req.body);
   if (error) {
-    putLogger.error(`Tekshirish xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
@@ -132,13 +119,11 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
   const role = await getByIdRole(role_id);
   if (!role) {
-    putLogger.error(`Server xatolik. Role topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. Role topilmadi", 404));
   }
 
   const region = await getByIdRegion(region_id);
   if (!region) {
-    putLogger.error(`Server xatolik. Viloyat topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
 
@@ -150,7 +135,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
   if (oldUser.login !== login) {
     const test = await getByLoginAuth(login);
     if (test) {
-      putLogger.error(`Ushbu login avval kiritilgan. Foydalanuvchi ID: ${req.user.id}`);
       return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
     }
   }
@@ -177,7 +161,6 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 
   const userToDelete = await getByIdUser(id);
   if (!userToDelete) {
-    deleteLogger.error(`Server xatolik. User topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
 
@@ -196,7 +179,6 @@ const getElementById = asyncHandler(async (req, res, next) => {
   const user = await getByIdUser(req.params.id);
 
   if (!user) {
-    getLogger.error(`Server xatolik. User topilmadi. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
 

@@ -5,6 +5,7 @@ const {
   queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getLogger } = require('../../helpers/log_functions/logger')
 
 const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query);
@@ -45,6 +46,8 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
   const summaFrom = Number(result.total_sum_from);
   const summaTo = Number(result.total_sum_to);
   const pageCount = Math.ceil(total / limit);
+
+  getLogger.info(`Muvaffaqiyatli bank monitoring doclar olindi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,
     meta: {

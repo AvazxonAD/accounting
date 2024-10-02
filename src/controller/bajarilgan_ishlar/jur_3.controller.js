@@ -21,6 +21,7 @@ const {
   getByIdtype_operatsii,
 } = require("../../service/spravochnik/type_operatsii.db");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
+const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
 const {
   createJur3DB,
@@ -142,6 +143,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
     });
   }
 
+  postLogger.info(`Jur3 doc muvaffaqiyatli kiritildi. UserId : ${user_id}`)
   res.status(201).json({
     success: true,
     data: "Muvaffaqiyatli kiritildi",
@@ -196,6 +198,7 @@ const jur_3_get_all = asyncHandler(async (req, res, next) => {
   const pageCount = Math.ceil(total / limit);
   const summa = parents.summa;
 
+  getLogger.info(`Jur3 doclar muvaffaqiyatli olindi. UserId : ${user_id}`)
   return res.status(200).json({
     success: true,
     meta: {
@@ -321,6 +324,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
     });
   }
 
+  putLogger.info(`Jur3 doc muvaffaqiyatli yangilandi. UserId : ${user_id}`)
   res.status(201).json({
     success: true,
     data: "Muvaffaqiyatli yangilandi",
@@ -351,6 +355,7 @@ const deleteJur_3 = asyncHandler(async (req, res, next) => {
   await deleteJur3ChildDB(id);
   await deleteJur3DB(id);
 
+  deleteLogger.info(`Jur3 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
   return res.status(200).json({
     success: true,
     data: "Muvaffaqiyatli ochirildi",
@@ -382,6 +387,7 @@ const getElementByIdJur_3 = asyncHandler(async (req, res, next) => {
   const object = { ...result };
   object.childs = await getAllJur3ChildDB(region_id, main_schet_id, object.id);
 
+  getLogger.info(`Jur3 doc muvaffaqiyatli olindi. UserId : ${user_id}`)
   return res.status(200).json({
     success: true,
     data: object,

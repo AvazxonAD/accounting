@@ -23,13 +23,11 @@ const createRole = asyncHandler(async (req, res, next) => {
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
     const user_id = req.user.id;
-    postLogger.error(`Tekshirish xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse(error.details[0].message, 400));
   }
   const test = await getByNameRole(value.name);
   if (test) {
     const user_id = req.user.id;
-    postLogger.warn(`Rol allaqachon mavjud: ${value.name}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Ushbu ma'lumot avval kiritilgan", 409));
   }
 
@@ -69,14 +67,12 @@ const updateRole = asyncHandler(async (req, res, next) => {
   const role = await getByIdRole(id);
   if (!role) {
     const user_id = req.user.id;
-    getLogger.error(`Malumot topilmadi. RegionId: ${id}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
     const user_id = req.user.id;
-    putLogger.error(`Tekshirish xatosi: ${error.details[0].message}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
@@ -84,7 +80,6 @@ const updateRole = asyncHandler(async (req, res, next) => {
     const test = await getByNameRole(value.name.trim());
     if (test) {
       const user_id = req.user.id;
-      putLogger.warn(`Rol allaqachon mavjud: ${value.name}. Foydalanuvchi ID: ${user_id}`);
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
@@ -108,7 +103,6 @@ const deleteRole = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
   const role = await getByIdRole(id);
   if (!role) {
-    getLogger.error(`Malumot topilmadi. RoleId: ${id}. Foydalanuvchi ID: ${req.user.id}`);
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
@@ -131,7 +125,6 @@ const getElementById = asyncHandler(async (req, res, next) => {
   const role = await getByIdRole(req.params.id);
   if (!role) {
     const user_id = req.user.id;
-    getLogger.error(`Malumot topilmadi. RoleId: ${req.params.id}. Foydalanuvchi ID: ${user_id}`);
     return next(new ErrorResponse("Server xatolik. Role topilmadi", 404));
   }
 
