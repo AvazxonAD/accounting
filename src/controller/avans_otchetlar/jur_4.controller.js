@@ -49,7 +49,7 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
 
   for (let child of value.childs) {
     if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'Pokazat_uslugi')
+      const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'avans_otchet')
       if (!spravochnik_operatsii) {
         return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
       }
@@ -223,7 +223,7 @@ const jur_4_update = asyncHandler(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    data: "Muvaffaqiyatli kiritildi",
+    data: "Muvaffaqiyatli yangilandi",
   });
 });
 
