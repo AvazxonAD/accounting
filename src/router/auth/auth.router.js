@@ -8,11 +8,13 @@ const {
   update,
   getProfile,
   select_budget,
+  forLogin
 } = require("../../controller/auth/auth.controller");
 
 router.post("/login", login);
 router.patch("/update", protect, update);
 router.get("/get", protect, getProfile);
 router.get("/select/budjet/:id", select_budget);
+router.get('/for/login', protect, forLogin)
 
 module.exports = router;

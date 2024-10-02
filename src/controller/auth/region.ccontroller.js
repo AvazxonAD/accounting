@@ -13,9 +13,10 @@ const {
   delete_region,
 } = require("../../service/auth/region.db");
 
+
 // create region
 const createRegion = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
+  if (req.user.region_id) {
     return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
   }
   const { error, value } = regionValidation.validate(req.body);
@@ -38,7 +39,7 @@ const createRegion = asyncHandler(async (req, res, next) => {
 
 // get all regions
 const getAllReegions = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
+  if (req.user.region_id) {
     return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
   }
   const result = await get_all_region();
@@ -50,7 +51,7 @@ const getAllReegions = asyncHandler(async (req, res, next) => {
 
 // update region
 const updateRegion = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
+  if (req.user.region_id) {
     return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
   }
   const id = req.params.id;
@@ -78,7 +79,7 @@ const updateRegion = asyncHandler(async (req, res, next) => {
 
 // delete region
 const deleteRegion = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
+  if (req.user.region_id) {
     return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
   }
   const id = req.params.id;
@@ -96,7 +97,7 @@ const deleteRegion = asyncHandler(async (req, res, next) => {
 });
 
 const getElementById = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
+  if (req.user.region_id) {
     return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
   }
   const region = await getByIdRegion(req.params.id);
