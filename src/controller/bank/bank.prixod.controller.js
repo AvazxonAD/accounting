@@ -8,7 +8,9 @@ const {
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 
 const { returnAllChildSumma } = require("../../utils/returnSumma");
-const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.db");
+const {
+  getByIdAndOrganizationIdShartnoma,
+} = require("../../service/shartnoma/shartnoma.db");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
 const {
   getByIdOrganization,
@@ -46,7 +48,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
   const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -67,7 +69,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
       region_id,
       main_schet_id,
       value.id_shartnomalar_organization,
-      value.id_spravochnik_organization
+      value.id_spravochnik_organization,
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
@@ -76,7 +78,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'bank_prixod'
+    "bank_prixod",
   );
   if (!spravochnik_operatsii_own_id_test) {
     return next(
@@ -90,12 +92,12 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const { error, value } = bankPrixodChildValidation.validate(child);
     if (error) {
-      return next(new ErrorResponse(error.details[0].message, 406));
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const spravochnik_operatsii = await getByIdOperatsii(
       value.spravochnik_operatsii_id,
-      'bank_prixod'
+      "bank_prixod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -188,7 +190,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = bankPrixodValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
@@ -208,7 +210,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
       region_id,
       main_schet_id,
       value.id_shartnomalar_organization,
-      value.id_spravochnik_organization
+      value.id_spravochnik_organization,
     );
     if (!contract) {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
@@ -217,7 +219,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own_id_test = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'bank_prixod'
+    "bank_prixod",
   );
   if (!spravochnik_operatsii_own_id_test) {
     return next(
@@ -231,12 +233,12 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const { error, value } = bankPrixodChildValidation.validate(child);
     if (error) {
-      return next(new ErrorResponse(error.details[0].message, 406));
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
 
     const spravochnik_operatsii = await getByIdOperatsii(
       value.spravochnik_operatsii_id,
-      'bank_prixod'
+      "bank_prixod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -383,7 +385,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const { error, value } = queryValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
 
   const limit = parseInt(value.limit) || 10;

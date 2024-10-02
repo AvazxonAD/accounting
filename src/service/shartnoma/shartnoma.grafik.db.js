@@ -90,8 +90,9 @@ const getAllGrafikDB = handleServiceError(async (region_id, main_schet_id) => {
   return result.rows;
 });
 
-const updateShartnomaGrafikDB = handleServiceError(async (object) =>  { 
-  await pool.query(`
+const updateShartnomaGrafikDB = handleServiceError(async (object) => {
+  await pool.query(
+    `
     UPDATE shartnoma_grafik SET 
       oy_1 = $1,
       oy_2 = $2,
@@ -105,25 +106,27 @@ const updateShartnomaGrafikDB = handleServiceError(async (object) =>  {
       oy_10 = $10,
       oy_11 = $11,
       oy_12 = $12
-  `, [
-    object.oy_1,
-    object.oy_2,
-    object.oy_3,
-    object.oy_4,
-    object.oy_5,
-    object.oy_6,
-    object.oy_7,
-    object.oy_8,
-    object.oy_9,
-    object.oy_10,
-    object.oy_11,
-    object.oy_12,
-  ])
-})
+  `,
+    [
+      object.oy_1,
+      object.oy_2,
+      object.oy_3,
+      object.oy_4,
+      object.oy_5,
+      object.oy_6,
+      object.oy_7,
+      object.oy_8,
+      object.oy_9,
+      object.oy_10,
+      object.oy_11,
+      object.oy_12,
+    ],
+  );
+});
 
 module.exports = {
   createShartnomaGrafik,
   getByIdGrafikDB,
   getAllGrafikDB,
-  updateShartnomaGrafikDB
+  updateShartnomaGrafikDB,
 };

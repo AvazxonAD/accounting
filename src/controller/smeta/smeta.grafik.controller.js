@@ -23,7 +23,7 @@ const create = asyncHandler(async (req, res, next) => {
   const user_id = req.user.id;
   const { error, value } = smetaGrafikValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   let { smeta_id, spravochnik_budjet_name_id, year } = value;
@@ -154,7 +154,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = smetaGrafikUpdateValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const itogo = sum(

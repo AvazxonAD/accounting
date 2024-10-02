@@ -156,10 +156,13 @@ const updateShartnomaDB = handleServiceError(async (object) => {
       object.smeta_2,
       object.spravochnik_organization_id,
       object.pudratchi_bool,
-      object.id
+      object.id,
     ],
   );
-  await pool.query(`UPDATE shartnoma_grafik SET year = $1 WHERE id_shartnomalar_organization = $2`, [object.grafik_year, object.id])
+  await pool.query(
+    `UPDATE shartnoma_grafik SET year = $1 WHERE id_shartnomalar_organization = $2`,
+    [object.grafik_year, object.id],
+  );
 });
 
 const deleteShartnomaDB = handleServiceError(async (id) => {
@@ -216,8 +219,9 @@ const getByIdOrganizationShartnoma = handleServiceError(
   },
 );
 
-const getByIdAndOrganizationIdShartnoma = handleServiceError(async (region_id, main_schet_id, id, organization_id) => {
-  const result = await pool.query(
+const getByIdAndOrganizationIdShartnoma = handleServiceError(
+  async (region_id, main_schet_id, id, organization_id) => {
+    const result = await pool.query(
       `
         SELECT 
             shartnomalar_organization.* 
@@ -234,7 +238,47 @@ const getByIdAndOrganizationIdShartnoma = handleServiceError(async (region_id, m
     );
     return result.rows[0];
   },
-)
+);
+
+const forJur3DB = handleServiceError(async (region_id, main_schet_id) => {
+    const result = await pool.query(
+      `
+        SELECT 
+            shartnomalar_organization.id, 
+            shartnomalar_organization.doc_num, 
+            TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS doc_date, 
+            shartnomalar_organization.summa,
+            shartnomalar_organization.opisanie,
+            shartnomalar_organization.smeta_id,
+            shartnomalar_organization.smeta_2,
+            shartnomalar_organization.pudratchi_bool,
+            smeta.smeta_name,
+            smeta.smeta_number,
+            shartnomalar_organization.main_schet_id,
+            shartnomalar_organization.spravochnik_organization_id,
+            spravochnik_organization.name AS organization_name,
+            spravochnik_organization.okonx,
+            spravochnik_organization.bank_klient,
+            spravochnik_organization.raschet_schet,
+            spravochnik_organization.raschet_schet_gazna,
+            spravochnik_organization.mfo,
+            spravochnik_organization.inn
+        FROM shartnomalar_organization
+        JOIN users  ON shartnomalar_organization.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        JOIN smeta ON smeta.id = shartnomalar_organization.smeta_id
+        JOIN spravochnik_organization ON spravochnik_organization.id = shartnomalar_organization.spravochnik_organization_id
+        WHERE shartnomalar_organization.isdeleted = false 
+            AND regions.id = $1
+            AND shartnomalar_organization.main_schet_id = $2
+            AND shartnomalar_organization.pudratchi_bool = true
+    `,
+      [region_id, main_schet_id],
+    );
+    return result.rows;
+  },
+);
+
 
 module.exports = {
   createShartnoma,
@@ -244,5 +288,6 @@ module.exports = {
   updateShartnomaDB,
   getByIdOrganizationShartnoma,
   deleteShartnomaDB,
-  getByIdAndOrganizationIdShartnoma
+  getByIdAndOrganizationIdShartnoma,
+  forJur3DB
 };

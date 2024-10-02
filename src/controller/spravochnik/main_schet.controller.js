@@ -18,7 +18,7 @@ const {
 const create = asyncHandler(async (req, res, next) => {
   const { error, value } = mainSchetValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message), 406);
+    return next(new ErrorResponse(error.details[0].message), 400);
   }
   if (value.tashkilot_inn.toString().length !== 9) {
     return next(
@@ -43,7 +43,7 @@ const create = asyncHandler(async (req, res, next) => {
 const getAll = asyncHandler(async (req, res, next) => {
   const { error, value } = queryMainSchetValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const limit = parseInt(value.limit) || 10;
@@ -86,7 +86,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = mainSchetValidator.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);

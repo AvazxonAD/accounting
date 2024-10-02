@@ -22,9 +22,9 @@ const {
 const createUser = asyncHandler(async (req, res, next) => {
   const { error, value } = userValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
-  const user_region_id = req.user.region_id
+  const user_region_id = req.user.region_id;
 
   let { login, password, fio, region_id, role_id } = value;
 
@@ -42,9 +42,9 @@ const createUser = asyncHandler(async (req, res, next) => {
   if (test) {
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
   }
-  if(user_region_id){
-    if(user_region_id !== region_id){
-      return next(new ErrorResponse('region id notogri', 403))
+  if (user_region_id) {
+    if (user_region_id !== region_id) {
+      return next(new ErrorResponse("region id notogri", 403));
     }
   }
 
@@ -75,7 +75,7 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 });
 
 const getRegionAllUsers = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id
+  const region_id = req.user.region_id;
   if (region_id) {
     return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
   }
@@ -91,9 +91,9 @@ const getRegionAllUsers = asyncHandler(async (req, res, next) => {
 // update user
 const updateUser = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  let user_region_id = req.user.region_id
-  if(!user_region_id){
-    user_region_id = req.query.region_id
+  let user_region_id = req.user.region_id;
+  if (!user_region_id) {
+    user_region_id = req.query.region_id;
   }
   const oldUser = await getByIdUser(id);
   if (!oldUser) {
@@ -102,7 +102,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
   const { error, value } = userValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   let { login, password, fio, region_id, role_id } = value;
@@ -116,7 +116,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
-
 
   login = login.trim();
   password = password.trim();
@@ -141,9 +140,9 @@ const updateUser = asyncHandler(async (req, res, next) => {
 // delete user
 const deleteUser = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-  let region_id = req.user.region_id 
-  if(region_id){
-    region_id = req.query.region_id
+  let region_id = req.user.region_id;
+  if (region_id) {
+    region_id = req.query.region_id;
   }
 
   const deleteUser = await getByIdUser(id);

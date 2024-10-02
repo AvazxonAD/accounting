@@ -1,10 +1,13 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
+
 const { getByIdSmeta } = require("../../service/smeta/smeta.db");
-const {
-  getByIdOrganization,
-} = require("../../service//spravochnik/organization.db");
+const { getByIdOrganization } = require("../../service//spravochnik/organization.db");
+const { shartnomaValidation } = require("../../helpers/validation/shartnoma/shartnoma.validation");
+const { createShartnomaGrafik } = require("../../service/shartnoma/shartnoma.grafik.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db.js");
+
 const {
   createShartnoma,
   getAllShartnoma,
@@ -13,17 +16,8 @@ const {
   getByIdOrganizationShartnoma,
   getByIdShartnomaDB,
   deleteShartnomaDB,
+  forJur3DB
 } = require("../../service/shartnoma/shartnoma.db");
-
-const {
-  shartnomaValidation,
-} = require("../../helpers/validation/shartnoma/shartnoma.validation");
-const {
-  createShartnomaGrafik,
-} = require("../../service/shartnoma/shartnoma.grafik.db");
-const {
-  getByIdMainSchet,
-} = require("../../service/spravochnik/main.schet.db.js");
 
 const create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
@@ -32,7 +26,7 @@ const create = asyncHandler(async (req, res, next) => {
 
   const { error, value } = shartnomaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -55,7 +49,12 @@ const create = asyncHandler(async (req, res, next) => {
 
   const shartnoma = await createShartnoma({ ...value, user_id, main_schet_id });
 
-  await createShartnomaGrafik(user_id, shartnoma.id, main_schet_id, value.grafik_year);
+  await createShartnomaGrafik(
+    user_id,
+    shartnoma.id,
+    main_schet_id,
+    value.grafik_year,
+  );
 
   return res.status(201).json({
     success: true,
@@ -107,6 +106,11 @@ const getElementById = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  if (!main_schet) {
+    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
+  }
+
   const result = await getByIdShartnomaDB(region_id, main_schet_id, id);
   if (!result) {
     return next(new ErrorResponse("Server xatolik. Shartnoma topilmadi", 404));
@@ -131,7 +135,7 @@ const update_shartnoma = asyncHandler(async (req, res, next) => {
 
   const { error, value } = shartnomaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -166,6 +170,11 @@ const deleteShartnoma = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  if (!main_schet) {
+    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
+  }
+
   const test = await getByIdShartnomaDB(region_id, main_schet_id, id);
   if (!test) {
     return next(new ErrorResponse("Server xatolik. Shartnoma topilmadi", 404));
@@ -192,6 +201,25 @@ const getByIdOrganization_Shartnoma = asyncHandler(async (req, res, next) => {
   });
 });
 
+// for jur_3 
+const  forJur3 = asyncHandler(async (req, res, next) => {
+  const region_id = req.user.region_id;
+  const main_schet_id = req.query.main_schet_id;
+  const id = req.params.id;
+
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  if (!main_schet) {
+    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
+  }
+
+  const result = await forJur3DB(region_id, main_schet_id);
+
+  return res.status(200).json({
+    success: true,
+    data: result,
+  });
+})
+
 module.exports = {
   create,
   getAll,
@@ -199,4 +227,5 @@ module.exports = {
   update_shartnoma,
   getByIdOrganization_Shartnoma,
   deleteShartnoma,
+  forJur3
 };

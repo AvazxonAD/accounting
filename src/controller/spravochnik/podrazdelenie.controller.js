@@ -21,7 +21,7 @@ const create = asyncHandler(async (req, res, next) => {
   const user_id = req.user.id;
   const { error, value } = podrazdelenieValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const test = await getByAllPodrazdelenie(region_id, value.name, value.rayon);
@@ -83,7 +83,7 @@ const update = asyncHandler(async (req, res, next) => {
   }
   const { error, value } = podrazdelenieValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const { name, rayon } = value;
 

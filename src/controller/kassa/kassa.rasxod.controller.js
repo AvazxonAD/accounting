@@ -41,7 +41,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
 
   const { error, value } = kassaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -51,7 +51,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'kassa_rasxod'
+    "kassa_rasxod",
   );
   if (!spravochnik_operatsii_own) {
     return next(
@@ -74,7 +74,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const spravochnik_operatsii = await getByIdOperatsii(
       child.spravochnik_operatsii_id,
-      'kassa_rasxod'
+      "kassa_rasxod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
@@ -141,7 +141,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
 const getAllKassaRasxod = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet_id = value.main_schet_id;
@@ -224,7 +224,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
 
   const { error, value } = kassaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
@@ -234,7 +234,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
 
   const spravochnik_operatsii_own = await getByIdOperatsii(
     value.spravochnik_operatsii_own_id,
-    'kassa_rasxod'
+    "kassa_rasxod",
   );
   if (spravochnik_operatsii_own) {
     return next(
@@ -257,7 +257,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     const spravochnik_operatsii = await getByIdOperatsii(
       child.spravochnik_operatsii_id,
-      'kassa_rasxod'
+      "kassa_rasxod",
     );
     if (!spravochnik_operatsii) {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));

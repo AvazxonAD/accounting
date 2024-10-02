@@ -15,12 +15,12 @@ const {
 
 // create role
 const createRole = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const test = await getByNameRole(value.name);
   if (test) {
@@ -37,8 +37,8 @@ const createRole = asyncHandler(async (req, res, next) => {
 
 // get all role
 const getAllRole = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const roles = await get_all_role();
   return res.status(200).json({
@@ -49,8 +49,8 @@ const getAllRole = asyncHandler(async (req, res, next) => {
 
 // update role
 const updateRole = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const id = req.params.id;
   const role = await getByIdRole(id);
@@ -60,7 +60,7 @@ const updateRole = asyncHandler(async (req, res, next) => {
 
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   if (role.name !== value.name.trim()) {
@@ -80,8 +80,8 @@ const updateRole = asyncHandler(async (req, res, next) => {
 
 // delete role
 const deleteRole = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const id = req.params.id;
   const role = await getByIdRole(id);
@@ -98,8 +98,8 @@ const deleteRole = asyncHandler(async (req, res, next) => {
 });
 
 const getElementById = asyncHandler(async (req, res, next) => {
-  if(req.user.region_id){
-    return next(new ErrorResponse('Siz uchun ruhsat yoq', 403))
+  if (req.user.region_id) {
+    return next(new ErrorResponse("Siz uchun ruhsat yoq", 403));
   }
   const role = await getByIdRole(req.params.id);
   if (!role) {

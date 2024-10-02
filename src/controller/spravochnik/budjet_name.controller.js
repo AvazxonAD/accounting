@@ -18,7 +18,7 @@ const {
 const create = asyncHandler(async (req, res, next) => {
   const { error, value } = budjetValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0], 406));
+    return next(new ErrorResponse(error.details[0], 400));
   }
 
   const test = await getByNameBudjet(value.name);
@@ -54,7 +54,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   const { error, value } = budjetValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   if (oldBudjet.name !== value.name) {

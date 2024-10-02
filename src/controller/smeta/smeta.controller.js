@@ -19,7 +19,7 @@ const {
 const create = asyncHandler(async (req, res, next) => {
   const { error, value } = smetaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
 
   const { smeta_name, smeta_number, father_smeta_name } = value;
@@ -87,7 +87,7 @@ const update = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
   const { error, value } = smetaValidation.validate(req.body);
   if (error) {
-    return next(new ErrorResponse(error.details[0].message, 406));
+    return next(new ErrorResponse(error.details[0].message, 400));
   }
   const { smeta_name, smeta_number, father_smeta_name } = value;
 

@@ -66,7 +66,6 @@ const getByIDOperatsii = handleServiceError(async (id) => {
   return result.rows[0];
 });
 
-
 const updateOperatsii = handleServiceError(async (object) => {
   await pool.query(
     `UPDATE spravochnik_operatsii 
@@ -99,5 +98,5 @@ module.exports = {
   getByIdOperatsii,
   updateOperatsii,
   deleteOperatsii,
-  getByIDOperatsii
+  getByIDOperatsii,
 };
