@@ -15,6 +15,6 @@ router.post("/login", login);
 router.patch("/update", protect, update);
 router.get("/get", protect, getProfile);
 router.get("/select/budjet/:id", select_budget);
-router.get('/for/login', protect, forLogin)
+router.get('/for/login', forLogin)
 
 module.exports = router;
