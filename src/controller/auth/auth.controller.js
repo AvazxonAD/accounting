@@ -19,6 +19,9 @@ const {
   getByBudjet_idMain_schet,
 } = require("../../service/spravochnik/main.schet.db");
 
+const { getAllBudjet } = require('../../service/spravochnik/budjet.name.db')
+const { get_all_region } = require('../../service/auth/region.db')
+
 // login
 const login = asyncHandler(async (req, res, next) => {
   const { error, value } = authValidation.validate(req.body);
@@ -125,9 +128,22 @@ const select_budget = asyncHandler(async (req, res, next) => {
   });
 });
 
+
+const forLogin = asyncHandler(async (req, res, next) => {
+  const all_budjet = await getAllBudjet()
+  const all_region = await get_all_region()
+
+  return res.status(200).json({
+    success: true,
+    data: { all_budjet, all_region }
+  })
+})
+
+
 module.exports = {
   login,
   update,
   getProfile,
   select_budget,
+  forLogin
 };
