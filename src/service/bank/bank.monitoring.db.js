@@ -123,12 +123,40 @@ const getAllMonitoring = handleServiceError(
                 AND br.isdeleted = false
                 AND br.doc_date < $3 ), 0) AS total_sum
     `;
-    const summaFrom = await pool.query(SumQuery, [
+    const summaFrom = await pool.query(`SELECT 
+        COALESCE((SELECT SUM(bp.summa) 
+                FROM bank_prixod bp
+                JOIN users u ON bp.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND bp.main_schet_id = $2 
+                AND bp.isdeleted = false
+                AND bp.doc_date < $3), 0) -
+        COALESCE((SELECT SUM(br.summa) 
+                FROM bank_rasxod br
+                JOIN users u ON br.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND br.main_schet_id = $2 
+                AND br.isdeleted = false
+                AND br.doc_date < $3 ), 0) AS total_sum`, [
       region_id,
       main_schet_id,
       from,
     ]);
-    const summaTo = await pool.query(SumQuery, [region_id, main_schet_id, to]);
+    const summaTo = await pool.query(`SELECT 
+        COALESCE((SELECT SUM(bp.summa) 
+                FROM bank_prixod bp
+                JOIN users u ON bp.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND bp.main_schet_id = $2 
+                AND bp.isdeleted = false
+                AND bp.doc_date < $3), 0) -
+        COALESCE((SELECT SUM(br.summa) 
+                FROM bank_rasxod br
+                JOIN users u ON br.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE r.id = $1 AND br.main_schet_id = $2 
+                AND br.isdeleted = false
+                AND br.doc_date <= $3 ), 0) AS total_sum`, [region_id, main_schet_id, to]);
 
     const result_data = data.rows.map((row) => ({
       id: row.id,
