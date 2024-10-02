@@ -114,10 +114,13 @@ const getAllKassaPrixodDb = handleServiceError(
                 kassa_prixod.opisaine, 
                 kassa_prixod.summa, 
                 kassa_prixod.id_podotchet_litso,
+                spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
+                spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon,
                 kassa_prixod.spravochnik_operatsii_own_id
             FROM kassa_prixod
             JOIN users ON users.id = kassa_prixod.user_id
-            JOIN regions ON regions.id = users.region_id  
+            JOIN regions ON regions.id = users.region_id
+            JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kassa_prixod.id_podotchet_litso
             WHERE kassa_prixod.main_schet_id = $1 
                 AND regions.id = $2
                 AND kassa_prixod.isdeleted = false
@@ -177,10 +180,13 @@ const getElementById = handleServiceError(
                 kassa_prixod.opisaine, 
                 kassa_prixod.summa, 
                 kassa_prixod.id_podotchet_litso,
+                spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
+                spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon,
                 kassa_prixod.spravochnik_operatsii_own_id
             FROM kassa_prixod
             JOIN users ON users.id = kassa_prixod.user_id
-            JOIN regions ON regions.id = users.region_id  
+            JOIN regions ON regions.id = users.region_id
+            JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kassa_prixod.id_podotchet_litso  
             WHERE kassa_prixod.main_schet_id = $1 
                 AND regions.id = $2
                 AND kassa_prixod.isdeleted = false
