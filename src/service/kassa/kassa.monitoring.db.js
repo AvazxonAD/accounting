@@ -15,7 +15,7 @@ const getAllMonitoring = handleServiceError(
             kp.spravochnik_operatsii_own_id,
             kp.id_podotchet_litso,
             spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
-            kp.opisaine,
+            kp.opisanie,
             kp.doc_date AS combined_date
         FROM kassa_prixod kp
         JOIN users u ON kp.user_id = u.id
@@ -35,7 +35,7 @@ const getAllMonitoring = handleServiceError(
             kr.spravochnik_operatsii_own_id,
             kr.id_podotchet_litso,
             spravochnik_podotchet_litso.name,
-            kr.opisaine,
+            kr.opisanie,
             kr.doc_date AS combined_date
         FROM kassa_rasxod kr
         JOIN users u ON kr.user_id = u.id
@@ -128,7 +128,7 @@ const getAllMonitoring = handleServiceError(
       rasxod_sum: Number(row.rasxod_sum),
       id_podotchet_litso: row.id_podotchet_litso,
       spravochnik_podotchet_litso_name: row.spravochnik_podotchet_litso_name,
-      opisaine: row.opisaine,
+      opisanie: row.opisanie,
     }));
 
     return {
