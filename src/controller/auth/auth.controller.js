@@ -1,6 +1,7 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const generateToken = require("../../utils/auth/generate.token");
+const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger')
 const bcrypt = require("bcrypt");
 const {
   authValidation,
@@ -24,6 +25,8 @@ const { get_all_region } = require('../../service/auth/region.db')
 
 // login
 const login = asyncHandler(async (req, res, next) => {
+  const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  console.log(userIp)
   const { error, value } = authValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 400);
@@ -47,6 +50,7 @@ const login = asyncHandler(async (req, res, next) => {
     }
   }
   const token = generateToken(user);
+  postLogger.info(`Foydalanuvchi muvaffaqiyatli tizimga kirdi. UserIp : ${userIp}`)
   return res.status(200).json({
     success: true,
     data: {
