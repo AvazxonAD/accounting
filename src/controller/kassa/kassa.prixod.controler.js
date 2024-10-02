@@ -53,7 +53,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
     value.spravochnik_operatsii_own_id,
     "kassa_prixod",
   );
-  if (spravochnik_operatsii_own) {
+  if (!spravochnik_operatsii_own) {
     return next(
       new ErrorResponse(
         "Server xatolik. spravochnik_operatsii_own topilmadi",
@@ -236,7 +236,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     value.spravochnik_operatsii_own_id,
     "kassa_prixod",
   );
-  if (spravochnik_operatsii_own) {
+  if (!spravochnik_operatsii_own) {
     return next(
       new ErrorResponse(
         "Server xatolik. spravochnik_operatsii_own topilmadi",
