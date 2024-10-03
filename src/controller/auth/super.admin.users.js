@@ -56,7 +56,7 @@ const createUserForSuperAdmin = asyncHandler(async (req, res, next) => {
     await createAccess(role.id, user.id)
   }
   const user_id = req.user.id;
-  postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${user_id}`);
+  postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(201).json({
     success: true,
