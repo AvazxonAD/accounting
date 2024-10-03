@@ -126,7 +126,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
   if (req.user.region_id) {
     return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
   }
-  const role = await getByIdRole(req.params.id);
+  const role = await getByIdRole(req.params.id, true);
   if (!role) {
     const user_id = req.user.id;
     return next(new ErrorResponse("Server xatolik. Role topilmadi", 404));

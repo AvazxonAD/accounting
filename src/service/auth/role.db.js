@@ -24,11 +24,12 @@ const get_all_role = handleServiceError(async () => {
   return result.rows;
 });
 
-const getByIdRole = handleServiceError(async (id) => {
-  const result = await pool.query(
-    `SELECT id, name FROM role WHERE id = $1`,
-    [id],
-  );
+const getByIdRole = handleServiceError(async (id, ignore = false) => {
+  const query = `SELECT id, name FROM role WHERE id = $1`
+  if(!ignore){
+    query += `AND isdeleted = false`
+  }
+  const result = await pool.query(query,[id]);
   return result.rows[0];
 });
 

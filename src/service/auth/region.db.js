@@ -23,11 +23,12 @@ const get_all_region = handleServiceError(async () => {
   return result.rows;
 });
 
-const getByIdRegion = handleServiceError(async (id) => {
-  const result = await pool.query(
-    `SELECT id, name FROM regions WHERE isdeleted = false AND id = $1`,
-    [id],
-  );
+const getByIdRegion = handleServiceError(async (id, ignoreDeleted = false) => {
+  const query = `SELECT id, name FROM regions WHERE id = $1`
+  if(!ignoreDeleted){
+    query += `AND isdeleted = false`
+  }
+  const result = await pool.query(query,[id]);
   return result.rows[0];
 });
 

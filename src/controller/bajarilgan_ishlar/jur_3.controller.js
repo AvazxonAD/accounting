@@ -198,7 +198,7 @@ const jur_3_get_all = asyncHandler(async (req, res, next) => {
   const pageCount = Math.ceil(total / limit);
   const summa = parents.summa;
 
-  getLogger.info(`Jur3 doclar muvaffaqiyatli olindi. UserId : ${user_id}`)
+  getLogger.info(`Jur3 doclar muvaffaqiyatli olindi. UserId : ${req.user.id}`)
   return res.status(200).json({
     success: true,
     meta: {
@@ -367,6 +367,7 @@ const getElementByIdJur_3 = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
   const id = req.params.id;
+  const user_id = req.user.id
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
