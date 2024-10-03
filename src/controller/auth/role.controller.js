@@ -14,7 +14,7 @@ const {
   getAdminRole
 } = require("../../service/auth/role.db");
 
-const { createAccess } = require('../../service/auth/access.db')
+const { createAccess } = require('../../service/auth/access.service')
 const { getAllUsersForSuperAdminDB } = require('../../service/auth/user.db')
 
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');

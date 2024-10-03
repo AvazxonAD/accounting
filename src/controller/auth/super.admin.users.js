@@ -19,7 +19,7 @@ const {
   getAllUsersForSuperAdminDB,
 } = require("../../service/auth/user.db");
 const { get_all_role } = require('../../service/auth/role.db')
-const { createAccess } = require('../../service/auth/access.db')
+const { createAccess } = require('../../service/auth/access.service')
 
 // create user for super admin
 const createUserForSuperAdmin = asyncHandler(async (req, res, next) => {

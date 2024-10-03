@@ -6,7 +6,7 @@ const {
     getByRoleIdAccessDB, 
     getByIdAccessDB,
     updateAccessDB
-} = require('../../service/auth/access.db')
+} = require('../../service/auth/access.service')
 
 const updateAccess = asyncHandler(async (req, res, next) => {
     const { error, value } = accessValidation.validate(req.body)
