@@ -32,7 +32,7 @@ const {
   updateRasxod,
   getAllRasxodChildDb,
   getAllBankRasxodByFromAndTo,
-  getElemenByIdRasxod,
+  getElementByIdRasxod,
   getElemenByIdRasxodChild,
   deleteRasxodChild,
   deleteBankRasxod,
@@ -364,7 +364,7 @@ const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
   const region_id = req.user.region_id;
-  const rasxod = await getElemenByIdRasxod(region_id, main_schet_id, id);
+  const rasxod = await getElementByIdRasxod(region_id, main_schet_id, id, true);
   if (!rasxod) {
     return next(
       new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404),
@@ -397,7 +397,7 @@ const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }
 
-  const test = await getElemenByIdRasxod(region_id, main_schet_id, id);
+  const test = await getElementByIdRasxod(region_id, main_schet_id, id);
   if (!test) {
     return next(new ErrorResponse("Server xatolik. Rasxod doc topilmadi", 404));
   }

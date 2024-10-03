@@ -71,7 +71,7 @@ const getAll = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const result = await getByIdSmeta(req.params.id);
+  const result = await getByIdSmeta(req.params.id, true);
   if (!result) {
     return next(new ErrorResponse("Server xatolik. Smeta topilmadi", 404));
   }

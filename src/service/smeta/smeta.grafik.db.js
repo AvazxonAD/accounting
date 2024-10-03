@@ -68,37 +68,42 @@ const getAllSmetaGrafik = handleServiceError(
   },
 );
 
-const getElementByIdGrafik = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT 
-                smeta_grafik.id, 
-                smeta_grafik.smeta_id, 
-                smeta.smeta_name,
-                smeta_grafik.spravochnik_budjet_name_id,
-                spravochnik_budjet_name.name AS budjet_name,
-                smeta_grafik.itogo,
-                smeta_grafik.oy_1,
-                smeta_grafik.oy_2,
-                smeta_grafik.oy_3,
-                smeta_grafik.oy_4,
-                smeta_grafik.oy_5,
-                smeta_grafik.oy_6,
-                smeta_grafik.oy_7,
-                smeta_grafik.oy_8,
-                smeta_grafik.oy_9,
-                smeta_grafik.oy_10,
-                smeta_grafik.oy_11,
-                smeta_grafik.oy_12,
-                smeta_grafik.year
-            FROM smeta_grafik  
-            JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = smeta_grafik.spravochnik_budjet_name_id
-            JOIN smeta ON smeta.id = smeta_grafik.smeta_id
-            WHERE smeta_grafik.isdeleted = false AND smeta_grafik.user_id = $1 AND smeta_grafik.id = $2
-        `,
-    [region_id, id],
-  );
+const getElementByIdGrafik = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        smeta_grafik.id, 
+        smeta_grafik.smeta_id, 
+        smeta.smeta_name,
+        smeta_grafik.spravochnik_budjet_name_id,
+        spravochnik_budjet_name.name AS budjet_name,
+        smeta_grafik.itogo,
+        smeta_grafik.oy_1,
+        smeta_grafik.oy_2,
+        smeta_grafik.oy_3,
+        smeta_grafik.oy_4,
+        smeta_grafik.oy_5,
+        smeta_grafik.oy_6,
+        smeta_grafik.oy_7,
+        smeta_grafik.oy_8,
+        smeta_grafik.oy_9,
+        smeta_grafik.oy_10,
+        smeta_grafik.oy_11,
+        smeta_grafik.oy_12,
+        smeta_grafik.year
+    FROM smeta_grafik  
+    JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = smeta_grafik.spravochnik_budjet_name_id
+    JOIN smeta ON smeta.id = smeta_grafik.smeta_id
+    WHERE smeta_grafik.user_id = $1 AND smeta_grafik.id = $2
+  `;
+
+  if (!ignoreDeleted) {
+    query += ` AND smeta_grafik.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, [region_id, id]);
   return result.rows[0];
 });
+
 
 const updateSmetaGrafikDB = handleServiceError(async (object) => {
   await pool.query(

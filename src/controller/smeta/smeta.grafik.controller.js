@@ -114,7 +114,7 @@ const getElemnetById = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const result = await getElementByIdGrafik(region_id, id);
+  const result = await getElementByIdGrafik(region_id, id, true);
 
   if (!result) {
     return next(new ErrorResponse("Server xatoilik. Grafik topilmadi", 500));

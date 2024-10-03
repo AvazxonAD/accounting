@@ -59,20 +59,27 @@ const getTotaltype_operatsii = handleServiceError(async (region_id) => {
   return result.rows[0];
 });
 
-const getByIdtype_operatsii = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT spravochnik_type_operatsii.id, spravochnik_type_operatsii.rayon, spravochnik_type_operatsii.name 
-        FROM spravochnik_type_operatsii
-        JOIN users ON spravochnik_type_operatsii.user_id = users.id
-        JOIN regions ON users.region_id = regions.id  
-        WHERE spravochnik_type_operatsii.isdeleted = false 
-          AND regions.id = $1 
-          AND spravochnik_type_operatsii.id = $2
-    `,
-    [region_id, id],
-  );
+const getByIdtype_operatsii = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        spravochnik_type_operatsii.id, 
+        spravochnik_type_operatsii.rayon, 
+        spravochnik_type_operatsii.name 
+    FROM spravochnik_type_operatsii
+    JOIN users ON spravochnik_type_operatsii.user_id = users.id
+    JOIN regions ON users.region_id = regions.id  
+    WHERE regions.id = $1 
+      AND spravochnik_type_operatsii.id = $2
+  `;
+
+  if (!ignoreDeleted) {
+    query += ` AND spravochnik_type_operatsii.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, [region_id, id]);
   return result.rows[0];
 });
+
 
 const updatetype_operatsii = handleServiceError(async (id, name, rayon) => {
   await pool.query(

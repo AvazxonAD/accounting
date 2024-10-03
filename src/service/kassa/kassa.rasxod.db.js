@@ -162,33 +162,36 @@ const getAllKassaRasxodDb = handleServiceError(
 );
 
 const getElementById = handleServiceError(
-  async (region_id, main_schet_id, id) => {
-    const result = await pool.query(
-      `   
-            SELECT 
-                kassa_rasxod.id, 
-                kassa_rasxod.doc_num,
-                TO_CHAR(kassa_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                kassa_rasxod.opisanie, 
-                kassa_rasxod.summa, 
-                kassa_rasxod.id_podotchet_litso,
-                spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
-                spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon,
-                kassa_rasxod.spravochnik_operatsii_own_id
-            FROM kassa_rasxod
-            JOIN users ON users.id = kassa_rasxod.user_id
-            JOIN regions ON regions.id = users.region_id
-            JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kassa_rasxod.id_podotchet_litso  
-            WHERE kassa_rasxod.main_schet_id = $1 
-                AND regions.id = $2
-                AND kassa_rasxod.isdeleted = false
-                AND kassa_rasxod.id = $3
-        `,
-      [main_schet_id, region_id, id],
-    );
+  async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+    let query = `
+      SELECT 
+          kassa_rasxod.id, 
+          kassa_rasxod.doc_num,
+          TO_CHAR(kassa_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
+          kassa_rasxod.opisanie, 
+          kassa_rasxod.summa, 
+          kassa_rasxod.id_podotchet_litso,
+          spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
+          spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon,
+          kassa_rasxod.spravochnik_operatsii_own_id
+      FROM kassa_rasxod
+      JOIN users ON users.id = kassa_rasxod.user_id
+      JOIN regions ON regions.id = users.region_id
+      JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kassa_rasxod.id_podotchet_litso  
+      WHERE kassa_rasxod.main_schet_id = $1 
+          AND regions.id = $2
+          AND kassa_rasxod.id = $3
+    `;
+
+    if (!ignoreDeleted) {
+      query += ` AND kassa_rasxod.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, [main_schet_id, region_id, id]);
     return result.rows[0];
   },
 );
+
 
 const updateKassaRasxodDB = handleServiceError(async (object) => {
   await pool.query(

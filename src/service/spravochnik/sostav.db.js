@@ -55,18 +55,24 @@ const getTotalSostav = handleServiceError(async (region_id) => {
   return result.rows[0];
 });
 
-const getByIdSostav = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT spravochnik_sostav.id, spravochnik_sostav.name, spravochnik_sostav.rayon 
-      FROM spravochnik_sostav
-      JOIN users ON spravochnik_sostav.user_id = users.id
-      JOIN regions ON users.region_id = regions.id  
-      WHERE spravochnik_sostav.isdeleted = false 
-        AND regions.id = $1
-        AND spravochnik_sostav.id = $2
-    `,
-    [region_id, id],
-  );
+const getByIdSostav = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        spravochnik_sostav.id, 
+        spravochnik_sostav.name, 
+        spravochnik_sostav.rayon 
+    FROM spravochnik_sostav
+    JOIN users ON spravochnik_sostav.user_id = users.id
+    JOIN regions ON users.region_id = regions.id  
+    WHERE spravochnik_sostav.id = $2 
+      AND regions.id = $1
+  `;
+
+  if (!ignoreDeleted) {
+    query += ` AND spravochnik_sostav.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, [region_id, id]);
   return result.rows[0];
 });
 

@@ -170,37 +170,40 @@ const getAllJur3ChildDB = handleServiceError(
 );
 
 const getElementByIdJur_3DB = handleServiceError(
-  async (region_id, main_schet_id, id) => {
-    const result = await pool.query(
-      ` 
-            SELECT 
-                bajarilgan_ishlar_jur3.id, 
-                bajarilgan_ishlar_jur3.doc_num,
-                TO_CHAR(bajarilgan_ishlar_jur3.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                bajarilgan_ishlar_jur3.opisanie, 
-                bajarilgan_ishlar_jur3.summa::FLOAT, 
-                bajarilgan_ishlar_jur3.id_spravochnik_organization,
-                spravochnik_organization.name AS spravochnik_organization_name,
-                spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
-                spravochnik_organization.inn AS spravochnik_organization_inn, 
-                bajarilgan_ishlar_jur3.shartnomalar_organization_id,
-                shartnomalar_organization.doc_num AS shartnomalar_organization_doc_num,
-                TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date
-            FROM bajarilgan_ishlar_jur3 
-            JOIN users ON bajarilgan_ishlar_jur3.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization ON spravochnik_organization.id = bajarilgan_ishlar_jur3.id_spravochnik_organization
-            LEFT JOIN shartnomalar_organization ON shartnomalar_organization.id = bajarilgan_ishlar_jur3.shartnomalar_organization_id
-            WHERE bajarilgan_ishlar_jur3.main_schet_id = $1 
-                AND regions.id = $2 
-                AND bajarilgan_ishlar_jur3.isdeleted = false
-                AND bajarilgan_ishlar_jur3.id = $3
-        `,
-      [main_schet_id, region_id, id],
-    );
+  async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+    let query = `
+      SELECT 
+          bajarilgan_ishlar_jur3.id, 
+          bajarilgan_ishlar_jur3.doc_num,
+          TO_CHAR(bajarilgan_ishlar_jur3.doc_date, 'YYYY-MM-DD') AS doc_date, 
+          bajarilgan_ishlar_jur3.opisanie, 
+          bajarilgan_ishlar_jur3.summa::FLOAT, 
+          bajarilgan_ishlar_jur3.id_spravochnik_organization,
+          spravochnik_organization.name AS spravochnik_organization_name,
+          spravochnik_organization.raschet_schet AS spravochnik_organization_raschet_schet,
+          spravochnik_organization.inn AS spravochnik_organization_inn, 
+          bajarilgan_ishlar_jur3.shartnomalar_organization_id,
+          shartnomalar_organization.doc_num AS shartnomalar_organization_doc_num,
+          TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date
+      FROM bajarilgan_ishlar_jur3 
+      JOIN users ON bajarilgan_ishlar_jur3.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      JOIN spravochnik_organization ON spravochnik_organization.id = bajarilgan_ishlar_jur3.id_spravochnik_organization
+      LEFT JOIN shartnomalar_organization ON shartnomalar_organization.id = bajarilgan_ishlar_jur3.shartnomalar_organization_id
+      WHERE bajarilgan_ishlar_jur3.main_schet_id = $1 
+        AND regions.id = $2 
+        AND bajarilgan_ishlar_jur3.id = $3
+    `;
+
+    if (!ignoreDeleted) {
+      query += ` AND bajarilgan_ishlar_jur3.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, [main_schet_id, region_id, id]);
     return result.rows[0];
   },
 );
+
 
 const updateJur3DB = handleServiceError(async (object) => {
   await pool.query(

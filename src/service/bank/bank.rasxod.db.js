@@ -203,33 +203,35 @@ const getAllRasxodChildDb = handleServiceError(async (region_id, rasxod_id) => {
   return result.rows;
 });
 
-const getElemenByIdRasxod = handleServiceError(
-  async (region_id, main_schet_id, id) => {
-    let result = await pool.query(
-      `
-            SELECT 
-                bank_rasxod.id,
-                bank_rasxod.doc_num, 
-                TO_CHAR(bank_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                bank_rasxod.summa, 
-                bank_rasxod.opisanie, 
-                bank_rasxod.id_spravochnik_organization, 
-                bank_rasxod.id_shartnomalar_organization,
-                bank_rasxod.id_shartnomalar_organization,
-                bank_rasxod.spravochnik_operatsii_own_id
-            FROM bank_rasxod 
-            JOIN users ON bank_rasxod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            WHERE bank_rasxod.main_schet_id = $1 
-              AND regions.id = $2 
-              AND bank_rasxod.isdeleted = false 
-              AND bank_rasxod.id = $3
-        `,
-      [main_schet_id, region_id, id],
-    );
+const getElementByIdRasxod = handleServiceError(
+  async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+    let query = `
+      SELECT 
+          bank_rasxod.id,
+          bank_rasxod.doc_num, 
+          TO_CHAR(bank_rasxod.doc_date, 'YYYY-MM-DD') AS doc_date, 
+          bank_rasxod.summa, 
+          bank_rasxod.opisanie, 
+          bank_rasxod.id_spravochnik_organization, 
+          bank_rasxod.id_shartnomalar_organization,
+          bank_rasxod.spravochnik_operatsii_own_id
+      FROM bank_rasxod 
+      JOIN users ON bank_rasxod.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE bank_rasxod.main_schet_id = $1 
+        AND regions.id = $2 
+        AND bank_rasxod.id = $3
+    `;
+
+    if (!ignoreDeleted) {
+      query += ` AND bank_rasxod.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, [main_schet_id, region_id, id]);
     return result.rows[0];
   },
 );
+
 
 const getElemenByIdRasxodChild = handleServiceError(
   async (region_id, rasxod_id) => {
@@ -281,7 +283,7 @@ module.exports = {
   updateRasxod,
   getAllRasxodChildDb,
   getAllBankRasxodByFromAndTo,
-  getElemenByIdRasxod,
+  getElementByIdRasxod,
   getElemenByIdRasxodChild,
   deleteRasxodChild,
   deleteBankRasxod,

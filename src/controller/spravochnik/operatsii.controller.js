@@ -139,7 +139,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIDOperatsii(req.params.id);
+  const value = await getByIDOperatsii(req.params.id, true);
   if (!value) {
     return next(
       new ErrorResponse("Server error. spravochnik_operatsii topilmadi"),

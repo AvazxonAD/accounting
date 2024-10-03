@@ -96,7 +96,7 @@ const getElementByIdGrafik = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. main_schet topilmadi", 404));
   }
 
-  const result = await getByIdGrafikDB(region_id, main_schet_id, id);
+  const result = await getByIdGrafikDB(region_id, main_schet_id, id, true);
 
   return res.status(200).json({
     success: true,

@@ -55,20 +55,30 @@ const totalPodotChet = handleServiceError(async (region_id) => {
   return result.rows[0];
 });
 
-const getByIdPodotchet = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT spravochnik_podotchet_litso.id, spravochnik_podotchet_litso.name, spravochnik_podotchet_litso.rayon 
-      FROM spravochnik_podotchet_litso
-      JOIN users ON spravochnik_podotchet_litso.user_id = users.id
-      JOIN regions ON users.region_id = regions.id
-      WHERE regions.id = $1
-        AND spravochnik_podotchet_litso.isdeleted = false
-        AND spravochnik_podotchet_litso.id = $2
-    `,
-    [region_id, id],
-  );
+const getByIdPodotchet = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        spravochnik_podotchet_litso.id, 
+        spravochnik_podotchet_litso.name, 
+        spravochnik_podotchet_litso.rayon 
+    FROM spravochnik_podotchet_litso
+    JOIN users ON spravochnik_podotchet_litso.user_id = users.id
+    JOIN regions ON users.region_id = regions.id
+    WHERE regions.id = $1
+      AND spravochnik_podotchet_litso.id = $2
+  `;
+
+  let params = [region_id, id];
+
+  // Agar ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
+  if (!ignoreDeleted) {
+    query += ` AND spravochnik_podotchet_litso.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, params);
   return result.rows[0];
 });
+
 
 const updatePodotchet = handleServiceError(async (object) => {
   await pool.query(

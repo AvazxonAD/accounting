@@ -111,7 +111,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
   }
 
-  const result = await getByIdShartnomaDB(region_id, main_schet_id, id);
+  const result = await getByIdShartnomaDB(region_id, main_schet_id, id, true);
   if (!result) {
     return next(new ErrorResponse("Server xatolik. Shartnoma topilmadi", 404));
   }

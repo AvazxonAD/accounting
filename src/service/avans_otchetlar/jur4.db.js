@@ -142,9 +142,9 @@ const getAllJur4ChildDB = handleServiceError(async (region_id, main_schet_id, av
     return result.rows
 })
 
-const getByIdJur4DB = handleServiceError(async (region_id, main_schet_id, id) => {
-    const result = await pool.query(
-        ` SELECT 
+const getByIdJur4DB = handleServiceError(async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+    let query = `
+        SELECT 
             a_o_j_4.id, 
             a_o_j_4.doc_num, 
             TO_CHAR(a_o_j_4.doc_date, 'YYYY-MM-DD') AS doc_date, 
@@ -154,19 +154,22 @@ const getByIdJur4DB = handleServiceError(async (region_id, main_schet_id, id) =>
             s_p_l.name AS spravochnik_podotchet_litso_name,
             s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
             a_o_j_4.spravochnik_operatsii_own_id
-          FROM avans_otchetlar_jur4 AS a_o_j_4
-          JOIN users AS u ON u.id =  a_o_j_4.user_id
-          JOIN regions AS r ON u.region_id = r.id
-          JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_o_j_4.spravochnik_podotchet_litso_id 
-          WHERE a_o_j_4.main_schet_id = $1 
+        FROM avans_otchetlar_jur4 AS a_o_j_4
+        JOIN users AS u ON u.id = a_o_j_4.user_id
+        JOIN regions AS r ON u.region_id = r.id
+        JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_o_j_4.spravochnik_podotchet_litso_id 
+        WHERE a_o_j_4.main_schet_id = $1 
             AND r.id = $2 
-            AND a_o_j_4.isdeleted = false
             AND a_o_j_4.id = $3
-        `,
-        [main_schet_id, region_id, id],
-    );
-    return result.rows[0]
-})
+    `;
+
+    if (!ignoreDeleted) {
+        query += ` AND a_o_j_4.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, [main_schet_id, region_id, id]);
+    return result.rows[0];
+});
 
 const updateJur4DB = handleServiceError(async (object) => {
     await pool.query(

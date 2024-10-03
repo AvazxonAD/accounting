@@ -125,7 +125,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
   const user_id = req.user.region_id;
   const id = req.params.id;
 
-  const value = await getByIdPodrazlanie(user_id, id);
+  const value = await getByIdPodrazlanie(user_id, id, true);
   if (!value) {
     return next(
       new ErrorResponse("Server error. spravochnik_podrazdelenie topilmadi"),

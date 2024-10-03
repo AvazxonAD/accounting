@@ -352,7 +352,7 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
 
-  const prixod = await getElementByIdPrixod(region_id, main_schet_id, id);
+  const prixod = await getElementByIdPrixod(region_id, main_schet_id, id, true);
 
   if (!prixod) {
     return next(

@@ -268,7 +268,7 @@ const getElementByIdjur_4 = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const result = await getByIdJur4DB(region_id, main_schet_id, id)
+  const result = await getByIdJur4DB(region_id, main_schet_id, id, true)
   if (!result) {
     return next(new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", 404));
   }

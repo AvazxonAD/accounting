@@ -350,7 +350,7 @@ const getElementByIdKassaRasxod = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const result = await getElementById(region_id, main_schet_id, id);
+  const result = await getElementById(region_id, main_schet_id, id, true);
   if (!result) {
     return next(
       new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404),

@@ -57,14 +57,24 @@ const getByIdOperatsii = handleServiceError(async (id, type_schet) => {
   return result.rows[0];
 });
 
-const getByIDOperatsii = handleServiceError(async (id) => {
-  let result = await pool.query(
-    `SELECT id, name, schet, sub_schet, type_schet, smeta_id FROM spravochnik_operatsii WHERE id = $1 AND isdeleted = false
-    `,
-    [id],
-  );
+const getByIDOperatsii = handleServiceError(async (id, ignoreDeleted = false) => {
+  let query = `
+    SELECT id, name, schet, sub_schet, type_schet, smeta_id
+    FROM spravochnik_operatsii
+    WHERE id = $1
+  `;
+  
+  let params = [id];
+
+  // Agar ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
+  if (!ignoreDeleted) {
+    query += ` AND isdeleted = false`;
+  }
+
+  let result = await pool.query(query, params);
   return result.rows[0];
 });
+
 
 const updateOperatsii = handleServiceError(async (object) => {
   await pool.query(

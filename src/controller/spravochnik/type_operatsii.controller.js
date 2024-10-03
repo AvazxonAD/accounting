@@ -123,7 +123,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdtype_operatsii(req.user.region_id, req.params.id);
+  const value = await getByIdtype_operatsii(req.user.region_id, req.params.id, true);
   if (!value) {
     return next(
       new ErrorResponse("Server error. spravochnik_type_operatsii topilmadi"),

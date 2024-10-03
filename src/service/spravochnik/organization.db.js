@@ -77,27 +77,35 @@ const totalOrganization = handleServiceError(async (region_id) => {
   return result.rows[0];
 });
 
-const getByIdOrganization = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT 
-          spravochnik_organization.id, 
-          spravochnik_organization.name, 
-          spravochnik_organization.bank_klient, 
-          spravochnik_organization.raschet_schet, 
-          spravochnik_organization.raschet_schet_gazna, 
-          spravochnik_organization.mfo, 
-          spravochnik_organization.inn, 
-          spravochnik_organization.okonx  
-      FROM spravochnik_organization 
-      JOIN users ON spravochnik_organization.user_id = users.id
-      JOIN regions ON users.region_id = regions.id 
-      WHERE  regions.id = $1 
-        AND spravochnik_organization.id = $2 
-        AND spravochnik_organization.isdeleted = false `,
-    [region_id, id],
-  );
+const getByIdOrganization = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        spravochnik_organization.id, 
+        spravochnik_organization.name, 
+        spravochnik_organization.bank_klient, 
+        spravochnik_organization.raschet_schet, 
+        spravochnik_organization.raschet_schet_gazna, 
+        spravochnik_organization.mfo, 
+        spravochnik_organization.inn, 
+        spravochnik_organization.okonx  
+    FROM spravochnik_organization 
+    JOIN users ON spravochnik_organization.user_id = users.id
+    JOIN regions ON users.region_id = regions.id 
+    WHERE regions.id = $1 
+      AND spravochnik_organization.id = $2
+  `;
+
+  let params = [region_id, id];
+
+  // Agar ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
+  if (!ignoreDeleted) {
+    query += ` AND spravochnik_organization.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, params);
   return result.rows[0];
 });
+
 
 const updateOrganization = handleServiceError(async (object) => {
   await pool.query(

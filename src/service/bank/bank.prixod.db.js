@@ -71,18 +71,22 @@ const createBankPrixodChild = handleServiceError(async (object) => {
 });
 
 const getByIdBankPrixod = handleServiceError(
-  async (region_id, main_schet_id, id) => {
-    const result = await pool.query(
-      ` SELECT bank_prixod.* 
-        FROM bank_prixod 
-        JOIN users ON bank_prixod.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE bank_prixod.id = $1 AND regions.id = $2 
-          AND bank_prixod.main_schet_id = $3 
-          AND bank_prixod.isdeleted = false
-      `,
-      [id, region_id, main_schet_id],
-    );
+  async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+    let query = `
+      SELECT bank_prixod.* 
+      FROM bank_prixod 
+      JOIN users ON bank_prixod.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE bank_prixod.id = $1 
+        AND regions.id = $2 
+        AND bank_prixod.main_schet_id = $3
+    `;
+
+    if (!ignoreDeleted) {
+      query += ` AND bank_prixod.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, [id, region_id, main_schet_id]);
     return result.rows[0];
   },
 );
@@ -227,33 +231,36 @@ const getAllPrixodChild = handleServiceError(async (region_id, prixod_id) => {
 });
 
 const getElementByIdPrixod = handleServiceError(
-  async (region_id, main_schet_id, id) => {
-    let result = await pool.query(
-      `
-            SELECT 
-                bank_prixod.id,
-                bank_prixod.doc_num, 
-                TO_CHAR(bank_prixod.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                bank_prixod.summa, 
-                bank_prixod.provodki_boolean, 
-                bank_prixod.dop_provodki_boolean, 
-                bank_prixod.opisanie, 
-                bank_prixod.id_spravochnik_organization, 
-                bank_prixod.id_shartnomalar_organization,
-                bank_prixod.spravochnik_operatsii_own_id
-            FROM bank_prixod
-            JOIN users ON bank_prixod.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 
-              AND regions.id = $2 
-              AND bank_prixod.isdeleted = false 
-              AND bank_prixod.id = $3
-        `,
-      [main_schet_id, region_id, id],
-    );
+  async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+    let query = `
+      SELECT 
+          bank_prixod.id,
+          bank_prixod.doc_num, 
+          TO_CHAR(bank_prixod.doc_date, 'YYYY-MM-DD') AS doc_date, 
+          bank_prixod.summa, 
+          bank_prixod.provodki_boolean, 
+          bank_prixod.dop_provodki_boolean, 
+          bank_prixod.opisanie, 
+          bank_prixod.id_spravochnik_organization, 
+          bank_prixod.id_shartnomalar_organization,
+          bank_prixod.spravochnik_operatsii_own_id
+      FROM bank_prixod
+      JOIN users ON bank_prixod.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE bank_prixod.main_schet_id = $1 
+        AND regions.id = $2 
+        AND bank_prixod.id = $3
+    `;
+
+    if (!ignoreDeleted) {
+      query += ` AND bank_prixod.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, [main_schet_id, region_id, id]);
     return result.rows[0];
   },
 );
+
 
 const getElementByIdBankPrixodChild = handleServiceError(
   async (region_id, prixod_id) => {

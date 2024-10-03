@@ -59,17 +59,24 @@ const getTotalPodrazlanie = handleServiceError(async (region_id) => {
   return result.rows[0];
 });
 
-const getByIdPodrazlanie = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT spravochnik_podrazdelenie.id, spravochnik_podrazdelenie.name, spravochnik_podrazdelenie.rayon 
-        FROM spravochnik_podrazdelenie
-        JOIN users ON spravochnik_podrazdelenie.user_id = users.id
-        JOIN regions ON users.region_id = regions.id  
-        WHERE spravochnik_podrazdelenie.isdeleted = false 
-          AND spravochnik_podrazdelenie.id = $1
-          AND regions.id = $2`,
-    [id, region_id],
-  );
+const getByIdPodrazlanie = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        spravochnik_podrazdelenie.id, 
+        spravochnik_podrazdelenie.name, 
+        spravochnik_podrazdelenie.rayon 
+    FROM spravochnik_podrazdelenie
+    JOIN users ON spravochnik_podrazdelenie.user_id = users.id
+    JOIN regions ON users.region_id = regions.id  
+    WHERE spravochnik_podrazdelenie.id = $1
+      AND regions.id = $2
+  `;
+
+  if (!ignoreDeleted) {
+    query += ` AND spravochnik_podrazdelenie.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, [id, region_id]);
   return result.rows[0];
 });
 

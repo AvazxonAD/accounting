@@ -121,7 +121,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdSostav(req.user.region_id, req.params.id);
+  const value = await getByIdSostav(req.user.region_id, req.params.id, true);
   if (!value) {
     return next(
       new ErrorResponse("Server error. spravochnik_sostav topilmadi"),

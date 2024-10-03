@@ -41,15 +41,25 @@ const getTotalSmeta = handleServiceError(async () => {
   return result.rows[0];
 });
 
-const getByIdSmeta = handleServiceError(async (id) => {
-  const result = await pool.query(
-    `SELECT id, smeta_name, smeta_number, father_smeta_name FROM smeta  
-        WHERE isdeleted = false AND id = $1
-    `,
-    [id],
-  );
+const getByIdSmeta = handleServiceError(async (id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        id, 
+        smeta_name, 
+        smeta_number, 
+        father_smeta_name 
+    FROM smeta  
+    WHERE id = $1
+  `;
+
+  if (!ignoreDeleted) {
+    query += ` AND isdeleted = false`;
+  }
+
+  const result = await pool.query(query, [id]);
   return result.rows[0];
 });
+
 
 const updateSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name, id) => {
