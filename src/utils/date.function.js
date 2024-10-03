@@ -1,3 +1,8 @@
+const tashkentTime = () => {
+  const millisecondsInAnHour = 60 * 60 * 1000;
+  return new Date().getTime() + (5 * millisecondsInAnHour);
+};
+
 // return string  date
 const returnStringDate = (date) => {
   const day = date.getDate().toString().padStart(2, "0"); // "05"
@@ -81,4 +86,5 @@ module.exports = {
   returnStringDate,
   newDate,
   returnLocalAllDate,
+  tashkentTime
 };

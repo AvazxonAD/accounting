@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const kassaValidation = Joi.object({
   doc_num: Joi.string(),
-  doc_date: Joi.date(),
+  doc_date: Joi.string().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
   opisanie: Joi.string(),
   id_podotchet_litso: Joi.number(),
   spravochnik_operatsii_own_id: Joi.number().required(),
@@ -18,7 +18,7 @@ const kassaValidation = Joi.object({
     )
     .required(),
   spravochnik_operatsii_own_id: Joi.number().required(),
-}).options({ stripUnknown: true });
+});
 
 module.exports = {
   kassaValidation,
