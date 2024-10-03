@@ -9,7 +9,7 @@ const kassaPrixodCreateDB = handleServiceError(async (object) => {
                 doc_date, 
                 opisanie, 
                 summa, 
-                id_podotchet_litso, 
+                id_podotchet_litso,
                 main_schet_id, 
                 user_id,
                 created_at,
