@@ -1,7 +1,6 @@
-
 CREATE TABLE bajarilgan_ishlar_jur3 (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES regions(id),
+    user_id INTEGER REFERENCES users(id),
     doc_num VARCHAR(255),
     doc_date DATE,
     summa DECIMAL,
@@ -24,7 +23,7 @@ CREATE TABLE bajarilgan_ishlar_jur3_child (
     id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
     bajarilgan_ishlar_jur3_id INT REFERENCES bajarilgan_ishlar_jur3(id),
     spravochnik_operatsii_own_id INT REFERENCES spravochnik_operatsii(id),
-    user_id INT REFERENCES regions(id),
+    user_id INT REFERENCES users(id),
     main_schet_id INT REFERENCES main_schet(id),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
