@@ -95,6 +95,7 @@ const getTotalShartnoma = handleServiceError(
 
 const getByIdShartnomaDB = handleServiceError(
   async (region_id, main_schet_id, id) => {
+    console.log('---------')
     const result = await pool.query(
       `
         SELECT 
@@ -116,12 +117,14 @@ const getByIdShartnomaDB = handleServiceError(
             spravochnik_organization.raschet_schet,
             spravochnik_organization.raschet_schet_gazna,
             spravochnik_organization.mfo,
-            spravochnik_organization.inn
+            spravochnik_organization.inn,
+            shartnoma_grafik.year AS grafik_year
         FROM shartnomalar_organization
         JOIN users  ON shartnomalar_organization.user_id = users.id
         JOIN regions ON users.region_id = regions.id
         JOIN smeta ON smeta.id = shartnomalar_organization.smeta_id
         JOIN spravochnik_organization ON spravochnik_organization.id = shartnomalar_organization.spravochnik_organization_id
+        JOIN shartnoma_grafik ON shartnoma_grafik.id_shartnomalar_organization = shartnomalar_organization.id 
         WHERE shartnomalar_organization.isdeleted = false 
             AND regions.id = $1
             AND shartnomalar_organization.main_schet_id = $2
