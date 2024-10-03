@@ -29,8 +29,6 @@ CREATE TABLE kassa_prixod_child (
     isdeleted BOOLEAN DEFAULT false 
 );
 
-
-
 CREATE TABLE kassa_rasxod (
     id SERIAL PRIMARY KEY,
     doc_num VARCHAR(255),

@@ -11,15 +11,16 @@ const {
   getByIdRole,
   update_role,
   delete_role,
+  getAdminRole
 } = require("../../service/auth/role.db");
+
+const { createAccess } = require('../../service/auth/access.db')
+const { getAllUsersForSuperAdminDB } = require('../../service/auth/user.db')
 
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
 // create role
 const createRole = asyncHandler(async (req, res, next) => {
-  if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
-  }
   const { error, value } = roleValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 400));
@@ -32,7 +33,12 @@ const createRole = asyncHandler(async (req, res, next) => {
   if (name === 'region-admin' || name === 'super-admin') {
     return next(new ErrorResponse("Ushbu rolni kiritish mumkin emas", 400))
   }
-  await create_role(value.name);
+  const role = await create_role(value.name);
+  const admin_role = await getAdminRole()
+  const users = await getAllUsersForSuperAdminDB(admin_role.id)
+  for(let user of users){
+    await createAccess(role.id, user.id)
+  }
   const user_id = req.user.id;
   postLogger.info(`Rol yaratildi: ${value.name}. Foydalanuvchi ID: ${user_id}`);
 
@@ -45,9 +51,6 @@ const createRole = asyncHandler(async (req, res, next) => {
 
 // get all role
 const getAllRole = asyncHandler(async (req, res, next) => {
-  if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
-  }
   const roles = await get_all_role();
 
   const user_id = req.user.id;
@@ -98,9 +101,6 @@ const updateRole = asyncHandler(async (req, res, next) => {
 
 // delete role
 const deleteRole = asyncHandler(async (req, res, next) => {
-  if (req.user.region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat yo'q", 403));
-  }
   const id = req.params.id;
   const role = await getByIdRole(id);
   if (!role) {

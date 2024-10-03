@@ -4,10 +4,30 @@ const { handleServiceError } = require("../../middleware/service.handle");
 const getByLoginAuth = handleServiceError(async (login) => {
   const result = await pool.query(
     `
-        SELECT users.id, users.fio, users.password, users.login, users.region_id, users.role_id, role.name AS role_name 
+        SELECT 
+          users.id, 
+          users.fio, 
+          users.password, 
+          users.login, 
+          users.region_id, 
+          users.role_id, 
+          role.name AS role_name,
+          access.kassa AS access_kassa,
+          access.bank AS access_bank,
+          access.spravochnik AS access_spravochnik,
+          access.organization AS access_organization,
+          access.region_users AS access_region_users,
+          access.smeta AS access_smeta,
+          access.region AS access_region,
+          access.role AS access_role, 
+          access.users AS access_users,
+          access.shartnoma AS access_shartnoma,
+          access.jur3 AS access_jur3,
+          access.jur4 AS access_jur4
         FROM users 
-        INNER JOIN role ON role.id = users.role_id 
-        WHERE login = $1 AND users.isdeleted = false
+        INNER JOIN role ON role.id = users.role_id
+        INNER JOIN access ON access.role_id = role.id 
+        WHERE users.login = $1
     `,
     [login.trim()],
   );

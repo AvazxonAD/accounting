@@ -58,7 +58,6 @@ const login = asyncHandler(async (req, res, next) => {
   });
 });
 
-
 // update
 const update = asyncHandler(async (req, res, next) => {
   const { error, value } = authUpdateValidation.validate(req.body);
@@ -137,7 +136,6 @@ const select_budget = asyncHandler(async (req, res, next) => {
   });
 });
 
-
 // for login
 const forLogin = asyncHandler(async (req, res, next) => {
   const all_budjet = await getAllBudjet();
@@ -149,7 +147,6 @@ const forLogin = asyncHandler(async (req, res, next) => {
     data: { all_budjet, all_region }
   });
 });
-
 
 module.exports = {
   login,

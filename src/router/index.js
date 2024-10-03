@@ -1,5 +1,6 @@
-// ./router/index.js
 const express = require("express");
+const router = express.Router();
+
 const authRouter = require("./auth/auth.router");
 const regionRouter = require("./auth/region.router");
 const roleRouter = require("./auth/role.router");
@@ -24,8 +25,9 @@ const bankMonitoring = require("./bank/bank.monitoring");
 const kassaRasxodRouter = require("./kassa/kassa.rasxod.router");
 const kassaMonitoringRouter = require("./kassa/kassa.monitoring.router");
 const shartnomaGrafikRouter = require("./shartnoma/shartnoma.grafik.router");
+const accessRouter = require('./auth/access.router')
 
-const router = express.Router();
+
 
 router.use("/bank/monitoring", bankMonitoring);
 router.use("/kassa/monitoring", kassaMonitoringRouter);
@@ -51,5 +53,6 @@ router.use("/smeta/grafik", smetaGarfik);
 router.use("/bajarilgan_ishlar", bajarilgan_ishlar_jur3Router);
 router.use("/avans_otchetlar", avans_otchetlar_jur4Router);
 router.use("/kassa/rasxod", kassaRasxodRouter);
+router.use('/access', accessRouter)
 
 module.exports = router;

@@ -1,29 +1,51 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const create_user = handleServiceError(
-  async (login, password, fio, role_id, region_id) => {
-    await pool.query(
+const create_user = handleServiceError(async (login, password, fio, role_id, region_id) => {
+    const user = await pool.query(
       `INSERT INTO users(login, password, fio, role_id, region_id, created_at) 
-        VALUES($1, $2, $3, $4, $5, $6)
+        VALUES($1, $2, $3, $4, $5, $6) RETURNING * 
     `,
       [login, password, fio, role_id, region_id, new Date()],
     );
-  },
-);
+    return user.rows[0]
+});
 
 const getByIdUser = handleServiceError(async (id) => {
-  let result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
+  let result = await pool.query(`
+            SELECT 
+              users.id, 
+          users.fio, 
+          users.login, 
+          users.region_id, 
+          users.role_id, 
+          role.name AS role_name,
+          access.kassa AS access_kassa,
+          access.bank AS access_bank,
+          access.spravochnik AS access_spravochnik,
+          access.organization AS access_organization,
+          access.region_users AS access_region_users,
+          access.smeta AS access_smeta,
+          access.region AS access_region,
+          access.role AS access_role, 
+          access.users AS access_users,
+          access.shartnoma AS access_shartnoma,
+          access.jur3 AS access_jur3,
+          access.jur4 AS access_jur4
+        FROM users 
+        INNER JOIN role ON role.id = users.role_id
+        INNER JOIN access ON access.role_id = role.id 
+        WHERE users.id = $1 `, [id]);
   return result.rows[0];
 });
 
 const update_user = handleServiceError(
-  async (login, password, fio, role_id, region_id, id) => {
+  async (login, password, fio, region_id, id) => {
     await pool.query(
-      `UPDATE users SET login = $1, password = $2, fio = $3, role_id =$4, region_id = $5, updated_at = $7
+      `UPDATE users SET login = $1, password = $2, fio = $3, region_id = $4, updated_at = $5
         WHERE id = $6
     `,
-      [login, password, fio, role_id, region_id, id, new Date()],
+      [login, password, fio, region_id, new Date(), id],
     );
   },
 );

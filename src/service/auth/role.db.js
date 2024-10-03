@@ -10,16 +10,17 @@ const getByNameRole = handleServiceError(async (name) => {
 });
 
 const create_role = handleServiceError(async (name) => {
-  await pool.query(
-    `INSERT INTO role(name, created_at, updated_at) VALUES($1, $2, $3)`,
-    [name, new Date(), new Date()],
+  const role = await pool.query(
+    `INSERT INTO role(name, created_at) VALUES($1, $2) RETURNING *`,
+    [name, new Date()],
   );
+  return role.rows[0]
 });
 
 const get_all_role = handleServiceError(async () => {
   const result = await pool.query(
-    `SELECT id, name FROM role WHERE isdeleted = false ORDER BY id`,
-  );
+    `SELECT id, name FROM role WHERE isdeleted = false AND name != $1 AND name != $2 ORDER BY id`,
+  ['super-admin', 'region-admin']);
   return result.rows;
 });
 
@@ -40,7 +41,9 @@ const update_role = handleServiceError(async (id, name) => {
 });
 
 const delete_role = handleServiceError(async (id) => {
-  await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2`, [true, id]);
+  await pool.query(`UPDATE access SET isdeleted = true WHERE role_id = $1`, [id])
+  console.log(1)
+  await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2 AND name != $3 AND name != $4`, [true, id, 'super-admin', 'region-admin']);
 });
 
 const getAdminRole = handleServiceError(async () => {

@@ -27,14 +27,9 @@ exports.protect = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Token muddati tugagan", 403));
   }
 
-  let user = await pool.query(
-    `SELECT id, role_id, region_id FROM users WHERE id = $1`,
-    [decoded.id],
-  );
-  user = user.rows[0];
-  if (!user) {
+  if (!decoded) {
     return next(new ErrorResponse("User topilmadi", 404));
   }
-  req.user = user;
+  req.user = decoded;
   next();
 });
