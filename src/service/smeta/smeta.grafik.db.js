@@ -105,7 +105,7 @@ const getElementByIdGrafik = handleServiceError(async (region_id, id, ignoreDele
 });
 
 
-const updateSmetaGrafikDB = handleServiceError(async (object) => {
+const updateSmetaGrafikDB = handleServiceError(async (data) => {
   await pool.query(
     `UPDATE  smeta_grafik 
             SET 
@@ -125,20 +125,20 @@ const updateSmetaGrafikDB = handleServiceError(async (object) => {
             WHERE  id = $14 AND isdeleted = false
         `,
     [
-      object.itogo,
-      object.oy_1,
-      object.oy_2,
-      object.oy_3,
-      object.oy_4,
-      object.oy_5,
-      object.oy_6,
-      object.oy_7,
-      object.oy_8,
-      object.oy_9,
-      object.oy_10,
-      object.oy_11,
-      object.oy_12,
-      object.id,
+      data.itogo,
+      data.oy_1,
+      data.oy_2,
+      data.oy_3,
+      data.oy_4,
+      data.oy_5,
+      data.oy_6,
+      data.oy_7,
+      data.oy_8,
+      data.oy_9,
+      data.oy_10,
+      data.oy_11,
+      data.oy_12,
+      data.id,
     ],
   );
 });

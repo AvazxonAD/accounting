@@ -40,7 +40,7 @@ const getByIdMainSchet = handleServiceError(async (region_id, id, ignoreDeleted 
   return result.rows[0];
 });
 
-const createMain_schet = handleServiceError(async (object) => {
+const createMain_schet = handleServiceError(async (data) => {
   await pool.query(
     `   INSERT INTO main_schet(
         account_number,
@@ -63,22 +63,22 @@ const createMain_schet = handleServiceError(async (object) => {
       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
     `,
     [
-      object.account_number,
-      object.spravochnik_budjet_name_id,
-      object.tashkilot_nomi,
-      object.tashkilot_bank,
-      object.tashkilot_mfo,
-      object.tashkilot_inn,
-      object.account_name,
-      object.jur1_schet,
-      object.jur1_subschet,
-      object.jur2_schet,
-      object.jur2_subschet,
-      object.jur3_schet,
-      object.jur3_subschet,
-      object.jur4_subschet,
-      object.jur4_schet,
-      object.user_id,
+      data.account_number,
+      data.spravochnik_budjet_name_id,
+      data.tashkilot_nomi,
+      data.tashkilot_bank,
+      data.tashkilot_mfo,
+      data.tashkilot_inn,
+      data.account_name,
+      data.jur1_schet,
+      data.jur1_subschet,
+      data.jur2_schet,
+      data.jur2_subschet,
+      data.jur3_schet,
+      data.jur3_subschet,
+      data.jur4_subschet,
+      data.jur4_schet,
+      data.user_id,
     ],
   );
 });
@@ -138,7 +138,7 @@ const getAllMain_schet = handleServiceError(
   },
 );
 
-const updateMain_schet = handleServiceError(async (object) => {
+const updateMain_schet = handleServiceError(async (data) => {
   await pool.query(
     `UPDATE  main_schet SET 
         account_number = $1, 
@@ -159,22 +159,22 @@ const updateMain_schet = handleServiceError(async (object) => {
         WHERE id = $16
     `,
     [
-      object.account_number,
-      object.spravochnik_budjet_name_id,
-      object.tashkilot_nomi,
-      object.tashkilot_bank,
-      object.tashkilot_mfo,
-      object.tashkilot_inn,
-      object.account_name,
-      object.jur1_schet,
-      object.jur1_subschet,
-      object.jur2_schet,
-      object.jur2_subschet,
-      object.jur3_schet,
-      object.jur3_subschet,
-      object.jur4_subschet,
-      object.jur4_schet,
-      object.id,
+      data.account_number,
+      data.spravochnik_budjet_name_id,
+      data.tashkilot_nomi,
+      data.tashkilot_bank,
+      data.tashkilot_mfo,
+      data.tashkilot_inn,
+      data.account_name,
+      data.jur1_schet,
+      data.jur1_subschet,
+      data.jur2_schet,
+      data.jur2_subschet,
+      data.jur3_schet,
+      data.jur3_subschet,
+      data.jur4_subschet,
+      data.jur4_schet,
+      data.id,
     ],
   );
 });

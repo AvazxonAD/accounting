@@ -15,7 +15,7 @@ const getByInnOrganization = handleServiceError(async (inn, region_id) => {
   return result.rows[0];
 });
 
-const createOrganization = handleServiceError(async (object) => {
+const createOrganization = handleServiceError(async (data) => {
   const result = await pool.query(
     `INSERT INTO spravochnik_organization(
         name, bank_klient, raschet_schet, 
@@ -24,14 +24,14 @@ const createOrganization = handleServiceError(async (object) => {
         RETURNING *
     `,
     [
-      object.name,
-      object.bank_klient,
-      object.raschet_schet,
-      object.raschet_schet_gazna,
-      object.mfo,
-      object.inn,
-      object.user_id,
-      object.okonx,
+      data.name,
+      data.bank_klient,
+      data.raschet_schet,
+      data.raschet_schet_gazna,
+      data.mfo,
+      data.inn,
+      data.user_id,
+      data.okonx,
     ],
   );
   return result.rows[0];
@@ -107,21 +107,21 @@ const getByIdOrganization = handleServiceError(async (region_id, id, ignoreDelet
 });
 
 
-const updateOrganization = handleServiceError(async (object) => {
+const updateOrganization = handleServiceError(async (data) => {
   await pool.query(
     `UPDATE spravochnik_organization 
         SET name = $1, bank_klient = $2, raschet_schet = $3, raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $7
         WHERE id = $8 AND isdeleted = false
     `,
     [
-      object.name,
-      object.bank_klient,
-      object.raschet_schet,
-      object.raschet_schet_gazna,
-      object.mfo,
-      object.inn,
-      object.okonx,
-      object.id,
+      data.name,
+      data.bank_klient,
+      data.raschet_schet,
+      data.raschet_schet_gazna,
+      data.mfo,
+      data.inn,
+      data.okonx,
+      data.id,
     ],
   );
 });

@@ -21,7 +21,7 @@ const {
   updateJur4DB,
   deleteJur4ChildDB,
   deleteJur4DB
-} = require('../../service/avans_otchetlar/jur4.db')
+} = require('../../service/avans_otchetlar/jur4.service')
 
 // jur 4 create
 const jur_4_create = asyncHandler(async (req, res, next) => {

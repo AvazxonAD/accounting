@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const kassaRasxodCreateDB = handleServiceError(async (object) => {
+const kassaRasxodCreateDB = handleServiceError(async (data) => {
   const result = await pool.query(
     `
             INSERT INTO kassa_rasxod(
@@ -13,29 +13,27 @@ const kassaRasxodCreateDB = handleServiceError(async (object) => {
                 main_schet_id, 
                 user_id,
                 created_at,
-                updated_at,
-                spravochnik_operatsii_own_id
+                updated_at
             ) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING * 
         `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.opisanie,
-      object.summa,
-      object.id_podotchet_litso,
-      object.main_schet_id,
-      object.user_id,
+      data.doc_num,
+      data.doc_date,
+      data.opisanie,
+      data.summa,
+      data.id_podotchet_litso,
+      data.main_schet_id,
+      data.user_id,
       new Date(),
       new Date(),
-      object.spravochnik_operatsii_own_id,
     ],
   );
   return result.rows[0];
 });
 
-const kassaRasxodChild = handleServiceError(async (object) => {
+const kassaRasxodChild = handleServiceError(async (data) => {
   await pool.query(
     `
         INSERT INTO kassa_rasxod_child (
@@ -54,15 +52,15 @@ const kassaRasxodChild = handleServiceError(async (object) => {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     `,
     [
-      object.spravochnik_operatsii_id,
-      object.summa,
-      object.id_spravochnik_podrazdelenie,
-      object.id_spravochnik_sostav,
-      object.id_spravochnik_type_operatsii,
-      object.spravochnik_operatsii_own_id,
-      object.kassa_rasxod_id,
-      object.user_id,
-      object.main_schet_id,
+      data.spravochnik_operatsii_id,
+      data.summa,
+      data.id_spravochnik_podrazdelenie,
+      data.id_spravochnik_sostav,
+      data.id_spravochnik_type_operatsii,
+      data.spravochnik_operatsii_own_id,
+      data.kassa_rasxod_id,
+      data.user_id,
+      data.main_schet_id,
       new Date(),
       new Date(),
     ],
@@ -107,8 +105,7 @@ const getAllKassaRasxodDb = handleServiceError(
                 kassa_rasxod.summa, 
                 kassa_rasxod.id_podotchet_litso,
                 spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
-                spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon,
-                kassa_rasxod.spravochnik_operatsii_own_id
+                spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon
             FROM kassa_rasxod
             JOIN users ON users.id = kassa_rasxod.user_id
             JOIN regions ON regions.id = users.region_id
@@ -172,8 +169,7 @@ const getElementById = handleServiceError(
           kassa_rasxod.summa, 
           kassa_rasxod.id_podotchet_litso,
           spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
-          spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon,
-          kassa_rasxod.spravochnik_operatsii_own_id
+          spravochnik_podotchet_litso.rayon AS spravochnik_podotchet_litso_rayon
       FROM kassa_rasxod
       JOIN users ON users.id = kassa_rasxod.user_id
       JOIN regions ON regions.id = users.region_id
@@ -193,7 +189,7 @@ const getElementById = handleServiceError(
 );
 
 
-const updateKassaRasxodDB = handleServiceError(async (object) => {
+const updateKassaRasxodDB = handleServiceError(async (data) => {
   await pool.query(
     `
             UPDATE kassa_rasxod SET 
@@ -202,19 +198,17 @@ const updateKassaRasxodDB = handleServiceError(async (object) => {
                 opisanie = $3, 
                 summa = $4, 
                 id_podotchet_litso = $5, 
-                updated_at = $6,
-                spravochnik_operatsii_own_id = $7
-            WHERE id = $8
+                updated_at = $6
+            WHERE id = $7
         `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.opisanie,
-      object.summa,
-      object.id_podotchet_litso,
+      data.doc_num,
+      data.doc_date,
+      data.opisanie,
+      data.summa,
+      data.id_podotchet_litso,
       new Date(),
-      object.spravochnik_operatsii_own_id,
-      object.id,
+      data.id,
     ],
   );
 });

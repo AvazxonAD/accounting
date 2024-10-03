@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const createShartnoma = handleServiceError(async (object) => {
+const createShartnoma = handleServiceError(async (data) => {
   const shartnoma = await pool.query(
     `INSERT INTO shartnomalar_organization(
         doc_num, 
@@ -19,16 +19,16 @@ const createShartnoma = handleServiceError(async (object) => {
       RETURNING *
       `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.summa,
-      object.opisanie,
-      object.smeta_id,
-      object.user_id,
-      object.smeta_2,
-      object.spravochnik_organization_id,
-      object.pudratchi_bool,
-      object.main_schet_id,
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.opisanie,
+      data.smeta_id,
+      data.user_id,
+      data.smeta_2,
+      data.spravochnik_organization_id,
+      data.pudratchi_bool,
+      data.main_schet_id,
     ],
   );
   return shartnoma.rows[0];
@@ -137,7 +137,7 @@ const getByIdShartnomaDB = handleServiceError(
   },
 );
 
-const updateShartnomaDB = handleServiceError(async (object) => {
+const updateShartnomaDB = handleServiceError(async (data) => {
   await pool.query(
     `UPDATE shartnomalar_organization 
       SET 
@@ -152,20 +152,20 @@ const updateShartnomaDB = handleServiceError(async (object) => {
       WHERE id = $9
     `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.summa,
-      object.opisanie,
-      object.smeta_id,
-      object.smeta_2,
-      object.spravochnik_organization_id,
-      object.pudratchi_bool,
-      object.id,
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.opisanie,
+      data.smeta_id,
+      data.smeta_2,
+      data.spravochnik_organization_id,
+      data.pudratchi_bool,
+      data.id,
     ],
   );
   await pool.query(
     `UPDATE shartnoma_grafik SET year = $1 WHERE id_shartnomalar_organization = $2`,
-    [object.grafik_year, object.id],
+    [data.grafik_year, data.id],
   );
 });
 

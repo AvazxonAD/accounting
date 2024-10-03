@@ -17,11 +17,11 @@ const getByAllPodotChet = handleServiceError(async (name, rayon, region_id) => {
   return result.rows[0];
 });
 
-const createPodotChet = handleServiceError(async (object) => {
+const createPodotChet = handleServiceError(async (data) => {
   await pool.query(
     `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3)
     `,
-    [object.name, object.rayon, object.user_id],
+    [data.name, data.rayon, data.user_id],
   );
 });
 
@@ -80,12 +80,12 @@ const getByIdPodotchet = handleServiceError(async (region_id, id, ignoreDeleted 
 });
 
 
-const updatePodotchet = handleServiceError(async (object) => {
+const updatePodotchet = handleServiceError(async (data) => {
   await pool.query(
     `UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2
         WHERE id = $3 AND isdeleted = false
     `,
-    [object.name, object.rayon, object.id],
+    [data.name, data.rayon, data.id],
   );
 });
 

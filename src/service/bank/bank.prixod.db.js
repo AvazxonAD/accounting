@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const createBankPrixod = handleServiceError(async (object) => {
+const createBankPrixod = handleServiceError(async (data) => {
   const result = await pool.query(
     `
             INSERT INTO bank_prixod(
@@ -13,29 +13,27 @@ const createBankPrixod = handleServiceError(async (object) => {
                 id_spravochnik_organization, 
                 id_shartnomalar_organization, 
                 main_schet_id, 
-                user_id,
-                spravochnik_operatsii_own_id
+                user_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING * 
             `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.summa,
-      object.provodki_boolean,
-      object.opisanie,
-      object.id_spravochnik_organization,
-      object.id_shartnomalar_organization,
-      object.main_schet_id,
-      object.user_id,
-      object.spravochnik_operatsii_own_id,
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.provodki_boolean,
+      data.opisanie,
+      data.id_spravochnik_organization,
+      data.id_shartnomalar_organization,
+      data.main_schet_id,
+      data.user_id,
     ],
   );
   return result.rows[0];
 });
 
-const createBankPrixodChild = handleServiceError(async (object) => {
+const createBankPrixodChild = handleServiceError(async (data) => {
   const result = await pool.query(
     `
             INSERT INTO bank_prixod_child(
@@ -53,18 +51,18 @@ const createBankPrixodChild = handleServiceError(async (object) => {
                 spravochnik_operatsii_own_id
             ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
     [
-      object.spravochnik_operatsii_id,
-      object.summa,
-      object.id_spravochnik_podrazdelenie,
-      object.id_spravochnik_sostav,
-      object.id_spravochnik_type_operatsii,
-      object.id_spravochnik_podotchet_litso,
-      object.jur2_schet,
-      object.jur2_subschet,
-      object.main_schet_id,
-      object.bank_prixod_id,
-      object.user_id,
-      object.spravochnik_operatsii_own_id,
+      data.spravochnik_operatsii_id,
+      data.summa,
+      data.id_spravochnik_podrazdelenie,
+      data.id_spravochnik_sostav,
+      data.id_spravochnik_type_operatsii,
+      data.id_spravochnik_podotchet_litso,
+      data.jur2_schet,
+      data.jur2_subschet,
+      data.main_schet_id,
+      data.bank_prixod_id,
+      data.user_id,
+      data.spravochnik_operatsii_own_id,
     ],
   );
   return result.rows[0];
@@ -91,7 +89,7 @@ const getByIdBankPrixod = handleServiceError(
   },
 );
 
-const bankPrixodUpdate = handleServiceError(async (object) => {
+const bankPrixodUpdate = handleServiceError(async (data) => {
   await pool.query(
     `
             UPDATE bank_prixod SET 
@@ -101,20 +99,18 @@ const bankPrixodUpdate = handleServiceError(async (object) => {
                 provodki_boolean = $4, 
                 opisanie = $5, 
                 id_spravochnik_organization = $6, 
-                id_shartnomalar_organization = $7,
-                spravochnik_operatsii_own_id = $8
-            WHERE id = $9
+                id_shartnomalar_organization = $7
+            WHERE id = $8
             `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.summa,
-      object.provodki_boolean,
-      object.opisanie,
-      object.id_spravochnik_organization,
-      object.id_shartnomalar_organization,
-      object.spravochnik_operatsii_own_id,
-      object.id,
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.provodki_boolean,
+      data.opisanie,
+      data.id_spravochnik_organization,
+      data.id_shartnomalar_organization,
+      data.id,
     ],
   );
 });
@@ -148,8 +144,7 @@ const getAllPrixod = handleServiceError(
             spravochnik_organization.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
             spravochnik_organization.mfo AS spravochnik_organization_mfo,
             spravochnik_organization.inn AS spravochnik_organization_inn,
-            bank_prixod.id_shartnomalar_organization,  -- Vergul qo'shildi
-            bank_prixod.spravochnik_operatsii_own_id
+            bank_prixod.id_shartnomalar_organization
         FROM bank_prixod
         JOIN users ON bank_prixod.user_id = users.id
         JOIN regions ON users.region_id = regions.id
@@ -242,8 +237,7 @@ const getElementByIdPrixod = handleServiceError(
           bank_prixod.dop_provodki_boolean, 
           bank_prixod.opisanie, 
           bank_prixod.id_spravochnik_organization, 
-          bank_prixod.id_shartnomalar_organization,
-          bank_prixod.spravochnik_operatsii_own_id
+          bank_prixod.id_shartnomalar_organization
       FROM bank_prixod
       JOIN users ON bank_prixod.user_id = users.id
       JOIN regions ON users.region_id = regions.id

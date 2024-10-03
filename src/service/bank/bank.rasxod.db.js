@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const createBankRasxodDb = handleServiceError(async (object) => {
+const createBankRasxodDb = handleServiceError(async (data) => {
   const result = await pool.query(
     `
             INSERT INTO bank_rasxod(
@@ -12,28 +12,26 @@ const createBankRasxodDb = handleServiceError(async (object) => {
                 id_spravochnik_organization, 
                 id_shartnomalar_organization, 
                 main_schet_id, 
-                user_id,
-                spravochnik_operatsii_own_id
+                user_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
             RETURNING *
             `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.summa,
-      object.opisanie,
-      object.id_spravochnik_organization,
-      object.id_shartnomalar_organization,
-      object.main_schet_id,
-      object.user_id,
-      object.spravochnik_operatsii_own_id,
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.opisanie,
+      data.id_spravochnik_organization,
+      data.id_shartnomalar_organization,
+      data.main_schet_id,
+      data.user_id,
     ],
   );
   return result.rows[0];
 });
 
-const createBankRasxodChild = handleServiceError(async (object) => {
+const createBankRasxodChild = handleServiceError(async (data) => {
   await pool.query(
     `
               INSERT INTO bank_rasxod_child(
@@ -50,17 +48,17 @@ const createBankRasxodChild = handleServiceError(async (object) => {
                   spravochnik_operatsii_own_id
               ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
     [
-      object.spravochnik_operatsii_id,
-      object.summa,
-      object.id_spravochnik_podrazdelenie,
-      object.id_spravochnik_sostav,
-      object.id_spravochnik_type_operatsii,
-      object.jur2_schet,
-      object.jur2_subschet,
-      object.main_schet_id,
-      object.rasxod_id,
-      object.user_id,
-      object.spravochnik_operatsii_own_id,
+      data.spravochnik_operatsii_id,
+      data.summa,
+      data.id_spravochnik_podrazdelenie,
+      data.id_spravochnik_sostav,
+      data.id_spravochnik_type_operatsii,
+      data.jur2_schet,
+      data.jur2_subschet,
+      data.main_schet_id,
+      data.rasxod_id,
+      data.user_id,
+      data.spravochnik_operatsii_own_id,
     ],
   );
 });
@@ -83,7 +81,7 @@ const getByIdRasxod = handleServiceError(
   },
 );
 
-const updateRasxod = handleServiceError(async (object) => {
+const updateRasxod = handleServiceError(async (data) => {
   await pool.query(
     `
             UPDATE bank_rasxod SET 
@@ -92,20 +90,18 @@ const updateRasxod = handleServiceError(async (object) => {
                 summa = $3, 
                 opisanie = $4, 
                 id_spravochnik_organization = $5, 
-                id_shartnomalar_organization = $6,
-                spravochnik_operatsii_own_id = $7
-            WHERE id = $8
+                id_shartnomalar_organization = $6
+            WHERE id = $7
             RETURNING * 
             `,
     [
-      object.doc_num,
-      object.doc_date,
-      object.summa,
-      object.opisanie,
-      object.id_spravochnik_organization,
-      object.id_shartnomalar_organization,
-      object.spravochnik_operatsii_own_id,
-      object.id,
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.opisanie,
+      data.id_spravochnik_organization,
+      data.id_shartnomalar_organization,
+      data.id,
     ],
   );
 });
@@ -213,8 +209,7 @@ const getElementByIdRasxod = handleServiceError(
           bank_rasxod.summa, 
           bank_rasxod.opisanie, 
           bank_rasxod.id_spravochnik_organization, 
-          bank_rasxod.id_shartnomalar_organization,
-          bank_rasxod.spravochnik_operatsii_own_id
+          bank_rasxod.id_shartnomalar_organization
       FROM bank_rasxod 
       JOIN users ON bank_rasxod.user_id = users.id
       JOIN regions ON users.region_id = regions.id

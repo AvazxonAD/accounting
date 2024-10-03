@@ -1,18 +1,18 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const createOperatsii = handleServiceError(async (object) => {
+const createOperatsii = handleServiceError(async (data) => {
   await pool.query(
     `INSERT INTO spravochnik_operatsii(
         name,  schet, sub_schet, type_schet, smeta_id
         ) VALUES($1, $2, $3, $4, $5) 
     `,
     [
-      object.name,
-      object.schet,
-      object.sub_schet,
-      object.type_schet,
-      object.smeta_id,
+      data.name,
+      data.schet,
+      data.sub_schet,
+      data.type_schet,
+      data.smeta_id,
     ],
   );
 });
@@ -76,19 +76,19 @@ const getByIDOperatsii = handleServiceError(async (id, ignoreDeleted = false) =>
 });
 
 
-const updateOperatsii = handleServiceError(async (object) => {
+const updateOperatsii = handleServiceError(async (data) => {
   await pool.query(
     `UPDATE spravochnik_operatsii 
         SET name = $1, schet = $2, sub_schet = $3, type_schet = $4, smeta_id = $5
         WHERE id = $6
     `,
     [
-      object.name,
-      object.schet,
-      object.sub_schet,
-      object.type_schet,
-      object.smeta_id,
-      object.id,
+      data.name,
+      data.schet,
+      data.sub_schet,
+      data.type_schet,
+      data.smeta_id,
+      data.id,
     ],
   );
 });
