@@ -10,7 +10,7 @@ const shartnomaValidation = Joi.object({
   spravochnik_organization_id: Joi.number().required(),
   pudratchi_bool: Joi.boolean(),
   grafik_year: Joi.number().required(),
-});
+}).options({ stripUnknown: true });
 
 const shartnomaGarfikValidation = Joi.object({
   oy_1: Joi.number().required(),
@@ -25,7 +25,7 @@ const shartnomaGarfikValidation = Joi.object({
   oy_10: Joi.number().required(),
   oy_11: Joi.number().required(),
   oy_12: Joi.number().required(),
-});
+}).options({ stripUnknown: true });
 
 module.exports = {
   shartnomaValidation,

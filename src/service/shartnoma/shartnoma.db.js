@@ -95,7 +95,6 @@ const getTotalShartnoma = handleServiceError(
 
 const getByIdShartnomaDB = handleServiceError(
   async (region_id, main_schet_id, id) => {
-    console.log('---------')
     const result = await pool.query(
       `
         SELECT 
