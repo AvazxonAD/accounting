@@ -12,10 +12,10 @@ const {
   getTotaltype_operatsii,
   getByIdtype_operatsii,
   updatetype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.db");
+} = require("../../service/spravochnik/type_operatsii.service");
 const {
   deletetype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.db");
+} = require("../../service/spravochnik/type_operatsii.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

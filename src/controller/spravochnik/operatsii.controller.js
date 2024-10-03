@@ -13,9 +13,9 @@ const {
   getByIDOperatsii,
   updateOperatsii,
   deleteOperatsii,
-} = require("../../service/spravochnik/operatsii.db");
+} = require("../../service/spravochnik/operatsii.service");
 
-const { getByIdSmeta } = require("../../service/smeta/smeta.db");
+const { getByIdSmeta } = require("../../service/smeta/smeta.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

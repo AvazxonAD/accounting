@@ -2,11 +2,11 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 
-const { getByIdSmeta } = require("../../service/smeta/smeta.db");
-const { getByIdOrganization } = require("../../service//spravochnik/organization.db");
+const { getByIdSmeta } = require("../../service/smeta/smeta.service");
+const { getByIdOrganization } = require("../../service//spravochnik/organization.service");
 const { shartnomaValidation } = require("../../helpers/validation/shartnoma/shartnoma.validation");
-const { createShartnomaGrafik } = require("../../service/shartnoma/shartnoma.grafik.db");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db.js");
+const { createShartnomaGrafik } = require("../../service/shartnoma/shartnoma.grafik.service");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service.js");
 
 const {
   createShartnoma,
@@ -17,7 +17,7 @@ const {
   getByIdShartnomaDB,
   deleteShartnomaDB,
   forJur3DB
-} = require("../../service/shartnoma/shartnoma.db");
+} = require("../../service/shartnoma/shartnoma.service");
 
 const create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;

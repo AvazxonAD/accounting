@@ -7,19 +7,19 @@ const {
 const {
   jur3Validation,
 } = require("../../helpers/validation/bajarilgan_ishlar/jur_3.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdOrganization,
-} = require("../../service/spravochnik/organization.db");
-const { getByIdShartnomaDB } = require("../../service/shartnoma/shartnoma.db");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
+} = require("../../service/spravochnik/organization.service");
+const { getByIdShartnomaDB } = require("../../service/shartnoma/shartnoma.service");
+const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanie,
-} = require("../../service/spravochnik/podrazdelenie.db");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
+} = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
 const {
   getByIdtype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.db");
+} = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
@@ -32,7 +32,7 @@ const {
   deleteJur3ChildDB,
   updateJur3DB,
   deleteJur3DB,
-} = require("../../service/bajarilgan_ishlar/jur_3.db");
+} = require("../../service/bajarilgan_ishlar/jur_3.service");
 
 // jur_3 create
 const jur_3_create = asyncHandler(async (req, res, next) => {

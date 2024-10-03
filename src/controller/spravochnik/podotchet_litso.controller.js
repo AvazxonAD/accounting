@@ -13,7 +13,7 @@ const {
   getAllPodotChet,
   totalPodotChet,
   getByIdPodotchet,
-} = require("../../service/spravochnik/podotchet.litso.db");
+} = require("../../service/spravochnik/podotchet.litso.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

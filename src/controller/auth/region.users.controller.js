@@ -2,8 +2,8 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const bcrypt = require("bcrypt");
-const { getByIdRole } = require("../../service/auth/role.db");
-const { getByLoginAuth } = require("../../service/auth/auth.db");
+const { getByIdRole } = require("../../service/auth/role.service");
+const { getByLoginAuth } = require("../../service/auth/auth.service");
 const {
   userValidation,
 } = require("../../helpers/validation/auth/user.validation");
@@ -16,7 +16,7 @@ const {
   getByIdUser,
   update_user,
   deleteUserDb,
-} = require("../../service/auth/user.db");
+} = require("../../service/auth/user.service");
 
 // create user for region admin
 const createUserForRegionAdmin = asyncHandler(async (req, res, next) => {

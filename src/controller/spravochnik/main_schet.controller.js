@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.db");
+const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.service");
 const {
   createMain_schet,
   getByIdMainSchet,
@@ -10,7 +10,7 @@ const {
   deleteMain_schet,
   checkMainSchetDB,
   getByAndAccountNumber,
-} = require("../../service/spravochnik/main.schet.db");
+} = require("../../service/spravochnik/main.schet.service");
 const {
   mainSchetValidator,
   queryMainSchetValidation,

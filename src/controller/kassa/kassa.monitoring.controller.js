@@ -1,10 +1,10 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { getAllMonitoring } = require("../../service/kassa/kassa.monitoring.db");
+const { getAllMonitoring } = require("../../service/kassa/kassa.monitoring.service");
 const {
   queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 
 const getAllKassaMonitoring = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query);

@@ -5,13 +5,13 @@ const {
   getByIdGrafikDB,
   getAllGrafikDB,
   updateShartnomaGrafikDB,
-} = require("../../service/shartnoma/shartnoma.grafik.db");
+} = require("../../service/shartnoma/shartnoma.grafik.service");
 
 const { sum } = require("../../utils/returnSumma");
 const {
   shartnomaGarfikValidation,
 } = require("../../helpers/validation/shartnoma/shartnoma.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 
 const updateShartnomaGrafik = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;

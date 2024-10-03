@@ -3,12 +3,12 @@ const ErrorResponse = require("../../utils/errorResponse");
 
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { jur4Validation } = require("../../helpers/validation/avans_otchetlar/jur4.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
-const { getByIdPodotchet } = require("../../service/spravochnik/podotchet.litso.db");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
-const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.db");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
-const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdPodotchet } = require("../../service/spravochnik/podotchet.litso.service");
+const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
+const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
+const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 

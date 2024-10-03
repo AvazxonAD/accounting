@@ -10,22 +10,22 @@ const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helper
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const {
   getByIdAndOrganizationIdShartnoma,
-} = require("../../service/shartnoma/shartnoma.db");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+} = require("../../service/shartnoma/shartnoma.service");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdOrganization,
-} = require("../../service/spravochnik/organization.db");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
+} = require("../../service/spravochnik/organization.service");
+const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanie,
-} = require("../../service/spravochnik/podrazdelenie.db");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
+} = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
 const {
   getByIdtype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.db");
+} = require("../../service/spravochnik/type_operatsii.service");
 const {
   getByIdPodotchet,
-} = require("../../service/spravochnik/podotchet.litso.db");
+} = require("../../service/spravochnik/podotchet.litso.service");
 const {
   createBankPrixod,
   createBankPrixodChild,
@@ -37,7 +37,7 @@ const {
   getElementByIdPrixod,
   getElementByIdBankPrixodChild,
   deleteBankPrixod,
-} = require("../../service/bank/bank.prixod.db");
+} = require("../../service/bank/bank.prixod.service");
 const { returnLocalDate } = require("../../utils/date.function");
 
 // bank prixod create

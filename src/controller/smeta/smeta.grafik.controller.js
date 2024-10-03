@@ -6,8 +6,8 @@ const {
   smetaGrafikValidation,
   smetaGrafikUpdateValidation,
 } = require("../../helpers/validation/smeta/smeta.validation");
-const { getByIdSmeta } = require("../../service/smeta/smeta.db");
-const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.db");
+const { getByIdSmeta } = require("../../service/smeta/smeta.service");
+const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.service");
 const {
   getByAllSmetaGrafik,
   createSmetaGrafik,
@@ -15,7 +15,7 @@ const {
   getElementByIdGrafik,
   updateSmetaGrafikDB,
   deleteSmetaGrafik,
-} = require("../../service/smeta/smeta.grafik.db");
+} = require("../../service/smeta/smeta.grafik.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

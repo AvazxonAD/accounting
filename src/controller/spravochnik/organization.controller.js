@@ -10,7 +10,7 @@ const {
   getByIdOrganization,
   updateOrganization,
   deleteOrganization,
-} = require("../../service/spravochnik/organization.db");
+} = require("../../service/spravochnik/organization.service");
 
 const {
   organizationValidation,

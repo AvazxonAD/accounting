@@ -2,9 +2,9 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const bcrypt = require("bcrypt");
-const { getAdminRole } = require("../../service/auth/role.db");
-const { getByIdRegion } = require("../../service/auth/region.db");
-const { getByLoginAuth } = require("../../service/auth/auth.db");
+const { getAdminRole } = require("../../service/auth/role.service");
+const { getByIdRegion } = require("../../service/auth/region.service");
+const { getByLoginAuth } = require("../../service/auth/auth.service");
 const {
   userValidation,
 } = require("../../helpers/validation/auth/user.validation");
@@ -17,8 +17,8 @@ const {
   update_user,
   deleteUserDb,
   getAllUsersForSuperAdminDB,
-} = require("../../service/auth/user.db");
-const { get_all_role } = require('../../service/auth/role.db')
+} = require("../../service/auth/user.service");
+const { get_all_role } = require('../../service/auth/role.service')
 const { createAccess } = require('../../service/auth/access.service')
 
 // create user for super admin

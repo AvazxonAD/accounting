@@ -13,7 +13,7 @@ const {
   getByIdSmeta,
   updateSmeta,
   deleteSmeta,
-} = require("../../service/smeta/smeta.db");
+} = require("../../service/smeta/smeta.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

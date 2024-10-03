@@ -12,7 +12,7 @@ const {
   getByIdBudjet,
   updateBudjet,
   deleteBudjet,
-} = require("../../service/spravochnik/budjet.name.db");
+} = require("../../service/spravochnik/budjet.name.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

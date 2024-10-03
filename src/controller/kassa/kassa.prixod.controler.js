@@ -9,18 +9,18 @@ const {
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { returnLocalDate } = require("../../utils/date.function");
 
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdPodotchet,
-} = require("../../service/spravochnik/podotchet.litso.db");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
+} = require("../../service/spravochnik/podotchet.litso.service");
+const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanie,
-} = require("../../service/spravochnik/podrazdelenie.db");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
+} = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
 const {
   getByIdtype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.db");
+} = require("../../service/spravochnik/type_operatsii.service");
 const {
   kassaPrixodCreateDB,
   kassaPrixodChild,
@@ -30,7 +30,7 @@ const {
   updateKassaPrixodDB,
   deleteKassaPrixodChild,
   deleteKassaPrixodDB,
-} = require("../../service/kassa/kassa.prixod.db");
+} = require("../../service/kassa/kassa.prixod.service");
 const { returnAllChildSumma, sum } = require("../../utils/returnSumma");
 
 // kassa prixod rasxod

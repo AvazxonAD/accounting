@@ -13,7 +13,7 @@ const {
   getByIdSostav,
   updateSostav,
   deleteSostav,
-} = require("../../service/spravochnik/sostav.db");
+} = require("../../service/spravochnik/sostav.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {

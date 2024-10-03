@@ -2,21 +2,21 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
 
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.db");
+const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdOrganization,
-} = require("../../service/spravochnik/organization.db");
+} = require("../../service/spravochnik/organization.service");
 const {
   getByIdAndOrganizationIdShartnoma,
-} = require("../../service/shartnoma/shartnoma.db");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.db");
+} = require("../../service/shartnoma/shartnoma.service");
+const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanie,
-} = require("../../service/spravochnik/podrazdelenie.db");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.db");
+} = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
 const {
   getByIdtype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.db");
+} = require("../../service/spravochnik/type_operatsii.service");
 
 const {
   bankRasxodValidation,
@@ -36,7 +36,7 @@ const {
   getElemenByIdRasxodChild,
   deleteRasxodChild,
   deleteBankRasxod,
-} = require("../../service/bank/bank.rasxod.db");
+} = require("../../service/bank/bank.rasxod.service");
 
 const {
   queryValidation,

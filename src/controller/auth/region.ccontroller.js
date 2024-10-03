@@ -11,7 +11,7 @@ const {
   getByIdRegion,
   update_region,
   delete_region,
-} = require("../../service/auth/region.db");
+} = require("../../service/auth/region.service");
 
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 

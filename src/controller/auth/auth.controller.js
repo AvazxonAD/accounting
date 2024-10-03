@@ -12,13 +12,13 @@ const {
   getByIdAuth,
   updateAuth,
   getProfileAuth,
-} = require("../../service/auth/auth.db");
+} = require("../../service/auth/auth.service");
 const {
   getByIdMainSchet,
   getByBudjet_idMain_schet,
-} = require("../../service/spravochnik/main.schet.db");
-const { getAllBudjet } = require('../../service/spravochnik/budjet.name.db');
-const { get_all_region } = require('../../service/auth/region.db');
+} = require("../../service/spravochnik/main.schet.service");
+const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
+const { get_all_region } = require('../../service/auth/region.service');
 
 // login
 const login = asyncHandler(async (req, res, next) => {
