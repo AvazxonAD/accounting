@@ -4,7 +4,6 @@ const router = express.Router();
 const authRouter = require("./auth/auth.router");
 const regionRouter = require("./auth/region.router");
 const roleRouter = require("./auth/role.router");
-const userRouter = require("./auth/user.router");
 const spravochnik_podotchet_litsoRouter = require("./spravochnik/podochet.litso.router");
 const spravochnik_podrazdelenieRouter = require("./spravochnik/podrazdelenie.router");
 const spravochnik_type_operatsiiRouter = require("./spravochnik/type_operatsii.router");
@@ -26,7 +25,8 @@ const kassaRasxodRouter = require("./kassa/kassa.rasxod.router");
 const kassaMonitoringRouter = require("./kassa/kassa.monitoring.router");
 const shartnomaGrafikRouter = require("./shartnoma/shartnoma.grafik.router");
 const accessRouter = require('./auth/access.router')
-
+const regionUsersRouter = require('./auth/region.users.router')
+const superAdminUsersRouter = require('./auth/super.admin.users')
 
 
 router.use("/bank/monitoring", bankMonitoring);
@@ -34,7 +34,6 @@ router.use("/kassa/monitoring", kassaMonitoringRouter);
 router.use("/auth", authRouter);
 router.use("/region", regionRouter);
 router.use("/role", roleRouter);
-router.use("/user", userRouter);
 router.use("/spravochnik_podotchet_litso", spravochnik_podotchet_litsoRouter);
 router.use("/spravochnik_podrazdelenie", spravochnik_podrazdelenieRouter);
 router.use("/spravochnik_type_operatsii", spravochnik_type_operatsiiRouter);
@@ -54,5 +53,7 @@ router.use("/bajarilgan_ishlar", bajarilgan_ishlar_jur3Router);
 router.use("/avans_otchetlar", avans_otchetlar_jur4Router);
 router.use("/kassa/rasxod", kassaRasxodRouter);
 router.use('/access', accessRouter)
+router.use('/region_admin_users', regionUsersRouter)
+router.use('/super_admin_users', superAdminUsersRouter)
 
 module.exports = router;
