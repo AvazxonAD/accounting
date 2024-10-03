@@ -9,7 +9,11 @@ const {
   updateUserForSuperAdmin,
   deleteUserForSuperAdmin,
   getElementByIdForSuperAdmin,
-  getRegionAllUsers,
+  createUserForRegionAdmin,
+  getAllUsersForRegionAdmin,
+  updateUserForRegionAdmin,
+  deleteUserForRegionAdmin,
+  getElementByIdForRegionAdmin
 } = require("../../controller/auth/user.controller");
 
 router.post("/create/for/super/admin", protect, createUserForSuperAdmin);
@@ -18,7 +22,12 @@ router.put("/update/for/super/admin/:id", protect, updateUserForSuperAdmin);
 router.delete("/delete/for/super/admin/:id", protect, deleteUserForSuperAdmin);
 router.get("/get/element/by/for/super/admin/:id", protect, getElementByIdForSuperAdmin);
 
-router.get("/get/all/:id", protect, getRegionAllUsers);
+router.post("/create/for/region/admin", protect, createUserForRegionAdmin);
+router.get("/get/all/for/region/admin", protect, getAllUsersForRegionAdmin);
+router.put("/update/for/region/admin/:id", protect, updateUserForRegionAdmin);
+router.delete("/delete/for/region/admin/:id", protect, deleteUserForRegionAdmin);
+router.get("/get/element/by/for/region/admin/:id", protect, getElementByIdForRegionAdmin);
+
 
 
 module.exports = router;

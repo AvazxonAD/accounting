@@ -13,7 +13,7 @@ const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helper
 
 const {
   create_user,
-  getAllRegionUsers,
+  getAllRegionUsersDB,
   getByIdUser,
   update_user,
   deleteUserDb,
@@ -128,6 +128,9 @@ const deleteUserForSuperAdmin = asyncHandler(async (req, res, next) => {
   if (!userToDelete) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
   }
+  if(userToDelete.role_name === 'super-admin'){
+    return next(new ErrorResponse('Ochirish mumkin emas', 404))
+  }
 
   await deleteUserDb(id);
   deleteLogger.info(`Foydalanuvchi ochirildi: ${userToDelete.login}. Foydalanuvchi ID: ${req.user.id}`);
@@ -155,23 +158,6 @@ const getElementByIdForSuperAdmin = asyncHandler(async (req, res, next) => {
   });
 });
 
-
-// get all users for region admin 
-const getRegionAllUsers = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  if (!region_id) {
-    return next(new ErrorResponse("Siz uchun ruhsat etilmagan", 403));
-  }
-
-  const users = await getAllRegionUsers(region_id);
-  putLogger.info(`Muvaffaqyatli foydalanuvchilar ro'yxati olindi. Region ID: ${region_id}. Foydalanuvchi ID: ${req.user.id}`);
-
-  return res.status(200).json({
-    success: true,
-    data: users,
-  });
-});
-
 // create user for region admin
 const createUserForRegionAdmin = asyncHandler(async (req, res, next) => {
   const { error, value } = userValidation.validate(req.body);
@@ -180,10 +166,11 @@ const createUserForRegionAdmin = asyncHandler(async (req, res, next) => {
   }
 
   let { login, password, fio, role_id } = value;
+  const region_id  = req.user.region_id
 
-  const role = await getAdminRole();
-  if (!role) {
-    return next(new ErrorResponse("Server xatolik. Rol topilmadi", 404));
+  const role = await getByIdRole(role_id)
+  if(!role){
+    return next(new ErrorResponse("Server xatolik. role topilmadi", 404))
   }
 
   login = login.trim();
@@ -194,11 +181,6 @@ const createUserForRegionAdmin = asyncHandler(async (req, res, next) => {
   const test = await getByLoginAuth(value.login);
   if (test) {
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
-  }
-
-  const region = await getByIdRegion(region_id);
-  if (!region) {
-    return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
 
   await create_user(login, hashedPassword, fio, role.id, region_id);
@@ -213,9 +195,9 @@ const createUserForRegionAdmin = asyncHandler(async (req, res, next) => {
 
 // get all users for regionadmin 
 const getAllUsersForRegionAdmin = asyncHandler(async (req, res, next) => {
-  const role = await getAdminRole()
-  const users = await getAllUsersForSuperAdminDB(role.id)
+  const region_id = req.user.region_id
 
+  const users = await getAllRegionUsersDB(region_id)
   return res.status(200).json({
     success: true,
     data: users,
@@ -237,11 +219,11 @@ const updateUserForRegionAdmin = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
-  let { login, password, fio, region_id } = value;
+  let { login, password, fio, role_id } = value;
 
-  const region = await getByIdRegion(region_id);
-  if (!region) {
-    return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
+  const role = await getByIdRole(role_id)
+  if(!role){
+    return next(new ErrorResponse("Server xatolik. role topilmadi", 404))
   }
 
   login = login.trim();
@@ -256,7 +238,7 @@ const updateUserForRegionAdmin = asyncHandler(async (req, res, next) => {
     }
   }
 
-  await update_user(login, hashedPassword, fio, region_id, id);
+  await update_user(login, hashedPassword, fio, role_id, id);
   putLogger.info(`Foydalanuvchi yangilandi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(200).json({
@@ -273,6 +255,9 @@ const deleteUserForRegionAdmin = asyncHandler(async (req, res, next) => {
   const userToDelete = await getByIdUser(id);
   if (!userToDelete) {
     return next(new ErrorResponse("Server xatolik. User topilmadi", 404));
+  }
+  if(userToDelete.role_name === 'region-admin' || userToDelete.role_name === 'super-admin'){
+    return next(new ErrorResponse('Ochirish mumkin emas', 404))
   }
 
   await deleteUserDb(id);
@@ -307,5 +292,9 @@ module.exports = {
   updateUserForSuperAdmin,
   deleteUserForSuperAdmin,
   getElementByIdForSuperAdmin,
-  getRegionAllUsers,
+  createUserForRegionAdmin,
+  getAllUsersForRegionAdmin,
+  updateUserForRegionAdmin,
+  deleteUserForRegionAdmin,
+  getElementByIdForRegionAdmin
 };

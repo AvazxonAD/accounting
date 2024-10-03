@@ -35,22 +35,22 @@ const getByIdUser = handleServiceError(async (id) => {
         FROM users 
         INNER JOIN role ON role.id = users.role_id
         INNER JOIN access ON access.role_id = role.id 
-        WHERE users.id = $1 `, [id]);
+        WHERE users.id = $1`, [id]);
   return result.rows[0];
 });
 
 const update_user = handleServiceError(
-  async (login, password, fio, region_id, id) => {
+  async (login, password, fio, role_id, id) => {
     await pool.query(
-      `UPDATE users SET login = $1, password = $2, fio = $3, region_id = $4, updated_at = $5
+      `UPDATE users SET login = $1, password = $2, fio = $3, role_id  = $4, updated_at = $5
         WHERE id = $6
     `,
-      [login, password, fio, region_id, new Date(), id],
+      [login, password, fio, role_id, new Date(), id],
     );
   },
 );
 
-const getAllRegionUsers = handleServiceError(async (region_id) => {
+const getAllRegionUsersDB = handleServiceError(async (region_id) => {
   const result = await pool.query(
     `SELECT 
             users.id, 
@@ -95,7 +95,7 @@ const deleteUserDb = handleServiceError(async (id) => {
 
 module.exports = {
   create_user,
-  getAllRegionUsers,
+  getAllRegionUsersDB,
   getByIdUser,
   update_user,
   deleteUserDb,
