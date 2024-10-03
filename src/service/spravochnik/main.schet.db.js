@@ -1,37 +1,42 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const getByIdMainSchet = handleServiceError(async (region_id, id) => {
-  const result = await pool.query(
-    `SELECT 
-                main_schet.id, 
-                main_schet.account_number, 
-                main_schet.spravochnik_budjet_name_id, 
-                main_schet.tashkilot_nomi, 
-                main_schet.tashkilot_bank, 
-                main_schet.tashkilot_mfo, 
-                main_schet.tashkilot_inn, 
-                main_schet.account_name, 
-                main_schet.jur1_schet, 
-                main_schet.jur1_subschet,
-                main_schet.jur2_schet, 
-                main_schet.jur2_subschet,
-                main_schet.jur3_schet,
-                main_schet.jur3_subschet, 
-                main_schet.jur4_schet,
-                main_schet.jur4_subschet, 
-                spravochnik_budjet_name.name AS budjet_name
-            FROM main_schet
-            JOIN users ON main_schet.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_budjet_name 
-                ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
-            WHERE main_schet.isdeleted = false 
-                AND regions.id = $1 
-                AND main_schet.id = $2
-    `,
-    [region_id, id],
-  );
+const getByIdMainSchet = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
+  let query = `
+    SELECT 
+        main_schet.id, 
+        main_schet.account_number, 
+        main_schet.spravochnik_budjet_name_id, 
+        main_schet.tashkilot_nomi, 
+        main_schet.tashkilot_bank, 
+        main_schet.tashkilot_mfo, 
+        main_schet.tashkilot_inn, 
+        main_schet.account_name, 
+        main_schet.jur1_schet, 
+        main_schet.jur1_subschet,
+        main_schet.jur2_schet, 
+        main_schet.jur2_subschet,
+        main_schet.jur3_schet,
+        main_schet.jur3_subschet, 
+        main_schet.jur4_schet,
+        main_schet.jur4_subschet, 
+        spravochnik_budjet_name.name AS budjet_name
+    FROM main_schet
+    JOIN users ON main_schet.user_id = users.id
+    JOIN regions ON users.region_id = regions.id
+    JOIN spravochnik_budjet_name 
+        ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
+    WHERE regions.id = $1 
+      AND main_schet.id = $2
+  `;
+  let params = [region_id, id];
+
+  // ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
+  if (!ignoreDeleted) {
+    query += ` AND main_schet.isdeleted = false`;
+  }
+
+  const result = await pool.query(query, params);
   return result.rows[0];
 });
 
@@ -219,6 +224,11 @@ const checkMainSchetDB = handleServiceError(async (id) => {
   return true
 })
 
+const getByAndAccountNumber = handleServiceError(async (account_number) => {
+    const result = await pool.query(`SELECT * FROM main_schet WHERE account_number = $1`, [account_number])
+    return result.rows[0]
+})
+
 module.exports = {
   getByIdMainSchet,
   createMain_schet,
@@ -226,5 +236,6 @@ module.exports = {
   updateMain_schet,
   deleteMain_schet,
   getByBudjet_idMain_schet,
-  checkMainSchetDB
+  checkMainSchetDB,
+  getByAndAccountNumber
 };

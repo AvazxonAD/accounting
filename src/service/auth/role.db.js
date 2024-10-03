@@ -25,9 +25,9 @@ const get_all_role = handleServiceError(async () => {
 });
 
 const getByIdRole = handleServiceError(async (id, ignore = false) => {
-  const query = `SELECT id, name FROM role WHERE id = $1`
+  let query = `SELECT id, name FROM role WHERE id = $1`
   if(!ignore){
-    query += `AND isdeleted = false`
+    query += `   AND isdeleted = false`
   }
   const result = await pool.query(query,[id]);
   return result.rows[0];

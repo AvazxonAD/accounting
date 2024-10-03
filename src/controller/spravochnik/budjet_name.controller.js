@@ -91,7 +91,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  let result = await getByIdBudjet(req.params.id);
+  let result = await getByIdBudjet(req.params.id, true);
   if (!result) {
     return next(
       new ErrorResponse("Server error. spravochnik_budjet_name topilmadi"),

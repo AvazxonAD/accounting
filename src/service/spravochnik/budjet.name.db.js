@@ -22,11 +22,16 @@ const getAllBudjet = handleServiceError(async () => {
   return result.rows;
 });
 
-const getByIdBudjet = handleServiceError(async (id) => {
-  let result = await pool.query(
-    `SELECT id, name FROM spravochnik_budjet_name WHERE id = $1`,
-    [id],
-  );
+const getByIdBudjet = handleServiceError(async (id, ignoreDeleted = false) => {
+  let query = `SELECT id, name FROM spravochnik_budjet_name WHERE id = $1`;
+  let params = [id];
+
+  // Agar ignoreDeleted false bo'lsa, isdeleted shartini qo'shamiz
+  if (!ignoreDeleted) {
+    query += ` AND isdeleted = false`;
+  }
+
+  let result = await pool.query(query, params);
   return result.rows[0];
 });
 

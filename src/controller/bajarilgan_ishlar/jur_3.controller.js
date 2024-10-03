@@ -56,10 +56,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
   );
   if (!spravochnik_operatsii_own) {
     return next(
-      new ErrorResponse(
-        "Server xatolik. spravochnik_operatsii_own topilmadi",
-        404,
-      ),
+      new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi",404),
     );
   }
   const organization = await getByIdOrganization(

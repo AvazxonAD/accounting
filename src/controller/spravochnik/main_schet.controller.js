@@ -8,7 +8,8 @@ const {
   getAllMain_schet,
   updateMain_schet,
   deleteMain_schet,
-  checkMainSchetDB
+  checkMainSchetDB,
+  getByAndAccountNumber,
 } = require("../../service/spravochnik/main.schet.db");
 const {
   mainSchetValidator,
@@ -29,6 +30,10 @@ const create = asyncHandler(async (req, res, next) => {
   const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
+  }
+  const test_account_number = await getByAndAccountNumber(value.account_number)
+  if(test_account_number){
+    return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
   }
   await createMain_schet({
     ...value,
@@ -89,7 +94,12 @@ const update = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
-
+  if(value.account_number !== testMain_schet.account_number){
+    const test_account_number = await getByAndAccountNumber(value.account_number)
+    if(test_account_number){
+      return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
+    }
+  }
   const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
@@ -130,7 +140,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdMainSchet(req.user.region_id, req.params.id);
+  const value = await getByIdMainSchet(req.user.region_id, req.params.id, true);
   if (!value) {
     return next(new ErrorResponse("Server error. main_schet topilmadi", 404));
   }
