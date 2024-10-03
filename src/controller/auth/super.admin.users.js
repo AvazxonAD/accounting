@@ -51,11 +51,11 @@ const createUserForSuperAdmin = asyncHandler(async (req, res, next) => {
   }
 
   const user = await create_user(login, hashedPassword, fio, role.id, region_id);
+  console.log(user)
   const roles = await get_all_role()
   for(let role of roles){
     await createAccess(role.id, user.id)
   }
-  const user_id = req.user.id;
   postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
 
   return res.status(201).json({

@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 
-const createAccess = handleServiceError(async (region_id, role_id) => {
+const createAccess = handleServiceError(async (role_id, user_id) => {
     await pool.query(`INSERT INTO access (role_id, user_id) VALUES($1, $2)`, [role_id, user_id])
 })
 
