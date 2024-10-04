@@ -215,12 +215,16 @@ const updateKassaPrixodDB = handleServiceError(async (data) => {
 
 const deleteKassaPrixodChild = handleServiceError(async (id) => {
   await pool.query(
-    `UPDATE kassa_prixod_child SET isdeleted = $1 WHERE kassa_prixod_id = $2`,
-    [true, id],
+    `DELETE FROM kassa_prixod_child  WHERE kassa_prixod_id = $1`,
+    [id]
   );
 });
 
 const deleteKassaPrixodDB = handleServiceError(async (id) => {
+  await pool.query(
+    `UPDATE kassa_prixod_child SET isdeleted = $1 WHERE kassa_prixod_id = $2`,
+    [true, id],
+  );
   await pool.query(
     `UPDATE kassa_prixod
             SET isdeleted = true

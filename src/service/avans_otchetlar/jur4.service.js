@@ -96,7 +96,6 @@ const getAllJur4DB = handleServiceError(async (region_id, main_schet_id, from, t
           JOIN regions AS r ON u.region_id = r.id
           WHERE a_o_j_4.main_schet_id = $1 
             AND r.id = $2 
-            AND a_o_j_4.isdeleted = false
             AND a_o_j_4.doc_date BETWEEN $3 AND $4
     `, [main_schet_id, region_id, from, to])
 
@@ -107,7 +106,6 @@ const getAllJur4DB = handleServiceError(async (region_id, main_schet_id, from, t
         JOIN regions AS r ON u.region_id = r.id
         WHERE a_o_j_4.main_schet_id = $1 
           AND r.id = $2 
-          AND a_o_j_4.isdeleted = false
           AND a_o_j_4.doc_date BETWEEN $3 AND $4
   `, [main_schet_id, region_id, from, to])
 
@@ -136,7 +134,6 @@ const getAllJur4ChildDB = handleServiceError(async (region_id, main_schet_id, av
             JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = a_o_j_4_ch.id_spravochnik_type_operatsii
             WHERE r.id = $1 
                 AND a_o_j_4_ch.main_schet_id = $2 
-                AND a_o_j_4_ch.isdeleted = false 
                 AND a_o_j_4_ch.avans_otchetlar_jur4_id = $3
     `, [region_id, main_schet_id, avans_otchetlar_jur4_id])
     return result.rows
@@ -198,11 +195,12 @@ const updateJur4DB = handleServiceError(async (data) => {
 })
 
 const deleteJur4ChildDB = handleServiceError(async (id) => {
-    await pool.query(`UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, [id])
+    await pool.query(`DELETE FROM avans_otchetlar_jur4_child WHERE avans_otchetlar_jur4_id = $1`, [id])
 })
 
 const deleteJur4DB = handleServiceError(async (id) => {
     await pool.query(`UPDATE avans_otchetlar_jur4 SET isdeleted = true WHERE id = $1`, [id])
+    await pool.query(`UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, [id])
 })
 
 module.exports = {

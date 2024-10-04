@@ -337,8 +337,6 @@ const delete_bank_prixod = asyncHandler(async (req, res, next) => {
 
   await deleteBankPrixod(id);
 
-  await deleteBankPrixodChild(id);
-
   deleteLogger.info(`Bank prixod doc ochirildi. UserId: ${req.user.id}`)
   return res.status(200).json({
     success: true,

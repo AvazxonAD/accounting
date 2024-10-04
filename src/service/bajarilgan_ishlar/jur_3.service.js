@@ -238,7 +238,7 @@ const deleteJur3ChildDB = handleServiceError(async (id) => {
   await pool.query(
     `
         DELETE FROM bajarilgan_ishlar_jur3_child 
-        WHERE bajarilgan_ishlar_jur3_id = $1 AND isdeleted = false
+        WHERE bajarilgan_ishlar_jur3_id = $1
     `,
     [id],
   );

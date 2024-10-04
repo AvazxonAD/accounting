@@ -335,7 +335,6 @@ const deleteKassaRasxodRasxod = asyncHandler(async (req, res, next) => {
     );
   }
 
-  await deleteKassaRasxodChild(id);
   await deleteKassaRasxodDB(id);
 
   return res.status(200).json({

@@ -215,12 +215,16 @@ const updateKassaRasxodDB = handleServiceError(async (data) => {
 
 const deleteKassaRasxodChild = handleServiceError(async (id) => {
   await pool.query(
-    `UPDATE kassa_rasxod_child SET isdeleted = $1 WHERE kassa_rasxod_id = $2`,
-    [true, id],
+    `DELETE FROM kassa_rasxod_child WHERE kassa_rasxod_id = $1`,
+    [id],
   );
 });
 
 const deleteKassaRasxodDB = handleServiceError(async (id) => {
+  await pool.query(
+    `UPDATE kassa_rasxod_child SET isdeleted = $1 WHERE kassa_rasxod_id = $2`,
+    [true, id],
+  );
   await pool.query(
     `UPDATE kassa_rasxod
             SET isdeleted = true

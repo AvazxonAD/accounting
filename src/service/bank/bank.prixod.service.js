@@ -115,16 +115,6 @@ const bankPrixodUpdate = handleServiceError(async (data) => {
   );
 });
 
-const deleteBankPrixodChild = handleServiceError(async (bank_prixod_id) => {
-  await pool.query(
-    `
-      UPDATE bank_prixod_child SET isdeleted = $1 
-      WHERE id_bank_prixod = $2 AND isdeleted = false
-    `,
-    [true, bank_prixod_id],
-  );
-});
-
 const getAllPrixod = handleServiceError(
   async (region_id, main_schet_id, offset, limit, from, to) => {
     const result = await pool.query(
@@ -279,10 +269,27 @@ const getElementByIdBankPrixodChild = handleServiceError(
 
 const deleteBankPrixod = handleServiceError(async (id) => {
   await pool.query(
+    `
+      UPDATE bank_prixod_child SET isdeleted = $1 
+      WHERE id_bank_prixod = $2 AND isdeleted = false
+    `,
+    [true, bank_prixod_id],
+  );
+  await pool.query(
     `UPDATE bank_prixod SET isdeleted = $1
         WHERE id = $2 AND isdeleted = false
     `,
     [true, id],
+  );
+});
+
+const deleteBankPrixodChild = handleServiceError(async (bank_prixod_id) => {
+  await pool.query(
+    `
+      DELETE FROM bank_prixod_child  
+      WHERE id_bank_prixod = $1
+    `,
+    [bank_prixod_id],
   );
 });
 

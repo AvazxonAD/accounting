@@ -251,15 +251,21 @@ const getElemenByIdRasxodChild = handleServiceError(
 
 const deleteRasxodChild = handleServiceError(async (id) => {
   await pool.query(
+    ` DELETE FROM bank_rasxod_child
+        WHERE id_bank_rasxod = $1
+      `,
+    [id],
+  );
+});
+
+const deleteBankRasxod = handleServiceError(async (id) => {
+  await pool.query(
     ` UPDATE  bank_rasxod_child
         SET isdeleted = $2
         WHERE id_bank_rasxod = $1 AND isdeleted = false 
       `,
     [id, true],
   );
-});
-
-const deleteBankRasxod = handleServiceError(async (id) => {
   await pool.query(
     ` 
         UPDATE bank_rasxod 

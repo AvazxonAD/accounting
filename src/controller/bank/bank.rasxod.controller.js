@@ -402,7 +402,6 @@ const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Rasxod doc topilmadi", 404));
   }
 
-  await deleteRasxodChild(id);
   await deleteBankRasxod(id);
 
   return res.status(200).json({

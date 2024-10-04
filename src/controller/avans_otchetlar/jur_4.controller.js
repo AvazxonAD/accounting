@@ -247,7 +247,6 @@ const delete_jur_4 = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", 404));
   }
 
-  await deleteJur4ChildDB(id)
   await deleteJur4DB(id)
 
   deleteLogger.info(`Jur4 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
