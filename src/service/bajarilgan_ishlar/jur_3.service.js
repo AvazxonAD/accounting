@@ -133,8 +133,7 @@ const getAllJur3DB = handleServiceError(
   },
 );
 
-const getAllJur3ChildDB = handleServiceError(
-  async (region_id, main_schet_id, jur3_id) => {
+const getAllJur3ChildDB = handleServiceError(async (region_id, main_schet_id, jur3_id) => {
     const result = await pool.query(
       `
         SELECT  
@@ -153,9 +152,9 @@ const getAllJur3ChildDB = handleServiceError(
         JOIN users AS u ON b_i_j_ch.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
         JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j_ch.spravochnik_operatsii_id
-        JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_i_j_ch.id_spravochnik_podrazdelenie
-        JOIN spravochnik_sostav AS s_s ON s_s.id = b_i_j_ch.id_spravochnik_sostav
-        JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_i_j_ch.id_spravochnik_type_operatsii
+        LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_i_j_ch.id_spravochnik_podrazdelenie
+        LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = b_i_j_ch.id_spravochnik_sostav
+        LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_i_j_ch.id_spravochnik_type_operatsii
         WHERE r.id = $1 
             AND b_i_j_ch.main_schet_id = $2
             AND b_i_j_ch.bajarilgan_ishlar_jur3_id = $3

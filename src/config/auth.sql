@@ -1,10 +1,11 @@
 CREATE TABLE regions (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(200),
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
 );
+
 
 CREATE TABLE role (
   id SERIAL PRIMARY KEY,
