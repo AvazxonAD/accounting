@@ -81,7 +81,8 @@ const getAllJur3DB = handleServiceError(
                 spravochnik_organization.inn AS spravochnik_organization_inn, 
                 bajarilgan_ishlar_jur3.shartnomalar_organization_id,
                 shartnomalar_organization.doc_num AS shartnomalar_organization_doc_num,
-                TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date
+                TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                bajarilgan_ishlar_jur3.spravochnik_operatsii_own_id
             FROM bajarilgan_ishlar_jur3 
             JOIN users ON bajarilgan_ishlar_jur3.user_id = users.id
             JOIN regions ON users.region_id = regions.id
@@ -181,7 +182,8 @@ const getElementByIdJur_3DB = handleServiceError(
           spravochnik_organization.inn AS spravochnik_organization_inn, 
           bajarilgan_ishlar_jur3.shartnomalar_organization_id,
           shartnomalar_organization.doc_num AS shartnomalar_organization_doc_num,
-          TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date
+          TO_CHAR(shartnomalar_organization.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+          bajarilgan_ishlar_jur3.spravochnik_operatsii_own_id
       FROM bajarilgan_ishlar_jur3 
       JOIN users ON bajarilgan_ishlar_jur3.user_id = users.id
       JOIN regions ON users.region_id = regions.id
