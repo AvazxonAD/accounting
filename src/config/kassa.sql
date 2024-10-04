@@ -7,7 +7,6 @@ CREATE TABLE kassa_prixod (
     id_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
     user_id INT NOT NULL REFERENCES users(id),
     main_schet_id INT NOT NULL REFERENCES main_schet(id),
-    spravochnik_operatsii_own_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT false 
@@ -38,7 +37,6 @@ CREATE TABLE kassa_rasxod (
     id_podotchet_litso INT REFERENCES spravochnik_podotchet_litso(id),
     user_id INT NOT NULL REFERENCES users(id),
     main_schet_id INT NOT NULL REFERENCES main_schet(id),
-    spravochnik_operatsii_own_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT false 
