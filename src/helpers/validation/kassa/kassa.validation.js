@@ -16,9 +16,7 @@ const kassaValidation = Joi.object({
         id_spravochnik_type_operatsii: Joi.number(),
       }),
     )
-    .required(),
-  spravochnik_operatsii_own_id: Joi.number().required(),
-});
+}).options({ stripUnknown: true });
 
 module.exports = {
   kassaValidation,
