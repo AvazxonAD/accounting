@@ -90,10 +90,12 @@ const getElementByIdGrafik = handleServiceError(async (region_id, id, ignoreDele
         smeta_grafik.oy_11,
         smeta_grafik.oy_12,
         smeta_grafik.year
-    FROM smeta_grafik  
+    FROM smeta_grafik
+    JOIN users ON smeta_grafik.user_id = users.id
+    JOIN regions ON users.region_id = regions.id  
     JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = smeta_grafik.spravochnik_budjet_name_id
     JOIN smeta ON smeta.id = smeta_grafik.smeta_id
-    WHERE smeta_grafik.user_id = $1 AND smeta_grafik.id = $2
+    WHERE regions.id = $1 AND smeta_grafik.id = $2
   `;
 
   if (!ignoreDeleted) {

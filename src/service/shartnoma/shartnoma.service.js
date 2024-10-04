@@ -184,6 +184,7 @@ const deleteShartnomaDB = handleServiceError(async (id) => {
 
 const getByIdOrganizationShartnoma = handleServiceError(
   async (region_id, main_schet_id, organization_id) => {
+    console.log('//////////////')
     const result = await pool.query(
       `
         SELECT 

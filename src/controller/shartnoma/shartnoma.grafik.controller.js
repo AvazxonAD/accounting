@@ -56,7 +56,6 @@ const updateShartnomaGrafik = asyncHandler(async (req, res, next) => {
     oy_11,
     oy_12,
   );
-
   if (summa !== grafik.summa) {
     return next(new ErrorResponse("Summa notogri kiritildi", 400));
   }

@@ -166,7 +166,6 @@ const getAllPrixod = handleServiceError(
             JOIN regions ON users.region_id = regions.id
             WHERE bank_prixod.main_schet_id = $1 
               AND regions.id = $2 
-              AND bank_prixod.isdeleted = false
               AND doc_date BETWEEN $3 AND $4
     `,
       [main_schet_id, region_id, from, to],
@@ -179,7 +178,6 @@ const getAllPrixod = handleServiceError(
         JOIN regions ON users.region_id = regions.id
         WHERE bank_prixod.main_schet_id = $1 
           AND regions.id = $2 
-          AND bank_prixod.isdeleted = false
           AND doc_date BETWEEN $3 AND $4
     `,
       [main_schet_id, region_id, from, to],
@@ -271,7 +269,6 @@ const getElementByIdBankPrixodChild = handleServiceError(
               JOIN users ON bank_prixod_child.user_id = users.id
               JOIN regions ON users.region_id = regions.id
               WHERE regions.id = $1 
-                AND bank_prixod_child.isdeleted = false 
                 AND bank_prixod_child.id_bank_prixod = $2
           `,
       [region_id, prixod_id],
