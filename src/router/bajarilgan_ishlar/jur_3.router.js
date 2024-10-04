@@ -17,4 +17,5 @@ router.put("/update/:id", protect, jur_3_update);
 router.delete("/delete/:id", protect, deleteJur_3);
 router.get("/get/element/by/:id", protect, getElementByIdJur_3);
 
+
 module.exports = router;
