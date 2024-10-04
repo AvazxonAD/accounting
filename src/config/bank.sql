@@ -28,8 +28,6 @@ CREATE TABLE bank_prixod_child (
   id_spravochnik_type_operatsii INTEGER REFERENCES spravochnik_type_operatsii(id),
   id_spravochnik_podotchet_litso INTEGER REFERENCES spravochnik_podotchet_litso(id),
   id_bank_prixod INTEGER REFERENCES bank_prixod(id),
-  own_schet VARCHAR(200),
-  own_subschet VARCHAR(200),
   main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -62,8 +60,6 @@ CREATE TABLE bank_rasxod_child (
     id_bank_rasxod INTEGER REFERENCES bank_rasxod(id),
     user_id INTEGER REFERENCES regions(id),
     main_schet_id INTEGER REFERENCES main_schet(id),
-    own_schet VARCHAR(200),
-    own_subschet VARCHAR(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
