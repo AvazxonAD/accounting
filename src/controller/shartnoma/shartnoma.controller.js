@@ -190,10 +190,16 @@ const deleteShartnoma = asyncHandler(async (req, res, next) => {
 
 // get by organization id shartnoama
 const getByIdOrganization_Shartnoma = asyncHandler(async (req, res, next) => {
+  let pudratchi = false
+  if(req.query.pudratchi === 'true'){
+    pudratchi = true
+  }
+
   const result = await getByIdOrganizationShartnoma(
     req.user.region_id,
     req.query.main_schet_id,
     req.params.id,
+    pudratchi
   );
   return res.status(200).json({
     sucess: true,

@@ -183,10 +183,8 @@ const deleteShartnomaDB = handleServiceError(async (id) => {
 });
 
 const getByIdOrganizationShartnoma = handleServiceError(
-  async (region_id, main_schet_id, organization_id) => {
-    console.log('//////////////')
-    const result = await pool.query(
-      `
+  async (region_id, main_schet_id, organization_id, pudratchi) => {
+    let query = `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -216,10 +214,11 @@ const getByIdOrganizationShartnoma = handleServiceError(
             AND regions.id = $1
             AND shartnomalar_organization.main_schet_id = $2
             AND shartnomalar_organization.spravochnik_organization_id = $3
-        ORDER BY shartnomalar_organization.id
-    `,
-      [region_id, main_schet_id, organization_id],
-    );
+    `
+    if(pudratchi){
+      query += `   AND pudratchi_bool = true`
+    }
+    const result = await pool.query( query, [region_id, main_schet_id, organization_id],);
     return result.rows;
   },
 );
