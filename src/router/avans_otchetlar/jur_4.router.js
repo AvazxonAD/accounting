@@ -11,10 +11,10 @@ const {
   delete_jur_4,
 } = require("../../controller/avans_otchetlar/jur_4.controller");
 
-router.post("/jur_4/create", protect, jur_4_create);
-router.get("/jur_4/get/all", protect, getAllJur_4);
-router.put("/jur_4/update/:id", protect, jur_4_update);
-router.delete("/jur_4/delete/:id", protect, delete_jur_4);
-router.get("/jur_4/get/element/by/id/:id", protect, getElementByIdjur_4);
+router.post("/create", protect, jur_4_create);
+router.get("/get/all", protect, getAllJur_4);
+router.put("/update/:id", protect, jur_4_update);
+router.delete("/delete/:id", protect, delete_jur_4);
+router.get("/get/element/by/:id", protect, getElementByIdjur_4);
 
 module.exports = router;

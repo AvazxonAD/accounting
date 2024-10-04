@@ -99,6 +99,7 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
 const getAllJur_4 = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
+  const user_id = req.user.id
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
@@ -236,6 +237,7 @@ const delete_jur_4 = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id
+  const user_id = req.user.id
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
@@ -244,7 +246,7 @@ const delete_jur_4 = asyncHandler(async (req, res, next) => {
 
   const test = await getByIdJur4DB(region_id, main_schet_id, id)
   if (!test) {
-    return next(new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", 404));
+    return next(new ErrorResponse("Server xatolik. jur 4 documentlar topilmadi", 404));
   }
 
   await deleteJur4DB(id)
@@ -261,6 +263,7 @@ const getElementByIdjur_4 = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id
+  const user_id = req.user.id
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
@@ -269,7 +272,7 @@ const getElementByIdjur_4 = asyncHandler(async (req, res, next) => {
 
   const result = await getByIdJur4DB(region_id, main_schet_id, id, true)
   if (!result) {
-    return next(new ErrorResponse("Server xatolik. Prixod documentlar topilmadi", 404));
+    return next(new ErrorResponse("Server xatolik. jur 4 document topilmadi", 404));
   }
 
   const prixod_childs = await getAllJur4ChildDB(region_id, main_schet_id, id)
