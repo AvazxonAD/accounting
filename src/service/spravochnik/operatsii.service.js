@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require('../../utils/errorResponse')
 
 const createOperatsii = handleServiceError(async (data) => {
   await pool.query(
@@ -54,6 +55,9 @@ const getByIdOperatsii = handleServiceError(async (id, type_schet) => {
     `,
     [id, type_schet],
   );
+  if (!result.rows[0]) {
+    throw new ErrorResponse(`Spravochnik operatsii not found`, 404);
+  }
   return result.rows[0];
 });
 

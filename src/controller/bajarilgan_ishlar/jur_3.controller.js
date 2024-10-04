@@ -33,6 +33,7 @@ const {
   updateJur3DB,
   deleteJur3DB,
 } = require("../../service/bajarilgan_ishlar/jur_3.service");
+const { resFunc } = require('../../helpers/resFunc');
 
 // jur_3 create
 const jur_3_create = asyncHandler(async (req, res, next) => {
@@ -56,7 +57,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
   );
   if (!spravochnik_operatsii_own) {
     return next(
-      new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi",404),
+      new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404),
     );
   }
   const organization = await getByIdOrganization(
@@ -141,10 +142,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
   }
 
   postLogger.info(`Jur3 doc muvaffaqiyatli kiritildi. UserId : ${user_id}`)
-  res.status(201).json({
-    success: true,
-    data: "Muvaffaqiyatli kiritildi",
-  });
+  return resFunc(res, 201, result);
 });
 
 // jur_3 get all
@@ -353,10 +351,7 @@ const deleteJur_3 = asyncHandler(async (req, res, next) => {
   await deleteJur3DB(id);
 
   deleteLogger.info(`Jur3 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
+  return resFunc(res, 200, 'deleted success')
 });
 
 // get element by id jur_3

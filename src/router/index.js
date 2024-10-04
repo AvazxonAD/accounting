@@ -55,5 +55,6 @@ router.use("/kassa/rasxod", kassaRasxodRouter);
 router.use('/access', accessRouter)
 router.use('/region_admin_users', regionUsersRouter)
 router.use('/super_admin_users', superAdminUsersRouter)
+router.use('/jur3', require('./jur3/jur3.routes'));
 
 module.exports = router;

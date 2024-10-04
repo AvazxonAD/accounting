@@ -1,8 +1,10 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require("../../utils/errorResponse");
 
-const getByIdMainSchet = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
-  let query = `
+const getByIdMainSchet = async (region_id, id, ignoreDeleted = false) => {
+  try {
+    let query = `
     SELECT 
         main_schet.id, 
         main_schet.account_number, 
@@ -29,16 +31,22 @@ const getByIdMainSchet = handleServiceError(async (region_id, id, ignoreDeleted 
     WHERE regions.id = $1 
       AND main_schet.id = $2
   `;
-  let params = [region_id, id];
+    let params = [region_id, id];
 
-  // ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
-  if (!ignoreDeleted) {
-    query += ` AND main_schet.isdeleted = false`;
+    // ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
+    if (!ignoreDeleted) {
+      query += ` AND main_schet.isdeleted = false`;
+    }
+
+    const result = await pool.query(query, params);
+    if (!result.rows[0]) {
+      throw new ErrorResponse(`Main schet not found`, 404);
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error.message, error?.statusCode);
   }
-
-  const result = await pool.query(query, params);
-  return result.rows[0];
-});
+};
 
 const createMain_schet = handleServiceError(async (data) => {
   await pool.query(
@@ -213,11 +221,11 @@ const checkMainSchetDB = handleServiceError(async (id) => {
       WHERE 
           confrelid = 'main_schet'::regclass;
   `)
-  for(let table of tables.rows){
+  for (let table of tables.rows) {
     const test = await pool.query(`
       SELECT * FROM ${table.name} WHERE main_schet_id = $1 AND isdeleted = false
     `, [id])
-    if(test.rows.length > 0){
+    if (test.rows.length > 0) {
       return false
     }
   }
@@ -225,8 +233,8 @@ const checkMainSchetDB = handleServiceError(async (id) => {
 })
 
 const getByAndAccountNumber = handleServiceError(async (account_number) => {
-    const result = await pool.query(`SELECT * FROM main_schet WHERE account_number = $1`, [account_number])
-    return result.rows[0]
+  const result = await pool.query(`SELECT * FROM main_schet WHERE account_number = $1`, [account_number])
+  return result.rows[0]
 })
 
 module.exports = {

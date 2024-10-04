@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require("../../utils/errorResponse");
 
 const createShartnoma = handleServiceError(async (data) => {
   const shartnoma = await pool.query(
@@ -133,6 +134,9 @@ const getByIdShartnomaDB = handleServiceError(
     }
 
     const result = await pool.query(query, [region_id, main_schet_id, id]);
+    if (!result.rows[0]) {
+      throw new ErrorResponse(`Shartnoma not found`, 404);
+    }
     return result.rows[0];
   },
 );

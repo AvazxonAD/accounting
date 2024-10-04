@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require("../../utils/errorResponse");
 
 const getByInnOrganization = handleServiceError(async (inn, region_id) => {
   const result = await pool.query(
@@ -103,6 +104,9 @@ const getByIdOrganization = handleServiceError(async (region_id, id, ignoreDelet
   }
 
   const result = await pool.query(query, params);
+  if (!result.rows[0]) {
+    throw new ErrorResponse(`Spravochnik organization not found`, 404);
+  }
   return result.rows[0];
 });
 
