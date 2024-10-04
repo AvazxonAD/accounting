@@ -6,6 +6,7 @@ const { getByIdShartnomaDB } = require('../../service/shartnoma/shartnoma.servic
 const { getByIdPodrazlanie } = require('../../service/spravochnik/podrazdelenie.service')
 const { getByIdSostav } = require('../../service/spravochnik/sostav.service')
 const { getByIdOperatsii, getByIdtype_operatsii } = require('../../service/spravochnik/type_operatsii.service')
+const { resFunc } = require('../../helpers/resFunc')
 
 const createController = async () => {
     try {
@@ -47,14 +48,12 @@ const createController = async () => {
             }
             if (value.id_spravochnik_type_operatsii) {
                 const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, value.id_spravochnik_type_operatsii)
-                if(!spravochnik_type_operatsii){
+                if (!spravochnik_type_operatsii) {
                     return new ErrorResponse(`spravochnik_type_operatsii is not defined`, 404)
                 }
             }
         }
-        const summa 
-    } catch (err) {
-        console.log(`show services createController :  ${err}`)
-        return new ErrorResponse(`show services createController :  ${err.message}`)
+    } catch (error) {
+        resFunc(res, error.statusCode, error.message)
     }
 }
