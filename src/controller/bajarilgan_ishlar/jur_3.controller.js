@@ -308,7 +308,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
 
   const summa = returnAllChildSumma(value.childs);
 
-  await updateJur3DB({ ...value, id });
+  await updateJur3DB({ ...value, id, summa });
   await deleteJur3ChildDB(id);
 
   for (let child of value.childs) {
@@ -333,6 +333,7 @@ const deleteJur_3 = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
   const id = req.params.id;
+  const user_id = req.user.id
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
   if (!main_schet) {
@@ -349,7 +350,6 @@ const deleteJur_3 = asyncHandler(async (req, res, next) => {
     );
   }
 
-  await deleteJur3ChildDB(id);
   await deleteJur3DB(id);
 
   deleteLogger.info(`Jur3 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)

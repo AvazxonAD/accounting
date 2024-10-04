@@ -141,6 +141,7 @@ const getAllJur3ChildDB = handleServiceError(
       `
         SELECT  
             b_i_j_ch.id,
+            b_i_j_ch.bajarilgan_ishlar_jur3_id,
             b_i_j_ch.spravochnik_operatsii_id,
             s_o.name AS spravochnik_operatsii_name,
             b_i_j_ch.summa::FLOAT,
@@ -158,7 +159,6 @@ const getAllJur3ChildDB = handleServiceError(
         JOIN spravochnik_sostav AS s_s ON s_s.id = b_i_j_ch.id_spravochnik_sostav
         JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_i_j_ch.id_spravochnik_type_operatsii
         WHERE r.id = $1 
-            AND b_i_j_ch.isdeleted = false 
             AND b_i_j_ch.main_schet_id = $2
             AND b_i_j_ch.bajarilgan_ishlar_jur3_id = $3
     `,
@@ -237,7 +237,7 @@ const updateJur3DB = handleServiceError(async (data) => {
 const deleteJur3ChildDB = handleServiceError(async (id) => {
   await pool.query(
     `
-        UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true 
+        DELETE FROM bajarilgan_ishlar_jur3_child 
         WHERE bajarilgan_ishlar_jur3_id = $1 AND isdeleted = false
     `,
     [id],
@@ -250,6 +250,13 @@ const deleteJur3DB = handleServiceError(async (id) => {
         UPDATE bajarilgan_ishlar_jur3 
         SET  isdeleted = true
         WHERE id = $1
+    `,
+    [id],
+  );
+  await pool.query(
+    `
+        UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true 
+        WHERE bajarilgan_ishlar_jur3_id = $1 AND isdeleted = false
     `,
     [id],
   );

@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const jur3Validation = Joi.object({
   doc_num: Joi.string(),
-  doc_date: Joi.date(),
+  doc_date: Joi.string().pattern(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/),
   opisanie: Joi.string(),
   spravochnik_operatsii_own_id: Joi.number().required(),
   id_spravochnik_organization: Joi.number().required(),
