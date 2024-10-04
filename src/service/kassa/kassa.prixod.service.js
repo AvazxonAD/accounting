@@ -84,7 +84,6 @@ const getAllKassaPrixodChild = handleServiceError(
               JOIN regions ON regions.id = users.region_id   
               WHERE regions.id = $1 
                 AND kassa_prixod_child.main_schet_id = $2 
-                AND kassa_prixod_child.isdeleted = false 
                 AND kassa_prixod_child.kassa_prixod_id = $3
           `,
       [region_id, main_schet_id, kassa_prixod_id],

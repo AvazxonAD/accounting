@@ -12,18 +12,20 @@ const getByLoginAuth = handleServiceError(async (login) => {
           users.region_id, 
           users.role_id, 
           role.name AS role_name,
-          access.kassa AS access_kassa,
-          access.bank AS access_bank,
-          access.spravochnik AS access_spravochnik,
-          access.organization AS access_organization,
-          access.region_users AS access_region_users,
-          access.smeta AS access_smeta,
-          access.region AS access_region,
-          access.role AS access_role, 
-          access.users AS access_users,
-          access.shartnoma AS access_shartnoma,
-          access.jur3 AS access_jur3,
-          access.jur4 AS access_jur4
+          json_build_object(
+            'kassa', access.kassa,
+            'bank', access.bank,
+            'spravochnik', access.spravochnik,
+            'organization', access.organization,
+            'region_users', access.region_users,
+            'smeta', access.smeta,
+            'region', access.region,
+            'role', access.role, 
+            'users', access.users,
+            'shartnoma', access.shartnoma,
+            'jur3', access.jur3,
+            'jur4', access.jur4
+          ) AS access_object
         FROM users 
         INNER JOIN role ON role.id = users.role_id
         INNER JOIN access ON access.role_id = role.id 
@@ -31,8 +33,10 @@ const getByLoginAuth = handleServiceError(async (login) => {
     `,
     [login.trim()],
   );
+
   return result.rows[0];
 });
+
 
 const getByIdAuth = handleServiceError(async (id) => {
   const result = await pool.query(

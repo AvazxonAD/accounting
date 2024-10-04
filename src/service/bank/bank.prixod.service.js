@@ -273,7 +273,7 @@ const deleteBankPrixod = handleServiceError(async (id) => {
       UPDATE bank_prixod_child SET isdeleted = $1 
       WHERE id_bank_prixod = $2 AND isdeleted = false
     `,
-    [true, bank_prixod_id],
+    [true, id],
   );
   await pool.query(
     `UPDATE bank_prixod SET isdeleted = $1

@@ -15,7 +15,7 @@ const kassaRasxodCreateDB = handleServiceError(async (data) => {
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING * 
         `,
     [
@@ -84,7 +84,6 @@ const getAllKassaRasxodChild = handleServiceError(
               JOIN regions ON regions.id = users.region_id   
               WHERE regions.id = $1 
                 AND kassa_rasxod_child.main_schet_id = $2 
-                AND kassa_rasxod_child.isdeleted = false 
                 AND kassa_rasxod_child.kassa_rasxod_id = $3
           `,
       [region_id, main_schet_id, kassa_rasxod_id],
@@ -129,7 +128,6 @@ const getAllKassaRasxodDb = handleServiceError(
         JOIN regions ON regions.id = users.region_id  
         WHERE kassa_rasxod.main_schet_id = $1 
             AND regions.id = $2
-            AND kassa_rasxod.isdeleted = false
             AND kassa_rasxod.doc_date BETWEEN $3 AND $4
     `,
       [main_schet_id, region_id, from, to],
@@ -144,7 +142,6 @@ const getAllKassaRasxodDb = handleServiceError(
         JOIN regions ON regions.id = users.region_id  
         WHERE kassa_rasxod.main_schet_id = $1 
             AND regions.id = $2
-            AND kassa_rasxod.isdeleted = false
             AND kassa_rasxod.doc_date BETWEEN $3 AND $4
     `,
       [main_schet_id, region_id, from, to],
