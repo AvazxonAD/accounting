@@ -98,7 +98,6 @@ const getByIdOrganization = handleServiceError(async (region_id, id, ignoreDelet
 
   let params = [region_id, id];
 
-  // Agar ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
   if (!ignoreDeleted) {
     query += ` AND spravochnik_organization.isdeleted = false`;
   }

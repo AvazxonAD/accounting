@@ -3,7 +3,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const bcrypt = require("bcrypt");
 const { getAdminRole } = require("../../service/auth/role.service");
-const { getByIdRegion } = require("../../service/auth/region.service");
+const { getByIdRegionService } = require("../../service/auth/region.service");
 const { getByLoginAuth } = require("../../service/auth/auth.service");
 const {
   userValidation,
@@ -45,7 +45,7 @@ const createUserForSuperAdmin = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Ushbu login avval kiritilgan", 409));
   }
 
-  const region = await getByIdRegion(region_id);
+  const region = await getByIdRegionService(region_id);
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }
@@ -92,7 +92,7 @@ const updateUserForSuperAdmin = asyncHandler(async (req, res, next) => {
 
   let { login, password, fio, region_id } = value;
 
-  const region = await getByIdRegion(region_id);
+  const region = await getByIdRegionService(region_id);
   if (!region) {
     return next(new ErrorResponse("Server xatolik. Viloyat topilmadi", 404));
   }

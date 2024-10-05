@@ -1,8 +1,9 @@
 const tashkentTime = () => {
-  const millisecondsInAnHour = 60 * 60 * 1000;
-  return new Date().getTime() + (5 * millisecondsInAnHour);
+  const currentUtcDate = new Date(); 
+  const tashkentOffset = 10 * 60 * 60 * 1000;
+  const tashkentDate = new Date(currentUtcDate.getTime() + tashkentOffset); 
+  return tashkentDate.toISOString(); 
 };
-
 // return string  date
 const returnStringDate = (date) => {
   const day = date.getDate().toString().padStart(2, "0"); // "05"

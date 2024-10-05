@@ -11,7 +11,6 @@ const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.servi
 const {
   createShartnoma,
   getAllShartnoma,
-  getTotalShartnoma,
   updateShartnomaDB,
   getByIdOrganizationShartnoma,
   getByIdShartnomaDB,
@@ -70,21 +69,13 @@ const getAll = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
 
   if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
+    return next( new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
   }
-
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
-  }
-
+  await getByIdMainSchet(region_id, main_schet_id);
   const offset = (page - 1) * limit;
 
   const result = await getAllShartnoma(region_id, main_schet_id, offset, limit);
-  const totalQuery = await getTotalShartnoma(region_id, main_schet_id);
-  const total = parseInt(totalQuery.total);
+  const total = parseInt(result.total_count);
   const pageCount = Math.ceil(total / limit);
 
   return res.status(200).json({
@@ -96,7 +87,7 @@ const getAll = asyncHandler(async (req, res, next) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     },
-    data: result,
+    data: result.data,
   });
 });
 

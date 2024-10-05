@@ -1,4 +1,5 @@
 const pool = require("../../config/db");
+const ErrorResponse = require('../../utils/errorResponse')
 const { handleServiceError } = require("../../middleware/service.handle");
 
 const getByAllSostav = handleServiceError(async (region_id, name, rayon) => {
@@ -73,6 +74,9 @@ const getByIdSostav = handleServiceError(async (region_id, id, ignoreDeleted = f
   }
 
   const result = await pool.query(query, [region_id, id]);
+  if(!result.rows[0]){
+    throw new ErrorResponse('spravochnik_sostav not found', 404)
+  }
   return result.rows[0];
 });
 

@@ -2,20 +2,18 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const {
-  operatsiiValidation,
-} = require("../../helpers/validation/spravochnik/operatsii.validation");
+const { operatsiiValidation } = require("../../helpers/validation/spravochnik/operatsii.validation");
+const { getByIdSmeta } = require("../../service/smeta/smeta.service");
+const { errorCatch } = require('../../helpers/errorCatch')
 const {
   getByNameAndSchetOperatsii,
   createOperatsii,
-  getAllOperatsii,
-  totalOperatsii,
+  getAllOperatsiiService,
   getByIDOperatsii,
   updateOperatsii,
   deleteOperatsii,
 } = require("../../service/spravochnik/operatsii.service");
 
-const { getByIdSmeta } = require("../../service/smeta/smeta.service");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
@@ -46,41 +44,36 @@ const create = asyncHandler(async (req, res, next) => {
 });
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
-  const query = req.query.type_schet;
-  if (!query) {
-    return next(new ErrorResponse("Type_schet topilmadi", 400));
+const getAll = async (req, res, next) => {
+  try {
+    const query = req.query.type_schet;
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    if (limit <= 0 || page <= 0) {
+      return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
+    }
+    const offset = (page - 1) * limit;
+    
+    const result = await getAllOperatsiiService(query, offset, limit);
+
+    const total = parseInt(result.total_count);
+    const pageCount = Math.ceil(total / limit);
+
+    return res.status(200).json({
+      success: true,
+      meta: {
+        pageCount: pageCount,
+        count: total,
+        currentPage: page,
+        nextPage: page >= pageCount ? null : page + 1,
+        backPage: page === 1 ? null : page - 1,
+      },
+      data: result.data,
+    });
+  } catch (error) {
+    return errorCatch(error, res)
   }
-
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
-  const offset = (page - 1) * limit;
-
-  const result = await getAllOperatsii(query, offset, limit);
-
-  const totalQuery = await totalOperatsii(query);
-  const total = parseInt(totalQuery.total);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    },
-    data: result,
-  });
-});
+}
 
 // update
 const update = asyncHandler(async (req, res, next) => {

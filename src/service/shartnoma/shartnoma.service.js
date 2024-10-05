@@ -1,3 +1,6 @@
+const { query } = require("express");
+const { rows } = require("pg/lib/defaults");
+const { log } = require("winston");
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 const ErrorResponse = require("../../utils/errorResponse");
@@ -35,64 +38,39 @@ const createShartnoma = handleServiceError(async (data) => {
   return shartnoma.rows[0];
 });
 
-const getAllShartnoma = handleServiceError(
-  async (region_id, main_schet_id, offset, limit) => {
+const getAllShartnoma = async (region_id, main_schet_id, offset, limit) => {
     const result = await pool.query(
-      `
+      `WITH data AS (
         SELECT 
-            shartnomalar_organization.id, 
-            shartnomalar_organization.doc_num, 
-            shartnomalar_organization.doc_date, 
-            shartnomalar_organization.summa,
-            shartnomalar_organization.opisanie,
-            shartnomalar_organization.smeta_id,
-            shartnomalar_organization.smeta_2,
-            shartnomalar_organization.pudratchi_bool,
-            smeta.smeta_name,
-            smeta.smeta_number,
-            shartnomalar_organization.main_schet_id,
-            shartnomalar_organization.spravochnik_organization_id,
-            spravochnik_organization.name AS organization_name,
-            spravochnik_organization.okonx,
-            spravochnik_organization.bank_klient,
-            spravochnik_organization.raschet_schet,
-            spravochnik_organization.raschet_schet_gazna,
-            spravochnik_organization.mfo,
-            spravochnik_organization.inn
-        FROM shartnomalar_organization
-        JOIN users  ON shartnomalar_organization.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        JOIN smeta ON smeta.id = shartnomalar_organization.smeta_id
-        JOIN spravochnik_organization ON spravochnik_organization.id = shartnomalar_organization.spravochnik_organization_id
-        WHERE shartnomalar_organization.isdeleted = false 
-            AND regions.id = $3
-            AND shartnomalar_organization.main_schet_id = $4
-        ORDER BY shartnomalar_organization.id
-        OFFSET $1 
-        LIMIT $2
-    `,
-      [offset, limit, region_id, main_schet_id],
-    );
-    return result.rows;
-  },
-);
-
-const getTotalShartnoma = handleServiceError(
-  async (region_id, main_schet_id) => {
-    const result = await pool.query(
-      `SELECT COUNT(shartnomalar_organization.id) AS total 
-      FROM shartnomalar_organization 
-      JOIN users  ON shartnomalar_organization.user_id = users.id
-      JOIN regions ON users.region_id = regions.id
-      WHERE shartnomalar_organization.isdeleted = false 
-        AND regions.id = $1
-        AND shartnomalar_organization.main_schet_id = $2
-    `,
-      [region_id, main_schet_id],
+            sh_o.*, 
+            s.*,
+            s_o.*
+        FROM shartnomalar_organization AS sh_o
+        JOIN users AS u ON sh_o.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        JOIN smeta AS s ON s.id = sh_o.smeta_id
+        JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
+        WHERE sh_o.isdeleted = false 
+            AND r.id = $1
+            AND sh_o.main_schet_id = $2
+        ORDER BY sh_o.id  -- ORDER BY qachonki OFFSET va LIMIT bo'lsa, kerak
+        OFFSET $3 
+        LIMIT $4
+      ) 
+      SELECT 
+        ARRAY_AGG(row_to_json(data)) AS data,
+        (SELECT COUNT(sh_o.id) 
+         FROM shartnomalar_organization AS sh_o
+         JOIN users AS u  ON sh_o.user_id = u.id
+         JOIN regions AS r ON u.region_id = r.id
+         WHERE sh_o.isdeleted = false 
+           AND r.id = $1
+           AND sh_o.main_schet_id = $2)::INTEGER AS total_count
+      FROM data`,
+      [region_id, main_schet_id, offset, limit],
     );
     return result.rows[0];
-  },
-);
+}
 
 const getByIdShartnomaDB = handleServiceError(
   async (region_id, main_schet_id, id, ignoreDeleted = false) => {
@@ -291,7 +269,6 @@ const forJur3DB = handleServiceError(async (region_id, main_schet_id) => {
 module.exports = {
   createShartnoma,
   getAllShartnoma,
-  getTotalShartnoma,
   getByIdShartnomaDB,
   updateShartnomaDB,
   getByIdOrganizationShartnoma,

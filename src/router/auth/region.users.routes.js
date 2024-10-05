@@ -11,11 +11,11 @@ const {
   getElementByIdForRegionAdmin
 } = require("../../controller/auth/region.users.controller");
 
-router.post("/create", protect, createUserForRegionAdmin);
-router.get("/get/all", protect, getAllUsersForRegionAdmin);
-router.put("/update/:id", protect, updateUserForRegionAdmin);
-router.delete("/delete/:id", protect, deleteUserForRegionAdmin);
-router.get("/get/element/by/:id", protect, getElementByIdForRegionAdmin);
+router.post("/", protect, createUserForRegionAdmin)
+  .get("/:id", protect, getElementByIdForRegionAdmin)
+  .get("/", protect, getAllUsersForRegionAdmin)
+  .put("/", protect, updateUserForRegionAdmin)
+  .delete("/", protect, deleteUserForRegionAdmin);
 
 
 

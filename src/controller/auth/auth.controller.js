@@ -18,7 +18,7 @@ const {
   getByBudjet_idMain_schet,
 } = require("../../service/spravochnik/main.schet.service");
 const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
-const { get_all_region } = require('../../service/auth/region.service');
+const { getRegionService } = require('../../service/auth/region.service');
 
 // login
 const login = asyncHandler(async (req, res, next) => {
@@ -139,7 +139,7 @@ const select_budget = asyncHandler(async (req, res, next) => {
 // for login
 const forLogin = asyncHandler(async (req, res, next) => {
   const all_budjet = await getAllBudjet();
-  const all_region = await get_all_region();
+  const all_region = await getRegionService();
   
   
   return res.status(200).json({

@@ -1,4 +1,5 @@
 const pool = require("../../config/db");
+const ErrorResponse = require('../../utils/errorResponse')
 const { handleServiceError } = require("../../middleware/service.handle");
 
 const getByAlltype_operatsii = handleServiceError(
@@ -77,6 +78,9 @@ const getByIdtype_operatsii = handleServiceError(async (region_id, id, ignoreDel
   }
 
   const result = await pool.query(query, [region_id, id]);
+  if(!result.rows[0]){
+    throw new ErrorResponse('spravochnik_type_operatsii not found', 404)
+  }
   return result.rows[0];
 });
 

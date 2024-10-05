@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require('../../utils/errorResponse')
 
 const getByAllPodrazdelenie = handleServiceError(
   async (region_id, name, rayon) => {
@@ -77,6 +78,9 @@ const getByIdPodrazlanie = handleServiceError(async (region_id, id, ignoreDelete
   }
 
   const result = await pool.query(query, [id, region_id]);
+  if(!result.rows[0]){
+    throw new ErrorResponse('spravochnik_podrazdelenie not found', 404)
+  }
   return result.rows[0];
 });
 

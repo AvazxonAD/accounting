@@ -14,7 +14,7 @@ const {
 const upload = require("../../utils/protect.file");
 
 router.post("/create", protect, create);
-router.get("/get/all", protect, getAll);
+router.get("/", protect, getAll);
 router.put("/update/:id", protect, update);
 router.delete("/delete/:id", protect, deleteValue);
 router.post("/import/excel", protect, upload.single("file"), importToExcel);

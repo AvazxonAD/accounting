@@ -1,7 +1,6 @@
 const pool = require('../../config/db')
 const { tashkentTime } = require('../../utils/date.function')
-
-const createService = async (data) => {
+const createRegionService = async (data) => {
     try {
         const result = await pool.query(
             `
@@ -34,8 +33,8 @@ const createService = async (data) => {
         ])
         return result.rows[0]
     } catch (error) {
-        console.log(`show services createService function:  ${error}`)
-        throw new Error(`show services createService function:  ${error.message}`)
+        console.log(`show services createRegionService function:  ${error}`)
+        throw new Error(`show services createRegionService function:  ${error.message}`)
     }
 }
 
@@ -78,6 +77,6 @@ const createChildService = async (data) => {
 
 
 module.exports = {
-    createService,
+    createRegionService,
     createChildService
 }
