@@ -1,44 +1,47 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require('../../utils/errorResponse')
 
-const getByLoginAuth = handleServiceError(async (login) => {
-  const result = await pool.query(
-    `
-        SELECT 
-          users.id, 
-          users.fio, 
-          users.password, 
-          users.login, 
-          users.region_id, 
-          users.role_id, 
-          role.name AS role_name,
-          json_build_object(
-            'kassa', access.kassa,
-            'bank', access.bank,
-            'spravochnik', access.spravochnik,
-            'organization', access.organization,
-            'region_users', access.region_users,
-            'smeta', access.smeta,
-            'region', access.region,
-            'role', access.role, 
-            'users', access.users,
-            'shartnoma', access.shartnoma,
-            'jur3', access.jur3,
-            'jur4', access.jur4
-          ) AS access_object
-        FROM users 
-        INNER JOIN role ON role.id = users.role_id
-        INNER JOIN access ON access.role_id = role.id 
-        WHERE users.login = $1
-    `,
-    [login.trim()],
-  );
+const getByLoginUserService = async (login) => {  
+  try {
+    const result = await pool.query(
+      `
+          SELECT 
+            users.id, 
+            users.fio, 
+            users.password, 
+            users.login, 
+            users.region_id, 
+            users.role_id, 
+            role.name AS role_name,
+            json_build_object(
+              'kassa', access.kassa,
+              'bank', access.bank,
+              'spravochnik', access.spravochnik,
+              'organization', access.organization,
+              'region_users', access.region_users,
+              'smeta', access.smeta,
+              'region', access.region,
+              'role', access.role, 
+              'users', access.users,
+              'shartnoma', access.shartnoma,
+              'jur3', access.jur3,
+              'jur4', access.jur4
+            ) AS access_object
+          FROM users 
+          INNER JOIN role ON role.id = users.role_id
+          INNER JOIN access ON access.role_id = role.id 
+          WHERE users.login = $1
+      `,
+      [login.trim()],
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+};
 
-  return result.rows[0];
-});
-
-
-const getByIdAuth = handleServiceError(async (id) => {
+const getByIdUserService = handleServiceError(async (id) => {
   const result = await pool.query(
     `SELECT * FROM users WHERE id = $1 AND isdeleted = false`,
     [id],
@@ -67,8 +70,8 @@ const getProfileAuth = handleServiceError(async (id) => {
 });
 
 module.exports = {
-  getByLoginAuth,
-  getByIdAuth,
+  getByLoginUserService,
+  getByIdUserService,
   updateAuth,
   getProfileAuth,
 };

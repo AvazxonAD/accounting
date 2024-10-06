@@ -3,22 +3,17 @@ const ErrorResponse = require("../../utils/errorResponse");
 const generateToken = require("../../utils/auth/generate.token");
 const { getLogger, postLogger, putLogger } = require('../../helpers/log_functions/logger');
 const bcrypt = require("bcrypt");
+const { getByIdMainSchet, getByBudjet_idMain_schet } = require("../../service/spravochnik/main.schet.service");
+const { authValidation, authUpdateValidation } = require("../../helpers/validation/auth/auth.validation");
+const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
+const { getRegionService } = require('../../service/auth/region.service');
+
 const {
-  authValidation,
-  authUpdateValidation,
-} = require("../../helpers/validation/auth/auth.validation");
-const {
-  getByLoginAuth,
-  getByIdAuth,
+  getByLoginUserService,
+  getByIdUserService,
   updateAuth,
   getProfileAuth,
 } = require("../../service/auth/auth.service");
-const {
-  getByIdMainSchet,
-  getByBudjet_idMain_schet,
-} = require("../../service/spravochnik/main.schet.service");
-const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
-const { getRegionService } = require('../../service/auth/region.service');
 
 // login
 const login = asyncHandler(async (req, res, next) => {
@@ -26,12 +21,12 @@ const login = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 400);
   }
-  
-  const user = await getByLoginAuth(value.login);
+
+  const user = await getByLoginUserService(value.login);
   if (!user) {
     return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
   }
-  
+
   const matchPassword = await bcrypt.compare(value.password, user.password);
   if (!matchPassword) {
     return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
@@ -44,7 +39,7 @@ const login = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("Shot raqami noto'g'ri kiritildi", 400));
     }
   }
-  
+
   const token = generateToken(user);
 
   postLogger.info(`Foydalanuvchi muvaffaqiyatli tizimga kirdi. Foydalanuvchi ID: ${user.id}`);
@@ -63,7 +58,7 @@ const update = asyncHandler(async (req, res, next) => {
   const { error, value } = authUpdateValidation.validate(req.body);
   const id = req.user.id;
 
-  const user = await getByIdAuth(id);
+  const user = await getByIdUserService(id);
   if (!user) {
     return next(new ErrorResponse("Foydalanuvchi topilmadi", 404));
   }
@@ -88,7 +83,7 @@ const update = asyncHandler(async (req, res, next) => {
   if (value.login) {
     const login = value.login.trim();
     if (login !== user.login) {
-      const test = await getByLoginAuth(login);
+      const test = await getByLoginUserService(login);
       if (test) {
         return next(new ErrorResponse("Login avval ishlatilgan", 400));
       }
@@ -98,7 +93,7 @@ const update = asyncHandler(async (req, res, next) => {
 
   await updateAuth(user.login, user.password, user.fio, id);
   putLogger.info(`Foydalanuvchi profili yangilandi. Foydalanuvchi ID: ${req.user.id}`);
-  
+
   return res.status(200).json({
     success: true,
     data: "Muvaffaqiyatli yangilandi",
@@ -108,13 +103,13 @@ const update = asyncHandler(async (req, res, next) => {
 // get profile
 const getProfile = asyncHandler(async (req, res, next) => {
   const user = await getProfileAuth(req.user.id);
-  
+
   if (!user) {
     return next(new ErrorResponse("Server xatolik. Foydalanuvchi topilmadi", 404));
   }
 
   getLogger.info(`Foydalanuvchi profili olindi. Foydalanuvchi ID: ${req.user.id}`);
-  
+
   return res.status(200).json({
     success: true,
     data: user,
@@ -125,7 +120,7 @@ const getProfile = asyncHandler(async (req, res, next) => {
 const select_budget = asyncHandler(async (req, res, next) => {
   const region_id = req.query.region_id;
   const result = await getByBudjet_idMain_schet(req.params.id, region_id);
-  
+
   if (!result) {
     return next(new ErrorResponse("Budjet topilmadi", 404));
   }
@@ -140,8 +135,8 @@ const select_budget = asyncHandler(async (req, res, next) => {
 const forLogin = asyncHandler(async (req, res, next) => {
   const all_budjet = await getAllBudjet();
   const all_region = await getRegionService();
-  
-  
+
+
   return res.status(200).json({
     success: true,
     data: { all_budjet, all_region }

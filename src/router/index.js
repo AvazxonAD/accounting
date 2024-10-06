@@ -16,8 +16,8 @@ router.use("/auth", require("./auth/auth.routes"));
 router.use("/auth/region", require("./auth/region.routes"));
 router.use("/auth/role", require("./auth/role.routes"));
 router.use("/auth/access", require('./auth/access.routes'));
-router.use("/auth/region-admin-users", require('./auth/region.users.routes'));
-router.use("/auth/super-admin-users", require('./auth/super.admin.users.routes'));
+router.use("/auth/user", require('./auth/user.routes'));
+router.use("/auth/admin", require('./auth/admin.routes'));
 
 // spravochnik  routes
 router.use("/spravochnik/podotchet-litso", require("./spravochnik/podochet.litso.routes"));

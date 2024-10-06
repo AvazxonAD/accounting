@@ -1,63 +1,89 @@
 const pool = require("../../config/db");
-const { handleServiceError } = require("../../middleware/service.handle");
+const { tashkentTime } = require('../../utils/date.function');
+const ErrorResponse = require("../../utils/errorResponse");
 
-const getByNameRole = handleServiceError(async (name) => {
-  const result = await pool.query(
-    `SELECT * FROM role WHERE name = $1 AND isdeleted = false`,
-    [name],
-  );
-  return result.rows[0];
-});
-
-const create_role = handleServiceError(async (name) => {
-  const role = await pool.query(
-    `INSERT INTO role(name, created_at) VALUES($1, $2) RETURNING *`,
-    [name, new Date()],
-  );
-  return role.rows[0]
-});
-
-const get_all_role = handleServiceError(async () => {
-  const result = await pool.query(
-    `SELECT id, name FROM role WHERE isdeleted = false AND name != $1 AND name != $2 ORDER BY id`,
-  ['super-admin', 'region-admin']);
-  return result.rows;
-});
-
-const getByIdRole = handleServiceError(async (id, ignore = false) => {
-  let query = `SELECT id, name FROM role WHERE id = $1`
-  if(!ignore){
-    query += `   AND isdeleted = false`
+const getByNameRoleService = async (name) => {
+  try {
+    const result = await pool.query(`SELECT * FROM role WHERE name = $1`, [name]);
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
   }
-  const result = await pool.query(query,[id]);
-  return result.rows[0];
-});
+}
 
-const update_role = handleServiceError(async (id, name) => {
-  await pool.query(`UPDATE role SET name = $1, updated_at = $3 WHERE id = $2`, [
-    name,
-    id,
-    new Date(),
-  ]);
-});
+const createRoleService = async (name) => {
+  try {
+    const role = await pool.query(`INSERT INTO role(name, created_at, updated_at) VALUES($1, $2, $3) RETURNING *`, [name, tashkentTime(), tashkentTime()]);
+    return role.rows[0]
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
-const delete_role = handleServiceError(async (id) => {
-  await pool.query(`UPDATE access SET isdeleted = true WHERE role_id = $1`, [id])
-  console.log(1)
-  await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2 AND name != $3 AND name != $4`, [true, id, 'super-admin', 'region-admin']);
-});
+const getRoleService = async () => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name FROM role WHERE isdeleted = false AND name != $1 AND name != $2 ORDER BY id`,
+      ['super-admin', 'region-admin']);
+    return result.rows;
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
-const getAdminRole = handleServiceError(async () => {
-  const admin = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = $2`, ['region-admin', false])
-  return admin.rows[0]
-})
+const getByIdRoleService = async (id, ignore = false) => {
+  try {
+    let query = `SELECT id, name FROM role WHERE id = $1`
+    if (!ignore) {
+      query += `   AND isdeleted = false`
+    }
+    const result = await pool.query(query, [id]);
+    if(!result.rows[0]){
+      throw new ErrorResponse('role not found', 404)
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const updateRoleService = async (id, name) => {
+  try {
+    const role = await pool.query(`UPDATE role SET name = $1, updated_at = $3 WHERE id = $2 RETURNING * `
+    , [ name, id, tashkentTime() ]);
+    return role.rows[0]
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const deleteRoleService = async (id) => {
+  try {
+    await pool.query(`UPDATE access SET isdeleted = true WHERE role_id = $1`, [id])
+    await pool.query(`UPDATE role SET isdeleted = $1 WHERE id = $2 AND name != $3 AND name != $4`, [true, id, 'super-admin', 'region-admin']);
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const getAdminRoleService = async () => {
+  try {
+    const admin = await pool.query(`SELECT * FROM role WHERE name = $1 AND isdeleted = $2`, ['region-admin', false])
+    if(!admin.rows[0]){
+      throw new ErrorResponse('role not found', 404)
+    }
+    return admin.rows[0]
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
 module.exports = {
-  getByNameRole,
-  create_role,
-  get_all_role,
-  getByIdRole,
-  update_role,
-  delete_role,
-  getAdminRole
+  getByNameRoleService,
+  createRoleService,
+  getRoleService,
+  getByIdRoleService,
+  updateRoleService,
+  deleteRoleService,
+  getAdminRoleService
 };
