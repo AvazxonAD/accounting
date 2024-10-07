@@ -36,18 +36,21 @@ const createShartnoma = handleServiceError(async (data) => {
 });
 
 const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool) => {
-    let organization = ``
-    let pudratchi = ''
-    const params = [region_id, main_schet_id, offset, limit]
-    if(organization_id){
-      organization = `AND sh_o.spravochnik_organization_id = $5`
-      params.push(organization_id)
-    }
-    if(pudratchi_bool === 'true'){
-      pudratchi = `AND sh_o.pudratchi_bool = true`
-    }
-    const result = await pool.query(
-      `WITH data AS (
+  let organization = ``
+  let pudratchi = ''
+  const params = [region_id, main_schet_id, offset, limit]
+  if (organization_id) {
+    organization = `AND sh_o.spravochnik_organization_id = $5`
+    params.push(organization_id)
+  }
+  if (pudratchi_bool === 'true') {
+    pudratchi = `AND sh_o.pudratchi_bool = true`
+  }
+  if (pudratchi_bool === 'false') {
+    pudratchi = `AND sh_o.pudratchi_bool = false`
+  }
+  const result = await pool.query(
+    `WITH data AS (
         SELECT 
             sh_o.id,
             sh_o.spravochnik_organization_id,
@@ -77,24 +80,24 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
            AND r.id = $1
            AND sh_o.main_schet_id = $2)::INTEGER AS total_count
       FROM data`, params);
-    return result.rows[0];
+  return result.rows[0];
 }
 
 const getByIdShartnomaService = async (region_id, main_schet_id, id, ignoreDeleted = false, organization_id) => {
-    try {
-      const params = [region_id, main_schet_id, id]
-      let organization = ``;
-      let ignore = ``;
-  
-      if (!ignoreDeleted) {
-         ignore = `AND sh_o.isdeleted = false`;
-      }
-      if(organization_id){
-        organization = `AND sh_o.spravochnik_organization_id = $4`
-        params.push(organization_id)
-      }
-  
-      const result = await pool.query(`
+  try {
+    const params = [region_id, main_schet_id, id]
+    let organization = ``;
+    let ignore = ``;
+
+    if (!ignoreDeleted) {
+      ignore = `AND sh_o.isdeleted = false`;
+    }
+    if (organization_id) {
+      organization = `AND sh_o.spravochnik_organization_id = $4`
+      params.push(organization_id)
+    }
+
+    const result = await pool.query(`
         SELECT 
               sh_o.spravochnik_organization_id,
               sh_o.doc_num,
@@ -110,13 +113,13 @@ const getByIdShartnomaService = async (region_id, main_schet_id, id, ignoreDelet
           AND sh_o.main_schet_id = $2
           AND sh_o.id = $3 ${ignore} ${organization}
       `, params);
-      if (!result.rows[0]) {
-        throw new ErrorResponse(`Shartnoma not found`, 404);
-      }
-      return result.rows[0];
-    } catch (error) {
-      throw new ErrorResponse(error, error.statusCode)
+    if (!result.rows[0]) {
+      throw new ErrorResponse(`Shartnoma not found`, 404);
     }
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
 }
 
 const updateShartnomaDB = handleServiceError(async (data) => {
@@ -197,38 +200,44 @@ const getByIdOrganizationShartnoma = handleServiceError(
             AND shartnomalar_organization.main_schet_id = $2
             AND shartnomalar_organization.spravochnik_organization_id = $3
     `
-    if(pudratchi){
+    if (pudratchi) {
       query += `   AND pudratchi_bool = true`
     }
-    const result = await pool.query( query, [region_id, main_schet_id, organization_id],);
+    const result = await pool.query(query, [region_id, main_schet_id, organization_id],);
     return result.rows;
   },
 );
 
-const getByIdAndOrganizationIdShartnoma = handleServiceError(
-  async (region_id, main_schet_id, id, organization_id) => {
+const getByIdAndOrganizationIdShartnoma = async (region_id, main_schet_id, id, organization_id) => {
+  console.log(region_id, main_schet_id, id, organization_id)
+  try {
     const result = await pool.query(
       `
-        SELECT 
-            shartnomalar_organization.* 
-        FROM shartnomalar_organization
-        JOIN users  ON shartnomalar_organization.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE shartnomalar_organization.isdeleted = false 
-            AND regions.id = $1
-            AND shartnomalar_organization.main_schet_id = $2
-            AND shartnomalar_organization.id = $3
-            AND shartnomalar_organization.spravochnik_organization_id = $4
-    `,
+          SELECT 
+              shartnomalar_organization.* 
+          FROM shartnomalar_organization
+          JOIN users  ON shartnomalar_organization.user_id = users.id
+          JOIN regions ON users.region_id = regions.id
+          WHERE shartnomalar_organization.isdeleted = false 
+              AND regions.id = $1
+              AND shartnomalar_organization.main_schet_id = $2
+              AND shartnomalar_organization.id = $3
+              AND shartnomalar_organization.spravochnik_organization_id = $4
+      `,
       [region_id, main_schet_id, id, organization_id],
     );
+    if (!result.rows[0]) {
+      throw new ErrorResponse('conrtact not found', 404)
+    }
     return result.rows[0];
-  },
-);
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
 const forJur3DB = handleServiceError(async (region_id, main_schet_id) => {
-    const result = await pool.query(
-      `
+  const result = await pool.query(
+    `
         SELECT 
             shartnomalar_organization.id, 
             shartnomalar_organization.doc_num, 
@@ -259,10 +268,10 @@ const forJur3DB = handleServiceError(async (region_id, main_schet_id) => {
             AND shartnomalar_organization.main_schet_id = $2
             AND shartnomalar_organization.pudratchi_bool = true
     `,
-      [region_id, main_schet_id],
-    );
-    return result.rows;
-  },
+    [region_id, main_schet_id],
+  );
+  return result.rows;
+},
 );
 
 
