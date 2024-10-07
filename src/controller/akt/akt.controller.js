@@ -25,7 +25,7 @@ const {
 } = require("../../service/akt/akt.service");
 const { resFunc } = require('../../helpers/resFunc');
 
-// jur_3 create
+// jur_3 create 
 const jur_3_create = asyncHandler(async (req, res, next) => {
   const { error, value } = jur3Validation.validate(req.body);
   if (error) {
