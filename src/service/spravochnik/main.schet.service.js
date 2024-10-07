@@ -194,7 +194,7 @@ const deleteMain_schet = handleServiceError(async (id) => {
   ]);
 });
 
-const getByBudjet_idMain_schet = handleServiceError(async (id, region_id) => {
+const getByBudjetIdMainSchetService = handleServiceError(async (budjet_id, region_id) => {
   const result = await pool.query(
     `
       SELECT 
@@ -207,7 +207,7 @@ const getByBudjet_idMain_schet = handleServiceError(async (id, region_id) => {
         AND main_schet.isdeleted = false
         AND regions.id = $2
     `,
-    [id, region_id],
+    [budjet_id, region_id],
   );
   return result.rows;
 });
@@ -243,7 +243,7 @@ module.exports = {
   getAllMain_schet,
   updateMain_schet,
   deleteMain_schet,
-  getByBudjet_idMain_schet,
+  getByBudjetIdMainSchetService,
   checkMainSchetDB,
   getByAndAccountNumber
 };

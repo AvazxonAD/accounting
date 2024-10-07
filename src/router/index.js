@@ -30,16 +30,20 @@ router.use("/spravochnik/budjet-name", require("./spravochnik/budjet_name.routes
 router.use("/spravochnik/sostav", require("./spravochnik/sostav.routes"));
 
 // Smeta routes
-router.use("/smeta", require("./smeta/smeta.routes"));
 router.use("/smeta/grafik", require("./smeta/smeta.grafik.routes"));
+router.use("/smeta", require("./smeta/smeta.routes"));
 
-// contract routes
-router.use("/contract", require("./shartnoma/shartnoma.routes"));
-router.use("/contract/grafik", require("./shartnoma/shartnoma.grafik.routes"));
+// shartnoma routes
+router.use("/shartnoma/grafik", require("./shartnoma/shartnoma.grafik.routes"));
+router.use("/shartnoma", require("./shartnoma/shartnoma.routes"));
 
-// Other routes
-router.use("/completed-works", require("./bajarilgan_ishlar/jur_3.routes"));
-router.use("/advance-reports", require("./avans_otchetlar/jur_4.routes"));
+// akt routes
+router.use("/akt", require("./akt/akt.routes"));
+
+// avans routes 
+router.use("/avans", require("./avans/avans.routes"));
+
+// other routes
 router.use("/services/show", require("./show.services/show.services.routes"));
 
 module.exports = router;

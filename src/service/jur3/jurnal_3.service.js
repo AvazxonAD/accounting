@@ -36,7 +36,6 @@ const createJurnal3 = async (data) => {
         );
         return result.rows[0];
     } catch (error) {
-        console.log(`Error on create jurnal3: ${error}`);
         throw new Error(`Error on create jurnal3: ${error.message}`);
     }
 };
@@ -76,7 +75,6 @@ const createJurnal3Child = async (data) => {
         );
         return result.rows[0];
     } catch (error) {
-        console.log(`Error on create jurnal3 child: ${error}`);
         throw new Error(`Error on create jurnal3 child: ${error.message}`);
     }
 };

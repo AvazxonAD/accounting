@@ -53,7 +53,6 @@ const getAllOperatsiiService = async (type_schet, offset, limit) => {
     const result = await pool.query(query, params);
     return result.rows[0];
   } catch (error) {
-    console.log(`Error on getAllOperatsiiService: ${error.message}`);
     throw new Error(`Error on getAllOperatsiiService: ${error.message}`);
   }
 };

@@ -1,25 +1,15 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 
-const {
-  queryValidation,
-} = require("../../helpers/validation/bank/bank.prixod.validation");
-const {
-  jur3Validation,
-} = require("../../helpers/validation/bajarilgan_ishlar/jur_3.validation");
+const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
+const { jur3Validation } = require("../../helpers/validation/bajarilgan_ishlar/jur_3.validation");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
-const {
-  getByIdOrganization,
-} = require("../../service/spravochnik/organization.service");
-const { getByIdShartnomaService } = require("../../service/shartnoma/shartnoma.service");
+const { getByIdOrganization } = require("../../service/spravochnik/organization.service");
+const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
-const {
-  getByIdPodrazlanie,
-} = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
-const {
-  getByIdtype_operatsii,
-} = require("../../service/spravochnik/type_operatsii.service");
+const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
@@ -69,10 +59,11 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
   }
 
   if (value.shartnomalar_organization_id) {
-    const shartnoma = await getByIdShartnomaService(
+    const shartnoma = await getByIdAndOrganizationIdShartnoma(
       region_id,
       main_schet_id,
       value.shartnomalar_organization_id,
+      value.id_spravochnik_organization
     );
     if (!shartnoma || !shartnoma.pudratchi_bool) {
       return next(
@@ -251,10 +242,11 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
   }
 
   if (value.shartnomalar_organization_id) {
-    const shartnoma = await getByIdShartnomaService(
+    const shartnoma = await getByIdAndOrganizationIdShartnoma(
       region_id,
       main_schet_id,
       value.shartnomalar_organization_id,
+      value.id_spravochnik_organization
     );
     if (!shartnoma || !shartnoma.pudratchi_bool) {
       return next(

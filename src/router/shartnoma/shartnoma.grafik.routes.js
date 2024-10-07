@@ -8,8 +8,8 @@ const {
   updateShartnomaGrafik,
 } = require("../../controller/shartnoma/shartnoma.grafik.controller");
 
-router.get("/get/all", protect, getAllGrafik);
-router.get("/get/element/by/:id", protect, getElementByIdGrafik);
-router.put("/update/:id", protect, updateShartnomaGrafik);
+router.get("/", protect, getAllGrafik);
+router.get("/:id", protect, getElementByIdGrafik);
+router.put("/:id", protect, updateShartnomaGrafik);
 
 module.exports = router;

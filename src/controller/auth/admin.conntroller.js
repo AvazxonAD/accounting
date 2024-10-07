@@ -67,6 +67,7 @@ const updateAdmin = async (req, res) => {
     const oldUser = await getByIdUserService(id);
     const data = validationResponse(userValidation, req.body)
     let { login, password, fio, region_id } = data;
+    const role = await getAdminRoleService()
     await getByIdRegionService(region_id);
     login = login.trim();
     password = password.trim();
@@ -79,7 +80,7 @@ const updateAdmin = async (req, res) => {
       }
     }
   
-    const admin = await updateUserService(login, hashedPassword, fio, region_id, id);
+    const admin = await updateUserService(login, hashedPassword, fio, role.id, region_id, id);
     putLogger.info(`Foydalanuvchi yangilandi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
   
     resFunc(res, 200, admin)

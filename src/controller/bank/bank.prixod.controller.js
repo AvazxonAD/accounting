@@ -417,9 +417,9 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   );
   summa = Number(all_prixod.summa);
   totalQuery = all_prixod.totalQuery;
-
+  
   const resultArray = [];
-
+  
   for (let prixod of all_prixod.prixod_rows) {
     const prixod_child = await getAllPrixodChild(region_id, prixod.id);
     let object = { ...prixod };

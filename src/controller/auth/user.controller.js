@@ -26,6 +26,9 @@ const createUser = async (req, res) => {
     const data = validationResponse(userValidation, req.body)
     let { login, password, fio, role_id } = data;
     const role = await getByIdRoleService(role_id)
+    if(role.name === 'super-admin' || role.name === 'region-admin'){
+      throw new ErrorResponse('role not found', 404)
+    }
     login = login.trim();
     password = password.trim();
     fio = fio.trim();
@@ -58,10 +61,14 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const id = req.params.id;
+    const region_id = req.user.region_id
     const oldUser = await getByIdUserService(id);
     const data = validationResponse(userValidation, req.body)
     let { login, password, fio, role_id } = data;    
-    await getByIdRoleService(role_id)
+    const role = await getByIdRoleService(role_id)
+    if(role.name === 'super-admin' || role.name === 'region-admin'){
+      throw new ErrorResponse('Error: role not found', 404)
+    }
     login = login.trim();
     password = password.trim();
     fio = fio.trim();
@@ -72,12 +79,12 @@ const updateUser = async (req, res) => {
         throw new ErrorResponse("This login has already been entered", 409)
       }
     }
-    const result = await updateUserService(login, hashedPassword, fio, role_id, id);
+    const result = await updateUserService(login, hashedPassword, fio, role_id, region_id, id);
     putLogger.info(`Foydalanuvchi yangilandi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
   
     resFunc(res, 200, result)
   } catch (error) {
-    errorCatch(res, error)
+    errorCatch(error, res)
   }
 };
 

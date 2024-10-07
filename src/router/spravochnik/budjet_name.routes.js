@@ -10,10 +10,10 @@ const {
   getElementById,
 } = require("../../controller/spravochnik/budjet_name.controller");
 
-router.post("/create", protect, create);
-router.get("/get/all", getAll);
-router.put("/update/:id", protect, update);
-router.delete("/delete/:id", protect, deleteValue);
-router.get("/get/element/by/:id", protect, getElementById);
+router.post("/", protect, create);
+router.get("/", getAll);
+router.put("/:id", protect, update);
+router.delete("/:id", protect, deleteValue);
+router.get("/:id", protect, getElementById);
 
 module.exports = router;

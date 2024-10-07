@@ -4,16 +4,16 @@ const router = Router();
 const { protect } = require("../../middleware/auth");
 const {
   create,
-  getAll,
+  getSmetaGrafik,
   update,
   deleteValue,
   getElemnetById,
 } = require("../../controller/smeta/smeta.grafik.controller");
 
-router.post("/create", protect, create);
-router.get("/get/all", protect, getAll);
-router.put("/update/:id", protect, update);
-router.delete("/delete/:id", protect, deleteValue);
-router.use("/get/element/by/:id", protect, getElemnetById);
+router.get("/:id", protect, getElemnetById);
+router.get("/", protect, getSmetaGrafik);
+router.post("/", protect, create);
+router.put("/:id", protect, update);
+router.delete("/:id", protect, deleteValue);
 
 module.exports = router;

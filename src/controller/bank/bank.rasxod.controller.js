@@ -332,7 +332,6 @@ const getAllBankRasxod = asyncHandler(async (req, res, next) => {
 
   for (let rasxod of all_rasxod.rasxod_rows) {
     const rasxod_child = await getAllRasxodChildDb(region_id, rasxod.id);
-
     let object = { ...rasxod };
     object.summa = Number(object.summa);
     object.childs = rasxod_child.map((item) => {

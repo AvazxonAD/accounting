@@ -20,7 +20,7 @@ const getAllMonitoring = handleServiceError(
         JOIN users u ON kp.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kp.id_podotchet_litso
-        WHERE r.id = $1 AND kp.main_schet_id = $2 AND kp.isdeleted = false
+        WHERE r.id = $1 AND kp.main_schet_id = $2
         AND kp.doc_date BETWEEN $3 AND $4
         
         UNION ALL
@@ -39,7 +39,7 @@ const getAllMonitoring = handleServiceError(
         JOIN users u ON kr.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kr.id_podotchet_litso
-        WHERE r.id = $1 AND kr.main_schet_id = $2 AND kr.isdeleted = false
+        WHERE r.id = $1 AND kr.main_schet_id = $2
         AND kr.doc_date BETWEEN $3 AND $4
         ORDER BY combined_date
         OFFSET $5 LIMIT $6;
@@ -55,14 +55,12 @@ const getAllMonitoring = handleServiceError(
                 JOIN users u ON kr.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND kr.main_schet_id = $2 
-                AND kr.isdeleted = false
                 AND kr.doc_date BETWEEN $3 AND $4), 0) +
         COALESCE((SELECT COUNT(kp.id) 
                 FROM kassa_prixod kp
                 JOIN users u ON kp.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND kp.main_schet_id = $2 
-                AND kp.isdeleted = false
                 AND kp.doc_date BETWEEN $3 AND $4), 0) AS total_count
     `,
       [region_id, main_schet_id, from, to],
@@ -75,7 +73,6 @@ const getAllMonitoring = handleServiceError(
         JOIN users u ON kp.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         WHERE r.id = $1 AND kp.main_schet_id = $2 
-        AND kp.isdeleted = false
         AND kp.doc_date BETWEEN $3 AND $4
     `,
       [region_id, main_schet_id, from, to],
@@ -88,63 +85,42 @@ const getAllMonitoring = handleServiceError(
         JOIN users u ON kr.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         WHERE r.id = $1 AND kr.main_schet_id = $2 
-        AND kr.isdeleted = false
         AND kr.doc_date BETWEEN $3 AND $4
     `,
       [region_id, main_schet_id, from, to],
     );
 
-    const SumQuery = `
-        SELECT 
+    const summaFrom = await pool.query(`
+      SELECT 
         COALESCE((SELECT SUM(kp.summa) 
                 FROM kassa_prixod kp
                 JOIN users u ON kp.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND kp.main_schet_id = $2 
-                AND kp.isdeleted = false
                 AND kp.doc_date < $3), 0) -
         COALESCE((SELECT SUM(kr.summa) 
                 FROM kassa_rasxod kr
                 JOIN users u ON kr.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND kr.main_schet_id = $2 
-                AND kr.isdeleted = false
                 AND kr.doc_date < $3 ), 0) AS total_sum
-    `;
-    const summaFrom = await pool.query(`SELECT 
+    `, [ region_id, main_schet_id, from]);
+    
+    const summaTo = await pool.query(`
+      SELECT 
         COALESCE((SELECT SUM(kp.summa) 
                 FROM kassa_prixod kp
                 JOIN users u ON kp.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND kp.main_schet_id = $2 
-                AND kp.isdeleted = false
-                AND kp.doc_date < $3), 0) -
-        COALESCE((SELECT SUM(kr.summa) 
-                FROM kassa_rasxod kr
-                JOIN users u ON kr.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                WHERE r.id = $1 AND kr.main_schet_id = $2 
-                AND kr.isdeleted = false
-                AND kr.doc_date < $3 ), 0) AS total_sum`, [
-      region_id,
-      main_schet_id,
-      from,
-    ]);
-    const summaTo = await pool.query(`SELECT 
-        COALESCE((SELECT SUM(kp.summa) 
-                FROM kassa_prixod kp
-                JOIN users u ON kp.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                WHERE r.id = $1 AND kp.main_schet_id = $2 
-                AND kp.isdeleted = false
                 AND kp.doc_date <= $3), 0) -
         COALESCE((SELECT SUM(kr.summa) 
                 FROM kassa_rasxod kr
                 JOIN users u ON kr.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND kr.main_schet_id = $2 
-                AND kr.isdeleted = false
-                AND kr.doc_date <= $3 ), 0) AS total_sum`, [region_id, main_schet_id, to]);
+                AND kr.doc_date <= $3 ), 0) AS total_sum
+    `, [region_id, main_schet_id, to]);
 
     const result_data = data.rows.map((row) => ({
       id: row.id,

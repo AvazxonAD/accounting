@@ -133,6 +133,7 @@ const getAllBankRasxodByFromAndTo = handleServiceError(
                 AND regions.id = $2 
                 AND bank_rasxod.isdeleted = false 
                 AND bank_rasxod.doc_date BETWEEN $3 AND $4
+            ORDER BY bank_rasxod.doc_date DESC
             OFFSET $5 
             LIMIT $6
         `,
@@ -189,9 +190,9 @@ const getAllRasxodChildDb = handleServiceError(async (region_id, rasxod_id) => {
               JOIN users ON bank_rasxod_child.user_id = users.id
               JOIN regions ON users.region_id = regions.id
               JOIN spravochnik_operatsii ON spravochnik_operatsii.id = bank_rasxod_child.spravochnik_operatsii_id
-              JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_rasxod_child.id_spravochnik_podrazdelenie
-              JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_rasxod_child.id_spravochnik_sostav
-              JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_rasxod_child.id_spravochnik_type_operatsii
+              LEFT JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_rasxod_child.id_spravochnik_podrazdelenie
+              LEFT JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_rasxod_child.id_spravochnik_sostav
+              LEFT JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_rasxod_child.id_spravochnik_type_operatsii
               WHERE regions.id = $1 AND bank_rasxod_child.id_bank_rasxod = $2 AND bank_rasxod_child.isdeleted = false
           `,
     [region_id, rasxod_id],

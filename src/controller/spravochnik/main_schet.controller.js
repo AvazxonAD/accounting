@@ -2,6 +2,7 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.service");
+const { mainSchetValidator, queryMainSchetValidation } = require("../../helpers/validation/spravochnik/main_schet.validation");
 const {
   createMain_schet,
   getByIdMainSchet,
@@ -10,11 +11,9 @@ const {
   deleteMain_schet,
   checkMainSchetDB,
   getByAndAccountNumber,
+  getByBudjetIdMainSchetService
 } = require("../../service/spravochnik/main.schet.service");
-const {
-  mainSchetValidator,
-  queryMainSchetValidation,
-} = require("../../helpers/validation/spravochnik/main_schet.validation");
+const { resFunc } = require("../../helpers/resFunc");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
@@ -32,7 +31,7 @@ const create = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }
   const test_account_number = await getByAndAccountNumber(value.account_number)
-  if(test_account_number){
+  if (test_account_number) {
     return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
   }
   await createMain_schet({
@@ -94,9 +93,9 @@ const update = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
-  if(value.account_number !== testMain_schet.account_number){
+  if (value.account_number !== testMain_schet.account_number) {
     const test_account_number = await getByAndAccountNumber(value.account_number)
-    if(test_account_number){
+    if (test_account_number) {
       return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
     }
   }
@@ -127,8 +126,8 @@ const deleteValue = asyncHandler(async (req, res, next) => {
   }
 
   const test = await checkMainSchetDB(id)
-  if(!test){
-    return next(new ErrorResponse('Ushbu schetga boglangan documentlar bor', 400))
+  if (!test) {
+    return next(new ErrorResponse('There are documents linked to this account', 400))
   }
   await deleteMain_schet(id);
 
@@ -151,10 +150,20 @@ const getElementById = asyncHandler(async (req, res, next) => {
   });
 });
 
+// get by budjet id 
+const getByBudjetIdMainSchet = asyncHandler(async (req, res, next) => {
+  const region_id = req.query.region_id;
+  const budjet_id = req.query.budjet_id;
+  const result = await getByBudjetIdMainSchetService(budjet_id, region_id);
+  resFunc(res, 200, result)
+});
+
+
 module.exports = {
   getElementById,
   create,
   getAll,
   deleteValue,
   update,
+  getByBudjetIdMainSchet
 };

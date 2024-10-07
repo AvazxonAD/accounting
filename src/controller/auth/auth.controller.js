@@ -3,7 +3,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 const generateToken = require("../../utils/auth/generate.token");
 const { getLogger, postLogger, putLogger } = require('../../helpers/log_functions/logger');
 const bcrypt = require("bcrypt");
-const { getByIdMainSchet, getByBudjet_idMain_schet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchet, getByBudjetIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { authValidation, authUpdateValidation } = require("../../helpers/validation/auth/auth.validation");
 const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
 const { getRegionService } = require('../../service/auth/region.service');
@@ -35,9 +35,6 @@ const login = asyncHandler(async (req, res, next) => {
   let main_schet = null;
   if (value.main_schet_id) {
     main_schet = await getByIdMainSchet(user.region_id, value.main_schet_id);
-    if (!main_schet) {
-      return next(new ErrorResponse("Shot raqami noto'g'ri kiritildi", 400));
-    }
   }
 
   const token = generateToken(user);
@@ -119,7 +116,7 @@ const getProfile = asyncHandler(async (req, res, next) => {
 // select budget
 const select_budget = asyncHandler(async (req, res, next) => {
   const region_id = req.query.region_id;
-  const result = await getByBudjet_idMain_schet(req.params.id, region_id);
+  const result = await getByBudjetIdMainSchetService(req.params.id, region_id);
 
   if (!result) {
     return next(new ErrorResponse("Budjet topilmadi", 404));
@@ -135,8 +132,6 @@ const select_budget = asyncHandler(async (req, res, next) => {
 const forLogin = asyncHandler(async (req, res, next) => {
   const all_budjet = await getAllBudjet();
   const all_region = await getRegionService();
-
-
   return res.status(200).json({
     success: true,
     data: { all_budjet, all_region }

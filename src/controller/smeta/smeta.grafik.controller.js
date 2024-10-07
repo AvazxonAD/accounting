@@ -56,8 +56,8 @@ const create = asyncHandler(async (req, res, next) => {
   });
 });
 
-// get all
-const getAll = asyncHandler(async (req, res, next) => {
+// get all smeta grafik 
+const getSmetaGrafik = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
@@ -200,7 +200,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
 
 module.exports = {
   create,
-  getAll,
+  getSmetaGrafik,
   deleteValue,
   update,
   getElemnetById,

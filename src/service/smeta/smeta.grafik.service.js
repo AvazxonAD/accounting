@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require("../../utils/errorResponse");
 
 const getByAllSmetaGrafik = handleServiceError(
   async (region_id, smeta_id, spravochnik_budjet_name_id, year) => {
@@ -30,8 +31,8 @@ const createSmetaGrafik = handleServiceError(
   },
 );
 
-const getAllSmetaGrafik = handleServiceError(
-  async (region_id, offset, limit) => {
+const getAllSmetaGrafik = async (region_id, offset, limit) => {
+  try {
     const result = await pool.query(
       `SELECT 
                 smeta_grafik.id, 
@@ -65,8 +66,10 @@ const getAllSmetaGrafik = handleServiceError(
       [region_id, offset, limit],
     );
     return result.rows;
-  },
-);
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
 const getElementByIdGrafik = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
   let query = `

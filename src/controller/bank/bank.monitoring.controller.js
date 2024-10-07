@@ -66,5 +66,5 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
-  getAllBankMonitoring,
+  getAllBankMonitoring
 };

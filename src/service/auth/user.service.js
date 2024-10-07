@@ -65,14 +65,14 @@ const getByIdUserService = async (id) => {
   }
 }
 
-const updateUserService = async (login, password, fio, role_id, id) => {
+const updateUserService = async (login, password, fio, role_id, region_id, id) => {
   try {
     const result = await pool.query(
-      `UPDATE users SET login = $1, password = $2, fio = $3, role_id  = $4, updated_at = $5
+      `UPDATE users SET login = $1, password = $2, fio = $3, role_id  = $4, updated_at = $5, region_id = $7
         WHERE id = $6
         RETURNING *
       `,
-    [login, password, fio, role_id, tashkentTime(), id]);
+    [login, password, fio, role_id, tashkentTime(), id, region_id]);
     return result.rows[0]
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

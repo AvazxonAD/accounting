@@ -128,7 +128,6 @@ const getAllKassaPrixodDb = handleServiceError(
         JOIN regions ON regions.id = users.region_id  
         WHERE kassa_prixod.main_schet_id = $1 
             AND regions.id = $2
-            AND kassa_prixod.isdeleted = false
             AND kassa_prixod.doc_date BETWEEN $3 AND $4
     `,
       [main_schet_id, region_id, from, to],
@@ -143,7 +142,6 @@ const getAllKassaPrixodDb = handleServiceError(
         JOIN regions ON regions.id = users.region_id  
         WHERE kassa_prixod.main_schet_id = $1 
             AND regions.id = $2
-            AND kassa_prixod.isdeleted = false
             AND kassa_prixod.doc_date BETWEEN $3 AND $4
     `,
       [main_schet_id, region_id, from, to],

@@ -13,6 +13,7 @@ const {
   updateOperatsii,
   deleteOperatsii,
 } = require("../../service/spravochnik/operatsii.service");
+const { resFunc } = require("../../helpers/resFunc");
 
 
 // create
@@ -55,21 +56,18 @@ const getAll = async (req, res, next) => {
     const offset = (page - 1) * limit;
     
     const result = await getAllOperatsiiService(query, offset, limit);
-
+          
     const total = parseInt(result.total_count);
     const pageCount = Math.ceil(total / limit);
-
-    return res.status(200).json({
-      success: true,
-      meta: {
-        pageCount: pageCount,
-        count: total,
-        currentPage: page,
-        nextPage: page >= pageCount ? null : page + 1,
-        backPage: page === 1 ? null : page - 1,
-      },
-      data: result.data,
-    });
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    }
+    const data = result?.data || []
+    resFunc(res, 200, data, meta)
   } catch (error) {
     return errorCatch(error, res)
   }

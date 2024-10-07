@@ -13,7 +13,7 @@ const {
   getAllShartnoma,
   updateShartnomaDB,
   getByIdOrganizationShartnoma,
-  getByIdShartnomaDB,
+  getByIdShartnomaService,
   deleteShartnomaDB,
   forJur3DB
 } = require("../../service/shartnoma/shartnoma.service");
@@ -67,6 +67,8 @@ const getAll = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
+  const organization_id = req.query.organization
+  const pudratchi_bool = req.query.pudratchi
 
   if (limit <= 0 || page <= 0) {
     return next( new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
@@ -74,7 +76,7 @@ const getAll = asyncHandler(async (req, res, next) => {
   await getByIdMainSchet(region_id, main_schet_id);
   const offset = (page - 1) * limit;
 
-  const result = await getAllShartnoma(region_id, main_schet_id, offset, limit);
+  const result = await getAllShartnoma(region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool);
   const total = parseInt(result.total_count);
   const pageCount = Math.ceil(total / limit);
 
@@ -102,7 +104,7 @@ const getElementById = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
   }
 
-  const result = await getByIdShartnomaDB(region_id, main_schet_id, id, true);
+  const result = await getByIdShartnomaService(region_id, main_schet_id, id, true);
   if (!result) {
     return next(new ErrorResponse("Server xatolik. Shartnoma topilmadi", 404));
   }
@@ -119,10 +121,7 @@ const update_shartnoma = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
-  const test = await getByIdShartnomaDB(region_id, main_schet_id, id);
-  if (!test) {
-    return next(new ErrorResponse("Server xatolik. Shartnoma topilmadi", 404));
-  }
+  const test = await getByIdShartnomaService(region_id, main_schet_id, id);
 
   const { error, value } = shartnomaValidation.validate(req.body);
   if (error) {
@@ -166,7 +165,7 @@ const deleteShartnoma = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
   }
 
-  const test = await getByIdShartnomaDB(region_id, main_schet_id, id);
+  const test = await getByIdShartnomaService(region_id, main_schet_id, id);
   if (!test) {
     return next(new ErrorResponse("Server xatolik. Shartnoma topilmadi", 404));
   }
@@ -179,50 +178,10 @@ const deleteShartnoma = asyncHandler(async (req, res, next) => {
   });
 });
 
-// get by organization id shartnoama
-const getByIdOrganization_Shartnoma = asyncHandler(async (req, res, next) => {
-  let pudratchi = false
-  if(req.query.pudratchi === 'true'){
-    pudratchi = true
-  }
-
-  const result = await getByIdOrganizationShartnoma(
-    req.user.region_id,
-    req.query.main_schet_id,
-    req.params.id,
-    pudratchi
-  );
-  return res.status(200).json({
-    sucess: true,
-    data: result,
-  });
-});
-
-// for jur_3 
-const  forJur3 = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const main_schet_id = req.query.main_schet_id;
-  const id = req.params.id;
-
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
-  }
-
-  const result = await forJur3DB(region_id, main_schet_id);
-
-  return res.status(200).json({
-    success: true,
-    data: result,
-  });
-})
-
 module.exports = {
   create,
   getAll,
   getElementById,
   update_shartnoma,
-  getByIdOrganization_Shartnoma,
   deleteShartnoma,
-  forJur3
 };

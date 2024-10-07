@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require("../../utils/errorResponse");
 
 const getByAllSmeta = handleServiceError(
   async (smeta_name, smeta_number, father_smeta_name) => {
@@ -41,24 +42,28 @@ const getTotalSmeta = handleServiceError(async () => {
   return result.rows[0];
 });
 
-const getByIdSmeta = handleServiceError(async (id, ignoreDeleted = false) => {
-  let query = `
-    SELECT 
-        id, 
-        smeta_name, 
-        smeta_number, 
-        father_smeta_name 
-    FROM smeta  
-    WHERE id = $1
-  `;
-
-  if (!ignoreDeleted) {
-    query += ` AND isdeleted = false`;
+const getByIdSmeta = async (id, ignoreDeleted = false) => {
+  try {
+    let query = `
+      SELECT 
+          id, 
+          smeta_name, 
+          smeta_number, 
+          father_smeta_name 
+      FROM smeta  
+      WHERE id = $1
+    `;
+  
+    if (!ignoreDeleted) {
+      query += ` AND isdeleted = false`;
+    }
+  
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
   }
-
-  const result = await pool.query(query, [id]);
-  return result.rows[0];
-});
+}
 
 
 const updateSmeta = handleServiceError(

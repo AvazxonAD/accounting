@@ -32,7 +32,7 @@ const {
   deleteJur3ChildDB,
   updateJur3DB,
   deleteJur3DB,
-} = require("../../service/akt/akt.service");
+} = require("../../service/akt/jur_3.service");
 const { resFunc } = require('../../helpers/resFunc');
 
 // jur_3 create

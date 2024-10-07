@@ -13,11 +13,10 @@ const {
 
 const upload = require("../../utils/protect.file");
 
-router.post("/create", protect, create);
+router.post("/", protect, create);
 router.get("/", protect, getAll);
-router.put("/update/:id", protect, update);
-router.delete("/delete/:id", protect, deleteValue);
-router.post("/import/excel", protect, upload.single("file"), importToExcel);
-router.get("/get/element/by/:id", protect, getElementById);
+router.put("/:id", protect, update);
+router.delete("/:id", protect, deleteValue);
+router.get("/:id", protect, getElementById);
 
 module.exports = router;

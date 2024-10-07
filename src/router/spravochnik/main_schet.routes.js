@@ -8,12 +8,14 @@ const {
   update,
   deleteValue,
   getElementById,
+  getByBudjetIdMainSchet
 } = require("../../controller/spravochnik/main_schet.controller");
 
-router.post("/create", protect, create);
-router.get("/get/all", protect, getAll);
-router.put("/update/:id", protect, update);
-router.delete("/delete/:id", protect, deleteValue);
-router.get("/get/element/by/:id", protect, getElementById);
+router.post("/", protect, create)
+  .get("/", protect, getAll)
+  .put("/:id", protect, update)
+  .delete("/:id", protect, deleteValue)
+  .get("/:id", protect, getElementById)
+  .get('/budjet/region/', getByBudjetIdMainSchet);
 
 module.exports = router;
