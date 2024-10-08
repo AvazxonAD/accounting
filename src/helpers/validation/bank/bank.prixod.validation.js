@@ -19,9 +19,9 @@ const bankPrixodChildValidation = Joi.object({
 }).options({ stripUnknown: true });
 
 const queryValidation = Joi.object({
-  main_schet_id: Joi.number().required(),
-  limit: Joi.number(),
-  page: Joi.number(),
+  main_schet_id: Joi.number().required().min(1),
+  limit: Joi.number().min(1).default(10),
+  page: Joi.number().min(1).default(1),
   from: Joi.date().required(),
   to: Joi.date().required(),
 }).options({ stripUnknown: true });

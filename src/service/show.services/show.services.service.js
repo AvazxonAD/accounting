@@ -89,7 +89,8 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
                     k_h_j.id_spravochnik_organization,
                     k_h_j.shartnomalar_organization_id,
                     k_h_j.summa::FLOAT,
-                    k_h_j.opisanie
+                    k_h_j.opisanie,
+                    k_h_j.spravochnik_operatsii_own_id
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -156,7 +157,8 @@ const getByIdShowServiceService = async (region_id, main_schet_id, id, ignoreDel
                     k_h_j.id_spravochnik_organization,
                     k_h_j.shartnomalar_organization_id,
                     k_h_j.summa::FLOAT,
-                    k_h_j.opisanie
+                    k_h_j.opisanie,
+                    k_h_j.spravochnik_operatsii_own_id
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
