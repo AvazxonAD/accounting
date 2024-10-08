@@ -61,18 +61,20 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
             (SELECT 
-          COALESCE((SELECT COUNT(br.id) 
-                  FROM bank_rasxod br
-                  JOIN users u ON br.user_id = u.id
-                  JOIN regions r ON u.region_id = r.id
-                  WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
-                  AND br.doc_date BETWEEN $3 AND $4), 0) +
-          COALESCE((SELECT COUNT(bp.id) 
-                  FROM bank_prixod bp
-                  JOIN users u ON bp.user_id = u.id
-                  JOIN regions r ON u.region_id = r.id
-                  WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
-                  AND bp.doc_date BETWEEN $3 AND $4), 0) AS total_count) AS total_count
+              COALESCE((SELECT COUNT(br.id) 
+                      FROM bank_rasxod br
+                      JOIN users u ON br.user_id = u.id
+                      JOIN regions r ON u.region_id = r.id
+                      WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
+                      AND br.doc_date BETWEEN $3 AND $4), 0) +
+              COALESCE((SELECT COUNT(bp.id) 
+                      FROM bank_prixod bp
+                      JOIN users u ON bp.user_id = u.id
+                      JOIN regions r ON u.region_id = r.id
+                      WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
+                      AND bp.doc_date BETWEEN $3 AND $4), 0) AS total_count
+            ) AS total_count
+            
       `,
       [region_id, main_schet_id, from, to, offset, limit],
     );

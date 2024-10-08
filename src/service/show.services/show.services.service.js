@@ -87,13 +87,20 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
                     k_h_j.doc_date,
                     TO_CHAR(k_h_j.doc_date, 'YYYY-MM-DD') AS doc_date,
                     k_h_j.id_spravochnik_organization,
+                    s_o.name AS spravochnik_organization_name,
+                    s_o.raschet_schet AS spravochnik_organization_raschet_schet,
+                    s_o.inn AS spravochnik_organization_inn,
                     k_h_j.shartnomalar_organization_id,
+                    sh_o.doc_num AS shartnomalar_organization_doc_num,
+                    sh_o.doc_date AS shartnomalar_organization_doc_date,
                     k_h_j.summa::FLOAT,
                     k_h_j.opisanie,
                     k_h_j.spravochnik_operatsii_own_id
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
+                JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j.id_spravochnik_organization
+                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j.shartnomalar_organization_id
                 WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
                 OFFSET $5 LIMIT $6 
             )
