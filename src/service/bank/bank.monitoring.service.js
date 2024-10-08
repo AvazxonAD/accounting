@@ -113,7 +113,6 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             ARRAY_AGG(row_to_json(data)) AS data
           FROM data`,[region_id, main_schet_id, from, to, offset, limit],
     ); 
-    console.log(data.rows[0].prixod_sum, data.rows[0].rasxod_sum, data.rows[0].summa_from, data.rows[0].summa_to,)
     return {
       result_data: data.rows[0].data,
       total_count: data.rows[0].total_count,

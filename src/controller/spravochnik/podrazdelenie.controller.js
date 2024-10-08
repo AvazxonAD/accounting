@@ -78,18 +78,9 @@ const deleteValue = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-  
-    const value = await getByIdPodrazlanie(region_id, id);
-    if (!value) {
-      return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
-    }
-  
+    await getByIdPodrazlanie(region_id, id);
     await deletePodrazlanie(id);
-  
-    return res.status(200).json({
-      success: true,
-      data: "Muvaffaqiyatli ochirildi",
-    });
+    resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
   }
@@ -100,18 +91,8 @@ const getElementById = async (req, res, next) => {
   try {
     const user_id = req.user.region_id;
     const id = req.params.id;
-  
-    const value = await getByIdPodrazlanie(user_id, id, true);
-    if (!value) {
-      return next(
-        new ErrorResponse("Server error. spravochnik_podrazdelenie topilmadi"),
-      );
-    }
-  
-    return res.status(200).json({
-      success: true,
-      data: value,
-    });
+    const data = await getByIdPodrazlanie(user_id, id, true);
+    resFunc(res, 200, data)
   } catch (error) {
     errorCatch(error, res)
   }
