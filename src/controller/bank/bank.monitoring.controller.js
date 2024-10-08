@@ -1,24 +1,19 @@
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { getAllMonitoring } = require("../../service/bank/bank.monitoring.service");
-const {
-  queryValidation,
-} = require("../../helpers/validation/bank/bank.prixod.validation");
+const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const { getLogger } = require('../../helpers/log_functions/logger')
+const { validationResponse } = require('../../helpers/response-for-validation')
 
 const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
-  const { error, value } = queryValidation.validate(req.query);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
+  const data = validationResponse(queryValidation, req.query)
   const region_id = req.user.region_id;
-
-  const limit = parseInt(value.limit) || 10;
-  const page = parseInt(value.page) || 1;
-  const main_schet_id = value.main_schet_id;
-  const from = value.from;
-  const to = value.to;
+  const limit = parseInt(data.limit) || 10;
+  const page = parseInt(data.page) || 1;
+  const main_schet_id = data.main_schet_id;
+  const from = data.from;
+  const to = data.to;
 
   if (limit <= 0 || page <= 0) {
     return next(
@@ -27,7 +22,7 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
   }
 
   const offset = (page - 1) * limit;
-  const main_schet = await getByIdMainSchet(region_id, value.main_schet_id);
+  const main_schet = await getByIdMainSchet(region_id, data.main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
   }

@@ -100,7 +100,7 @@ const getShowService = async (req, res) => {
             limit,
         );
         const resultArray = [];
-        for (let result of parents.data) {
+        for (let result of parents.data ? parents.data : []) {
             const childs = await showServiceChildService(region_id, main_schet_id, result.id);
             let object = { ...result };
             object.childs = childs;
