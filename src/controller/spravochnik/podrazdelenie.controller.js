@@ -37,7 +37,7 @@ const getAll = async (req, res, next) => {
     const { page, limit } = validationResponse(queryValidation, req.body)
     const offset = (page - 1) * limit;
     const result = await getAllPodrazdelenie(region_id, offset, limit);
-    const total = parseInt(totalQuery.total);
+    const total = parseInt(result.total_count);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -57,17 +57,14 @@ const update = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    await getByIdPodrazlanie(region_id, id);
+    const podrazdelenie = await getByIdPodrazlanie(region_id, id);
     const { error, value } = podrazdelenieValidation.validate(req.body);
     if (error) {
       return next(new ErrorResponse(error.details[0].message, 400));
     }
     const { name, rayon } = value;
     if (podrazdelenie.name !== name || podrazdelenie.rayon !== rayon) {
-      const test = await getByAllPodrazdelenie(region_id, name, rayon);
-      if (test) {
-        return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-      }
+      await getByAllPodrazdelenie(region_id, name, rayon);
     }
     const result = await updatePodrazlanie(id, name, rayon);
     resFunc(res, 200, result)

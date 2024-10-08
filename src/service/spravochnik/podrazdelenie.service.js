@@ -7,11 +7,11 @@ const getByAllPodrazdelenie = async (region_id, name, rayon) => {
     const result = await pool.query(
       ` SELECT s_p.* 
           FROM spravochnik_podrazdelenie AS s_p
-          JOIN  AS u ON s_p.user_id = u.id
+          JOIN  users AS u ON s_p.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id 
           WHERE s_p.name = $1 
             AND s_p.rayon = $2 
-            AND regions.id = $3 
+            AND r.id = $3 
             AND s_p.isdeleted = false
       `,
       [name, rayon, region_id],
@@ -98,7 +98,7 @@ const getByIdPodrazlanie = async (region_id, id, ignoreDeleted = false) => {
 
 const updatePodrazlanie = async (id, name, rayon) => {
   try {
-    const result =- await pool.query(
+    const result = await pool.query(
       `UPDATE  spravochnik_podrazdelenie SET name = $1, rayon = $2 WHERE id = $3 RETURNING * `,
       [name, rayon, id]
     );
