@@ -5,8 +5,7 @@ const bankPrixodValidator = Joi.object({
   doc_date: Joi.date(),
   opisanie: Joi.string(),
   id_spravochnik_organization: Joi.number().required(),
-  id_shartnomalar_organization: Joi.number(),
-  spravochnik_operatsii_own_id: Joi.number().required(),
+  id_shartnomalar_organization: Joi.number().allow(null),
   childs: Joi.array().required(),
 }).options({ stripUnknown: true });
 

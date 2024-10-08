@@ -40,25 +40,19 @@ const createBankRasxodChild = handleServiceError(async (data) => {
                   id_spravochnik_podrazdelenie,
                   id_spravochnik_sostav,
                   id_spravochnik_type_operatsii,
-                  own_schet,
-                  own_subschet,
                   main_schet_id,
                   id_bank_rasxod,
-                  user_id,
-                  spravochnik_operatsii_own_id
-              ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+                  user_id
+              ) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
     [
       data.spravochnik_operatsii_id,
       data.summa,
       data.id_spravochnik_podrazdelenie,
       data.id_spravochnik_sostav,
       data.id_spravochnik_type_operatsii,
-      data.jur2_schet,
-      data.jur2_subschet,
       data.main_schet_id,
       data.rasxod_id,
-      data.user_id,
-      data.spravochnik_operatsii_own_id,
+      data.user_id
     ],
   );
 });

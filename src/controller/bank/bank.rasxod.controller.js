@@ -78,20 +78,6 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("Shartnoma topilmadi", 404));
     }
   }
-
-  const spravochnik_operatsii = await getByIdOperatsii(
-    value.spravochnik_operatsii_own_id,
-    "bank_rasxod",
-  );
-  if (!spravochnik_operatsii) {
-    return next(
-      new ErrorResponse(
-        "Server xatolik. spravochnik_operatsii_own  topilmadi",
-        404,
-      ),
-    );
-  }
-
   for (let child of value.childs) {
     const { error, value } = bankRasxodChildValidation.validate(child);
     if (error) {
@@ -149,12 +135,9 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
   for (let child of value.childs) {
     await createBankRasxodChild({
       ...child,
-      jur2_schet: main_schet.jur2_schet,
-      jur2_subschet: main_schet.jur2_subschet,
       main_schet_id,
       rasxod_id: rasxod.id,
-      user_id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
+      user_id
     });
   }
 

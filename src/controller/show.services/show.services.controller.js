@@ -36,11 +36,11 @@ const createController = async (req, res) => {
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
             if(contract.pudratchi_bool){
-                throw new ErrorResponse(`contract not found`, 404)
+               // throw new ErrorResponse(`contract not found`, 404)
             }
         }
         for (let child of data.childs) {
-            await getByIdOperatsii(child.spravochnik_operatsii_id, 'show_service')
+            //await getByIdOperatsii(child.spravochnik_operatsii_id, 'show_service')
             if (data.id_spravochnik_podrazdelenie) {
                 await getByIdPodrazlanie(region_id, data.id_spravochnik_podrazdelenie)
             }

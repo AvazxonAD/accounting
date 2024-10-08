@@ -209,7 +209,6 @@ const getByIdOrganizationShartnoma = handleServiceError(
 );
 
 const getByIdAndOrganizationIdShartnoma = async (region_id, main_schet_id, id, organization_id) => {
-  console.log(region_id, main_schet_id, id, organization_id)
   try {
     const result = await pool.query(
       `
