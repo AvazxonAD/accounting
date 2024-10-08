@@ -162,8 +162,8 @@ const updateShowService = async (req, res) => {
             const contract = await getByIdAndOrganizationIdShartnoma(
                 region_id,
                 main_schet_id,
-                data.id_spravochnik_organization,
-                data.shartnomalar_organization_id
+                data.shartnomalar_organization_id,
+                data.id_spravochnik_organization
             );
             if(contract.pudratchi_bool) throw new ErrorResponse(`contract not found`, 404)
             
