@@ -6,7 +6,7 @@ const shartnomaValidation = Joi.object({
   summa: Joi.number(),
   opisanie: Joi.string(),
   smeta_id: Joi.number().required(),
-  smeta_2: Joi.string(),
+  smeta2_id: Joi.number(),
   spravochnik_organization_id: Joi.number().required(),
   pudratchi_bool: Joi.boolean(),
   grafik_year: Joi.number().required(),

@@ -1,106 +1,134 @@
 const pool = require("../../config/db");
-const { handleServiceError } = require("../../middleware/service.handle");
+const ErrorResponse = require("../../utils/errorResponse");
+const { tashkentTime } = require('../../utils/date.function')
 
-const getByAllPodotChet = handleServiceError(async (name, rayon, region_id) => {
-  const result = await pool.query(
-    `SELECT spravochnik_podotchet_litso.id, spravochnik_podotchet_litso.name, spravochnik_podotchet_litso.rayon 
-      FROM spravochnik_podotchet_litso 
-      JOIN users ON spravochnik_podotchet_litso.user_id = users.id
-      JOIN regions ON users.region_id = regions.id
-      WHERE spravochnik_podotchet_litso.name = $1 
-        AND spravochnik_podotchet_litso.rayon = $2 
-        AND regions.id = $3 
-        AND spravochnik_podotchet_litso.isdeleted = false
+const getByAllPodotChet = async (name, rayon, region_id) => {
+  try {
+    const result = await pool.query(
+      `SELECT s_p_l.id, s_p_l.name, s_p_l.rayon 
+        FROM spravochnik_podotchet_litso AS s_p_l 
+        JOIN users ON s_p_l.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        WHERE s_p_l.name = $1 
+          AND s_p_l.rayon = $2 
+          AND regions.id = $3 
+          AND s_p_l.isdeleted = false
+      `,
+      [name, rayon, region_id],
+    );
+    if (result.rows[0]) {
+      throw new ErrorResponse('This information has already been submitted', 409)
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const createPodotChet = async (data) => {
+  try {
+    const result = await pool.query(
+      `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id, created_at, updated_at) VALUES($1, $2, $3, $4, $5) RETURNING *
     `,
-    [name, rayon, region_id],
-  );
-  return result.rows[0];
-});
-
-const createPodotChet = handleServiceError(async (data) => {
-  await pool.query(
-    `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id) VALUES($1, $2, $3)
-    `,
-    [data.name, data.rayon, data.user_id],
-  );
-});
-
-const getAllPodotChet = handleServiceError(async (region_id, offset, limit) => {
-  const result = await pool.query(
-    ` SELECT spravochnik_podotchet_litso.id, spravochnik_podotchet_litso.name, spravochnik_podotchet_litso.rayon 
-      FROM spravochnik_podotchet_litso 
-      JOIN users ON spravochnik_podotchet_litso.user_id = users.id
-      JOIN regions ON users.region_id = regions.id
-      WHERE regions.id = $1
-        AND spravochnik_podotchet_litso.isdeleted = false
-      ORDER BY id
-      OFFSET $2 
-      LIMIT $3 
-    `,
-    [region_id, offset, limit],
-  );
-  return result;
-});
-
-const totalPodotChet = handleServiceError(async (region_id) => {
-  const result = await pool.query(
-    `SELECT COUNT(spravochnik_podotchet_litso.id) AS total
-      FROM spravochnik_podotchet_litso 
-      JOIN users ON spravochnik_podotchet_litso.user_id = users.id
-      JOIN regions ON users.region_id = regions.id
-      WHERE regions.id = $1
-        AND spravochnik_podotchet_litso.isdeleted = false`,
-    [region_id],
-  );
-  return result.rows[0];
-});
-
-const getByIdPodotchet = handleServiceError(async (region_id, id, ignoreDeleted = false) => {
-  let query = `
-    SELECT 
-        spravochnik_podotchet_litso.id, 
-        spravochnik_podotchet_litso.name, 
-        spravochnik_podotchet_litso.rayon 
-    FROM spravochnik_podotchet_litso
-    JOIN users ON spravochnik_podotchet_litso.user_id = users.id
-    JOIN regions ON users.region_id = regions.id
-    WHERE regions.id = $1
-      AND spravochnik_podotchet_litso.id = $2
-  `;
-
-  let params = [region_id, id];
-
-  // Agar ignoreDeleted false bo'lsa, isdeleted = false sharti qo'shiladi
-  if (!ignoreDeleted) {
-    query += ` AND spravochnik_podotchet_litso.isdeleted = false`;
+      [data.name, data.rayon, data.user_id, tashkentTime(), tashkentTime()],
+    );
+    return result.rows[0]
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
   }
 
-  const result = await pool.query(query, params);
-  return result.rows[0];
-});
+}
 
+const getAllPodotChet = async (region_id, offset, limit) => {
+  try {
+    const result = await pool.query(
+      ` WITH data AS (
+        SELECT s_p_l.id, 
+              s_p_l.name, 
+              s_p_l.rayon
+        FROM spravochnik_podotchet_litso AS  s_p_l
+        JOIN users AS u ON s_p_l.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        WHERE r.id = $1
+          AND s_p_l.isdeleted = false
+        ORDER BY s_p_l.id
+        OFFSET $2 
+        LIMIT $3
+      )
+      SELECT 
+        ARRAY_AGG(row_to_json(data)) AS data,
+        (SELECT COUNT(s_p_l.id)
+        FROM spravochnik_podotchet_litso AS s_p_l
+        JOIN users AS u ON s_p_l.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        WHERE r.id = $1
+          AND s_p_l.isdeleted = false)::INTEGER AS total_count
+      FROM data
+      `, [region_id, offset, limit],
+    );
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
-const updatePodotchet = handleServiceError(async (data) => {
-  await pool.query(
-    `UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2
-        WHERE id = $3 AND isdeleted = false
-    `,
-    [data.name, data.rayon, data.id],
-  );
-});
+const getByIdPodotchet = async (region_id, id, ignoreDeleted = false) => {
+  try {
+    let query = `
+      SELECT 
+          s_p_l.id, 
+          s_p_l.name, 
+          s_p_l.rayon 
+      FROM spravochnik_podotchet_litso AS s_p_l
+      JOIN users ON s_p_l.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE regions.id = $1
+        AND s_p_l.id = $2
+    `;
+    let params = [region_id, id];
 
-const deletePodotchet = handleServiceError(async (id) => {
-  await pool.query(
-    `UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`,
-    [true, id],
-  );
-});
+    if (!ignoreDeleted) {
+      query += ` AND s_p_l.isdeleted = false`;
+    }
+    const result = await pool.query(query, params);
+    if (!result.rows[0]) {
+      throw new ErrorResponse('spravochnik_podotchet_litso not found', 404)
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const updatePodotchet = async (data) => {
+  try {
+    const result = await pool.query(
+      ` UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2, updated_at = $4
+        WHERE id = $3
+        RETURNING *
+      `, [data.name, data.rayon, data.id, tashkentTime()],
+    );
+    return result.rows[0]
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const deletePodotchet = async (id) => {
+  try {
+    await pool.query(
+      `UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`,
+      [true, id],
+    );
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
 
 module.exports = {
   getByAllPodotChet,
   createPodotChet,
   getAllPodotChet,
-  totalPodotChet,
   getByIdPodotchet,
   updatePodotchet,
   deletePodotchet,

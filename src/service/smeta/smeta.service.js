@@ -59,6 +59,9 @@ const getByIdSmeta = async (id, ignoreDeleted = false) => {
     }
   
     const result = await pool.query(query, [id]);
+    if(!result.rows[0]){
+      throw new ErrorResponse('smeta not found', 404)
+    }
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

@@ -1,146 +1,100 @@
 const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const {
-  podotchetLitsoValidation,
-} = require("../../helpers/validation/spravochnik/podotchet.litso.validation");
+const { podotchetLitsoValidation } = require("../../helpers/validation/spravochnik/podotchet.litso.validation");
+const { errorCatch } = require('../../helpers/errorCatch')
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
+const { queryValidation } = require('../../helpers/validation/other/query.validation')
+
 const {
   createPodotChet,
   updatePodotchet,
   deletePodotchet,
   getByAllPodotChet,
   getAllPodotChet,
-  totalPodotChet,
   getByIdPodotchet,
 } = require("../../service/spravochnik/podotchet.litso.service");
 
 // create
-const create = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const user_id = req.user.id;
-
-  const { error, value } = podotchetLitsoValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+const create = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const data = validationResponse(podotchetLitsoValidation, req.body)
+    await getByAllPodotChet(data.name, data.rayon, region_id);
+    const result = await createPodotChet({ ...data, user_id });
+    resFunc(res, 201, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
 
-  const test = await getByAllPodotChet(value.name, value.rayon, region_id);
-  if (test) {
-    return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-  }
-
-  await createPodotChet({ ...value, user_id });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
-  const region_id = req.user.region_id;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
-  const offset = (page - 1) * limit;
-
-  const result = await getAllPodotChet(region_id, offset, limit);
-
-  const totalQuery = await totalPodotChet(region_id);
-  const total = parseInt(totalQuery.total);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
+const getAll = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id
+    const { page, limit } = validationResponse(queryValidation, req.query)
+    const offset = (page - 1) * limit;
+    const result = await getAllPodotChet(region_id, offset, limit);
+    const total = parseInt(result.total_count);
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-    },
-    data: result.rows,
-  });
-});
+    }
+    resFunc(res, 200, result.data, meta)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 // update
-const update = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const id = req.params.id;
-
-  const podotchet_litso = await getByIdPodotchet(region_id, id);
-  if (!podotchet_litso) {
-    return next(
-      new ErrorResponse("Server xatolik. Podotchet_litso topilmadi", 404),
-    );
-  }
-
-  const { error, value } = podotchetLitsoValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-
-  if (
-    podotchet_litso.name !== value.name ||
-    podotchet_litso.rayon !== value.rayon
-  ) {
-    const test = await getByAllPodotChet(value.name, value.rayon, region_id);
-    if (test) {
-      return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
+const update = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const podotchet_litso = await getByIdPodotchet(region_id, id);  
+    const data = validationResponse(podotchetLitsoValidation, req.body)
+    if ( podotchet_litso.name !== data.name || podotchet_litso.rayon !== data.rayon) {
+      await getByAllPodotChet(data.name, data.rayon, region_id);
     }
+    const result = await updatePodotchet({ ...data, id });
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await updatePodotchet({ ...value, id });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
-});
+}
 
 // delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const id = req.params.id;
-
-  const value = await getByIdPodotchet(region_id, id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
+const deleteValue = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    await getByIdPodotchet(region_id, id);
+    await deletePodotchet(id);
+    resFunc(res, 200, 'Delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await deletePodotchet(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdPodotchet(req.user.region_id, req.params.id, true);
-  if (!value) {
-    return next(
-      new ErrorResponse("Server error. spravochnik_podotchet_litso topilmadi"),
-    );
+const getElementById = async (req, res, next) => {
+  try {
+    const result = await getByIdPodotchet(req.user.region_id, req.params.id, true);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  return res.status(200).json({
-    success: true,
-    data: value,
-  });
-});
+}
 
 // import to excel
-const importToExcel = asyncHandler(async (req, res, next) => {
+const importToExcel = async (req, res, next) => {
   if (!req.file) {
     return next(new ErrorResponse("Fayl yuklanmadi", 400));
   }
@@ -191,7 +145,7 @@ const importToExcel = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
-});
+}
 
 module.exports = {
   getElementById,

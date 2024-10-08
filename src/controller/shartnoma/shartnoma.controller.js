@@ -7,6 +7,7 @@ const { getByIdOrganization } = require("../../service//spravochnik/organization
 const { shartnomaValidation } = require("../../helpers/validation/shartnoma/shartnoma.validation");
 const { createShartnomaGrafik } = require("../../service/shartnoma/shartnoma.grafik.service");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service.js");
+const { validationResponse } = require('../../helpers/response-for-validation.js')
 
 const {
   createShartnoma,
@@ -18,51 +19,38 @@ const {
   forJur3DB
 } = require("../../service/shartnoma/shartnoma.service");
 
-const create = asyncHandler(async (req, res, next) => {
+const create = async (req, res, next) => {
   const region_id = req.user.region_id;
   const user_id = req.user.id;
   const main_schet_id = req.query.main_schet_id;
+  const data = validationResponse(shartnomaValidation, req.body)
+  const main_schet = await getByIdMainSchet(region_id, main_schet_id)
 
-  const { error, value } = shartnomaValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+  await getByIdSmeta(data.smeta_id);
+  if (data.smeta2_id) {
+    await getByIdSmeta(data.smeta2_id)
   }
-
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
-  }
-
-  const test_smeta = await getByIdSmeta(value.smeta_id);
-  if (!test_smeta) {
-    return next(new ErrorResponse("Smeta topilmadi", 500));
-  }
-
   const test_organization = await getByIdOrganization(
     region_id,
-    value.spravochnik_organization_id,
+    data.spravochnik_organization_id,
   );
-  if (!test_organization) {
-    return next(new ErrorResponse("Hamkor topilmadi", 500));
-  }
-
-  const shartnoma = await createShartnoma({ ...value, user_id, main_schet_id });
+  const shartnoma = await createShartnoma({ ...data, user_id, main_schet_id });
 
   await createShartnomaGrafik(
     user_id,
     shartnoma.id,
     main_schet_id,
-    value.grafik_year,
+    data.grafik_year,
   );
 
   return res.status(201).json({
     success: true,
     data: "Muvafaqiyatli kiritildi",
   });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
+const getAll = async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
   const region_id = req.user.region_id;
@@ -71,7 +59,7 @@ const getAll = asyncHandler(async (req, res, next) => {
   const pudratchi_bool = req.query.pudratchi
 
   if (limit <= 0 || page <= 0) {
-    return next( new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
+    return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
   }
   await getByIdMainSchet(region_id, main_schet_id);
   const offset = (page - 1) * limit;
@@ -91,10 +79,10 @@ const getAll = asyncHandler(async (req, res, next) => {
     },
     data: result.data,
   });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
+const getElementById = async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
@@ -113,10 +101,10 @@ const getElementById = asyncHandler(async (req, res, next) => {
     success: true,
     data: result,
   });
-});
+}
 
 // update shartnoma
-const update_shartnoma = asyncHandler(async (req, res, next) => {
+const update_shartnoma = async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
@@ -152,10 +140,10 @@ const update_shartnoma = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvafaqiyatli yangilandi",
   });
-});
+}
 
 // delete shartnoma
-const deleteShartnoma = asyncHandler(async (req, res, next) => {
+const deleteShartnoma = async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
@@ -176,7 +164,7 @@ const deleteShartnoma = asyncHandler(async (req, res, next) => {
     sucess: true,
     data: "Muvaffaqiyatli ochirildi",
   });
-});
+}
 
 module.exports = {
   create,

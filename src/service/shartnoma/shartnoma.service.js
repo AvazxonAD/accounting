@@ -11,7 +11,7 @@ const createShartnoma = handleServiceError(async (data) => {
         opisanie, 
         smeta_id, 
         user_id, 
-        smeta_2, 
+        smeta2_id, 
         spravochnik_organization_id, 
         pudratchi_bool, 
         main_schet_id
@@ -26,7 +26,7 @@ const createShartnoma = handleServiceError(async (data) => {
       data.opisanie,
       data.smeta_id,
       data.user_id,
-      data.smeta_2,
+      data.smeta2_id,
       data.spravochnik_organization_id,
       data.pudratchi_bool,
       data.main_schet_id,
@@ -105,10 +105,12 @@ const getByIdShartnomaService = async (region_id, main_schet_id, id, ignoreDelet
               sh_o.smeta_id,
               sh_o.opisanie,
               sh_o.summa,
-              sh_o.pudratchi_bool
+              sh_o.pudratchi_bool,
+              sh_g.year AS grafik_year
         FROM shartnomalar_organization AS sh_o
         JOIN users  ON sh_o.user_id = users.id
         JOIN regions ON users.region_id = regions.id
+        JOIN shartnoma_grafik AS sh_g ON sh_g.id_shartnomalar_organization = sh_o.id
         WHERE regions.id = $1
           AND sh_o.main_schet_id = $2
           AND sh_o.id = $3 ${ignore} ${organization}

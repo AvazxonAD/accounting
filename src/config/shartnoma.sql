@@ -9,7 +9,7 @@ CREATE TABLE shartnomalar_organization (
     summa DECIMAL NOT NULL,
     opisanie TEXT,
     smeta_id INTEGER REFERENCES smeta(id),
-    smeta_2 VARCHAR(255),
+    smeta2_id INTEGER REFERENCES smeta(id),
     spravochnik_organization_id INTEGER REFERENCES spravochnik_organization(id),
     pudratchi_bool BOOLEAN,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

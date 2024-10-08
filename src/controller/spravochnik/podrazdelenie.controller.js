@@ -1,10 +1,3 @@
-const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
-const ErrorResponse = require("../../utils/errorResponse");
-const xlsx = require("xlsx");
-const {
-  podrazdelenieValidation,
-} = require("../../helpers/validation/spravochnik/porazdelenie.validation");
 const {
   getByAllPodrazdelenie,
   createPodrazdelenie,
@@ -14,132 +7,121 @@ const {
   updatePodrazlanie,
   deletePodrazlanie,
 } = require("../../service/spravochnik/podrazdelenie.service");
+const pool = require("../../config/db");
+const ErrorResponse = require("../../utils/errorResponse");
+const xlsx = require("xlsx");
+const { podrazdelenieValidation } = require("../../helpers/validation/spravochnik/porazdelenie.validation");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
+const { queryValidation } = require("../../helpers/validation/other/query.validation");
+const { errorCatch } = require('../../helpers/errorCatch')
 
 // create
-const create = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const user_id = req.user.id;
-  const { error, value } = podrazdelenieValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+const create = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const data = validationResponse(podrazdelenieValidation, req.body)
+    await getByAllPodrazdelenie(region_id, data.name, data.rayon);
+    const result = await createPodrazdelenie(user_id, data.name, data.rayon);
+    resFunc(res, 201, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const test = await getByAllPodrazdelenie(region_id, value.name, value.rayon);
-  if (test) {
-    return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-  }
-
-  await createPodrazdelenie(user_id, value.name, value.rayon);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
-  const region_id = req.user.region_id;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
-  const offset = (page - 1) * limit;
-
-  const result = await getAllPodrazdelenie(region_id, offset, limit);
-
-  const totalQuery = await getTotalPodrazlanie(region_id);
-  const total = parseInt(totalQuery.total);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
+const getAll = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const { page, limit } = validationResponse(queryValidation, req.body)
+    const offset = (page - 1) * limit;
+    const result = await getAllPodrazdelenie(region_id, offset, limit);
+    const total = parseInt(totalQuery.total);
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-    },
-    data: result,
-  });
-});
+    }
+    resFunc(res, 200, result.data, meta)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 // update
-const update = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const id = req.params.id;
-
-  const podrazdelenie = await getByIdPodrazlanie(region_id, id);
-  if (!podrazdelenie) {
-    return next(
-      new ErrorResponse("Server xatolik. Podrazdelenie topilmadi", 404),
-    );
-  }
-  const { error, value } = podrazdelenieValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-  const { name, rayon } = value;
-
-  if (podrazdelenie.name !== name || podrazdelenie.rayon !== rayon) {
-    const test = await getByAllPodrazdelenie(region_id, name, rayon);
-    if (test) {
-      return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
+const update = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    await getByIdPodrazlanie(region_id, id);
+    const { error, value } = podrazdelenieValidation.validate(req.body);
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400));
     }
+    const { name, rayon } = value;
+    if (podrazdelenie.name !== name || podrazdelenie.rayon !== rayon) {
+      const test = await getByAllPodrazdelenie(region_id, name, rayon);
+      if (test) {
+        return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
+      }
+    }
+    const result = await updatePodrazlanie(id, name, rayon);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await updatePodrazlanie(id, name, rayon);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
-});
+}
 
 // delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const id = req.params.id;
-
-  const value = await getByIdPodrazlanie(region_id, id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
+const deleteValue = async (req, res, next) => {
+  try {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+  
+    const value = await getByIdPodrazlanie(region_id, id);
+    if (!value) {
+      return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
+    }
+  
+    await deletePodrazlanie(id);
+  
+    return res.status(200).json({
+      success: true,
+      data: "Muvaffaqiyatli ochirildi",
+    });
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await deletePodrazlanie(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
-  const user_id = req.user.region_id;
-  const id = req.params.id;
-
-  const value = await getByIdPodrazlanie(user_id, id, true);
-  if (!value) {
-    return next(
-      new ErrorResponse("Server error. spravochnik_podrazdelenie topilmadi"),
-    );
+const getElementById = async (req, res, next) => {
+  try {
+    const user_id = req.user.region_id;
+    const id = req.params.id;
+  
+    const value = await getByIdPodrazlanie(user_id, id, true);
+    if (!value) {
+      return next(
+        new ErrorResponse("Server error. spravochnik_podrazdelenie topilmadi"),
+      );
+    }
+  
+    return res.status(200).json({
+      success: true,
+      data: value,
+    });
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  return res.status(200).json({
-    success: true,
-    data: value,
-  });
-});
+}
 
 // import to excel
-const importToExcel = asyncHandler(async (req, res, next) => {
+const importToExcel = async (req, res, next) => {
   if (!req.file) {
     return next(new ErrorResponse("Fayl yuklanmadi", 400));
   }
@@ -190,7 +172,7 @@ const importToExcel = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
-});
+}
 
 module.exports = {
   getElementById,
