@@ -90,13 +90,13 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 JOIN users u ON bp.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
-                AND bp.doc_date <= $3), 0) -
+                AND bp.doc_date < $3), 0) -
                 COALESCE((SELECT SUM(br.summa) 
                 FROM bank_rasxod br
                 JOIN users u ON br.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
-                AND br.doc_date <= $3 ), 0))::FLOAT AS summa_from,
+                AND br.doc_date < $3 ), 0))::FLOAT AS summa_from,
             (SELECT 
                 COALESCE((SELECT SUM(bp.summa) 
                 FROM bank_prixod bp
