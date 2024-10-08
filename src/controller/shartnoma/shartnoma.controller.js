@@ -18,6 +18,7 @@ const {
   deleteShartnomaDB,
   forJur3DB
 } = require("../../service/shartnoma/shartnoma.service");
+const { errorCatch } = require("../../helpers/errorCatch.js");
 
 const create = async (req, res, next) => {
   const region_id = req.user.region_id;
@@ -51,34 +52,38 @@ const create = async (req, res, next) => {
 
 // get all
 const getAll = async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
-  const region_id = req.user.region_id;
-  const main_schet_id = req.query.main_schet_id;
-  const organization_id = req.query.organization
-  const pudratchi_bool = req.query.pudratchi
-
-  if (limit <= 0 || page <= 0) {
-    return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const region_id = req.user.region_id;
+    const main_schet_id = req.query.main_schet_id;
+    const organization_id = req.query.organization
+    const pudratchi_bool = req.query.pudratchi
+  
+    if (limit <= 0 || page <= 0) {
+      return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
+    }
+    await getByIdMainSchet(region_id, main_schet_id);
+    const offset = (page - 1) * limit;
+  
+    const result = await getAllShartnoma(region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool);
+    const total = parseInt(result.total_count);
+    const pageCount = Math.ceil(total / limit);
+  
+    return res.status(200).json({
+      success: true,
+      meta: {
+        pageCount: pageCount,
+        count: total,
+        currentPage: page,
+        nextPage: page >= pageCount ? null : page + 1,
+        backPage: page === 1 ? null : page - 1,
+      },
+      data: result.data,
+    });
+  } catch (error) {
+    errorCatch(error, res)
   }
-  await getByIdMainSchet(region_id, main_schet_id);
-  const offset = (page - 1) * limit;
-
-  const result = await getAllShartnoma(region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool);
-  const total = parseInt(result.total_count);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    },
-    data: result.data,
-  });
 }
 
 // get element by id

@@ -36,51 +36,57 @@ const createShartnoma = handleServiceError(async (data) => {
 });
 
 const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool) => {
-  let organization = ``
-  let pudratchi = ''
-  const params = [region_id, main_schet_id, offset, limit]
-  if (organization_id) {
-    organization = `AND sh_o.spravochnik_organization_id = $5`
-    params.push(organization_id)
-  }
-  if (pudratchi_bool === 'true') {
-    pudratchi = `AND sh_o.pudratchi_bool = true`
-  }
-  if (pudratchi_bool === 'false') {
-    pudratchi = `AND sh_o.pudratchi_bool = false`
-  }
-  const result = await pool.query(
-    `WITH data AS (
+  try {
+    let organization = ``
+    let pudratchi = ''
+    const params = [region_id, main_schet_id, offset, limit]
+    if (organization_id) {
+      organization = `AND sh_o.spravochnik_organization_id = $5`
+      params.push(organization_id)
+    }
+    if (pudratchi_bool === 'true') {
+      pudratchi = `AND sh_o.pudratchi_bool = true`
+    }
+    if (pudratchi_bool === 'false') {
+      pudratchi = `AND sh_o.pudratchi_bool = false`
+    }
+    const result = await pool.query(
+      `WITH data AS (
+          SELECT 
+              sh_o.id,
+              sh_o.spravochnik_organization_id,
+              sh_o.doc_num,
+              TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
+              sh_o.smeta_id,
+              sh_o.opisanie,
+              sh_o.summa,
+              sh_o.pudratchi_bool,
+              smeta.smeta_number
+          FROM shartnomalar_organization AS sh_o
+          JOIN users AS u ON sh_o.user_id = u.id
+          JOIN regions AS r ON u.region_id = r.id
+          JOIN smeta ON sh_o.smeta_id = smeta.id
+          WHERE sh_o.isdeleted = false ${organization} ${pudratchi}
+              AND r.id = $1
+              AND sh_o.main_schet_id = $2
+          ORDER BY sh_o.doc_date DESC 
+          OFFSET $3 
+          LIMIT $4
+        ) 
         SELECT 
-            sh_o.id,
-            sh_o.spravochnik_organization_id,
-            sh_o.doc_num,
-            TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-            sh_o.smeta_id,
-            sh_o.opisanie,
-            sh_o.summa,
-            sh_o.pudratchi_bool 
-        FROM shartnomalar_organization AS sh_o
-        JOIN users AS u ON sh_o.user_id = u.id
-        JOIN regions AS r ON u.region_id = r.id
-        WHERE sh_o.isdeleted = false ${organization} ${pudratchi}
-            AND r.id = $1
-            AND sh_o.main_schet_id = $2
-        ORDER BY sh_o.doc_date DESC 
-        OFFSET $3 
-        LIMIT $4
-      ) 
-      SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
-        (SELECT COUNT(sh_o.id) 
-         FROM shartnomalar_organization AS sh_o
-         JOIN users AS u  ON sh_o.user_id = u.id
-         JOIN regions AS r ON u.region_id = r.id
-         WHERE sh_o.isdeleted = false ${organization} ${pudratchi}
-           AND r.id = $1
-           AND sh_o.main_schet_id = $2)::INTEGER AS total_count
-      FROM data`, params);
-  return result.rows[0];
+          ARRAY_AGG(row_to_json(data)) AS data,
+          (SELECT COUNT(sh_o.id) 
+           FROM shartnomalar_organization AS sh_o
+           JOIN users AS u  ON sh_o.user_id = u.id
+           JOIN regions AS r ON u.region_id = r.id
+           WHERE sh_o.isdeleted = false ${organization} ${pudratchi}
+             AND r.id = $1
+             AND sh_o.main_schet_id = $2)::INTEGER AS total_count
+        FROM data`, params);
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
 }
 
 const getByIdShartnomaService = async (region_id, main_schet_id, id, ignoreDeleted = false, organization_id) => {
