@@ -19,7 +19,7 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
     offset,
     limit,
     from,
-    to,
+    to
   );
   const total = Number(result.total_count);
   const prixod_sum = Number(result.all_prixod_sum);
@@ -27,6 +27,17 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
   const summaFrom = Number(result.total_sum_from);
   const summaTo = Number(result.total_sum_to);
   const pageCount = Math.ceil(total / limit);
+  const meta = {
+    pageCount: pageCount,
+    count: total,
+    currentPage: page,
+    nextPage: page >= pageCount ? null : page + 1,
+    backPage: page === 1 ? null : page - 1,
+    prixod_sum,
+    rasxod_sum,
+    summaFrom,
+    summaTo,
+  }
 
   getLogger.info(`Muvaffaqiyatli bank monitoring doclar olindi. UserId: ${req.user.id}`)
   return res.status(200).json({

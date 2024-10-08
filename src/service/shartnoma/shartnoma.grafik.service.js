@@ -56,7 +56,13 @@ const getByIdGrafikDB = handleServiceError(
 );
 
 
-const getAllGrafikDB = handleServiceError(async (region_id, main_schet_id) => {
+const getAllGrafikDB = handleServiceError(async (region_id, main_schet_id, shartnoma) => {
+  let shartnoma_filter = ``
+  const params =  [region_id, main_schet_id]
+  if(shartnoma){
+    shartnoma_filter = `AND shartnoma_grafik.id_shartnomalar_organization = $${params.length + 1}`
+    params.push(shartnoma)
+  }
   const result = await pool.query(
     `
     SELECT
@@ -85,11 +91,9 @@ const getAllGrafikDB = handleServiceError(async (region_id, main_schet_id) => {
     JOIN shartnomalar_organization ON shartnomalar_organization.id = shartnoma_grafik.id_shartnomalar_organization
     WHERE shartnoma_grafik.isdeleted = false 
         AND regions.id = $1
-        AND shartnoma_grafik.main_schet_id = $2
+        AND shartnoma_grafik.main_schet_id = $2 ${shartnoma_filter}
     ORDER BY shartnoma_grafik.id
-  `,
-    [region_id, main_schet_id],
-  );
+  `,params);
 
   return result.rows;
 });

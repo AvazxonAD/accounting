@@ -70,14 +70,12 @@ const updateShartnomaGrafik = asyncHandler(async (req, res, next) => {
 
 const getAllGrafik = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
+  const shartnoma = req.query.shartnoma
   const main_schet_id = req.query.main_schet_id;
 
   const main_schet = await getByIdMainSchet(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatolik. main_schet topilmadi", 404));
-  }
 
-  const result = await getAllGrafikDB(region_id, main_schet_id);
+  const result = await getAllGrafikDB(region_id, main_schet_id, shartnoma);
 
   return res.status(200).json({
     success: true,
