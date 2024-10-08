@@ -26,7 +26,7 @@ const create = asyncHandler(async (req, res, next) => {
 
   const test = await getByInnOrganization(value.inn, region_id);
   if (test) {
-    return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
+    return next(new ErrorResponse("This information has already been entered", 409));
   }
 
   await createOrganization({ ...value, user_id });

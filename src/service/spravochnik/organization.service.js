@@ -14,9 +14,6 @@ const getByInnOrganization = async (inn, region_id) => {
     `,
       [inn, region_id],
     );
-    if(!result.rows[0]){
-      throw new ErrorResponse('organization not found', 404)
-    }
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
