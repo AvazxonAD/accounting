@@ -141,7 +141,7 @@ const updateShartnomaDB = handleServiceError(async (data) => {
         summa = $3, 
         opisanie = $4, 
         smeta_id = $5, 
-        smeta_2 = $6, 
+        smeta2_id = $6, 
         spravochnik_organization_id = $7, 
         pudratchi_bool = $8
       WHERE id = $9

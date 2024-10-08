@@ -110,41 +110,45 @@ const getElementById = async (req, res, next) => {
 
 // update shartnoma
 const update_shartnoma = async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const main_schet_id = req.query.main_schet_id;
-  const id = req.params.id;
-
-  const test = await getByIdShartnomaService(region_id, main_schet_id, id);
-
-  const { error, value } = shartnomaValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+  try {
+    const region_id = req.user.region_id;
+    const main_schet_id = req.query.main_schet_id;
+    const id = req.params.id;
+  
+    const test = await getByIdShartnomaService(region_id, main_schet_id, id);
+  
+    const { error, value } = shartnomaValidation.validate(req.body);
+    if (error) {
+      return next(new ErrorResponse(error.details[0].message, 400));
+    }
+  
+    const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+    if (!main_schet) {
+      return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
+    }
+  
+    const test_smeta = await getByIdSmeta(value.smeta_id);
+    if (!test_smeta) {
+      return next(new ErrorResponse("Smeta topilmadi", 500));
+    }
+  
+    const test_organization = await getByIdOrganization(
+      region_id,
+      value.spravochnik_organization_id,
+    );
+    if (!test_organization) {
+      return next(new ErrorResponse("Hamkor topilmadi", 500));
+    }
+  
+    await updateShartnomaDB({ ...value, id });
+  
+    return res.status(201).json({
+      success: true,
+      data: "Muvafaqiyatli yangilandi",
+    });
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
-  }
-
-  const test_smeta = await getByIdSmeta(value.smeta_id);
-  if (!test_smeta) {
-    return next(new ErrorResponse("Smeta topilmadi", 500));
-  }
-
-  const test_organization = await getByIdOrganization(
-    region_id,
-    value.spravochnik_organization_id,
-  );
-  if (!test_organization) {
-    return next(new ErrorResponse("Hamkor topilmadi", 500));
-  }
-
-  await updateShartnomaDB({ ...value, id });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqiyatli yangilandi",
-  });
 }
 
 // delete shartnoma
