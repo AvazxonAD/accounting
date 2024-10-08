@@ -79,7 +79,7 @@ const getAll = async (req, res, next) => {
         nextPage: page >= pageCount ? null : page + 1,
         backPage: page === 1 ? null : page - 1,
       },
-      data: result.data,
+      data: result.data ? result.data : [],
     });
   } catch (error) {
     errorCatch(error, res)
