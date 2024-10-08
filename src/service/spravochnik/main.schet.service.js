@@ -195,6 +195,7 @@ const deleteMain_schet = handleServiceError(async (id) => {
 });
 
 const getByBudjetIdMainSchetService = handleServiceError(async (budjet_id, region_id) => {
+  console.log(region_id)
   const result = await pool.query(
     `
       SELECT 

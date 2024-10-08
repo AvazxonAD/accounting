@@ -55,7 +55,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             LEFT JOIN shartnomalar_organization so2 ON br.id_shartnomalar_organization = so2.id
             WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
             AND br.doc_date BETWEEN $3 AND $4
-            ORDER BY combined_date DESC
+            ORDER BY combined_date
             OFFSET $5 LIMIT $6
         )
         SELECT 
@@ -78,12 +78,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
               JOIN regions r ON u.region_id = r.id
               WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
               AND bp.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS prixod_sum,
-            (SELECT SUM(br.summa)
+            COALESCE((SELECT SUM(br.summa)
               FROM bank_rasxod br
               JOIN users u ON br.user_id = u.id
               JOIN regions r ON u.region_id = r.id
               WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
-              AND br.doc_date BETWEEN $3 AND $4)::FLOAT AS rasxod_sum,
+              AND br.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS rasxod_sum,
             (SELECT 
                 COALESCE((SELECT SUM(bp.summa) 
                 FROM bank_prixod bp
