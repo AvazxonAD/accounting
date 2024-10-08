@@ -78,6 +78,8 @@ const result = await pool.query(
       sh_g.id_shartnomalar_organization,
       sh_o.doc_num AS shartnomalar_organization_doc_num,
       TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+      s_1.smeta_number AS smeta_number,
+      s_2.smeta_number AS smeta2_number,
       sh_o.opisanie AS shartnomalar_organization_opisanie,
       sh_o.summa::FLOAT AS shartnomalar_organization_summa,
       sh_o.pudratchi_bool AS shartnomalar_organization_pudratchi_bool,
@@ -100,6 +102,8 @@ const result = await pool.query(
     JOIN regions AS r ON u.region_id = r.id
     JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
     JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
+    JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
+    LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
     WHERE sh_g.isdeleted = false 
         AND r.id = $1
         AND sh_g.main_schet_id = $2 ${organization_filter}
