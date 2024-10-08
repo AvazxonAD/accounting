@@ -105,7 +105,7 @@ const getAllJur3DB = handleServiceError(
             FROM bajarilgan_ishlar_jur3 
             JOIN users ON bajarilgan_ishlar_jur3.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE bajarilgan_ishlar_jur3.main_schet_id = $1 
+            WHERE bajarilgan_ishlar_jur3.main_schet_id = $1 AND bajarilgan_ishlar_jur3.isdeleted = false
                 AND regions.id = $2 
                 AND bajarilgan_ishlar_jur3.doc_date BETWEEN $3 AND $4
     `,
@@ -119,7 +119,7 @@ const getAllJur3DB = handleServiceError(
             FROM bajarilgan_ishlar_jur3 
             JOIN users ON bajarilgan_ishlar_jur3.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE bajarilgan_ishlar_jur3.main_schet_id = $1 
+            WHERE bajarilgan_ishlar_jur3.main_schet_id = $1 AND bajarilgan_ishlar_jur3.isdeleted = false
                 AND regions.id = $2 
                 AND bajarilgan_ishlar_jur3.doc_date BETWEEN $3 AND $4
     `,

@@ -93,8 +93,8 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4
-                OFFSET $5 LIMIT $6
+                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
+                OFFSET $5 LIMIT $6 
             )
             SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
@@ -102,13 +102,13 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4
+                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
             )::INTEGER AS total_count,
             (SELECT SUM(k_h_j.summa) 
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4
+                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
             )::FLOAT AS summa
             FROM data
         `, [region_id, from, to, main_schet_id, offset, limit])

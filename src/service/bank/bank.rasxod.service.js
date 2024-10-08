@@ -140,7 +140,7 @@ const getAllBankRasxodByFromAndTo = handleServiceError(
                 FROM bank_rasxod 
                 JOIN users ON bank_rasxod.user_id = users.id
                 JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.doc_date BETWEEN $3 AND $4
+                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2 AND bank_rasxod.doc_date BETWEEN $3 AND $4 AND bank_rasxod.isdeleted = false 
         `,
       [main_schet_id, region_id, from, to], // $3: from, $4: to
     );
@@ -151,7 +151,7 @@ const getAllBankRasxodByFromAndTo = handleServiceError(
                 FROM bank_rasxod 
                 JOIN users ON bank_rasxod.user_id = users.id
                 JOIN regions ON users.region_id = regions.id
-                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2  AND bank_rasxod.doc_date BETWEEN $3 AND $4
+                WHERE bank_rasxod.main_schet_id = $1 AND regions.id = $2  AND bank_rasxod.doc_date BETWEEN $3 AND $4 AND bank_rasxod.isdeleted = false 
         `,
       [main_schet_id, region_id, from, to], // $3: from, $4: to
     );
@@ -187,7 +187,7 @@ const getAllRasxodChildDb = handleServiceError(async (region_id, rasxod_id) => {
               LEFT JOIN spravochnik_podrazdelenie ON spravochnik_podrazdelenie.id = bank_rasxod_child.id_spravochnik_podrazdelenie
               LEFT JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_rasxod_child.id_spravochnik_sostav
               LEFT JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_rasxod_child.id_spravochnik_type_operatsii
-              WHERE regions.id = $1 AND bank_rasxod_child.id_bank_rasxod = $2 AND bank_rasxod_child.isdeleted = false
+              WHERE regions.id = $1 AND bank_rasxod_child.id_bank_rasxod = $2
           `,
     [region_id, rasxod_id],
   );

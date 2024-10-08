@@ -94,7 +94,7 @@ const getAllJur4DB = handleServiceError(async (region_id, main_schet_id, from, t
           FROM avans_otchetlar_jur4 AS a_o_j_4
           JOIN users AS u ON u.id =  a_o_j_4.user_id
           JOIN regions AS r ON u.region_id = r.id
-          WHERE a_o_j_4.main_schet_id = $1 
+          WHERE a_o_j_4.main_schet_id = $1 AND a_o_j_4.isdeleted = false
             AND r.id = $2 
             AND a_o_j_4.doc_date BETWEEN $3 AND $4
     `, [main_schet_id, region_id, from, to])
@@ -104,7 +104,7 @@ const getAllJur4DB = handleServiceError(async (region_id, main_schet_id, from, t
         FROM avans_otchetlar_jur4 AS a_o_j_4
         JOIN users AS u ON u.id =  a_o_j_4.user_id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE a_o_j_4.main_schet_id = $1 
+        WHERE a_o_j_4.main_schet_id = $1 AND a_o_j_4.isdeleted = false
           AND r.id = $2 
           AND a_o_j_4.doc_date BETWEEN $3 AND $4
   `, [main_schet_id, region_id, from, to])

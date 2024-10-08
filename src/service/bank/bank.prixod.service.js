@@ -149,7 +149,7 @@ const getAllPrixod = handleServiceError(
             FROM bank_prixod 
             JOIN users ON bank_prixod.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 
+            WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.isdeleted = false
               AND regions.id = $2 
               AND doc_date BETWEEN $3 AND $4
     `,
@@ -161,7 +161,7 @@ const getAllPrixod = handleServiceError(
         FROM bank_prixod 
         JOIN users ON bank_prixod.user_id = users.id
         JOIN regions ON users.region_id = regions.id
-        WHERE bank_prixod.main_schet_id = $1 
+        WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.isdeleted = false
           AND regions.id = $2 
           AND doc_date BETWEEN $3 AND $4
     `,
@@ -201,7 +201,7 @@ const getAllPrixodChild = handleServiceError(async (region_id, prixod_id) => {
               LEFT JOIN spravochnik_sostav ON spravochnik_sostav.id = bank_prixod_child.id_spravochnik_sostav
               LEFT JOIN spravochnik_type_operatsii ON spravochnik_type_operatsii.id = bank_prixod_child.id_spravochnik_type_operatsii
               LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = bank_prixod_child.id_spravochnik_podotchet_litso
-              WHERE regions.id = $1 AND bank_prixod_child.isdeleted = false AND bank_prixod_child.id_bank_prixod = $2
+              WHERE regions.id = $1 AND  bank_prixod_child.id_bank_prixod = $2
           `,
     [region_id, prixod_id],
   );
