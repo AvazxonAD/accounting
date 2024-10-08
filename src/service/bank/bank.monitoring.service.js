@@ -72,12 +72,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                         JOIN regions r ON u.region_id = r.id
                         WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
                         AND bp.doc_date BETWEEN $3 AND $4), 0))::INTEGER AS total_count,
-            (SELECT SUM(bp.summa)
+            COALESCE((SELECT SUM(bp.summa)
               FROM bank_prixod bp
               JOIN users u ON bp.user_id = u.id
               JOIN regions r ON u.region_id = r.id
               WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
-              AND bp.doc_date BETWEEN $3 AND $4)::FLOAT AS prixod_sum,
+              AND bp.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS prixod_sum,
             (SELECT SUM(br.summa)
               FROM bank_rasxod br
               JOIN users u ON br.user_id = u.id
@@ -90,20 +90,20 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 JOIN users u ON bp.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
-                AND bp.doc_date < $3), 0) -
+                AND bp.doc_date <= $3), 0) -
                 COALESCE((SELECT SUM(br.summa) 
                 FROM bank_rasxod br
                 JOIN users u ON br.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
-                AND br.doc_date < $3 ), 0))::FLOAT AS summa_from,
+                AND br.doc_date <= $3 ), 0))::FLOAT AS summa_from,
             (SELECT 
                 COALESCE((SELECT SUM(bp.summa) 
                 FROM bank_prixod bp
                 JOIN users u ON bp.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false
-                AND bp.doc_date <= $3), 0) -
+                AND bp.doc_date <= $4), 0) -
                 COALESCE((SELECT SUM(br.summa) 
                 FROM bank_rasxod br
                 JOIN users u ON br.user_id = u.id
@@ -113,6 +113,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             ARRAY_AGG(row_to_json(data)) AS data
           FROM data`,[region_id, main_schet_id, from, to, offset, limit],
     ); 
+    console.log(data.rows[0].prixod_sum, data.rows[0].rasxod_sum, data.rows[0].summa_from, data.rows[0].summa_to,)
     return {
       result_data: data.rows[0].data,
       total_count: data.rows[0].total_count,
