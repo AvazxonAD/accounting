@@ -1,10 +1,10 @@
 const ErrorResponse = require('../../utils/errorResponse')
 const { showServicesValidation } = require('../../helpers/validation/show.services/show.services.validation')
 const { getByIdOperatsii } = require('../../service/spravochnik/operatsii.service')
-const { getByIdOrganization } = require('../../service/spravochnik/organization.service')
+const { getByIdOrganizationService } = require('../../service/spravochnik/organization.service')
 const { getByIdShartnomaService, getByIdAndOrganizationIdShartnoma } = require('../../service/shartnoma/shartnoma.service')
 const { getByIdPodrazlanieService } = require('../../service/spravochnik/podrazdelenie.service')
-const { getByIdSostav } = require('../../service/spravochnik/sostav.service')
+const { getByIdSostavService } = require('../../service/spravochnik/sostav.service')
 const { getByIdTypeOperatsiiService } = require('../../service/spravochnik/type_operatsii.service')
 const { resFunc } = require('../../helpers/resFunc')
 const { validationResponse } = require('../../helpers/response-for-validation')
@@ -32,7 +32,7 @@ const createController = async (req, res) => {
         const data = validationResponse(showServicesValidation, req.body)
         await getByIdMainSchet(region_id, main_schet_id)
         await getByIdOperatsii(data.spravochnik_operatsii_own_id, 'show_service')
-        await getByIdOrganization(region_id, data.id_spravochnik_organization)
+        await getByIdOrganizationService(region_id, data.id_spravochnik_organization)
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
             if(contract.pudratchi_bool){
@@ -45,7 +45,7 @@ const createController = async (req, res) => {
                 await getByIdPodrazlanieService(region_id, data.id_spravochnik_podrazdelenie)
             }
             if (data.id_spravochnik_sostav) {
-                await getByIdSostav(region_id, data.id_spravochnik_sostav)
+                await getByIdSostavService(region_id, data.id_spravochnik_sostav)
             }
             if (data.id_spravochnik_type_operatsii) {
                 await getByIdTypeOperatsiiService(region_id, data.id_spravochnik_type_operatsii)
@@ -157,7 +157,7 @@ const updateShowService = async (req, res) => {
         await getByIdMainSchet(region_id, main_schet_id);    
         await getByIdShowServiceService(region_id, main_schet_id, id);
         await getByIdOperatsii( data.spravochnik_operatsii_own_id, "show_service");
-        await getByIdOrganization(region_id, data.id_spravochnik_organization);
+        await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdAndOrganizationIdShartnoma(
                 region_id,
@@ -174,7 +174,7 @@ const updateShowService = async (req, res) => {
                 await getByIdPodrazlanieService( region_id, child.id_spravochnik_podrazdelenie );
             }
             if (child.id_spravochnik_sostav) {
-                await getByIdSostav( region_id, child.id_spravochnik_sostav );
+                await getByIdSostavService( region_id, child.id_spravochnik_sostav );
             }
             if (child.id_spravochnik_type_operatsii) {
                 await getByIdTypeOperatsiiService( region_id, child.id_spravochnik_type_operatsii );

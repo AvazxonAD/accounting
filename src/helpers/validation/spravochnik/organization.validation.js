@@ -10,6 +10,13 @@ const organizationValidation = Joi.object({
   okonx: Joi.string().required(),
 }).options({ stripUnknown: true });
 
+const queryValidation = Joi.object({
+  page: Joi.number().min(1).default(1),
+  limit: Joi.number().min(1).default(10),
+  inn: Joi.number()
+})
+
 module.exports = {
   organizationValidation,
+  queryValidation
 };

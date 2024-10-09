@@ -13,31 +13,31 @@ const { deletetypeOperatsiiService } = require("../../service/spravochnik/type_o
 const { validationResponse } = require("../../helpers/response-for-validation");
 const { errorCatch } = require("../../helpers/errorCatch");
 const { resFunc } = require("../../helpers/resFunc");
+const { queryValidation } = require('../../helpers/validation/other/query.validation')
 
 // createTypeOperatsii
 const createTypeOperatsii = async (req, res) => {
-  const region_id = req.user.region_id;
-  const user_id = req.user.id;
-  const data = validationResponse(typeOperatsiiValidation, req.body)
-  const { name, rayon } = data;
-  await getByAlltypeOperatsiiService(region_id, name, rayon);
-  const result = await createTypeOperatsiiService(user_id, name, rayon);
-  resFunc(res, 200, result)
+  try {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const data = validationResponse(typeOperatsiiValidation, req.body)
+    const { name, rayon } = data;
+    await getByAlltypeOperatsiiService(region_id, name, rayon);
+    const result = await createTypeOperatsiiService(user_id, name, rayon);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
 }
 
 // get all
 const getTypeOperatsii = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
-    const page = parseInt(req.query.page) || 1;
     const region_id = req.user.region_id;
-  
-    if (limit <= 0 || page <= 0) {
-      throw new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400)
-    }
+    const { page, limit } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
     const result = await getAlltypeOperatsiiService(region_id, offset, limit);
-    const total = parseInt(result.total_count);
+    const total = result.total_count;
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -58,13 +58,9 @@ const updateTypeOperatsii = async (req, res) => {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const type_operatsii = await getByIdTypeOperatsiiService(region_id, id);
-    const data = validationResponse(typeOperatsiiValidation, req.body);
-    const { name, rayon } = data;  
+    const {name, rayon} = validationResponse(typeOperatsiiValidation, req.body);
     if (type_operatsii.name !== name || type_operatsii.rayon !== rayon) {
-      const test = await getByAlltypeOperatsiiService(region_id, name, rayon);
-      if (test) {
-        throw new ErrorResponse("This information has already been entered", 409)
-      }
+      await getByAlltypeOperatsiiService(region_id, name, rayon);
     }
     const result = await updatetypeOperatsiiService(id, name, rayon);
     resFunc(res, 200, result)

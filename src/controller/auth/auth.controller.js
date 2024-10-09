@@ -1,3 +1,9 @@
+const {
+  getByLoginUserService,
+  getByIdUserService,
+  updateAuth,
+  getProfileAuth,
+} = require("../../service/auth/auth.service");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const generateToken = require("../../utils/auth/generate.token");
@@ -7,47 +13,21 @@ const { getByIdMainSchet, getByBudjetIdMainSchetService } = require("../../servi
 const { authValidation, authUpdateValidation } = require("../../helpers/validation/auth/auth.validation");
 const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
 const { getRegionService } = require('../../service/auth/region.service');
-
-const {
-  getByLoginUserService,
-  getByIdUserService,
-  updateAuth,
-  getProfileAuth,
-} = require("../../service/auth/auth.service");
+const { resFunc } = require("../../helpers/resFunc");
+const { validationResponse } = require("../../helpers/response-for-validation");
 
 // login
 const login = asyncHandler(async (req, res, next) => {
-  const { error, value } = authValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message), 400);
-  }
-
-  const user = await getByLoginUserService(value.login);
-  if (!user) {
-    return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
-  }
-
-  const matchPassword = await bcrypt.compare(value.password, user.password);
+  const { login, password } = validationResponse(authValidation, req.body)
+  const user = await getByLoginUserService(login);
+  const matchPassword = await bcrypt.compare(password, user.password);
   if (!matchPassword) {
-    return next(new ErrorResponse("login yoki parol xato kiritildi", 403));
+    return next(new ErrorResponse("Incorrect login or password", 403));
   }
-
-  let main_schet = null;
-  if (value.main_schet_id) {
-    main_schet = await getByIdMainSchet(user.region_id, value.main_schet_id);
-  }
-
   const token = generateToken(user);
-
   postLogger.info(`Foydalanuvchi muvaffaqiyatli tizimga kirdi. Foydalanuvchi ID: ${user.id}`);
-  return res.status(200).json({
-    success: true,
-    data: {
-      user,
-      main_schet,
-      token,
-    },
-  });
+  const data = { user, token }
+  resFunc(res, 200, data)
 });
 
 // update
@@ -76,7 +56,6 @@ const update = asyncHandler(async (req, res, next) => {
     const fio = value.fio.trim();
     user.fio = fio;
   }
-
   if (value.login) {
     const login = value.login.trim();
     if (login !== user.login) {

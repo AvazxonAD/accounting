@@ -50,27 +50,16 @@ const getSostavService = async (region_id, offset, limit) => {
           OFFSET $2 
           LIMIT $3)
         SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
-         
+          ARRAY_AGG(row_to_json(data)) AS data,
+          (SELECT COUNT(spravochnik_sostav.id) AS total
+          FROM spravochnik_sostav
+          JOIN users ON spravochnik_sostav.user_id = users.id
+          JOIN regions ON users.region_id = regions.id  
+          WHERE spravochnik_sostav.isdeleted = false 
+            AND regions.id = $1)::INTEGER AS total_count
+        FROM data
       `,
       [region_id, offset, limit],
-    );
-    return result.rows;
-  } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
-  }
-}
-
-const getTotalSostav = async (region_id) => {
-  try {
-    const result = await pool.query(
-      `SELECT COUNT(spravochnik_sostav.id) AS total
-        FROM spravochnik_sostav
-        JOIN users ON spravochnik_sostav.user_id = users.id
-        JOIN regions ON users.region_id = regions.id  
-        WHERE spravochnik_sostav.isdeleted = false 
-          AND regions.id = $1`,
-      [region_id],
     );
     return result.rows[0];
   } catch (error) {
@@ -78,7 +67,7 @@ const getTotalSostav = async (region_id) => {
   }
 }
 
-const getByIdSostav = async (region_id, id, ignoreDeleted = false) => {
+const getByIdSostavService = async (region_id, id, ignoreDeleted = false) => {
   try {
     let query = `
       SELECT 
@@ -100,13 +89,13 @@ const getByIdSostav = async (region_id, id, ignoreDeleted = false) => {
     if(!result.rows[0]){
       throw new ErrorResponse('spravochnik_sostav not found', 404)
     }
+    return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
-  return result.rows[0];
 }
 
-const updateSostav = async (id, name, rayon) => {
+const updateSostavService = async (id, name, rayon) => {
   try {
     const result = await pool.query(
       `UPDATE  spravochnik_sostav SET name = $1, rayon = $2 WHERE id = $3 RETURNING * 
@@ -118,7 +107,7 @@ const updateSostav = async (id, name, rayon) => {
   }
 }
 
-const deleteSostav = async (id) => {
+const deleteSostavService = async (id) => {
   try {
     await pool.query(
       `UPDATE spravochnik_sostav SET isdeleted = $1 WHERE id = $2 `,
@@ -133,8 +122,7 @@ module.exports = {
   getByAllSostavService,
   createSostavService,
   getSostavService,
-  getTotalSostav,
-  getByIdSostav,
-  updateSostav,
-  deleteSostav,
+  getByIdSostavService,
+  updateSostavService,
+  deleteSostavService,
 };

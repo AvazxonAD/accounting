@@ -13,13 +13,13 @@ const {
 } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const {
-  getByIdOrganization,
+  getByIdOrganizationService,
 } = require("../../service/spravochnik/organization.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
+const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
 const {
   getByIdTypeOperatsiiService,
 } = require("../../service/spravochnik/type_operatsii.service");
@@ -56,7 +56,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const organization = await getByIdOrganization(
+  const organization = await getByIdOrganizationService(
     region_id,
     value.id_spravochnik_organization,
   );
@@ -100,7 +100,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
       }
     }
     if (value.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(
+      const spravochnik_sostav = await getByIdSostavService(
         region_id,
         value.id_spravochnik_sostav,
       );
@@ -181,7 +181,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const organization = await getByIdOrganization(
+  const organization = await getByIdOrganizationService(
     region_id,
     value.id_spravochnik_organization,
   );
@@ -239,7 +239,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
       }
     }
     if (value.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(
+      const spravochnik_sostav = await getByIdSostavService(
         region_id,
         value.id_spravochnik_sostav,
       );

@@ -13,6 +13,9 @@ const getByAlltypeOperatsiiService = async (region_id, name, rayon) => {
           AND regions.id = $3 
           AND spravochnik_type_operatsii.isdeleted = false
     `,[name, rayon, region_id]);
+    if(test.rows[0]){
+      throw new ErrorResponse('This information has already been entered', 409)
+    }
     return test.rows[0];    
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -56,7 +59,7 @@ const getAlltypeOperatsiiService = async (region_id, offset, limit) => {
           JOIN users ON spravochnik_type_operatsii.user_id = users.id
           JOIN regions ON users.region_id = regions.id  
           WHERE spravochnik_type_operatsii.isdeleted = false 
-            AND regions.id = $1) AS total_count
+            AND regions.id = $1)::INTEGER AS total_count
       FROM data
       `
     ,[region_id, offset, limit]);

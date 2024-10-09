@@ -3,7 +3,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 
 const { getByIdSmeta } = require("../../service/smeta/smeta.service");
-const { getByIdOrganization } = require("../../service//spravochnik/organization.service");
+const { getByIdOrganizationService } = require("../../service//spravochnik/organization.service");
 const { shartnomaValidation } = require("../../helpers/validation/shartnoma/shartnoma.validation");
 const { createShartnomaGrafik } = require("../../service/shartnoma/shartnoma.grafik.service");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service.js");
@@ -13,7 +13,7 @@ const {
   createShartnoma,
   getAllShartnoma,
   updateShartnomaDB,
-  getByIdOrganizationShartnoma,
+  getByIdOrganizationServiceShartnoma,
   getByIdShartnomaService,
   deleteShartnomaDB,
   forJur3DB
@@ -31,7 +31,7 @@ const create = async (req, res, next) => {
   if (data.smeta2_id) {
     await getByIdSmeta(data.smeta2_id)
   }
-  const test_organization = await getByIdOrganization(
+  const test_organization = await getByIdOrganizationService(
     region_id,
     data.spravochnik_organization_id,
   );
@@ -132,7 +132,7 @@ const update_shartnoma = async (req, res, next) => {
       return next(new ErrorResponse("Smeta topilmadi", 500));
     }
   
-    const test_organization = await getByIdOrganization(
+    const test_organization = await getByIdOrganizationService(
       region_id,
       value.spravochnik_organization_id,
     );

@@ -14,6 +14,7 @@ const getByLoginUserService = async (login) => {
             users.region_id, 
             users.role_id, 
             role.name AS role_name,
+            regions.name AS region_name,
             json_build_object(
               'kassa', access.kassa,
               'bank', access.bank,
@@ -31,10 +32,14 @@ const getByLoginUserService = async (login) => {
           FROM users 
           INNER JOIN role ON role.id = users.role_id
           INNER JOIN access ON access.role_id = role.id 
+          JOIN regions ON regions.id = users.region_id
           WHERE users.login = $1
       `,
       [login.trim()],
     );
+    if(!result.rows[0]){
+      throw new ErrorResponse('Incorrect login or password', 403)
+    }
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

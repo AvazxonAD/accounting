@@ -17,7 +17,7 @@ const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.servic
 const {
   getByIdPodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
+const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
 const {
   getByIdTypeOperatsiiService,
 } = require("../../service/spravochnik/type_operatsii.service");
@@ -92,7 +92,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(
+      const spravochnik_sostav = await getByIdSostavService(
         region_id,
         child.id_spravochnik_sostav,
       );
@@ -275,7 +275,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(
+      const spravochnik_sostav = await getByIdSostavService(
         region_id,
         child.id_spravochnik_sostav,
       );

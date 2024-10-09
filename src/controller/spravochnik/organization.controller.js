@@ -1,85 +1,63 @@
+const {
+  getByInnOrganizationService,
+  createOrganizationService,
+  getAllOrganizationService,
+  getByIdOrganizationService,
+  updateOrganizationService,
+  deleteOrganizationService,
+} = require("../../service/spravochnik/organization.service");
 const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const {
-  getByInnOrganization,
-  createOrganization,
-  getAllOrganization,
-  totalOrganization,
-  getByIdOrganization,
-  updateOrganization,
-  deleteOrganization,
-} = require("../../service/spravochnik/organization.service");
+const { organizationValidation, queryValidation } = require("../../helpers/validation/spravochnik/organization.validation");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
+const { errorCatch } = require("../../helpers/errorCatch");
 
-const {
-  organizationValidation,
-} = require("../../helpers/validation/spravochnik/organization.validation");
-// create
-const create = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const user_id = req.user.id;
-  const { error, value } = organizationValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+// createOrganization
+const createOrganization = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const data = validationResponse(organizationValidation, req.body)
+    const result = await createOrganizationService({ ...data, user_id });
+    resFunc(res, 201, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-  await createOrganization({ ...value, user_id });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
-  let result = null;
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
-  let inn = null;
-  let totalQuery = null;
-  const region_id = req.user.region_id;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
-  const offset = (page - 1) * limit;
-
-  if (inn) {
-    result = await getByInnOrganization(inn, region_id);
-    totalQuery = { total: 1 };
-  }
-
-  if (!inn) {
-    result = await getAllOrganization(region_id, offset, limit);
-    totalQuery = await totalOrganization(region_id);
-  }
-
-  const total = parseInt(totalQuery.total);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
+const getOrganization = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const { page, limit, inn } = validationResponse(queryValidation, req.query)
+    const offset = (page - 1) * limit;
+    const { result, total } = await getAllOrganizationService(region_id, offset, limit, inn);
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-    },
-    data: result,
-  });
-});
+    }
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
-// update
-const update = asyncHandler(async (req, res, next) => {
+// updateOrganization
+const updateOrganization = async (req, res) => {
+  try {
+
+  } catch (error) {
+    errorCatch(error, res)
+  }
   const id = req.params.id;
   const region_id = req.user.region_id;
 
-  const partner = await getByIdOrganization(region_id, id);
+  const partner = await getByIdOrganizationService(region_id, id);
   if (!partner) {
     return next(new ErrorResponse("Server xatolik. Hamkor topilmadi", 500));
   }
@@ -90,40 +68,50 @@ const update = asyncHandler(async (req, res, next) => {
   }
 
   if (partner.inn !== value.inn) {
-    const test = await getByInnOrganization(value.inn, region_id);
+    const test = await getByInnOrganizationService(value.inn, region_id);
     if (test) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
     }
   }
 
-  await updateOrganization({ ...value, id });
+  await updateOrganizationService({ ...value, id });
 
   return res.status(201).json({
     success: true,
     data: "Muvafaqyatli yangilandi",
   });
-});
+}
 
 // delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
+const deleteOrganization = async (req, res) => {
+  try {
+
+  } catch (error) {
+    errorCatch(error, res)
+  }
   const id = req.params.id;
   const region_id = req.user.region_id;
-  const value = await getByIdOrganization(region_id, id);
+  const value = await getByIdOrganizationService(region_id, id);
   if (!value) {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  await deleteOrganization(id);
+  await deleteOrganizationService(id);
 
   return res.status(200).json({
     success: true,
     data: "Muvaffaqiyatli ochirildi",
   });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdOrganization(req.user.region_id, req.params.id, true);
+const getByIdOrganization = async (req, res) => {
+  try {
+
+  } catch (error) {
+    errorCatch(error, res)
+  }
+  const value = await getByIdOrganizationService(req.user.region_id, req.params.id, true);
   if (!value) {
     return next(
       new ErrorResponse("Server error. spravochnik_organization topilmadi"),
@@ -134,10 +122,10 @@ const getElementById = asyncHandler(async (req, res, next) => {
     success: true,
     data: value,
   });
-});
+}
 
 // import excel
-const importToExcel = asyncHandler(async (req, res, next) => {
+const importToExcel = async (req, res) => {
   if (!req.file) {
     return next(new ErrorResponse("Fayl yuklanmadi", 400));
   }
@@ -194,13 +182,13 @@ const importToExcel = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
-});
+}
 
 module.exports = {
-  getElementById,
-  create,
-  getAll,
-  deleteValue,
-  update,
+  getByIdOrganization,
+  createOrganization,
+  getOrganization,
+  deleteOrganization,
+  updateOrganization,
   importToExcel,
 };

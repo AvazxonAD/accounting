@@ -177,7 +177,7 @@ const deleteShartnomaDB = handleServiceError(async (id) => {
   );
 });
 
-const getByIdOrganizationShartnoma = handleServiceError(
+const getByIdOrganizationServiceShartnoma = handleServiceError(
   async (region_id, main_schet_id, organization_id, pudratchi) => {
     let query = `
         SELECT 
@@ -289,7 +289,7 @@ module.exports = {
   getAllShartnoma,
   getByIdShartnomaService,
   updateShartnomaDB,
-  getByIdOrganizationShartnoma,
+  getByIdOrganizationServiceShartnoma,
   deleteShartnomaDB,
   getByIdAndOrganizationIdShartnoma,
   forJur3DB

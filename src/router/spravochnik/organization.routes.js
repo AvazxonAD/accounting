@@ -3,20 +3,19 @@ const router = Router();
 
 const { protect } = require("../../middleware/auth");
 const {
-  create,
-  getAll,
-  update,
-  deleteValue,
-  importToExcel,
-  getElementById,
+  createOrganization,
+  getOrganization,
+  updateOrganization,
+  deleteOrganization,
+  getByIdOrganization,
 } = require("../../controller/spravochnik/organization.controller");
 
 const upload = require("../../utils/protect.file");
 
-router.post("/", protect, create);
-router.get("/", protect, getAll);
-router.put("/:id", protect, update);
-router.delete("/:id", protect, deleteValue);
-router.get("/:id", protect, getElementById);
+router.post("/", protect, createOrganization);
+router.get("/", protect, getOrganization);
+router.put("/:id", protect, updateOrganization);
+router.delete("/:id", protect, deleteOrganization);
+router.get("/:id", protect, getByIdOrganization);
 
 module.exports = router;

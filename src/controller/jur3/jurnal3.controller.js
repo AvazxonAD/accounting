@@ -5,7 +5,7 @@ const { errorCatch } = require('../../helpers/errorCatch');
 const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.service');
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
-    getByIdOrganization,
+    getByIdOrganizationService,
 } = require("../../service/spravochnik/organization.service");
 const { getByIdShartnomaService } = require("../../service/shartnoma/shartnoma.service");
 
@@ -17,7 +17,7 @@ const createJurnal3 = async (req, res) => {
         await getByIdMainSchet(region_id, main_schet_id);
         const data = validationResponse(jur3Validation, req.body);
         await getByIdOperatsii(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
-        await getByIdOrganization(region_id, data.id_spravochnik_organization);
+        await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id);
         if (!shartnoma.pudratchi_bool) {
             throw new ErrorResponse("Shartnoma pudratchi not", 404);

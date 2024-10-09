@@ -4,11 +4,11 @@ const ErrorResponse = require("../../utils/errorResponse");
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { jur3Validation } = require("../../helpers/validation/bajarilgan_ishlar/jur_3.validation");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
-const { getByIdOrganization } = require("../../service/spravochnik/organization.service");
+const { getByIdOrganizationService } = require("../../service/spravochnik/organization.service");
 const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
-const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
+const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
@@ -50,7 +50,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
       new ErrorResponse("Server xatolik. spravochnik_operatsii_own topilmadi", 404),
     );
   }
-  const organization = await getByIdOrganization(
+  const organization = await getByIdOrganizationService(
     region_id,
     value.id_spravochnik_organization,
   );
@@ -92,7 +92,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(
+      const spravochnik_sostav = await getByIdSostavService(
         region_id,
         child.id_spravochnik_sostav,
       );
@@ -233,7 +233,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
       ),
     );
   }
-  const organization = await getByIdOrganization(
+  const organization = await getByIdOrganizationService(
     region_id,
     value.id_spravochnik_organization,
   );
@@ -275,7 +275,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostav(
+      const spravochnik_sostav = await getByIdSostavService(
         region_id,
         child.id_spravochnik_sostav,
       );
