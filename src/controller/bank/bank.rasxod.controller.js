@@ -2,7 +2,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const pool = require("../../config/db");
 
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdOrganizationService,
 } = require("../../service/spravochnik/organization.service");
@@ -54,7 +54,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
@@ -164,7 +164,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
@@ -374,7 +374,7 @@ const delete_bank_rasxod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
   const id = req.params.id;
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }

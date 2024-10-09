@@ -2,7 +2,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { getAllMonitoring } = require("../../service/bank/bank.monitoring.service");
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getLogger } = require('../../helpers/log_functions/logger')
 const { validationResponse } = require('../../helpers/response-for-validation')
 
@@ -11,7 +11,7 @@ const getAllBankMonitoring = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const { limit, page, main_schet_id, from, to } = data
   const offset = (page - 1) * limit;
-  await getByIdMainSchet(region_id, data.main_schet_id);
+  await getByIdMainSchetService(region_id, data.main_schet_id);
 
   const result = await getAllMonitoring(
     region_id,

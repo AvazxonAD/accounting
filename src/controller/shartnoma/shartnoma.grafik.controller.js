@@ -11,7 +11,7 @@ const { sum } = require("../../utils/returnSumma");
 const {
   shartnomaGarfikValidation,
 } = require("../../helpers/validation/shartnoma/shartnoma.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { errorCatch } = require("../../helpers/errorCatch");
 const { resFunc } = require("../../helpers/resFunc");
 
@@ -75,7 +75,7 @@ const getAllGrafik = async (req, res, next) => {
     const region_id = req.user.region_id;
     const organization = req.query.organization
     const main_schet_id = req.query.main_schet_id;
-    await getByIdMainSchet(region_id, main_schet_id);
+    await getByIdMainSchetService(region_id, main_schet_id);
     
     const result = await getAllGrafikDB(region_id, main_schet_id, organization);
     resFunc(res, 200, result)
@@ -89,7 +89,7 @@ const getElementByIdGrafik = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. main_schet topilmadi", 404));
   }

@@ -6,7 +6,7 @@ const { getByIdSmeta } = require("../../service/smeta/smeta.service");
 const { getByIdOrganizationService } = require("../../service//spravochnik/organization.service");
 const { shartnomaValidation } = require("../../helpers/validation/shartnoma/shartnoma.validation");
 const { createShartnomaGrafik } = require("../../service/shartnoma/shartnoma.grafik.service");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service.js");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service.js");
 const { validationResponse } = require('../../helpers/response-for-validation.js')
 
 const {
@@ -25,7 +25,7 @@ const create = async (req, res, next) => {
   const user_id = req.user.id;
   const main_schet_id = req.query.main_schet_id;
   const data = validationResponse(shartnomaValidation, req.body)
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id)
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
 
   await getByIdSmeta(data.smeta_id);
   if (data.smeta2_id) {
@@ -63,7 +63,7 @@ const getAll = async (req, res, next) => {
     if (limit <= 0 || page <= 0) {
       return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
     }
-    await getByIdMainSchet(region_id, main_schet_id);
+    await getByIdMainSchetService(region_id, main_schet_id);
     const offset = (page - 1) * limit;
   
     const result = await getAllShartnoma(region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool);
@@ -92,7 +92,7 @@ const getElementById = async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
   }
@@ -122,7 +122,7 @@ const update_shartnoma = async (req, res, next) => {
       return next(new ErrorResponse(error.details[0].message, 400));
     }
   
-    const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+    const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     if (!main_schet) {
       return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
     }
@@ -157,7 +157,7 @@ const deleteShartnoma = async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 404));
   }

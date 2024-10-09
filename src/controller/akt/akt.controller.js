@@ -3,7 +3,7 @@ const ErrorResponse = require("../../utils/errorResponse");
 
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { jur3Validation } = require("../../helpers/validation/bajarilgan_ishlar/jur_3.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getByIdOrganizationService } = require("../../service/spravochnik/organization.service");
 const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
@@ -36,7 +36,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
   const user_id = req.user.id;
   const main_schet_id = req.query.main_schet_id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -141,7 +141,7 @@ const jur_3_get_all = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const main_schet_id = req.query.main_schet_id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -211,7 +211,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -325,7 +325,7 @@ const deleteJur_3 = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
   const user_id = req.user.id
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -353,7 +353,7 @@ const getElementByIdJur_3 = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
   const user_id = req.user.id
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }

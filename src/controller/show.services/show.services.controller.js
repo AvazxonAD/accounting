@@ -9,7 +9,7 @@ const { getByIdTypeOperatsiiService } = require('../../service/spravochnik/type_
 const { resFunc } = require('../../helpers/resFunc')
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { errorCatch } = require('../../helpers/errorCatch')
-const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.service')
+const { getByIdMainSchetService } = require('../../service/spravochnik/main.schet.service')
 const { returnAllChildSumma } = require('../../utils/returnSumma')
 const { queryValidation } = require('../../helpers/validation/bank/bank.prixod.validation')
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
@@ -30,7 +30,7 @@ const createController = async (req, res) => {
         const user_id = req.user.id
         const main_schet_id = req.query.main_schet_id
         const data = validationResponse(showServicesValidation, req.body)
-        await getByIdMainSchet(region_id, main_schet_id)
+        await getByIdMainSchetService(region_id, main_schet_id)
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'show_service')
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization)
         if (data.shartnomalar_organization_id) {
@@ -78,7 +78,7 @@ const getShowService = async (req, res) => {
         const region_id = req.user.region_id;
         const main_schet_id = req.query.main_schet_id;
     
-        await getByIdMainSchet(region_id, main_schet_id);
+        await getByIdMainSchetService(region_id, main_schet_id);
         const data = validationResponse(queryValidation, req.query)
     
         const limit = parseInt(data.limit) || 10;
@@ -132,7 +132,7 @@ const getByIdShowService = async (req, res) => {
         const id = req.params.id;
         const user_id = req.user.id
     
-        await getByIdMainSchet(region_id, main_schet_id);
+        await getByIdMainSchetService(region_id, main_schet_id);
     
         const result = await getByIdShowServiceService(region_id, main_schet_id, id, true);
     
@@ -154,7 +154,7 @@ const updateShowService = async (req, res) => {
         const main_schet_id = req.query.main_schet_id;
         const id = req.params.id;
         const data = validationResponse(showServicesValidation, req.body)
-        await getByIdMainSchet(region_id, main_schet_id);    
+        await getByIdMainSchetService(region_id, main_schet_id);    
         await getByIdShowServiceService(region_id, main_schet_id, id);
         await getByIdOperatsiiService( data.spravochnik_operatsii_own_id, "show_service");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
@@ -213,7 +213,7 @@ const deleteShowService = async (req, res) => {
     const id = req.params.id;
     const user_id = req.user.id
 
-    await getByIdMainSchet(region_id, main_schet_id);
+    await getByIdMainSchetService(region_id, main_schet_id);
 
     await getByIdShowServiceService(region_id, main_schet_id, id);
 

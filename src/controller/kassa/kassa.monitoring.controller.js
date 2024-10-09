@@ -4,7 +4,7 @@ const { getAllMonitoring } = require("../../service/kassa/kassa.monitoring.servi
 const {
   queryValidation,
 } = require("../../helpers/validation/bank/bank.prixod.validation");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 
 const getAllKassaMonitoring = asyncHandler(async (req, res, next) => {
   const { error, value } = queryValidation.validate(req.query);
@@ -26,7 +26,7 @@ const getAllKassaMonitoring = asyncHandler(async (req, res, next) => {
   }
 
   const offset = (page - 1) * limit;
-  const main_schet = await getByIdMainSchet(region_id, value.main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, value.main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
   }

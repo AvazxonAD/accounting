@@ -11,7 +11,7 @@ const { returnAllChildSumma } = require("../../utils/returnSumma");
 const {
   getByIdAndOrganizationIdShartnoma,
 } = require("../../service/shartnoma/shartnoma.service");
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdOrganizationService,
 } = require("../../service/spravochnik/organization.service");
@@ -51,7 +51,7 @@ const bank_prixod = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message), 400);
   }
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -176,7 +176,7 @@ const bank_prixod_update = asyncHandler(async (req, res, next) => {
   if (error) {
     return next(new ErrorResponse(error.details[0].message), 400);
   }
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -308,7 +308,7 @@ const delete_bank_prixod = asyncHandler(async (req, res, next) => {
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
   const id = req.params.id;
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatolik. Main schet topilmadi", 500));
   }
@@ -385,7 +385,7 @@ const getAllBankPrixod = asyncHandler(async (req, res, next) => {
   }
   const offset = (page - 1) * limit;
 
-  const main_schet = await getByIdMainSchet(region_id, value.main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, value.main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Schet topilmadi", 404));
   }

@@ -2,7 +2,7 @@ const { jur3Validation } = require('../../helpers/validation/bajarilgan_ishlar/j
 const ErrorResponse = require('../../utils/errorResponse');
 const { validationResponse } = require('../../helpers/response-for-validation');
 const { errorCatch } = require('../../helpers/errorCatch');
-const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.service');
+const { getByIdMainSchetService } = require('../../service/spravochnik/main.schet.service');
 const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const {
     getByIdOrganizationService,
@@ -14,7 +14,7 @@ const createJurnal3 = async (req, res) => {
         const user_id = req.user.id;
         const region_id = req.user.region_id;
         const main_schet_id = req.query.main_schet_id;
-        await getByIdMainSchet(region_id, main_schet_id);
+        await getByIdMainSchetService(region_id, main_schet_id);
         const data = validationResponse(jur3Validation, req.body);
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);

@@ -1,162 +1,109 @@
-const pool = require("../../config/db");
+const {
+  createMainSchetService,
+  getByIdMainSchetService,
+  getAllMainSchetService,
+  updateMainSchetService,
+  deleteMainSchetService,
+  checkMainSchetService,
+  getByAccountNumberMainSchetService,
+  getByBudjetIdMainSchetService
+} = require("../../service/spravochnik/main.schet.service");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const { getByIdBudjetService } = require("../../service/spravochnik/budjet.name.service");
 const { mainSchetValidator, queryMainSchetValidation } = require("../../helpers/validation/spravochnik/main_schet.validation");
-const {
-  createMain_schet,
-  getByIdMainSchet,
-  getAllMain_schet,
-  updateMain_schet,
-  deleteMain_schet,
-  checkMainSchetDB,
-  getByAndAccountNumber,
-  getByBudjetIdMainSchetService
-} = require("../../service/spravochnik/main.schet.service");
 const { resFunc } = require("../../helpers/resFunc");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { errorCatch } = require("../../helpers/errorCatch");
 
 // create
-const create = asyncHandler(async (req, res, next) => {
-  const { error, value } = mainSchetValidator.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message), 400);
+const create = async (req, res) => {
+  try {
+    const region_id = req.user.region_id
+    const user_id = req.user.id
+    const data = validationResponse(mainSchetValidator, req.body)
+    await getByIdBudjetService(data.spravochnik_budjet_name_id);
+    await getByAccountNumberMainSchetService(region_id, data.account_number)
+    const result = await createMainSchetService({ ...data, user_id });
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-  if (value.tashkilot_inn.toString().length !== 9) {
-    return next(
-      new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400),
-    );
-  }
-  const test_budjet = await getByIdBudjetService(value.spravochnik_budjet_name_id);
-  if (!test_budjet) {
-    return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
-  }
-  const test_account_number = await getByAndAccountNumber(value.account_number)
-  if (test_account_number) {
-    return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
-  }
-  await createMain_schet({
-    ...value,
-    user_id: req.user.id,
-  });
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
-  const { error, value } = queryMainSchetValidation.validate(req.query);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-
-  const limit = parseInt(value.limit) || 10;
-  const page = parseInt(value.page) || 1;
-  const offset = (page - 1) * limit;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
-  const result = await getAllMain_schet(req.user.region_id, offset, limit);
-
-  const total = Number(result.total.count);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).send({
-    success: true,
-    meta: {
+const getAll = async (req, res) => {
+  try {
+    const { limit, page } = validationResponse(queryMainSchetValidation, req.query)
+    const offset = (page - 1) * limit;
+    const { result, total } = await getAllMainSchetService(req.user.region_id, offset, limit);
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-    },
-    data: result.main_schet_rows,
-  });
-});
+    }
+    resFunc(res, 200, result, meta)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 // update
-const update = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const id = req.params.id;
-
-  const testMain_schet = await getByIdMainSchet(region_id, id);
-  if (!testMain_schet) {
-    return next(new ErrorResponse("Server xatolik. Schet topilmadi", 404));
-  }
-
-  const { error, value } = mainSchetValidator.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-  if (value.account_number !== testMain_schet.account_number) {
-    const test_account_number = await getByAndAccountNumber(value.account_number)
-    if (test_account_number) {
-      return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
+const update = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const testMain_schet = await getByIdMainSchetService(region_id, id);
+    const data = validationResponse(mainSchetValidator, req.body)
+    if (data.account_number !== testMain_schet.account_number) {
+      await getByAccountNumberMainSchetService(region_id, data.account_number);
     }
+    await getByIdBudjetService(data.spravochnik_budjet_name_id);
+    const result = await updateMainSchetService({ ...data, id, });
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-  const test_budjet = await getByIdBudjetService(value.spravochnik_budjet_name_id);
-  if (!test_budjet) {
-    return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
+}
+
+// delete data
+const deleteValue = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    await getByIdMainSchetService(region_id, id);
+    await checkMainSchetService(id)
+    await deleteMainSchetService(id);
+    resFunc(res, 200, 'delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await updateMain_schet({
-    ...value,
-    id,
-  });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
-});
-
-// delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const id = req.params.id;
-
-  const value = await getByIdMainSchet(region_id, id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
-  }
-
-  const test = await checkMainSchetDB(id)
-  if (!test) {
-    return next(new ErrorResponse('There are documents linked to this account', 400))
-  }
-  await deleteMain_schet(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdMainSchet(req.user.region_id, req.params.id, true);
-  if (!value) {
-    return next(new ErrorResponse("Server error. main_schet topilmadi", 404));
+const getElementById = async (req, res) => {
+  try {
+    const data = await getByIdMainSchetService(req.user.region_id, req.params.id, true);
+    resFunc(res, 200, data)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  return res.status(200).json({
-    success: true,
-    data: value,
-  });
-});
+}
 
 // get by budjet id 
-const getByBudjetIdMainSchet = asyncHandler(async (req, res, next) => {
-  const region_id = req.query.region_id;
-  const budjet_id = req.query.budjet_id;
-  const result = await getByBudjetIdMainSchetService(budjet_id, region_id);
-  resFunc(res, 200, result)
-});
+const getByBudjetIdMainSchet = async (req, res) => {
+  try {
+    const region_id = req.query.region_id;
+    const budjet_id = req.query.budjet_id;
+    const result = await getByBudjetIdMainSchetService(budjet_id, region_id);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 
 module.exports = {

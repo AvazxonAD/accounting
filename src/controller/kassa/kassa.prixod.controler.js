@@ -9,7 +9,7 @@ const {
 } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { returnLocalDate } = require("../../utils/date.function");
 
-const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
+const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const {
   getByIdPodotchetService,
 } = require("../../service/spravochnik/podotchet.litso.service");
@@ -44,7 +44,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
@@ -157,7 +157,7 @@ const getAllKassaPrixod = asyncHandler(async (req, res, next) => {
       new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
     );
   }
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
@@ -227,7 +227,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400));
   }
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
@@ -323,7 +323,7 @@ const deleteKassaPrixodRasxod = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const id = req.params.id;
 
-  const main_schet = await getByIdMainSchet(region_id, main_schet_id);
+  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
