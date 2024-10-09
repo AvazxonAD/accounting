@@ -3,17 +3,17 @@ const router = Router();
 
 const { protect } = require("../../middleware/auth");
 const {
-  create,
-  getAll,
-  update,
-  deleteValue,
-  getElementById,
+  createBudjet,
+  getBudjet,
+  updateBudjet,
+  deleteBudjet,
+  getByIdBudjet,
 } = require("../../controller/spravochnik/budjet_name.controller");
 
-router.post("/", protect, create);
-router.get("/", getAll);
-router.put("/:id", protect, update);
-router.delete("/:id", protect, deleteValue);
-router.get("/:id", protect, getElementById);
+router.post("/", protect, createBudjet);
+router.get("/", getBudjet);
+router.put("/:id", protect, updateBudjet);
+router.delete("/:id", protect, deleteBudjet);
+router.get("/:id", protect, getByIdBudjet);
 
 module.exports = router;

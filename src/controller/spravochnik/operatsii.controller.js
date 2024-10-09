@@ -1,150 +1,90 @@
+const {
+  getByNameAndSchetOperatsiiService,
+  createOperatsiiService,
+  getAllOperatsiiService,
+  updateOperatsiiService,
+  deleteOperatsiiService,
+  getByIdOperatsiiService,
+} = require("../../service/spravochnik/operatsii.service");
 const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { operatsiiValidation } = require("../../helpers/validation/spravochnik/operatsii.validation");
+const { operatsiiValidation, queryValidation } = require("../../helpers/validation/spravochnik/operatsii.validation");
 const { getByIdSmeta } = require("../../service/smeta/smeta.service");
 const { errorCatch } = require('../../helpers/errorCatch')
-const {
-  getByNameAndSchetOperatsii,
-  createOperatsii,
-  getAllOperatsiiService,
-  getByIDOperatsii,
-  updateOperatsii,
-  deleteOperatsii,
-} = require("../../service/spravochnik/operatsii.service");
 const { resFunc } = require("../../helpers/resFunc");
+const { validationResponse } = require("../../helpers/response-for-validation");
 
-
-// create
-const create = asyncHandler(async (req, res, next) => {
-  const { error, value } = operatsiiValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+// createOperatsii
+const createOperatsii = async (req, res) => {
+  try {
+    const data = validationResponse(operatsiiValidation, req.body)
+    await getByIdSmeta(data.smeta_id);
+    const result = await createOperatsiiService({ ...data });
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const smeta_test = await getByIdSmeta(value.smeta_id);
-  if (!smeta_test) {
-    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 400));
-  }
-  const test = await getByNameAndSchetOperatsii(
-    value.name,
-    value.type_schet,
-    value.smeta_id,
-  );
-  if (test) {
-    return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-  }
-
-  await createOperatsii({ ...value });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
-});
+}
 
 // get all
-const getAll = async (req, res, next) => {
+const getOperatsii = async (req, res) => {
   try {
-    const query = req.query.type_schet;
-    const limit = parseInt(req.query.limit) || 10;
-    const page = parseInt(req.query.page) || 1;
-    if (limit <= 0 || page <= 0) {
-      return next(new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400));
-    }
+    const { type_schet, page, limit } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    
-    const result = await getAllOperatsiiService(query, offset, limit);
-          
-    const total = parseInt(result.total_count);
-    const pageCount = Math.ceil(total / limit);
+    const { result, total } = await getAllOperatsiiService(type_schet, offset, limit);
+    const pageCount = Math.ceil(total / limit)
     const meta = {
-      pageCount: pageCount,
+      pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    const data = result?.data || []
-    resFunc(res, 200, data, meta)
+    resFunc(res, 200, result, meta)
   } catch (error) {
     return errorCatch(error, res)
   }
 }
 
-// update
-const update = asyncHandler(async (req, res, next) => {
-  const id = req.params.id;
-  const operatsii = await getByIDOperatsii(id);
-  if (!operatsii) {
-    return next(new ErrorResponse("Server xatolik. Operatsi topilmadi", 404));
+// updateOperatsii
+const updateOperatsii = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await getByIdOperatsiiService(id, null);
+    const data = validationResponse(operatsiiValidation, req.body)
+    await getByIdSmeta(data.smeta_id);
+    const result = await updateOperatsiiService({ ...data, id });
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const { error, value } = operatsiiValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-
-  const smeta_test = await getByIdSmeta(value.smeta_id);
-  if (!smeta_test) {
-    return next(new ErrorResponse("Server xatolik. smeta topilmadi", 400));
-  }
-  if (
-    operatsii.name !== value.name ||
-    operatsii.type_schet !== value.type_schet
-  ) {
-    const test = await getByNameAndSchetOperatsii(
-      value.name,
-      value.type_schet,
-      value.smeta_id,
-    );
-    if (test) {
-      return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-    }
-  }
-
-  await updateOperatsii({ ...value, id });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
-});
+}
 
 // delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
-  const id = req.params.id;
-  const value = await getByIDOperatsii(id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
+const deleteOperatsii = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await getByIdOperatsiiService(id, null);
+    await deleteOperatsiiService(id);
+    return resFunc(res, 200, 'delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await deleteOperatsii(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIDOperatsii(req.params.id, true);
-  if (!value) {
-    return next(
-      new ErrorResponse("Server error. spravochnik_operatsii topilmadi"),
-    );
+const getByIdOperatsii = async (req, res) => {
+  try {
+    const result = await getByIdOperatsiiService(req.params.id, null, true);
+    return resFunc(res, 200, result);
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  return res.status(200).json({
-    success: true,
-    data: value,
-  });
-});
+}
 
 // import to excel
-const importToExcel = asyncHandler(async (req, res, next) => {
+const importToExcel = async (req, res) => {
   if (!req.file) {
     return next(new ErrorResponse("Fayl yuklanmadi", 400));
   }
@@ -195,13 +135,13 @@ const importToExcel = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
-});
+}
 
 module.exports = {
-  getElementById,
-  create,
-  getAll,
-  deleteValue,
-  update,
+  getByIdOperatsii,
+  createOperatsii,
+  getOperatsii,
+  deleteOperatsii,
+  updateOperatsii,
   importToExcel,
 };

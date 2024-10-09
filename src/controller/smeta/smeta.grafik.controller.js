@@ -7,7 +7,7 @@ const {
   smetaGrafikUpdateValidation,
 } = require("../../helpers/validation/smeta/smeta.validation");
 const { getByIdSmeta } = require("../../service/smeta/smeta.service");
-const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.service");
+const { getByIdBudjetService } = require("../../service/spravochnik/budjet.name.service");
 const {
   getByAllSmetaGrafik,
   createSmetaGrafik,
@@ -33,7 +33,7 @@ const create = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik smeta topilmadi", 500));
   }
 
-  const budjet = await getByIdBudjet(spravochnik_budjet_name_id);
+  const budjet = await getByIdBudjetService(spravochnik_budjet_name_id);
   if (!budjet) {
     return next(new ErrorResponse("Server xatolik budjet topilmadi", 500));
   }

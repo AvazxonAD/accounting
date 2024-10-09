@@ -1,113 +1,81 @@
-const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
-const ErrorResponse = require("../../utils/errorResponse");
 const {
-  budjetValidation,
-} = require("../../helpers/validation/spravochnik/budejet.validation");
-
-const {
-  getByNameBudjet,
-  createBudjet,
-  getAllBudjet,
-  getByIdBudjet,
-  updateBudjet,
-  deleteBudjet,
+  getByNameBudjetService,
+  createBudjetService,
+  getBudjetService,
+  getByIdBudjetService,
+  updateBudjetService,
+  deleteBudjetService,
 } = require("../../service/spravochnik/budjet.name.service");
+const ErrorResponse = require("../../utils/errorResponse");
+const { budjetValidation } = require("../../helpers/validation/spravochnik/budejet.validation");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
+const { errorCatch } = require("../../helpers/errorCatch");
 
-// create
-const create = asyncHandler(async (req, res, next) => {
-  const { error, value } = budjetValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0], 400));
+// createBudjet
+const createBudjet = async (req, res) => {
+  try {
+    const { name } = validationResponse(budjetValidation, req.body)
+    await getByNameBudjetService(name);
+    const result = await createBudjetService(name);
+    resFunc(res, 201, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const test = await getByNameBudjet(value.name);
-  if (test) {
-    return next(new ErrorResponse("Ushbu budjet nomi avval kiritilgan", 409));
-  }
-
-  await createBudjet(value.name);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
-  const result = await getAllBudjet();
-  return res.status(200).json({
-    success: true,
-    data: result,
-  });
-});
-
-// update
-const update = asyncHandler(async (req, res, next) => {
-  const id = req.params.id;
-
-  let oldBudjet = await getByIdBudjet(req.params.id);
-  if (!oldBudjet) {
-    return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
+const getBudjet = async (req, res) => {
+  try {
+    const result = await getBudjetService();
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
+}
 
-  const { error, value } = budjetValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-
-  if (oldBudjet.name !== value.name) {
-    const test_name = await getByNameBudjet(value.name);
-    if (test_name) {
-      return next(new ErrorResponse("Ushbu budjet nomi avval kiritilgan", 409));
+// updateBudjet
+const updateBudjet = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const oldBudjet = await getByIdBudjetService(req.params.id);
+    const { name } = validationResponse(budjetValidation, req.body)
+    if (oldBudjet.name !== name) {
+      await getByNameBudjetService(name);      
     }
+    const result = await updateBudjetService(name, id);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await updateBudjet(value.name, id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
-});
+}
 
 // delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
-  const id = req.params.id;
-
-  const oldBudjet = await getByIdBudjet(id);
-  if (!oldBudjet) {
-    return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
+const deleteBudjet = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await getByIdBudjetService(id);
+    await deleteBudjetService(id);
+    resFunc(res, 200, 'delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await deleteBudjet(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
-  let result = await getByIdBudjet(req.params.id, true);
-  if (!result) {
-    return next(
-      new ErrorResponse("Server error. spravochnik_budjet_name topilmadi"),
-    );
+const getByIdBudjet = async (req, res) => {
+  try {
+    const result = await getByIdBudjetService(req.params.id, true);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  return res.status(200).json({
-    success: true,
-    data: result,
-  });
-});
+}
 
 module.exports = {
-  getElementById,
-  create,
-  getAll,
-  deleteValue,
-  update,
+  getByIdBudjet,
+  createBudjet,
+  getBudjet,
+  deleteBudjet,
+  updateBudjet,
 };

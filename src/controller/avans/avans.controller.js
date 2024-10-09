@@ -5,7 +5,7 @@ const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.v
 const { jur4Validation } = require("../../helpers/validation/avans_otchetlar/jur4.validation");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const { getByIdPodotchetService } = require("../../service/spravochnik/podotchet.litso.service");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
+const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
@@ -43,14 +43,14 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
   if (!podotchet_litso) {
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }
-  const spravochnik_operatsii_own = await getByIdOperatsii(value.spravochnik_operatsii_own_id, 'avans_otchet')
+  const spravochnik_operatsii_own = await getByIdOperatsiiService(value.spravochnik_operatsii_own_id, 'avans_otchet')
   if (!spravochnik_operatsii_own) {
     return next(new ErrorResponse('Server xatolik. spravochnik_operatsii_own topilmadi', 404))
   }
 
   for (let child of value.childs) {
     if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'avans_otchet')
+      const spravochnik_operatsii = await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
       if (!spravochnik_operatsii) {
         return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
       }
@@ -179,14 +179,14 @@ const jur_4_update = asyncHandler(async (req, res, next) => {
   if (!podotchet_litso) {
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }
-  const spravochnik_operatsii_own = await getByIdOperatsii(value.spravochnik_operatsii_own_id, 'avans_otchet')
+  const spravochnik_operatsii_own = await getByIdOperatsiiService(value.spravochnik_operatsii_own_id, 'avans_otchet')
   if (!spravochnik_operatsii_own) {
     return next(new ErrorResponse('Server xatolik. spravochnik_operatsii_own topilmadi', 404))
   }
 
   for (let child of value.childs) {
     if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsii(child.spravochnik_operatsii_id, 'avans_otchet')
+      const spravochnik_operatsii = await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
       if (!spravochnik_operatsii) {
         return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
       }

@@ -1,7 +1,7 @@
 const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { getByIdBudjet } = require("../../service/spravochnik/budjet.name.service");
+const { getByIdBudjetService } = require("../../service/spravochnik/budjet.name.service");
 const { mainSchetValidator, queryMainSchetValidation } = require("../../helpers/validation/spravochnik/main_schet.validation");
 const {
   createMain_schet,
@@ -26,7 +26,7 @@ const create = asyncHandler(async (req, res, next) => {
       new ErrorResponse("Inn raqami 9 xonalik raqam bolishi kerak", 400),
     );
   }
-  const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
+  const test_budjet = await getByIdBudjetService(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }
@@ -99,7 +99,7 @@ const update = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("Ushbu hisob raqami avval kiritilgan", 400))
     }
   }
-  const test_budjet = await getByIdBudjet(value.spravochnik_budjet_name_id);
+  const test_budjet = await getByIdBudjetService(value.spravochnik_budjet_name_id);
   if (!test_budjet) {
     return next(new ErrorResponse("Server xatolik. Budjet topilmadi", 404));
   }

@@ -13,7 +13,7 @@ const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.servi
 const {
   getByIdPodotchetService,
 } = require("../../service/spravochnik/podotchet.litso.service");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
+const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
@@ -49,7 +49,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
 
-  const spravochnik_operatsii_own = await getByIdOperatsii(
+  const spravochnik_operatsii_own = await getByIdOperatsiiService(
     value.spravochnik_operatsii_own_id,
     "kassa_prixod",
   );
@@ -72,7 +72,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
   }
 
   for (let child of value.childs) {
-    const spravochnik_operatsii = await getByIdOperatsii(
+    const spravochnik_operatsii = await getByIdOperatsiiService(
       child.spravochnik_operatsii_id,
       "kassa_prixod",
     );
@@ -232,7 +232,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
 
-  const spravochnik_operatsii_own = await getByIdOperatsii(
+  const spravochnik_operatsii_own = await getByIdOperatsiiService(
     value.spravochnik_operatsii_own_id,
     "kassa_prixod",
   );
@@ -255,7 +255,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
   }
 
   for (let child of value.childs) {
-    const spravochnik_operatsii = await getByIdOperatsii(
+    const spravochnik_operatsii = await getByIdOperatsiiService(
       child.spravochnik_operatsii_id,
       "kassa_prixod",
     );

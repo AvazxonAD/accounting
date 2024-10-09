@@ -11,7 +11,7 @@ const { getLogger, postLogger, putLogger } = require('../../helpers/log_function
 const bcrypt = require("bcrypt");
 const { getByIdMainSchet, getByBudjetIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { authValidation, authUpdateValidation } = require("../../helpers/validation/auth/auth.validation");
-const { getAllBudjet } = require('../../service/spravochnik/budjet.name.service');
+const { getBudjetService } = require('../../service/spravochnik/budjet.name.service');
 const { getRegionService } = require('../../service/auth/region.service');
 const { resFunc } = require("../../helpers/resFunc");
 const { validationResponse } = require("../../helpers/response-for-validation");
@@ -109,7 +109,7 @@ const select_budget = asyncHandler(async (req, res, next) => {
 
 // for login
 const forLogin = asyncHandler(async (req, res, next) => {
-  const all_budjet = await getAllBudjet();
+  const all_budjet = await getBudjetService();
   const all_region = await getRegionService();
   return res.status(200).json({
     success: true,

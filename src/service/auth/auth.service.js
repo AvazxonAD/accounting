@@ -32,7 +32,7 @@ const getByLoginUserService = async (login) => {
           FROM users 
           INNER JOIN role ON role.id = users.role_id
           INNER JOIN access ON access.role_id = role.id 
-          JOIN regions ON regions.id = users.region_id
+          LEFT JOIN regions ON regions.id = users.region_id
           WHERE users.login = $1
       `,
       [login.trim()],

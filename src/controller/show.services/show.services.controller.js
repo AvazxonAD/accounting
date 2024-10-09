@@ -1,6 +1,6 @@
 const ErrorResponse = require('../../utils/errorResponse')
 const { showServicesValidation } = require('../../helpers/validation/show.services/show.services.validation')
-const { getByIdOperatsii } = require('../../service/spravochnik/operatsii.service')
+const { getByIdOperatsiiService } = require('../../service/spravochnik/operatsii.service')
 const { getByIdOrganizationService } = require('../../service/spravochnik/organization.service')
 const { getByIdShartnomaService, getByIdAndOrganizationIdShartnoma } = require('../../service/shartnoma/shartnoma.service')
 const { getByIdPodrazlanieService } = require('../../service/spravochnik/podrazdelenie.service')
@@ -31,7 +31,7 @@ const createController = async (req, res) => {
         const main_schet_id = req.query.main_schet_id
         const data = validationResponse(showServicesValidation, req.body)
         await getByIdMainSchet(region_id, main_schet_id)
-        await getByIdOperatsii(data.spravochnik_operatsii_own_id, 'show_service')
+        await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'show_service')
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization)
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
@@ -40,7 +40,7 @@ const createController = async (req, res) => {
             }
         }
         for (let child of data.childs) {
-            //await getByIdOperatsii(child.spravochnik_operatsii_id, 'show_service')
+            //await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'show_service')
             if (data.id_spravochnik_podrazdelenie) {
                 await getByIdPodrazlanieService(region_id, data.id_spravochnik_podrazdelenie)
             }
@@ -156,7 +156,7 @@ const updateShowService = async (req, res) => {
         const data = validationResponse(showServicesValidation, req.body)
         await getByIdMainSchet(region_id, main_schet_id);    
         await getByIdShowServiceService(region_id, main_schet_id, id);
-        await getByIdOperatsii( data.spravochnik_operatsii_own_id, "show_service");
+        await getByIdOperatsiiService( data.spravochnik_operatsii_own_id, "show_service");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdAndOrganizationIdShartnoma(
@@ -169,7 +169,7 @@ const updateShowService = async (req, res) => {
             
         }
         for (let child of data.childs) {
-            await getByIdOperatsii( child.spravochnik_operatsii_id, "show_service" );
+            await getByIdOperatsiiService( child.spravochnik_operatsii_id, "show_service" );
             if (child.id_spravochnik_podrazdelenie) {
                 await getByIdPodrazlanieService( region_id, child.id_spravochnik_podrazdelenie );
             }

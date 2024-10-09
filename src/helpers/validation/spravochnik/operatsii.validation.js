@@ -8,6 +8,13 @@ const operatsiiValidation = Joi.object({
   smeta_id: Joi.number().required(),
 }).options({ stripUnknown: true });
 
+const queryValidation = Joi.object({
+  page: Joi.number().min(1).default(1),
+  limit: Joi.number().min(1).default(10),
+  type_schet: Joi.string()
+})
+
 module.exports = {
   operatsiiValidation,
+  queryValidation
 };

@@ -3,7 +3,7 @@ const ErrorResponse = require('../../utils/errorResponse');
 const { validationResponse } = require('../../helpers/response-for-validation');
 const { errorCatch } = require('../../helpers/errorCatch');
 const { getByIdMainSchet } = require('../../service/spravochnik/main.schet.service');
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
+const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const {
     getByIdOrganizationService,
 } = require("../../service/spravochnik/organization.service");
@@ -16,7 +16,7 @@ const createJurnal3 = async (req, res) => {
         const main_schet_id = req.query.main_schet_id;
         await getByIdMainSchet(region_id, main_schet_id);
         const data = validationResponse(jur3Validation, req.body);
-        await getByIdOperatsii(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
+        await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id);
         if (!shartnoma.pudratchi_bool) {

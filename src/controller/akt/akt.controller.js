@@ -6,7 +6,7 @@ const { jur3Validation } = require("../../helpers/validation/bajarilgan_ishlar/j
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const { getByIdOrganizationService } = require("../../service/spravochnik/organization.service");
 const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
+const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
@@ -41,7 +41,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
   }
 
-  const spravochnik_operatsii_own = await getByIdOperatsii(
+  const spravochnik_operatsii_own = await getByIdOperatsiiService(
     value.spravochnik_operatsii_own_id,
     "Akt_priyom_peresdach",
   );
@@ -73,7 +73,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
   }
 
   for (let child of value.childs) {
-    const spravochnik_operatsii = await getByIdOperatsii(
+    const spravochnik_operatsii = await getByIdOperatsiiService(
       child.spravochnik_operatsii_id,
       "Akt_priyom_peresdach",
     );
@@ -221,7 +221,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
   }
 
-  const spravochnik_operatsii_own = await getByIdOperatsii(
+  const spravochnik_operatsii_own = await getByIdOperatsiiService(
     value.spravochnik_operatsii_own_id,
     "Akt_priyom_peresdach",
   );
@@ -256,7 +256,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
   }
 
   for (let child of value.childs) {
-    const spravochnik_operatsii = await getByIdOperatsii(
+    const spravochnik_operatsii = await getByIdOperatsiiService(
       child.spravochnik_operatsii_id,
       "Akt_priyom_peresdach",
     );

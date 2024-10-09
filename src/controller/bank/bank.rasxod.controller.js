@@ -9,7 +9,7 @@ const {
 const {
   getByIdAndOrganizationIdShartnoma,
 } = require("../../service/shartnoma/shartnoma.service");
-const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
+const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const {
   getByIdPodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
@@ -84,7 +84,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse(error.details[0].message, 400));
     }
 
-    const spravochnik_operatsii = await getByIdOperatsii(
+    const spravochnik_operatsii = await getByIdOperatsiiService(
       value.spravochnik_operatsii_id,
       "bank_rasxod",
     );
@@ -189,7 +189,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
     }
   }
 
-  const spravochnik_operatsii = await getByIdOperatsii(
+  const spravochnik_operatsii = await getByIdOperatsiiService(
     value.spravochnik_operatsii_own_id,
     "bank_rasxod",
   );
@@ -208,7 +208,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse(error.details[0].message, 400));
     }
 
-    const spravochnik_operatsii = await getByIdOperatsii(
+    const spravochnik_operatsii = await getByIdOperatsiiService(
       value.spravochnik_operatsii_id,
       "bank_rasxod",
     );
