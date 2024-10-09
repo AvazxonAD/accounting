@@ -1,6 +1,4 @@
 const pool = require("../../config/db");
-const { handleServiceError } = require("../../middleware/service.handle");
-const { returnLocalDate } = require("../../utils/date.function");
 const ErrorResponse = require("../../utils/errorResponse");
 
 const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, to) => {
@@ -114,12 +112,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           FROM data`,[region_id, main_schet_id, from, to, offset, limit],
     ); 
     return {
-      result_data: data.rows[0].data,
-      total_count: data.rows[0].total_count,
-      all_prixod_sum: data.rows[0].prixod_sum,
-      all_rasxod_sum: data.rows[0].rasxod_sum,
-      total_sum_from: data.rows[0].summa_from,
-      total_sum_to: data.rows[0].summa_to,
+      data: data.rows[0].data,
+      total: data.rows[0].total_count,
+      prixod_sum: data.rows[0].prixod_sum,
+      rasxod_sum: data.rows[0].rasxod_sum,
+      summaFrom: data.rows[0].summa_from,
+      summaTo: data.rows[0].summa_to,
     };
   } catch (error) {
     throw new  ErrorResponse(error, error.statusCode)

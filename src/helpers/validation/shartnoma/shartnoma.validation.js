@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const shartnomaValidation = Joi.object({
   doc_num: Joi.string(),
-  doc_date: Joi.date(),
+  doc_date: Joi.string().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
   summa: Joi.number(),
   opisanie: Joi.string(),
   smeta_id: Joi.number().required(),
