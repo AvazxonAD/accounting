@@ -11,11 +11,11 @@ const {
 } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
-  getByIdPodrazlanie,
+  getByIdPodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
 const {
-  getByIdtype_operatsii,
+  getByIdTypeOperatsiiService,
 } = require("../../service/spravochnik/type_operatsii.service");
 
 const {
@@ -92,7 +92,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
     if (value.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(
         region_id,
         value.id_spravochnik_podrazdelenie,
       );
@@ -112,7 +112,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
       }
     }
     if (value.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(
         region_id,
         value.id_spravochnik_type_operatsii,
       );
@@ -216,7 +216,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
     if (value.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(
         region_id,
         value.id_spravochnik_podrazdelenie,
       );
@@ -236,7 +236,7 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
       }
     }
     if (value.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(
         region_id,
         value.id_spravochnik_type_operatsii,
       );

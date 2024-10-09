@@ -5,18 +5,17 @@ const upload = require("../../utils/protect.file");
 
 const { protect } = require("../../middleware/auth");
 const {
-  create,
-  getAll,
-  update,
-  deleteValue,
-  importToExcel,
-  getElementById,
+  createPodotchetLitso,
+  getPodotchetLitso,
+  updatePodotchetLitso,
+  deletePodotchetLitso,
+  getByIdPodotchetLitso,
 } = require("../../controller/spravochnik/podotchet_litso.controller");
 
-router.post("/", protect, create);
-router.get("/", protect, getAll);
-router.put("/:id", protect, update);
-router.delete("/:id", protect, deleteValue);
-router.get("/:id", protect, getElementById);
+router.post("/", protect, createPodotchetLitso);
+router.get("/", protect, getPodotchetLitso);
+router.put("/:id", protect, updatePodotchetLitso);
+router.delete("/:id", protect, deletePodotchetLitso);
+router.get("/:id", protect, getByIdPodotchetLitso);
 
 module.exports = router;

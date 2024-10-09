@@ -2,7 +2,7 @@ const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 const { tashkentTime } = require('../../utils/date.function')
 
-const getByAllPodotChet = async (name, rayon, region_id) => {
+const getByAllPodotChetService = async (name, rayon, region_id) => {
   try {
     const result = await pool.query(
       `SELECT s_p_l.id, s_p_l.name, s_p_l.rayon 
@@ -25,7 +25,7 @@ const getByAllPodotChet = async (name, rayon, region_id) => {
   }
 }
 
-const createPodotChet = async (data) => {
+const createPodotChetService = async (data) => {
   try {
     const result = await pool.query(
       `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id, created_at, updated_at) VALUES($1, $2, $3, $4, $5) RETURNING *
@@ -39,7 +39,7 @@ const createPodotChet = async (data) => {
 
 }
 
-const getAllPodotChet = async (region_id, offset, limit) => {
+const getAllPodotChetService = async (region_id, offset, limit) => {
   try {
     const result = await pool.query(
       ` WITH data AS (
@@ -72,7 +72,7 @@ const getAllPodotChet = async (region_id, offset, limit) => {
   }
 }
 
-const getByIdPodotchet = async (region_id, id, ignoreDeleted = false) => {
+const getByIdPodotchetService = async (region_id, id, ignoreDeleted = false) => {
   try {
     let query = `
       SELECT 
@@ -100,7 +100,7 @@ const getByIdPodotchet = async (region_id, id, ignoreDeleted = false) => {
   }
 }
 
-const updatePodotchet = async (data) => {
+const updatePodotchetService = async (data) => {
   try {
     const result = await pool.query(
       ` UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2, updated_at = $4
@@ -114,7 +114,7 @@ const updatePodotchet = async (data) => {
   }
 }
 
-const deletePodotchet = async (id) => {
+const deletePodotchetService = async (id) => {
   try {
     await pool.query(
       `UPDATE spravochnik_podotchet_litso SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`,
@@ -126,10 +126,10 @@ const deletePodotchet = async (id) => {
 }
 
 module.exports = {
-  getByAllPodotChet,
-  createPodotChet,
-  getAllPodotChet,
-  getByIdPodotchet,
-  updatePodotchet,
-  deletePodotchet,
+  getByAllPodotChetService,
+  createPodotChetService,
+  getAllPodotChetService,
+  getByIdPodotchetService,
+  updatePodotchetService,
+  deletePodotchetService,
 };

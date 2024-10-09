@@ -2,136 +2,74 @@ const pool = require("../../config/db");
 const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
+const { sostavValidation } = require("../../helpers/validation/spravochnik/sostav.validation");
 const {
-  sostavValidation,
-} = require("../../helpers/validation/spravochnik/sostav.validation");
-const {
-  getAllSostav,
-  getByAllSostav,
-  createSostav,
+  getSostavService,
+  getByAllSostavService,
+  createSostavService,
   getTotalSostav,
   getByIdSostav,
   updateSostav,
   deleteSostav,
 } = require("../../service/spravochnik/sostav.service");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
+const { queryValidation } = require("../../helpers/validation/other/query.validation");
 
 // create
 const create = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const user_id = req.user.id;
-
-  const { error, value } = sostavValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-  const { name, rayon } = value;
-
-  const test = await getByAllSostav(region_id, name, rayon);
-  if (test) {
-    return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-  }
-
-  await createSostav(user_id, name, rayon);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
+  const {name, rayon} = validationResponse(sostavValidation, req.body)
+  await getByAllSostavService(region_id, name, rayon);
+  const result = await createSostavService(user_id, name, rayon);
+  resFunc(res, 200, result)
 });
 
 // get all
 const getAll = asyncHandler(async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
   const region_id = req.user.region_id;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
+  const {limit, page} = validationResponse(queryValidation, req.query)
   const offset = (page - 1) * limit;
-
-  const result = await getAllSostav(region_id, offset, limit);
-
-  const totalQuery = await getTotalSostav(region_id);
-  const total = parseInt(totalQuery.total);
+  const result = await getSostavService(region_id, offset, limit);
+  const total = result.total_count
   const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    },
-    data: result,
-  });
+  const meta = {
+    pageCount: pageCount,
+    count: total,
+    currentPage: page,
+    nextPage: page >= pageCount ? null : page + 1,
+    backPage: page === 1 ? null : page - 1,
+  }
+  resFunc(res, 200, result?.data || [], meta)
 });
 
 // update
 const update = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const id = req.params.id;
-
   let sostav = await getByIdSostav(region_id, id);
-  if (!sostav) {
-    return next(new ErrorResponse("Server xatolik. Sostav topilmadi", 404));
-  }
-
-  const { error, value } = sostavValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-  const { name, rayon } = value;
+  const { name, rayon} = validationResponse(sostavValidation, req,body)
   if (sostav.name !== name || sostav.rayon !== rayon) {
-    const test = await getByAllSostav(region_id, name, rayon);
-    if (test) {
-      return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-    }
+    await getByAllSostavService(region_id, name, rayon);
   }
-
-  await updateSostav(id, name, rayon);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
+  const result = await updateSostav(id, name, rayon);
+  resFunc(res, 200, result)
 });
 
 // delete value
 const deleteValue = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
   const id = req.params.id;
-  const value = await getByIdSostav(region_id, id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
-  }
-
+  await getByIdSostav(region_id, id);
   await deleteSostav(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
+  resFunc(res, 200, 'delete success true')
 });
 
 // get element by id
 const getElementById = asyncHandler(async (req, res, next) => {
-  const value = await getByIdSostav(req.user.region_id, req.params.id, true);
-  if (!value) {
-    return next(
-      new ErrorResponse("Server error. spravochnik_sostav topilmadi"),
-    );
-  }
-
-  return res.status(200).json({
-    success: true,
-    data: value,
-  });
+  const data = await getByIdSostav(req.user.region_id, req.params.id, true);
+  resFunc(res, 200, data)
 });
 
 // import to excel

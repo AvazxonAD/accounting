@@ -1,29 +1,29 @@
 const {
-  getByAllPodrazdelenie,
-  createPodrazdelenie,
-  getAllPodrazdelenie,
+  getByAllPodrazdelenieService,
+  createPodrazdelenieService,
+  getAllPodrazdelenieService,
   getTotalPodrazlanie,
-  getByIdPodrazlanie,
-  updatePodrazlanie,
-  deletePodrazlanie,
+  getByIdPodrazlanieService,
+  updatePodrazlanieService,
+  deletePodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { podrazdelenieValidation } = require("../../helpers/validation/spravochnik/porazdelenie.validation");
+const { podrazdelenieValidation } = require("../../helpers/validation/spravochnik/podrazdelenie.validation");
 const { validationResponse } = require("../../helpers/response-for-validation");
 const { resFunc } = require("../../helpers/resFunc");
 const { queryValidation } = require("../../helpers/validation/other/query.validation");
 const { errorCatch } = require('../../helpers/errorCatch')
 
-// create
-const create = async (req, res, next) => {
+// createPodrazdelenie
+const createPodrazdelenie = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const data = validationResponse(podrazdelenieValidation, req.body)
-    await getByAllPodrazdelenie(region_id, data.name, data.rayon);
-    const result = await createPodrazdelenie(user_id, data.name, data.rayon);
+    await getByAllPodrazdelenieService(region_id, data.name, data.rayon);
+    const result = await createPodrazdelenieService(user_id, data.name, data.rayon);
     resFunc(res, 201, result)
   } catch (error) {
     errorCatch(error, res)
@@ -31,12 +31,12 @@ const create = async (req, res, next) => {
 }
 
 // get all
-const getAll = async (req, res, next) => {
+const getPodrazdelenie = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
     const { page, limit } = validationResponse(queryValidation, req.body)
     const offset = (page - 1) * limit;
-    const result = await getAllPodrazdelenie(region_id, offset, limit);
+    const result = await getAllPodrazdelenieService(region_id, offset, limit);
     const total = parseInt(result.total_count);
     const pageCount = Math.ceil(total / limit);
     const meta = {
@@ -52,21 +52,21 @@ const getAll = async (req, res, next) => {
   }
 }
 
-// update
-const update = async (req, res, next) => {
+// updatePodrazdelenie
+const updatePodrazdelenie = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const podrazdelenie = await getByIdPodrazlanie(region_id, id);
+    const podrazdelenie = await getByIdPodrazlanieService(region_id, id);
     const { error, value } = podrazdelenieValidation.validate(req.body);
     if (error) {
       return next(new ErrorResponse(error.details[0].message, 400));
     }
     const { name, rayon } = value;
     if (podrazdelenie.name !== name || podrazdelenie.rayon !== rayon) {
-      await getByAllPodrazdelenie(region_id, name, rayon);
+      await getByAllPodrazdelenieService(region_id, name, rayon);
     }
-    const result = await updatePodrazlanie(id, name, rayon);
+    const result = await updatePodrazlanieService(id, name, rayon);
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
@@ -74,12 +74,12 @@ const update = async (req, res, next) => {
 }
 
 // delete value
-const deleteValue = async (req, res, next) => {
+const deletePodrazdelenie = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    await getByIdPodrazlanie(region_id, id);
-    await deletePodrazlanie(id);
+    await getByIdPodrazlanieService(region_id, id);
+    await deletePodrazlanieService(id);
     resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
@@ -87,11 +87,11 @@ const deleteValue = async (req, res, next) => {
 }
 
 // get element by id
-const getElementById = async (req, res, next) => {
+const getByIdPodrazdelenie = async (req, res, next) => {
   try {
     const user_id = req.user.region_id;
     const id = req.params.id;
-    const data = await getByIdPodrazlanie(user_id, id, true);
+    const data = await getByIdPodrazlanieService(user_id, id, true);
     resFunc(res, 200, data)
   } catch (error) {
     errorCatch(error, res)
@@ -153,10 +153,10 @@ const importToExcel = async (req, res, next) => {
 }
 
 module.exports = {
-  getElementById,
-  create,
-  getAll,
-  deleteValue,
-  update,
+  getByIdPodrazdelenie,
+  createPodrazdelenie,
+  getPodrazdelenie,
+  deletePodrazdelenie,
+  updatePodrazdelenie,
   importToExcel,
 };

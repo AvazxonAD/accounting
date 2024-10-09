@@ -3,9 +3,9 @@ const { showServicesValidation } = require('../../helpers/validation/show.servic
 const { getByIdOperatsii } = require('../../service/spravochnik/operatsii.service')
 const { getByIdOrganization } = require('../../service/spravochnik/organization.service')
 const { getByIdShartnomaService, getByIdAndOrganizationIdShartnoma } = require('../../service/shartnoma/shartnoma.service')
-const { getByIdPodrazlanie } = require('../../service/spravochnik/podrazdelenie.service')
+const { getByIdPodrazlanieService } = require('../../service/spravochnik/podrazdelenie.service')
 const { getByIdSostav } = require('../../service/spravochnik/sostav.service')
-const { getByIdtype_operatsii } = require('../../service/spravochnik/type_operatsii.service')
+const { getByIdTypeOperatsiiService } = require('../../service/spravochnik/type_operatsii.service')
 const { resFunc } = require('../../helpers/resFunc')
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { errorCatch } = require('../../helpers/errorCatch')
@@ -42,13 +42,13 @@ const createController = async (req, res) => {
         for (let child of data.childs) {
             //await getByIdOperatsii(child.spravochnik_operatsii_id, 'show_service')
             if (data.id_spravochnik_podrazdelenie) {
-                await getByIdPodrazlanie(region_id, data.id_spravochnik_podrazdelenie)
+                await getByIdPodrazlanieService(region_id, data.id_spravochnik_podrazdelenie)
             }
             if (data.id_spravochnik_sostav) {
                 await getByIdSostav(region_id, data.id_spravochnik_sostav)
             }
             if (data.id_spravochnik_type_operatsii) {
-                await getByIdtype_operatsii(region_id, data.id_spravochnik_type_operatsii)
+                await getByIdTypeOperatsiiService(region_id, data.id_spravochnik_type_operatsii)
             }
         }
         const summa = returnAllChildSumma(data.childs)
@@ -171,13 +171,13 @@ const updateShowService = async (req, res) => {
         for (let child of data.childs) {
             await getByIdOperatsii( child.spravochnik_operatsii_id, "show_service" );
             if (child.id_spravochnik_podrazdelenie) {
-                await getByIdPodrazlanie( region_id, child.id_spravochnik_podrazdelenie );
+                await getByIdPodrazlanieService( region_id, child.id_spravochnik_podrazdelenie );
             }
             if (child.id_spravochnik_sostav) {
                 await getByIdSostav( region_id, child.id_spravochnik_sostav );
             }
             if (child.id_spravochnik_type_operatsii) {
-                await getByIdtype_operatsii( region_id, child.id_spravochnik_type_operatsii );
+                await getByIdTypeOperatsiiService( region_id, child.id_spravochnik_type_operatsii );
             }
         }
     

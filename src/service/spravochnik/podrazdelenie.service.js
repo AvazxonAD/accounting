@@ -1,8 +1,7 @@
 const pool = require("../../config/db");
-const { handleServiceError } = require("../../middleware/service.handle");
 const ErrorResponse = require('../../utils/errorResponse')
 
-const getByAllPodrazdelenie = async (region_id, name, rayon) => {
+const getByAllPodrazdelenieService = async (region_id, name, rayon) => {
   try {
     const result = await pool.query(
       ` SELECT s_p.* 
@@ -23,7 +22,7 @@ const getByAllPodrazdelenie = async (region_id, name, rayon) => {
 }
 
 
-const createPodrazdelenie = async (user_id, name, rayon) => {
+const createPodrazdelenieService = async (user_id, name, rayon) => {
   try {
     const resut = await pool.query(
       `INSERT INTO spravochnik_podrazdelenie(name, rayon, user_id) VALUES($1, $2, $3) RETURNING * `,
@@ -35,7 +34,7 @@ const createPodrazdelenie = async (user_id, name, rayon) => {
   }
 }
 
-const getAllPodrazdelenie = async (region_id, offset, limit) => {
+const getAllPodrazdelenieService = async (region_id, offset, limit) => {
   try {
     const result = await pool.query(
       ` WITH data AS (
@@ -70,7 +69,7 @@ const getAllPodrazdelenie = async (region_id, offset, limit) => {
   }
 
 
-const getByIdPodrazlanie = async (region_id, id, ignoreDeleted = false) => {
+const getByIdPodrazlanieService = async (region_id, id, ignoreDeleted = false) => {
   try {
     let query = `
       SELECT 
@@ -96,7 +95,7 @@ const getByIdPodrazlanie = async (region_id, id, ignoreDeleted = false) => {
   }
 }
 
-const updatePodrazlanie = async (id, name, rayon) => {
+const updatePodrazlanieService = async (id, name, rayon) => {
   try {
     const result = await pool.query(
       `UPDATE  spravochnik_podrazdelenie SET name = $1, rayon = $2 WHERE id = $3 RETURNING * `,
@@ -108,7 +107,7 @@ const updatePodrazlanie = async (id, name, rayon) => {
   }
 }
 
-const deletePodrazlanie = async (id) => {
+const deletePodrazlanieService = async (id) => {
   await pool.query(
     `UPDATE spravochnik_podrazdelenie SET isdeleted = $1 WHERE id = $2 RETURNING *`,
     [true, id],
@@ -116,10 +115,10 @@ const deletePodrazlanie = async (id) => {
 }
 
 module.exports = {
-  getByAllPodrazdelenie,
-  createPodrazdelenie,
-  getAllPodrazdelenie,
-  getByIdPodrazlanie,
-  updatePodrazlanie,
-  deletePodrazlanie,
+  getByAllPodrazdelenieService,
+  createPodrazdelenieService,
+  getAllPodrazdelenieService,
+  getByIdPodrazlanieService,
+  updatePodrazlanieService,
+  deletePodrazlanieService,
 };

@@ -5,18 +5,17 @@ const upload = require("../../utils/protect.file");
 
 const { protect } = require("../../middleware/auth");
 const {
-  create,
-  getAll,
-  update,
-  deleteValue,
-  importToExcel,
-  getElementById,
+  createPodrazdelenie,
+  getPodrazdelenie,
+  updatePodrazdelenie,
+  deletePodrazdelenie,
+  getByIdPodrazdelenie,
 } = require("../../controller/spravochnik/podrazdelenie.controller");
 
-router.post("/", protect, create);
-router.get("/", protect, getAll);
-router.put("/:id", protect, update);
-router.delete("/:id", protect, deleteValue);
-router.get("/:id", protect, getElementById);
+router.post("/", protect, createPodrazdelenie);
+router.get("/", protect, getPodrazdelenie);
+router.put("/:id", protect, updatePodrazdelenie);
+router.delete("/:id", protect, deletePodrazdelenie);
+router.get("/:id", protect, getByIdPodrazdelenie);
 
 module.exports = router;

@@ -4,11 +4,11 @@ const ErrorResponse = require("../../utils/errorResponse");
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { jur4Validation } = require("../../helpers/validation/avans_otchetlar/jur4.validation");
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
-const { getByIdPodotchet } = require("../../service/spravochnik/podotchet.litso.service");
+const { getByIdPodotchetService } = require("../../service/spravochnik/podotchet.litso.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
-const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
-const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.service");
+const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
@@ -39,7 +39,7 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400))
   }
 
-  const podotchet_litso = await getByIdPodotchet(region_id, value.spravochnik_podotchet_litso_id)
+  const podotchet_litso = await getByIdPodotchetService(region_id, value.spravochnik_podotchet_litso_id)
   if (!podotchet_litso) {
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }
@@ -56,7 +56,7 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(region_id, child.id_spravochnik_podrazdelenie)
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
       if (!spravochnik_podrazdelenie) {
         return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
       }
@@ -68,7 +68,7 @@ const jur_4_create = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, child.id_spravochnik_type_operatsii)
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
       if (!spravochnik_type_operatsii) {
         return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
       }
@@ -175,7 +175,7 @@ const jur_4_update = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(error.details[0].message, 400))
   }
 
-  const podotchet_litso = await getByIdPodotchet(region_id, value.spravochnik_podotchet_litso_id)
+  const podotchet_litso = await getByIdPodotchetService(region_id, value.spravochnik_podotchet_litso_id)
   if (!podotchet_litso) {
     return next(new ErrorResponse("podotchet_litso topilmadi", 404));
   }
@@ -192,7 +192,7 @@ const jur_4_update = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(region_id, child.id_spravochnik_podrazdelenie)
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
       if (!spravochnik_podrazdelenie) {
         return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
       }
@@ -204,7 +204,7 @@ const jur_4_update = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(region_id, child.id_spravochnik_type_operatsii)
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
       if (!spravochnik_type_operatsii) {
         return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
       }

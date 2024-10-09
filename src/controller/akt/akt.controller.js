@@ -7,9 +7,9 @@ const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.servi
 const { getByIdOrganization } = require("../../service/spravochnik/organization.service");
 const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
-const { getByIdPodrazlanie } = require("../../service/spravochnik/podrazdelenie.service");
+const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
-const { getByIdtype_operatsii } = require("../../service/spravochnik/type_operatsii.service");
+const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 
@@ -81,7 +81,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(
         region_id,
         child.id_spravochnik_podrazdelenie,
       );
@@ -101,7 +101,7 @@ const jur_3_create = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(
         region_id,
         child.id_spravochnik_type_operatsii,
       );
@@ -264,7 +264,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
     }
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(
         region_id,
         child.id_spravochnik_podrazdelenie,
       );
@@ -284,7 +284,7 @@ const jur_3_update = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(
         region_id,
         child.id_spravochnik_type_operatsii,
       );

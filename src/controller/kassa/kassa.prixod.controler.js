@@ -11,15 +11,15 @@ const { returnLocalDate } = require("../../utils/date.function");
 
 const { getByIdMainSchet } = require("../../service/spravochnik/main.schet.service");
 const {
-  getByIdPodotchet,
+  getByIdPodotchetService,
 } = require("../../service/spravochnik/podotchet.litso.service");
 const { getByIdOperatsii } = require("../../service/spravochnik/operatsii.service");
 const {
-  getByIdPodrazlanie,
+  getByIdPodrazlanieService,
 } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostav } = require("../../service/spravochnik/sostav.service");
 const {
-  getByIdtype_operatsii,
+  getByIdTypeOperatsiiService,
 } = require("../../service/spravochnik/type_operatsii.service");
 const {
   kassaPrixodCreateDB,
@@ -62,7 +62,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
     );
   }
   if (value.id_podotchet_litso) {
-    const podotchet_litso = await getByIdPodotchet(
+    const podotchet_litso = await getByIdPodotchetService(
       region_id,
       value.id_podotchet_litso,
     );
@@ -81,7 +81,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
     }
 
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(
         region_id,
         child.id_spravochnik_podrazdelenie,
       );
@@ -101,7 +101,7 @@ const kassaPrixodCreate = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(
         region_id,
         child.id_spravochnik_type_operatsii,
       );
@@ -245,7 +245,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     );
   }
   if (value.id_podotchet_litso) {
-    const podotchet_litso = await getByIdPodotchet(
+    const podotchet_litso = await getByIdPodotchetService(
       region_id,
       value.id_podotchet_litso,
     );
@@ -264,7 +264,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
     }
 
     if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanie(
+      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(
         region_id,
         child.id_spravochnik_podrazdelenie,
       );
@@ -284,7 +284,7 @@ const updateKassaPrixodBank = asyncHandler(async (req, res, next) => {
       }
     }
     if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdtype_operatsii(
+      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(
         region_id,
         child.id_spravochnik_type_operatsii,
       );
