@@ -1,3 +1,10 @@
+const pool = require("../../config/db");
+const ErrorResponse = require("../../utils/errorResponse");
+const xlsx = require("xlsx");
+const { organizationValidation, queryValidation } = require("../../helpers/validation/spravochnik/organization.validation");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
+const { errorCatch } = require("../../helpers/errorCatch");
 const {
   getByInnOrganizationService,
   createOrganizationService,
@@ -6,13 +13,6 @@ const {
   updateOrganizationService,
   deleteOrganizationService,
 } = require("../../service/spravochnik/organization.service");
-const pool = require("../../config/db");
-const ErrorResponse = require("../../utils/errorResponse");
-const xlsx = require("xlsx");
-const { organizationValidation, queryValidation } = require("../../helpers/validation/spravochnik/organization.validation");
-const { validationResponse } = require("../../helpers/response-for-validation");
-const { resFunc } = require("../../helpers/resFunc");
-const { errorCatch } = require("../../helpers/errorCatch");
 
 // createOrganization
 const createOrganization = async (req, res) => {
@@ -41,7 +41,7 @@ const getOrganization = async (req, res) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result)
+    resFunc(res, 200, result, meta)
   } catch (error) {
     errorCatch(error, res)
   }
@@ -50,78 +50,38 @@ const getOrganization = async (req, res) => {
 // updateOrganization
 const updateOrganization = async (req, res) => {
   try {
-
+    const id = req.params.id;
+    const region_id = req.user.region_id;
+    await getByIdOrganizationService(region_id, id);
+    const data = validationResponse(organizationValidation, req.body);
+    const result = await updateOrganizationService({ ...data, id });
+    resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
   }
-  const id = req.params.id;
-  const region_id = req.user.region_id;
-
-  const partner = await getByIdOrganizationService(region_id, id);
-  if (!partner) {
-    return next(new ErrorResponse("Server xatolik. Hamkor topilmadi", 500));
-  }
-
-  const { error, value } = organizationValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-
-  if (partner.inn !== value.inn) {
-    const test = await getByInnOrganizationService(value.inn, region_id);
-    if (test) {
-      return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-    }
-  }
-
-  await updateOrganizationService({ ...value, id });
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
 }
 
 // delete value
 const deleteOrganization = async (req, res) => {
   try {
-
+    const id = req.params.id;
+    const region_id = req.user.region_id;
+    await getByIdOrganizationService(region_id, id);
+    await deleteOrganizationService(id);
+    resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
   }
-  const id = req.params.id;
-  const region_id = req.user.region_id;
-  const value = await getByIdOrganizationService(region_id, id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
-  }
-
-  await deleteOrganizationService(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
 }
 
 // get element by id
 const getByIdOrganization = async (req, res) => {
   try {
-
+    const result = await getByIdOrganizationService(req.user.region_id, req.params.id, true);
+    resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
   }
-  const value = await getByIdOrganizationService(req.user.region_id, req.params.id, true);
-  if (!value) {
-    return next(
-      new ErrorResponse("Server error. spravochnik_organization topilmadi"),
-    );
-  }
-
-  return res.status(200).json({
-    success: true,
-    data: value,
-  });
 }
 
 // import excel
