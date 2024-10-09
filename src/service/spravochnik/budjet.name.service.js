@@ -73,10 +73,7 @@ const deleteBudjetService = async (id) => {
         throw new ErrorResponse('Cannot delete, there are linked documents', 400)
       }
     }
-    await pool.query(
-      `UPDATE spravochnik_budjet_name SET isdeleted = $1 WHERE id = $2`,
-      [true, id],
-    );
+    await pool.query(`UPDATE spravochnik_budjet_name SET isdeleted = $1 WHERE id = $2`,[true, id]);
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
