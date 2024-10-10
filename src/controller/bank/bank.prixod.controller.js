@@ -117,6 +117,7 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
+  await getByIdMainSchetService(region_id, main_schet_id)
   const prixod = await getByIdPrixodService(region_id, main_schet_id, id, true);
   postLogger.info(`Bank prixod doc olindi. UserId: ${req.user.id}`)
   resFunc(res, 200, prixod)

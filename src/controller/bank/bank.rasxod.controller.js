@@ -52,7 +52,7 @@ const bank_rasxod = asyncHandler(async (req, res, next) => {
     childs.push(result)
   }
   rasxod.childs = childs
-  postLogger.info(`Bank prixod doc yaratildi. UserId: ${req.user.id}`)
+  postLogger.info(`Bank rasxod doc yaratildi. UserId: ${req.user.id}`)
   resFunc(res, 201, rasxod)
 });
 
@@ -89,106 +89,43 @@ const bank_rasxod_update = asyncHandler(async (req, res, next) => {
   await deleteRasxodChild(id);
   const childs = []
   for (let child of data.childs) {
-    const result = await createBankPrixodServiceChild({ ...child, bank_prixod_id: id, user_id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id });
+    const result = await createBankRasxodChild({ ...child, bank_prixod_id: id, user_id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id });
     childs.push(result)
   }
   prixod.childs = childs
-  putLogger.info(`Bank prixod doc yangilandi. UserId: ${req.user.id}`)
+  putLogger.info(`Bank rasxod doc yangilandi. UserId: ${req.user.id}`)
   resFunc(res, 200, prixod)
 });
 
 // get all bank rasxod
 const getAllBankRasxod = asyncHandler(async (req, res, next) => {
   const region_id = req.user.region_id;
-  let all_rasxod = null;
-  let totalQuery = null;
-  let summa = null;
-
-  const { error, value } = queryValidation.validate(req.query);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-
-  const limit = parseInt(value.limit) || 10;
-  const page = parseInt(value.page) || 1;
-  const from = value.from;
-  const to = value.to;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
+  const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
   const offset = (page - 1) * limit;
-
-  all_rasxod = await getBankRasxodService(
-    region_id,
-    value.main_schet_id,
-    offset,
-    limit,
-    from,
-    to,
-  );
-  totalQuery = all_rasxod.totalQuery;
-  summa = Number(all_rasxod.summa);
-
-  const resultArray = [];
-
-  for (let rasxod of all_rasxod.rasxod_rows) {
-    const rasxod_child = await getAllRasxodChildDb(region_id, rasxod.id);
-    let object = { ...rasxod };
-    object.summa = Number(object.summa);
-    object.childs = rasxod_child.map((item) => {
-      let result = { ...item };
-      result.summa = Number(result.summa);
-      return result;
-    });
-    resultArray.push(object);
-  }
-
-  const total = Number(totalQuery.count);
+  await getByIdMainSchetService(region_id, main_schet_id);
+  const { data, summa, total } = await getBankRasxodService(region_id, main_schet_id, offset, limit, from, to,);
   const pageCount = Math.ceil(total / limit);
-  return res.status(200).json({
-    success: true,
-    meta: {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-      summa,
-    },
-    data: resultArray,
-  });
+  getLogger.info(`Bank rasxod doclar olindi. UserId: ${req.user.id}`)
+  const meta = {
+    pageCount: pageCount,
+    count: total,
+    currentPage: page,
+    nextPage: page >= pageCount ? null : page + 1,
+    backPage: page === 1 ? null : page - 1,
+    summa
+  }
+  resFunc(res, 200, data, meta)
 });
 
 // get element by id bank rasxod
 const getElementByIdBankRasxod = asyncHandler(async (req, res, next) => {
-  const main_schet_id = req.query.main_schet_id;
   const id = req.params.id;
+  const main_schet_id = req.query.main_schet_id;
   const region_id = req.user.region_id;
-  const rasxod = await getElementByIdRasxod(region_id, main_schet_id, id, true);
-  if (!rasxod) {
-    return next(
-      new ErrorResponse("Server xatolik. Rasxod document topilmadi", 404),
-    );
-  }
-
-  const rasxod_child = await getElemenByIdRasxodChild(region_id, rasxod.id);
-  let object = { ...rasxod };
-  object.summa = Number(object.summa);
-  object.childs = rasxod_child.map((item) => {
-    let result = { ...item };
-    result.summa = Number(result.summa);
-    return result;
-  });
-
-  getLogger.info(`Bank rasxod doclar olindi. UserId: ${req.user.id}`)
-  return res.status(200).json({
-    success: true,
-    data: object,
-  });
+  await getByIdMainSchetService(region_id, main_schet_id)
+  const prixod = await getByIdPrixodService(region_id, main_schet_id, id, true);
+  postLogger.info(`Bank rasxod doc olindi. UserId: ${req.user.id}`)
+  resFunc(res, 200, prixod)
 });
 
 // delete bank_rasxod
