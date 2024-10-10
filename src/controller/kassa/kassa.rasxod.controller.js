@@ -49,18 +49,6 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
 
-  const spravochnik_operatsii_own = await getByIdOperatsiiService(
-    value.spravochnik_operatsii_own_id,
-    "kassa_rasxod",
-  );
-  if (!spravochnik_operatsii_own) {
-    return next(
-      new ErrorResponse(
-        "Server xatolik. spravochnik_operatsii_own topilmadi",
-        404,
-      ),
-    );
-  }
   if (value.id_podotchet_litso) {
     const podotchet_litso = await getByIdPodotchetService(
       region_id,
@@ -126,8 +114,7 @@ const kassaRasxodCreate = asyncHandler(async (req, res, next) => {
       ...child,
       user_id,
       main_schet_id,
-      kassa_rasxod_id: kassa_rasxod.id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
+      kassa_rasxod_id: kassa_rasxod.id
     });
   }
 
@@ -231,19 +218,6 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
   if (!main_schet) {
     return next(new ErrorResponse("Server xatoli. Schet topilmadi", 404));
   }
-
-  const spravochnik_operatsii_own = await getByIdOperatsiiService(
-    value.spravochnik_operatsii_own_id,
-    "kassa_rasxod",
-  );
-  if (!spravochnik_operatsii_own) {
-    return next(
-      new ErrorResponse(
-        "Server xatolik. spravochnik_operatsii_own topilmadi",
-        404,
-      ),
-    );
-  }
   if (value.id_podotchet_litso) {
     const podotchet_litso = await getByIdPodotchetService(
       region_id,
@@ -306,8 +280,7 @@ const updateKassaRasxodBank = asyncHandler(async (req, res, next) => {
       ...child,
       user_id,
       main_schet_id,
-      kassa_rasxod_id: id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id,
+      kassa_rasxod_id: id
     });
   }
 
