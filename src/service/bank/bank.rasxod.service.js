@@ -9,20 +9,18 @@ const createBankRasxodDb = async (data) => {
             doc_num, 
             doc_date, 
             summa, 
-            provodki_boolean, 
             opisanie, 
             id_spravochnik_organization, 
             id_shartnomalar_organization, 
             main_schet_id, 
             user_id
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
         RETURNING * 
       `, [
       data.doc_num,
       data.doc_date,
       data.summa,
-      data.provodki_boolean,
       data.opisanie,
       data.id_spravochnik_organization,
       data.id_shartnomalar_organization,
@@ -45,19 +43,17 @@ const createBankRasxodChild = async (data) => {
             id_spravochnik_podrazdelenie,
             id_spravochnik_sostav,
             id_spravochnik_type_operatsii,
-            id_spravochnik_podotchet_litso,
             main_schet_id,
             id_bank_rasxod,
             user_id
-        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`
+        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`
       , [data.spravochnik_operatsii_id,
       data.summa,
       data.id_spravochnik_podrazdelenie,
       data.id_spravochnik_sostav,
       data.id_spravochnik_type_operatsii,
-      data.id_spravochnik_podotchet_litso,
       data.main_schet_id,
-      data.bank_prixod_id,
+      data.bank_rasxod_id,
       data.user_id
       ]);
     return result.rows[0];
@@ -73,16 +69,14 @@ const updateRasxodService = async (data) => {
         doc_num = $1, 
         doc_date = $2, 
         summa = $3, 
-        provodki_boolean = $4, 
-        opisanie = $5, 
-        id_spravochnik_organization = $6, 
-        id_shartnomalar_organization = $7
-      WHERE id = $8 RETURNING * 
+        opisanie = $4, 
+        id_spravochnik_organization = $5, 
+        id_shartnomalar_organization = $6
+      WHERE id = $7 RETURNING * 
       `,[
         data.doc_num,
         data.doc_date,
         data.summa,
-        data.provodki_boolean,
         data.opisanie,
         data.id_spravochnik_organization,
         data.id_shartnomalar_organization,
@@ -102,8 +96,6 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
               b_r.doc_num, 
               TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date, 
               b_r.summa, 
-              b_r.provodki_boolean, 
-              b_r.dop_provodki_boolean, 
               b_r.opisanie, 
               b_r.id_spravochnik_organization, 
               s_o.name AS spravochnik_organization_name,
@@ -121,21 +113,17 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
                       b_r_ch.spravochnik_operatsii_id,
                       s_o.name AS spravochnik_operatsii_name,
                       b_r_ch.summa,
-                      b_r_ch.spravochnik_operatsii_own_id,
                       b_r_ch.id_spravochnik_podrazdelenie,
                       s_p.name AS spravochnik_podrazdelenie_name,
                       b_r_ch.id_spravochnik_sostav,
                       s_s.name AS spravochnik_sostav_name,
                       b_r_ch.id_spravochnik_type_operatsii,
-                      s_t_o.name AS spravochnik_type_operatsii_name,
-                      b_r_ch.id_spravochnik_podotchet_litso,
-                      s_p_l.name AS spravochnik_podotchet_litso_name
+                      s_t_o.name AS spravochnik_type_operatsii_name
                   FROM bank_rasxod_child AS b_r_ch
                   JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
                   LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_r_ch.id_spravochnik_podrazdelenie
                   LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = b_r_ch.id_spravochnik_sostav
                   LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_r_ch.id_spravochnik_type_operatsii
-                  LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
                   WHERE b_r_ch.id_bank_rasxod = b_r.id 
                 ) AS b_r_ch
               ) AS childs 
@@ -176,9 +164,7 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
         b_r.id,
         b_r.doc_num, 
         TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date, 
-        b_r.summa, 
-        b_r.provodki_boolean, 
-        b_r.dop_provodki_boolean, 
+        b_r.summa::FLOAT, 
         b_r.opisanie, 
         b_r.id_spravochnik_organization, 
         b_r.id_shartnomalar_organization,
@@ -190,21 +176,17 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
                 b_r_ch.spravochnik_operatsii_id,
                 s_o.name AS spravochnik_operatsii_name,
                 b_r_ch.summa,
-                b_r_ch.spravochnik_operatsii_own_id,
                 b_r_ch.id_spravochnik_podrazdelenie,
                 s_p.name AS spravochnik_podrazdelenie_name,
                 b_r_ch.id_spravochnik_sostav,
                 s_s.name AS spravochnik_sostav_name,
                 b_r_ch.id_spravochnik_type_operatsii,
-                s_t_o.name AS spravochnik_type_operatsii_name,
-                b_r_ch.id_spravochnik_podotchet_litso,
-                s_p_l.name AS spravochnik_podotchet_litso_name
+                s_t_o.name AS spravochnik_type_operatsii_name
             FROM bank_rasxod_child AS b_r_ch
             JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
             LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_r_ch.id_spravochnik_podrazdelenie
             LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = b_r_ch.id_spravochnik_sostav
             LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_r_ch.id_spravochnik_type_operatsii
-            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
             WHERE b_r_ch.id_bank_rasxod = b_r.id 
           ) AS b_r_ch
         ) AS childs 

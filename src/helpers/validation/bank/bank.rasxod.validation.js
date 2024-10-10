@@ -12,8 +12,7 @@ const bankRasxodValidation = Joi.object({
       spravochnik_operatsii_id: Joi.number().required(),
       id_spravochnik_podrazdelenie: Joi.number(),
       id_spravochnik_sostav: Joi.number(),
-      id_spravochnik_type_operatsii: Joi.number(),
-      id_spravochnik_podotchet_litso: Joi.number(),
+      id_spravochnik_type_operatsii: Joi.number()
     })
   )
 }).options({ stripUnknown: true });

@@ -92,7 +92,7 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
   await deleteBankPrixodChild(id);
   const childs = []
   for (let child of data.childs) {
-    const result = await createBankPrixodServiceChild({ ...child, bank_prixod_id: id, user_id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id });
+    const result = await createBankPrixodServiceChild({ ...child, bank_prixod_id: id, user_id, main_schet_id });
     childs.push(result)
   }
   prixod.childs = childs

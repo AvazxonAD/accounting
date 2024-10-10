@@ -112,7 +112,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           FROM data`,[region_id, main_schet_id, from, to, offset, limit],
     ); 
     return {
-      data: data.rows[0].data,
+      data: data.rows[0]?.data || [],
       total: data.rows[0].total_count,
       prixod_sum: data.rows[0].prixod_sum,
       rasxod_sum: data.rows[0].rasxod_sum,
