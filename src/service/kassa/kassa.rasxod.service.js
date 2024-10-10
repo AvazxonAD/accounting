@@ -46,21 +46,19 @@ const kassaRasxodChild = async (data) => {
             id_spravochnik_podrazdelenie, 
             id_spravochnik_sostav, 
             id_spravochnik_type_operatsii,
-            spravochnik_operatsii_own_id,
             kassa_rasxod_id,
             user_id, 
             main_schet_id, 
             created_at, 
             updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING * `,
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING * `,
       [
         data.spravochnik_operatsii_id,
         data.summa,
         data.id_spravochnik_podrazdelenie,
         data.id_spravochnik_sostav,
         data.id_spravochnik_type_operatsii,
-        data.spravochnik_operatsii_own_id,
         data.kassa_rasxod_id,
         data.user_id,
         data.main_schet_id,
@@ -102,7 +100,7 @@ const getAllKassaRasxodDb = async (region_id, main_schet_id, from, to, offset, l
                           JOIN regions AS r ON r.id = u.region_id   
                           WHERE r.id = $1 
                             AND k_r_ch.main_schet_id = $2 
-                            AND k_r_ch.kassa_prixod_id = k_r.id
+                            AND k_r_ch.kassa_rasxod_id = k_r.id
                       ) AS k_r_ch
                   ) AS childs
               FROM kassa_rasxod AS k_r
@@ -176,7 +174,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
                     JOIN regions AS r ON r.id = u.region_id   
                     WHERE r.id = $1 
                       AND k_r_ch.main_schet_id = $2 
-                      AND k_r_ch.kassa_prixod_id = k_r.id
+                      AND k_r_ch.kassa_rasxod_id = k_r.id
                 ) AS k_r_ch
             ) AS childs
         FROM kassa_rasxod AS k_r
