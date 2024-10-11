@@ -12,7 +12,7 @@ const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.v
 const { jur3Validation } = require("../../helpers/validation/bajarilgan_ishlar/jur_3.validation");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getByIdOrganizationService } = require("../../service/spravochnik/organization.service");
-const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
+const { getByIdShartnomaService } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
@@ -34,7 +34,7 @@ const jur_3_create = async (req, res) => {
     await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
     if (data.shartnomalar_organization_id) {
-      const shartnoma = await getByIdAndOrganizationIdShartnoma(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
+      const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
       if (!shartnoma.pudratchi_bool) {
         throw new ErrorResponse("conrtact not found", 404)
       }
@@ -103,7 +103,7 @@ const jur_3_update = async (req, res) => {
     await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
     if (data.shartnomalar_organization_id) {
-      const shartnoma = await getByIdAndOrganizationIdShartnoma(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
+      const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
       if (!shartnoma.pudratchi_bool) {
         throw new ErrorResponse("conrtact not found", 404)
       }

@@ -1,7 +1,7 @@
 const { createBankRasxodDb, createBankRasxodChild, getByIdRasxodService, updateRasxodService, getBankRasxodService, deleteRasxodChild, deleteBankRasxod } = require("../../service/bank/bank.rasxod.service");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getByIdOrganizationService } = require("../../service/spravochnik/organization.service");
-const { getByIdAndOrganizationIdShartnoma } = require("../../service/shartnoma/shartnoma.service");
+const { getByIdShartnomaService } = require("../../service/shartnoma/shartnoma.service");
 const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
 const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
 const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
@@ -25,7 +25,7 @@ const bank_rasxod = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
     if (data.id_shartnomalar_organization) {
-      await getByIdAndOrganizationIdShartnoma(
+      await getByIdShartnomaService(
         region_id,
         main_schet_id,
         data.id_shartnomalar_organization,
@@ -71,7 +71,7 @@ const bank_rasxod_update = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
     if (data.id_shartnomalar_organization) {
-      await getByIdAndOrganizationIdShartnoma(region_id, main_schet_id, data.id_shartnomalar_organization, data.id_spravochnik_organization);
+      await getByIdShartnomaService(region_id, main_schet_id, data.id_shartnomalar_organization, data.id_spravochnik_organization);
     }
     for (let child of data.childs) {
       await getByIdOperatsiiService(child.spravochnik_operatsii_id, "bank_rasxod");

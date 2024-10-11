@@ -128,7 +128,7 @@ const getAllJur3DB = async (region_id, main_schet_id, from, to, offset, limit) =
               JOIN regions AS r ON u.region_id = r.id
               JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
               LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
-              WHERE ${filter} OFFSET $5 LIMIT $6
+              WHERE ${filter} ORDER BY b_i_j3.doc_date OFFSET $5 LIMIT $6 
             )
           SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,

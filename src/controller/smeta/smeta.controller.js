@@ -6,7 +6,6 @@ const {
   updateSmeta,
   deleteSmeta,
 } = require("../../service/smeta/smeta.service");
-const ErrorResponse = require("../../utils/errorResponse");
 const { smetaValidation, queryValidation } = require("../../helpers/validation/smeta/smeta.validation");
 const { errorCatch } = require("../../helpers/errorCatch");
 const { validationResponse } = require("../../helpers/response-for-validation");

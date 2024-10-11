@@ -2,7 +2,7 @@ const ErrorResponse = require('../../utils/errorResponse')
 const { showServicesValidation } = require('../../helpers/validation/show.services/show.services.validation')
 const { getByIdOperatsiiService } = require('../../service/spravochnik/operatsii.service')
 const { getByIdOrganizationService } = require('../../service/spravochnik/organization.service')
-const { getByIdShartnomaService, getByIdAndOrganizationIdShartnoma } = require('../../service/shartnoma/shartnoma.service')
+const { getByIdShartnomaService } = require('../../service/shartnoma/shartnoma.service')
 const { getByIdPodrazlanieService } = require('../../service/spravochnik/podrazdelenie.service')
 const { getByIdSostavService } = require('../../service/spravochnik/sostav.service')
 const { getByIdTypeOperatsiiService } = require('../../service/spravochnik/type_operatsii.service')
@@ -118,7 +118,7 @@ const updateShowService = async (req, res) => {
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "show_service");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         if (data.shartnomalar_organization_id) {
-            const contract = await getByIdAndOrganizationIdShartnoma(
+            const contract = await getByIdShartnomaService(
                 region_id,
                 main_schet_id,
                 data.shartnomalar_organization_id,

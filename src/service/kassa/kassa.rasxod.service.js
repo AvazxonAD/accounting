@@ -107,10 +107,7 @@ const getAllKassaRasxodDb = async (region_id, main_schet_id, from, to, offset, l
               JOIN users AS u ON u.id = k_r.user_id
               JOIN regions AS r ON r.id = u.region_id
               JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
-              WHERE r.id = $1 
-                AND k_r.main_schet_id = $2 
-                AND k_r.isdeleted = false 
-                AND k_r.doc_date BETWEEN $3 AND $4
+              WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.doc_date BETWEEN $3 AND $4 ORDER BY k_r.doc_date
               OFFSET $5 LIMIT $6
           )
           SELECT 

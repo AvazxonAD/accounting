@@ -118,7 +118,7 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
                 JOIN regions AS r ON u.region_id = r.id
                 JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j.id_spravochnik_organization
                 LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j.shartnomalar_organization_id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
+                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false ORDER BY k_h_j.doc_date
                 OFFSET $5 LIMIT $6 
             )
             SELECT 

@@ -116,7 +116,7 @@ const getAllJur4DB = async (region_id, main_schet_id, from, to, offset, limit) =
                 JOIN users AS u ON u.id =  a_o_j_4.user_id
                 JOIN regions AS r ON u.region_id = r.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_o_j_4.spravochnik_podotchet_litso_id 
-                WHERE ${filter} OFFSET $5 LIMIT $6
+                WHERE ${filter}  ORDER BY a_o_j_4.doc_date OFFSET $5 LIMIT $6 
             ) 
             SELECT 
                 ARRAY_AGG(row_to_json(data)) AS data,
@@ -181,7 +181,7 @@ const getByIdJur4DB = async (region_id, main_schet_id, id, ignoreDeleted = false
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = a_o_j_4_ch.id_spravochnik_podrazdelenie
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = a_o_j_4_ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = a_o_j_4_ch.id_spravochnik_type_operatsii
-                        WHERE r.id = $1  AND a_o_j_4_ch.main_schet_id = $2 AND a_o_j_4_ch.avans_otchetlar_jur4_id = a_o_j_4.id
+                        WHERE r.id = $1  AND a_o_j_4_ch.main_schet_id = $2 AND a_o_j_4_ch.avans_otchetlar_jur4_id = a_o_j_4.id 
                     ) AS a_o_j_4_child
                 ) AS childs
             FROM avans_otchetlar_jur4 AS a_o_j_4
@@ -189,6 +189,7 @@ const getByIdJur4DB = async (region_id, main_schet_id, id, ignoreDeleted = false
             JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_o_j_4.spravochnik_podotchet_litso_id 
             WHERE a_o_j_4.main_schet_id = $1 AND r.id = $2 AND a_o_j_4.id = $3 ${ignore}
+            ORDER BY a_o_j_4.doc_date
         `, [main_schet_id, region_id, id]);
         const data = result.rows[0]
         if(!data){

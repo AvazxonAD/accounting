@@ -18,7 +18,7 @@ const createJurnal3 = async (req, res) => {
         const data = validationResponse(jur3Validation, req.body);
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
-        const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id);
+        const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, id_spravochnik_organization);
         if (!shartnoma.pudratchi_bool) {
             throw new ErrorResponse("Shartnoma pudratchi not", 404);
         }
