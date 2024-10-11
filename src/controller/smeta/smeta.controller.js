@@ -2,134 +2,87 @@ const {
   getByAllSmeta,
   createSmeta,
   getAllSmeta,
-  getTotalSmeta,
   getByIdSmeta,
   updateSmeta,
   deleteSmeta,
 } = require("../../service/smeta/smeta.service");
-const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
-const { smetaValidation } = require("../../helpers/validation/smeta/smeta.validation");
+const { smetaValidation, queryValidation } = require("../../helpers/validation/smeta/smeta.validation");
+const { errorCatch } = require("../../helpers/errorCatch");
+const { validationResponse } = require("../../helpers/response-for-validation");
+const { resFunc } = require("../../helpers/resFunc");
 
-  
 // create
-const create = async (req, res, next) => {
-  const { error, value } = smetaValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
+const create = async (req, res) => {
+  try {
+    const { smeta_name, smeta_number, father_smeta_name } = validationResponse(smetaValidation, req.body)
+    await getByAllSmeta(smeta_name, smeta_number, father_smeta_name);
+    const result = await createSmeta(smeta_name, smeta_number, father_smeta_name);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const { smeta_name, smeta_number, father_smeta_name } = value;
-
-  const test = await getByAllSmeta(smeta_name, smeta_number, father_smeta_name);
-  if (test) {
-    return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
-  }
-
-  await createSmeta(smeta_name, smeta_number, father_smeta_name);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli kiritildi",
-  });
 }
 
 // get all
-const getAll = async (req, res, next) => {
-  const limit = parseInt(req.query.limit) || 10;
-  const page = parseInt(req.query.page) || 1;
-
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-
-  const offset = (page - 1) * limit;
-
-  const result = await getAllSmeta(offset, limit);
-
-  const totalQuery = await getTotalSmeta();
-  const total = parseInt(totalQuery.total);
-  const pageCount = Math.ceil(total / limit);
-
-  return res.status(200).json({
-    success: true,
-    meta: {
+const getAll = async (req, res) => {
+  try {
+    const { page, limit } = validationResponse(queryValidation, req.query)
+    const offset = (page - 1) * limit;
+    const { data, total } = await getAllSmeta(offset, limit);
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    },
-    data: result,
-  });
+      backPage: page === 1 ? null : page - 1
+    }
+    resFunc(res, 200, data, meta)
+  } catch (error) {
+    errorCatch(error, res)
+  }
 }
 
 // get element by id
-const getElementById = async (req, res, next) => {
-  const result = await getByIdSmeta(req.params.id, true);
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. Smeta topilmadi", 404));
+const getElementById = async (req, res) => {
+  try {
+    const result = await getByIdSmeta(req.params.id, true);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  return res.status(200).json({
-    success: true,
-    data: result,
-  });
 }
 
 // update
-const update = async (req, res, next) => {
-  const id = req.params.id;
-  const { error, value } = smetaValidation.validate(req.body);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400));
-  }
-  const { smeta_name, smeta_number, father_smeta_name } = value;
-
-  const smeta = await getByIdSmeta(id);
-  if (!smeta) {
-    return next(new ErrorResponse("Server xatolik. Smeta topilmadi", 404));
-  }
-
-  if (
-    smeta.smeta_name !== smeta_name ||
-    smeta.smeta_number !== smeta_number ||
-    smeta.father_smeta_name !== father_smeta_name
-  ) {
-    const test = await getByAllSmeta(
-      smeta_name,
-      smeta_number,
-      father_smeta_name,
-    );
-    if (test) {
-      return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
+const update = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { smeta_name, smeta_number, father_smeta_name } = validationResponse(smetaValidation, req.body)
+    const smeta = await getByIdSmeta(id);
+    if (smeta.smeta_name !== smeta_name ||
+      smeta.smeta_number !== smeta_number ||
+      smeta.father_smeta_name !== father_smeta_name
+    ) {
+      await getByAllSmeta(smeta_name, smeta_number, father_smeta_name);
     }
+    const result = await updateSmeta(smeta_name, smeta_number, father_smeta_name, id);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await updateSmeta(smeta_name, smeta_number, father_smeta_name, id);
-
-  return res.status(201).json({
-    success: true,
-    data: "Muvafaqyatli yangilandi",
-  });
 }
 
 // delete value
-const deleteValue = async (req, res, next) => {
-  const id = req.params.id;
-  const value = await getByIdSmeta(id);
-  if (!value) {
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404));
+const deleteValue = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await getByIdSmeta(id);
+    await deleteSmeta(id);
+    resFunc(res, 200, 'delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  await deleteSmeta(id);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
 }
 
 module.exports = {

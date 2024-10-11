@@ -27,8 +27,14 @@ const smetaGrafikUpdateValidation = Joi.object({
   oy_12: Joi.number().required(),
 }).options({ stripUnknown: true });
 
+const queryValidation = Joi.object({
+  page: Joi.number().min(1).default(1),
+  limit: Joi.number().min(1).default(10)
+})
+
 module.exports = {
   smetaValidation,
   smetaGrafikValidation,
   smetaGrafikUpdateValidation,
+  queryValidation
 };

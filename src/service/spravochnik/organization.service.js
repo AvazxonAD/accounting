@@ -115,7 +115,6 @@ const getByIdOrganizationService = async (region_id, id, ignoreDeleted = false) 
 
 }
 
-
 const updateOrganizationService = async (data) => {
   try {
     const result = await pool.query(
