@@ -17,7 +17,6 @@ const {
     createShowServiceChildService,
     createShowServiceService,
     getShowServiceService,
-    showServiceChildService,
     getByIdShowServiceService,
     updateShowServiceService,
     deleteShowServiceChildService,
@@ -35,12 +34,12 @@ const createController = async (req, res) => {
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization)
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
-            if(contract.pudratchi_bool){
-               // throw new ErrorResponse(`contract not found`, 404)
+            if (contract.pudratchi_bool) {
+                throw new ErrorResponse(`contract not found`, 404)
             }
         }
         for (let child of data.childs) {
-            //await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'show_service')
+            await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'show_service')
             if (data.id_spravochnik_podrazdelenie) {
                 await getByIdPodrazlanieService(region_id, data.id_spravochnik_podrazdelenie)
             }
@@ -55,18 +54,12 @@ const createController = async (req, res) => {
         const doc = await createShowServiceService({ ...data, main_schet_id, user_id, summa })
         const childs = []
         for (let child of data.childs) {
-            const result = await createShowServiceChildService({
-                ...child,
-                main_schet_id,
-                user_id,
-                spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id,
-                kursatilgan_hizmatlar_jur152_id: doc.id
-            })
+            const result = await createShowServiceChildService({ ...child, main_schet_id, user_id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id, kursatilgan_hizmatlar_jur152_id: doc.id })
             childs.push(result)
         }
-        let object = { ...doc }
-        object.childs = childs
-        resFunc(res, 201, object)
+        doc.childs = childs
+        postLogger.info(`show servise doclar muvaffaqiyatli kritildi. UserId : ${req.user.id}`)
+        resFunc(res, 201, doc)
     } catch (error) {
         errorCatch(error, res)
     }
@@ -76,39 +69,11 @@ const createController = async (req, res) => {
 const getShowService = async (req, res) => {
     try {
         const region_id = req.user.region_id;
-        const main_schet_id = req.query.main_schet_id;
-    
+        const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
         await getByIdMainSchetService(region_id, main_schet_id);
-        const data = validationResponse(queryValidation, req.query)
-    
-        const limit = parseInt(data.limit) || 10;
-        const page = parseInt(data.page) || 1;
-        const from = data.from;
-        const to = data.to;
-    
-        if (limit <= 0 || page <= 0) {
-            throw new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400)
-        }
         const offset = (page - 1) * limit;
-    
-        const parents = await getShowServiceService(
-            region_id,
-            main_schet_id,
-            from,
-            to,
-            offset,
-            limit,
-        );
-        const resultArray = [];
-        for (let result of parents.data ? parents.data : []) {
-            const childs = await showServiceChildService(region_id, main_schet_id, result.id);
-            let object = { ...result };
-            object.childs = childs;
-            resultArray.push(object);
-        }
-        const total = parents.total_count;
+        const {data, summa, total} = await getShowServiceService(region_id, main_schet_id, from, to, offset, limit);
         const pageCount = Math.ceil(total / limit);
-        const summa = parents.summa;
         getLogger.info(`show servise doclar muvaffaqiyatli olindi. UserId : ${req.user.id}`)
         const meta = {
             pageCount: pageCount,
@@ -118,7 +83,7 @@ const getShowService = async (req, res) => {
             backPage: page === 1 ? null : page - 1,
             summa,
         }
-        resFunc(res, 200, resultArray, meta)
+        resFunc(res, 200, data, meta)
     } catch (error) {
         errorCatch(error, res)
     }
@@ -131,16 +96,10 @@ const getByIdShowService = async (req, res) => {
         const region_id = req.user.region_id;
         const id = req.params.id;
         const user_id = req.user.id
-    
         await getByIdMainSchetService(region_id, main_schet_id);
-    
         const result = await getByIdShowServiceService(region_id, main_schet_id, id, true);
-    
-        const object = { ...result };
-        object.childs = await showServiceChildService(region_id, main_schet_id, object.id);
-    
         getLogger.info(`show servise doc muvaffaqiyatli olindi. UserId : ${user_id}`)
-        resFunc(res, 200, object)
+        resFunc(res, 200, result)
     } catch (error) {
         errorCatch(error, res)
     }
@@ -154,9 +113,9 @@ const updateShowService = async (req, res) => {
         const main_schet_id = req.query.main_schet_id;
         const id = req.params.id;
         const data = validationResponse(showServicesValidation, req.body)
-        await getByIdMainSchetService(region_id, main_schet_id);    
+        await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdShowServiceService(region_id, main_schet_id, id);
-        await getByIdOperatsiiService( data.spravochnik_operatsii_own_id, "show_service");
+        await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "show_service");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdAndOrganizationIdShartnoma(
@@ -165,24 +124,24 @@ const updateShowService = async (req, res) => {
                 data.shartnomalar_organization_id,
                 data.id_spravochnik_organization
             );
-            if(contract.pudratchi_bool) throw new ErrorResponse(`contract not found`, 404)
-            
+            if (contract.pudratchi_bool) throw new ErrorResponse(`contract not found`, 404)
+
         }
         for (let child of data.childs) {
-            await getByIdOperatsiiService( child.spravochnik_operatsii_id, "show_service" );
+            await getByIdOperatsiiService(child.spravochnik_operatsii_id, "show_service");
             if (child.id_spravochnik_podrazdelenie) {
-                await getByIdPodrazlanieService( region_id, child.id_spravochnik_podrazdelenie );
+                await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie);
             }
             if (child.id_spravochnik_sostav) {
-                await getByIdSostavService( region_id, child.id_spravochnik_sostav );
+                await getByIdSostavService(region_id, child.id_spravochnik_sostav);
             }
             if (child.id_spravochnik_type_operatsii) {
-                await getByIdTypeOperatsiiService( region_id, child.id_spravochnik_type_operatsii );
+                await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
             }
         }
-    
+
         const summa = returnAllChildSumma(data.childs);
-    
+
         const service = await updateShowServiceService({ ...data, id, summa });
         await deleteShowServiceChildService(id);
         const childs = []
@@ -196,9 +155,9 @@ const updateShowService = async (req, res) => {
             });
             childs.push(result)
         }
-        let object = {...service}
+        let object = { ...service }
         object.childs = childs
-    
+
         putLogger.info(`show servise doc muvaffaqiyatli yangilandi. UserId : ${user_id}`)
         return resFunc(res, 200, object)
     } catch (error) {

@@ -1,10 +1,3 @@
-const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
-const ErrorResponse = require("../../utils/errorResponse");
-const {
-  smetaValidation,
-} = require("../../helpers/validation/smeta/smeta.validation");
-
 const {
   getByAllSmeta,
   createSmeta,
@@ -14,9 +7,13 @@ const {
   updateSmeta,
   deleteSmeta,
 } = require("../../service/smeta/smeta.service");
+const asyncHandler = require("../../middleware/asyncHandler");
+const ErrorResponse = require("../../utils/errorResponse");
+const { smetaValidation } = require("../../helpers/validation/smeta/smeta.validation");
 
+  
 // create
-const create = asyncHandler(async (req, res, next) => {
+const create = async (req, res, next) => {
   const { error, value } = smetaValidation.validate(req.body);
   if (error) {
     return next(new ErrorResponse(error.details[0].message, 400));
@@ -35,10 +32,10 @@ const create = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvafaqyatli kiritildi",
   });
-});
+}
 
 // get all
-const getAll = asyncHandler(async (req, res, next) => {
+const getAll = async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
 
@@ -67,10 +64,10 @@ const getAll = asyncHandler(async (req, res, next) => {
     },
     data: result,
   });
-});
+}
 
 // get element by id
-const getElementById = asyncHandler(async (req, res, next) => {
+const getElementById = async (req, res, next) => {
   const result = await getByIdSmeta(req.params.id, true);
   if (!result) {
     return next(new ErrorResponse("Server xatolik. Smeta topilmadi", 404));
@@ -80,10 +77,10 @@ const getElementById = asyncHandler(async (req, res, next) => {
     success: true,
     data: result,
   });
-});
+}
 
 // update
-const update = asyncHandler(async (req, res, next) => {
+const update = async (req, res, next) => {
   const id = req.params.id;
   const { error, value } = smetaValidation.validate(req.body);
   if (error) {
@@ -117,10 +114,10 @@ const update = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvafaqyatli yangilandi",
   });
-});
+}
 
 // delete value
-const deleteValue = asyncHandler(async (req, res, next) => {
+const deleteValue = async (req, res, next) => {
   const id = req.params.id;
   const value = await getByIdSmeta(id);
   if (!value) {
@@ -133,7 +130,7 @@ const deleteValue = asyncHandler(async (req, res, next) => {
     success: true,
     data: "Muvaffaqiyatli ochirildi",
   });
-});
+}
 
 module.exports = {
   create,

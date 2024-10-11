@@ -1,6 +1,13 @@
-const asyncHandler = require("../../middleware/asyncHandler");
+const {
+  createJur4ChildDB,
+  createJur4DB,
+  getAllJur4DB,
+  getByIdJur4DB,
+  updateJur4DB,
+  deleteJur4ChildDB,
+  deleteJur4DB
+} = require('../../service/avans/jur4.service')
 const ErrorResponse = require("../../utils/errorResponse");
-
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { jur4Validation } = require("../../helpers/validation/avans_otchetlar/jur4.validation");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
@@ -11,280 +18,148 @@ const { getByIdSostavService } = require("../../service/spravochnik/sostav.servi
 const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
-
-const {
-  createJur4ChildDB,
-  createJur4DB,
-  getAllJur4ChildDB,
-  getAllJur4DB,
-  getByIdJur4DB,
-  updateJur4DB,
-  deleteJur4ChildDB,
-  deleteJur4DB
-} = require('../../service/avans/jur4.service')
+const { validationResponse } = require('../../helpers/response-for-validation');
+const { resFunc } = require('../../helpers/resFunc');
+const { errorCatch } = require('../../helpers/errorCatch')
 
 // jur 4 create
-const jur_4_create = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const user_id = req.user.id;
-  const main_schet_id = req.query.main_schet_id;
-
-  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
-  }
-
-  const { error, value } = jur4Validation.validate(req.body)
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400))
-  }
-
-  const podotchet_litso = await getByIdPodotchetService(region_id, value.spravochnik_podotchet_litso_id)
-  if (!podotchet_litso) {
-    return next(new ErrorResponse("podotchet_litso topilmadi", 404));
-  }
-  const spravochnik_operatsii_own = await getByIdOperatsiiService(value.spravochnik_operatsii_own_id, 'avans_otchet')
-  if (!spravochnik_operatsii_own) {
-    return next(new ErrorResponse('Server xatolik. spravochnik_operatsii_own topilmadi', 404))
-  }
-
-  for (let child of value.childs) {
-    if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
-      if (!spravochnik_operatsii) {
-        return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
+const jur_4_create = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const main_schet_id = req.query.main_schet_id;
+    await getByIdMainSchetService(region_id, main_schet_id);
+    const data = validationResponse(jur4Validation, req.body)
+    await getByIdPodotchetService(region_id, data.spravochnik_podotchet_litso_id)
+    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'avans_otchet')
+    for (let child of data.childs) {
+      if (child.spravochnik_operatsii_id) {
+        await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
+      }
+      if (child.id_spravochnik_podrazdelenie) {
+        await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
+      }
+      if (child.id_spravochnik_sostav) {
+        await getByIdSostavService(region_id, child.id_spravochnik_sostav)
+      }
+      if (child.id_spravochnik_type_operatsii) {
+        await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
       }
     }
-    if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
-      if (!spravochnik_podrazdelenie) {
-        return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
-      }
+    const summa = returnAllChildSumma(data.childs)
+    const result = await createJur4DB({ ...data, main_schet_id, user_id, summa })
+    const childs = []
+    for (let child of data.childs) {
+      const child_data = await createJur4ChildDB({ ...child, user_id, main_schet_id, avans_otchetlar_jur4_id: result.id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id })
+      childs.push(child_data)
     }
-    if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostavService(region_id, child.id_spravochnik_sostav)
-      if (!spravochnik_sostav) {
-        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
-      }
-    }
-    if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
-      if (!spravochnik_type_operatsii) {
-        return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
-      }
-    }
+    result.childs = childs
+    postLogger.info(`Jur4 doc muvaffaqiyatli kiritildi. UserId : ${user_id}`)
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const summa = returnAllChildSumma(value.childs)
-  const result = await createJur4DB({ ...value, main_schet_id, user_id, summa })
-
-  for (let child of value.childs) {
-    await createJur4ChildDB({
-      ...child,
-      user_id,
-      main_schet_id,
-      avans_otchetlar_jur4_id: result.id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
-    })
-  }
-
-  postLogger.info(`Jur4 doc muvaffaqiyatli kiritildi. UserId : ${user_id}`)
-  res.status(201).json({
-    success: true,
-    data: "Muvaffaqiyatli kiritildi",
-  });
-});
+}
 
 // jur 4 get all
-const getAllJur_4 = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const main_schet_id = req.query.main_schet_id;
-  const user_id = req.user.id
-
-  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
-  }
-
-  const { error, value } = queryValidation.validate(req.query);
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message), 400);
-  }
-
-  const limit = parseInt(value.limit) || 10;
-  const page = parseInt(value.page) || 1;
-  const from = value.from;
-  const to = value.to;
-  if (limit <= 0 || page <= 0) {
-    return next(
-      new ErrorResponse("Limit va page musbat sonlar bo'lishi kerak", 400),
-    );
-  }
-  const offset = (page - 1) * limit;
-
-  const results = await getAllJur4DB(region_id, main_schet_id, from, to, offset, limit)
-
-  const resultArray = [];
-
-  for (let result of results.rows) {
-    const prixod_child = await getAllJur4ChildDB(region_id, main_schet_id, result.id)
-
-    let object = { ...result };
-    object.childs = prixod_child;
-    resultArray.push(object);
-  }
-
-  const total = results.total;
-  const pageCount = Math.ceil(total / limit);
-  const summa = results.summa;
-
-  getLogger.info(`Jur4 doclar muvaffaqiyatli olindi. UserId : ${user_id}`)
-  return res.status(200).json({
-    success: true,
-    meta: {
+const getAllJur_4 = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id
+    const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)  
+    const offset = (page - 1) * limit;
+    const {data, total, summa} = await getAllJur4DB(region_id, main_schet_id, from, to, offset, limit)
+    await getByIdMainSchetService(region_id, main_schet_id);
+    const pageCount = Math.ceil(total / limit);
+    getLogger.info(`Jur4 doclar muvaffaqiyatli olindi. UserId : ${user_id}`)
+    const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      summa,
-    },
-    data: resultArray,
-  });
-});
+      summa
+    }
+    resFunc(res, 200, data, meta)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 // jur 4 update
-const jur_4_update = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const user_id = req.user.id;
-  const main_schet_id = req.query.main_schet_id;
-  const id = req.params.id
-
-  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
-  }
-
-  const test = await getByIdJur4DB(region_id, main_schet_id, id)
-  if(!test){
-    return next(new ErrorResponse("Server xatolik. Malumot topilmadi", 404))
-  }
-
-  const { error, value } = jur4Validation.validate(req.body)
-  if (error) {
-    return next(new ErrorResponse(error.details[0].message, 400))
-  }
-
-  const podotchet_litso = await getByIdPodotchetService(region_id, value.spravochnik_podotchet_litso_id)
-  if (!podotchet_litso) {
-    return next(new ErrorResponse("podotchet_litso topilmadi", 404));
-  }
-  const spravochnik_operatsii_own = await getByIdOperatsiiService(value.spravochnik_operatsii_own_id, 'avans_otchet')
-  if (!spravochnik_operatsii_own) {
-    return next(new ErrorResponse('Server xatolik. spravochnik_operatsii_own topilmadi', 404))
-  }
-
-  for (let child of value.childs) {
-    if (child.spravochnik_operatsii_id) {
-      const spravochnik_operatsii = await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
-      if (!spravochnik_operatsii) {
-        return next(new ErrorResponse("spravochnik_operatsii topilmadi", 404));
+const jur_4_update = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const main_schet_id = req.query.main_schet_id;
+    const id = req.params.id
+    await getByIdMainSchetService(region_id, main_schet_id);
+    await getByIdJur4DB(region_id, main_schet_id, id)   
+    const data = validationResponse(jur4Validation, req.body)
+    await getByIdPodotchetService(region_id, data.spravochnik_podotchet_litso_id)
+    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'avans_otchet')
+    for (let child of data.childs) {
+      if (child.spravochnik_operatsii_id) {
+        await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
+      }
+      if (child.id_spravochnik_podrazdelenie) {
+        await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
+      }
+      if (child.id_spravochnik_sostav) {
+        await getByIdSostavService(region_id, child.id_spravochnik_sostav)
+      }
+      if (child.id_spravochnik_type_operatsii) {
+        await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
       }
     }
-    if (child.id_spravochnik_podrazdelenie) {
-      const spravochnik_podrazdelenie = await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
-      if (!spravochnik_podrazdelenie) {
-        return next(new ErrorResponse("spravochnik_podrazdelenie topilmadi", 404));
-      }
+    const summa = returnAllChildSumma(data.childs)
+    const result = await updateJur4DB({ ...data, id, summa })
+    await deleteJur4ChildDB(id)
+    const childs = []
+    for (let child of data.childs) {
+      const result = await createJur4ChildDB({...child, user_id, main_schet_id, avans_otchetlar_jur4_id: id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id})
+      childs.push(result)
     }
-    if (child.id_spravochnik_sostav) {
-      const spravochnik_sostav = await getByIdSostavService(region_id, child.id_spravochnik_sostav)
-      if (!spravochnik_sostav) {
-        return next(new ErrorResponse("spravochnik_sostav topilmadi", 404));
-      }
-    }
-    if (child.id_spravochnik_type_operatsii) {
-      const spravochnik_type_operatsii = await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
-      if (!spravochnik_type_operatsii) {
-        return next(new ErrorResponse("spravochnik_type_operatsii topilmadi", 404));
-      }
-    }
+    result.childs = childs
+    putLogger.info(`Jur4 doc muvaffaqiyatli yangilandi. UserId : ${user_id}`)
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const summa = returnAllChildSumma(value.childs)
-  await updateJur4DB({ ...value, id, summa})
-  await deleteJur4ChildDB(id)
-
-  for (let child of value.childs) {
-    await createJur4ChildDB({
-      ...child,
-      user_id,
-      main_schet_id,
-      avans_otchetlar_jur4_id: id,
-      spravochnik_operatsii_own_id: value.spravochnik_operatsii_own_id
-    })
-  }
-
-  putLogger.info(`Jur4 doc muvaffaqiyatli yangilandi. UserId : ${user_id}`)
-  res.status(201).json({
-    success: true,
-    data: "Muvaffaqiyatli yangilandi",
-  });
-});
+}
 
 // delete jur 4
-const delete_jur_4 = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const main_schet_id = req.query.main_schet_id;
-  const id = req.params.id
-  const user_id = req.user.id
-
-  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
+const delete_jur_4 = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const main_schet_id = req.query.main_schet_id;
+    const id = req.params.id
+    const user_id = req.user.id
+    await getByIdMainSchetService(region_id, main_schet_id);
+    await getByIdJur4DB(region_id, main_schet_id, id)
+    await deleteJur4DB(id)
+    deleteLogger.info(`Jur4 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
+    resFunc(res, 200, 'delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const test = await getByIdJur4DB(region_id, main_schet_id, id)
-  if (!test) {
-    return next(new ErrorResponse("Server xatolik. jur 4 documentlar topilmadi", 404));
-  }
-
-  await deleteJur4DB(id)
-
-  deleteLogger.info(`Jur4 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
-  return res.status(200).json({
-    success: true,
-    data: "Muvaffaqiyatli ochirildi",
-  });
-});
+}
 
 // get element by id jur 4
-const getElementByIdjur_4 = asyncHandler(async (req, res, next) => {
-  const region_id = req.user.region_id;
-  const main_schet_id = req.query.main_schet_id;
-  const id = req.params.id
-  const user_id = req.user.id
-
-  const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  if (!main_schet) {
-    return next(new ErrorResponse("Server xatoli. Schet topilmadi"));
+const getElementByIdjur_4 = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const main_schet_id = req.query.main_schet_id;
+    const id = req.params.id
+    const user_id = req.user.id
+    await getByIdMainSchetService(region_id, main_schet_id);  
+    const result = await getByIdJur4DB(region_id, main_schet_id, id, true)
+    postLogger.info(`Jur4 doc muvaffaqiyatli olindi. UserId : ${user_id}`)
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
   }
-
-  const result = await getByIdJur4DB(region_id, main_schet_id, id, true)
-  if (!result) {
-    return next(new ErrorResponse("Server xatolik. jur 4 document topilmadi", 404));
-  }
-
-  const prixod_childs = await getAllJur4ChildDB(region_id, main_schet_id, id)
-  let object = { ...result };
-  object.childs = prixod_childs;
-
-  postLogger.info(`Jur4 doc muvaffaqiyatli olindi. UserId : ${user_id}`)
-  return res.status(200).json({
-    success: true,
-    data: object,
-  });
-});
+}
 
 module.exports = {
   jur_4_create,

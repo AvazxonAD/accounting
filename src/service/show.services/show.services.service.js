@@ -79,7 +79,7 @@ const createShowServiceChildService = async (data) => {
 
 const getShowServiceService = async (region_id, main_schet_id, from, to, offset, limit) => {
     try {
-        const result = await pool.query(`
+        const { rows } = await pool.query(`
             WITH data AS (
                 SELECT 
                     k_h_j.id,
@@ -95,7 +95,24 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
                     sh_o.doc_date AS shartnomalar_organization_doc_date,
                     k_h_j.summa::FLOAT,
                     k_h_j.opisanie,
-                    k_h_j.spravochnik_operatsii_own_id
+                    k_h_j.spravochnik_operatsii_own_id,
+                    (
+                        SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
+                        FROM (
+                                SELECT  
+                                    k_h_j_ch.id,
+                                    k_h_j_ch.kursatilgan_hizmatlar_jur152_id,
+                                    k_h_j_ch.spravochnik_operatsii_id,
+                                    k_h_j_ch.summa::FLOAT,
+                                    k_h_j_ch.id_spravochnik_podrazdelenie,
+                                    k_h_j_ch.id_spravochnik_sostav,
+                                    k_h_j_ch.id_spravochnik_type_operatsii
+                                FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
+                                JOIN users AS u ON k_h_j_ch.user_id = u.id
+                                JOIN regions AS r ON u.region_id = r.id
+                                WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = k_h_j.id
+                            ) AS k_h_j_ch
+                    ) AS childs
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -120,34 +137,7 @@ const getShowServiceService = async (region_id, main_schet_id, from, to, offset,
             )::FLOAT AS summa
             FROM data
         `, [region_id, from, to, main_schet_id, offset, limit])
-        return result.rows[0]
-    } catch (error) {
-        throw new ErrorResponse(error, error.statusCode)
-    }
-}
-
-const showServiceChildService = async (region_id, main_schet_id, parent_id) => {
-    try {
-        const result = await pool.query(
-            `
-              SELECT  
-                  k_h_j_ch.id,
-                  k_h_j_ch.kursatilgan_hizmatlar_jur152_id,
-                  k_h_j_ch.spravochnik_operatsii_id,
-                  k_h_j_ch.summa::FLOAT,
-                  k_h_j_ch.id_spravochnik_podrazdelenie,
-                  k_h_j_ch.id_spravochnik_sostav,
-                  k_h_j_ch.id_spravochnik_type_operatsii
-              FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
-              JOIN users AS u ON k_h_j_ch.user_id = u.id
-              JOIN regions AS r ON u.region_id = r.id
-              WHERE r.id = $1 
-                  AND k_h_j_ch.main_schet_id = $2
-                  AND k_h_j_ch.kursatilgan_hizmatlar_jur152_id = $3
-          `,
-            [region_id, main_schet_id, parent_id],
-        );
-        return result.rows;
+        return {data: rows[0]?.data || [], total: rows[0]?.total_count || 0, summa: rows[0]?.summa || 0}
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
     }
@@ -155,7 +145,11 @@ const showServiceChildService = async (region_id, main_schet_id, parent_id) => {
 
 const getByIdShowServiceService = async (region_id, main_schet_id, id, ignoreDeleted = false) => {
     try {
-        let query = `
+        let ignore = ``
+        if (!ignoreDeleted) {
+            ignore = ` AND k_h_j.isdeleted = false`;
+        }
+        const result = await pool.query(`
                 SELECT 
                     k_h_j.id,
                     k_h_j.doc_num,
@@ -165,20 +159,29 @@ const getByIdShowServiceService = async (region_id, main_schet_id, id, ignoreDel
                     k_h_j.shartnomalar_organization_id,
                     k_h_j.summa::FLOAT,
                     k_h_j.opisanie,
-                    k_h_j.spravochnik_operatsii_own_id
+                    k_h_j.spravochnik_operatsii_own_id,
+                    (
+                        SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
+                        FROM (
+                                SELECT  
+                                    k_h_j_ch.id,
+                                    k_h_j_ch.kursatilgan_hizmatlar_jur152_id,
+                                    k_h_j_ch.spravochnik_operatsii_id,
+                                    k_h_j_ch.summa::FLOAT,
+                                    k_h_j_ch.id_spravochnik_podrazdelenie,
+                                    k_h_j_ch.id_spravochnik_sostav,
+                                    k_h_j_ch.id_spravochnik_type_operatsii
+                                FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
+                                JOIN users AS u ON k_h_j_ch.user_id = u.id
+                                JOIN regions AS r ON u.region_id = r.id
+                                WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = k_h_j.id
+                            ) AS k_h_j_ch
+                    ) AS childs
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 
-                    AND k_h_j.id = $2 
-                    AND k_h_j.main_schet_id = $3
-          `;
-
-        if (!ignoreDeleted) {
-            query += ` AND k_h_j.isdeleted = false`;
-        }
-
-        const result = await pool.query(query, [region_id, id, main_schet_id]);
+                WHERE r.id = $1 AND k_h_j.id = $2 AND k_h_j.main_schet_id = $3 ${ignore}
+        `, [region_id, id, main_schet_id])
         if (!result.rows[0]) {
             throw new ErrorResponse(' show service not found', 404)
         }
@@ -212,7 +215,7 @@ const updateShowServiceService = async (data) => {
             data.id_spravochnik_organization,
             data.shartnomalar_organization_id,
             data.spravochnik_operatsii_own_id,
-            new Date(),
+            tashkentTime(),
             data.id,
         ],
     );
@@ -220,38 +223,18 @@ const updateShowServiceService = async (data) => {
 }
 
 const deleteShowServiceChildService = async (id) => {
-    await pool.query(
-        `
-          DELETE FROM kursatilgan_hizmatlar_jur152_child 
-          WHERE kursatilgan_hizmatlar_jur152_id = $1
-      `,
-        [id],
-    );
+    await pool.query(`DELETE FROM kursatilgan_hizmatlar_jur152_child WHERE kursatilgan_hizmatlar_jur152_id = $1`, [id]);
 }
 
 const deleteShowServiceService = async (id) => {
-    await pool.query(
-        `
-          UPDATE kursatilgan_hizmatlar_jur152 
-          SET  isdeleted = true
-          WHERE id = $1
-      `,
-        [id],
-    );
-    await pool.query(
-        `
-          UPDATE kursatilgan_hizmatlar_jur152_child SET isdeleted = true 
-          WHERE kursatilgan_hizmatlar_jur152_id = $1
-      `,
-        [id],
-    );
+    await pool.query(`UPDATE kursatilgan_hizmatlar_jur152 SET  isdeleted = true WHERE id = $1`, [id]);
+    await pool.query(`UPDATE kursatilgan_hizmatlar_jur152_child SET isdeleted = true WHERE kursatilgan_hizmatlar_jur152_id = $1`, [id]);
 }
 
 module.exports = {
     createShowServiceService,
     createShowServiceChildService,
     getShowServiceService,
-    showServiceChildService,
     getByIdShowServiceService,
     updateShowServiceService,
     deleteShowServiceChildService,
