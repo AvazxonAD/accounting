@@ -10,10 +10,10 @@ const {
   getElemnetById,
 } = require("../../controller/smeta/smeta.grafik.controller");
 
-router.get("/:id", protect, getElemnetById);
-router.get("/", protect, getSmetaGrafik);
-router.post("/", protect, create);
-router.put("/:id", protect, update);
-router.delete("/:id", protect, deleteValue);
+router.get("/:id", getElemnetById);
+router.get("/", getSmetaGrafik);
+router.post("/", create);
+router.put("/:id", update);
+router.delete("/:id", deleteValue);
 
 module.exports = router;

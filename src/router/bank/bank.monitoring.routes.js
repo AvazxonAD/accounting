@@ -6,6 +6,6 @@ const {
   getAllBankMonitoring,
 } = require("../../controller/bank/bank.monitoring.controller");
 
-router.get("/", protect, getAllBankMonitoring);
+router.get("/", getAllBankMonitoring);
 
 module.exports = router;

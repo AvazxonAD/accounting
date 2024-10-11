@@ -27,7 +27,8 @@ const getByLoginUserService = async (login) => {
               'users', access.users,
               'shartnoma', access.shartnoma,
               'jur3', access.jur3,
-              'jur4', access.jur4
+              'jur4', access.jur4,
+              'show_service', access.show_service
             ) AS access_object
           FROM users 
           INNER JOIN role ON role.id = users.role_id

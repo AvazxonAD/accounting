@@ -68,7 +68,7 @@ const jur_3_create = async (req, res) => {
 
 // jur_3 get all
 const jur_3_get_all = async (req, res) => {
-  try {
+    try {
     const region_id = req.user.region_id;
     const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
     await getByIdMainSchetService(region_id, main_schet_id);

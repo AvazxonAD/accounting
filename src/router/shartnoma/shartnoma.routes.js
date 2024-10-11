@@ -10,10 +10,10 @@ const {
   deleteShartnoma,
 } = require("../../controller/shartnoma/shartnoma.controller");
 
-router.post("/", protect, create);
-router.get("/", protect, getAll);
-router.get("/:id", protect, getElementById);
-router.put("/:id", protect, update_shartnoma);
-router.delete("/:id", protect, deleteShartnoma);
+router.post("/", create);
+router.get("/", getAll);
+router.get("/:id", getElementById);
+router.put("/:id", update_shartnoma);
+router.delete("/:id", deleteShartnoma);
 
 module.exports = router;

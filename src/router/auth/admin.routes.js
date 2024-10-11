@@ -11,10 +11,10 @@ const {
   getByIdAdmin,
 } = require("../../controller/auth/admin.conntroller");
 
-router.post("/", protect, createAdmin)
-  .get("/", protect, getAdmin)
-  .put("/:id", protect, updateAdmin)
-  .delete("/:id", protect, deleteAdmin)
-  .get("/:id", protect, getByIdAdmin);
+router.post("/", createAdmin)
+  .get("/", getAdmin)
+  .put("/:id", updateAdmin)
+  .delete("/:id", deleteAdmin)
+  .get("/:id", getByIdAdmin);
 
 module.exports = router;

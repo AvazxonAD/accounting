@@ -11,10 +11,10 @@ const {
   delete_jur_4,
 } = require("../../controller/avans/avans.controller");
 
-router.post("/", protect, jur_4_create);
-router.get("/", protect, getAllJur_4);
-router.put("/:id", protect, jur_4_update);
-router.delete("/:id", protect, delete_jur_4);
-router.get("/:id", protect, getElementByIdjur_4);
+router.post("/", jur_4_create);
+router.get("/", getAllJur_4);
+router.put("/:id", jur_4_update);
+router.delete("/:id", delete_jur_4);
+router.get("/:id", getElementByIdjur_4);
 
 module.exports = router;

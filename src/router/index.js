@@ -1,49 +1,51 @@
 const express = require("express");
 const router = express.Router();
+const { protect } = require('../middleware/auth')
+const police = require('../middleware/police')
 
 // Bank monitoring
-router.use("/bank/monitoring", require("./bank/bank.monitoring.routes"));
-router.use("/bank/income", require("./bank/bank.prixod.routes"));
-router.use("/bank/expense", require("./bank/bank.rasxod.routes"));
+router.use("/bank/monitoring", protect, police('bank'), require("./bank/bank.monitoring.routes"));
+router.use("/bank/income", protect, police('bank'), require("./bank/bank.prixod.routes"));
+router.use("/bank/expense", protect, police('bank'), require("./bank/bank.rasxod.routes"));
 
 // Kassa monitoring
-router.use("/kassa/monitoring", require("./kassa/kassa.monitoring.routes"));
-router.use("/kassa/income", require("./kassa/kassa.prixod.routes"));
-router.use("/kassa/expense", require("./kassa/kassa.rasxod.routes"));
+router.use("/kassa/monitoring", protect, police('kassa'), require("./kassa/kassa.monitoring.routes"));
+router.use("/kassa/income", protect, police('kassa'), require("./kassa/kassa.prixod.routes"));
+router.use("/kassa/expense", protect, police('kassa'), require("./kassa/kassa.rasxod.routes"));
 
 // Auth routes
 router.use("/auth", require("./auth/auth.routes"));
-router.use("/auth/region", require("./auth/region.routes"));
-router.use("/auth/role", require("./auth/role.routes"));
-router.use("/auth/access", require('./auth/access.routes'));
-router.use("/auth/user", require('./auth/user.routes'));
-router.use("/auth/admin", require('./auth/admin.routes'));
+router.use("/auth/region", protect, police('region'), require("./auth/region.routes"));
+router.use("/auth/role", protect, police('role'), require("./auth/role.routes"));
+router.use("/auth/access", protect, police('role'), require('./auth/access.routes'));
+router.use("/auth/user", protect, police('users'), require('./auth/user.routes'));
+router.use("/auth/admin", protect, police('region_users'), require('./auth/admin.routes'));
 
 // spravochnik  routes
-router.use("/spravochnik/podotchet-litso", require("./spravochnik/podochet.litso.routes"));
-router.use("/spravochnik/podrazdelenie", require("./spravochnik/podrazdelenie.routes"));
-router.use("/spravochnik/type-operatsii", require("./spravochnik/type_operatsii.routes"));
-router.use("/spravochnik/organization", require("./spravochnik/organization.routes"));
-router.use("/spravochnik/operatsii", require("./spravochnik/operatsii.routes"));
+router.use("/spravochnik/podotchet-litso", protect, police('spravochnik'), require("./spravochnik/podochet.litso.routes"));
+router.use("/spravochnik/podrazdelenie", protect, police('spravochnik'), require("./spravochnik/podrazdelenie.routes"));
+router.use("/spravochnik/type-operatsii", protect, police('spravochnik'), require("./spravochnik/type_operatsii.routes"));
+router.use("/spravochnik/organization", protect, police('spravochnik'), require("./spravochnik/organization.routes"));
+router.use("/spravochnik/operatsii", protect, police('spravochnik'), require("./spravochnik/operatsii.routes"));
 router.use("/spravochnik/main-schet", require("./spravochnik/main_schet.routes"));
-router.use("/spravochnik/budjet-name", require("./spravochnik/budjet_name.routes"));
-router.use("/spravochnik/sostav", require("./spravochnik/sostav.routes"));
+router.use("/spravochnik/budjet-name", protect, police('spravochnik'), require("./spravochnik/budjet_name.routes"));
+router.use("/spravochnik/sostav", protect, police('spravochnik'), require("./spravochnik/sostav.routes"));
 
 // Smeta routes
-router.use("/smeta/grafik", require("./smeta/smeta.grafik.routes"));
-router.use("/smeta", require("./smeta/smeta.routes"));
+router.use("/smeta/grafik", protect, police('smeta'), require("./smeta/smeta.grafik.routes"));
+router.use("/smeta", protect, police('smeta'), require("./smeta/smeta.routes"));
 
 // shartnoma routes
-router.use("/shartnoma/grafik", require("./shartnoma/shartnoma.grafik.routes"));
-router.use("/shartnoma", require("./shartnoma/shartnoma.routes"));
+router.use("/shartnoma/grafik", protect, police('shartnoma'), require("./shartnoma/shartnoma.grafik.routes"));
+router.use("/shartnoma", protect, police('shartnoma'), require("./shartnoma/shartnoma.routes"));
 
 // akt routes
-router.use("/akt", require("./akt/akt.routes"));
+router.use("/akt", protect, police('jur3'), require("./akt/akt.routes"));
 
 // avans routes 
-router.use("/avans", require("./avans/avans.routes"));
+router.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));
 
 // other routes
-router.use("/services/show", require("./show.services/show.services.routes"));
+router.use("/services/show", protect, police('show_service'), require("./show.services/show.services.routes"));
 
 module.exports = router;

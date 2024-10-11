@@ -12,10 +12,10 @@ const {
 
 const upload = require("../../utils/protect.file");
 
-router.post("/", protect, createSostav);
-router.get("/", protect, getSostav);
-router.put("/:id", protect, updateSostav);
-router.delete("/:id", protect, deleteSostav);
-router.get("/:id", protect, getByIdSostav);
+router.post("/", createSostav);
+router.get("/", getSostav);
+router.put("/:id", updateSostav);
+router.delete("/:id", deleteSostav);
+router.get("/:id", getByIdSostav);
 
 module.exports = router;

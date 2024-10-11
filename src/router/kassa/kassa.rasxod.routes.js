@@ -11,10 +11,10 @@ const {
   getElementByIdKassaRasxod,
 } = require("../../controller/kassa/kassa.rasxod.controller");
 
-router.post("/", protect, kassaRasxodCreate);
-router.get("/", protect, getAllKassaRasxod);
-router.put("/:id", protect, updateKassaRasxodBank);
-router.delete("/:id", protect, deleteKassaRasxodRasxod);
-router.get("/:id", protect, getElementByIdKassaRasxod);
+router.post("/", kassaRasxodCreate);
+router.get("/", getAllKassaRasxod);
+router.put("/:id", updateKassaRasxodBank);
+router.delete("/:id", deleteKassaRasxodRasxod);
+router.get("/:id", getElementByIdKassaRasxod);
 
 module.exports = router;

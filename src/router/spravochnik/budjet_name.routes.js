@@ -10,10 +10,10 @@ const {
   getByIdBudjet,
 } = require("../../controller/spravochnik/budjet_name.controller");
 
-router.post("/", protect, createBudjet);
+router.post("/", createBudjet);
 router.get("/", getBudjet);
-router.put("/:id", protect, updateBudjet);
-router.delete("/:id", protect, deleteBudjet);
-router.get("/:id", protect, getByIdBudjet);
+router.put("/:id", updateBudjet);
+router.delete("/:id", deleteBudjet);
+router.get("/:id", getByIdBudjet);
 
 module.exports = router;

@@ -11,11 +11,11 @@ const {
   getByIdUser
 } = require("../../controller/auth/user.controller");
 
-router.post("/", protect, createUser)
-  .get("/:id", protect, getByIdUser)
-  .get("/", protect, getUser)
-  .put("/:id", protect, updateUser)
-  .delete("/:id", protect, deleteUser);
+router.post("/", createUser)
+  .get("/:id", getByIdUser)
+  .get("/", getUser)
+  .put("/:id", updateUser)
+  .delete("/:id", deleteUser);
 
 
 

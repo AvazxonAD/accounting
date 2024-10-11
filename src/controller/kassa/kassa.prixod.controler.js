@@ -114,7 +114,6 @@ const updateKassaPrixodBank = async (req, res) => {
       const result = await kassaPrixodChild({ ...child, user_id, main_schet_id, kassa_prixod_id: id });
       childs.push(result)
     }
-    console.log(childs)
     prixod.childs = childs
     resFunc(res, 200, prixod)
   } catch (error) {

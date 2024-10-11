@@ -10,10 +10,10 @@ const {
   getByIdRole,
 } = require("../../controller/auth/role.controller");
 
-router.post("/", protect, createRole)
-  .get("/", protect, getAllRole)
-  .put("/:id", protect, updateRole)
-  .delete("/:id", protect, deleteRole)
-  .get("/:id", protect, getByIdRole);
+router.post("/", createRole)
+  .get("/", getAllRole)
+  .put("/:id", updateRole)
+  .delete("/:id", deleteRole)
+  .get("/:id", getByIdRole);
 
 module.exports = router;

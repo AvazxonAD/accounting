@@ -47,7 +47,7 @@ const getPodotchetLitso = async (req, res, next) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result.data, meta)
+    resFunc(res, 200, result?.data || [], meta)
   } catch (error) {
     errorCatch(error, res)
   }

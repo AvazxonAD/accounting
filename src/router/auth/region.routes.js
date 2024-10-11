@@ -10,10 +10,10 @@ const {
   getElementById,
 } = require("../../controller/auth/region.ccontroller");
 
-router.post("/", protect, createRegion)
-  .get("/", protect, getAllReegion)
-  .put("/:id", protect, updateRegion)
-  .delete("/:id", protect, deleteRegion)
-  .get("/:id", protect, getElementById);
+router.post("/", createRegion)
+  .get("/", getAllReegion)
+  .put("/:id", updateRegion)
+  .delete("/:id", deleteRegion)
+  .get("/:id", getElementById);
 
 module.exports = router;

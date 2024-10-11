@@ -49,11 +49,8 @@ const getAllPodotChetService = async (region_id, offset, limit) => {
         FROM spravochnik_podotchet_litso AS  s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1
-          AND s_p_l.isdeleted = false
-        ORDER BY s_p_l.id
-        OFFSET $2 
-        LIMIT $3
+        WHERE r.id = $1 AND s_p_l.isdeleted = false
+        ORDER BY s_p_l.id OFFSET $2 LIMIT $3
       )
       SELECT 
         ARRAY_AGG(row_to_json(data)) AS data,
@@ -61,8 +58,7 @@ const getAllPodotChetService = async (region_id, offset, limit) => {
         FROM spravochnik_podotchet_litso AS s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1
-          AND s_p_l.isdeleted = false)::INTEGER AS total_count
+        WHERE r.id = $1 AND s_p_l.isdeleted = false)::INTEGER AS total_count
       FROM data
       `, [region_id, offset, limit],
     );

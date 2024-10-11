@@ -10,10 +10,10 @@ const {
   getElementByIdBankRasxod,
 } = require("../../controller/bank/bank.rasxod.controller");
 
-router.post("/", protect, bank_rasxod);
-router.put("/:id", protect, bank_rasxod_update);
-router.get("/", protect, getAllBankRasxod);
-router.delete("/:id", protect, delete_bank_rasxod);
-router.get("/:id", protect, getElementByIdBankRasxod);
+router.post("/", bank_rasxod);
+router.put("/:id", bank_rasxod_update);
+router.get("/", getAllBankRasxod);
+router.delete("/:id", delete_bank_rasxod);
+router.get("/:id", getElementByIdBankRasxod);
 
 module.exports = router;

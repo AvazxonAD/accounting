@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("../middleware/asyncHandler.js");
 const ErrorResponse = require("../utils/errorResponse.js");
-const pool = require("../config/db.js");
 
 exports.protect = asyncHandler(async (req, res, next) => {
   let token;
@@ -21,7 +20,6 @@ exports.protect = asyncHandler(async (req, res, next) => {
   if (!decoded) {
     return next(new ErrorResponse("Siz tizimga kirmagansiz", 403));
   }
-
   const currentTimestamp = Math.floor(Date.now() / 1000);
   if (decoded.exp && decoded.exp < currentTimestamp) {
     return next(new ErrorResponse("Token muddati tugagan", 403));

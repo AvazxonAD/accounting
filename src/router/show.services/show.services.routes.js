@@ -10,11 +10,11 @@ const {
     deleteShowService
 } = require("../../controller/show.services/show.services.controller");
 
-router.post("/", protect, createController)
-    .get('/', protect, getShowService)
-    .get('/:id', protect, getByIdShowService)
-    .put('/:id', protect, updateShowService)
-    .delete('/:id', protect, deleteShowService)
+router.post("/", createController)
+    .get('/', getShowService)
+    .get('/:id', getByIdShowService)
+    .put('/:id', updateShowService)
+    .delete('/:id', deleteShowService)
 
 
 module.exports = router;

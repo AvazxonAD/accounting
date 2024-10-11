@@ -8,7 +8,7 @@ const {
     updateAccess
 } = require("../../controller/auth/access.controller");
 
-router.get('/:id', protect, getByIdAccess)
-router.put('/:id', protect, updateAccess)
+router.get('/:id', getByIdAccess)
+router.put('/:id', updateAccess)
 
 module.exports = router;

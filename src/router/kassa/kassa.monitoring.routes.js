@@ -6,6 +6,6 @@ const {
   getAllKassaMonitoring,
 } = require("../../controller/kassa/kassa.monitoring.controller");
 
-router.get("/", protect, getAllKassaMonitoring);
+router.get("/", getAllKassaMonitoring);
 
 module.exports = router;

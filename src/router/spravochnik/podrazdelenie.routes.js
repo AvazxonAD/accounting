@@ -12,10 +12,10 @@ const {
   getByIdPodrazdelenie,
 } = require("../../controller/spravochnik/podrazdelenie.controller");
 
-router.post("/", protect, createPodrazdelenie);
-router.get("/", protect, getPodrazdelenie);
-router.put("/:id", protect, updatePodrazdelenie);
-router.delete("/:id", protect, deletePodrazdelenie);
-router.get("/:id", protect, getByIdPodrazdelenie);
+router.post("/", createPodrazdelenie);
+router.get("/", getPodrazdelenie);
+router.put("/:id", updatePodrazdelenie);
+router.delete("/:id", deletePodrazdelenie);
+router.get("/:id", getByIdPodrazdelenie);
 
 module.exports = router;
