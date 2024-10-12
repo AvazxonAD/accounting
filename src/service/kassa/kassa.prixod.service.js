@@ -75,7 +75,6 @@ const kassaPrixodChild = async (data) => {
 
 const getAllKassaPrixodDb = async (region_id, main_schet_id, from, to, offset, limit) => {
   try {
-    console.log(region_id, main_schet_id, from, to, offset, limit)
     const result = await pool.query(
       `
         WITH data AS (
@@ -182,7 +181,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
           JOIN regions AS r ON r.id = u.region_id
           LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
           WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.id = $3 ${ignore}
-        `, [main_schet_id, region_id, id]);
+        `, [region_id, main_schet_id, id]);
       if(!result.rows[0]){
         throw new ErrorResponse('kassa prixod doc not found', 404)
       }
