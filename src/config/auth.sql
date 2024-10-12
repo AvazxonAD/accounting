@@ -29,23 +29,29 @@ CREATE TABLE users (
 
 CREATE TABLE access (
   id SERIAL PRIMARY KEY,
-  kassa BOOLEAN DEFAULT FALSE,
-  bank BOOLEAN DEFAULT FALSE,
-  spravochnik BOOLEAN DEFAULT FALSE,
-  organization BOOLEAN DEFAULT FALSE,
-  region_users BOOLEAN DEFAULT FALSE,
-  smeta BOOLEAN DEFAULT false,
-  region BOOLEAN DEFAULT false,
-  role BOOLEAN DEFAULT false,
-  users BOOLEAN DEFAULT false,
-  shartnoma BOOLEAN DEFAULT false,
-  jur3 BOOLEAN DEFAULT FALSE,
-  jur4 BOOLEAN DEFAULT FALSE,
-  podotchet_monitoring BOOLEAN DEFAULT FALSE,
-  show_service BOOLEAN DEFAULT FALSE,
+  region BOOLEAN DEFAULT FALSE, 
+  role BOOLEAN DEFAULT FALSE, 
+  users BOOLEAN DEFAULT FALSE, 
+  budjet_get BOOLEAN DEFAULT FALSE,    -- Ikkinchi jadvalda mavjud emas
+  budjet BOOLEAN DEFAULT FALSE,        -- Ikkinchi jadvalda mavjud emas
+  access BOOLEAN DEFAULT FALSE,        -- Ikkinchi jadvalda mavjud emas
+  spravochnik BOOLEAN DEFAULT FALSE, 
+  smeta BOOLEAN DEFAULT FALSE, 
+  smeta_get BOOLEAN DEFAULT FALSE,     -- Ikkinchi jadvalda mavjud emas
+  smeta_grafik BOOLEAN DEFAULT FALSE,  -- Ikkinchi jadvalda mavjud emas
+  bank BOOLEAN DEFAULT FALSE, 
+  kassa BOOLEAN DEFAULT FALSE, 
+  shartnoma BOOLEAN DEFAULT FALSE, 
+  jur3 BOOLEAN DEFAULT FALSE, 
+  jur152 BOOLEAN DEFAULT FALSE,        -- Ikkinchi jadvalda mavjud emas
+  jur4 BOOLEAN DEFAULT FALSE, 
+  region_users BOOLEAN DEFAULT FALSE, 
+  podotchet_monitoring BOOLEAN DEFAULT FALSE, 
+  show_service BOOLEAN DEFAULT FALSE, 
   role_id INT REFERENCES role(id),
   user_id INT REFERENCES users(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
-  isdeleted BOOLEAN DEFAULT FALSE
+  isdeleted BOOLEAN DEFAULT FALSE, 
+  organization BOOLEAN DEFAULT FALSE    -- Bu ustun faqat ikkinchi jadvalda bor
 );

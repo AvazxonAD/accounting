@@ -119,8 +119,8 @@ const getAllKassaPrixodDb = async (region_id, main_schet_id, from, to, offset, l
                   FROM kassa_prixod AS k_p
                   JOIN users AS u ON u.id = k_p.user_id
                   JOIN regions AS r ON r.id = u.region_id  
-                  WHERE k_p.main_schet_id = $1 
-                    AND r.id = $2 
+                  WHERE k_p.main_schet_id = $2 
+                    AND r.id = $1
                     AND k_p.doc_date BETWEEN $3 AND $4 
                     AND k_p.isdeleted = false
               )::FLOAT AS summa,
