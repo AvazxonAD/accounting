@@ -142,21 +142,21 @@ const getPrixodService = async (region_id, main_schet_id, offset, limit, from, t
           JOIN users AS u ON b_p.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
           JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization 
-          WHERE b_p.main_schet_id = $1 AND r.id = $2 AND b_p.isdeleted = false AND doc_date BETWEEN $3 AND $4 ORDER BY b_p.doc_date OFFSET $5 LIMIT $6)
+          WHERE b_p.main_schet_id = $2 AND r.id = $1 AND b_p.isdeleted = false AND doc_date BETWEEN $3 AND $4 ORDER BY b_p.doc_date OFFSET $5 LIMIT $6)
         SELECT 
           ARRAY_AGG(row_to_json(data)) AS data,
           (SELECT SUM(bank_prixod.summa)
             FROM bank_prixod 
             JOIN users ON bank_prixod.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.isdeleted = false AND regions.id = $2 AND doc_date BETWEEN $3 AND $4)::FLOAT AS summa,
+            WHERE bank_prixod.main_schet_id = $2 AND bank_prixod.isdeleted = false AND regions.id = $1 AND doc_date BETWEEN $3 AND $4)::FLOAT AS summa,
           (SELECT COUNT(bank_prixod.id)
             FROM bank_prixod 
             JOIN users ON bank_prixod.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE bank_prixod.main_schet_id = $1 AND bank_prixod.isdeleted = false AND regions.id = $2  AND doc_date BETWEEN $3 AND $4)::FLOAT AS total_count
+            WHERE bank_prixod.main_schet_id = $2 AND bank_prixod.isdeleted = false AND regions.id = $1  AND doc_date BETWEEN $3 AND $4)::FLOAT AS total_count
         FROM data
-    `, [main_schet_id, region_id, from, to, offset, limit],
+    `, [ region_id, main_schet_id, from, to, offset, limit],
     );
     return { data: result.rows[0]?.data || [], summa: result.rows[0]?.summa || 0, total: result.rows[0]?.total_count || 0 };
   } catch (error) {
@@ -209,9 +209,9 @@ const getByIdPrixodService = async (region_id, main_schet_id, id, ignoreDeleted 
       FROM bank_prixod AS b_p
       JOIN users AS u ON b_p.user_id = u.id
       JOIN regions AS r ON u.region_id = r.id
-      WHERE b_p.main_schet_id = $1 AND r.id = $2 AND b_p.id = $3 ${ignore}
+      WHERE b_p.main_schet_id = $2 AND r.id = $1 AND b_p.id = $3 ${ignore}
       ORDER BY b_p.doc_date ASC
-    `, [main_schet_id, region_id, id]);
+    `, [region_id, main_schet_id, id]);
     
     if (!result.rows[0]) {
       throw new ErrorResponse('bank prixod doc not found', 404);

@@ -117,8 +117,8 @@ const getAllKassaRasxodDb = async (region_id, main_schet_id, from, to, offset, l
                   FROM kassa_rasxod AS k_r
                   JOIN users AS u ON u.id = k_r.user_id
                   JOIN regions AS r ON r.id = u.region_id  
-                  WHERE k_r.main_schet_id = $1 
-                    AND r.id = $2 
+                  WHERE k_r.main_schet_id = $2
+                    AND r.id = $1
                     AND k_r.doc_date BETWEEN $3 AND $4 
                     AND k_r.isdeleted = false
               )::FLOAT AS summa,
@@ -133,7 +133,7 @@ const getAllKassaRasxodDb = async (region_id, main_schet_id, from, to, offset, l
                     AND k_r.isdeleted = false
               )::INTEGER AS total_count
         FROM data
-      `, [main_schet_id, region_id, from, to, offset, limit]);
+      `, [region_id, main_schet_id, from, to, offset, limit]);
     return { data: result.rows[0]?.data || [], summa: result.rows[0].summa, total: result.rows[0].total_count, };
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -179,7 +179,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
         JOIN regions AS r ON r.id = u.region_id
         JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
         WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.id = $3 ${ignore}
-      `, [main_schet_id, region_id, id]);
+      `, [region_id, main_schet_id, id]);
     if (!result.rows[0]) {
       throw new ErrorResponse('kassa prixod doc not found', 404)
     }
