@@ -75,6 +75,7 @@ const kassaPrixodChild = async (data) => {
 
 const getAllKassaPrixodDb = async (region_id, main_schet_id, from, to, offset, limit) => {
   try {
+    console.log(region_id, main_schet_id, from, to, offset, limit)
     const result = await pool.query(
       `
         WITH data AS (
@@ -108,7 +109,7 @@ const getAllKassaPrixodDb = async (region_id, main_schet_id, from, to, offset, l
               FROM kassa_prixod AS k_p
               JOIN users AS u ON u.id = k_p.user_id
               JOIN regions AS r ON r.id = u.region_id
-              JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
+              LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
               WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.doc_date BETWEEN $3 AND $4 ORDER BY k_p.doc_date
               OFFSET $5 LIMIT $6
           )
@@ -135,7 +136,7 @@ const getAllKassaPrixodDb = async (region_id, main_schet_id, from, to, offset, l
                     AND k_p.isdeleted = false
               )::INTEGER AS total_count
         FROM data
-      `, [main_schet_id, region_id, from, to, offset, limit]);
+      `, [region_id, main_schet_id, from, to, offset, limit]);
     return { data: result.rows[0]?.data || [], summa: result.rows[0].summa, total: result.rows[0].total_count, };
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -179,7 +180,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
           FROM kassa_prixod AS k_p
           JOIN users AS u ON u.id = k_p.user_id
           JOIN regions AS r ON r.id = u.region_id
-          JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
+          LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
           WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.id = $3 ${ignore}
         `, [main_schet_id, region_id, id]);
       if(!result.rows[0]){
