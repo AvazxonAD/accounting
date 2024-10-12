@@ -49,6 +49,6 @@ router.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));
 router.use("/services/show", protect, police('show_service'), require("./show.services/show.services.routes"));
 
 // podotchet monitoring 
-router.use('/podotchet/monitoring', protect, police('podocte'))
+router.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet/podotchet.monitoring.router'))
 
 module.exports = router;

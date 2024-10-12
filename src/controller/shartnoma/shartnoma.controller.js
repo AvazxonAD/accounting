@@ -40,10 +40,10 @@ const create = async (req, res) => {
 const getAll = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { page, limit, main_schet_id, organization_id, pudratchi_bool } = validationResponse(queryValidation, req.query)
+    const { page, limit, main_schet_id, organization, pudratchi_bool } = validationResponse(queryValidation, req.query)
     await getByIdMainSchetService(region_id, main_schet_id);
     const offset = (page - 1) * limit;
-    const { data, total } = await getAllShartnoma(region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool);
+    const { data, total } = await getAllShartnoma(region_id, main_schet_id, offset, limit, organization, pudratchi_bool);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
