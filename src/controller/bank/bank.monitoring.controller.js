@@ -29,10 +29,9 @@ const getAllBankMonitoring = async (req, res) => {
       backPage: page === 1 ? null : page - 1,
       prixod_sum,
       rasxod_sum,
-      summaFrom,
-      summaTo
+      summa_from: summaFrom,
+      summa_to: summaTo
     }
-
     getLogger.info(`Muvaffaqiyatli bank monitoring doclar olindi. UserId: ${req.user.id}`)
     resFunc(res, 200, data, meta)
   } catch (error) {
