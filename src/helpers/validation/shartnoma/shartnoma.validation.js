@@ -32,8 +32,7 @@ const queryValidation = Joi.object({
   main_schet_id: Joi.number().min(1),
   organization: Joi.number().min(1),
   pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
-
-})
+}).options({ stripUnknown: true });
 
 module.exports = {
   shartnomaValidation,

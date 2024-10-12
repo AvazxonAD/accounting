@@ -12,7 +12,7 @@ const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
   type_schet: Joi.string()
-})
+}).options({ stripUnknown: true });
 
 module.exports = {
   operatsiiValidation,
