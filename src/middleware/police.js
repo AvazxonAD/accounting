@@ -5,7 +5,7 @@ const police = (accessKey) => {
       const userAccess = req.user.access_object;
       if (!userAccess[accessKey]) {
         throw new ErrorResponse('Access denied: You do not have permission to perform this action', 403)
-      } 
+      }
       next();
     };
   } catch (error) {
@@ -13,4 +13,4 @@ const police = (accessKey) => {
   }
 };
 
-module.exports = police
+module.exports = { police }

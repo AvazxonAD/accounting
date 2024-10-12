@@ -11,12 +11,10 @@ exports.protect = asyncHandler(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(" ")[1];
   }
-
   if (!token) {
     return next(new ErrorResponse("Token notog'ri jonatildi", 403));
   }
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
   if (!decoded) {
     return next(new ErrorResponse("Siz tizimga kirmagansiz", 403));
   }

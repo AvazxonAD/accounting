@@ -8,7 +8,7 @@ const { getAllMonitoring } = require('../../service/podotchet/podotchet.monitori
 
 const getPodotchetMonitoring = async (req, res) => {
     try {
-        const { limit, page, main_schet_id, from, to } = validationResponse(queryValidation, req.query)
+        const { limit, page, main_schet_id, from, to, podotchet } = validationResponse(queryValidation, req.query)
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
@@ -18,7 +18,8 @@ const getPodotchetMonitoring = async (req, res) => {
             offset,
             limit,
             from,
-            to
+            to,
+            podotchet
         );
         const pageCount = Math.ceil(total / limit);
         const meta = {

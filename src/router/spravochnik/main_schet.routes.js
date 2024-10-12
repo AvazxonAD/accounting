@@ -2,7 +2,7 @@ const { Router } = require("express");
 const router = Router();
 
 const { protect } = require("../../middleware/auth");
-const police = require('../../middleware/police')
+const { police } = require('../../middleware/police')
 const {
   create,
   getAll,
