@@ -159,7 +159,7 @@ const getAllJur3DB = async (region_id, main_schet_id, from, to, offset, limit) =
 
 const getElementByIdJur_3DB = async (region_id, main_schet_id, id, ignoreDeleted = false) => {
     try {
-      let filter = `b_i_j3.main_schet_id = $1 AND r.id = $2 AND b_i_j3.id = $3`
+      let filter = `b_i_j3.main_schet_id = $2 AND r.id = $1 AND b_i_j3.id = $3`
       if (!ignoreDeleted) {
         filter += ` AND b_i_j3.isdeleted = false`;
       }
