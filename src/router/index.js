@@ -45,7 +45,10 @@ router.use("/akt", protect, police('jur3'), require("./akt/akt.routes"));
 // avans routes 
 router.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));
 
-// other routes
+// show service  routes
 router.use("/services/show", protect, police('show_service'), require("./show.services/show.services.routes"));
+
+// podotchet monitoring 
+router.use('/podotchet/monitoring', protect, police('podocte'))
 
 module.exports = router;

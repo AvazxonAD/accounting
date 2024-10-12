@@ -6,7 +6,6 @@ const { errorCatch } = require('../../helpers/errorCatch')
 const { validationResponse } = require("../../helpers/response-for-validation");
 const { resFunc } = require("../../helpers/resFunc");
 const { queryValidation } = require('../../helpers/validation/other/query.validation')
-
 const {
   createPodotChetService,
   updatePodotchetService,

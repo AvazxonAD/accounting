@@ -41,6 +41,7 @@ CREATE TABLE access (
   shartnoma BOOLEAN DEFAULT false,
   jur3 BOOLEAN DEFAULT FALSE,
   jur4 BOOLEAN DEFAULT FALSE,
+  podotchet_monitoring BOOLEAN DEFAULT FALSE,
   show_service BOOLEAN DEFAULT FALSE,
   role_id INT REFERENCES role(id),
   user_id INT REFERENCES users(id),
