@@ -21,6 +21,9 @@ router.use("/auth/access", protect, police('role'), require('./auth/access.route
 router.use("/auth/user", protect, police('users'), require('./auth/user.routes'));
 router.use("/auth/admin", protect, police('region_users'), require('./auth/admin.routes'));
 
+// organization monitoring 
+router.use('/organization/monitoring', protect, police('organization_monitoring'), require('./organization/organization.router'))
+
 // spravochnik  routes
 router.use("/spravochnik/podotchet-litso", protect, police('spravochnik'), require("./spravochnik/podochet.litso.routes"));
 router.use("/spravochnik/podrazdelenie", protect, police('spravochnik'), require("./spravochnik/podrazdelenie.routes"));
@@ -46,9 +49,10 @@ router.use("/akt", protect, police('jur3'), require("./akt/akt.routes"));
 router.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));
 
 // show service  routes
-router.use("/services/show", protect, police('show_service'), require("./show.services/show.services.routes"));
+router.use("/services/show", protect, police('jur152'), require("./show.services/show.services.routes"));
 
 // podotchet monitoring 
 router.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet/podotchet.monitoring.router'))
+
 
 module.exports = router;
