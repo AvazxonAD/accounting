@@ -17,7 +17,7 @@ router.use("/kassa/expense", protect, police('kassa'), require("./kassa/kassa.ra
 router.use("/auth", require("./auth/auth.routes"));
 router.use("/auth/region", protect, police('region'), require("./auth/region.routes"));
 router.use("/auth/role", protect, police('role'), require("./auth/role.routes"));
-router.use("/auth/access", protect, police('role'), require('./auth/access.routes'));
+router.use("/auth/access", protect, police('access'), require('./auth/access.routes'));
 router.use("/auth/user", protect, police('users'), require('./auth/user.routes'));
 router.use("/auth/admin", protect, police('region_users'), require('./auth/admin.routes'));
 
@@ -31,12 +31,12 @@ router.use("/spravochnik/type-operatsii", protect, police('spravochnik'), requir
 router.use("/spravochnik/organization", protect, police('spravochnik'), require("./spravochnik/organization.routes"));
 router.use("/spravochnik/operatsii", protect, police('spravochnik'), require("./spravochnik/operatsii.routes"));
 router.use("/spravochnik/main-schet", require("./spravochnik/main_schet.routes"));
-router.use("/spravochnik/budjet-name", require("./spravochnik/budjet_name.routes"));
+router.use("/spravochnik/budjet-name", protect, police('budjet'), require("./spravochnik/budjet_name.routes"));
 router.use("/spravochnik/sostav", protect, police('spravochnik'), require("./spravochnik/sostav.routes"));
 
 // Smeta routes
 router.use("/smeta/grafik", protect, police('smeta_grafik'), require("./smeta/smeta.grafik.routes"));
-router.use("/smeta", require("./smeta/smeta.routes"));
+router.use("/smeta", protect, police('smeta'), require("./smeta/smeta.routes"));
 
 // shartnoma routes
 router.use("/shartnoma/grafik", protect, police('shartnoma'), require("./shartnoma/shartnoma.grafik.routes"));
