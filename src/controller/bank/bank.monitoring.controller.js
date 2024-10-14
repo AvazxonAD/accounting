@@ -1,12 +1,14 @@
-const { getAllMonitoring } = require("../../service/bank/bank.monitoring.service");
-const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
+const { getAllMonitoring, bankCapService } = require("../../service/bank/bank.monitoring.service");
+const { queryValidation, bankCapValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getLogger } = require('../../helpers/log_functions/logger')
 const { validationResponse } = require('../../helpers/response-for-validation');
 const { errorCatch } = require("../../helpers/errorCatch");
 const { resFunc } = require("../../helpers/resFunc");
 const XLSX = require('xlsx')
-const path = require('path')
+const path = require('path');
+const ErrorResponse = require("../../utils/errorResponse");
+const { returnStringDate } = require('../../utils/date.function')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
@@ -43,30 +45,43 @@ const getAllBankMonitoring = async (req, res) => {
 
 const capExcelCreate = async (req, res) => {
   try {
+    const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
+    const region_id = req.user.region_id;
+    const title = `Дневной отчет шапка Ж.О. №2`;
+    const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
+    const data = await bankCapService(region_id, main_schet_id, from, to);
     const workBook = XLSX.utils.book_new();
-    const data = [
-      [{ v: "Дневной отчет папка Ж.О. №2", s: { font: { bold: true } } }], 
-      [{ v: "За период с 1-январь 2023 по 14-октябрь 2024", s: { font: { bold: true } } }], 
-      [{ v: "Остаток к началу дня: 0.00", s: { font: { bold: true } } }], 
-      ["Счет", "Приход", "Расход"], 
-      ["120", 0, 9648390800],
-      ["159", 1975060, 0],
+    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
+    const sheetData = [
+      [title],
+      [dateBetween],
+      [`Остаток к началу дня: ${data.balance_from.toFixed(2)}`], 
+      ['Счет', 'Приход', 'Расход'],  
     ];
-    const fileName = `bank_shapka_${new Date().getTime()}`;
-    const workSheet = XLSX.utils.aoa_to_sheet(data);
+    data.data.forEach(item => {
+      sheetData.push([item.schet, item.prixod_sum.toFixed(2), item.rasxod_sum.toFixed(2)]);
+    });
+    sheetData.push(['Всего', data.prixod_sum.toFixed(2), data.rasxod_sum.toFixed(2)]);
+    sheetData.push([`Остаток концу дня: ${data.balance_to.toFixed(2)}`]); 
+    const workSheet = XLSX.utils.aoa_to_sheet(sheetData);
+    workSheet['!cols'] = [
+      { wch: 50 },
+      { wch: 20 },
+      { wch: 20 },
+    ];
     XLSX.utils.book_append_sheet(workBook, workSheet, 'Hisobot');
-    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName); 
+    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName);
     XLSX.writeFile(workBook, filePath);
-    res.download(filePath, 'hisobot.xlsx', (err) => {
+    return res.download(filePath, (err) => {
       if (err) {
-        console.error('Faylni yuklab olishda xatolik:', err);
-        return res.status(500).send('Faylni yuklab olishda xatolik yuz berdi.');
+        throw new ErrorResponse(err, err.statusCode);
       }
     });
   } catch (error) {
     errorCatch(error, res);
   }
 };
+
 
 
 module.exports = {
