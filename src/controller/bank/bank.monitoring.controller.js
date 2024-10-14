@@ -39,6 +39,10 @@ const getAllBankMonitoring = async (req, res) => {
   }
 }
 
+const capExcelCreate = async () => {
+  
+}
+
 module.exports = {
   getAllBankMonitoring
 };
