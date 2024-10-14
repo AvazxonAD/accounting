@@ -5,6 +5,8 @@ const { getLogger } = require('../../helpers/log_functions/logger')
 const { validationResponse } = require('../../helpers/response-for-validation');
 const { errorCatch } = require("../../helpers/errorCatch");
 const { resFunc } = require("../../helpers/resFunc");
+const XLSX = require('xlsx')
+const path = require('path')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
@@ -39,10 +41,35 @@ const getAllBankMonitoring = async (req, res) => {
   }
 }
 
-const capExcelCreate = async () => {
-  
-}
+const capExcelCreate = async (req, res) => {
+  try {
+    const workBook = XLSX.utils.book_new();
+    const data = [
+      [{ v: "Дневной отчет папка Ж.О. №2", s: { font: { bold: true } } }], 
+      [{ v: "За период с 1-январь 2023 по 14-октябрь 2024", s: { font: { bold: true } } }], 
+      [{ v: "Остаток к началу дня: 0.00", s: { font: { bold: true } } }], 
+      ["Счет", "Приход", "Расход"], 
+      ["120", 0, 9648390800],
+      ["159", 1975060, 0],
+    ];
+    const fileName = `bank_shapka_${new Date().getTime()}`;
+    const workSheet = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(workBook, workSheet, 'Hisobot');
+    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName); 
+    XLSX.writeFile(workBook, filePath);
+    res.download(filePath, 'hisobot.xlsx', (err) => {
+      if (err) {
+        console.error('Faylni yuklab olishda xatolik:', err);
+        return res.status(500).send('Faylni yuklab olishda xatolik yuz berdi.');
+      }
+    });
+  } catch (error) {
+    errorCatch(error, res);
+  }
+};
+
 
 module.exports = {
-  getAllBankMonitoring
+  getAllBankMonitoring,
+  capExcelCreate
 };
