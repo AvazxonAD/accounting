@@ -20,6 +20,9 @@ const { validationResponse } = require("../../helpers/response-for-validation");
 const login = asyncHandler(async (req, res, next) => {
   const { login, password } = validationResponse(authValidation, req.body)
   const user = await getByLoginUserService(login);
+  if(!user){
+    throw new ErrorResponse('User not found', 404)
+  }
   const matchPassword = await bcrypt.compare(password, user.password);
   if (!matchPassword) {
     return next(new ErrorResponse("Incorrect login or password", 403));

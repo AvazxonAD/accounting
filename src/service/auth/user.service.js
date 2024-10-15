@@ -17,6 +17,17 @@ const createUserSerivice = async (login, password, fio, role_id, region_id) => {
   }
 };
 
+const checkAdminService = async (region_id, role_id) => {
+  try {
+    const test = await pool.query(`SELECT * FROM users WHERE role_id = $1 AND isdeleted = false AND region_id = $2`, [role_id, region_id])
+    if(test.rows[0]){
+      throw new ErrorResponse(`The information has already been entered`, 400)
+    }
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+} 
+
 const getPasswordUser = async(id) => {
   try {
     const password = await pool.query(`SELECT password FROM users WHERE id = $1 AND isdeleted = false`, [id])
@@ -40,7 +51,7 @@ const getByIdUserService = async (id) => {
                 'kassa', access.kassa,
                 'bank', access.bank,
                 'spravochnik', access.spravochnik,
-                'organization', access.organization,
+                'organization_monitoring', access.organization_monitoring,
                 'region_users', access.region_users,
                 'smeta', access.smeta,
                 'region', access.region,
@@ -142,5 +153,6 @@ module.exports = {
   updateUserService,
   deleteUserService,
   getAdminService,
-  getPasswordUser
+  getPasswordUser,
+  checkAdminService
 };

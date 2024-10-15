@@ -26,7 +26,8 @@ const getByRoleIdAccessService = async (region_id, role_id) => {
                 access.shartnoma,
                 access.jur3,
                 access.jur4,
-                role.name AS role_name
+                role.name AS role_name,
+                region_id
             FROM access
             JOIN users ON access.user_id = users.id
             JOIN regions ON regions.id = users.region_id

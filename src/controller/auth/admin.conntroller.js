@@ -17,6 +17,7 @@ const {
   updateUserService,
   deleteUserService,
   getAdminService,
+  checkAdminService
 } = require("../../service/auth/user.service");
 const { errorCatch } = require("../../helpers/errorCatch");
 const { resFunc } = require("../../helpers/resFunc");
@@ -36,6 +37,7 @@ const createAdmin = async (req, res) => {
       throw new ErrorResponse("This login has already been registered", 409)
     }
     await getByIdRegionService(region_id);
+    await checkAdminService(region_id, role.id)
     const admin = await createUserSerivice(login, hashedPassword, fio, role.id, region_id);
     const roles = await getRoleService()
     for (let role of roles) {
@@ -79,7 +81,9 @@ const updateAdmin = async (req, res) => {
       throw new ErrorResponse("This login has already been registered", 409)
       }
     }
-  
+    if(oldUser.role_id !== role.id || oldUser.region_id !== region_id){
+      await checkAdminService(region_id, role.id)
+    }
     const admin = await updateUserService(login, hashedPassword, fio, role.id, region_id, id);
     putLogger.info(`Foydalanuvchi yangilandi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
   

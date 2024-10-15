@@ -42,9 +42,6 @@ const getByLoginUserService = async (login) => {
       `,
       [login.trim()],
     );
-    if(!result.rows[0]){
-      throw new ErrorResponse('Incorrect login or password', 403)
-    }
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
