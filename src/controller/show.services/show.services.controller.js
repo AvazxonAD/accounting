@@ -40,14 +40,14 @@ const createController = async (req, res) => {
         }
         for (let child of data.childs) {
             await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'show_service')
-            if (data.id_spravochnik_podrazdelenie) {
-                await getByIdPodrazlanieService(region_id, data.id_spravochnik_podrazdelenie)
+            if (child.id_spravochnik_podrazdelenie) {
+                await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
             }
-            if (data.id_spravochnik_sostav) {
-                await getByIdSostavService(region_id, data.id_spravochnik_sostav)
+            if (child.id_spravochnik_sostav) {
+                await getByIdSostavService(region_id, child.id_spravochnik_sostav)
             }
-            if (data.id_spravochnik_type_operatsii) {
-                await getByIdTypeOperatsiiService(region_id, data.id_spravochnik_type_operatsii)
+            if (child.id_spravochnik_type_operatsii) {
+                await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
             }
         }
         const summa = returnAllChildSumma(data.childs)
