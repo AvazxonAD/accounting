@@ -4,7 +4,7 @@ const accessValidation = Joi.object({
   kassa: Joi.boolean().default(false),
   bank: Joi.boolean().default(false),
   spravochnik: Joi.boolean().default(false),
-  organization: Joi.boolean().default(false),
+  organization_monitoring: Joi.boolean().default(false),
   region_users: Joi.boolean().default(false),
   smeta: Joi.boolean().default(false),
   region: Joi.boolean().default(false),
