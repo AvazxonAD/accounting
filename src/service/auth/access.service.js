@@ -1,9 +1,9 @@
 const pool = require("../../config/db");
 const ErrorResponse = require('../../utils/errorResponse')
 
-const createAccessService = async (role_id, user_id) => {
+const createAccessService = async (role_id, region_id) => {
     try {
-        const result = await pool.query(`INSERT INTO access (role_id, user_id) VALUES($1, $2) RETURNING *`, [role_id, user_id])
+        const result = await pool.query(`INSERT INTO access (role_id, region_id) VALUES($1, $2) RETURNING *`, [role_id, region_id])
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
     }
@@ -29,10 +29,8 @@ const getByRoleIdAccessService = async (region_id, role_id) => {
                 role.name AS role_name,
                 region_id
             FROM access
-            JOIN users ON access.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
             JOIN role ON role.id = access.role_id
-            WHERE regions.id = $1 AND role.id = $2
+            WHERE region_id = $1 AND role.id = $2
         `, [region_id, role_id])
         return access.rows[0]
     } catch (error) {
@@ -58,9 +56,7 @@ const getByIdAccessService = async (region_id, access_id) => {
                 access.jur3,
                 access.jur4
             FROM access
-            JOIN users ON access.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE regions.id = $1 AND access.id = $2
+            WHERE region_id = $1 AND access.id = $2
         `, [region_id, access_id])
         if(!access.rows[0]){
             throw new ErrorResponse('access not found', 404)

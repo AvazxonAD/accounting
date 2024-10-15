@@ -36,7 +36,7 @@ const createRole = async (req, res) => {
     const admin_role = await getAdminRoleService()
     const users = await getAdminService(admin_role.id)
     for (let user of users) {
-      await createAccessService(role.id, user.id)
+      await createAccessService(role.id, user.region_id)
     }
     postLogger.info(`Rol yaratildi: ${data.name}. Foydalanuvchi ID: ${user_id}`);
   
