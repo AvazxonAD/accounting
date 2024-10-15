@@ -2,7 +2,7 @@ const asyncHandler = require('../../middleware/asyncHandler')
 const { accessValidation } = require('../../helpers/validation/auth/access.validation')
 const ErrorResponse = require('../../utils/errorResponse')
 const { validationResponse } = require('../../helpers/response-for-validation')
-
+const { getByIdRoleService } = require('../../service/auth/role.service')
 const {
     getByRoleIdAccessService,
     getByIdAccessService,
@@ -28,6 +28,7 @@ const getByIdAccess = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const role_id = req.params.id
+        await getByIdRoleService(role_id)
         const access = await getByRoleIdAccessService(region_id, role_id)
         resFunc(res, 200, access)
     } catch (error) {

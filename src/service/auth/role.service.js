@@ -33,11 +33,11 @@ const getRoleService = async () => {
 
 const getByIdRoleService = async (id, ignore = false) => {
   try {
-    let query = `SELECT id, name FROM role WHERE id = $1`
+    let query = `SELECT id, name FROM role WHERE id = $1 AND name != $2 AND name != $3`
     if (!ignore) {
       query += `   AND isdeleted = false`
     }
-    const result = await pool.query(query, [id]);
+    const result = await pool.query(query, [id, 'super-admin', 'region-admin']);
     if(!result.rows[0]){
       throw new ErrorResponse('role not found', 404)
     }
