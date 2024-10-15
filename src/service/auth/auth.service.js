@@ -2,6 +2,25 @@ const pool = require("../../config/db");
 const { handleServiceError } = require("../../middleware/service.handle");
 const ErrorResponse = require('../../utils/errorResponse')
 
+const existLogin = async (login) => {
+  try {
+    const user = await pool.query(
+      `
+        SELECT
+          users.id
+        FROM users
+        WHERE users.login = $1 AND isdeleted = false
+      `,
+      [login.trim()]
+    );
+    if (user.rows[0]){
+      throw new ErrorResponse('Login already exist', 409);
+    }
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode);
+  }
+}
+
 const getByLoginUserService = async (login) => {
   try {
     const user = await pool.query(
@@ -169,6 +188,7 @@ const getProfileAuth = handleServiceError(async (id) => {
 });
 
 module.exports = {
+  existLogin,
   getByLoginUserService,
   getByIdUserService,
   updateAuth,

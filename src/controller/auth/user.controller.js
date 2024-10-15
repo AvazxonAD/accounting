@@ -2,7 +2,7 @@ const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const bcrypt = require("bcrypt");
 const { getByIdRoleService } = require("../../service/auth/role.service");
-const { getByLoginUserService } = require("../../service/auth/auth.service");
+const { getByLoginUserService, existLogin } = require("../../service/auth/auth.service");
 const { userValidation } = require("../../helpers/validation/auth/user.validation");
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { errorCatch } = require('../../helpers/errorCatch')
@@ -33,10 +33,7 @@ const createUser = async (req, res) => {
     password = password.trim();
     fio = fio.trim();
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const test = await getByLoginUserService(data.login);
-    if (test) {
-      throw new ErrorResponse("This login has already been entered", 409)
-    }
+    await existLogin(data.login);
     const result = await createUserSerivice(login, hashedPassword, fio, role.id, region_id);
     postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${user_id}`);
   
