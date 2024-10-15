@@ -16,7 +16,45 @@ const getByLoginUserService = async (login) => {
       [login.trim()]
     );
     let result;
-    if (user.role == 'super-admin') {
+    if (user.rows[0].role_name == 'super-admin') {
+      result = await pool.query(
+        `
+            SELECT 
+              users.id, 
+              users.fio, 
+              users.password, 
+              users.login, 
+              users.region_id, 
+              users.role_id, 
+              role.name AS role_name,
+              null AS region_name,
+              json_build_object(
+                  'region', access.region,
+                  'role', access.role,
+                  'users', access.users,
+                  'budjet', access.budjet,
+                  'access', access.access,
+                  'spravochnik', access.spravochnik,
+                  'smeta', access.smeta,
+                  'smeta_grafik', access.smeta_grafik,
+                  'bank', access.bank,
+                  'kassa', access.kassa,
+                  'shartnoma', access.shartnoma,
+                  'jur3', access.jur3,
+                  'jur152', access.jur152,
+                  'jur4', access.jur4,
+                  'region_users', access.region_users,
+                  'podotchet_monitoring', access.podotchet_monitoring,
+                  'organization_monitoring', access.organization_monitoring
+              ) AS access_object
+            FROM users 
+            INNER JOIN role ON role.id = users.role_id
+            INNER JOIN access ON access.role_id = role.id 
+            WHERE users.login = $1
+        `,
+        [login.trim()],
+      );
+    } else if (user.rows[0].role_name == 'region-admin') {
       result = await pool.query(
         `
             SELECT 
@@ -50,6 +88,7 @@ const getByLoginUserService = async (login) => {
             FROM users 
             INNER JOIN role ON role.id = users.role_id
             INNER JOIN access ON access.role_id = role.id 
+            LEFT JOIN regions ON regions.id = users.region_id
             WHERE users.login = $1
         `,
         [login.trim()],
