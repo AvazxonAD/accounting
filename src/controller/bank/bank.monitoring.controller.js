@@ -51,6 +51,7 @@ const capExcelCreate = async (req, res) => {
     const title = `Дневной отчет шапка Ж.О. №2.  Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await bankCapService(region_id, main_schet_id, from, to);
+    return res.send(data)
     const workBook = XLSX.utils.book_new();
     const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
     const sheetData = [
@@ -91,6 +92,7 @@ const dailyExcelCreate = async (req, res) => {
     const title = `Дневной отчет по Журнал-Ордеру №2.  Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
+    return res.send(data)
     const workBook = XLSX.utils.book_new();
     const fileName = `kundalik_hisobot_${new Date().getTime()}.xlsx`;
     const sheetData = [
