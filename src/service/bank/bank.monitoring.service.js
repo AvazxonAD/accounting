@@ -208,7 +208,8 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
           'rasxod_sum', 0
           )
         ) AS docs,
-        SUM(b_p_ch.summa) AS schet_summa
+        SUM(b_p_ch.summa) AS prixod_sum,
+        0 AS rasxod_sum
       FROM spravochnik_operatsii AS s_o
       JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
       JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
@@ -227,11 +228,12 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
           'spravochnik_organization_name', s_organ.name,
           'opisanie', b_r.opisanie,
           'schet', s_o.schet,
-          'prixod_sum', b_r_ch.summa,
-          'rasxod_sum', 0
+          'prixod_sum', 0,
+          'rasxod_sum', b_r_ch.summa
           )
         ) AS docs,
-        SUM(b_r_ch.summa) AS schet_summa
+        0 AS prixod_sum,
+        SUM(b_r_ch.summa) AS rasxod_sum
       FROM spravochnik_operatsii AS s_o
       JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
       JOIN bank_prixod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
@@ -242,23 +244,65 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
       GROUP BY s_o.schet
     )
     SELECT 
-      ARRAY_AGG(row_to_json(data)) AS result
+      ARRAY_AGG(row_to_json(data)) AS data,
+      COALESCE((
+        SELECT SUM(b_r_ch.summa)
+        FROM spravochnik_operatsii AS s_o
+        JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
+        JOIN bank_prixod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+        JOIN users AS u ON u.id = b_r.user_id
+        JOIN regions AS r ON r.id = u.region_id 
+        WHERE r.id = $4 AND b_r.doc_date BETWEEN $2 AND $3 AND b_r.main_schet_id = $1
+      ), 0)::FLOAT AS rasxod_sum,
+      COALESCE((
+        SELECT SUM(b_p_ch.summa)
+        FROM spravochnik_operatsii AS s_o
+        JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
+        JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+        JOIN users AS u ON u.id = b_p.user_id
+        JOIN regions AS r ON r.id = u.region_id 
+        WHERE r.id = $4 AND b_p.doc_date BETWEEN $2 AND $3 AND b_p.main_schet_id = $1
+      ), 0)::FLOAT prixod_sum,
+      COALESCE((
+        (SELECT SUM(b_p_ch.summa)
+        FROM spravochnik_operatsii AS s_o
+        JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
+        JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+        JOIN users AS u ON u.id = b_p.user_id
+        JOIN regions AS r ON r.id = u.region_id 
+        WHERE r.id = $4 AND b_p.doc_date < $2 AND b_p.main_schet_id = $1) - 
+        (SELECT SUM(b_r_ch.summa)
+        FROM spravochnik_operatsii AS s_o
+        JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
+        JOIN bank_prixod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+        JOIN users AS u ON u.id = b_r.user_id
+        JOIN regions AS r ON r.id = u.region_id 
+        WHERE r.id = $4 AND b_r.doc_date < $2 AND b_r.main_schet_id = $1)  
+      ), 0)::FLOAT summa_from,
+      COALESCE((
+        (SELECT SUM(b_p_ch.summa)
+        FROM spravochnik_operatsii AS s_o
+        JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
+        JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+        JOIN users AS u ON u.id = b_p.user_id
+        JOIN regions AS r ON r.id = u.region_id 
+        WHERE r.id = $4 AND b_p.doc_date < $3 AND b_p.main_schet_id = $1) - 
+        (SELECT SUM(b_r_ch.summa)
+        FROM spravochnik_operatsii AS s_o
+        JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
+        JOIN bank_prixod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+        JOIN users AS u ON u.id = b_r.user_id
+        JOIN regions AS r ON r.id = u.region_id 
+        WHERE r.id = $4 AND b_r.doc_date < $3 AND b_r.main_schet_id = $1)  
+      ), 0)::FLOAT summa_to
     FROM data
   `, [main_schet_id, from, to, region_id]);
-  return rows[0]
-
-  let prixod_sum = 0;
-  let rasxod_sum = 0;
-  rows[0].data?.forEach(item => {
-    prixod_sum += item.prixod_sum;
-    rasxod_sum += item.rasxod_sum;
-  });
   return {
-    prixod_sum,
-    rasxod_sum,
+    prixod_sum: rows[0].prixod_sum,
+    rasxod_sum: rows[0].rasxod_sum,
     data: rows[0]?.data || [],
-    balance_from: rows[0].balance_from,
-    balance_to: rows[0]?.balance_to
+    balance_from: rows[0].summa_from,
+    balance_to: rows[0]?.summa_to
   };
 };
 
