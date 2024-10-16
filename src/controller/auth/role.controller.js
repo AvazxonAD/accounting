@@ -7,6 +7,7 @@ const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helper
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { resFunc } = require("../../helpers/resFunc");
 const { errorCatch } = require('../../helpers/errorCatch')
+const { getRegionService } = require('../../service/auth/region.service')
 
 const {
   getByNameRoleService,
@@ -15,7 +16,6 @@ const {
   getByIdRoleService,
   updateRoleService,
   deleteRoleService,
-  getAdminRoleService
 } = require("../../service/auth/role.service");
 
 
@@ -33,19 +33,16 @@ const createRole = async (req, res) => {
       throw new ErrorResponse("This role cannot be added", 400)
     }
     const role = await createRoleService(data.name);
-    const admin_role = await getAdminRoleService()
-    const users = await getAdminService(admin_role.id)
-    for (let user of users) {
-      await createAccessService(role.id, user.region_id)
+    const regions = await getRegionService()
+    for (let region of regions) {
+      await createAccessService(role.id, region.id)
     }
     postLogger.info(`Rol yaratildi: ${data.name}. Foydalanuvchi ID: ${user_id}`);
-  
     return resFunc(res, 200, role)
   } catch (error) {
     errorCatch(error, res)
   }
 }
-
 
 // get all role
 const getAllRole = async (req, res) => {
@@ -53,7 +50,7 @@ const getAllRole = async (req, res) => {
     const user_id = req.user.id;
     const roles = await getRoleService();
     getLogger.info(`Barcha rollar olish muvaffaqiyatli. Foydalanuvchi ID: ${user_id}`);
-  
+
     return resFunc(res, 200, roles)
   } catch (error) {
     errorCatch(error, res)
@@ -76,7 +73,7 @@ const updateRole = async (req, res) => {
     }
     const result = await updateRoleService(id, data.name);
     putLogger.info(`Rol yangilandi: ${data.name}. Foydalanuvchi ID: ${user_id}`);
-   
+
     return resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
@@ -93,10 +90,10 @@ const deleteRole = async (req, res) => {
     if (role.name === 'super-admin' || role.name === 'region-admin') {
       throw new ErrorResponse('This data cannot be deleted', 400)
     }
-  
+
     await deleteRoleService(id);
     deleteLogger.info(`Rol o'chirildi. RoleId: ${id}. Foydalanuvchi ID: ${user_id}`);
-  
+
     resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
@@ -108,9 +105,9 @@ const deleteRole = async (req, res) => {
 const getByIdRole = async (req, res) => {
   try {
     const role = await getByIdRoleService(req.params.id, true);
-    const user_id = req.user.id  
+    const user_id = req.user.id
     getLogger.info(`Role olindi. RoleId: ${req.params.id}. Foydalanuvchi ID: ${user_id}`);
-  
+
     return res.status(200).json({
       success: true,
       data: role,

@@ -35,10 +35,6 @@ const createAdmin = async (req, res) => {
     await getByIdRegionService(region_id);
     await checkAdminService(region_id, role.id)
     const admin = await createUserSerivice(login, hashedPassword, fio, role.id, region_id);
-    const roles = await getRoleService()
-    for (let role of roles) {
-      await createAccessService(role.id, admin.id)
-    }
     postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
     resFunc(res, 201, admin)
   } catch (error) {

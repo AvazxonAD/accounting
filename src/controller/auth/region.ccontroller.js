@@ -6,6 +6,8 @@ const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helper
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { resFunc } = require('../../helpers/resFunc')
 const { errorCatch } = require('../../helpers/errorCatch')
+const { getRoleService } = require('../../service/auth/role.service')
+const { createAccessService } = require('../../service/auth/access.service')
 const {
   getByNameRegionService,
   createRegionService,
@@ -24,6 +26,10 @@ const createRegion = async (req, res) => {
       throw new ErrorResponse("This region has already been entered", 409)
     }
     const result = await createRegionService(data.name);
+    const roles = await getRoleService()
+    for (let role of roles) {
+      await createAccessService(role.id, result.id)
+    }
     postLogger.info(`Viloyat yaratildi: ${data.name}. Foydalanuvchi ID: ${req.user.id}`);
     return resFunc(res, 201, result)
   } catch (error) {
@@ -56,7 +62,7 @@ const updateRegion = async (req, res) => {
     }
     const result = await update_region(id, data.name.trim());
     putLogger.info(`Viloyat yangilandi: ${data.name}. Foydalanuvchi ID: ${req.user.id}`);
-  
+
     return resFunc(res, 200, result)
   } catch (error) {
     return errorCatch(error, res)

@@ -29,6 +29,7 @@ const getByIdAccess = async (req, res) => {
         const role_id = req.params.id
         await getByIdRoleService(role_id)
         const access = await getByRoleIdAccessService(region_id, role_id)
+        console.log(access)
         resFunc(res, 200, access)
     } catch (error) {
         errorCatch(error, res)
