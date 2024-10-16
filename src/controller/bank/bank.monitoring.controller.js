@@ -1,4 +1,4 @@
-const { getAllMonitoring, bankCapService } = require("../../service/bank/bank.monitoring.service");
+const { getAllMonitoring, bankCapService, dailyReportService } = require("../../service/bank/bank.monitoring.service");
 const { queryValidation, bankCapValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getLogger } = require('../../helpers/log_functions/logger')
@@ -82,9 +82,49 @@ const capExcelCreate = async (req, res) => {
   }
 };
 
-
+const dailyExcelCreate = async (req, res) => {
+  try {
+    const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
+    const region_id = req.user.region_id;
+    const title = `Дневной отчет шапка Ж.О. №2`;
+    const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
+    const data = await dailyReportService(region_id, main_schet_id, from, to);
+    console.log(data)
+    return res.status(200).json({ data})
+    const workBook = XLSX.utils.book_new();
+    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
+    const sheetData = [
+      [title],
+      [dateBetween],
+      [`Остаток к началу дня: ${data.balance_from.toFixed(2)}`], 
+      ['Счет', 'Приход', 'Расход'],  
+    ];
+    data.data.forEach(item => {
+      sheetData.push([item.schet, item.prixod_sum.toFixed(2), item.rasxod_sum.toFixed(2)]);
+    });
+    sheetData.push(['Всего', data.prixod_sum.toFixed(2), data.rasxod_sum.toFixed(2)]);
+    sheetData.push([`Остаток концу дня: ${data.balance_to.toFixed(2)}`]); 
+    const workSheet = XLSX.utils.aoa_to_sheet(sheetData);
+    workSheet['!cols'] = [
+      { wch: 50 },
+      { wch: 20 },
+      { wch: 20 },
+    ];
+    XLSX.utils.book_append_sheet(workBook, workSheet, 'Hisobot');
+    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName);
+    XLSX.writeFile(workBook, filePath);
+    return res.download(filePath, (err) => {
+      if (err) {
+        throw new ErrorResponse(err, err.statusCode);
+      }
+    });
+  } catch (error) {
+    errorCatch(error, res);
+  }
+};
 
 module.exports = {
   getAllBankMonitoring,
-  capExcelCreate
+  capExcelCreate,
+  dailyExcelCreate
 };

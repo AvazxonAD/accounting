@@ -6,9 +6,7 @@ const { getByLoginUserService, existLogin } = require("../../service/auth/auth.s
 const { userValidation } = require("../../helpers/validation/auth/user.validation");
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { errorCatch } = require('../../helpers/errorCatch')
-
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
-
 const {
   createUserSerivice,
   getUserService,
@@ -23,20 +21,15 @@ const createUser = async (req, res) => {
   try {
     const region_id = req.user.region_id
     const user_id = req.user.id;
-    const data = validationResponse(userValidation, req.body)
-    let { login, password, fio, role_id } = data;
+    const {login, password, fio, role_id} = validationResponse(userValidation, req.body)
     const role = await getByIdRoleService(role_id)
     if(role.name === 'super-admin' || role.name === 'region-admin'){
       throw new ErrorResponse('role not found', 404)
     }
-    login = login.trim();
-    password = password.trim();
-    fio = fio.trim();
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    await existLogin(data.login);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await existLogin(login);
     const result = await createUserSerivice(login, hashedPassword, fio, role.id, region_id);
     postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${user_id}`);
-  
     return resFunc(res, 201, result)
   } catch (error) {
     errorCatch(error, res)
@@ -45,14 +38,14 @@ const createUser = async (req, res) => {
 
 // get user
 const getUser = async (req, res) => {
-  const region_id = req.user.region_id
-  const users = await getUserService(region_id)
-  return res.status(200).json({
-    success: true,
-    data: users,
-  });
+  try {
+    const region_id = req.user.region_id
+    const users = await getUserService(region_id)
+    resFunc(res, 200, users)
+  } catch (error) {
+    errorCatch(error, res)
+  }
 };
-
 
 // update user  
 const updateUser = async (req, res) => {
@@ -66,51 +59,43 @@ const updateUser = async (req, res) => {
     if(role.name === 'super-admin' || role.name === 'region-admin'){
       throw new ErrorResponse('Error: role not found', 404)
     }
-    login = login.trim();
-    password = password.trim();
-    fio = fio.trim();
     const hashedPassword = await bcrypt.hash(data.password, 10);
     if (oldUser.login !== login) {
-      const test = await getByLoginUserService(login);
-      if (test) {
-        throw new ErrorResponse("This login has already been entered", 409)
-      }
+      await existLogin(login);
     }
     const result = await updateUserService(login, hashedPassword, fio, role_id, region_id, id);
     putLogger.info(`Foydalanuvchi yangilandi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
-  
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
   }
 };
 
-
 // delete user  
 const deleteUser = async (req, res) => {
-  const id = req.params.id;
-  const userToDelete = await getByIdUserService(id);
-  if (userToDelete.role_name === 'region-admin' || userToDelete.role_name === 'super-admin') {
-    return next(new ErrorResponse('Ochirish mumkin emas', 404))
+  try {
+    const id = req.params.id;
+    const userToDelete = await getByIdUserService(id);
+    if (userToDelete.role_name === 'region-admin' || userToDelete.role_name === 'super-admin') {
+      throw new ErrorResponse('Cannot delete', 404)
+    }
+    await deleteUserService(id);
+    deleteLogger.info(`Foydalanuvchi ochirildi: ${userToDelete.login}. Foydalanuvchi ID: ${req.user.id}`);
+    resFunc(res, 200, 'delete success true')
+  } catch (error) {
+    errorCatch(error, res)
   }
-  await deleteUserService(id);
-  deleteLogger.info(`Foydalanuvchi ochirildi: ${userToDelete.login}. Foydalanuvchi ID: ${req.user.id}`);
-
-  return res.status(200).json({
-    success: true,
-    data: "Muvafaqyatli ochirildi",
-  });
 };
-
 
 // get by id user
 const getByIdUser = async (req, res) => {
-  const user = await getByIdUserService(req.params.id);
-  getLogger.info(`Muvaffaqyatli foydalanuvchi ma'lumotlari olindi. Foydalanuvchi ID: ${req.user.id}`);
-  return res.status(200).json({
-    success: true,
-    data: user,
-  });
+  try {
+    const result = await getByIdUserService(req.params.id, true);
+    getLogger.info(`Muvaffaqyatli foydalanuvchi ma'lumotlari olindi. Foydalanuvchi ID: ${req.user.id, true}`);
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
 };
 
 module.exports = {

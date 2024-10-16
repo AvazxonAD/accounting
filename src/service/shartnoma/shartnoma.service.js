@@ -38,20 +38,19 @@ const createShartnoma = async (data) => {
   }
 }
 
-const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization_id, pudratchi_bool) => {
+const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterValue) => {
   try {
-    let organization = ``
-    let pudratchi = ''
+    let filter = ``
     const params = [region_id, main_schet_id, offset, limit]
-    if (organization_id) {
-      organization = `AND sh_o.spravochnik_organization_id = $5`
-      params.push(organization_id)
+    if (typeof filterValue === "number") {
+       filter = `AND sh_o.spravochnik_organization_id = $5`
+      params.push(filterValue)
     }
-    if (pudratchi_bool === 'true') {
-      pudratchi = `AND sh_o.pudratchi_bool = true`
+    if (filterValue === 'true') {
+      filter = `AND sh_o.pudratchi_bool = true`
     }
-    if (pudratchi_bool === 'false') {
-      pudratchi = `AND sh_o.pudratchi_bool = false`
+    if (filterValue === 'false') {
+      filter = `AND sh_o.pudratchi_bool = false`
     }
     const { rows } = await pool.query(
       `WITH data AS (
@@ -70,7 +69,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
           JOIN users AS u ON sh_o.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
           JOIN smeta ON sh_o.smeta_id = smeta.id
-          WHERE sh_o.isdeleted = false ${organization} ${pudratchi}
+          WHERE sh_o.isdeleted = false ${filter}
               AND r.id = $1
               AND sh_o.main_schet_id = $2
           ORDER BY sh_o.doc_date 
@@ -83,7 +82,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
            FROM shartnomalar_organization AS sh_o
            JOIN users AS u  ON sh_o.user_id = u.id
            JOIN regions AS r ON u.region_id = r.id
-           WHERE sh_o.isdeleted = false ${organization} ${pudratchi}
+           WHERE sh_o.isdeleted = false ${filter}
              AND r.id = $1
              AND sh_o.main_schet_id = $2)::INTEGER AS total_count
         FROM data`, params);

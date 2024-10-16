@@ -1,9 +1,9 @@
 const Joi = require("joi");
 
 const smetaValidation = Joi.object({
-  smeta_name: Joi.string().required(),
+  smeta_name: Joi.string().trim().required(),
   smeta_number: Joi.number().required().required(),
-  father_smeta_name: Joi.string().required(),
+  father_smeta_name: Joi.string().trim().required(),
 }).options({ stripUnknown: true });
 
 const smetaGrafikValidation = Joi.object({

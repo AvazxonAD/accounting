@@ -191,7 +191,73 @@ const bankCapService = async (region_id, main_schet_id, from, to) => {
   return {prixod_sum, rasxod_sum, data: rows[0]?.data || [], balance_from: rows[0].balance_from, balance_to: rows[0]?.balance_to}
 }
 
+const dailyReportService = async (region_id, main_schet_id, from, to) => {
+  const { rows } = await pool.query(`
+    WITH data AS (
+      SELECT 
+        b_p.doc_num, 
+        b_p.doc_date, 
+        s_organ.name AS spravochnik_organization_name, 
+        b_p.opisanie, 
+        s_o.schet, 
+        b_p_ch.summa AS prixod_sum, 
+        0 AS rasxod_sum,
+        (
+          SELECT SUM(b_p_ch.summa) 
+          FROM bank_prixod_child b_p_ch
+          JOIN users AS u ON u.id = b_p_ch.user_id
+          JOIN regions AS r ON r.id = u.region_id 
+          JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+          WHERE r.id = $1 AND b_p.doc_date BETWEEN $2 AND $3 AND b_p.main_schet_id = $4 AND b_p_ch.spravochnik_operatsii_id = s_o.id
+        ) AS all_prixod_sum,
+        (0 + 1) AS all_rasxod_sum
+      FROM bank_prixod_child b_p_ch
+      JOIN users AS u ON u.id = b_p_ch.user_id
+      JOIN regions AS r ON r.id = u.region_id 
+      JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+      JOIN spravochnik_organization AS s_organ ON b_p.id_spravochnik_organization = s_organ.id
+      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
+      WHERE r.id = $1 AND b_p.doc_date BETWEEN $2 AND $3 AND b_p.main_schet_id = $4
+      UNION ALL 
+      SELECT 
+        b_r.doc_num, 
+        b_r.doc_date, 
+        s_organ.name AS spravochnik_organization_name, 
+        b_r.opisanie, s_o.schet, 
+        0 AS prixod_sum, 
+        b_r_ch.summa AS rasxod_sum,
+        (0 + 1) AS all_prixod_sum,
+        (0 + 1) AS all_rasxod_sum
+      FROM bank_rasxod_child b_r_ch
+      JOIN users AS u ON u.id = b_r_ch.user_id
+      JOIN regions AS r ON r.id = u.region_id 
+      JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+      JOIN spravochnik_organization AS s_organ ON b_r.id_spravochnik_organization = s_organ.id
+      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
+      WHERE r.id = $1 AND b_r.doc_date BETWEEN $2 AND $3 AND b_r.main_schet_id = $4
+    )
+    SELECT 
+      ARRAY_AGG(row_to_json(data)) AS data
+    FROM data 
+  `, [region_id, from, to, main_schet_id]);
+  console.log(rows[0])
+  let prixod_sum = 0;
+  let rasxod_sum = 0;
+  rows[0].data?.forEach(item => {
+    prixod_sum += item.prixod_sum;
+    rasxod_sum += item.rasxod_sum;
+  });
+  return {
+    prixod_sum,
+    rasxod_sum,
+    data: rows[0]?.data || [],
+    balance_from: rows[0].balance_from,
+    balance_to: rows[0]?.balance_to
+  };
+};
+
 module.exports = {
   getAllMonitoring,
-  bankCapService
+  bankCapService,
+  dailyReportService
 };

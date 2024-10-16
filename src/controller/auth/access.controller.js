@@ -1,6 +1,4 @@
-const asyncHandler = require('../../middleware/asyncHandler')
 const { accessValidation } = require('../../helpers/validation/auth/access.validation')
-const ErrorResponse = require('../../utils/errorResponse')
 const { validationResponse } = require('../../helpers/response-for-validation')
 const { getByIdRoleService } = require('../../service/auth/role.service')
 const {
@@ -16,7 +14,8 @@ const updateAccess = async (req, res) => {
         const data = validationResponse(accessValidation, req.body)
         const region_id = req.user.region_id
         const access_id = req.params.id
-        await getByIdAccessService(region_id, access_id)
+        const role_id = req.query.role_id
+        await getByIdAccessService(region_id, access_id, role_id)
         const result = await updateAccessDB({ ...data, access_id })
         resFunc(res, 200, result)
     } catch (error) {

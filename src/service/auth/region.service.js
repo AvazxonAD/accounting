@@ -1,12 +1,11 @@
 const pool = require("../../config/db");
-const { handleServiceError } = require("../../middleware/service.handle");
 const ErrorResponse = require('../../utils/errorResponse.js')
 const { tashkentTime } = require('../../utils/date.function.js')
 
 const getByNameRegionService  = async (name) => {
   try {
     const result = await pool.query(
-      `SELECT * FROM regions WHERE name = $1`,
+      `SELECT * FROM regions WHERE name = $1 AND isdeleted = false`,
       [name],
     );
     return result.rows[0];
@@ -22,7 +21,6 @@ const createRegionService = async (name) => {
       [name, tashkentTime(), tashkentTime()],
     );
     return result.rows[0]
-
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }

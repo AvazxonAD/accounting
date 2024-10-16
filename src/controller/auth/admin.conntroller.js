@@ -1,10 +1,9 @@
 const pool = require("../../config/db");
-const asyncHandler = require("../../middleware/asyncHandler");
 const ErrorResponse = require("../../utils/errorResponse");
 const bcrypt = require("bcrypt");
 const { getAdminRoleService } = require("../../service/auth/role.service");
 const { getByIdRegionService } = require("../../service/auth/region.service");
-const { getByLoginUserService } = require("../../service/auth/auth.service");
+const { getByLoginUserService, existLogin } = require("../../service/auth/auth.service");
 const { userValidation } = require("../../helpers/validation/auth/user.validation");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../../helpers/log_functions/logger');
 const { getRoleService } = require('../../service/auth/role.service')
@@ -17,7 +16,7 @@ const {
   updateUserService,
   deleteUserService,
   getAdminService,
-  checkAdminService
+  checkAdminService,
 } = require("../../service/auth/user.service");
 const { errorCatch } = require("../../helpers/errorCatch");
 const { resFunc } = require("../../helpers/resFunc");
@@ -32,10 +31,7 @@ const createAdmin = async (req, res) => {
     password = password.trim();
     fio = fio.trim();
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const test = await getByLoginUserService(data.login);
-    if (test) {
-      throw new ErrorResponse("This login has already been registered", 409)
-    }
+    await existLogin(data.login);
     await getByIdRegionService(region_id);
     await checkAdminService(region_id, role.id)
     const admin = await createUserSerivice(login, hashedPassword, fio, role.id, region_id);
@@ -44,7 +40,6 @@ const createAdmin = async (req, res) => {
       await createAccessService(role.id, admin.id)
     }
     postLogger.info(`Foydalanuvchi yaratildi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
-  
     resFunc(res, 201, admin)
   } catch (error) {
     errorCatch(error, res)
@@ -67,32 +62,23 @@ const updateAdmin = async (req, res) => {
   try {
     const id = req.params.id;
     const oldUser = await getByIdUserService(id);
-    const data = validationResponse(userValidation, req.body)
-    let { login, password, fio, region_id } = data;
+    const {login, password, fio, region_id} = validationResponse(userValidation, req.body)
     const role = await getAdminRoleService()
     await getByIdRegionService(region_id);
-    login = login.trim();
-    password = password.trim();
-    fio = fio.trim();
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     if (oldUser.login !== login) {
-      const test = await getByLoginUserService(login);
-      if (test) {
-      throw new ErrorResponse("This login has already been registered", 409)
-      }
+      await existLogin(login);
     }
     if(oldUser.role_id !== role.id || oldUser.region_id !== region_id){
       await checkAdminService(region_id, role.id)
     }
     const admin = await updateUserService(login, hashedPassword, fio, role.id, region_id, id);
     putLogger.info(`Foydalanuvchi yangilandi: ${login}. Foydalanuvchi ID: ${req.user.id}`);
-  
     resFunc(res, 200, admin)
   } catch (error) {
     errorCatch(error, res)
   }
 }
-
 
 // delete  admin 
 const deleteAdmin = async (req, res) => {
@@ -104,22 +90,23 @@ const deleteAdmin = async (req, res) => {
     }
     await deleteUserService(id);
     deleteLogger.info(`Foydalanuvchi ochirildi: ${userToDelete.login}. Foydalanuvchi ID: ${req.user.id}`);
-  
     resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
   }
 }
 
-
 // get by id admin 
 const getByIdAdmin = async (req, res) => {
   try {
-    const admin = await getByIdUserService(req.params.id); 
+    const admin = await getByIdUserService(req.params.id, true); 
+    if(!admin){
+      throw new ErrorResponse('user not found', 404)
+    }
     getLogger.info(`Muvaffaqyatli foydalanuvchi ma'lumotlari olindi. Foydalanuvchi ID: ${req.user.id}`);
-  
     resFunc(res, 200, admin)
   } catch (error) {
+    console.log(error.statusCode)
     errorCatch(error, res)
   }
 }

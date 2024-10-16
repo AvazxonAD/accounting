@@ -4,6 +4,7 @@ const ErrorResponse = require('../../utils/errorResponse')
 const createAccessService = async (role_id, region_id) => {
     try {
         const result = await pool.query(`INSERT INTO access (role_id, region_id) VALUES($1, $2) RETURNING *`, [role_id, region_id])
+        return result.rows[0]
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
     }
@@ -14,20 +15,25 @@ const getByRoleIdAccessService = async (region_id, role_id) => {
         const access = await pool.query(`
             SELECT 
                 access.id,
-                access.kassa,
-                access.bank,
-                access.spravochnik,
-                access.organization_monitoring,
-                access.region_users,
-                access.smeta,
+                access.role_id,
+                access.region_id,
                 access.region,
                 access.role,
                 access.users,
+                access.budjet,
+                access.access,
+                access.spravochnik,
+                access.smeta,
+                access.smeta_grafik,
+                access.bank,
+                access.kassa,
                 access.shartnoma,
                 access.jur3,
+                access.jur152,
                 access.jur4,
-                role.name AS role_name,
-                region_id
+                access.region_users,
+                access.podotchet_monitoring,
+                access.organization_monitoring
             FROM access
             JOIN role ON role.id = access.role_id
             WHERE region_id = $1 AND role.id = $2
@@ -38,26 +44,10 @@ const getByRoleIdAccessService = async (region_id, role_id) => {
     }
 }
 
-const getByIdAccessService = async (region_id, access_id) => {
+const getByIdAccessService = async (region_id, access_id, role_id) => {
     try {
         const access = await pool.query(`
-            SELECT 
-                access.id,
-                access.kassa,
-                access.bank,
-                access.spravochnik,
-                access.organization_monitoring,
-                access.region_users,
-                access.smeta,
-                access.region,
-                access.role,
-                access.users,
-                access.shartnoma,
-                access.jur3,
-                access.jur4
-            FROM access
-            WHERE region_id = $1 AND access.id = $2
-        `, [region_id, access_id])
+            SELECT id FROM access WHERE region_id = $1 AND access.id = $2 AND role_id = $3`, [region_id, access_id, role_id])
         if(!access.rows[0]){
             throw new ErrorResponse('access not found', 404)
         }

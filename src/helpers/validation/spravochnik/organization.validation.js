@@ -1,13 +1,13 @@
 const Joi = require("joi");
 
 const organizationValidation = Joi.object({
-  name: Joi.string().required(),
-  bank_klient: Joi.string().required(),
-  raschet_schet: Joi.string().required(),
-  raschet_schet_gazna: Joi.string().required(),
-  mfo: Joi.string().required(),
-  inn: Joi.string().required(),
-  okonx: Joi.string().required(),
+  name: Joi.string().trim().required(),
+  bank_klient: Joi.string().trim().required(),
+  raschet_schet: Joi.string().trim().required(),
+  raschet_schet_gazna: Joi.string().trim().required(),
+  mfo: Joi.string().trim().required(),
+  inn: Joi.string().trim().required(),
+  okonx: Joi.string().trim().required(),
 }).options({ stripUnknown: true });
 
 const queryValidation = Joi.object({
