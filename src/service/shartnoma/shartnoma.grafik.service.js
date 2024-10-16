@@ -1,3 +1,4 @@
+const { query } = require("express");
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 
@@ -41,9 +42,9 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
         JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
         WHERE regions.id = $1 AND sh_g.main_schet_id = $2 AND sh_g.id = $3 ${ignore}
       `, [region_id, main_schet_id, id])
-      if(!result.rows[0]){
-        throw new ErrorResponse('shartnoma_grafik not found', 404)
-      }
+    if (!result.rows[0]) {
+      throw new ErrorResponse('shartnoma_grafik not found', 404)
+    }
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -51,61 +52,82 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
 }
 
 
-const getAllGrafikDB = async (region_id, main_schet_id, organization) => {
+const getAllGrafikDB = async (region_id, main_schet_id, search, limit, offset) => {
   try {
     let organization_filter = '';
-    const params = [region_id, main_schet_id];
-    if (organization) {
+    const params = [region_id, main_schet_id, offset, limit];
+    if (typeof search === "number") {
       organization_filter = `AND s_o.id = $${params.length + 1}`;
-      params.push(organization);
+      params.push(search);
     }
-    const result = await pool.query(
-      `
-      SELECT
-        s_o.name AS spravochnik_organization_name,
-        s_o.bank_klient AS spravochnik_organization_bank_klient,
-        s_o.mfo AS spravochnik_organization_mfo,
-        s_o.inn AS spravochnik_organization_inn,
-        s_o.raschet_schet AS spravochnik_organization_raschet_schet,
-        sh_g.id_shartnomalar_organization,
-        sh_o.doc_num AS shartnomalar_organization_doc_num,
-        TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
-        s_1.smeta_number AS smeta_number,
-        s_2.smeta_number AS smeta2_number,
-        sh_o.opisanie AS shartnomalar_organization_opisanie,
-        sh_o.summa::FLOAT AS shartnomalar_organization_summa,
-        sh_o.pudratchi_bool AS shartnomalar_organization_pudratchi_bool,
-        sh_g.id,
-        sh_g.oy_1::FLOAT,
-        sh_g.oy_2::FLOAT,
-        sh_g.oy_3::FLOAT,
-        sh_g.oy_4::FLOAT,
-        sh_g.oy_5::FLOAT,
-        sh_g.oy_6::FLOAT,
-        sh_g.oy_7::FLOAT,
-        sh_g.oy_8::FLOAT,
-        sh_g.oy_9::FLOAT,
-        sh_g.oy_10::FLOAT,
-        sh_g.oy_11::FLOAT,
-        sh_g.oy_12::FLOAT,
-        sh_g.year
-      FROM shartnoma_grafik AS sh_g
-      JOIN users AS u ON sh_g.user_id = u.id
-      JOIN regions AS r ON u.region_id = r.id
-      JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
-      JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
-      JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
-      LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
-      WHERE sh_g.isdeleted = false AND r.id = $1 AND sh_g.main_schet_id = $2 ${organization_filter} ORDER BY sh_o.doc_date
-    `,
-      params
-    );
+    
+    const { rows } = await pool.query(`
+      WITH data AS (
+        SELECT
+          s_o.name AS spravochnik_organization_name,
+          s_o.bank_klient AS spravochnik_organization_bank_klient,
+          s_o.mfo AS spravochnik_organization_mfo,
+          s_o.inn AS spravochnik_organization_inn,
+          s_o.raschet_schet AS spravochnik_organization_raschet_schet,
+          sh_g.id_shartnomalar_organization,
+          sh_o.doc_num AS shartnomalar_organization_doc_num,
+          TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+          s_1.smeta_number AS smeta_number,
+          s_2.smeta_number AS smeta2_number,
+          sh_o.opisanie AS shartnomalar_organization_opisanie,
+          sh_o.summa::FLOAT AS shartnomalar_organization_summa,
+          sh_o.pudratchi_bool AS shartnomalar_organization_pudratchi_bool,
+          sh_g.id,
+          sh_g.oy_1::FLOAT,
+          sh_g.oy_2::FLOAT,
+          sh_g.oy_3::FLOAT,
+          sh_g.oy_4::FLOAT,
+          sh_g.oy_5::FLOAT,
+          sh_g.oy_6::FLOAT,
+          sh_g.oy_7::FLOAT,
+          sh_g.oy_8::FLOAT,
+          sh_g.oy_9::FLOAT,
+          sh_g.oy_10::FLOAT,
+          sh_g.oy_11::FLOAT,
+          sh_g.oy_12::FLOAT,
+          sh_g.year
+        FROM shartnoma_grafik AS sh_g
+        JOIN users AS u ON sh_g.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
+        JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
+        JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
+        LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
+        WHERE sh_g.isdeleted = false AND r.id = $1 AND sh_g.main_schet_id = $2 ${organization_filter}
+        ORDER BY sh_o.doc_date 
+        OFFSET $3 
+        LIMIT $4
+      )
+      SELECT 
+        ARRAY_AGG(row_to_json(data)) AS data,
+        COALESCE((
+          SELECT COUNT(sh_g.id)
+          FROM shartnoma_grafik AS sh_g
+          JOIN users AS u ON sh_g.user_id = u.id
+          JOIN regions AS r ON u.region_id = r.id
+          JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
+          JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
+          JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
+          LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
+          WHERE sh_g.isdeleted = false 
+            AND r.id = $1 
+            AND sh_g.main_schet_id = $2 
+            ${organization_filter}
+        ), 0)::INTEGER AS total_count
+      FROM data
+    `, params);
 
-    return result.rows;
+    return { data: rows[0]?.data || [], total: rows[0].total_count };
   } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
+    throw new ErrorResponse(error, error.statusCode);
   }
 }
+
 
 const updateShartnomaGrafikDB = async (data) => {
   try {

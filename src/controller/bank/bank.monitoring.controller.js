@@ -48,7 +48,7 @@ const capExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
-    const title = `Дневной отчет шапка Ж.О. №2.  Счет: ${main_schet.jur2_schet}`;
+    const title = `Дневной отчет шапка Ж.О. №2.  Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await bankCapService(region_id, main_schet_id, from, to);
     const workBook = XLSX.utils.book_new();
@@ -88,7 +88,7 @@ const dailyExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
-    const title = `Дневной отчет по Журнал-Ордеру №2.  Счет: ${main_schet.jur2_schet}`;
+    const title = `Дневной отчет по Журнал-Ордеру №2.  Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
     const workBook = XLSX.utils.book_new();
@@ -103,9 +103,9 @@ const dailyExcelCreate = async (req, res) => {
       object.docs.forEach(item => {
         let operatsii = ``
         if(item.rasxod_sum){
-          operatsii = `${main_schet.jur2_schet} - ${item.schet}`
-        }else{
           operatsii = `${item.schet} - ${main_schet.jur2_schet}`
+        }else{
+          operatsii = `${main_schet.jur2_schet} - ${item.schet}`
         }
         sheetData.push([item.doc_num, item.doc_date, item.spravochnik_organization_name, item.schet, item.prixod_sum.toFixed(2), item.rasxod_sum.toFixed(2), `${operatsii}`]);
       })
