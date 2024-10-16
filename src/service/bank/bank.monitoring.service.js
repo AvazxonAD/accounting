@@ -1,4 +1,4 @@
-const { query } = require("winston");
+const { query, log } = require("winston");
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 
@@ -195,29 +195,58 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
 
   const { rows } = await pool.query(`
     WITH data AS (
-        ARRAY_AGG(row_to_json(
-          SELECT 
-            b_p.doc_num, 
-            b_p.doc_date, 
-            s_organ.name AS spravochnik_organization_name, 
-            b_p.opisanie, 
-            s_o.schet, 
-            b_p_ch.summa AS prixod_sum, 
-            0 AS rasxod_sum,
-          FROM bank_prixod_child b_p_ch
-          JOIN users AS u ON u.id = b_p_ch.user_id
-          JOIN regions AS r ON r.id = u.region_id 
-          JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
-          JOIN spravochnik_organization AS s_organ ON b_p.id_spravochnik_organization = s_organ.id
-          JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
-          WHERE r.id = $1 AND b_p.doc_date BETWEEN $2 AND $3 AND b_p.main_schet_id = $4
-        ))
+      SELECT 
+      s_o.schet,
+      ARRAY_AGG(
+        json_build_object(
+          'doc_num', b_p.doc_num, 
+          'doc_date', b_p.doc_date,
+          'spravochnik_organization_name', s_organ.name,
+          'opisanie', b_p.opisanie,
+          'schet', s_o.schet,
+          'prixod_sum', b_p_ch.summa,
+          'rasxod_sum', 0
+          )
+        ) AS docs,
+        SUM(b_p_ch.summa) AS schet_summa
+      FROM spravochnik_operatsii AS s_o
+      JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
+      JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+      JOIN spravochnik_organization AS s_organ ON b_p.id_spravochnik_organization = s_organ.id
+      JOIN users AS u ON u.id = b_p.user_id
+      JOIN regions AS r ON r.id = u.region_id 
+      WHERE r.id = $4 AND b_p.doc_date BETWEEN $2 AND $3 AND b_p.main_schet_id = $1
+      GROUP BY s_o.schet
+      UNION ALL 
+      SELECT 
+      s_o.schet,
+      ARRAY_AGG(
+        json_build_object(
+          'doc_num', b_r.doc_num, 
+          'doc_date', b_r.doc_date,
+          'spravochnik_organization_name', s_organ.name,
+          'opisanie', b_r.opisanie,
+          'schet', s_o.schet,
+          'prixod_sum', b_r_ch.summa,
+          'rasxod_sum', 0
+          )
+        ) AS docs,
+        SUM(b_r_ch.summa) AS schet_summa
+      FROM spravochnik_operatsii AS s_o
+      JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
+      JOIN bank_prixod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+      JOIN spravochnik_organization AS s_organ ON b_r.id_spravochnik_organization = s_organ.id
+      JOIN users AS u ON u.id = b_r.user_id
+      JOIN regions AS r ON r.id = u.region_id 
+      WHERE r.id = $4 AND b_r.doc_date BETWEEN $2 AND $3 AND b_r.main_schet_id = $1
+      GROUP BY s_o.schet
     )
     SELECT 
-      ARRAY_AGG(row_to_json(data)) AS data
-    FROM data 
-  `, [region_id, from, to, main_schet_id]);
-  console.log(rows[0])
+      ARRAY_AGG(row_to_json(data)) AS result
+    FROM data
+  `, [main_schet_id, from, to, region_id]);
+  return rows[0]
+
   let prixod_sum = 0;
   let rasxod_sum = 0;
   rows[0].data?.forEach(item => {

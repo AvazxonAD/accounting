@@ -89,7 +89,6 @@ const dailyExcelCreate = async (req, res) => {
     const title = `Дневной отчет шапка Ж.О. №2`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
-    console.log(data)
     return res.status(200).json({ data})
     const workBook = XLSX.utils.book_new();
     const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
