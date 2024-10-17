@@ -16,6 +16,7 @@ const getByRoleIdAccessService = async (region_id, role_id) => {
             SELECT 
                 access.id,
                 access.role_id,
+                role.name,
                 access.region_id,
                 access.region,
                 access.role,
