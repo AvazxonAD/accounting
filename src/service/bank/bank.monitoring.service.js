@@ -1,4 +1,3 @@
-const { query, log } = require("winston");
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 
@@ -128,7 +127,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
 const bankCapService = async (region_id, main_schet_id, from, to) => {
   const { rows } = await pool.query(`
     WITH data AS (
-      SELECT s_o.schet, SUM(b_p_ch.summa)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
+      SELECT s_o.schet, COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
       FROM bank_prixod b_p
       JOIN users AS u ON u.id = b_p.user_id
       JOIN regions AS r ON r.id = u.region_id
@@ -207,7 +206,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
           'rasxod_sum', 0
           )
         ) AS docs,
-        SUM(b_p_ch.summa) AS prixod_sum,
+        COALESCE(SUM(b_p_ch.summa), 0) AS prixod_sum,
         0 AS rasxod_sum
       FROM spravochnik_operatsii AS s_o
       JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
@@ -232,7 +231,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
           )
         ) AS docs,
         0 AS prixod_sum,
-        SUM(b_r_ch.summa) AS rasxod_sum
+        COALESCE(SUM(b_r_ch.summa), 0) AS rasxod_sum
       FROM spravochnik_operatsii AS s_o
       JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
       JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
@@ -244,26 +243,26 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
     )
     SELECT 
       ARRAY_AGG(row_to_json(data)) AS data,
-      COALESCE((
-        SELECT SUM(b_r_ch.summa)
+      (
+        SELECT COALESCE(SUM(b_r_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
         JOIN users AS u ON u.id = b_r.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND b_r.doc_date BETWEEN $2 AND $3 AND b_r.main_schet_id = $1 AND b_r.isdeleted = false
-      ), 0)::FLOAT AS rasxod_sum,
-      COALESCE((
-        SELECT SUM(b_p_ch.summa)
+      )::FLOAT AS rasxod_sum,
+      (
+        SELECT COALESCE(SUM(b_p_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
         JOIN users AS u ON u.id = b_p.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND b_p.doc_date BETWEEN $2 AND $3 AND b_p.main_schet_id = $1 AND b_p.isdeleted = false
-      ), 0)::FLOAT prixod_sum,
-      COALESCE((
-        (SELECT SUM(b_p_ch.summa)
+      )::FLOAT prixod_sum,
+      (
+        (SELECT COALESCE(SUM(b_p_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
@@ -277,23 +276,23 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
         JOIN users AS u ON u.id = b_r.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND b_r.doc_date < $2 AND b_r.main_schet_id = $1 AND b_r.isdeleted = false)  
-      ), 0)::FLOAT summa_from,
-      COALESCE((
-        (SELECT SUM(b_p_ch.summa)
+      )::FLOAT summa_from,
+      (
+        (SELECT COALESCE(SUM(b_p_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_prixod_child AS b_p_ch ON b_p_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
         JOIN users AS u ON u.id = b_p.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND b_p.doc_date < $3 AND b_p.main_schet_id = $1 AND b_p.isdeleted = false) - 
-        (SELECT SUM(b_r_ch.summa)
+        (SELECT COALESCE(SUM(b_r_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
         JOIN users AS u ON u.id = b_r.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND b_r.doc_date < $3 AND b_r.main_schet_id = $1 AND b_r.isdeleted = false)  
-      ), 0)::FLOAT summa_to
+      )::FLOAT summa_to
     FROM data
   `, [main_schet_id, from, to, region_id]);
   return {

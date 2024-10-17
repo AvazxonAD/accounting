@@ -11,7 +11,6 @@ const createAccessService = async (role_id, region_id) => {
 }
 
 const getByRoleIdAccessService = async (region_id, role_id) => {
-    console.log(region_id, role_id)
     try {
         const access = await pool.query(`
             SELECT 

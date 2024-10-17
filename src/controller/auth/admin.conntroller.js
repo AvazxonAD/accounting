@@ -102,7 +102,6 @@ const getByIdAdmin = async (req, res) => {
     getLogger.info(`Muvaffaqyatli foydalanuvchi ma'lumotlari olindi. Foydalanuvchi ID: ${req.user.id}`);
     resFunc(res, 200, admin)
   } catch (error) {
-    console.log(error.statusCode)
     errorCatch(error, res)
   }
 }
