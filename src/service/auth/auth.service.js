@@ -34,6 +34,9 @@ const getByLoginUserService = async (login) => {
       `,
       [login.trim()]
     );
+    if(!user.rows[0]){
+      throw new ErrorResponse('login or password incorrent', 403)
+    }
     let filter = ``;
     if (user.rows[0].role_name !== 'super-admin' && user.rows[0].role_name !== 'region-admin') {
       filter = `AND users.region_id = access.region_id`
