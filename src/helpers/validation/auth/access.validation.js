@@ -12,7 +12,12 @@ const accessValidation = Joi.object({
   users: Joi.boolean().default(false),
   shartnoma: Joi.boolean().default(false),
   jur3: Joi.boolean().default(false),
-  jur4: Joi.boolean().default(false)
+  jur4: Joi.boolean().default(false),
+  podotchet_monitoring: Joi.boolean().default(false), 
+  budjet: Joi.boolean().default(false),
+  access: Joi.boolean().default(false),
+  smeta_grafik: Joi.boolean().default(false),
+  jur152: Joi.boolean().default(false)
 }).options({ stripUnknown: true });
 
 module.exports = {

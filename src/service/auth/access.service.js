@@ -1,4 +1,4 @@
-const pool = require("../../config/db");
+const pool = require(`../../config/db`);
 const ErrorResponse = require('../../utils/errorResponse')
 
 const createAccessService = async (role_id, region_id) => {
@@ -73,7 +73,12 @@ const updateAccessDB = async (object) => {
                 users = $9,
                 shartnoma = $10,
                 jur3 = $11,
-                jur4 = $12
+                jur4 = $12,
+                podotchet_monitoring = $14,
+                budjet = $15,
+                access = $16,
+                smeta_grafik = $17,
+                jur152 = $18
             WHERE id = $13
             RETURNING * 
         `, [
@@ -89,7 +94,12 @@ const updateAccessDB = async (object) => {
             object.shartnoma,
             object.jur3,
             object.jur4,
-            object.access_id
+            object.access_id,
+            object.podotchet_monitoring,
+            object.budjet,
+            object.access,
+            object.smeta_grafik,
+            object.jur152
         ])
         return result.rows[0]
     } catch (error) {
