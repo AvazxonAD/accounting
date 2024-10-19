@@ -38,21 +38,20 @@ const createShartnoma = async (data) => {
   }
 }
 
-const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterValue) => {
+const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization, pudratchi) => {
   try {
-    let filter = ``
+    let filter_organization = ``
+    let pudratchi_filter = ``
     const params = [region_id, main_schet_id, offset, limit]
-    if (typeof Number(filterValue) === "number") {
-       filter = `AND sh_o.spravochnik_organization_id = $5`
-      params.push(filterValue)
+    if (organization) {
+      filter_organization = `AND sh_o.spravochnik_organization_id = $5`
+      params.push(organization)
     }
-    if (filterValue === 'true') {
-      filter = `AND sh_o.pudratchi_bool = true`
-      params.push(filterValue)
+    if (pudratchi === 'true') {
+      pudratchi_filter = `AND sh_o.pudratchi_bool = true`
     }
-    if (filterValue === 'false') {
-      filter = `AND sh_o.pudratchi_bool = false`
-      params.push(filterValue)
+    if (pudratchi === 'false') {
+      pudratchi_filter = `AND sh_o.pudratchi_bool = false`
     }
     const { rows } = await pool.query(
       `WITH data AS (
@@ -72,7 +71,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterVa
           JOIN users AS u ON sh_o.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
           JOIN smeta ON sh_o.smeta_id = smeta.id
-          WHERE sh_o.isdeleted = false ${filter}
+          WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter}
               AND r.id = $1
               AND sh_o.main_schet_id = $2
           ORDER BY sh_o.doc_date 
@@ -85,7 +84,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterVa
            FROM shartnomalar_organization AS sh_o
            JOIN users AS u  ON sh_o.user_id = u.id
            JOIN regions AS r ON u.region_id = r.id
-           WHERE sh_o.isdeleted = false ${filter}
+           WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter}
              AND r.id = $1
              AND sh_o.main_schet_id = $2)::INTEGER AS total_count
         FROM data`, params);

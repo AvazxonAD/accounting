@@ -30,7 +30,8 @@ const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
   main_schet_id: Joi.number().min(1),
-  search: Joi.any()
+  organization: Joi.number().min(1),
+  pudratchi: Joi.string().pattern(/^(true|false)$/)
 }).options({ stripUnknown: true });
 
 module.exports = {
