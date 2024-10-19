@@ -181,7 +181,7 @@ const getByIdJur4DB = async (region_id, main_schet_id, id, ignoreDeleted = false
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = a_o_j_4_ch.id_spravochnik_podrazdelenie
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = a_o_j_4_ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = a_o_j_4_ch.id_spravochnik_type_operatsii
-                        WHERE r.id = $1  AND a_o_j_4_ch.main_schet_id = $2 AND a_o_j_4_ch.avans_otchetlar_jur4_id = a_o_j_4.id 
+                        WHERE r.id = $2  AND a_o_j_4_ch.main_schet_id = $1 AND a_o_j_4_ch.avans_otchetlar_jur4_id = $3 
                     ) AS a_o_j_4_child
                 ) AS childs
             FROM avans_otchetlar_jur4 AS a_o_j_4
