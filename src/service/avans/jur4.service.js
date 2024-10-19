@@ -149,6 +149,7 @@ const getByIdJur4DB = async (region_id, main_schet_id, id, ignoreDeleted = false
         if (!ignoreDeleted) {
             ignore = ` AND a_o_j_4.isdeleted = false`;
         }
+        
         const result = await pool.query(`
             SELECT 
                 a_o_j_4.id, 
