@@ -42,15 +42,17 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterVa
   try {
     let filter = ``
     const params = [region_id, main_schet_id, offset, limit]
-    if (typeof filterValue === "number") {
+    if (typeof Number(filterValue) === "number") {
        filter = `AND sh_o.spravochnik_organization_id = $5`
       params.push(filterValue)
     }
     if (filterValue === 'true') {
       filter = `AND sh_o.pudratchi_bool = true`
+      params.push(filterValue)
     }
     if (filterValue === 'false') {
       filter = `AND sh_o.pudratchi_bool = false`
+      params.push(filterValue)
     }
     const { rows } = await pool.query(
       `WITH data AS (
@@ -64,7 +66,8 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterVa
               sh_o.opisanie,
               sh_o.summa,
               sh_o.pudratchi_bool,
-              smeta.smeta_number
+              smeta.smeta_number,
+              sh_o.main_schet_id
           FROM shartnomalar_organization AS sh_o
           JOIN users AS u ON sh_o.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
@@ -86,7 +89,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, filterVa
              AND r.id = $1
              AND sh_o.main_schet_id = $2)::INTEGER AS total_count
         FROM data`, params);
-    return { data: rows[0]?.data, total: rows[0]?.total_count }
+    return { data: rows[0]?.data || [], total: rows[0]?.total_count }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
