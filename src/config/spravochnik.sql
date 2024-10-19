@@ -45,7 +45,7 @@ CREATE TABLE spravochnik_organization (
   bank_klient VARCHAR(200),
   raschet_schet_gazna VARCHAR(200),
   mfo VARCHAR(200),
-  inn VARCHAR(9),
+  inn VARCHAR(40),
   raschet_schet VARCHAR(200),
   user_id INTEGER REFERENCES users(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

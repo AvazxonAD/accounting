@@ -21,7 +21,7 @@ const checkAdminService = async (region_id, role_id) => {
   try {
     const test = await pool.query(`SELECT * FROM users WHERE role_id = $1 AND isdeleted = false AND region_id = $2`, [role_id, region_id])
     if(test.rows[0]){
-      throw new ErrorResponse(`The information has already been entered`, 400)
+      throw new ErrorResponse(`The admin has already been entered. code: 409`, 409)
     }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
