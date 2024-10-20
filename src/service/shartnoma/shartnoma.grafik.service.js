@@ -52,18 +52,19 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
 }
 
 
-const getAllGrafikDB = async (region_id, main_schet_id, search, limit, offset) => {
+const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, offset) => {
   try {
     let organization_filter = '';
     const params = [region_id, main_schet_id, offset, limit];
-    if (typeof search === "number") {
+    if (typeof organization === "number") {
       organization_filter = `AND s_o.id = $${params.length + 1}`;
-      params.push(search);
+      params.push(organization);
     }
     
     const { rows } = await pool.query(`
       WITH data AS (
         SELECT
+          s_o.id AS spravochnik_organization_id,
           s_o.name AS spravochnik_organization_name,
           s_o.bank_klient AS spravochnik_organization_bank_klient,
           s_o.mfo AS spravochnik_organization_mfo,

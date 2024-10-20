@@ -43,10 +43,10 @@ const updateShartnomaGrafik = async (req, res) => {
 const getAllGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { search, main_schet_id, page, limit } = validationResponse(queryValidation, req.query)
+    const { organization, main_schet_id, page, limit } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
     await getByIdMainSchetService(region_id, main_schet_id);
-    const { data, total } = await getAllGrafikDB(region_id, main_schet_id, search, limit, offset);
+    const { data, total } = await getAllGrafikDB(region_id, main_schet_id, organization, limit, offset);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,

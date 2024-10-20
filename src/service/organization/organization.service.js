@@ -171,10 +171,14 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
         const data = rows[0].data?.map(obj => {
             let summa_prixod = 0;
             let summa_rasxod = 0; 
-            obj.array.forEach(item => { 
-                summa_rasxod += item.summa_rasxod; 
-                summa_prixod += item.summa_prixod; 
-            });
+            if(obj.array){
+                obj.array.forEach(item => { 
+                    summa_rasxod += item.summa_rasxod; 
+                    summa_prixod += item.summa_prixod; 
+                });
+            }else{
+                obj.array = []
+            }
             obj.summa_rasxod = summa_rasxod;
             obj.summa_prixod = summa_prixod;
             return obj;
