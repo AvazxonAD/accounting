@@ -42,7 +42,6 @@ const capExcelCreate = async (req, res) => {
     const title = `Дневной отчет шапка Ж.О. №1.  Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await kassaCapService(region_id, main_schet_id, from, to);
-    return res.send(data)
     const workBook = XLSX.utils.book_new();
     const fileName = `kassa_shapka_${new Date().getTime()}.xlsx`;
     const sheetData = [
@@ -83,7 +82,6 @@ const dailyExcelCreate = async (req, res) => {
     const title = `Дневной отчет по Журнал-Ордеру №1.  Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
-    return res.send(data)
     const workBook = XLSX.utils.book_new();
     const fileName = `kundalik_hisobot_${new Date().getTime()}.xlsx`;
     const sheetData = [
@@ -100,7 +98,7 @@ const dailyExcelCreate = async (req, res) => {
         } else {
           operatsii = `${main_schet.jur2_schet} - ${item.schet}`
         }
-        sheetData.push([item.doc_num, item.doc_date, item.spravochnik_organization_name, item.schet, item.prixod_sum.toFixed(2), item.rasxod_sum.toFixed(2), `${operatsii}`]);
+        sheetData.push([item.doc_num, item.doc_date, item.spravochnik_podotchet_litso_name, item.schet, item.prixod_sum.toFixed(2), item.rasxod_sum.toFixed(2), `${operatsii}`]);
       })
       sheetData.push([`Итого по счоту: ${object.schet}`, ' ', ' ', ' ', `${object.prixod_sum}`, `${object.rasxod_sum}`])
     }

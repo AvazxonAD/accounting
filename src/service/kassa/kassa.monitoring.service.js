@@ -18,7 +18,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           FROM kassa_prixod kp
           JOIN users u ON kp.user_id = u.id
           JOIN regions r ON u.region_id = r.id
-          JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kp.id_podotchet_litso
+          LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kp.id_podotchet_litso
           WHERE r.id = $1 AND kp.main_schet_id = $2
           AND kp.doc_date BETWEEN $3 AND $4
 
@@ -37,7 +37,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           FROM kassa_rasxod kr
           JOIN users u ON kr.user_id = u.id
           JOIN regions r ON u.region_id = r.id
-          JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kr.id_podotchet_litso
+          LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kr.id_podotchet_litso
           WHERE r.id = $1 AND kr.main_schet_id = $2
           AND kr.doc_date BETWEEN $3 AND $4
           ORDER BY combined_date
@@ -110,6 +110,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
 }
 
 const kassaCapService = async (region_id, main_schet_id, from, to) => {
+  console.log(region_id, main_schet_id, from, to)
   const { rows } = await pool.query(`
     WITH data AS (
       SELECT s_o.schet, COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
@@ -184,7 +185,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
         json_build_object(
           'doc_num', k_p.doc_num, 
           'doc_date', k_p.doc_date,
-          'spravochnik_organization_name', s_organ.name,
+          'spravochnik_podotchet_litso_name', s_p_l.name,
           'opisanie', k_p.opisanie,
           'schet', s_o.schet,
           'prixod_sum', k_p_ch.summa,
@@ -196,7 +197,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
       FROM spravochnik_operatsii AS s_o
       JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.spravochnik_operatsii_id = s_o.id
       JOIN kassa_prixod AS k_p ON k_p.id = k_p_ch.kassa_prixod_id
-      JOIN spravochnik_organization AS s_organ ON k_p.id_spravochnik_organization = s_organ.id
+      LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON k_p.id_podotchet_litso = s_p_l.id
       JOIN users AS u ON u.id = k_p.user_id
       JOIN regions AS r ON r.id = u.region_id 
       WHERE r.id = $4 AND k_p.doc_date BETWEEN $2 AND $3 AND k_p.main_schet_id = $1 AND k_p.isdeleted = false
@@ -208,7 +209,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
         json_build_object(
           'doc_num', k_r.doc_num, 
           'doc_date', k_r.doc_date,
-          'spravochnik_organization_name', s_organ.name,
+          'spravochnik_podotchet_litso_name', s_p_l.name,
           'opisanie', k_r.opisanie,
           'schet', s_o.schet,
           'prixod_sum', 0,
@@ -220,7 +221,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
       FROM spravochnik_operatsii AS s_o
       JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.spravochnik_operatsii_id = s_o.id
       JOIN kassa_rasxod AS k_r ON k_r.id = k_r_ch.kassa_rasxod_id
-      JOIN spravochnik_organization AS s_organ ON k_r.id_spravochnik_organization = s_organ.id
+      LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON k_r.id_podotchet_litso = s_p_l.id
       JOIN users AS u ON u.id = k_r.user_id
       JOIN regions AS r ON r.id = u.region_id 
       WHERE r.id = $4 AND k_r.doc_date BETWEEN $2 AND $3 AND k_r.main_schet_id = $1 AND k_r.isdeleted = false
@@ -254,7 +255,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
         JOIN users AS u ON u.id = k_p.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND k_p.doc_date < $2 AND k_p.main_schet_id = $1 AND k_p.isdeleted = false) - 
-        (SELECT SUM(k_r_ch.summa)
+        (SELECT COALESCE(SUM(k_r_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.spravochnik_operatsii_id = s_o.id
         JOIN kassa_rasxod AS k_r ON k_r.id = k_r_ch.kassa_rasxod_id
