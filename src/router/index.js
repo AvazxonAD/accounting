@@ -54,5 +54,8 @@ router.use("/services/show", protect, police('jur152'), require("./show.services
 // podotchet monitoring 
 router.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet/podotchet.monitoring.router'))
 
+// jur 7 routes 
+router.use('/jur_7/pereotsenka', protect, require('./jur_7/pereotsenka.router'))
+router.use('/jur_7/group', protect, require('./jur_7/group.jur7.router'))
 
 module.exports = router;
