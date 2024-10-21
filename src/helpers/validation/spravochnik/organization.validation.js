@@ -13,7 +13,8 @@ const organizationValidation = Joi.object({
 const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
-  inn: Joi.number()
+  inn: Joi.number(),
+  search: Joi.string()
 }).options({ stripUnknown: true });
 
 module.exports = {

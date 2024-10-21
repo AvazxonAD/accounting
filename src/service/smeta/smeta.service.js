@@ -23,20 +23,26 @@ const createSmeta = async (smeta_name, smeta_number, father_smeta_name) => {
   }
 }
 
-const getAllSmeta = async (offset, limit) => {
+const getAllSmeta = async (offset, limit, search) => {
   try {
+    const params = [offset, limit]
+    let search_filter = ``
+    if(search){
+      search_filter = `AND smeta_name ILIKE '%' || $${params.length + 1} || '%'`
+      params.push(search)
+    }
     const { rows } = await pool.query(
       `
         WITH data AS (
           SELECT id, smeta_name, smeta_number, father_smeta_name FROM smeta  
-          WHERE isdeleted = false OFFSET $1 LIMIT $2
+          WHERE isdeleted = false ${search_filter} OFFSET $1 LIMIT $2
         )
         SELECT 
           ARRAY_AGG(row_to_json(data)) AS data,
-          (SELECT COUNT(id) FROM smeta WHERE isdeleted = false)::INTEGER AS total_count
+          (SELECT COUNT(id) FROM smeta WHERE isdeleted = false ${search_filter})::INTEGER AS total_count
         FROM data
       `,
-      [offset, limit]);
+      params);
     return {data: rows[0]?.data || [], total: rows[0]?.total_count || 0}
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

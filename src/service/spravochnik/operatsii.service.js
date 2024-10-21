@@ -34,21 +34,26 @@ const getByNameAndSchetOperatsiiService = async (name, type_schet, smeta_id) => 
   }
 }
 
-const getAllOperatsiiService = async (type_schet, offset, limit) => {
+const getAllOperatsiiService = async (offset, limit, search) => {
   try {
-    let type_schet_filter = ``
+    let search_filter = ``
     const params = [offset, limit];
-    if(type_schet){
-      type_schet_filter = `AND type_schet = $${params.length + 1}`
-      params.push(type_schet)
+    if(search){
+      search_filter = `AND (
+        type_schet ILIKE '%' || $${params.length + 1} || '%' OR
+        name ILIKE '%' || $${params.length + 1} || '%' OR
+        schet ILIKE '%' || $${params.length + 1} || '%' OR
+        sub_schet ILIKE '%' || $${params.length + 1} || '%'
+      )`
+      params.push(search)
     }
     const result = await pool.query(`
       WITH data AS (
         SELECT id, name, schet, sub_schet, type_schet, smeta_id
-        FROM spravochnik_operatsii  WHERE isdeleted = false ${type_schet_filter} OFFSET $1 LIMIT $2)
+        FROM spravochnik_operatsii  WHERE isdeleted = false ${search_filter} OFFSET $1 LIMIT $2)
       SELECT 
         ARRAY_AGG(row_to_json(data)) AS data,
-        (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${type_schet_filter})::INTEGER AS total_count
+        (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter})::INTEGER AS total_count
       FROM data
     `, params);
     return {result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0}

@@ -34,9 +34,9 @@ const createTypeOperatsii = async (req, res) => {
 const getTypeOperatsii = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { page, limit } = validationResponse(queryValidation, req.query)
+    const { page, limit, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const result = await getAlltypeOperatsiiService(region_id, offset, limit);
+    const result = await getAlltypeOperatsiiService(region_id, offset, limit, search);
     const total = result.total_count;
     const pageCount = Math.ceil(total / limit);
     const meta = {

@@ -34,8 +34,14 @@ const createPodrazdelenieService = async (user_id, name, rayon) => {
   }
 }
 
-const getAllPodrazdelenieService = async (region_id, offset, limit) => {
+const getAllPodrazdelenieService = async (region_id, offset, limit, search) => {
   try {
+    const params  = [region_id, offset, limit] 
+    let search_filter = ``
+    if(search){
+      search_filter = `AND s_p.name ILIKE '%' || $${params.length + 1} || '%'`
+      params.push(search)
+    }
     const result = await pool.query(
       ` WITH data AS (
         SELECT s_p.id, 
@@ -44,8 +50,7 @@ const getAllPodrazdelenieService = async (region_id, offset, limit) => {
         FROM spravochnik_podrazdelenie AS  s_p
         JOIN users AS u ON s_p.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1
-          AND s_p.isdeleted = false
+        WHERE r.id = $1 AND s_p.isdeleted = false ${search_filter}
         ORDER BY s_p.id
         OFFSET $2 
         LIMIT $3
@@ -56,12 +61,9 @@ const getAllPodrazdelenieService = async (region_id, offset, limit) => {
         FROM spravochnik_podrazdelenie AS s_p
         JOIN users AS u ON s_p.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1
-          AND s_p.isdeleted = false)::INTEGER AS total_count
+        WHERE r.id = $1 AND s_p.isdeleted = false ${search_filter})::INTEGER AS total_count
       FROM data
-      `,
-      [region_id, offset, limit],
-    );
+      `,params);
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

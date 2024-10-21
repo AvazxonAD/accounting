@@ -34,9 +34,9 @@ const createPodrazdelenie = async (req, res, next) => {
 const getPodrazdelenie = async (req, res, next) => {
   try {
     const region_id = req.user.region_id;
-    const { page, limit } = validationResponse(queryValidation, req.body)
+    const { page, limit, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const result = await getAllPodrazdelenieService(region_id, offset, limit);
+    const result = await getAllPodrazdelenieService(region_id, offset, limit, search);
     const total = parseInt(result.total_count);
     const pageCount = Math.ceil(total / limit);
     const meta = {

@@ -37,14 +37,20 @@ const createSostavService = async (user_id, name, rayon) => {
   }
 }
 
-const getSostavService = async (region_id, offset, limit) => {
+const getSostavService = async (region_id, offset, limit, search) => {
   try {
+    const params = [region_id, offset, limit]
+    let search_filter = ``
+    if(search){
+      search_filter = `AND spravochnik_sostav.name ILIKE '%' || $${params.length + 1} || '%'`
+      params.push(search)
+    }
     const result = await pool.query(
       ` WITH data AS (SELECT spravochnik_sostav.id, spravochnik_sostav.name, spravochnik_sostav.rayon 
           FROM spravochnik_sostav
           JOIN users ON spravochnik_sostav.user_id = users.id
           JOIN regions ON users.region_id = regions.id  
-          WHERE spravochnik_sostav.isdeleted = false 
+          WHERE spravochnik_sostav.isdeleted = false ${search_filter} 
             AND regions.id = $1 
           ORDER BY id
           OFFSET $2 
@@ -55,12 +61,10 @@ const getSostavService = async (region_id, offset, limit) => {
           FROM spravochnik_sostav
           JOIN users ON spravochnik_sostav.user_id = users.id
           JOIN regions ON users.region_id = regions.id  
-          WHERE spravochnik_sostav.isdeleted = false 
+          WHERE spravochnik_sostav.isdeleted = false ${search_filter}
             AND regions.id = $1)::INTEGER AS total_count
         FROM data
-      `,
-      [region_id, offset, limit],
-    );
+      `, params);
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

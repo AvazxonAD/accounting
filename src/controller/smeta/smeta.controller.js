@@ -26,9 +26,9 @@ const create = async (req, res) => {
 // get all
 const getAll = async (req, res) => {
   try {
-    const { page, limit } = validationResponse(queryValidation, req.query)
+    const { page, limit, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { data, total } = await getAllSmeta(offset, limit);
+    const { data, total } = await getAllSmeta(offset, limit, search);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,

@@ -64,23 +64,23 @@ const createMainSchetService = async (data) => {
           user_id
         ) 
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
-      `,[
-        data.account_number,
-        data.spravochnik_budjet_name_id,
-        data.tashkilot_nomi,
-        data.tashkilot_bank,
-        data.tashkilot_mfo,
-        data.tashkilot_inn,
-        data.account_name,
-        data.jur1_schet,
-        data.jur1_subschet,
-        data.jur2_schet,
-        data.jur2_subschet,
-        data.jur3_schet,
-        data.jur3_subschet,
-        data.jur4_subschet,
-        data.jur4_schet,
-        data.user_id,
+      `, [
+      data.account_number,
+      data.spravochnik_budjet_name_id,
+      data.tashkilot_nomi,
+      data.tashkilot_bank,
+      data.tashkilot_mfo,
+      data.tashkilot_inn,
+      data.account_name,
+      data.jur1_schet,
+      data.jur1_subschet,
+      data.jur2_schet,
+      data.jur2_subschet,
+      data.jur3_schet,
+      data.jur3_subschet,
+      data.jur4_subschet,
+      data.jur4_schet,
+      data.user_id,
     ]);
     return result.rows[0]
   } catch (error) {
@@ -88,10 +88,21 @@ const createMainSchetService = async (data) => {
   }
 }
 
-const getAllMainSchetService = async (region_id, offset, limit) => {
-    try {
-      const result = await pool.query(
-        `
+const getAllMainSchetService = async (region_id, offset, limit, search) => {
+  try {
+    const params = [region_id, offset, limit]
+    let search_filter = ``
+    if (search) {
+      search_filter = `AND (
+        main_schet.tashkilot_nomi ILIKE '%' || $${params.length + 1} || '%' OR
+        main_schet.tashkilot_inn ILIKE '%' || $${params.length + 1} || '%' OR
+        main_schet.account_name ILIKE '%' || $${params.length + 1} || '%' OR
+        main_schet.account_number ILIKE '%' || $${params.length + 1} || '%' 
+        )`
+      params.push(search)
+    }
+    const result = await pool.query(
+      `
           WITH data AS (SELECT 
               main_schet.id, 
               main_schet.user_id,
@@ -117,21 +128,21 @@ const getAllMainSchetService = async (region_id, offset, limit) => {
             JOIN regions ON users.region_id = regions.id
             JOIN spravochnik_budjet_name 
                 ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
-            WHERE main_schet.isdeleted = false AND regions.id = $1 OFFSET $2 LIMIT $3)
+            WHERE main_schet.isdeleted = false AND regions.id = $1 ${search_filter} OFFSET $2 LIMIT $3)
           SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
             (SELECT COUNT(main_schet.id)
               FROM main_schet
               JOIN users ON main_schet.user_id = users.id
               JOIN regions ON users.region_id = regions.id
-              WHERE main_schet.isdeleted = false 
+              WHERE main_schet.isdeleted = false ${search_filter}
               AND regions.id = $1)::INTEGER AS total_count
           FROM data 
-      `,[region_id, offset, limit]);
-      return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 };
-    } catch (error) {
-      throw new ErrorResponse(error, error.statusCode)
-    }
+      `, params);
+    return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 };
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
 }
 
 const updateMainSchetService = async (data) => {
@@ -153,23 +164,23 @@ const updateMainSchetService = async (data) => {
           jur4_subschet = $14, 
           jur4_schet = $15
           WHERE id = $16 RETURNING * 
-      `,[
-        data.account_number,
-        data.spravochnik_budjet_name_id,
-        data.tashkilot_nomi,
-        data.tashkilot_bank,
-        data.tashkilot_mfo,
-        data.tashkilot_inn,
-        data.account_name,
-        data.jur1_schet,
-        data.jur1_subschet,
-        data.jur2_schet,
-        data.jur2_subschet,
-        data.jur3_schet,
-        data.jur3_subschet,
-        data.jur4_subschet,
-        data.jur4_schet,
-        data.id,
+      `, [
+      data.account_number,
+      data.spravochnik_budjet_name_id,
+      data.tashkilot_nomi,
+      data.tashkilot_bank,
+      data.tashkilot_mfo,
+      data.tashkilot_inn,
+      data.account_name,
+      data.jur1_schet,
+      data.jur1_subschet,
+      data.jur2_schet,
+      data.jur2_subschet,
+      data.jur3_schet,
+      data.jur3_subschet,
+      data.jur4_subschet,
+      data.jur4_schet,
+      data.id,
     ])
     return result.rows[0]
   } catch (error) {
@@ -198,7 +209,7 @@ const getByBudjetIdMainSchetService = async (budjet_id, region_id) => {
         WHERE main_schet.spravochnik_budjet_name_id = $1 
           AND main_schet.isdeleted = false
           AND regions.id = $2
-      `,[budjet_id, region_id]);
+      `, [budjet_id, region_id]);
     return result.rows;
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -226,7 +237,7 @@ const getByAccountNumberMainSchetService = async (region_id, account_number) => 
       JOIN users ON users.id = main_schet.user_id
       JOIN regions ON regions.id = users.region_id
       WHERE main_schet.account_number = $1 AND main_schet.isdeleted = false AND regions.id = $2`, [account_number, region_id])
-    if(result.rows[0]){
+    if (result.rows[0]) {
       throw new ErrorResponse('This data has already been entered', 409)
     }
     return result.rows[0]

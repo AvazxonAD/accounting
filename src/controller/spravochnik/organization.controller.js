@@ -30,9 +30,9 @@ const createOrganization = async (req, res) => {
 const getOrganization = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { page, limit, inn } = validationResponse(queryValidation, req.query)
+    const { page, limit, inn, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllOrganizationService(region_id, offset, limit, inn);
+    const { result, total } = await getAllOrganizationService(region_id, offset, limit, inn, search);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -42,7 +42,7 @@ const getOrganization = async (req, res) => {
       backPage: page === 1 ? null : page - 1,
     }
     resFunc(res, 200, result, meta)
-  } catch (error) {
+  } catch (error) {  
     errorCatch(error, res)
   }
 }

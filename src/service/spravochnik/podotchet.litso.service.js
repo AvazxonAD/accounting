@@ -39,8 +39,14 @@ const createPodotChetService = async (data) => {
 
 }
 
-const getAllPodotChetService = async (region_id, offset, limit) => {
+const getAllPodotChetService = async (region_id, offset, limit, search) => {
   try {
+    const params = [region_id, offset, limit]
+    let search_filter = ``
+    if(search){
+      search_filter = `AND s_p_l.name ILIKE '%' || $${params.length + 1} || '%'`
+      params.push(search)
+    }
     const result = await pool.query(
       ` WITH data AS (
         SELECT s_p_l.id, 
@@ -49,7 +55,7 @@ const getAllPodotChetService = async (region_id, offset, limit) => {
         FROM spravochnik_podotchet_litso AS  s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1 AND s_p_l.isdeleted = false
+        WHERE r.id = $1 AND s_p_l.isdeleted = false ${search_filter}
         ORDER BY s_p_l.id OFFSET $2 LIMIT $3
       )
       SELECT 
@@ -58,10 +64,9 @@ const getAllPodotChetService = async (region_id, offset, limit) => {
         FROM spravochnik_podotchet_litso AS s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1 AND s_p_l.isdeleted = false)::INTEGER AS total_count
+        WHERE r.id = $1 AND s_p_l.isdeleted = false ${search_filter})::INTEGER AS total_count
       FROM data
-      `, [region_id, offset, limit],
-    );
+      `, params);
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

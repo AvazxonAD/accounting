@@ -43,13 +43,16 @@ const createOrganizationService = async (data) => {
   }
 }
 
-const getAllOrganizationService = async (region_id, offset, limit, inn) => {
+const getAllOrganizationService = async (region_id, offset, limit, inn, search) => {
   try {
     const params =  [region_id, offset, limit]
-    let innFilter = ``
-    if (inn) {
-      innFilter = `AND s_o.inn = $${params.length + 1}`
-      params.push(inn)
+    let search_filter = ``
+    if (search) {
+      search_filter = `AND (
+        s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR
+        s_o.name ILIKE '%' || $${params.length + 1} || '%'
+      )`
+      params.push(search)
     }
     result = await pool.query(
       `
@@ -65,7 +68,7 @@ const getAllOrganizationService = async (region_id, offset, limit, inn) => {
               FROM spravochnik_organization AS s_o  
               JOIN users AS u ON s_o.user_id = u.id
               JOIN regions AS r ON u.region_id = r.id 
-              WHERE s_o.isdeleted = false AND r.id = $1 ${innFilter}
+              WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter}
               OFFSET $2
               LIMIT $3)
           SELECT 
@@ -74,7 +77,7 @@ const getAllOrganizationService = async (region_id, offset, limit, inn) => {
               FROM spravochnik_organization AS s_o  
               JOIN users AS u ON s_o.user_id = u.id
               JOIN regions AS r ON u.region_id = r.id 
-              WHERE s_o.isdeleted = false AND r.id = $1 ${innFilter})::INTEGER AS total_count
+              WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter})::INTEGER AS total_count
           FROM data
       `,params);
     return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 };

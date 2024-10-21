@@ -34,9 +34,9 @@ const create = async (req, res) => {
 // get all
 const getAll = async (req, res) => {
   try {
-    const { limit, page } = validationResponse(queryMainSchetValidation, req.query)
+    const { limit, page, search } = validationResponse(queryMainSchetValidation, req.query)
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllMainSchetService(req.user.region_id, offset, limit);
+    const { result, total } = await getAllMainSchetService(req.user.region_id, offset, limit, search);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,

@@ -21,6 +21,7 @@ const mainSchetValidator = Joi.object({
 const queryMainSchetValidation = Joi.object({
   limit: Joi.number().min(1).default(10),
   page: Joi.number().min(1).default(1),
+  search: Joi.string().trim()
 }).options({ stripUnknown: true });
 
 module.exports = {

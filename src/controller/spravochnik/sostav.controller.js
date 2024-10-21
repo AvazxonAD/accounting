@@ -33,9 +33,9 @@ const createSostav = async (req, res) => {
 const getSostav = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const {limit, page} = validationResponse(queryValidation, req.query)
+    const {limit, page, search} = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const result = await getSostavService(region_id, offset, limit);
+    const result = await getSostavService(region_id, offset, limit, search);
     const total = result.total_count
     const pageCount = Math.ceil(total / limit);
     const meta = {

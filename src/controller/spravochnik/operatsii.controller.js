@@ -30,9 +30,9 @@ const createOperatsii = async (req, res) => {
 // get all
 const getOperatsii = async (req, res) => {
   try {
-    const { type_schet, page, limit } = validationResponse(queryValidation, req.query)
+    const { page, limit, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllOperatsiiService(type_schet, offset, limit);
+    const { result, total } = await getAllOperatsiiService(offset, limit, search);
     const pageCount = Math.ceil(total / limit)
     const meta = {
       pageCount,

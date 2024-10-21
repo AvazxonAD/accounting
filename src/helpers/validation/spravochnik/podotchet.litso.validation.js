@@ -12,7 +12,7 @@ const queryValidation = Joi.object({
 
 const podotchetLitsoValidation = Joi.object({
   name: Joi.string().trim().required(),
-  rayon: Joi.string().trim().required(),
+  rayon: Joi.string().trim().required()
 }).options({ stripUnknown: true });
 
 module.exports = {

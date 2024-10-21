@@ -35,34 +35,40 @@ const createTypeOperatsiiService = async (user_id, name, rayon) => {
 }
 
 
-const getAlltypeOperatsiiService = async (region_id, offset, limit) => {
+const getAlltypeOperatsiiService = async (region_id, offset, limit, search) => {
   try {
+    const params = [region_id, offset, limit]
+    let search_filter = ``
+    if(search){
+      search_filter = `AND s_t_o.name ILIKE '%' || $${params.length + 1} || '%'`
+      params.push(search)
+    }
     const result = await pool.query(
       `
               WITH data AS (
-          SELECT spravochnik_type_operatsii.id, 
-                spravochnik_type_operatsii.rayon, 
-                spravochnik_type_operatsii.name 
-          FROM spravochnik_type_operatsii
-          JOIN users ON spravochnik_type_operatsii.user_id = users.id
+          SELECT s_t_o.id, 
+                s_t_o.rayon, 
+                s_t_o.name 
+          FROM spravochnik_type_operatsii AS s_t_o
+          JOIN users ON s_t_o.user_id = users.id
           JOIN regions ON users.region_id = regions.id  
-          WHERE spravochnik_type_operatsii.isdeleted = false 
-            AND regions.id = $1 
+          WHERE s_t_o.isdeleted = false 
+            AND regions.id = $1 ${search_filter}
           ORDER BY id
           OFFSET $2 
           LIMIT $3
       )
       SELECT 
           ARRAY_AGG(row_to_json(data)) AS data,
-          (SELECT COUNT(spravochnik_type_operatsii.id) AS total 
-          FROM spravochnik_type_operatsii
-          JOIN users ON spravochnik_type_operatsii.user_id = users.id
+          (SELECT COUNT(s_t_o.id) AS total 
+          FROM  spravochnik_type_operatsii s_t_o
+          JOIN users ON s_t_o.user_id = users.id
           JOIN regions ON users.region_id = regions.id  
-          WHERE spravochnik_type_operatsii.isdeleted = false 
-            AND regions.id = $1)::INTEGER AS total_count
+          WHERE s_t_o.isdeleted = false 
+            AND regions.id = $1 ${search_filter})::INTEGER AS total_count 
       FROM data
       `
-    ,[region_id, offset, limit]);
+    ,params);
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

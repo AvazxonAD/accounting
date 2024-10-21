@@ -38,8 +38,9 @@ const createShartnoma = async (data) => {
   }
 }
 
-const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization, pudratchi) => {
+const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization, pudratchi, search) => {
   try {
+    let search_filter = ``
     let filter_organization = ``
     let pudratchi_filter = ``
     const params = [region_id, main_schet_id, offset, limit]
@@ -52,6 +53,10 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
     }
     if (pudratchi === 'false') {
       pudratchi_filter = `AND sh_o.pudratchi_bool = false`
+    }
+    if(search){
+      search_filter = `AND sh_o.doc_num ILIKE '%' || $${params.length + 1} || '%'`
+      params.push(search)
     }
     const { rows } = await pool.query(
       `WITH data AS (
@@ -71,7 +76,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
           JOIN users AS u ON sh_o.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
           JOIN smeta ON sh_o.smeta_id = smeta.id
-          WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter}
+          WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
               AND r.id = $1
               AND sh_o.main_schet_id = $2
           ORDER BY sh_o.doc_date 
@@ -84,7 +89,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
            FROM shartnomalar_organization AS sh_o
            JOIN users AS u  ON sh_o.user_id = u.id
            JOIN regions AS r ON u.region_id = r.id
-           WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter}
+           WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
              AND r.id = $1
              AND sh_o.main_schet_id = $2)::INTEGER AS total_count
         FROM data`, params);
