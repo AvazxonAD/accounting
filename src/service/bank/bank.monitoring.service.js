@@ -269,7 +269,7 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
         JOIN users AS u ON u.id = b_p.user_id
         JOIN regions AS r ON r.id = u.region_id 
         WHERE r.id = $4 AND b_p.doc_date < $2 AND b_p.main_schet_id = $1 AND b_p.isdeleted = false) - 
-        (SELECT SUM(b_r_ch.summa)
+        (SELECT COALESCE(SUM(b_r_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
