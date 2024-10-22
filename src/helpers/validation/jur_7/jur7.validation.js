@@ -27,6 +27,8 @@ const groupValidation = Joi.object({
     provodka_kredit: Joi.string().trim()
 });
 
+const podrazdelenieValidation = Joi.object({
+    name: Joi.string().trim()
+});
 
-
-module.exports = { pereotsenkaValidation, groupValidation }
+module.exports = { pereotsenkaValidation, groupValidation, podrazdelenieValidation }
