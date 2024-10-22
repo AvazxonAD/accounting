@@ -74,7 +74,7 @@ const getGroupService = async (region_id, offset, limit) => {
     }
 }
 
-const getByIdGroupService = async (id, region_id, ignore_ideleted = false) => {
+const getByIdGroupService = async (region_id, id, ignore_ideleted = false) => {
     try {
         let ignore = '';
         if (!ignore_ideleted) {
@@ -95,7 +95,7 @@ const getByIdGroupService = async (id, region_id, ignore_ideleted = false) => {
             JOIN regions AS r ON r.id = u.region_id
             WHERE g_j7.id = $1 AND r.id = $2 ${ignore}`, [id, region_id]);
         if (!result.rows[0]) {
-            throw new ErrorResponse('doc not found', 404);
+            throw new ErrorResponse('group_jur7 not found', 404);
         }
         return result.rows[0];
     } catch (error) {

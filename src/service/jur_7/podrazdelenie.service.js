@@ -57,7 +57,7 @@ const getpodrazdelenieService = async (region_id, offset, limit) => {
     }
 };
 
-const getByIdNamePodrazdelenieService = async (region_id, name) => {
+const getByNamePodrazdelenieService = async (region_id, name) => {
     try {
         const result = await pool.query(`
             SELECT s_p_j7.*
@@ -76,7 +76,7 @@ const getByIdNamePodrazdelenieService = async (region_id, name) => {
     }
 };
 
-const getByIdpodrazdelenieService = async (id, region_id, ignore_ideleted = false) => {
+const getByIdpodrazdelenieService = async (region_id, id, ignore_ideleted = false) => {
     try {
         let ignore = '';
         if (!ignore_ideleted) {
@@ -91,7 +91,6 @@ const getByIdpodrazdelenieService = async (id, region_id, ignore_ideleted = fals
             JOIN regions AS r ON r.id = u.region_id
             WHERE s_p_j7.id = $1 AND r.id = $2 ${ignore}
         `, [id, region_id]);
-
         if (!result.rows[0]) {
             throw new ErrorResponse('podrazdelenie not found', 404);
         }
@@ -128,5 +127,5 @@ module.exports = {
     getByIdpodrazdelenieService,
     updatepodrazdelenieService,
     deletepodrazdelenieService,
-    getByIdNamePodrazdelenieService
+    getByNamePodrazdelenieService
 }

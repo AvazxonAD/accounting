@@ -58,5 +58,7 @@ router.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), req
 router.use('/jur_7/pereotsenka', protect, require('./jur_7/pereotsenka.router'))
 router.use('/jur_7/group', protect, require('./jur_7/group.jur7.router'))
 router.use('/jur_7/podrazdelenie', protect, require('./jur_7/podrazdelenie.router'))
+router.use('/jur_7/responsible', protect, require('./jur_7/responsible.router'))
+router.use('/jur_7/naimenovanie', protect, require('./jur_7/naimenovanie.router'))
 
 module.exports = router;

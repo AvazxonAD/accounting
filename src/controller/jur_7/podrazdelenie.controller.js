@@ -8,7 +8,7 @@ const {
     getByIdpodrazdelenieService,
     updatepodrazdelenieService,
     deletepodrazdelenieService,
-    getByIdNamePodrazdelenieService
+    getByNamePodrazdelenieService
 } = require('../../service/jur_7/podrazdelenie.service')
 const { queryValidation } = require('../../helpers/validation/other/query.validation')
 
@@ -17,7 +17,7 @@ const podrazdelenieCreate = async (req, res) => {
         const user_id = req.user.id
         const region_id = req.user.region_id
         const data = validationResponse(podrazdelenieValidation, req.body)
-        await getByIdNamePodrazdelenieService(region_id, data.name)
+        await getByNamePodrazdelenieService(region_id, data.name)
         const result = await podrazdelenieCreateService({...data, user_id})
         resFunc(res, 200, result)
     } catch (error) {
@@ -61,9 +61,9 @@ const updatepodrazdelenie = async (req, res) => {
         const region_id = req.user.region_id
         const data = validationResponse(podrazdelenieValidation, req.body)
         const id = req.params.id
-        const oldData = await getByIdpodrazdelenieService(id, region_id)
+        const oldData = await getByIdpodrazdelenieService(region_id, id)
         if(oldData.name !== data.name){
-            await getByIdNamePodrazdelenieService(region_id, data.name)
+            await getByNamePodrazdelenieService(region_id, data.name)
         }
         const result = await updatepodrazdelenieService({ ...data, id })
         resFunc(res, 200, result)
@@ -76,7 +76,7 @@ const deletepodrazdelenie = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const id = req.params.id
-        await getByIdpodrazdelenieService(id, region_id)
+        await getByIdpodrazdelenieService(region_id, id)
         await deletepodrazdelenieService(id)
         resFunc(res, 200, 'delete success true')
     } catch (error) {

@@ -48,7 +48,7 @@ const getByIdgroup = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const id = req.params.id
-        const data = await getByIdGroupService(id, region_id, true)
+        const data = await getByIdGroupService(region_id, id, true)
         resFunc(res, 200, data)
     } catch (error) {
         errorCatch(error, res)
@@ -60,7 +60,7 @@ const updategroup = async (req, res) => {
         const region_id = req.user.region_id
         const data = validationResponse(groupValidation, req.body)
         const id = req.params.id
-        await getByIdGroupService(id, region_id)
+        await getByIdGroupService(region_id, id)
         await getByIdPereotsenkaService(data.pereotsenka_jur7_id)
         const result = await updateGroupService({ ...data, id })
         resFunc(res, 200, result)
@@ -73,7 +73,7 @@ const deletegroup = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const id = req.params.id
-        await getByIdGroupService(id, region_id)
+        await getByIdGroupService(region_id, id)
         await deleteGroupService(id)
         resFunc(res, 200, 'delete success true')
     } catch (error) {

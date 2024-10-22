@@ -31,4 +31,16 @@ const podrazdelenieValidation = Joi.object({
     name: Joi.string().trim()
 });
 
-module.exports = { pereotsenkaValidation, groupValidation, podrazdelenieValidation }
+const responsibleValidation = Joi.object({
+    fio: Joi.string().trim(),
+    spravochnik_podrazdelenie_jur7_id: Joi.number().required()
+})
+
+const naimenovanieValidation = Joi.object({
+    spravochnik_budjet_name_id: Joi.number().required(),
+    name: Joi.string().trim(),
+    edin: Joi.string().trim(),
+    group_jur7_id: Joi.number().required() 
+})
+
+module.exports = { pereotsenkaValidation, groupValidation, podrazdelenieValidation, responsibleValidation, naimenovanieValidation }
