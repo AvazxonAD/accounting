@@ -189,7 +189,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
     } catch (error) {
       throw new ErrorResponse(error, error.statusCode)
     }
-  }
+}
 
 const updateKassaPrixodDB = async (data) => {
   try {

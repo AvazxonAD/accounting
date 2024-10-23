@@ -67,7 +67,7 @@ CREATE TABLE naimenovanie_tovarov_jur7 (
 CREATE TABLE document_jur7 (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
-  type_document INT, -- 1-Приход 2-Расход 3-Внутр. перемещ.
+  type_document INT,
   doc_num VARCHAR(50),
   doc_date DATE,
   j_o_num VARCHAR(50),

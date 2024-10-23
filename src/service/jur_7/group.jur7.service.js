@@ -50,10 +50,12 @@ const getGroupService = async (region_id, offset, limit) => {
                     g_j7.iznos_foiz, 
                     g_j7.provodka_debet, 
                     g_j7.provodka_subschet, 
-                    g_j7.provodka_kredit
+                    g_j7.provodka_kredit,
+                    p_j7.name AS pereotsenka_jur7_name
                 FROM group_jur7 AS g_j7
                 JOIN users AS u ON u.id = g_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN pereotsenka_jur7 AS p_j7 ON p_j7.id = g_j7.pereotsenka_jur7_id
                 WHERE g_j7.isdeleted = false AND r.id = $3 
                 OFFSET $1 LIMIT $2
             )
@@ -89,10 +91,12 @@ const getByIdGroupService = async (region_id, id, ignore_ideleted = false) => {
                 g_j7.iznos_foiz, 
                 g_j7.provodka_debet, 
                 g_j7.provodka_subschet, 
-                g_j7.provodka_kredit
+                g_j7.provodka_kredit,
+                p_j7.name AS pereotsenka_jur7_name
             FROM group_jur7 AS g_j7
             JOIN users AS u ON u.id = g_j7.user_id
             JOIN regions AS r ON r.id = u.region_id
+            JOIN pereotsenka_jur7 AS p_j7 ON p_j7.id = g_j7.pereotsenka_jur7_id
             WHERE g_j7.id = $1 AND r.id = $2 ${ignore}`, [id, region_id]);
         if (!result.rows[0]) {
             throw new ErrorResponse('group_jur7 not found', 404);
