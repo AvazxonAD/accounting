@@ -74,7 +74,7 @@ const createDocumentJur7Child = async (data) => {
         `,
         [
           data.user_id,
-          data.document_jur7_id,
+          data.doc_jur7_id,
           data.naimenovanie_tovarov_jur7_id,
           data.kol,
           data.sena,
@@ -226,23 +226,21 @@ const createDocumentJur7Child = async (data) => {
     try {
       const result = await pool.query(`
           UPDATE document_jur7 SET 
-              user_id = $1, 
-              type_document = $2, 
-              doc_num = $3, 
-              doc_date = $4, 
-              j_o_num = $5, 
-              opisanie = $6, 
-              doverennost = $7, 
-              summa = $8, 
-              kimdan_id = $9, 
-              kimdan_name = $10, 
-              kimga_id = $11, 
-              kimga_name = $12, 
-              id_shartnomalar_organization = $13, 
-              updated_at = $14
-          WHERE id = $15 RETURNING * 
+              type_document = $1, 
+              doc_num = $2, 
+              doc_date = $3, 
+              j_o_num = $4, 
+              opisanie = $5, 
+              doverennost = $6, 
+              summa = $7, 
+              kimdan_id = $8, 
+              kimdan_name = $9, 
+              kimga_id = $10, 
+              kimga_name = $11, 
+              id_shartnomalar_organization = $12, 
+              updated_at = $13
+          WHERE id = $14 RETURNING * 
         `, [
-          data.user_id,
           data.type_document,
           data.doc_num,
           data.doc_date,

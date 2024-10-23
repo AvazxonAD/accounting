@@ -99,6 +99,21 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
   }
 }
 
+const getByIdShartnomaServiceForJur7 = async (region_id, id, organization_id) => {
+  try {
+    const result = await pool.query(`
+        SELECT sh_o.id
+        FROM shartnomalar_organization AS sh_o
+        JOIN users  ON sh_o.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        WHERE regions.id = $1 AND sh_o.id = $2 AND sh_o.isdeleted = false AND sh_o.spravochnik_organization_id = $3
+    `, [region_id, id, organization_id]);
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
 const getByIdShartnomaService = async (region_id, main_schet_id, id, organization_id, ignoreDeleted = false,) => {
   try {
     const params = [region_id, main_schet_id, id]
@@ -193,4 +208,5 @@ module.exports = {
   getByIdShartnomaService,
   updateShartnomaDB,
   deleteShartnomaDB,
+  getByIdShartnomaServiceForJur7
 };

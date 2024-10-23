@@ -7,7 +7,6 @@ const {
   deleteKassaPrixodChild,
   deleteKassaPrixodDB
 } = require("../../service/kassa/kassa.prixod.service");
-const ErrorResponse = require("../../utils/errorResponse");
 const { kassaValidation } = require("../../helpers/validation/kassa/kassa.validation");
 const { queryValidation } = require("../../helpers/validation/bank/bank.prixod.validation");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
