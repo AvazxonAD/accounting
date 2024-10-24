@@ -49,7 +49,7 @@ const getByIdpodrazdelenie = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const id = req.params.id
-        const data = await getByIdpodrazdelenieService(id, region_id, true)
+        const data = await getByIdpodrazdelenieService(region_id, id, true)
         resFunc(res, 200, data)
     } catch (error) {
         errorCatch(error, res)

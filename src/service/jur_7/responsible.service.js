@@ -35,10 +35,12 @@ const getResponsibleService = async (region_id, offset, limit) => {
                 SELECT 
                     s_j_s_j7.id, 
                     s_j_s_j7.fio,
-                    s_j_s_j7.spravochnik_podrazdelenie_jur7_id
+                    s_j_s_j7.spravochnik_podrazdelenie_jur7_id,
+                    s_p_j7.name AS spravochnik_podrazdelenie_jur7_name
                 FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
                 JOIN users AS u ON u.id = s_j_s_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
                 WHERE s_j_s_j7.isdeleted = false AND r.id = $3 
                 OFFSET $1 LIMIT $2
             )
@@ -70,10 +72,12 @@ const getByIdResponsibleService = async (id, region_id, ignore_ideleted = false)
             SELECT 
                 s_j_s_j7.id, 
                 s_j_s_j7.fio,
+                s_p_j7.name AS spravochnik_podrazdelenie_jur7_name,
                 s_j_s_j7.spravochnik_podrazdelenie_jur7_id
             FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
             JOIN users AS u ON u.id = s_j_s_j7.user_id
             JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
             WHERE s_j_s_j7.id = $1 AND r.id = $2 ${ignore}
         `, [id, region_id]);
 
