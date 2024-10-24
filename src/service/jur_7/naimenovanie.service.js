@@ -41,10 +41,12 @@ const getAllNaimenovanieService = async (region_id, offset, limit) => {
                     n_t_j7.name, 
                     n_t_j7.edin,
                     n_t_j7.group_jur7_id,
+                    g_j7.name AS group_jur7_name,
                     n_t_j7.spravochnik_budjet_name_id
                 FROM naimenovanie_tovarov_jur7 AS n_t_j7
                 JOIN users AS u ON u.id = n_t_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
                 WHERE n_t_j7.isdeleted = false AND r.id = $3
                 OFFSET $1 LIMIT $2
             )
@@ -77,11 +79,13 @@ const getByIdNaimenovanieService = async (region_id, id, ignore_deleted = false)
                 n_t_j7.id, 
                 n_t_j7.name, 
                 n_t_j7.edin,
+                g_j7.name AS group_jur7_name,
                 n_t_j7.group_jur7_id,
                 n_t_j7.spravochnik_budjet_name_id
             FROM naimenovanie_tovarov_jur7 AS n_t_j7
             JOIN users AS u ON u.id = n_t_j7.user_id
             JOIN regions AS r ON r.id = u.region_id
+            JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
             WHERE r.id = $2 AND n_t_j7.id = $1 ${ignore}                
         `, [id, region_id]);
 

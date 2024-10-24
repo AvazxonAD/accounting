@@ -17,7 +17,7 @@ const responsibleCreate = async (req, res) => {
         const user_id = req.user.id
         const region_id = req.user.region_id
         const data = validationResponse(responsibleValidation, req.body)
-        await getByIdpodrazdelenieService(data.spravochnik_podrazdelenie_jur7_id, region_id)
+        await getByIdpodrazdelenieService(region_id, data.spravochnik_podrazdelenie_jur7_id)
         const result = await responsibleCreateService({ ...data, user_id })
         resFunc(res, 200, result)
     } catch (error) {
