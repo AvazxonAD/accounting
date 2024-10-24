@@ -284,14 +284,14 @@ const dailyReportService = async (region_id, main_schet_id, from, to) => {
         JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
         JOIN users AS u ON u.id = b_p.user_id
         JOIN regions AS r ON r.id = u.region_id 
-        WHERE r.id = $4 AND b_p.doc_date < $3 AND b_p.main_schet_id = $1 AND b_p.isdeleted = false) - 
+        WHERE r.id = $4 AND b_p.doc_date <= $3 AND b_p.main_schet_id = $1 AND b_p.isdeleted = false) - 
         (SELECT COALESCE(SUM(b_r_ch.summa), 0)
         FROM spravochnik_operatsii AS s_o
         JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.spravochnik_operatsii_id = s_o.id
         JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
         JOIN users AS u ON u.id = b_r.user_id
         JOIN regions AS r ON r.id = u.region_id 
-        WHERE r.id = $4 AND b_r.doc_date < $3 AND b_r.main_schet_id = $1 AND b_r.isdeleted = false)  
+        WHERE r.id = $4 AND b_r.doc_date <= $3 AND b_r.main_schet_id = $1 AND b_r.isdeleted = false)  
       )::FLOAT summa_to
     FROM data
   `, [main_schet_id, from, to, region_id]);

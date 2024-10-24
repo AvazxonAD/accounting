@@ -110,7 +110,6 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
 }
 
 const kassaCapService = async (region_id, main_schet_id, from, to) => {
-  console.log(region_id, main_schet_id, from, to)
   const { rows } = await pool.query(`
     WITH data AS (
       SELECT s_o.schet, COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
