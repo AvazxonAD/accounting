@@ -42,11 +42,13 @@ const getAllNaimenovanieService = async (region_id, offset, limit) => {
                     n_t_j7.edin,
                     n_t_j7.group_jur7_id,
                     g_j7.name AS group_jur7_name,
-                    n_t_j7.spravochnik_budjet_name_id
+                    n_t_j7.spravochnik_budjet_name_id,
+                    s_b_n.name AS spravochnik_budjet_name
                 FROM naimenovanie_tovarov_jur7 AS n_t_j7
                 JOIN users AS u ON u.id = n_t_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
+                JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
                 WHERE n_t_j7.isdeleted = false AND r.id = $3
                 OFFSET $1 LIMIT $2
             )
@@ -71,7 +73,7 @@ const getAllNaimenovanieService = async (region_id, offset, limit) => {
 const getByIdNaimenovanieService = async (region_id, id, ignore_deleted = false) => {
     try {
         let ignore = ``
-        if(!ignore_deleted){
+        if (!ignore_deleted) {
             ignore = ` AND n_t_j7.isdeleted = false`
         }
         const result = await pool.query(`
@@ -81,11 +83,13 @@ const getByIdNaimenovanieService = async (region_id, id, ignore_deleted = false)
                 n_t_j7.edin,
                 g_j7.name AS group_jur7_name,
                 n_t_j7.group_jur7_id,
-                n_t_j7.spravochnik_budjet_name_id
+                n_t_j7.spravochnik_budjet_name_id,
+                s_b_n.name AS spravochnik_budjet_name
             FROM naimenovanie_tovarov_jur7 AS n_t_j7
             JOIN users AS u ON u.id = n_t_j7.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
+            JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
             WHERE r.id = $2 AND n_t_j7.id = $1 ${ignore}                
         `, [id, region_id]);
 
@@ -105,7 +109,7 @@ const updateNaimenovanieService = async (data) => {
             SET name = $1, edin = $2, updated_at = $3, spravochnik_budjet_name_id = $4, group_jur7_id = $6
             WHERE id = $5 AND isdeleted = false
             RETURNING *
-        `, [ data.name, data.edin, tashkentTime(), data.spravochnik_budjet_name_id, data.id, data.group_jur7_id ]);
+        `, [data.name, data.edin, tashkentTime(), data.spravochnik_budjet_name_id, data.id, data.group_jur7_id]);
         return result.rows[0];
     } catch (error) {
         throw new ErrorResponse(error.message, error.statusCode);
