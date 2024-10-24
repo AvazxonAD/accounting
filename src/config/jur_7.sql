@@ -64,14 +64,13 @@ CREATE TABLE naimenovanie_tovarov_jur7 (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE document_jur7 (
+CREATE TABLE document_prixod_jur7 (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
-  type_document INT,
-  doc_num VARCHAR(50),
+  doc_num VARCHAR(255),
   doc_date DATE,
-  j_o_num VARCHAR(50),
-  opisanie VARCHAR(255),
+  j_o_num VARCHAR(255),
+  opisanie TEXT,
   doverennost VARCHAR(255),
   summa DECIMAL,
   kimdan_id INT NOT NULL REFERENCES spravochnik_organization(id),
@@ -84,20 +83,94 @@ CREATE TABLE document_jur7 (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE document_jur7_child (
+CREATE TABLE document_prixod_jur7_child (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
-  document_jur7_id INT NOT NULL REFERENCES document_jur7(id),
+  document_prixod_jur7_id INT NOT NULL REFERENCES document_prixod_jur7(id),
   naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
   summa DECIMAL,
-  debet_schet VARCHAR(50),
-  debet_sub_schet VARCHAR(50),
-  kredit_schet VARCHAR(50),
-  kredit_sub_schet VARCHAR(50),
+  debet_schet VARCHAR(255),
+  debet_sub_schet VARCHAR(255),
+  kredit_schet VARCHAR(255),
+  kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE document_rasxod_jur7 (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
+  doc_num VARCHAR(255),
+  doc_date DATE,
+  j_o_num VARCHAR(255),
+  opisanie TEXT,
+  doverennost VARCHAR(255),
+  summa DECIMAL,
+  kimdan_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
+  kimdan_name VARCHAR(255),
+  kimga_id INT NOT NULL REFERENCES spravochnik_organization(id),
+  kimga_name VARCHAR(255),
+  id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE document_rasxod_jur7_child (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
+  document_rasxod_jur7_id INT NOT NULL REFERENCES document_rasxod_jur7(id),
+  naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+  kol DECIMAL,
+  sena DECIMAL,
+  summa DECIMAL,
+  debet_schet VARCHAR(255),
+  debet_sub_schet VARCHAR(255),
+  kredit_schet VARCHAR(255),
+  kredit_sub_schet VARCHAR(255),
+  data_pereotsenka DATE,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE document_vnutr_peremesh_jur7 (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
+  doc_num VARCHAR(255),
+  doc_date DATE,
+  j_o_num VARCHAR(255),
+  opisanie TEXT,
+  doverennost VARCHAR(255),
+  summa DECIMAL,
+  kimdan_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
+  kimdan_name VARCHAR(255),
+  kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
+  kimga_name VARCHAR(255),
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE document_vnutr_peremesh_jur7_child (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
+  document_vnutr_peremesh_jur7_id INT NOT NULL REFERENCES document_vnutr_peremesh_jur7(id),
+  naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+  kol DECIMAL,
+  sena DECIMAL,
+  summa DECIMAL,
+  debet_schet VARCHAR(255),
+  debet_sub_schet VARCHAR(255),
+  kredit_schet VARCHAR(255),
+  kredit_sub_schet VARCHAR(255),
+  data_pereotsenka DATE,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+

@@ -6,9 +6,8 @@ const createDocumentJur7 = async (data) => {
   try {
     const result = await pool.query(
       `
-      INSERT INTO document_jur7 (
+      INSERT INTO document_prixod_jur7 (
         user_id,
-        type_document,
         doc_num,
         doc_date,
         j_o_num,
@@ -23,12 +22,11 @@ const createDocumentJur7 = async (data) => {
         created_at,
         updated_at
       ) 
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING * 
       `,
       [
         data.user_id,
-        data.type_document,
         data.doc_num,
         data.doc_date,
         data.j_o_num,
@@ -54,9 +52,9 @@ const createDocumentJur7Child = async (data) => {
     try {
       const result = await pool.query(
         `
-        INSERT INTO document_jur7_child (
+        INSERT INTO document_prixod_jur7_child (
           user_id,
-          document_jur7_id,
+          document_prixod_jur7_id,
           naimenovanie_tovarov_jur7_id,
           kol,
           sena,
@@ -121,11 +119,11 @@ const createDocumentJur7Child = async (data) => {
                     d_j_ch.kredit_schet,
                     d_j_ch.kredit_sub_schet,
                     TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
-                  FROM document_jur7_child AS d_j_ch
-                  WHERE d_j_ch.document_jur7_id = d_j.id
+                  FROM document_prixod_jur7_child AS d_j_ch
+                  WHERE d_j_ch.document_prixod_jur7_id = d_j.id
                 ) AS d_j_ch
               ) AS childs
-            FROM document_jur7 AS d_j
+            FROM document_prixod_jur7 AS d_j
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 
@@ -138,7 +136,7 @@ const createDocumentJur7Child = async (data) => {
             ARRAY_AGG(row_to_json(data)) AS data,
             (
               SELECT COALESCE(SUM(d_j.summa), 0)
-              FROM document_jur7 AS d_j
+              FROM document_prixod_jur7 AS d_j
               JOIN users AS u ON u.id = d_j.user_id
               JOIN regions AS r ON r.id = u.region_id  
               WHERE r.id = $1 
@@ -147,7 +145,7 @@ const createDocumentJur7Child = async (data) => {
             )::FLOAT AS summa,
             (
               SELECT COALESCE(COUNT(d_j.id), 0)
-              FROM document_jur7 AS d_j
+              FROM document_prixod_jur7 AS d_j
               JOIN users AS u ON u.id = d_j.user_id
               JOIN regions AS r ON r.id = u.region_id  
               WHERE r.id = $1 
@@ -200,11 +198,11 @@ const createDocumentJur7Child = async (data) => {
                   d_j_ch.kredit_schet,
                   d_j_ch.kredit_sub_schet,
                   TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
-                FROM document_jur7_child AS d_j_ch
-                WHERE d_j_ch.document_jur7_id = d_j.id
+                FROM document_prixod_jur7_child AS d_j_ch
+                WHERE d_j_ch.document_prixod_jur7_id = d_j.id
               ) AS d_j_ch
             ) AS childs
-          FROM document_jur7 AS d_j
+          FROM document_prixod_jur7 AS d_j
           JOIN users AS u ON u.id = d_j.user_id
           JOIN regions AS r ON r.id = u.region_id
           WHERE r.id = $1 AND d_j.id = $2 ${ignore}
@@ -225,23 +223,21 @@ const createDocumentJur7Child = async (data) => {
   const updateDocumentJur7DB = async (data) => {
     try {
       const result = await pool.query(`
-          UPDATE document_jur7 SET 
-              type_document = $1, 
-              doc_num = $2, 
-              doc_date = $3, 
-              j_o_num = $4, 
-              opisanie = $5, 
-              doverennost = $6, 
-              summa = $7, 
-              kimdan_id = $8, 
-              kimdan_name = $9, 
-              kimga_id = $10, 
-              kimga_name = $11, 
-              id_shartnomalar_organization = $12, 
-              updated_at = $13
-          WHERE id = $14 RETURNING * 
+          UPDATE document_prixod_jur7 SET 
+              doc_num = $1, 
+              doc_date = $2, 
+              j_o_num = $3, 
+              opisanie = $4, 
+              doverennost = $5, 
+              summa = $6, 
+              kimdan_id = $7, 
+              kimdan_name = $8, 
+              kimga_id = $9, 
+              kimga_name = $10, 
+              id_shartnomalar_organization = $11, 
+              updated_at = $12
+          WHERE id = $13 RETURNING * 
         `, [
-          data.type_document,
           data.doc_num,
           data.doc_date,
           data.j_o_num,
@@ -264,7 +260,7 @@ const createDocumentJur7Child = async (data) => {
   
   const deleteDocumentJur7Child = async (documentJur7Id) => {
     try {
-      await pool.query(`DELETE FROM document_jur7_child WHERE document_jur7_id = $1`, [documentJur7Id]);
+      await pool.query(`DELETE FROM document_prixod_jur7_child WHERE document_prixod_jur7_id = $1`, [documentJur7Id]);
     } catch (error) {
       throw new ErrorResponse(error, error.statusCode);
     }
@@ -272,8 +268,8 @@ const createDocumentJur7Child = async (data) => {
   
   const deleteDocumentJur7DB = async (id) => {
     try {
-      await pool.query(`UPDATE document_jur7_child SET isdeleted = $1 WHERE document_jur7_id = $2`, [true, id]);
-      await pool.query(`UPDATE document_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, [id]);
+      await pool.query(`UPDATE document_prixod_jur7_child SET isdeleted = $1 WHERE document_prixod_jur7_id = $2`, [true, id]);
+      await pool.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, [id]);
     } catch (error) {
       throw new ErrorResponse(error, error.statusCode);
     }

@@ -11,7 +11,7 @@ const operatsiiValidation = Joi.object({
 const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
-  search: Joi.string().trim()
+  type_schet: Joi.string().trim()
 }).options({ stripUnknown: true });
 
 module.exports = {

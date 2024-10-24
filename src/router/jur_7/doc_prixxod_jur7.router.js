@@ -8,7 +8,7 @@ const {
     updateDocJur7,
     deleteDocJur7,
     getElementByIdDocJur7
-} = require("../../controller/jur_7/doc_jur7.controller");
+} = require("../../controller/jur_7/doc_prixod_jur7.controller");
 
 router.post("/", docJur7Create)
     .get("/", getAllDocJur7)

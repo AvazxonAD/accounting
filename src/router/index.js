@@ -60,6 +60,6 @@ router.use('/jur_7/group', protect, require('./jur_7/group.jur7.router'))
 router.use('/jur_7/podrazdelenie', protect, require('./jur_7/podrazdelenie.router'))
 router.use('/jur_7/responsible', protect, require('./jur_7/responsible.router'))
 router.use('/jur_7/naimenovanie', protect, require('./jur_7/naimenovanie.router'))
-router.use('/jur_7/doc', protect, require('./jur_7/doc_jur7.router'))
+router.use('/jur_7/doc_prixod', protect, require('./jur_7/doc_prixxod_jur7.router'))
 
 module.exports = router;

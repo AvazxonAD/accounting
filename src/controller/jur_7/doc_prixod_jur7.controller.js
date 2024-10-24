@@ -6,14 +6,8 @@ const {
     updateDocumentJur7DB,
     deleteDocumentJur7Child,
     deleteDocumentJur7DB,
-} = require("../../service/jur_7/doc_jur7.service");
-const { documentJur7Validation, queryValidation } = require("../../helpers/validation/jur_7/jur7.validation");
-const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
-const { getByIdPodotchetService } = require("../../service/spravochnik/podotchet.litso.service");
-const { getByIdOperatsiiService } = require("../../service/spravochnik/operatsii.service");
-const { getByIdPodrazlanieService } = require("../../service/spravochnik/podrazdelenie.service");
-const { getByIdSostavService } = require("../../service/spravochnik/sostav.service");
-const { getByIdTypeOperatsiiService } = require("../../service/spravochnik/type_operatsii.service");
+} = require("../../service/jur_7/doc_prixod_jur7.service");
+const { docPrixodJur7Validation, queryValidation } = require("../../helpers/validation/jur_7/jur7.validation");
 const { returnAllChildSumma } = require("../../utils/returnSumma");
 const { validationResponse } = require("../../helpers/response-for-validation");
 const { resFunc } = require("../../helpers/resFunc");
@@ -28,7 +22,7 @@ const docJur7Create = async (req, res) => {
     try {
         const user_id = req.user.id;
         const region_id = req.user.region_id;
-        const data = validationResponse(documentJur7Validation, req.body);
+        const data = validationResponse(docPrixodJur7Validation, req.body);
         await getByIdOrganizationService(region_id, data.kimdan_id)
         await getByIdResponsibleService(data.kimga_id, region_id)
         await getByIdShartnomaServiceForJur7(region_id, data.id_shartnomalar_organization, data.kimdan_id)
@@ -78,7 +72,7 @@ const updateDocJur7 = async (req, res) => {
         const id = req.params.id;
         const user_id = req.user.id;
         await getDocumentJur7ById(region_id, id);
-        const data = validationResponse(documentJur7Validation, req.body);
+        const data = validationResponse(docPrixodJur7Validation, req.body);
         await getByIdOrganizationService(region_id, data.kimdan_id)
         await getByIdResponsibleService(data.kimga_id, region_id)
         await getByIdShartnomaServiceForJur7(region_id, data.id_shartnomalar_organization, data.kimdan_id)

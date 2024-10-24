@@ -43,8 +43,7 @@ const naimenovanieValidation = Joi.object({
 }).options({ stripUnknown: true });
 
 
-const documentJur7Validation = Joi.object({
-  type_document: Joi.number(),
+const docPrixodJur7Validation = Joi.object({
   doc_num: Joi.string().trim(),
   doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
   j_o_num: Joi.string().trim(),
@@ -79,4 +78,4 @@ const queryValidation = Joi.object({
   }).options({ stripUnknown: true });
   
 
-module.exports = { pereotsenkaValidation, groupValidation, podrazdelenieValidation, responsibleValidation, naimenovanieValidation, documentJur7Validation, queryValidation }
+module.exports = { pereotsenkaValidation, groupValidation, podrazdelenieValidation, responsibleValidation, naimenovanieValidation, docPrixodJur7Validation, queryValidation }
