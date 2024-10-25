@@ -43,6 +43,8 @@ CREATE TABLE bank_rasxod (
     id_spravochnik_organization INTEGER REFERENCES spravochnik_organization(id),
     id_shartnomalar_organization INTEGER REFERENCES shartnomalar_organization(id),
     main_schet_id INTEGER REFERENCES main_schet(id),
+    rukovoditel VARCHAR,
+    glav_buxgalter VARCHAR,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

@@ -6,6 +6,8 @@ const bankRasxodValidation = Joi.object({
   opisanie: Joi.string().trim(),
   id_spravochnik_organization: Joi.number().required(),
   id_shartnomalar_organization: Joi.number().allow(null),
+  rukovoditel: Joi.string(),
+  glav_buxgalter: Joi.string(),
   childs: Joi.array().required().items(
     Joi.object({
       summa: Joi.number().required(),

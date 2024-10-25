@@ -1,15 +1,16 @@
 const { Router } = require("express");
 const router = Router();
 
-const { protect } = require("../../middleware/auth");
 const {
   bank_rasxod,
   bank_rasxod_update,
   getAllBankRasxod,
   delete_bank_rasxod,
   getElementByIdBankRasxod,
+  getFioBankRasxod
 } = require("../../controller/bank/bank.rasxod.controller");
 
+router.get('/fio', getFioBankRasxod)
 router.post("/", bank_rasxod);
 router.put("/:id", bank_rasxod_update);
 router.get("/", getAllBankRasxod);

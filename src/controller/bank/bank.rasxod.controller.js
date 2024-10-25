@@ -1,4 +1,4 @@
-const { createBankRasxodDb, createBankRasxodChild, getByIdRasxodService, updateRasxodService, getBankRasxodService, deleteRasxodChild, deleteBankRasxod } = require("../../service/bank/bank.rasxod.service");
+const { createBankRasxodDb, createBankRasxodChild, getByIdRasxodService, updateRasxodService, getBankRasxodService, deleteRasxodChild, deleteBankRasxod, getFioBankRasxodService } = require("../../service/bank/bank.rasxod.service");
 const { getByIdMainSchetService } = require("../../service/spravochnik/main.schet.service");
 const { getByIdOrganizationService } = require("../../service/spravochnik/organization.service");
 const { getByIdShartnomaService } = require("../../service/shartnoma/shartnoma.service");
@@ -156,10 +156,23 @@ const delete_bank_rasxod = async (req, res) => {
   }
 }
 
+const getFioBankRasxod = async (req, res) => {
+  try {
+    const region_id  = req.user.region_id
+    const main_schet_id = req.query.main_schet_id
+    await getByIdMainSchetService(region_id, main_schet_id)
+    const result = await getFioBankRasxodService(region_id, main_schet_id)
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+} 
+
 module.exports = {
   delete_bank_rasxod,
   getElementByIdBankRasxod,
   getAllBankRasxod,
   bank_rasxod,
   bank_rasxod_update,
+  getFioBankRasxod
 };

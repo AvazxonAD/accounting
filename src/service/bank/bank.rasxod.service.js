@@ -1,5 +1,6 @@
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
+const { tashkentTime } = require('../../utils/date.function')
 
 const createBankRasxodDb = async (data) => {
   try {
@@ -13,19 +14,27 @@ const createBankRasxodDb = async (data) => {
             id_spravochnik_organization, 
             id_shartnomalar_organization, 
             main_schet_id, 
-            user_id
+            user_id,
+            rukovoditel,
+            glav_buxgalter,
+            created_at,
+            updated_at
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
         RETURNING * 
       `, [
-      data.doc_num,
-      data.doc_date,
-      data.summa,
-      data.opisanie,
-      data.id_spravochnik_organization,
-      data.id_shartnomalar_organization,
-      data.main_schet_id,
-      data.user_id,
+          data.doc_num,
+          data.doc_date,
+          data.summa,
+          data.opisanie,
+          data.id_spravochnik_organization,
+          data.id_shartnomalar_organization,
+          data.main_schet_id,
+          data.user_id,
+          data.rukovoditel,
+          data.glav_buxgalter,
+          tashkentTime(),
+          tashkentTime()
     ]);
     return result.rows[0];
   } catch (error) {
@@ -45,8 +54,10 @@ const createBankRasxodChild = async (data) => {
             id_spravochnik_type_operatsii,
             main_schet_id,
             id_bank_rasxod,
-            user_id
-        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`
+            user_id,
+            created_at,
+            updated_at
+        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`
       , [data.spravochnik_operatsii_id,
       data.summa,
       data.id_spravochnik_podrazdelenie,
@@ -54,7 +65,9 @@ const createBankRasxodChild = async (data) => {
       data.id_spravochnik_type_operatsii,
       data.main_schet_id,
       data.bank_rasxod_id,
-      data.user_id
+      data.user_id,
+      tashkentTime(),
+      tashkentTime()
       ]);
     return result.rows[0];
   } catch (error) {
@@ -71,16 +84,22 @@ const updateRasxodService = async (data) => {
         summa = $3, 
         opisanie = $4, 
         id_spravochnik_organization = $5, 
-        id_shartnomalar_organization = $6
+        id_shartnomalar_organization = $6,
+        rukovoditel = $8,
+        glav_buxgalter = $9,
+        updated_at = $10
       WHERE id = $7 RETURNING * 
-      `,[
-        data.doc_num,
-        data.doc_date,
-        data.summa,
-        data.opisanie,
-        data.id_spravochnik_organization,
-        data.id_shartnomalar_organization,
-        data.id,
+      `, [
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.opisanie,
+      data.id_spravochnik_organization,
+      data.id_shartnomalar_organization,
+      data.id,
+      data.rukovoditel,
+      data.glav_buxgalter,
+      tashkentTime()
     ]);
     return result.rows[0]
   } catch (error) {
@@ -106,6 +125,8 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
               s_o.mfo AS spravochnik_organization_mfo,
               s_o.inn AS spravochnik_organization_inn,
               b_r.id_shartnomalar_organization,
+              b_r.rukovoditel,
+              b_r.glav_buxgalter,
               (SELECT ARRAY_AGG(row_to_json(b_r_ch))
                 FROM (
                   SELECT 
@@ -168,6 +189,8 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
         b_r.opisanie, 
         b_r.id_spravochnik_organization, 
         b_r.id_shartnomalar_organization,
+        b_r.rukovoditel,
+        b_r.glav_buxgalter,
         (
           SELECT ARRAY_AGG(row_to_json(b_r_ch))
           FROM (
@@ -196,9 +219,9 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
       WHERE b_r.main_schet_id = $1 AND r.id = $2 AND b_r.id = $3 ${ignore}
       ORDER BY b_r.doc_date ASC
     `, [main_schet_id, region_id, id]);
-    
+
     if (!result.rows[0]) {
-      throw new ErrorResponse('bank prixod doc not found', 404);
+      throw new ErrorResponse('bank rasxod doc not found', 404);
     }
     return result.rows[0];
   } catch (error) {
@@ -223,6 +246,24 @@ const deleteRasxodChild = async (bank_prixod_id) => {
   }
 }
 
+
+const getFioBankRasxodService = async (region_id, main_schet_id) => {
+  try {
+    const result = await pool.query(`
+      SELECT b.rukovoditel, b.glav_buxgalter 
+      FROM bank_rasxod b 
+      JOIN users AS u ON u.id = b.user_id 
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1 AND b.main_schet_id = $2
+      ORDER BY b.created_at DESC
+    `, [region_id, main_schet_id])
+    return result.rows
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+
 module.exports = {
   createBankRasxodDb,
   createBankRasxodChild,
@@ -231,4 +272,5 @@ module.exports = {
   getBankRasxodService,
   deleteRasxodChild,
   deleteBankRasxod,
+  getFioBankRasxodService
 };
