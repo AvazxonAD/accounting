@@ -1,13 +1,13 @@
 const returnStringSumma = (num) => {
-  const numStr = num.toString();
+  const [integerPart, decimalPart] = num.toString().split(".");
   const parts = [];
 
-  for (let i = numStr.length; i > 0; i -= 3) {
+  for (let i = integerPart.length; i > 0; i -= 3) {
     const start = Math.max(i - 3, 0);
-    parts.unshift(numStr.slice(start, i));
+    parts.unshift(integerPart.slice(start, i));
   }
 
-  return parts.join(" ");
+  return decimalPart ? `${parts.join(" ")}.${decimalPart}` : parts.join(" ");
 };
 
 const returnAllChildSumma = (array) => {

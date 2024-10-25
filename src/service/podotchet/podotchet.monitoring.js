@@ -14,7 +14,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 k_p.summa AS prixod_sum,
                 0 AS rasxod_sum,
                 k_p.opisanie,
-                k_p.id_podotchet_litso AS podotchet_litso_id
+                k_p.id_podotchet_litso AS podotchet_litso_id,
+                u.login,
+                u.fio,
+                u.id AS user_id
             FROM kassa_prixod k_p
             JOIN users u ON k_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -30,7 +33,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 0 AS prixod_sum,
                 k_r.summa AS rasxod_sum,
                 k_r.opisanie,
-                k_r.id_podotchet_litso AS podotchet_litso_id
+                k_r.id_podotchet_litso AS podotchet_litso_id,
+                u.login,
+                u.fio,
+                u.id AS user_id
             FROM kassa_rasxod k_r
             JOIN users u ON k_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -46,7 +52,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 0 AS prixod_sum,
                 a_o_j4.summa AS rasxod_sum,
                 a_o_j4.opisanie,
-                a_o_j4.spravochnik_podotchet_litso_id AS podotchet_litso_id
+                a_o_j4.spravochnik_podotchet_litso_id AS podotchet_litso_id,
+                u.login,
+                u.fio,
+                u.id AS user_id
             FROM avans_otchetlar_jur4 a_o_j4
             JOIN users u ON a_o_j4.user_id = u.id
             JOIN regions r ON u.region_id = r.id

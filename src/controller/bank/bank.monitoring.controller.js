@@ -9,8 +9,7 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const ErrorResponse = require("../../utils/errorResponse");
 const { returnStringDate } = require('../../utils/date.function');
-const { bold, italic } = require("colors");
-const { type } = require("os");
+const { returnStringSumma } = require('../../utils/returnSumma')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
@@ -50,48 +49,47 @@ const capExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-    const title = `Дневной отчет шапка Ж.О. №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
+
+    const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${returnStringSumma(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await bankCapService(region_id, main_schet_id, from, to);
-
     const workbook = new ExcelJS.Workbook();
+    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
     const worksheet = workbook.addWorksheet('Hisobot');
 
+    // Title
     worksheet.mergeCells('A1', 'C1');
     const titleCell = worksheet.getCell('A1');
     Object.assign(titleCell, {
       value: title,
-      font: { size: 16, bold: true, color: { argb: 'FF000000' } },
+      font: { size: 15, bold: true, color: { argb: 'FF000000' } },
       alignment: { vertical: 'middle', horizontal: 'center' },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
       border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     });
+    worksheet.getRow(1).height = 30;
 
-    worksheet.mergeCells('A2', 'B2');
+    // Date Range
+    worksheet.mergeCells('A2', 'C2');
     const dateCell = worksheet.getCell('A2');
     Object.assign(dateCell, {
       value: dateBetween,
       font: { size: 14, bold: true, color: { argb: 'FF000000' } },
       alignment: { vertical: 'middle', horizontal: 'center' }
     });
+    worksheet.getRow(2).height = 25;
 
-    worksheet.columns = [
-      { header: 'Счет', key: 'schet', width: 40 },
-      { header: 'Приход', key: 'prixod', width: 40 },
-      { header: 'Расход', key: 'rasxod', width: 40 }
-    ];
-
-    const summa_from = `Остаток к началу дня: ${data.balance_from.toFixed(2)}`;
-    worksheet.mergeCells('A4', 'B4');
-    const summaFrom = worksheet.getCell('A4');
-    Object.assign(summaFrom, {
-      value: summa_from,
+    // Balance from
+    const balanceFromCell = worksheet.getCell('A4');
+    balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
+    Object.assign(balanceFromCell, {
       font: { size: 14, bold: true, color: { argb: '80000000' } },
-      alignment: { vertical: 'middle', horizontal: 'left' }
+      alignment: { vertical: 'middle', horizontal: 'center' }
     });
 
-    const headerRow = worksheet.addRow({ schet: 'Счет', prixod: 'Приход', rasxod: 'Расход' });
-    headerRow.height = 30;
+    // Header Row
+    const headerRow = worksheet.addRow(['Счет-Субсчет', 'Приход', 'Расход']);
+    headerRow.height = 40;
     headerRow.eachCell((cell) => {
       Object.assign(cell, {
         font: { bold: true, size: 14 },
@@ -101,54 +99,71 @@ const capExcelCreate = async (req, res) => {
       });
     });
 
-    data.data.forEach(item => {
-      const row = worksheet.addRow({
-        schet: item.schet,
-        prixod: item.prixod_sum.toFixed(2),
-        rasxod: item.rasxod_sum.toFixed(2)
-      });
-      row.height = 20;
-      row.eachCell((cell) => {
-        Object.assign(cell, {
+    // Data Rows
+    for (let item of data.data) {
+      const row = worksheet.addRow([
+        item.schet,
+        returnStringSumma(item.prixod_sum),
+        returnStringSumma(item.rasxod_sum)
+      ]);
+      row.height = 25;
+      row.eachCell((cell, colNumber) => {
+        let cellStyle = {
           font: { size: 12 },
-          alignment: { vertical: 'middle', horizontal: 'center' },
           fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } },
-          border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-        });
-      });
-    });
+          border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
+          alignment: { wrapText: true, horizontal: 'center' }
+        };
 
-    const resultRow = worksheet.addRow({ schet: 'Всего', prixod: data.prixod_sum.toFixed(2), rasxod: data.rasxod_sum.toFixed(2) });
-    resultRow.eachCell((cell) => {
-      Object.assign(cell, {
+        // Aligning text
+        if (colNumber === 2 || colNumber === 3) {
+          cellStyle.alignment.horizontal = 'right'; // Right-aligning incoming and outgoing sums
+        }
+
+        Object.assign(cell, cellStyle);
+      });
+    }
+
+    // Total Row
+    worksheet.addRow(['Всего', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell) => {
+      let cellStyle = {
         font: { bold: true, size: 14 },
-        alignment: { vertical: 'middle', horizontal: 'center' },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      });
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
+        alignment: { vertical: 'middle', horizontal: 'center' }
+      };
+
+      Object.assign(cell, cellStyle);
     });
 
-    const summaToRow = worksheet.addRow({ schet: `Остаток концу дня: ${data.balance_to.toFixed(2)}` });
-    summaToRow.eachCell((cell) => {
-      Object.assign(cell, {
-        font: { bold: true, size: 14 },
-        alignment: { vertical: 'middle', horizontal: 'center' },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      });
+    // Balance to
+    const balanceToCell = worksheet.getCell('A' + (worksheet.rowCount + 1));
+    balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
+    Object.assign(balanceToCell, {
+      font: { bold: true, size: 14 },
+      alignment: { vertical: 'middle', horizontal: 'center' },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+      border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     });
 
-    const fileName = `bank_shapka_${Date.now()}.xlsx`;
-    const filePath = path.join(__dirname, '../../../public/uploads/', fileName);
+    // Column Widths
+    worksheet.getColumn('A').width = 40;
+    worksheet.getColumn('B').width = 25;
+    worksheet.getColumn('C').width = 60;
+
+    // Write file
+    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
 
-    return res.download(filePath, err => {
+    // Download file
+    return res.download(filePath, (err) => {
       if (err) throw new ErrorResponse(err, err.statusCode);
     });
   } catch (error) {
     errorCatch(error, res);
   }
 };
+
 
 const dailyExcelCreate = async (req, res) => {
   try {
@@ -184,7 +199,7 @@ const dailyExcelCreate = async (req, res) => {
     worksheet.getRow(2).height = 25;
 
     const balanceFromCell = worksheet.getCell('A4');
-    balanceFromCell.value = `Остаток к началу дня: ${data.balance_from.toFixed(2)}`;
+    balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
     Object.assign(balanceFromCell, {
       font: { size: 14, bold: true, color: { argb: '80000000' } },
       alignment: { vertical: 'middle', horizontal: 'left' }
@@ -210,8 +225,8 @@ const dailyExcelCreate = async (req, res) => {
           item.spravochnik_organization_name,
           item.opisanie,
           item.schet,
-          item.prixod_sum.toFixed(2),
-          item.rasxod_sum.toFixed(2),
+          returnStringSumma(item.prixod_sum),
+          returnStringSumma(item.rasxod_sum),
           operatsii
         ]);
 
@@ -254,7 +269,7 @@ const dailyExcelCreate = async (req, res) => {
       });
     }
 
-    worksheet.addRow(['Всего', ' ', ' ', ' ', ' ', data.prixod_sum.toFixed(2), data.rasxod_sum.toFixed(2)]).eachCell((cell, colNumber) => {
+    worksheet.addRow(['Всего', ' ', ' ', ' ', ' ', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell, colNumber) => {
       let cellStyle = {
         font: { bold: true, size: 14 },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
@@ -271,7 +286,7 @@ const dailyExcelCreate = async (req, res) => {
     });
 
     const balanceToCell = worksheet.getCell('A' + (worksheet.rowCount + 1));
-    balanceToCell.value = `Остаток концу дня: ${data.balance_to.toFixed(2)}`;
+    balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
     Object.assign(balanceToCell, {
       font: { bold: true, size: 14 },
       alignment: { vertical: 'middle', horizontal: 'center' },

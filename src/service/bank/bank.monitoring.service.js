@@ -20,7 +20,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 so2.doc_num AS shartnomalar_doc_num,
                 TO_CHAR(so2.doc_date, 'YYYY-MM-DD') AS shartnomalar_doc_date,
                 bp.opisanie,
-                bp.doc_date AS combined_date
+                bp.doc_date AS combined_date,
+                u.login,
+                u.fio,
+                u.id AS user_id
             FROM bank_prixod bp
             JOIN users u ON bp.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -45,7 +48,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 so2.doc_num AS shartnomalar_doc_num,
                 TO_CHAR(so2.doc_date, 'YYYY-MM-DD') AS shartnomalar_doc_date,
                 br.opisanie,
-                br.doc_date AS combined_date
+                br.doc_date AS combined_date,
+                u.login,
+                u.fio,
+                u.id AS user_id
             FROM bank_rasxod br
             JOIN users u ON br.user_id = u.id
             JOIN regions r ON u.region_id = r.id

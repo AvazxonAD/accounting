@@ -20,6 +20,9 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                         sh_o.summa,
                         sh_o.pudratchi_bool,
                         smeta.smeta_number,
+                        u.login,
+                        u.fio,
+                        u.id AS user_id,
                         (SELECT 
                             (SELECT ARRAY_AGG(row_to_json(operatsii))
                                 FROM (SELECT 

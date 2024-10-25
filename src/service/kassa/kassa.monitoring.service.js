@@ -14,7 +14,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
               kp.id_podotchet_litso,
               spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
               kp.opisanie,
-              kp.doc_date AS combined_date
+              kp.doc_date AS combined_date,
+              u.login,
+              u.fio,
+              u.id AS user_id
           FROM kassa_prixod kp
           JOIN users u ON kp.user_id = u.id
           JOIN regions r ON u.region_id = r.id
@@ -33,7 +36,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
               kr.id_podotchet_litso,
               spravochnik_podotchet_litso.name,
               kr.opisanie,
-              kr.doc_date AS combined_date
+              kr.doc_date AS combined_date,
+              u.login,
+              u.fio,
+              u.id AS user_id
           FROM kassa_rasxod kr
           JOIN users u ON kr.user_id = u.id
           JOIN regions r ON u.region_id = r.id
@@ -95,7 +101,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                             WHERE r.id = $1 AND kr.main_schet_id = $2 
                             AND kr.doc_date <= $4), 0))::FLOAT  AS summa_to
       FROM data`
-    , [region_id, main_schet_id, from, to, offset, limit])
+      , [region_id, main_schet_id, from, to, offset, limit])
     return {
       data: rows[0]?.data || [],
       total: rows[0].total_count,
@@ -172,7 +178,7 @@ const kassaCapService = async (region_id, main_schet_id, from, to) => {
     prixod_sum += item.prixod_sum
     rasxod_sum += item.rasxod_sum
   })
-  return {prixod_sum, rasxod_sum, data: rows[0]?.data || [], balance_from: rows[0].balance_from, balance_to: rows[0]?.balance_to}
+  return { prixod_sum, rasxod_sum, data: rows[0]?.data || [], balance_from: rows[0].balance_from, balance_to: rows[0]?.balance_to }
 }
 
 const dailyReportService = async (region_id, main_schet_id, from, to) => {
