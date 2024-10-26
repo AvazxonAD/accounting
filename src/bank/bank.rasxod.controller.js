@@ -8,7 +8,7 @@ const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service")
 const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
 const { bankRasxodValidation } = require("../utils/validation");;
 const { returnAllChildSumma } = require("../utils/returnSumma");
-const { queryValidation } = require("../utils/validation");;
+const { bankQueryValidation } = require("../utils/validation");;
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/logger');
 const { errorCatch } = require('../utils/errorCatch')
 const { validationResponse } = require('../utils/response-for-validation');
@@ -105,7 +105,7 @@ const bank_rasxod_update = async (req, res) => {
 const getAllBankRasxod = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
+    const { page, limit, from, to, main_schet_id } = validationResponse(bankQueryValidation, req.query)
     const offset = (page - 1) * limit;
     await getByIdMainSchetService(region_id, main_schet_id);
     const { data, summa, total } = await getBankRasxodService(region_id, main_schet_id, offset, limit, from, to,);
