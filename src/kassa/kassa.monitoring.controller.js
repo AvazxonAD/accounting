@@ -1,5 +1,5 @@
 const { getAllMonitoring, kassaCapService, dailyReportService } = require("./kassa.monitoring.service");
-const { queryValidation, bankCapValidation } = require("../utils/validation");;
+const { bankQueryValidation, bankCapValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
 const { validationResponse } = require("../utils/response-for-validation");
@@ -13,7 +13,7 @@ const { returnStringSumma } = require('../utils/returnSumma')
 const getAllKassaMonitoring = async (req, res, next) => {
   try {
     const region_id = req.user.region_id
-    const { page, limit, main_schet_id, from, to } = validationResponse(queryValidation, req.query)
+    const { page, limit, main_schet_id, from, to } = validationResponse(bankQueryValidation, req.query)
     const offset = (page - 1) * limit;
     await getByIdMainSchetService(region_id, main_schet_id);
     const { total, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await getAllMonitoring(region_id, main_schet_id, offset, limit, from, to);

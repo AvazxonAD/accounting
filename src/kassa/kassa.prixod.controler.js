@@ -8,7 +8,7 @@ const {
   deleteKassaPrixodDB
 } = require("./kassa.prixod.service");
 const { kassaValidation } = require("../utils/validation");;
-const { queryValidation } = require("../utils/validation");;
+const { bankQueryValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.litso.service");
 const { getByIdOperatsiiService } = require("../spravochnik/operatsii/operatsii.service");
@@ -61,7 +61,7 @@ const kassaPrixodCreate = async (req, res) => {
 const getAllKassaPrixod = async (req, res) => {
   try {
     const region_id = req.user.region_id
-    const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
+    const { page, limit, from, to, main_schet_id } = validationResponse(bankQueryValidation, req.query)
     await getByIdMainSchetService(region_id, main_schet_id);
     const offset = (page - 1) * limit;
     const {data, total, summa} = await getAllKassaPrixodDb(region_id, main_schet_id, from, to, offset, limit);
