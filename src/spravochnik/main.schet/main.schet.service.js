@@ -3,7 +3,6 @@ const ErrorResponse = require("../../utils/errorResponse");
 
 const getByIdMainSchetService = async (region_id, id, ignoreDeleted = false) => {
   try {
-    console.log(region_id, id,)
     let ignore = ``
     if (!ignoreDeleted) {
       ignore = ` AND m_s.isdeleted = false`;

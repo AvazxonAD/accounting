@@ -2,7 +2,7 @@ const { podotchetLitsoValidation } = require("../../utils/validation");;
 const { errorCatch } = require('../../utils/errorCatch')
 const { validationResponse } = require("../../utils/response-for-validation");
 const { resFunc } = require("../../utils/resFunc");
-const { podotchetQueryValidation } = require("../../utils/validation");
+const { queryValidation } = require("../../utils/validation");
 const {
   createPodotChetService,
   updatePodotchetService,
@@ -13,7 +13,7 @@ const {
 } = require("./podotchet.litso.service");
 
 // createPodotchetLitso
-const createPodotchetLitso = async (req, res, next) => {
+const createPodotchetLitso = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -28,10 +28,10 @@ const createPodotchetLitso = async (req, res, next) => {
 }
 
 // get all
-const getPodotchetLitso = async (req, res, next) => {
+const getPodotchetLitso = async (req, res) => {
   try {
     const region_id = req.user.region_id
-    const { page, limit, search } = validationResponse(podotchetQueryValidation, req.query)
+    const { page, limit, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
     const result = await getAllPodotChetService(region_id, offset, limit, search);
     const total = parseInt(result.total_count);
@@ -50,7 +50,7 @@ const getPodotchetLitso = async (req, res, next) => {
 }
 
 // updatePodotchetLitso
-const updatePodotchetLitso = async (req, res, next) => {
+const updatePodotchetLitso = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
@@ -67,7 +67,7 @@ const updatePodotchetLitso = async (req, res, next) => {
 }
 
 // delete value
-const deletePodotchetLitso = async (req, res, next) => {
+const deletePodotchetLitso = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
@@ -80,7 +80,7 @@ const deletePodotchetLitso = async (req, res, next) => {
 }
 
 // get element by id
-const getByIdPodotchetLitso = async (req, res, next) => {
+const getByIdPodotchetLitso = async (req, res) => {
   try {
     const result = await getByIdPodotchetService(req.user.region_id, req.params.id, true);
     resFunc(res, 200, result)
