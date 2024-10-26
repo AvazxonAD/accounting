@@ -1,5 +1,5 @@
 const { getAllMonitoring, bankCapService, dailyReportService } = require("./bank.monitoring.service");
-const { queryValidation, bankCapValidation } = require("../utils/validation");
+const { bankQueryValidation, bankCapValidation } = require("../utils/validation");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getLogger } = require('../utils/logger')
 const { validationResponse } = require('../utils/response-for-validation');
@@ -13,7 +13,7 @@ const { returnStringSumma } = require('../utils/returnSumma')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
-    const { limit, page, main_schet_id, from, to } = validationResponse(queryValidation, req.query)
+    const { limit, page, main_schet_id, from, to } = validationResponse(bankQueryValidation, req.query)
     const region_id = req.user.region_id;
     const offset = (page - 1) * limit;
     await getByIdMainSchetService(region_id, main_schet_id);
