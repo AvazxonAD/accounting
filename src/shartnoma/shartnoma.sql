@@ -4,7 +4,7 @@ CREATE TABLE shartnomalar_organization (
     id SERIAL PRIMARY KEY,
     doc_num VARCHAR(255) NOT NULL,
     doc_date DATE NOT NULL,
-    user_id INTEGER REFERENCES regions(id),
+    user_id INTEGER REFERENCES users(id),
     main_schet_id INTEGER REFERENCES main_schet(id),
     summa DECIMAL NOT NULL,
     opisanie TEXT,
@@ -20,7 +20,7 @@ CREATE TABLE shartnomalar_organization (
 CREATE TABLE shartnoma_grafik (
   id SERIAL PRIMARY KEY,
   id_shartnomalar_organization INTEGER REFERENCES shartnomalar_organization(id),
-  user_id INTEGER REFERENCES regions(id),
+  user_id INTEGER REFERENCES users(id),
   main_schet_id INTEGER REFERENCES main_schet(id),
   oy_1 DECIMAL DEFAULT 0,
   oy_2 DECIMAL DEFAULT 0,

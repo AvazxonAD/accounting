@@ -12,7 +12,7 @@ CREATE TABLE smeta_grafik (
   id SERIAL PRIMARY KEY,
   smeta_id INTEGER REFERENCES smeta(id),
   spravochnik_budjet_name_id INTEGER REFERENCES spravochnik_budjet_name(id),
-  user_id INTEGER REFERENCES regions(id),
+  user_id INTEGER REFERENCES users(id),
   itogo DECIMAL DEFAULT 0,
   oy_1 DECIMAL DEFAULT 0,
   oy_2 DECIMAL DEFAULT 0,
