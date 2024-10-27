@@ -8,7 +8,7 @@ const {
   deleteJur4DB
 } = require('../avans/jur4.service')
 const ErrorResponse = require("../utils/errorResponse");
-const { queryValidation } = require("../utils/validation");;
+const { validationQuery } = require("../utils/validation");;
 const { jur4Validation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.litso.service");
@@ -66,7 +66,7 @@ const getAllJur_4 = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const user_id = req.user.id
-    const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)  
+    const { page, limit, from, to, main_schet_id } = validationResponse(validationQuery, req.query)  
     const offset = (page - 1) * limit;
     const {data, total, summa} = await getAllJur4DB(region_id, main_schet_id, from, to, offset, limit)
     await getByIdMainSchetService(region_id, main_schet_id);

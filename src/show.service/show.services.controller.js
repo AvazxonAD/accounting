@@ -11,7 +11,7 @@ const { validationResponse } = require('../utils/response-for-validation')
 const { errorCatch } = require('../utils/errorCatch')
 const { getByIdMainSchetService } = require('../spravochnik/main.schet/main.schet.service')
 const { returnAllChildSumma } = require('../utils/returnSumma')
-const { queryValidation } = require("../utils/validation");
+const { validationQuery } = require("../utils/validation");
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/logger');
 const {
     createShowServiceChildService,
@@ -69,7 +69,7 @@ const createController = async (req, res) => {
 const getShowService = async (req, res) => {
     try {
         const region_id = req.user.region_id;
-        const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
+        const { page, limit, from, to, main_schet_id } = validationResponse(validationQuery, req.query)
         await getByIdMainSchetService(region_id, main_schet_id);
         const offset = (page - 1) * limit;
         const {data, summa, total} = await getShowServiceService(region_id, main_schet_id, from, to, offset, limit);

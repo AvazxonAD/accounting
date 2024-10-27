@@ -8,7 +8,7 @@ const {
   deleteJur3DB,
 } = require("./akt.service");
 const ErrorResponse = require("../utils/errorResponse");
-const { queryValidation } = require("../utils/validation");
+const { validationQuery } = require("../utils/validation");
 const { jur3Validation } = require("../utils/validation");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
@@ -70,7 +70,7 @@ const jur_3_create = async (req, res) => {
 const jur_3_get_all = async (req, res) => {
     try {
     const region_id = req.user.region_id;
-    const { page, limit, from, to, main_schet_id } = validationResponse(queryValidation, req.query)
+    const { page, limit, from, to, main_schet_id } = validationResponse(validationQuery, req.query)
     await getByIdMainSchetService(region_id, main_schet_id);
     const offset = (page - 1) * limit;
     const { data, total, summa } = await getAllJur3DB(region_id, main_schet_id, from, to, offset, limit);

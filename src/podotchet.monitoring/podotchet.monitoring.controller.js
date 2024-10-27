@@ -1,4 +1,4 @@
-const { queryValidation } = require("../utils/validation");;
+const { validationQuery } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getLogger } = require('../utils/logger')
 const { validationResponse } = require('../utils/response-for-validation');
@@ -8,7 +8,7 @@ const { getAllMonitoring } = require('./podotchet.monitoring.service')
 
 const getPodotchetMonitoring = async (req, res) => {
     try {
-        const { limit, page, main_schet_id, from, to, podotchet } = validationResponse(queryValidation, req.query)
+        const { limit, page, main_schet_id, from, to, podotchet } = validationResponse(validationQuery, req.query)
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);

@@ -1,7 +1,7 @@
 const { getByIdGrafikDB, getAllGrafikDB, updateShartnomaGrafikDB } = require("../shartnoma/shartnoma.grafik.service");
 const ErrorResponse = require("../utils/errorResponse");
 const { sum } = require("../utils/returnSumma");
-const { shartnomaGarfikValidation, queryValidation } = require("../utils/validation");;
+const { shartnomaGarfikValidation, ShartnomaqueryValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
@@ -43,7 +43,7 @@ const updateShartnomaGrafik = async (req, res) => {
 const getAllGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { organization, main_schet_id, page, limit } = validationResponse(queryValidation, req.query)
+    const { organization, main_schet_id, page, limit } = validationResponse(ShartnomaqueryValidation, req.query)
     const offset = (page - 1) * limit;
     await getByIdMainSchetService(region_id, main_schet_id);
     const { data, total } = await getAllGrafikDB(region_id, main_schet_id, organization, limit, offset);
