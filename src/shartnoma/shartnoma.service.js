@@ -14,9 +14,10 @@ const createShartnoma = async (data) => {
           smeta2_id, 
           spravochnik_organization_id, 
           pudratchi_bool, 
-          main_schet_id
+          main_schet_id,
+          yillik_oylikz
         )
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *
         `,
       [
@@ -30,6 +31,7 @@ const createShartnoma = async (data) => {
         data.spravochnik_organization_id,
         data.pudratchi_bool,
         data.main_schet_id,
+        data.yillik_oylik
       ],
     );
     return shartnoma.rows[0];

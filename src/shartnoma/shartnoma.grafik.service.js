@@ -1,10 +1,47 @@
 const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 
-const createShartnomaGrafik = async (user_id, shartnoma_id, main_schet_id, year, month, summa) => {
-  const grafik = await pool.query(`INSERT INTO shartnoma_grafik(id_shartnomalar_organization, user_id, main_schet_id, year, oy_${month}) VALUES($1, $2, $3, $4, $5) RETURNING *`,
-    [shartnoma_id, user_id, main_schet_id, year, summa],
-  );
+const createShartnomaGrafik = async (data) => {
+  const grafik = await pool.query(`
+    INSERT INTO shartnoma_grafik
+      (
+        id_shartnomalar_organization, 
+        user_id, 
+        main_schet_id, 
+        year, 
+        oy_1,
+        oy_2,
+        oy_3,
+        oy_4,
+        oy_5,
+        oy_6,
+        oy_7,
+        oy_8,
+        oy_9,
+        oy_10,
+        oy_11,
+        oy_12
+      ) 
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
+      RETURNING *
+    `,[
+        data.shartnoma_id, 
+        data.user_id, 
+        data.main_schet_id, 
+        data.year,
+        data.oy_1 || 0,
+        data.oy_2 || 0,
+        data.oy_3 || 0,
+        data.oy_4 || 0,
+        data.oy_5 || 0,
+        data.oy_6 || 0,
+        data.oy_7 || 0,
+        data.oy_8 || 0,
+        data.oy_9 || 0,
+        data.oy_10 || 0,
+        data.oy_11 || 0,
+        data.oy_12 || 0
+    ]);
   return grafik.rows[0]
 }
 
