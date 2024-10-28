@@ -23,7 +23,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           JOIN regions r ON u.region_id = r.id
           LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kp.id_podotchet_litso
           WHERE r.id = $1 AND kp.main_schet_id = $2
-          AND kp.doc_date BETWEEN $3 AND $4
+          AND kp.doc_date BETWEEN $3 AND $4 AND kp.isdeleted = false
 
           UNION ALL
 
@@ -45,7 +45,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
           JOIN regions r ON u.region_id = r.id
           LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = kr.id_podotchet_litso
           WHERE r.id = $1 AND kr.main_schet_id = $2
-          AND kr.doc_date BETWEEN $3 AND $4
+          AND kr.doc_date BETWEEN $3 AND $4 AND kr.isdeleted = false
           ORDER BY combined_date
           OFFSET $5 LIMIT $6
       ) 
@@ -57,49 +57,49 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                         JOIN users u ON kr.user_id = u.id
                         JOIN regions r ON u.region_id = r.id
                         WHERE r.id = $1 AND kr.main_schet_id = $2 
-                        AND kr.doc_date BETWEEN $3 AND $4), 0) +
+                        AND kr.doc_date BETWEEN $3 AND $4 AND kr.isdeleted = false), 0) +
               COALESCE((SELECT COUNT(kp.id) 
                         FROM kassa_prixod kp
                         JOIN users u ON kp.user_id = u.id
                         JOIN regions r ON u.region_id = r.id
                         WHERE r.id = $1 AND kp.main_schet_id = $2 
-                        AND kp.doc_date BETWEEN $3 AND $4), 0))::INTEGER AS total_count,
+                        AND kp.doc_date BETWEEN $3 AND $4 AND kp.isdeleted = false), 0))::INTEGER AS total_count,
           (COALESCE((SELECT SUM(kp.summa)
                     FROM kassa_prixod kp
                     JOIN users u ON kp.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND kp.main_schet_id = $2 
-                    AND kp.doc_date BETWEEN $3 AND $4), 0))::FLOAT AS prixod_sum,
+                    AND kp.doc_date BETWEEN $3 AND $4 AND kp.isdeleted = false), 0))::FLOAT AS prixod_sum,
           (COALESCE((SELECT SUM(kr.summa)
                     FROM kassa_rasxod kr
                     JOIN users u ON kr.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND kr.main_schet_id = $2 
-                    AND kr.doc_date BETWEEN $3 AND $4), 0))::FLOAT  AS rasxod_sum,
+                    AND kr.doc_date BETWEEN $3 AND $4 AND kr.isdeleted = false), 0))::FLOAT  AS rasxod_sum,
           (SELECT COALESCE((SELECT SUM(kp.summa) 
                             FROM kassa_prixod kp
                             JOIN users u ON kp.user_id = u.id
                             JOIN regions r ON u.region_id = r.id
                             WHERE r.id = $1 AND kp.main_schet_id = $2 
-                            AND kp.doc_date < $3), 0) -
+                            AND kp.doc_date < $3 AND kp.isdeleted = false ), 0) -
                   COALESCE((SELECT SUM(kr.summa) 
                             FROM kassa_rasxod kr
                             JOIN users u ON kr.user_id = u.id
                             JOIN regions r ON u.region_id = r.id
                             WHERE r.id = $1 AND kr.main_schet_id = $2 
-                            AND kr.doc_date < $3), 0))::FLOAT  AS summa_from,
+                            AND kr.doc_date < $3 AND kr.isdeleted = false), 0))::FLOAT  AS summa_from,
           (SELECT COALESCE((SELECT SUM(kp.summa) 
                             FROM kassa_prixod kp
                             JOIN users u ON kp.user_id = u.id
                             JOIN regions r ON u.region_id = r.id
                             WHERE r.id = $1 AND kp.main_schet_id = $2 
-                            AND kp.doc_date <= $4), 0) -
+                            AND kp.doc_date <= $4 AND kp.isdeleted = false), 0) -
                   COALESCE((SELECT SUM(kr.summa) 
                             FROM kassa_rasxod kr
                             JOIN users u ON kr.user_id = u.id
                             JOIN regions r ON u.region_id = r.id
                             WHERE r.id = $1 AND kr.main_schet_id = $2 
-                            AND kr.doc_date <= $4), 0))::FLOAT  AS summa_to
+                            AND kr.doc_date <= $4 AND kr.isdeleted = false), 0))::FLOAT  AS summa_to
       FROM data`
       , [region_id, main_schet_id, from, to, offset, limit])
     return {
