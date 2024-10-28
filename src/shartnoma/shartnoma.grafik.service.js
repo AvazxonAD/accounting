@@ -1,10 +1,9 @@
-const { query } = require("express");
 const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 
-const createShartnomaGrafik = async (user_id, shartnoma_id, main_schet_id, year) => {
-  const grafik = await pool.query(`INSERT INTO shartnoma_grafik(id_shartnomalar_organization, user_id, main_schet_id, year) VALUES($1, $2, $3, $4) RETURNING *`,
-    [shartnoma_id, user_id, main_schet_id, year],
+const createShartnomaGrafik = async (user_id, shartnoma_id, main_schet_id, year, month, summa) => {
+  const grafik = await pool.query(`INSERT INTO shartnoma_grafik(id_shartnomalar_organization, user_id, main_schet_id, year, oy_${month}) VALUES($1, $2, $3, $4, $5) RETURNING *`,
+    [shartnoma_id, user_id, main_schet_id, year, summa],
   );
   return grafik.rows[0]
 }
