@@ -3,8 +3,10 @@ const { tashkentTime } = require('../utils/date.function');
 const ErrorResponse = require("../utils/errorResponse");
 
 const createJur3DB = async (data) => {
+  const client = await pool.connect()
   try {
-    const result = await pool.query(
+    await client.query(`BEGIN`)
+    const doc = await client.query(
       `
               INSERT INTO bajarilgan_ishlar_jur3(
                   doc_num, 
@@ -16,9 +18,10 @@ const createJur3DB = async (data) => {
                   main_schet_id,
                   user_id,
                   spravochnik_operatsii_own_id,
-                  created_at
+                  created_at,
+                  updated_at
               ) 
-              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
               RETURNING *
               `,
       [
@@ -32,11 +35,52 @@ const createJur3DB = async (data) => {
         data.user_id,
         data.spravochnik_operatsii_own_id,
         tashkentTime(),
+        tashkentTime()
       ],
     );
-    return result.rows[0];
+    const result = doc.rows[0]
+    const child_queries = []
+    for(let child of data.childs){
+      const child_query = client.query(
+        `
+          INSERT INTO bajarilgan_ishlar_jur3_child(
+              spravochnik_operatsii_id,
+              summa,
+              id_spravochnik_podrazdelenie,
+              id_spravochnik_sostav,
+              id_spravochnik_type_operatsii,
+              main_schet_id,
+              bajarilgan_ishlar_jur3_id,
+              user_id,
+              spravochnik_operatsii_own_id,
+              created_at,
+              updated_at
+          ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+        [
+          child.spravochnik_operatsii_id,
+          child.summa,
+          child.id_spravochnik_podrazdelenie,
+          child.id_spravochnik_sostav,
+          child.id_spravochnik_type_operatsii,
+          data.main_schet_id,
+          result.id,
+          data.user_id,
+          data.spravochnik_operatsii_own_id,
+          tashkentTime(),
+          tashkentTime()
+      ]);
+      child_queries.push(child_query)
+    }
+    const childs = await Promise.all(child_queries)
+    const docs = childs.map(item => item.rows[0])
+    result.childs = docs
+    await client.query('COMMIT')
+    return result;
   } catch (error) {
+    await client.query(`ROLLBACK`)
     throw new ErrorResponse(error, error.statusCode)
+  } finally {
+    client.release()
   }
 }
 
@@ -245,8 +289,7 @@ const updateJur3DB = async (data) => {
         data.spravochnik_operatsii_own_id,
         tashkentTime(),
         data.id,
-      ],
-    );
+    ]);
     return result.rows[0]
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

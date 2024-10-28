@@ -53,12 +53,6 @@ const jur_3_create = async (req, res) => {
     }
     const summa = returnAllChildSumma(data.childs);
     const result = await createJur3DB({ ...data, main_schet_id, user_id, summa });
-    const childs = []
-    for (let child of data.childs) {
-      const child_data = await createJur3ChildDB({ ...child, main_schet_id, user_id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id, bajarilgan_ishlar_jur3_id: result.id });
-      childs.push(child_data)
-    }
-    result.childs = childs
     postLogger.info(`Jur3 doc muvaffaqiyatli kiritildi. UserId : ${user_id}`)
     return resFunc(res, 201, result);
   } catch (error) {

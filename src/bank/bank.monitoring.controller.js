@@ -69,7 +69,6 @@ const capExcelCreate = async (req, res) => {
     });
     worksheet.getRow(1).height = 30;
 
-    // Date Range
     worksheet.mergeCells('A2', 'C2');
     const dateCell = worksheet.getCell('A2');
     Object.assign(dateCell, {
@@ -79,7 +78,6 @@ const capExcelCreate = async (req, res) => {
     });
     worksheet.getRow(2).height = 25;
 
-    // Balance from
     const balanceFromCell = worksheet.getCell('A4');
     balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
     Object.assign(balanceFromCell, {
@@ -87,7 +85,6 @@ const capExcelCreate = async (req, res) => {
       alignment: { vertical: 'middle', horizontal: 'center' }
     });
 
-    // Header Row
     const headerRow = worksheet.addRow(['Счет-Субсчет', 'Приход', 'Расход']);
     headerRow.height = 40;
     headerRow.eachCell((cell) => {
@@ -99,7 +96,6 @@ const capExcelCreate = async (req, res) => {
       });
     });
 
-    // Data Rows
     for (let item of data.data) {
       const row = worksheet.addRow([
         item.schet,
@@ -115,16 +111,14 @@ const capExcelCreate = async (req, res) => {
           alignment: { wrapText: true, horizontal: 'center' }
         };
 
-        // Aligning text
         if (colNumber === 2 || colNumber === 3) {
-          cellStyle.alignment.horizontal = 'right'; // Right-aligning incoming and outgoing sums
+          cellStyle.alignment.horizontal = 'right'; 
         }
 
         Object.assign(cell, cellStyle);
       });
     }
 
-    // Total Row
     worksheet.addRow(['Всего', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell) => {
       let cellStyle = {
         font: { bold: true, size: 14 },
