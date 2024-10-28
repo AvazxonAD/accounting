@@ -33,7 +33,6 @@ const getByLoginUserService = async (login) => {
       `,
       [login.trim()]
     );
-    console.log(user.rows)
     if(!user.rows[0]){
       throw new ErrorResponse('login or password incorrent', 403)
     }

@@ -6,8 +6,6 @@ const { getByIdRegionService } = require("./region.service");
 const { getByLoginUserService, existLogin } = require("./auth.service");
 const { userValidation } = require("../utils/validation");;
 const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/logger');
-const { getRoleService } = require('./role.service')
-const { createAccessService } = require('./access.service')
 const { validationResponse } = require("../utils/response-for-validation");
 
 const {
@@ -58,6 +56,9 @@ const updateAdmin = async (req, res) => {
   try {
     const id = req.params.id;
     const oldUser = await getByIdUserService(id);
+    if(oldUser.role_name === 'super-admin'){
+      throw new ErrorResponse('This operation cannot be performed', 403)
+    }
     const {login, password, fio, region_id} = validationResponse(userValidation, req.body)
     const role = await getAdminRoleService()
     await getByIdRegionService(region_id);
