@@ -28,7 +28,7 @@ const create = async (req, res) => {
     }
     await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
     const shartnoma = await createShartnoma({ ...data, user_id, main_schet_id });
-    const grafik_data = {user_id, shartnoma_id: shartnoma.id, year: data.doc_date.split('-')[0]}
+    const grafik_data = {user_id, shartnoma_id: shartnoma.id, year: data.doc_date.split('-')[0], main_schet_id, yillik_oylik: shartnoma.yillik_oylik}
     if(shartnoma.yillik_oylik){
       grafik_data.oy_1 = shartnoma.summa / 12 
       grafik_data.oy_2 = shartnoma.summa / 12 
@@ -46,7 +46,7 @@ const create = async (req, res) => {
       const key = `oy_` + `${shartnoma.doc_date.getMonth() + 1}` 
       grafik_data[key] = shartnoma.summa
     }
-    const grafik = await createShartnomaGrafik(data);
+    const grafik = await createShartnomaGrafik(grafik_data);
     shartnoma.grafik = grafik
     resFunc(res, 200, shartnoma)
   } catch (error) {

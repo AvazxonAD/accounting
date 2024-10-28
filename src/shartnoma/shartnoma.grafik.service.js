@@ -20,9 +20,10 @@ const createShartnomaGrafik = async (data) => {
         oy_9,
         oy_10,
         oy_11,
-        oy_12
+        oy_12,
+        yillik_oylik
       ) 
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
       RETURNING *
     `,[
         data.shartnoma_id, 
@@ -40,7 +41,8 @@ const createShartnomaGrafik = async (data) => {
         data.oy_9 || 0,
         data.oy_10 || 0,
         data.oy_11 || 0,
-        data.oy_12 || 0
+        data.oy_12 || 0,
+        data.yillik_oylik
     ]);
   return grafik.rows[0]
 }
