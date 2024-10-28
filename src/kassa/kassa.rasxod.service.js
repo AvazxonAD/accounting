@@ -171,17 +171,17 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
                     JOIN regions AS r ON r.id = u.region_id   
                     WHERE r.id = $1 
                       AND k_r_ch.main_schet_id = $2 
-                      AND k_r_ch.kassa_rasxod_id = k_r.id
+                      AND k_r_ch.kassa_rasxod_id = $1
                 ) AS k_r_ch
             ) AS childs
         FROM kassa_rasxod AS k_r
         JOIN users AS u ON u.id = k_r.user_id
         JOIN regions AS r ON r.id = u.region_id
-        JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
+        LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
         WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.id = $3 ${ignore}
       `, [region_id, main_schet_id, id]);
     if (!result.rows[0]) {
-      throw new ErrorResponse('kassa prixod doc not found', 404)
+      throw new ErrorResponse('kassa rasxod doc not found', 404)
     }
     return result.rows[0];
   } catch (error) {
