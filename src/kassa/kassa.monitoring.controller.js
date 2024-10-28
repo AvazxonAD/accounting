@@ -137,16 +137,47 @@ const capExcelCreate = async (req, res) => {
       border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     });
 
-    // Column Widths
-    worksheet.getColumn('A').width = 40;
+    worksheet.addRow(['', '', '']);
+    const signature = worksheet.addRow(['Главный бухгалтер ___________________________']);
+    signature.height = 30;
+    signature.eachCell((cell) => {
+      Object.assign(cell, {
+        font: { bold: true, size: 14 },
+        alignment: { vertical: 'bottom', horizontal: 'left' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      });
+    });
+
+    const signature2 = worksheet.addRow(['Бухгалтер    __________________________________']);
+    signature2.height = 30;
+    signature2.eachCell((cell) => {
+      Object.assign(cell, {
+        font: { bold: true, size: 14 },
+        alignment: { vertical: 'bottom', horizontal: 'left' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      });
+    });
+
+    const signature3 = worksheet.addRow(['Получил кассир  ______________________________']);
+    signature3.height = 30;
+    signature3.eachCell((cell) => {
+      Object.assign(cell, {
+        font: { bold: true, size: 14 },
+        alignment: { vertical: 'bottom', horizontal: 'left' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      });
+    });
+
+    worksheet.getColumn('A').width = 60;
     worksheet.getColumn('B').width = 25;
     worksheet.getColumn('C').width = 60;
 
-    // Write file
-    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName);
+    const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
 
-    // Download file
     return res.download(filePath, (err) => {
       if (err) throw new ErrorResponse(err, err.statusCode);
     });
@@ -293,7 +324,7 @@ const dailyExcelCreate = async (req, res) => {
     worksheet.getColumn('F').width = 25;
     worksheet.getColumn('G').width = 25;
 
-    const filePath = path.join(__dirname, '../../../public/uploads/' + fileName);
+    const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
 
     return res.download(filePath, (err) => {

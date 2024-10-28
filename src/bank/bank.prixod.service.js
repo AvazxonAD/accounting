@@ -66,7 +66,7 @@ const createBankPrixodService = async (data) => {
       createChildQueries.push(childQuery);
     }
 
-    const childs = await (createChildQueries);
+    const childs = await Promise.all(createChildQueries);
     result.rows[0].childs = childs.map(child => child.rows[0]);
 
     await client.query(`COMMIT`);
