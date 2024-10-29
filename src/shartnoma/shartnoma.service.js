@@ -131,7 +131,8 @@ const getByIdShartnomaService = async (region_id, main_schet_id, id, organizatio
       params.push(organization_id)
     }
     const result = await pool.query(`
-        SELECT 
+        SELECT
+              sh_o.id, 
               sh_o.spravochnik_organization_id,
               sh_o.doc_num,
               TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
