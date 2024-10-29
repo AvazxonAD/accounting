@@ -9,7 +9,7 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const ErrorResponse = require("../utils/errorResponse");
 const { returnStringDate } = require('../utils/date.function');
-const { returnStringSumma } = require('../utils/returnSumma')
+const { returnStringSumma, sum } = require('../utils/returnSumma')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
@@ -59,7 +59,7 @@ const capExcelCreate = async (req, res) => {
     const titleCell = worksheet.getCell('A1');
     Object.assign(titleCell, {
       value: title,
-      font: { size: 12, bold: true, color: { argb: 'FF000000' } },
+      font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'center' },
     });
     worksheet.getRow(1).height = 30;
@@ -72,7 +72,7 @@ const capExcelCreate = async (req, res) => {
     const dateCell = worksheet.getCell('A2');
     Object.assign(dateCell, {
       value: dateBetween,
-      font: { size: 12, bold: true, color: { argb: 'FF000000' } },
+      font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'center' },
     });
     worksheet.getRow(2).height = 25;
@@ -81,14 +81,14 @@ const capExcelCreate = async (req, res) => {
     const balance_from = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
     Object.assign(balanceFromCell, {
       value: balance_from,
-      font: { size: 12, bold: true, color: { argb: 'FF000000' } },
+      font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'left' },
     });
     worksheet.mergeCells('A5:B5');
     const headerCell = worksheet.getCell('A5');
     Object.assign(headerCell, {
       value: 'Счет',
-      font: { bold: true, size: 12 },
+      font: { bold: true, size: 12, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'center' },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
       border: {
@@ -102,7 +102,7 @@ const capExcelCreate = async (req, res) => {
     worksheet.getCell('D5').value = 'Расход';
     [worksheet.getCell('C5'), worksheet.getCell('D5')].forEach((cell) => {
       Object.assign(cell, {
-        font: { bold: true, size: 12 },
+        font: { bold: true, size: 12, name: 'Times New Roman' },
         alignment: { vertical: 'middle', horizontal: 'center' },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
         border: {
@@ -114,88 +114,106 @@ const capExcelCreate = async (req, res) => {
       });
     });
     worksheet.getRow(5).height = 30;
+    let row_number = 5
     for (let item of data.data) {
-      const row = worksheet.addRow([
-        item.schet,
-        returnStringSumma(item.prixod_sum),
-        returnStringSumma(item.rasxod_sum)
-      ]);
-      row.height = 25;
-      row.eachCell((cell, colNumber) => {
-        let cellStyle = {
-          font: { size: 12 },
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } },
-          border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
-          alignment: { wrapText: true, horizontal: 'center' }
-        };
-
-        if (colNumber === 2 || colNumber === 3) {
-          cellStyle.alignment.horizontal = 'right';
-        }
-
-        Object.assign(cell, cellStyle);
-      });
-    }
-    /*worksheet.addRow(['Всего', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell) => {
-      let cellStyle = {
-        font: { bold: true, size: 14 },
+      worksheet.mergeCells(`A${row_number + 1}:B${row_number + 1}`);
+      const schet = worksheet.getCell(`A${row_number + 1}`)
+      Object.assign(schet, {
+        value: item.schet,
+        font: { name: 'Times New Roman' },
+        alignment: { vertical: 'middle', horizontal: 'center' },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
-        alignment: { vertical: 'middle', horizontal: 'center' }
-      };
-
-      Object.assign(cell, cellStyle);
-    });
-
-    // Balance to
-    const balanceToCell = worksheet.getCell('A' + (worksheet.rowCount + 1));
-    balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
-    Object.assign(balanceToCell, {
-      font: { bold: true, size: 14 },
+        border: {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      });
+      const prixod_sum = worksheet.getCell(`C${row_number + 1}`)
+      prixod_sum.value = returnStringSumma(item.prixod_sum)
+      const rasxod_sum = worksheet.getCell(`D${row_number + 1}`)
+      rasxod_sum.value = returnStringSumma(item.rasxod_sum)
+      const array = [prixod_sum, rasxod_sum]
+      array.forEach(item => {
+        Object.assign(item, {
+          alignment: { vertical: 'middle', horizontal: 'right' },
+          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+          border: {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          }
+        });
+      })
+      row_number++
+    }
+    worksheet.mergeCells(`A${row_number + 1}:B${row_number + 1}`);
+    const summa = worksheet.getCell(`A${row_number + 1}`);
+    summa.value = 'Всего'
+    Object.assign(summa, {
+      font: { bold: true, size: 12, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'center' },
       fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-      border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-    });
-
-    worksheet.addRow(['', '', '']);
-    const signature = worksheet.addRow(['Главный бухгалтер ___________________________']);
-    signature.height = 30;
-    signature.eachCell((cell) => {
+      border: {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    })
+    const all_prixod_summa = worksheet.getCell(`C${row_number + 1}`);
+    all_prixod_summa.value = returnStringSumma(data.prixod_sum)
+    const all_rasxod_summa = worksheet.getCell(`D${row_number + 1}`);
+    all_rasxod_summa.value = returnStringSumma(data.rasxod_sum)
+    const summa_array = [all_prixod_summa, all_rasxod_summa]
+    summa_array.forEach((cell) => {
       Object.assign(cell, {
-        font: { bold: true, size: 14 },
+        font: { bold: true, size: 12, name: 'Times New Roman' },
+        alignment: { vertical: 'middle', horizontal: 'right' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      });
+    });
+    row_number++
+    worksheet.mergeCells(`A${row_number + 1}`, `D${row_number + 1}`);
+    const balanceToCell = worksheet.getCell('A' + (row_number + 1));
+    balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
+    Object.assign(balanceToCell, {
+      font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+      alignment: { vertical: 'middle', horizontal: 'left' },
+    });
+    row_number++
+    worksheet.mergeCells(`A${row_number + 2}`, `C${row_number + 2}`);
+    const signature = worksheet.getCell(`A${row_number + 2}`);
+    signature.value = 'Главный бухгалтер ___________________________'
+    worksheet.mergeCells(`A${row_number + 3}`, `C${row_number + 3}`);
+    const signature2 = worksheet.getCell(`A${row_number + 3}`);
+    signature2.value = 'Бухгалтер    __________________________________'
+    worksheet.mergeCells(`A${row_number + 4}`, `C${row_number + 4}`)
+    const signature3 = worksheet.getCell(`A${row_number + 4}`)
+    signature3.value = `Получил кассир  ______________________________`
+    const signature_array = [signature, signature2, signature3]
+    signature_array.forEach(row => {
+      Object.assign(row, {
+        font: { bold: true, size: 12, name: 'Times New Roman' },
         alignment: { vertical: 'bottom', horizontal: 'left' },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
         border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
       });
     });
-
-    const signature2 = worksheet.addRow(['Бухгалтер    __________________________________']);
-    signature2.height = 30;
-    signature2.eachCell((cell) => {
-      Object.assign(cell, {
-        font: { bold: true, size: 14 },
-        alignment: { vertical: 'bottom', horizontal: 'left' },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      });
-    });
-
-    const signature3 = worksheet.addRow(['Получил кассир  ______________________________']);
-    signature3.height = 30;
-    signature3.eachCell((cell) => {
-      Object.assign(cell, {
-        font: { bold: true, size: 14 },
-        alignment: { vertical: 'bottom', horizontal: 'left' },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      });
-    });*/
-
-    // Write file
+    worksheet.getRow(row_number + 2).height = 30;
+    worksheet.getRow(row_number + 3).height = 30;
+    worksheet.getRow(row_number + 4).height = 30;
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
 
-    // Download file
     return res.download(filePath, (err) => {
       if (err) throw new ErrorResponse(err, err.statusCode);
     });
@@ -204,145 +222,155 @@ const capExcelCreate = async (req, res) => {
   }
 };
 
-
 const dailyExcelCreate = async (req, res) => {
   try {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-
     const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${main_schet.account_number}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
     const workbook = new ExcelJS.Workbook();
-    const fileName = `kundalik_hisobot_${new Date().getTime()}.xlsx`;
+    const fileName = `kundalik_hisobot_bank_${new Date().getTime()}.xlsx`;
     const worksheet = workbook.addWorksheet('Hisobot');
-
-    worksheet.mergeCells('A1', 'C1');
+    worksheet.mergeCells('A1', 'H1');
     const titleCell = worksheet.getCell('A1');
     Object.assign(titleCell, {
       value: title,
-      font: { size: 15, bold: true, color: { argb: 'FF000000' } },
-      alignment: { vertical: 'middle', horizontal: 'left' },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-      border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      font: { size: 13, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+      alignment: { vertical: 'middle', horizontal: 'center' }
     });
-
     worksheet.getRow(1).height = 30;
-    worksheet.mergeCells('A2', 'C2');
+    worksheet.getColumn(2).width = 15
+    worksheet.getColumn(6).width = 15
+    worksheet.getColumn(7).width = 20
+    worksheet.getColumn(8).width = 20
+    worksheet.getRow(1).height = 30;
+    worksheet.getRow(2).height = 25;
+    worksheet.mergeCells('A2', 'H2');
     const dateCell = worksheet.getCell('A2');
     Object.assign(dateCell, {
       value: dateBetween,
-      font: { size: 14, bold: true, color: { argb: 'FF000000' } },
-      alignment: { vertical: 'middle', horizontal: 'left' }
+      font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+      alignment: { vertical: 'middle', horizontal: 'center' }
     });
-    worksheet.getRow(2).height = 25;
-
+    worksheet.mergeCells('A4', 'H4');
     const balanceFromCell = worksheet.getCell('A4');
     balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
     Object.assign(balanceFromCell, {
-      font: { size: 14, bold: true, color: { argb: '80000000' } },
+      font: { size: 11, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'left' }
     });
-
-    const headerRow = worksheet.addRow(['№ док', 'Дата', 'Организатсия', 'Разъяснительный текст', 'Счет-Субсчет', 'Приход', 'Расход', 'Операции']);
-    headerRow.height = 40;
-    headerRow.eachCell((cell) => {
-      Object.assign(cell, {
-        font: { bold: true, size: 14 },
+    const doc_num = worksheet.getCell('A5');
+    const date = worksheet.getCell('B5')
+    const organization = worksheet.getCell(`C5`)
+    const comment = worksheet.getCell('D5')
+    const schet = worksheet.getCell('E5')
+    const prixod = worksheet.getCell('F5')
+    const rasxod = worksheet.getCell('G5')
+    const operatsii = worksheet.getCell('H5')
+    date.value = `Дата`
+    comment.value = 'Разъяснительный текст'
+    doc_num.value = `№ док`;
+    organization.value = `Организатсия`
+    schet.value = `Счет`
+    prixod.value = 'Приход'
+    rasxod.value = 'Расход'
+    operatsii.value = 'Операции'
+    const headers = [date, comment, organization, doc_num, schet, prixod, rasxod, operatsii]
+    headers.forEach(item => {
+      Object.assign(item, {
+        font: { bold: true, size: 12, name: 'Times New Roman' },
         alignment: { vertical: 'middle', horizontal: 'center' },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+        border: {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
       });
-    });
-
+    })
+    let row_number = 5
     for (let object of data.data) {
       object.docs.forEach(item => {
-        const operatsii = item.rasxod_sum ? `${item.schet} - ${main_schet.jur2_schet}` : `${main_schet.jur2_schet} - ${item.schet}`;
-        const row = worksheet.addRow([
-          item.doc_num,
-          item.doc_date,
-          item.spravochnik_organization_name,
-          item.opisanie,
-          item.schet,
-          returnStringSumma(item.prixod_sum),
-          returnStringSumma(item.rasxod_sum),
-          operatsii
-        ]);
-
-        if (item.opisanie) {
-          const opisanieLength = item.opisanie.length;
-          const baseHeight = 10;
-          const lineHeight = 20;
-          const maxLines = Math.ceil(opisanieLength / 50);
-          row.height = baseHeight + (maxLines * lineHeight);
-        } else {
-          row.height = 25;
-        }
-
-        row.eachCell((cell, colNumber) => {
-          let cellStyle = {};
-          if (colNumber === 4) {
-            cellStyle = {
-              font: { size: 12 },
-              fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } },
-              border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
-              alignment: { wrapText: true }
-            };
-          } else if (colNumber === 6 || colNumber === 7) {
-            cellStyle = {
-              font: { size: 12 },
-              fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } },
-              border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
-              alignment: { horizontal: 'right' }
-            };
+        const doc_num = worksheet.getCell(`A${row_number + 1}`);
+        const date = worksheet.getCell(`B${row_number + 1}`)
+        const organization = worksheet.getCell(`C${row_number + 1}`)
+        const comment = worksheet.getCell(`D${row_number + 1}`)
+        const schet = worksheet.getCell(`E${row_number + 1}`)
+        const rasxod = worksheet.getCell(`F${row_number + 1}`)
+        const prixod = worksheet.getCell(`G${row_number + 1}`)
+        const operatsii = worksheet.getCell(`H${row_number + 1}`)
+        date.value = item.doc_date
+        organization.value = item.spravochnik_organization_name
+        comment.value = item.opisanie
+        doc_num.value = item.doc_num
+        schet.value = item.schet
+        prixod.value = returnStringSumma(item.prixod_sum)
+        rasxod.value = returnStringSumma(item.rasxod_sum)
+        operatsii.value = item.rasxod_sum ? `${item.schet} - ${main_schet.jur2_schet}` : `${main_schet.jur2_schet} - ${item.schet}`;
+        const array = [doc_num, date, comment, schet, operatsii, rasxod, prixod, organization]
+        array.forEach((item, index) => {
+          const alignment = { vertical: 'middle' }
+          if (index === 2 || index === 7) {
+            alignment.horizontal = 'left'
+          } else if (index === 5 || index === 6) {
+            alignment.horizontal = 'right'
           } else {
-            cellStyle = {
-              font: { size: 12 },
-              fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } },
-              border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } },
-              alignment: { horizontal: 'center' }
-            };
+            alignment.horizontal = 'center'
           }
-          Object.assign(cell, cellStyle);
+          Object.assign(item, {
+            alignment,
+            font: { name: 'Times New Roman' },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+            border: {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' }
+            }
+          });
+        })
+        row_number++
+      })
+      worksheet.mergeCells(`A${row_number + 1}`, `E${row_number + 1}`);
+      const schet = worksheet.getCell(`A${row_number + 1}`)
+      schet.value = `Итого по счету ${object.schet}`
+      const prixod_sum = worksheet.getCell(`F${row_number + 1}`)
+      prixod_sum.value = returnStringSumma(object.prixod_sum)
+      const rasxod_sum = worksheet.getCell(`G${row_number + 1}`)
+      rasxod_sum.value = returnStringSumma(object.rasxod_sum)
+      const array = [schet, prixod_sum, rasxod_sum]
+      array.forEach((item, index) => {
+        let horizontal = `right`
+        if(index === 0){
+          horizontal = `left`
+        }
+        Object.assign(item, {
+          alignment: { vertical: 'middle', horizontal },
+          font: { name: 'Times New Roman', bold: true, size: 11 },
         });
-      });
+      })
+      row_number++
     }
-
-    worksheet.addRow(['Всего', ' ', ' ', ' ', ' ', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell, colNumber) => {
-      let cellStyle = {
-        font: { bold: true, size: 14 },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
-      };
-
-      if (colNumber < 6) {
-        cellStyle.alignment = { vertical: 'middle', horizontal: 'center' };
-      } else {
-        cellStyle.alignment = { vertical: 'middle', horizontal: 'right' };
-      }
-
-      Object.assign(cell, cellStyle);
-    });
-
-    const balanceToCell = worksheet.getCell('A' + (worksheet.rowCount + 1));
+    worksheet.mergeCells(`A${row_number + 2}`, `H${row_number + 2}`);
+    const balanceToCell = worksheet.getCell(`A${row_number + 2}`);
     balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
     Object.assign(balanceToCell, {
-      font: { bold: true, size: 14 },
-      alignment: { vertical: 'middle', horizontal: 'center' },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-      border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+      font: { size: 11, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+      alignment: { vertical: 'middle', horizontal: 'left' }
     });
-
-    worksheet.getColumn('A').width = 50;
-    worksheet.getColumn('B').width = 25;
-    worksheet.getColumn('C').width = 50;
-    worksheet.getColumn('D').width = 50;
-    worksheet.getColumn('E').width = 25;
-    worksheet.getColumn('F').width = 25;
-    worksheet.getColumn('G').width = 25;
-    worksheet.getColumn('H').width = 25;
-
+    worksheet.getRow(1).height = 30;
+    worksheet.getColumn(2).width = 15
+    worksheet.getColumn(3).width = 30
+    worksheet.getColumn(4).width = 30
+    worksheet.getColumn(5).width = 20
+    worksheet.getColumn(6).width = 20
+    worksheet.getColumn(7).width = 20
+    worksheet.getRow(1).height = 30;
+    worksheet.getRow(2).height = 25;
+    worksheet.getRow(5).height = 25;
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
 
