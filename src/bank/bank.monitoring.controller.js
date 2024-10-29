@@ -48,54 +48,72 @@ const capExcelCreate = async (req, res) => {
   try {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
-    const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-
+    const main_schet = await getByIdMainSchetService(region_id, main_schet_id); 0
     const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${returnStringSumma(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await bankCapService(region_id, main_schet_id, from, to);
     const workbook = new ExcelJS.Workbook();
     const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
     const worksheet = workbook.addWorksheet('Hisobot');
-
-    // Title
-    worksheet.mergeCells('A1', 'C1');
+    worksheet.mergeCells('A1', 'D1');
     const titleCell = worksheet.getCell('A1');
     Object.assign(titleCell, {
       value: title,
-      font: { size: 15, bold: true, color: { argb: 'FF000000' } },
+      font: { size: 12, bold: true, color: { argb: 'FF000000' } },
       alignment: { vertical: 'middle', horizontal: 'center' },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-      border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
     });
     worksheet.getRow(1).height = 30;
+    worksheet.getColumn(1).width = 12
+    worksheet.getColumn(2).width = 12
+    worksheet.getColumn(3).width = 35
+    worksheet.getColumn(4).width = 35
 
-    worksheet.mergeCells('A2', 'C2');
+    worksheet.mergeCells('A2', 'D2');
     const dateCell = worksheet.getCell('A2');
     Object.assign(dateCell, {
       value: dateBetween,
-      font: { size: 14, bold: true, color: { argb: 'FF000000' } },
-      alignment: { vertical: 'middle', horizontal: 'center' }
+      font: { size: 12, bold: true, color: { argb: 'FF000000' } },
+      alignment: { vertical: 'middle', horizontal: 'center' },
     });
     worksheet.getRow(2).height = 25;
-
+    worksheet.mergeCells('A4', 'D4');
     const balanceFromCell = worksheet.getCell('A4');
-    balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
+    const balance_from = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
     Object.assign(balanceFromCell, {
-      font: { size: 14, bold: true, color: { argb: '80000000' } },
-      alignment: { vertical: 'middle', horizontal: 'center' }
+      value: balance_from,
+      font: { size: 12, bold: true, color: { argb: 'FF000000' } },
+      alignment: { vertical: 'middle', horizontal: 'left' },
     });
-
-    const headerRow = worksheet.addRow(['Счет-Субсчет', 'Приход', 'Расход']);
-    headerRow.height = 40;
-    headerRow.eachCell((cell) => {
+    worksheet.mergeCells('A5:B5');
+    const headerCell = worksheet.getCell('A5');
+    Object.assign(headerCell, {
+      value: 'Счет',
+      font: { bold: true, size: 12 },
+      alignment: { vertical: 'middle', horizontal: 'center' },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+      border: {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      }
+    });
+    worksheet.getCell('C5').value = 'Приход';
+    worksheet.getCell('D5').value = 'Расход';
+    [worksheet.getCell('C5'), worksheet.getCell('D5')].forEach((cell) => {
       Object.assign(cell, {
-        font: { bold: true, size: 14 },
+        font: { bold: true, size: 12 },
         alignment: { vertical: 'middle', horizontal: 'center' },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-        border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
+        border: {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
       });
     });
-
+    worksheet.getRow(5).height = 30;
     for (let item of data.data) {
       const row = worksheet.addRow([
         item.schet,
@@ -112,14 +130,13 @@ const capExcelCreate = async (req, res) => {
         };
 
         if (colNumber === 2 || colNumber === 3) {
-          cellStyle.alignment.horizontal = 'right'; 
+          cellStyle.alignment.horizontal = 'right';
         }
 
         Object.assign(cell, cellStyle);
       });
     }
-
-    worksheet.addRow(['Всего', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell) => {
+    /*worksheet.addRow(['Всего', returnStringSumma(data.prixod_sum), returnStringSumma(data.rasxod_sum)]).eachCell((cell) => {
       let cellStyle = {
         font: { bold: true, size: 14 },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
@@ -172,12 +189,7 @@ const capExcelCreate = async (req, res) => {
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
         border: { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } }
       });
-    });
-
-    // Column Widths
-    worksheet.getColumn('A').width = 60;
-    worksheet.getColumn('B').width = 25;
-    worksheet.getColumn('C').width = 60;
+    });*/
 
     // Write file
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);

@@ -8,7 +8,7 @@ const {
 const { getByIdSmeta } = require("../smeta/smeta.service.js");
 const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service.js");
 const { shartnomaValidation, ShartnomaqueryValidation } = require("../utils/validation");;
-const { createShartnomaGrafik } = require("../shartnoma/shartnoma.grafik.service.js");
+const { createShartnomaGrafik, updateShartnomaGrafikService } = require("../shartnoma/shartnoma.grafik.service.js");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service.js");
 const { validationResponse } = require('../utils/response-for-validation.js')
 const { errorCatch } = require("../utils/errorCatch.js");
@@ -102,6 +102,26 @@ const update_shartnoma = async (req, res) => {
     await getByIdSmeta(data.smeta_id);
     await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
     const result = await updateShartnomaDB({ ...data, id });
+    const grafik_data = {shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik}
+    if(result.yillik_oylik){
+      grafik_data.oy_1 = result.summa / 12 
+      grafik_data.oy_2 = result.summa / 12 
+      grafik_data.oy_3 = result.summa / 12 
+      grafik_data.oy_4 = result.summa / 12 
+      grafik_data.oy_5 = result.summa / 12 
+      grafik_data.oy_6 = result.summa / 12 
+      grafik_data.oy_7 = result.summa / 12 
+      grafik_data.oy_8 = result.summa / 12 
+      grafik_data.oy_9 = result.summa / 12 
+      grafik_data.oy_10 = result.summa / 12 
+      grafik_data.oy_11 = result.summa / 12 
+      grafik_data.oy_12 = result.summa / 12 
+    } else{
+      const key = `oy_` + `${result.doc_date.getMonth() + 1}` 
+      grafik_data[key] = result.summa
+    }
+    const grafik = await updateShartnomaGrafikService(grafik_data)
+    result.grafik = grafik
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)

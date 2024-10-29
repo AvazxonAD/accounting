@@ -73,7 +73,8 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
               sh_o.summa,
               sh_o.pudratchi_bool,
               smeta.smeta_number,
-              sh_o.main_schet_id
+              sh_o.main_schet_id,
+              sh_o.yillik_oylik
           FROM shartnomalar_organization AS sh_o
           JOIN users AS u ON sh_o.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
@@ -138,7 +139,8 @@ const getByIdShartnomaService = async (region_id, main_schet_id, id, organizatio
               sh_o.smeta_id,
               sh_o.opisanie,
               sh_o.summa,
-              sh_o.pudratchi_bool
+              sh_o.pudratchi_bool,
+              sh_o.yillik_oylik
         FROM shartnomalar_organization AS sh_o
         JOIN users  ON sh_o.user_id = users.id
         JOIN regions ON users.region_id = regions.id
@@ -167,8 +169,9 @@ const updateShartnomaDB = async (data) => {
           smeta_id = $5, 
           smeta2_id = $6, 
           spravochnik_organization_id = $7, 
-          pudratchi_bool = $8
-        WHERE id = $9 RETURNING * 
+          pudratchi_bool = $8,
+          yillik_oylik = $9
+        WHERE id = $10 RETURNING * 
       `,
       [
         data.doc_num,
@@ -176,18 +179,14 @@ const updateShartnomaDB = async (data) => {
         data.summa,
         data.opisanie,
         data.smeta_id,
-        data.smeta_2,
+        data.smeta2_id,
         data.spravochnik_organization_id,
         data.pudratchi_bool,
-        data.id,
+        data.yillik_oylik,
+        data.id
       ],
     );
-    const grafik = await pool.query(
-      `UPDATE shartnoma_grafik SET year = $1 WHERE id_shartnomalar_organization = $2 RETURNING *`,
-      [data.doc_date.split('-')[0], data.id],
-    );
     const result = conract.rows[0]
-    result.grafik = grafik.rows[0]
     return result;
   } catch (error) {
     throw new ErrorResponse(error, error.statusCodes)
