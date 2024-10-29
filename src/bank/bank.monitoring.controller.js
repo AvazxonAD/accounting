@@ -382,13 +382,4 @@ const dailyExcelCreate = async (req, res) => {
   }
 };
 
-
-
-
-
-
-module.exports = {
-  getAllBankMonitoring,
-  capExcelCreate,
-  dailyExcelCreate
-};
+module.exports = { getAllBankMonitoring, capExcelCreate, dailyExcelCreate };
