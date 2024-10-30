@@ -30,7 +30,7 @@ const updateShartnomaGrafik = async (req, res) => {
       oy_11,
       oy_12
     );
-    if (summa !== grafik.summa) {
+    if ((Math.round((summa + Number.EPSILON) * 100) / 100) !== grafik.summa) {
       throw new ErrorResponse("The amount was entered incorrectly", 400)
     }
     const result = await updateShartnomaGrafikDB({ ...data, id });
