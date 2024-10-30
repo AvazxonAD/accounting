@@ -216,7 +216,6 @@ const capExcelCreate = async (req, res) => {
     worksheet.getRow(row_number + 4).height = 30;
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
-
     return res.download(filePath, (err) => {
       if (err) throw new ErrorResponse(err, err.statusCode);
     });
@@ -386,6 +385,7 @@ const dailyExcelCreate = async (req, res) => {
     worksheet.getRow(2).height = 20;
     worksheet.getRow(5).height = 25;
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+    console.log(workbook)
     await workbook.xlsx.writeFile(filePath);
 
     return res.download(filePath, (err) => {
