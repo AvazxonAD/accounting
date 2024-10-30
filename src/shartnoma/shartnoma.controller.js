@@ -35,7 +35,6 @@ const create = async (req, res) => {
       main_schet_id,
       yillik_oylik: shartnoma.yillik_oylik,
     };
-
     if (shartnoma.yillik_oylik) {
       let oy_maoshi = Math.floor((shartnoma.summa / 12) * 100) / 100; 
       let umumiy_summa = oy_maoshi * 12; 
@@ -59,8 +58,6 @@ const create = async (req, res) => {
       const key = `oy_` + `${new Date(shartnoma.doc_date).getMonth() + 1}`;
       grafik_data[key] = shartnoma.summa;
     }
-
-
     const grafik = await createShartnomaGrafik(grafik_data);
     shartnoma.grafik = grafik
     resFunc(res, 200, shartnoma)
@@ -119,22 +116,27 @@ const update_shartnoma = async (req, res) => {
     const result = await updateShartnomaDB({ ...data, id });
     const grafik_data = { shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik }
     if (result.yillik_oylik) {
-      console.log(1)
-      grafik_data.oy_1 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_2 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_3 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_4 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_5 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_6 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_7 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_8 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_9 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_10 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_11 = Math.round((result.summa / 12) * 100) / 100;
-      grafik_data.oy_12 = Math.round((result.summa / 12) * 100) / 100;
+      let oy_maoshi = Math.floor((result.summa / 12) * 100) / 100; 
+      let umumiy_summa = oy_maoshi * 12; 
+      grafik_data.oy_1 = oy_maoshi;
+      grafik_data.oy_2 = oy_maoshi;
+      grafik_data.oy_3 = oy_maoshi;
+      grafik_data.oy_4 = oy_maoshi;
+      grafik_data.oy_5 = oy_maoshi;
+      grafik_data.oy_6 = oy_maoshi;
+      grafik_data.oy_7 = oy_maoshi;
+      grafik_data.oy_8 = oy_maoshi;
+      grafik_data.oy_9 = oy_maoshi;
+      grafik_data.oy_10 = oy_maoshi;
+      grafik_data.oy_11 = oy_maoshi;
+      grafik_data.oy_12 = oy_maoshi;
+
+      let farq = result.summa - umumiy_summa; 
+      grafik_data.oy_1 += farq; 
+      grafik_data.oy_1 = Math.round(grafik_data.oy_1 * 100) / 100; 
     } else {
-      const key = `oy_` + `${result.doc_date.getMonth() + 1}`
-      grafik_data[key] = result.summa
+      const key = `oy_` + `${new Date(result.doc_date).getMonth() + 1}`;
+      grafik_data[key] = result.summa;
     }
     const grafik = await updateShartnomaGrafikService(grafik_data)
     result.grafik = grafik
