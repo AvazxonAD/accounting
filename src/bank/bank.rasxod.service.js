@@ -23,18 +23,18 @@ const createBankRasxodDb = async (data) => {
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
         RETURNING * 
       `, [
-          data.doc_num,
-          data.doc_date,
-          data.summa,
-          data.opisanie,
-          data.id_spravochnik_organization,
-          data.id_shartnomalar_organization,
-          data.main_schet_id,
-          data.user_id,
-          data.rukovoditel,
-          data.glav_buxgalter,
-          tashkentTime(),
-          tashkentTime()
+      data.doc_num,
+      data.doc_date,
+      data.summa,
+      data.opisanie,
+      data.id_spravochnik_organization,
+      data.id_shartnomalar_organization,
+      data.main_schet_id,
+      data.user_id,
+      data.rukovoditel,
+      data.glav_buxgalter,
+      tashkentTime(),
+      tashkentTime()
     ]);
     return result.rows[0];
   } catch (error) {
@@ -249,8 +249,10 @@ const deleteRasxodChild = async (bank_prixod_id) => {
 
 const getFioBankRasxodService = async (region_id, main_schet_id) => {
   try {
-    let rukovoditel = await pool.query(`
-      SELECT b.rukovoditel
+    const result = await pool.query(`
+      SELECT 
+        b.rukovoditel,
+        b.glav_buxgalter
       FROM bank_rasxod b 
       JOIN users AS u ON u.id = b.user_id 
       JOIN regions AS r ON r.id = u.region_id
@@ -258,26 +260,15 @@ const getFioBankRasxodService = async (region_id, main_schet_id) => {
         AND b.main_schet_id = $2 
         AND b.glav_buxgalter IS NOT NULL 
         AND b.created_at IS NOT NULL
-      GROUP BY b.rukovoditel
-      ORDER BY MAX(b.created_at) DESC
-    `, [region_id, main_schet_id])
-    let glav_buxgalter = await pool.query(`
-      SELECT b.glav_buxgalter
-      FROM bank_rasxod b 
-      JOIN users AS u ON u.id = b.user_id 
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE r.id = $1 
-        AND b.main_schet_id = $2 
-        AND b.glav_buxgalter IS NOT NULL 
-        AND b.created_at IS NOT NULL
-      GROUP BY b.glav_buxgalter
-      ORDER BY MAX(b.created_at) DESC
-    `, [region_id, main_schet_id])
-    glav_buxgalter = glav_buxgalter.rows.map(item => item.glav_buxgalter) 
-    rukovoditel = rukovoditel.rows.map(item => item.rukovoditel) 
-    return {glav_buxgalter, rukovoditel}
+      ORDER BY b.created_at DESC
+    `, [region_id, main_schet_id]);
+    const rukovoditelSet = new Set(result.rows.map(item => item.rukovoditel));
+    const glavBuxgalterSet = new Set(result.rows.map(item => item.glav_buxgalter));
+    const rukovoditel = Array.from(rukovoditelSet);
+    const glav_buxgalter = Array.from(glavBuxgalterSet);
+    return { glav_buxgalter, rukovoditel };
   } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
+    throw new ErrorResponse(error, error.statusCode);
   }
 }
 
