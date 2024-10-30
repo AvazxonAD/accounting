@@ -13,6 +13,13 @@ const returnStringDate = (date) => {
   return (topshiriqSana = `${year} ${day}-${month}`);
 };
 
+const returnSleshDate = (date) => {
+  const day = date.getDate().toString().padStart(2, "0"); // "05"
+  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
+  const year = date.getFullYear().toString(); // "2024"
+  return `${day}/${month}/${year}`; 
+};
+
 // need function
 function getMonth(month) {
   switch (month) {
@@ -87,5 +94,6 @@ module.exports = {
   returnStringDate,
   newDate,
   returnLocalAllDate,
-  tashkentTime
+  tashkentTime,
+  returnSleshDate
 };
