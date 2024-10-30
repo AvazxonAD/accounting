@@ -1,11 +1,49 @@
-const { query } = require("express");
 const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 
-const createShartnomaGrafik = async (user_id, shartnoma_id, main_schet_id, year) => {
-  const grafik = await pool.query(`INSERT INTO shartnoma_grafik(id_shartnomalar_organization, user_id, main_schet_id, year) VALUES($1, $2, $3, $4) RETURNING *`,
-    [shartnoma_id, user_id, main_schet_id, year],
-  );
+const createShartnomaGrafik = async (data) => {
+  const grafik = await pool.query(`
+    INSERT INTO shartnoma_grafik
+      (
+        id_shartnomalar_organization, 
+        user_id, 
+        main_schet_id, 
+        year, 
+        oy_1,
+        oy_2,
+        oy_3,
+        oy_4,
+        oy_5,
+        oy_6,
+        oy_7,
+        oy_8,
+        oy_9,
+        oy_10,
+        oy_11,
+        oy_12,
+        yillik_oylik
+      ) 
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
+      RETURNING *
+    `, [
+    data.shartnoma_id,
+    data.user_id,
+    data.main_schet_id,
+    data.year,
+    data.oy_1 || 0,
+    data.oy_2 || 0,
+    data.oy_3 || 0,
+    data.oy_4 || 0,
+    data.oy_5 || 0,
+    data.oy_6 || 0,
+    data.oy_7 || 0,
+    data.oy_8 || 0,
+    data.oy_9 || 0,
+    data.oy_10 || 0,
+    data.oy_11 || 0,
+    data.oy_12 || 0,
+    data.yillik_oylik
+  ]);
   return grafik.rows[0]
 }
 
@@ -60,7 +98,7 @@ const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, off
       organization_filter = `AND s_o.id = $${params.length + 1}`;
       params.push(organization);
     }
-    
+
     const { rows } = await pool.query(`
       WITH data AS (
         SELECT
@@ -171,9 +209,53 @@ const updateShartnomaGrafikDB = async (data) => {
   }
 }
 
+const updateShartnomaGrafikService = async (grafik_data) => {
+  try {
+    const grafik = await pool.query(`
+      UPDATE shartnoma_grafik SET
+          year = $1, 
+          oy_1 = $2,
+          oy_2 = $3,
+          oy_3 = $4,
+          oy_4 = $5,
+          oy_5 = $6,
+          oy_6 = $7,
+          oy_7 = $8,
+          oy_8 = $9,
+          oy_9 = $10,
+          oy_10 = $11,
+          oy_11 = $12,
+          oy_12 = $13,
+          yillik_oylik = $14
+        WHERE id_shartnomalar_organization = $15   
+        RETURNING *
+      `, [
+      grafik_data.year,
+      grafik_data.oy_1 || 0,
+      grafik_data.oy_2 || 0,
+      grafik_data.oy_3 || 0,
+      grafik_data.oy_4 || 0,
+      grafik_data.oy_5 || 0,
+      grafik_data.oy_6 || 0,
+      grafik_data.oy_7 || 0,
+      grafik_data.oy_8 || 0,
+      grafik_data.oy_9 || 0,
+      grafik_data.oy_10 || 0,
+      grafik_data.oy_11 || 0,
+      grafik_data.oy_12 || 0,
+      grafik_data.yillik_oylik,
+      grafik_data.shartnoma_id
+    ]);
+    return grafik.rows[0]
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
 module.exports = {
   createShartnomaGrafik,
   getByIdGrafikDB,
   getAllGrafikDB,
   updateShartnomaGrafikDB,
+  updateShartnomaGrafikService
 };

@@ -258,7 +258,8 @@ const shartnomaValidation = Joi.object({
   smeta_id: Joi.number().required(),
   smeta2_id: Joi.number(),
   spravochnik_organization_id: Joi.number().required(),
-  pudratchi_bool: Joi.boolean()
+  pudratchi_bool: Joi.boolean(),
+  yillik_oylik: Joi.boolean().required()
 }).options({ stripUnknown: true });
 
 const shartnomaGarfikValidation = Joi.object({
@@ -281,7 +282,7 @@ const ShartnomaqueryValidation = Joi.object({
   limit: Joi.number().min(1).default(10),
   main_schet_id: Joi.number().min(1),
   organization: Joi.number().min(1),
-  pudratchi: Joi.string().pattern(/^(true|false)$/),
+  pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
   search: Joi.string().trim()
 }).options({ stripUnknown: true });
 

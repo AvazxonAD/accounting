@@ -9,13 +9,11 @@ const router = require("./index.routes");
 
 app.use(express.json());
 app.use(cors());
+require("colors");
 
-const colors = require("colors");
 
 const PORT = process.env.PORT || 3005;
-
 app.use(express.static("../public"));
-
 app.use(router);
 
 app.use(require("./middleware/errorHandler"));

@@ -53,6 +53,9 @@ const updateUser = async (req, res) => {
     const id = req.params.id;
     const region_id = req.user.region_id
     const oldUser = await getByIdUserService(id);
+    if(oldUser.role_name === 'super-admin' || oldUser.role_name === 'region-admin'){
+      throw new ErrorResponse('This operation cannot be performed', 403)
+    }
     const data = validationResponse(userValidation, req.body)
     let { login, password, fio, role_id } = data;    
     const role = await getByIdRoleService(role_id)

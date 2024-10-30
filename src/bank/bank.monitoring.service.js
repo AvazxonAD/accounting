@@ -7,7 +7,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
       `
           WITH data AS (
             SELECT 
-                bp.id, 
+                bp.id,
                 bp.doc_num,
                 TO_CHAR(bp.doc_date, 'YYYY-MM-DD') AS doc_date,
                 bp.summa AS prixod_sum,

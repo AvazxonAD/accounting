@@ -29,7 +29,7 @@ const getByLoginUserService = async (login) => {
           role.name AS role_name
         FROM users
         INNER JOIN role ON role.id = users.role_id
-        WHERE users.login = $1
+        WHERE users.login = $1 AND users.isdeleted = false
       `,
       [login.trim()]
     );

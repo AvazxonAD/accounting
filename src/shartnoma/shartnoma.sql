@@ -12,9 +12,10 @@ CREATE TABLE shartnomalar_organization (
     smeta2_id INTEGER REFERENCES smeta(id),
     spravochnik_organization_id INTEGER REFERENCES spravochnik_organization(id),
     pudratchi_bool BOOLEAN,
+    yillik_oylik BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    isdeleted BOOLEAN DEFAULT FALSE
+    isdeleted BOOLEAN DEFAULT FALSE,
 );
 
 CREATE TABLE shartnoma_grafik (
