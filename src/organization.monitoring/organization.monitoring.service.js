@@ -5,7 +5,6 @@ const ErrorResponse = require("../utils/errorResponse");
 const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, to, spravochnik_organization_id) => {
     try {
         const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 AND sh_o.doc_date BETWEEN $3 AND $4 AND sh_o.spravochnik_organization_id = $7`
-        const operatsi_filter = `isdeleted = false AND id_spravochnik_organization = $7`
         const { rows } = await pool.query(
             `
                 WITH data AS (
@@ -26,48 +25,63 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                         (SELECT 
                             (SELECT ARRAY_AGG(row_to_json(operatsii))
                                 FROM (SELECT 
-                                        id,
-                                        id_shartnomalar_organization AS shartnoma_id,
-                                        doc_num,
-                                        doc_date,
-                                        opisanie,
+                                        b_r_ch.id,
+                                        b_r_ch.id_shartnomalar_organization AS shartnoma_id,
+                                        b_r_ch.doc_num,
+                                        b_r_ch.doc_date,
+                                        b_r_ch.opisanie,
                                         0 AS summa_rasxod, 
-                                        summa AS summa_prixod
-                                    FROM bank_rasxod 
-                                    WHERE ${operatsi_filter} AND id_shartnomalar_organization = sh_o.id
+                                        b_r_ch.summa AS summa_prixod,
+                                        u.id AS user_id,
+                                        u.login,
+                                        u.fio 
+                                    FROM bank_rasxod b_r_ch
+                                    JOIN users AS u ON u.id = b_r_ch.user_id 
+                                    WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization = $7 AND b_r_ch.id_shartnomalar_organization = sh_o.id
                                     UNION ALL 
                                     SELECT 
-                                        id,
-                                        shartnomalar_organization_id AS shartnoma_id,
-                                        doc_num,
-                                        doc_date,
-                                        opisanie,
-                                        summa AS summa_rasxod,  
-                                        0 AS summa_prixod
-                                    FROM bajarilgan_ishlar_jur3 
-                                    WHERE ${operatsi_filter} AND shartnomalar_organization_id = sh_o.id
+                                        b_i_j3_ch.id,
+                                        b_i_j3_ch.shartnomalar_organization_id AS shartnoma_id,
+                                        b_i_j3_ch.doc_num,
+                                        b_i_j3_ch.doc_date,
+                                        b_i_j3_ch.opisanie,
+                                        b_i_j3_ch.summa AS summa_rasxod,  
+                                        0 AS summa_prixod,
+                                        u.id AS user_id,
+                                        u.login,
+                                        u.fio 
+                                    FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
+                                    JOIN users AS u ON b_i_j3_ch.user_id = u.id
+                                    WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization = $7 AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id
                                     UNION ALL 
                                     SELECT 
-                                        id,
-                                        id_shartnomalar_organization AS shartnoma_id,
-                                        doc_num,
-                                        doc_date,
-                                        opisanie,
-                                        summa AS summa_rasxod, 
-                                        0 AS summa_prixod
-                                    FROM bank_prixod
-                                    WHERE ${operatsi_filter} AND id_shartnomalar_organization = sh_o.id
+                                        b_p_ch.id,
+                                        b_p_ch.id_shartnomalar_organization AS shartnoma_id,
+                                        b_p_ch.doc_num,
+                                        b_p_ch.doc_date,
+                                        b_p_ch.opisanie,
+                                        b_p_ch.summa AS summa_rasxod, 
+                                        0 AS summa_prixod,
+                                        u.id AS user_id,
+                                        u.login,
+                                        u.fio 
+                                    FROM bank_prixod AS b_p_ch
+                                    JOIN users AS u ON u.id = b_p_ch.user_id
+                                    WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization = $7 AND b_p_ch.id_shartnomalar_organization = sh_o.id
                                     UNION ALL
                                     SELECT 
-                                        id,
-                                        shartnomalar_organization_id AS shartnoma_id,
-                                        doc_num,
-                                        doc_date,
-                                        opisanie,
+                                        k_h_j152_ch.id,
+                                        k_h_j152_ch.shartnomalar_organization_id AS shartnoma_id,
+                                        k_h_j152_ch.doc_num,
+                                        k_h_j152_ch.doc_date,
+                                        k_h_j152_ch.opisanie,
                                         0 AS summa_rasxod, 
-                                        summa AS summa_prixod
-                                    FROM kursatilgan_hizmatlar_jur152 
-                                    WHERE ${operatsi_filter} AND shartnomalar_organization_id = sh_o.id
+                                        k_h_j152_ch.summa AS summa_prixod,
+                                        u.id AS user_id,
+                                        u.login,
+                                        u.fio 
+                                    FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
+                                    WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization = $7 AND k_h_j152_ch.shartnomalar_organization_id = sh_o.id
                                 ) AS operatsii
                             ) 
                         ) AS array
