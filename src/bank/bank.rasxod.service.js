@@ -250,12 +250,18 @@ const deleteRasxodChild = async (bank_prixod_id) => {
 const getFioBankRasxodService = async (region_id, main_schet_id) => {
   try {
     const result = await pool.query(`
-      SELECT b.rukovoditel, b.glav_buxgalter 
-      FROM bank_rasxod b 
-      JOIN users AS u ON u.id = b.user_id 
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE r.id = $1 AND b.main_schet_id = $2
-      ORDER BY b.created_at DESC
+      SELECT rukovoditel, glav_buxgalter, MAX(created_at) AS latest_created_at
+      FROM (
+          SELECT b.rukovoditel, b.glav_buxgalter, b.created_at
+          FROM bank_rasxod b 
+          JOIN users AS u ON u.id = b.user_id 
+          JOIN regions AS r ON r.id = u.region_id
+          WHERE r.id = $1 AND b.main_schet_id = $2 
+            AND b.glav_buxgalter IS NOT NULL 
+            AND b.created_at IS NOT NULL
+      ) AS subquery
+      GROUP BY rukovoditel, glav_buxgalter
+      ORDER BY latest_created_at DESC
     `, [region_id, main_schet_id])
     return result.rows
   } catch (error) {

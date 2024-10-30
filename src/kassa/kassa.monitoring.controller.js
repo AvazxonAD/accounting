@@ -56,8 +56,8 @@ const capExcelCreate = async (req, res) => {
     worksheet.getRow(1).height = 30;
     worksheet.getColumn(1).width = 5
     worksheet.getColumn(2).width = 7
-    worksheet.getColumn(3).width = 20
-    worksheet.getColumn(4).width = 20
+    worksheet.getColumn(3).width = 27
+    worksheet.getColumn(4).width = 27
 
     worksheet.mergeCells('A2', 'D2');
     const dateCell = worksheet.getCell('A2');

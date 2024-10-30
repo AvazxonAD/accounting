@@ -9,7 +9,7 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const ErrorResponse = require("../utils/errorResponse");
 const { returnStringDate, returnSleshDate } = require('../utils/date.function');
-const { returnStringSumma, probelNumber} = require('../utils/returnSumma')
+const { returnStringSumma, probelNumber } = require('../utils/returnSumma')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
@@ -65,8 +65,8 @@ const capExcelCreate = async (req, res) => {
     worksheet.getRow(1).height = 30;
     worksheet.getColumn(1).width = 5
     worksheet.getColumn(2).width = 7
-    worksheet.getColumn(3).width = 20
-    worksheet.getColumn(4).width = 20
+    worksheet.getColumn(3).width = 27
+    worksheet.getColumn(4).width = 27
 
     worksheet.mergeCells('A2', 'D2');
     const dateCell = worksheet.getCell('A2');
@@ -131,17 +131,17 @@ const capExcelCreate = async (req, res) => {
         }
       });
       const prixod_sum = worksheet.getCell(`C${row_number + 1}`);
-      prixod_sum.value = item.prixod_sum; 
+      prixod_sum.value = item.prixod_sum;
       prixod_sum.numFmt = '#,##0.00';
       const rasxod_sum = worksheet.getCell(`D${row_number + 1}`);
-      rasxod_sum.value = item.rasxod_sum; 
-      rasxod_sum.numFmt = '#,##0.00'; 
+      rasxod_sum.value = item.rasxod_sum;
+      rasxod_sum.numFmt = '#,##0.00';
       const array = [prixod_sum, rasxod_sum];
       array.forEach(cell => {
         Object.assign(cell, {
-          font: { name: 'Times New Roman', size: 12 }, 
-          alignment: { vertical: 'middle', horizontal: 'right' }, 
-          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }, 
+          font: { name: 'Times New Roman', size: 12 },
+          alignment: { vertical: 'middle', horizontal: 'right' },
+          fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
           border: {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -236,6 +236,14 @@ const dailyExcelCreate = async (req, res) => {
     const workbook = new ExcelJS.Workbook();
     const fileName = `kundalik_hisobot_bank_${new Date().getTime()}.xlsx`;
     const worksheet = workbook.addWorksheet('Hisobot');
+    worksheet.pageSetup = {
+      margins: {
+        top: 0.5,   // 0.5 inches
+        bottom: 0.5, // 0.5 inches
+        left: 0.5,   // 0.5 inches
+        right: 0.5   // 0.5 inches
+      }
+    };
     worksheet.mergeCells('A1', 'H1');
     const titleCell = worksheet.getCell('A1');
     Object.assign(titleCell, {
@@ -274,10 +282,14 @@ const dailyExcelCreate = async (req, res) => {
     rasxod.value = 'Расход'
     operatsii.value = 'Операции'
     const headers = [date, comment, organization, doc_num, schet, prixod, rasxod, operatsii]
-    headers.forEach(item => {
+    headers.forEach((item, index) => {
+      let horizontal = 'center'
+      if(index === 3){
+        horizontal = 'left'
+      }
       Object.assign(item, {
         font: { bold: true, size: 10, name: 'Times New Roman' },
-        alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
+        alignment: { vertical: 'middle', horizontal, wrapText: true },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
         border: {
           top: { style: 'thin' },
@@ -311,7 +323,7 @@ const dailyExcelCreate = async (req, res) => {
         const array = [doc_num, date, comment, schet, operatsii, rasxod, prixod, organization]
         array.forEach((item, index) => {
           const alignment = { vertical: 'middle' }
-          if (index === 2 || index === 7) {
+          if (index === 2 || index === 7 || index === 0) {
             alignment.horizontal = 'left'
             alignment.wrapText = true
           } else if (index === 5 || index === 6) {
@@ -362,6 +374,7 @@ const dailyExcelCreate = async (req, res) => {
       font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'left' }
     });
+    worksheet.getColumn(1).width = 10
     worksheet.getColumn(2).width = 10
     worksheet.getColumn(3).width = 16
     worksheet.getColumn(4).width = 15
