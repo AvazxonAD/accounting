@@ -27,13 +27,14 @@ const getAllSmeta = async (offset, limit, search) => {
   try {
     const params = [offset, limit]
     let search_filter = ``
-    if(search){
+    if(search && !Number.isInteger(Number(search)) ){
       search_filter = `AND smeta_name ILIKE '%' || $${params.length + 1} || '%'`
       params.push(search)
     }
-    if(Number.isInteger(search)){
-      search_filter = `smeta_number = $${params.length + 1}`
+    if(Number.isInteger(Number(search))){
+      search_filter = `AND smeta_number = $${params.length + 1}`
       search = Number(search)
+      params.push(search)
     }
     const { rows } = await pool.query(
       `
