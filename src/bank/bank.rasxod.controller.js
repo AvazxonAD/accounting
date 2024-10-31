@@ -43,6 +43,9 @@ const bank_rasxod = async (req, res) => {
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
+      if(child.id_spravochnik_podotchet_litso){
+        await getByIdPodotchetService(region_id, child.id_spravochnik_podotchet_litso)
+      }
     }
     const summa = returnAllChildSumma(data.childs);
     const rasxod = await createBankRasxodDb({ ...data, main_schet_id, user_id, summa, });
@@ -83,6 +86,9 @@ const bank_rasxod_update = async (req, res) => {
       }
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
+      }
+      if(child.id_spravochnik_podotchet_litso){
+        await getByIdPodotchetService(region_id, child.id_spravochnik_podotchet_litso)
       }
     }
     const summa = returnAllChildSumma(data.childs);

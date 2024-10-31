@@ -27,7 +27,6 @@ CREATE TABLE bank_prixod_child (
   id_bank_prixod INTEGER REFERENCES bank_prixod(id),
   main_schet_id INTEGER REFERENCES main_schet(id),
   main_zarplata_id INTEGER,
-  id_podotchet_litso INTEGER  REFERENCES spravochnik_podotchet_litso,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -61,6 +60,7 @@ CREATE TABLE bank_rasxod_child (
   user_id INTEGER REFERENCES users(id),
   main_schet_id INTEGER REFERENCES main_schet(id),
   main_zarplata_id INTEGER,
+  id_spravochnik_podotchet_litso INTEGER REFERENCES spravochnik_podotchet_litso(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
