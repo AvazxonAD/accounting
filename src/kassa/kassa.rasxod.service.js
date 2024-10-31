@@ -152,7 +152,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
             k_r.doc_num,
             TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date, 
             k_r.opisanie, 
-            k_r.summa::FLOAT, 
+            k_r.summa, 
             k_r.id_podotchet_litso,
             s_p_l.name AS spravochnik_podotchet_litso_name,
             s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
@@ -171,7 +171,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
                     JOIN regions AS r ON r.id = u.region_id   
                     WHERE r.id = $1 
                       AND k_r_ch.main_schet_id = $2 
-                      AND k_r_ch.kassa_rasxod_id = $1
+                      AND k_r_ch.kassa_rasxod_id = k_r.id
                 ) AS k_r_ch
             ) AS childs
         FROM kassa_rasxod AS k_r
