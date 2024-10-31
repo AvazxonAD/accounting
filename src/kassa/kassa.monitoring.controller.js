@@ -318,7 +318,7 @@ const dailyExcelCreate = async (req, res) => {
         })
         row_number++
       })
-      worksheet.mergeCells(`A${row_number + 1}`, `E${row_number + 1}`);
+      worksheet.mergeCells(`A${row_number + 1}`, `D${row_number + 1}`);
       const schet = worksheet.getCell(`A${row_number + 1}`)
       schet.value = `Итого по счету ${object.schet}`
       const prixod_sum = worksheet.getCell(`E${row_number + 1}`)
