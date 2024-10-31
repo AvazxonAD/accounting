@@ -31,7 +31,7 @@ const getAllSmeta = async (offset, limit, search) => {
       search_filter = `AND smeta_name ILIKE '%' || $${params.length + 1} || '%'`
       params.push(search)
     }
-    if(Number.isInteger(search_filter)){
+    if(Number.isInteger(search)){
       search_filter = `smeta_number = $${params.length + 1}`
       search = Number(search)
     }
