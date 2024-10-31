@@ -21,15 +21,53 @@ const getByAllSmetaGrafik = async (region_id, smeta_id, spravochnik_budjet_name_
   }
 }
 
-const createSmetaGrafik = async (user_id, smeta_id, spravochnik_budjet_name_id, year) => {
+const createSmetaGrafik = async (data) => {
   try {
-    const result = await pool.query(`INSERT INTO smeta_grafik(smeta_id, spravochnik_budjet_name_id, user_id, year) VALUES($1, $2, $3, $4) RETURNING *
-      `, [smeta_id, spravochnik_budjet_name_id, user_id, year]);
-    return result.rows[0]
+    const result = await pool.query(`
+      INSERT INTO smeta_grafik(
+        smeta_id, 
+        spravochnik_budjet_name_id, 
+        user_id, 
+        year,
+        oy_1,
+        oy_2,
+        oy_3,
+        oy_4,
+        oy_5,
+        oy_6,
+        oy_7,
+        oy_8,
+        oy_9,
+        oy_10,
+        oy_11,
+        oy_12,
+        itogo
+      ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *
+    `, [
+      data.smeta_id,
+      data.spravochnik_budjet_name_id,
+      data.user_id,
+      data.year,
+      data.oy_1,
+      data.oy_2,
+      data.oy_3,
+      data.oy_4,
+      data.oy_5,
+      data.oy_6,
+      data.oy_7,
+      data.oy_8,
+      data.oy_9,
+      data.oy_10,
+      data.oy_11,
+      data.oy_12,
+      data.itogo
+    ]);
+    return result.rows[0];
   } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
+    throw new ErrorResponse(error, error.statusCode);
   }
 }
+
 
 const getAllSmetaGrafik = async (region_id, offset, limit) => {
   try {
@@ -74,7 +112,7 @@ const getAllSmetaGrafik = async (region_id, offset, limit) => {
       `,
       [region_id, offset, limit],
     );
-    return {data: rows[0]?.data, total: rows[0]?.total_count}
+    return { data: rows[0]?.data, total: rows[0]?.total_count }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
@@ -114,7 +152,7 @@ const getElementByIdGrafik = async (region_id, id, ignoreDeleted = false) => {
       JOIN smeta ON smeta.id = s_g.smeta_id
       WHERE regions.id = $1 AND s_g.id = $2 ${ignore}
     `, [region_id, id]);
-    if((!result.rows[0])){
+    if ((!result.rows[0])) {
       throw new ErrorResponse('smeta_grafik not found', 404)
     }
     return result.rows[0];
@@ -141,7 +179,10 @@ const updateSmetaGrafikDB = async (data) => {
                   oy_9 = $10,
                   oy_10 = $11,
                   oy_11 = $12,
-                  oy_12 = $13
+                  oy_12 = $13,
+                  smeta_id = $15,
+                  spravochnik_budjet_name_id = $16,
+                  year = $17
               WHERE  id = $14 AND isdeleted = false RETURNING * 
           `,
       [
@@ -159,6 +200,9 @@ const updateSmetaGrafikDB = async (data) => {
         data.oy_11,
         data.oy_12,
         data.id,
+        data.smeta_id,
+        data.spravochnik_budjet_name_id,
+        data.year
       ],
     );
     return result.rows[0]
@@ -169,7 +213,7 @@ const updateSmetaGrafikDB = async (data) => {
 
 const deleteSmetaGrafik = async (id) => {
   try {
-    await pool.query(`UPDATE smeta_grafik SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`,[true, id]);
+    await pool.query(`UPDATE smeta_grafik SET isdeleted = $1 WHERE id = $2 AND isdeleted = false`, [true, id]);
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }

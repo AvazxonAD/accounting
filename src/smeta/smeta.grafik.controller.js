@@ -6,10 +6,8 @@ const {
   updateSmetaGrafikDB,
   deleteSmetaGrafik,
 } = require("../smeta/smeta.grafik.service");
-const pool = require("../config/db");
-const ErrorResponse = require("../utils/errorResponse");
 const { sum } = require("../utils/returnSumma");
-const { smetaGrafikValidation, smetaGrafikUpdateValidation, queryValidation } = require("../utils/validation");;
+const { smetaGrafikValidation, queryValidation } = require("../utils/validation");;
 const { getByIdSmeta } = require("../smeta/smeta.service");
 const { getByIdBudjetService } = require("../spravochnik/budjet/budjet.name.service");
 const { validationResponse } = require('../utils/response-for-validation')
@@ -21,11 +19,25 @@ const create = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const { smeta_id, spravochnik_budjet_name_id, year } = validationResponse(smetaGrafikValidation, req.body)
-    await getByIdSmeta(smeta_id);
-    await getByIdBudjetService(spravochnik_budjet_name_id);
-    await getByAllSmetaGrafik(region_id, smeta_id, spravochnik_budjet_name_id, year);
-    const result = await createSmetaGrafik(user_id, smeta_id, spravochnik_budjet_name_id, year);
+    const data = validationResponse(smetaGrafikValidation, req.body)
+    await getByIdSmeta(data.smeta_id);
+    await getByIdBudjetService(data.spravochnik_budjet_name_id);
+    await getByAllSmetaGrafik(region_id, data.smeta_id, data.spravochnik_budjet_name_id, data.year);
+    const itogo = sum(
+      data.oy_1,
+      data.oy_2,
+      data.oy_3,
+      data.oy_4,
+      data.oy_5,
+      data.oy_6,
+      data.oy_7,
+      data.oy_8,
+      data.oy_9,
+      data.oy_10,
+      data.oy_11,
+      data.oy_12
+    );
+    const result = await createSmetaGrafik({user_id, ...data, itogo});
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
@@ -70,8 +82,13 @@ const update = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    await getElementByIdGrafik(region_id, id);
-    const data = validationResponse(smetaGrafikUpdateValidation, req.body)
+    const data = validationResponse(smetaGrafikValidation, req.body)
+    const old_data = await getElementByIdGrafik(region_id, id);
+    if(old_data.smeta_id !== data.smeta_id || old_data.spravochnik_budjet_name_id !== data.spravochnik_budjet_name_id || old_data.year !== data.year){
+      await getByAllSmetaGrafik(region_id, data.smeta_id, data.spravochnik_budjet_name_id, data.year);
+    }
+    await getByIdSmeta(data.smeta_id);
+    await getByIdBudjetService(data.spravochnik_budjet_name_id);
     const itogo = sum(
       data.oy_1,
       data.oy_2,
@@ -84,7 +101,7 @@ const update = async (req, res) => {
       data.oy_9,
       data.oy_10,
       data.oy_11,
-      data.oy_12,
+      data.oy_12
     );
     const result = await updateSmetaGrafikDB({ ...data, id, itogo });
     resFunc(res, 200, result)
