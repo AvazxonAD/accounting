@@ -366,7 +366,7 @@ const dailyExcelCreate = async (req, res) => {
     const balanceToCell = worksheet.getCell(`A${row_number + 2}`);
     balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
     Object.assign(balanceToCell, {
-      font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+      font: { size: 11, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'left' }
     });
     worksheet.getColumn(1).width = 10
