@@ -28,7 +28,7 @@ const getAllSmeta = async (offset, limit, search) => {
     const params = [offset, limit]
     let search_filter = ``
     if(search){
-      search_filter = `AND (smeta_name ILIKE '%' || $${params.length + 1} || '%' OR smeta_number ILIKE '%' || $${params.length + 1} || '%')`
+      search_filter = `AND (smeta_name ILIKE '%' || $${params.length + 1} || '%' OR smeta_number = $${params.length + 1})`
       params.push(search)
     }
     const { rows } = await pool.query(
