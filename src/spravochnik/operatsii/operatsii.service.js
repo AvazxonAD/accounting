@@ -79,7 +79,7 @@ const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = fa
         FROM spravochnik_operatsii 
         WHERE id = $1 ${type_schet_filter} ${ignore}
       `, params);
-    if (!result.rows[0]) {
+      if (!result.rows[0]) {
       throw new ErrorResponse(`Spravochnik operatsii not found`, 404);
     }
     return result.rows[0];

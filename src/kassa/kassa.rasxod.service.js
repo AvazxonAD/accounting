@@ -15,9 +15,10 @@ const kassaRasxodCreateDB = async (data) => {
             main_schet_id, 
             user_id,
             created_at,
-            updated_at
+            updated_at,
+            main_zarplata_id
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
         RETURNING * 
       `, [
       data.doc_num,
@@ -29,6 +30,7 @@ const kassaRasxodCreateDB = async (data) => {
       data.user_id,
       tashkentTime(),
       tashkentTime(),
+      data.main_zarplata_id
     ]);
     return result.rows[0];
   } catch (error) {
@@ -85,6 +87,7 @@ const getAllKassaRasxodDb = async (region_id, main_schet_id, from, to, offset, l
                   k_r.id_podotchet_litso,
                   s_p_l.name AS spravochnik_podotchet_litso_name,
                   s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                  k_r.main_zarplata_id,
                   (
                       SELECT ARRAY_AGG(row_to_json(k_r_ch))
                       FROM (
@@ -156,6 +159,7 @@ const getElementById = async (region_id, main_schet_id, id, ignoreDeleted = fals
             k_r.id_podotchet_litso,
             s_p_l.name AS spravochnik_podotchet_litso_name,
             s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+            k_r.main_zarplata_id,
             (
                 SELECT ARRAY_AGG(row_to_json(k_r_ch))
                 FROM (
@@ -200,7 +204,8 @@ const updateKassaRasxodDB = async (data) => {
                   opisanie = $3, 
                   summa = $4, 
                   id_podotchet_litso = $5, 
-                  updated_at = $6
+                  updated_at = $6,
+                  main_zarplata_id = $8
               WHERE id = $7 RETURNING *
           `,
       [
@@ -211,6 +216,7 @@ const updateKassaRasxodDB = async (data) => {
         data.id_podotchet_litso,
         tashkentTime(),
         data.id,
+        data.main_zarplata_id
     ]);
     return result.rows[0]
   } catch (error) {
