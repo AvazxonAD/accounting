@@ -30,7 +30,7 @@ const createPodrazdelenie = async (req, res, next) => {
 }
 
 // get all
-const getPodrazdelenie = async (req, res, next) => {
+const getPodrazdelenie = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const { page, limit, search } = validationResponse(queryValidation, req.query)
@@ -45,7 +45,7 @@ const getPodrazdelenie = async (req, res, next) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result.data, meta)
+    resFunc(res, 200, result?.data || [], meta)
   } catch (error) {
     errorCatch(error, res)
   }

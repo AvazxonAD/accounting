@@ -1,13 +1,20 @@
 const returnStringSumma = (num) => {
+  const formatNumber = (number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
   if (Number.isInteger(num)) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ",00";
-  }
-  else {
+    return formatNumber(num) + ".00"; 
+  } else {
     let parts = num.toString().split(".");
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-    return parts.join(",");
+    parts[0] = formatNumber(parts[0]); 
+    return parts.join(".");
   }
-};
+}
+
+function probelNumber(num) {
+  const strNum = String(num);
+  return strNum.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
 
 const returnAllChildSumma = (array) => {
   let sum = 0;
@@ -27,4 +34,5 @@ module.exports = {
   returnAllChildSumma,
   returnStringSumma,
   sum,
+  probelNumber
 };

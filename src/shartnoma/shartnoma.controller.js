@@ -28,23 +28,35 @@ const create = async (req, res) => {
     }
     await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
     const shartnoma = await createShartnoma({ ...data, user_id, main_schet_id });
-    const grafik_data = {user_id, shartnoma_id: shartnoma.id, year: data.doc_date.split('-')[0], main_schet_id, yillik_oylik: shartnoma.yillik_oylik}
-    if(shartnoma.yillik_oylik){
-      grafik_data.oy_1 = shartnoma.summa / 12 
-      grafik_data.oy_2 = shartnoma.summa / 12 
-      grafik_data.oy_3 = shartnoma.summa / 12 
-      grafik_data.oy_4 = shartnoma.summa / 12 
-      grafik_data.oy_5 = shartnoma.summa / 12 
-      grafik_data.oy_6 = shartnoma.summa / 12 
-      grafik_data.oy_7 = shartnoma.summa / 12 
-      grafik_data.oy_8 = shartnoma.summa / 12 
-      grafik_data.oy_9 = shartnoma.summa / 12 
-      grafik_data.oy_10 = shartnoma.summa / 12 
-      grafik_data.oy_11 = shartnoma.summa / 12 
-      grafik_data.oy_12 = shartnoma.summa / 12 
-    } else{
-      const key = `oy_` + `${shartnoma.doc_date.getMonth() + 1}` 
-      grafik_data[key] = shartnoma.summa
+    const grafik_data = {
+      user_id,
+      shartnoma_id: shartnoma.id,
+      year: data.doc_date.split('-')[0],
+      main_schet_id,
+      yillik_oylik: shartnoma.yillik_oylik,
+    };
+    if (shartnoma.yillik_oylik) {
+      let oy_maoshi = Math.floor((shartnoma.summa / 12) * 100) / 100; 
+      let umumiy_summa = oy_maoshi * 12; 
+      grafik_data.oy_1 = oy_maoshi;
+      grafik_data.oy_2 = oy_maoshi;
+      grafik_data.oy_3 = oy_maoshi;
+      grafik_data.oy_4 = oy_maoshi;
+      grafik_data.oy_5 = oy_maoshi;
+      grafik_data.oy_6 = oy_maoshi;
+      grafik_data.oy_7 = oy_maoshi;
+      grafik_data.oy_8 = oy_maoshi;
+      grafik_data.oy_9 = oy_maoshi;
+      grafik_data.oy_10 = oy_maoshi;
+      grafik_data.oy_11 = oy_maoshi;
+      grafik_data.oy_12 = oy_maoshi;
+
+      let farq = shartnoma.summa - umumiy_summa; 
+      grafik_data.oy_1 += farq; 
+      grafik_data.oy_1 = Math.round(grafik_data.oy_1 * 100) / 100; 
+    } else {
+      const key = `oy_` + `${new Date(shartnoma.doc_date).getMonth() + 1}`;
+      grafik_data[key] = shartnoma.summa;
     }
     const grafik = await createShartnomaGrafik(grafik_data);
     shartnoma.grafik = grafik
@@ -102,23 +114,29 @@ const update_shartnoma = async (req, res) => {
     await getByIdSmeta(data.smeta_id);
     await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
     const result = await updateShartnomaDB({ ...data, id });
-    const grafik_data = {shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik}
-    if(result.yillik_oylik){
-      grafik_data.oy_1 = result.summa / 12 
-      grafik_data.oy_2 = result.summa / 12 
-      grafik_data.oy_3 = result.summa / 12 
-      grafik_data.oy_4 = result.summa / 12 
-      grafik_data.oy_5 = result.summa / 12 
-      grafik_data.oy_6 = result.summa / 12 
-      grafik_data.oy_7 = result.summa / 12 
-      grafik_data.oy_8 = result.summa / 12 
-      grafik_data.oy_9 = result.summa / 12 
-      grafik_data.oy_10 = result.summa / 12 
-      grafik_data.oy_11 = result.summa / 12 
-      grafik_data.oy_12 = result.summa / 12 
-    } else{
-      const key = `oy_` + `${result.doc_date.getMonth() + 1}` 
-      grafik_data[key] = result.summa
+    const grafik_data = { shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik }
+    if (result.yillik_oylik) {
+      let oy_maoshi = Math.floor((result.summa / 12) * 100) / 100; 
+      let umumiy_summa = oy_maoshi * 12; 
+      grafik_data.oy_1 = oy_maoshi;
+      grafik_data.oy_2 = oy_maoshi;
+      grafik_data.oy_3 = oy_maoshi;
+      grafik_data.oy_4 = oy_maoshi;
+      grafik_data.oy_5 = oy_maoshi;
+      grafik_data.oy_6 = oy_maoshi;
+      grafik_data.oy_7 = oy_maoshi;
+      grafik_data.oy_8 = oy_maoshi;
+      grafik_data.oy_9 = oy_maoshi;
+      grafik_data.oy_10 = oy_maoshi;
+      grafik_data.oy_11 = oy_maoshi;
+      grafik_data.oy_12 = oy_maoshi;
+
+      let farq = result.summa - umumiy_summa; 
+      grafik_data.oy_1 += farq; 
+      grafik_data.oy_1 = Math.round(grafik_data.oy_1 * 100) / 100; 
+    } else {
+      const key = `oy_` + `${new Date(result.doc_date).getMonth() + 1}`;
+      grafik_data[key] = result.summa;
     }
     const grafik = await updateShartnomaGrafikService(grafik_data)
     result.grafik = grafik
