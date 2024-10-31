@@ -235,14 +235,9 @@ const dailyExcelCreate = async (req, res) => {
     const workbook = new ExcelJS.Workbook();
     const fileName = `kundalik_hisobot_bank_${new Date().getTime()}.xlsx`;
     const worksheet = workbook.addWorksheet('Hisobot');
-    worksheet.pageSetup = {
-      margins: {
-        top: 0.5,   // 0.5 inches
-        bottom: 0.5, // 0.5 inches
-        left: 0.5,   // 0.5 inches
-        right: 0.5   // 0.5 inches
-      }
-    };
+    worksheet.pageSetup.margins.left = 0
+    worksheet.pageSetup.margins.header = 0
+    worksheet.pageSetup.margins.footer = 0
     worksheet.mergeCells('A1', 'H1');
     const titleCell = worksheet.getCell('A1');
     Object.assign(titleCell, {
@@ -375,17 +370,16 @@ const dailyExcelCreate = async (req, res) => {
     });
     worksheet.getColumn(1).width = 10
     worksheet.getColumn(2).width = 10
-    worksheet.getColumn(3).width = 16
-    worksheet.getColumn(4).width = 15
+    worksheet.getColumn(3).width = 10
+    worksheet.getColumn(4).width = 10
     worksheet.getColumn(5).width = 10
-    worksheet.getColumn(6).width = 18
-    worksheet.getColumn(7).width = 18
+    worksheet.getColumn(6).width = 15
+    worksheet.getColumn(7).width = 15
     worksheet.getColumn(8).width = 10
     worksheet.getRow(1).height = 25;
     worksheet.getRow(2).height = 20;
     worksheet.getRow(5).height = 25;
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
-    console.log(workbook)
     await workbook.xlsx.writeFile(filePath);
 
     return res.download(filePath, (err) => {

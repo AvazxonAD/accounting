@@ -92,6 +92,7 @@ const accessValidation = Joi.object({
     childs: Joi.array().required().items(
       Joi.object({
         summa: Joi.number().required(),
+        main_zarplata_id: Joi.number(),
         spravochnik_operatsii_id: Joi.number().required(),
         id_spravochnik_podrazdelenie: Joi.number(),
         id_spravochnik_sostav: Joi.number(),
@@ -129,7 +130,8 @@ const accessValidation = Joi.object({
         spravochnik_operatsii_id: Joi.number().required(),
         id_spravochnik_podrazdelenie: Joi.number(),
         id_spravochnik_sostav: Joi.number(),
-        id_spravochnik_type_operatsii: Joi.number()
+        id_spravochnik_type_operatsii: Joi.number(),
+        main_zarplata_id: Joi.number()
       })
     )
   }).options({ stripUnknown: true });

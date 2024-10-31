@@ -39,7 +39,6 @@ const capExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-
     const title = `Дневной отчет по Журнал-Ордеру №1. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${returnStringSumma(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await kassaCapService(region_id, main_schet_id, from, to);
@@ -336,7 +335,7 @@ const dailyExcelCreate = async (req, res) => {
         }
         Object.assign(item, {
           alignment: { vertical: 'middle', horizontal },
-          font: { name: 'Times New Roman', bold: true, size: 11 },
+          font: { name: 'Times New Roman', bold: true, size: 9 },
         });
       })
       row_number++
@@ -349,11 +348,11 @@ const dailyExcelCreate = async (req, res) => {
       alignment: { vertical: 'middle', horizontal: 'left' }
     });
     worksheet.getColumn(2).width = 10
-    worksheet.getColumn(3).width = 16
-    worksheet.getColumn(4).width = 15
-    worksheet.getColumn(5).width = 18
-    worksheet.getColumn(6).width = 18
-    worksheet.getColumn(7).width = 10
+    worksheet.getColumn(3).width = 12
+    worksheet.getColumn(4).width = 10
+    worksheet.getColumn(5).width = 16
+    worksheet.getColumn(6).width = 16
+    worksheet.getColumn(7).width = 9
     worksheet.getRow(1).height = 25;
     worksheet.getRow(2).height = 20;
     worksheet.getRow(5).height = 25;

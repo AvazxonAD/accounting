@@ -47,9 +47,10 @@ const createBankPrixodService = async (data) => {
           id_spravochnik_podotchet_litso,
           main_schet_id,
           id_bank_prixod,
-          user_id
+          user_id,
+          main_zarplata_id
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
         `, [
           child.spravochnik_operatsii_id,
@@ -60,7 +61,8 @@ const createBankPrixodService = async (data) => {
           child.id_spravochnik_podotchet_litso,
           data.main_schet_id,
           result.rows[0].id,
-          data.user_id
+          data.user_id,
+          child.main_zarplata_id
         ]
       );
       createChildQueries.push(childQuery);
@@ -193,7 +195,8 @@ const getPrixodService = async (region_id, main_schet_id, offset, limit, from, t
                       b_p_ch.id_spravochnik_type_operatsii,
                       s_t_o.name AS spravochnik_type_operatsii_name,
                       b_p_ch.id_spravochnik_podotchet_litso,
-                      s_p_l.name AS spravochnik_podotchet_litso_name
+                      s_p_l.name AS spravochnik_podotchet_litso_name,
+                      b_p_ch.main_zarplata_id
                   FROM bank_prixod_child AS b_p_ch
                   JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
                   LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_p_ch.id_spravochnik_podrazdelenie
@@ -261,7 +264,8 @@ const getByIdPrixodService = async (region_id, main_schet_id, id, ignoreDeleted 
                 b_p_ch.id_spravochnik_type_operatsii,
                 s_t_o.name AS spravochnik_type_operatsii_name,
                 b_p_ch.id_spravochnik_podotchet_litso,
-                s_p_l.name AS spravochnik_podotchet_litso_name
+                s_p_l.name AS spravochnik_podotchet_litso_name,
+                b_p_ch.main_zarplata_id
             FROM bank_prixod_child AS b_p_ch
             JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
             LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_p_ch.id_spravochnik_podrazdelenie

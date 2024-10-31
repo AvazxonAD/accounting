@@ -56,8 +56,9 @@ const createBankRasxodChild = async (data) => {
             id_bank_rasxod,
             user_id,
             created_at,
-            updated_at
-        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`
+            updated_at,
+            main_zarplata_id
+        ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`
       , [data.spravochnik_operatsii_id,
       data.summa,
       data.id_spravochnik_podrazdelenie,
@@ -67,7 +68,8 @@ const createBankRasxodChild = async (data) => {
       data.bank_rasxod_id,
       data.user_id,
       tashkentTime(),
-      tashkentTime()
+      tashkentTime(),
+      data.main_zarplata_id
       ]);
     return result.rows[0];
   } catch (error) {
@@ -139,7 +141,8 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
                       b_r_ch.id_spravochnik_sostav,
                       s_s.name AS spravochnik_sostav_name,
                       b_r_ch.id_spravochnik_type_operatsii,
-                      s_t_o.name AS spravochnik_type_operatsii_name
+                      s_t_o.name AS spravochnik_type_operatsii_name,
+                      b_r_ch.main_zarplata_id
                   FROM bank_rasxod_child AS b_r_ch
                   JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
                   LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_r_ch.id_spravochnik_podrazdelenie
@@ -204,7 +207,8 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
                 b_r_ch.id_spravochnik_sostav,
                 s_s.name AS spravochnik_sostav_name,
                 b_r_ch.id_spravochnik_type_operatsii,
-                s_t_o.name AS spravochnik_type_operatsii_name
+                s_t_o.name AS spravochnik_type_operatsii_name,
+                b_r_ch.main_zarplata_id
             FROM bank_rasxod_child AS b_r_ch
             JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
             LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_r_ch.id_spravochnik_podrazdelenie
