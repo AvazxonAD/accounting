@@ -222,6 +222,7 @@ const capExcelCreate = async (req, res) => {
   }
 };
 
+
 const dailyExcelCreate = async (req, res) => {
   try {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
