@@ -31,12 +31,6 @@ const docJur7Create = async (req, res) => {
         }
         const summa = returnAllChildSumma(data.childs);
         const doc_jur7 = await createDocumentJur7({ ...data, user_id, summa });
-        const childs = [];
-        for (let child of data.childs) {
-            const result = await createDocumentJur7Child({ ...child, user_id, doc_jur7_id: doc_jur7.id });
-            childs.push(result);
-        }
-        doc_jur7.childs = childs;
         resFunc(res, 201, doc_jur7);
     } catch (error) {
         errorCatch(error, res);
@@ -126,6 +120,4 @@ module.exports = {
     deleteDocJur7,
     getElementByIdDocJur7
 };
-const { query } = require("express"); const { getByIdOrganization } = require("../spravochnik/organization.controller");
-const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
 

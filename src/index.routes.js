@@ -55,11 +55,11 @@ routes.use("/services/show", protect, police('jur152'), require("./show.service/
 routes.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet.monitoring/podotchet.monitoring.routes'))
 
 // jur 7 routes 
-// routes.use('/jur_7/pereotsenka', protect, require('./jur7/'))
-// routes.use('/jur_7/group', protect, require('./jur_7/group.jur7.routes'))
-// routes.use('/jur_7/podrazdelenie', protect, require('./jur_7/podrazdelenie.routes'))
-// routes.use('/jur_7/responsible', protect, require('./jur_7/responsible.routes'))
-// routes.use('/jur_7/naimenovanie', protect, require('./jur_7/naimenovanie.routes'))
-// routes.use('/jur_7/doc_prixod', protect, require('./jur_7/doc_prixxod_jur7.routes'))
+routes.use('/jur_7/pereotsenka', protect, require('./jur7/pereotsenka.routes'))
+routes.use('/jur_7/group', protect, require('./jur7/group.jur7.routes'))
+routes.use('/jur_7/podrazdelenie', protect, require('./jur7/podrazdelenie.routes'))
+routes.use('/jur_7/responsible', protect, require('./jur7/responsible.routes'))
+routes.use('/jur_7/naimenovanie', protect, require('./jur7/naimenovanie.routes'))
+routes.use('/jur_7/doc_prixod', protect, require('./jur7/doc_prixxod_jur7.routes'))
 
 module.exports = routes;

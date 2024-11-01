@@ -9,7 +9,7 @@ const path = require('path')
 const ExcelJS = require('exceljs')
 const { returnStringSumma, probelNumber } = require('../utils/returnSumma')
 
-const getAllKassaMonitoring = async (req, res, next) => {
+const getAllKassaMonitoring = async (req, res) => {
   try {
     const region_id = req.user.region_id
     const { page, limit, main_schet_id, from, to } = validationResponse(bankQueryValidation, req.query)

@@ -40,17 +40,11 @@ const createDocumentJur7 = async (data) => {
         data.id_shartnomalar_organization,
         tashkentTime(), 
         tashkentTime()  
-      ]
-    );
-    return result.rows[0]; 
-  } catch (error) {
-    throw new ErrorResponse(error, error.statusCode); 
-  }
-};
-
-const createDocumentJur7Child = async (data) => {
-    try {
-      const result = await pool.query(
+    ]);
+    const document = result.rows[0];
+    const queryArray = [];
+    for (let child of data.childs) {
+      const query = pool.query(
         `
         INSERT INTO document_prixod_jur7_child (
           user_id,
@@ -71,21 +65,33 @@ const createDocumentJur7Child = async (data) => {
         RETURNING *
         `,
         [
-          data.user_id,
-          data.doc_jur7_id,
-          data.naimenovanie_tovarov_jur7_id,
-          data.kol,
-          data.sena,
-          data.summa,
-          data.debet_schet,
-          data.debet_sub_schet,
-          data.kredit_schet,
-          data.kredit_sub_schet,
-          data.data_pereotsenka,
-          tashkentTime(),  // yaratilgan vaqt
-          tashkentTime()   // yangilangan vaqt
-        ]
-      );
+          child.user_id,
+          document.id,
+          child.naimenovanie_tovarov_jur7_id,
+          child.kol,
+          child.sena,
+          child.summa,
+          child.debet_schet,
+          child.debet_sub_schet,
+          child.kredit_schet,
+          child.kredit_sub_schet,
+          child.data_pereotsenka,
+          tashkentTime(),
+          tashkentTime() 
+      ]);
+      queryArray.push(query);
+    }
+    const childs = await Promise.all(queryArray);
+    const childs_doc = childs.map(item => item.rows[0])
+    document.childs = childs_doc
+    return document 
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode); 
+  }
+};
+
+const createDocumentJur7Child = async (data) => {
+    try {
       return result.rows[0]; // Natijani qaytarish
     } catch (error) {
       throw new ErrorResponse(error, error.statusCode); // Xatolikni qaytarish
