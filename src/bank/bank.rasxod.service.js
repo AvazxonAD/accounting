@@ -214,6 +214,7 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
                 b_r_ch.id_spravochnik_type_operatsii,
                 s_t_o.name AS spravochnik_type_operatsii_name,
                 b_r_ch.main_zarplata_id,
+                b_r_ch.id_spravochnik_podotchet_litso,
                 s_p_l.name AS spravochnik_podotchet_litso_name
             FROM bank_rasxod_child AS b_r_ch
             JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id

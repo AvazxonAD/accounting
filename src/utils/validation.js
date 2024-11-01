@@ -186,7 +186,7 @@ const docPrixodJur7Validation = Joi.object({
   kimdan_name: Joi.string().trim(),
   kimga_id: Joi.number().required(),
   kimga_name: Joi.string().trim(),
-  id_shartnomalar_organization: Joi.number(),
+  id_shartnomalar_organization: Joi.number().allow(null),
   childs: Joi.array().required().items(
     Joi.object({
       document_jur7_id: Joi.number().required(),
