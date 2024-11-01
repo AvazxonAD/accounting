@@ -7,7 +7,8 @@ const {
     getResponsibleService,
     getByIdResponsibleService,
     updateResponsibleService,
-    deleteResponsibleService
+    deleteResponsibleService,
+    getByFioResponsibleService
 } = require('./responsible.service')
 const { queryValidation } = require("../utils/validation");
 const { getByIdpodrazdelenieService } = require('./podrazdelenie.service')
@@ -18,6 +19,7 @@ const responsibleCreate = async (req, res) => {
         const region_id = req.user.region_id
         const data = validationResponse(responsibleValidation, req.body)
         await getByIdpodrazdelenieService(region_id, data.spravochnik_podrazdelenie_jur7_id)
+        await getByFioResponsibleService(region_id, data.fio, data.spravochnik_podrazdelenie_jur7_id)
         const result = await responsibleCreateService({ ...data, user_id })
         resFunc(res, 200, result)
     } catch (error) {
@@ -64,6 +66,9 @@ const updateResponsible = async (req, res) => {
         const oldData = await getByIdResponsibleService(id, region_id)
         if (oldData.spravochnik_podrazdelenie_jur7_id !== data.spravochnik_podrazdelenie_jur7_id) {
             await getByIdpodrazdelenieService(region_id, data.spravochnik_podrazdelenie_jur7_id)
+        }
+        if(oldData.spravochnik_podrazdelenie_jur7_id !== data.spravochnik_podrazdelenie_jur7_id || oldData.fio !== data.fio){
+            await getByFioResponsibleService(region_id, data.fio, data.spravochnik_podrazdelenie_jur7_id)
         }
         const result = await updateResponsibleService({ ...data, id })
         resFunc(res, 200, result)
