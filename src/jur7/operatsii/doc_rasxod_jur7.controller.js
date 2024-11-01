@@ -4,16 +4,16 @@ const {
     getDocumentJur7ById,
     updateDocumentJur7DB,
     deleteDocumentJur7DB,
-} = require("./doc_prixod_jur7.service");
-const { docPrixodJur7Validation, jur7PrixodValidation } = require("../utils/validation");;
-const { returnAllChildSumma } = require("../utils/returnSumma");
-const { validationResponse } = require("../utils/response-for-validation");
-const { resFunc } = require("../utils/resFunc");
-const { errorCatch } = require("../utils/errorCatch");
-const { getByIdOrganizationService } = require('../spravochnik/organization/organization.service')
-const { getByIdResponsibleService } = require('./responsible.service')
-const { getByIdShartnomaServiceForJur7 } = require('../shartnoma/shartnoma.service')
-const { getByIdNaimenovanieService } = require('./naimenovanie.service')
+} = require("./doc_rasxod_jur7.service");
+const { docPrixodJur7Validation, jur7QueryValidation } = require("../../utils/validation");;
+const { returnAllChildSumma } = require("../../utils/returnSumma");
+const { validationResponse } = require("../../utils/response-for-validation");
+const { resFunc } = require("../../utils/resFunc");
+const { errorCatch } = require("../../utils/errorCatch");
+const { getByIdOrganizationService } = require('../../spravochnik/organization/organization.service')
+const { getByIdResponsibleService } = require('../responsible.service')
+const { getByIdShartnomaServiceForJur7 } = require('../../shartnoma/shartnoma.service')
+const { getByIdNaimenovanieService } = require('../naimenovanie.service')
 
 // doc jur7 yaratish
 const docJur7Create = async (req, res) => {
@@ -21,8 +21,8 @@ const docJur7Create = async (req, res) => {
         const user_id = req.user.id;
         const region_id = req.user.region_id;
         const data = validationResponse(docPrixodJur7Validation, req.body);
-        await getByIdOrganizationService(region_id, data.kimdan_id)
-        await getByIdResponsibleService(data.kimga_id, region_id)
+        await getByIdOrganizationService(region_id, data.kimga_id)
+        await getByIdResponsibleService(data.kimdan_id, region_id)
         if(data.id_shartnomalar_organization){
             await getByIdShartnomaServiceForJur7(region_id, data.id_shartnomalar_organization, data.kimdan_id)
         }
@@ -41,9 +41,8 @@ const docJur7Create = async (req, res) => {
 const getAllDocJur7 = async (req, res) => {
     try {
         const region_id = req.user.region_id;
-        const { page, limit, from, to } = validationResponse(jur7PrixodValidation, req.query);
+        const { page, limit, from, to } = validationResponse(jur7QueryValidation, req.query);
         const offset = (page - 1) * limit;
-        console.log(page, limit, from, to )
         const { data, total, summa } = await getAllDocumentJur7(region_id, from, to, offset, limit);
         const pageCount = Math.ceil(total / limit);
         const meta = {
@@ -65,12 +64,13 @@ const updateDocJur7 = async (req, res) => {
     try {
         const region_id = req.user.region_id;
         const id = req.params.id;
-        const user_id = req.user.id;
         await getDocumentJur7ById(region_id, id);
         const data = validationResponse(docPrixodJur7Validation, req.body);
-        await getByIdOrganizationService(region_id, data.kimdan_id)
-        await getByIdResponsibleService(data.kimga_id, region_id)
-        await getByIdShartnomaServiceForJur7(region_id, data.id_shartnomalar_organization, data.kimdan_id)
+        await getByIdOrganizationService(region_id, data.kimga_id)
+        await getByIdResponsibleService(data.kimdan_id, region_id)
+        if(data.id_shartnomalar_organization){
+            await getByIdShartnomaServiceForJur7(region_id, data.id_shartnomalar_organization, data.kimdan_id)
+        }
         for (let child of data.childs) {
             await getByIdNaimenovanieService(region_id, child.naimenovanie_tovarov_jur7_id)
         }

@@ -202,13 +202,6 @@ const docPrixodJur7Validation = Joi.object({
   )
 }).options({ stripUnknown: true });
 
-const jur7QueryValidation = Joi.object({ // ozgar_keyin 
-  limit: Joi.number().min(1).default(10),
-  page: Joi.number().min(1).default(1),
-  from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
-  to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
-}).options({ stripUnknown: true });
-
 
 const kassaValidation = Joi.object({
   doc_num: Joi.string().trim(),
@@ -235,7 +228,7 @@ const queryValidation = Joi.object({
   search: Joi.string().trim(),
 }).options({ stripUnknown: true });
 
-const jur7PrixodValidation = Joi.object({
+const jur7QueryValidation = Joi.object({
   limit: Joi.number().min(1).default(10),
   page: Joi.number().min(1).default(1),
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
@@ -433,7 +426,6 @@ const typeOperatsiiValidation = Joi.object({
 }).options({ stripUnknown: true });
 
 module.exports = {
-  jur7QueryValidation,
   kassaValidation,
   queryValidation,
   organizationMonitoringValidation,
@@ -474,6 +466,6 @@ module.exports = {
   docPrixodJur7Validation,
   validationQuery,
   jur7PodrazdelenieValidation,
-  jur7PrixodValidation
+  jur7QueryValidation
 };
 
