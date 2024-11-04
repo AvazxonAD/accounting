@@ -111,6 +111,9 @@ const getByIdShartnomaServiceForJur7 = async (region_id, id, organization_id) =>
         JOIN regions ON users.region_id = regions.id
         WHERE regions.id = $1 AND sh_o.id = $2 AND sh_o.isdeleted = false AND sh_o.spravochnik_organization_id = $3
     `, [region_id, id, organization_id]);
+    if(!result.rows[0]){
+      throw new ErrorResponse('contract not found', 404)
+    }
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)

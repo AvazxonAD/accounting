@@ -1,7 +1,7 @@
 const { errorCatch } = require('../utils/errorCatch')
 const { resFunc } = require('../utils/resFunc')
 const { validationResponse } = require('../utils/response-for-validation')
-const { podrazdelenieValidation } = require("../utils/validation");
+const { jur7PodrazdelenieValidation } = require("../utils/validation");
 const {
     podrazdelenieCreateService,
     getpodrazdelenieService,
@@ -16,7 +16,7 @@ const podrazdelenieCreate = async (req, res) => {
     try {
         const user_id = req.user.id
         const region_id = req.user.region_id
-        const data = validationResponse(podrazdelenieValidation, req.body)
+        const data = validationResponse(jur7PodrazdelenieValidation, req.body)
         await getByNamePodrazdelenieService(region_id, data.name)
         const result = await podrazdelenieCreateService({...data, user_id})
         resFunc(res, 200, result)
@@ -59,7 +59,7 @@ const getByIdpodrazdelenie = async (req, res) => {
 const updatepodrazdelenie = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const data = validationResponse(podrazdelenieValidation, req.body)
+        const data = validationResponse(jur7PodrazdelenieValidation, req.body)
         const id = req.params.id
         const oldData = await getByIdpodrazdelenieService(region_id, id)
         if(oldData.name !== data.name){

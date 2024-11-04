@@ -185,14 +185,13 @@ const docPrixodJur7Validation = Joi.object({
   kimdan_name: Joi.string().trim(),
   kimga_id: Joi.number().required(),
   kimga_name: Joi.string().trim(),
-  id_shartnomalar_organization: Joi.number(),
+  id_shartnomalar_organization: Joi.number().allow(null),
   childs: Joi.array().required().items(
     Joi.object({
-      document_jur7_id: Joi.number().required(),
       naimenovanie_tovarov_jur7_id: Joi.number().required(),
       kol: Joi.number(),
       sena: Joi.number(),
-      summa: Joi.number(),
+      summa: Joi.number().min(1),
       debet_schet: Joi.string().trim(),
       debet_sub_schet: Joi.string().trim(),
       kredit_schet: Joi.string().trim(),
@@ -200,13 +199,6 @@ const docPrixodJur7Validation = Joi.object({
       data_pereotsenka: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
     })
   )
-}).options({ stripUnknown: true });
-
-const jur7QueryValidation = Joi.object({ // ozgar_keyin 
-  limit: Joi.number().min(1).default(10),
-  page: Joi.number().min(1).default(1),
-  from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
-  to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
 }).options({ stripUnknown: true });
 
 
@@ -234,6 +226,13 @@ const queryValidation = Joi.object({
   limit: Joi.number().min(1).default(10),
   search: Joi.string().trim(),
 }).options({ stripUnknown: true });
+
+const jur7QueryValidation = Joi.object({
+  limit: Joi.number().min(1).default(10),
+  page: Joi.number().min(1).default(1),
+  from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+  to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
+})
 
 const validationQuery = Joi.object({
   main_schet_id: Joi.number().required().min(1),
@@ -411,6 +410,10 @@ const podrazdelenieValidation = Joi.object({
   rayon: Joi.string().trim().required(),
 }).options({ stripUnknown: true });
 
+const jur7PodrazdelenieValidation = Joi.object({
+  name: Joi.string().trim().required()
+}).options({ stripUnknown: true });
+
 const sostavValidation = Joi.object({
   name: Joi.string().trim().required(),
   rayon: Joi.string().trim().required(),
@@ -422,7 +425,6 @@ const typeOperatsiiValidation = Joi.object({
 }).options({ stripUnknown: true });
 
 module.exports = {
-  jur7QueryValidation,
   kassaValidation,
   queryValidation,
   organizationMonitoringValidation,
@@ -461,6 +463,8 @@ module.exports = {
   responsibleValidation,
   naimenovanieValidation,
   docPrixodJur7Validation,
-  validationQuery
+  validationQuery,
+  jur7PodrazdelenieValidation,
+  jur7QueryValidation
 };
 

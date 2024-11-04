@@ -2,6 +2,22 @@ const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 const { tashkentTime } = require('../utils/date.function');
 
+const getByFioResponsibleService = async (region_id, fio, podraz_id) => {
+    try {
+        const result = await pool.query(`
+            SELECT s_j_sh_j7.* 
+            FROM spravochnik_javobgar_shaxs_jur7 AS s_j_sh_j7
+            JOIN users AS u ON u.id = s_j_sh_j7.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 AND s_j_sh_j7.spravochnik_podrazdelenie_jur7_id = $2 AND s_j_sh_j7.fio = $3
+        `, [region_id, podraz_id, fio])
+        if(result.rows[0]){
+            throw new ErrorResponse('This data already exist', 409)
+        }
+    } catch (error) {
+        throw new ErrorResponse(error)
+    }
+}
 const responsibleCreateService = async (data) => {
     try {
         const result = await pool.query(`
@@ -115,5 +131,6 @@ module.exports = {
     getResponsibleService,
     getByIdResponsibleService,
     updateResponsibleService,
-    deleteResponsibleService
+    deleteResponsibleService,
+    getByFioResponsibleService
 };
