@@ -304,7 +304,6 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id) => {
         );
         console.log(rows)
         const data = rows[0].array
-        const summa 
         return {
             data: data || [],
             total: rows[0].total_count,
