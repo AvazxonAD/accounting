@@ -106,14 +106,20 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     WHERE r.id = $1  AND  k_p.id_podotchet_litso = $7
                     AND k_p.main_schet_id = $2 
                     AND k_p.isdeleted = false
-                    AND k_p.doc_date BETWEEN $3 AND $4), 0))::FLOAT AS prixod_sum,
+                    AND k_p.doc_date BETWEEN $3 AND $4), 0))::FLOAT AS rasxod_sum,
             COALESCE((SELECT SUM(k_r.summa)
               FROM kassa_rasxod k_r
               JOIN users u ON k_r.user_id = u.id
               JOIN regions r ON u.region_id = r.id
               WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND  k_r.id_podotchet_litso = $7
-              AND k_r.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS rasxod_sum,
+              AND k_r.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS prixod_sum,
             (SELECT 
+                (COALESCE((SELECT SUM(k_r.summa) 
+                    FROM kassa_rasxod k_r
+                    JOIN users u ON k_r.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.isdeleted = false AND  k_r.id_podotchet_litso = $7
+                    AND k_r.doc_date < $3 ), 0)) -
                 (COALESCE((SELECT SUM(a_o_j4.summa)
                     FROM avans_otchetlar_jur4 a_o_j4
                     JOIN users u ON a_o_j4.user_id = u.id
@@ -125,14 +131,14 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND  k_p.id_podotchet_litso = $7
-                    AND k_p.doc_date < $3), 0)) -
-                COALESCE((SELECT SUM(k_r.summa) 
+                    AND k_p.doc_date < $3), 0)) )::FLOAT AS summa_from,
+            (SELECT 
+                (COALESCE((SELECT SUM(k_r.summa) 
                     FROM kassa_rasxod k_r
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.isdeleted = false AND  k_r.id_podotchet_litso = $7
-                    AND k_r.doc_date < $3 ), 0))::FLOAT AS summa_from,
-            (SELECT 
+                    AND k_r.doc_date <= $4 ), 0)) - 
                 (COALESCE((SELECT SUM(a_o_j4.summa)
                     FROM avans_otchetlar_jur4 a_o_j4
                     JOIN users u ON a_o_j4.user_id = u.id
@@ -144,13 +150,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.isdeleted = false AND  k_p.id_podotchet_litso = $7
-                    AND k_p.doc_date <= $4), 0)) -
-                COALESCE((SELECT SUM(k_r.summa) 
-                    FROM kassa_rasxod k_r
-                    JOIN users u ON k_r.user_id = u.id
-                    JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.isdeleted = false AND  k_r.id_podotchet_litso = $7
-                    AND k_r.doc_date <= $4 ), 0))::FLOAT AS summa_to,
+                    AND k_p.doc_date <= $4), 0)) )::FLOAT AS summa_to,
             ARRAY_AGG(row_to_json(data)) AS data
           FROM data`, [region_id, main_schet_id, from, to, offset, limit, podotchet_id],
         );
