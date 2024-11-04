@@ -252,6 +252,10 @@ const organizationMonitoringValidation = Joi.object({
   spravochnik_organization_id: Joi.number().min(1).required()
 }).options({ stripUnknown: true });
 
+const aktSverkaValidation = Joi.object({
+  main_schet_id: Joi.number().required().min(1),
+  shartnoma_id: Joi.number().min(1).required()
+})
 
 const shartnomaValidation = Joi.object({
   doc_num: Joi.string().trim(),
@@ -466,6 +470,7 @@ module.exports = {
   docPrixodJur7Validation,
   validationQuery,
   jur7PodrazdelenieValidation,
-  jur7QueryValidation
+  jur7QueryValidation,
+  aktSverkaValidation
 };
 
