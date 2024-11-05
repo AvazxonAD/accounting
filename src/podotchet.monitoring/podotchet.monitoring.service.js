@@ -1,7 +1,6 @@
 const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 
-
 const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, to, podotchet_id) => {
     try {
         const { rows } = await pool.query(
@@ -18,7 +17,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur1_schet)
+                (SELECT ARRAY_AGG(m_sch.jur1_schet || ' - ' || s_o.schet)
                     FROM kassa_prixod_child AS k_p_ch
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = k_p_ch.main_schet_id
@@ -68,10 +67,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur1_schet)
+                (SELECT ARRAY_AGG(s_o.schet || ' - ' || s_own.schet)
                     FROM avans_otchetlar_jur4_child AS a_o_j4_ch
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = a_o_j4_ch.spravochnik_operatsii_id
-                    JOIN main_schet AS m_sch ON m_sch.id = a_o_j4_ch.main_schet_id
+                    JOIN spravochnik_operatsii AS s_own ON s_own.id = a_o_j4_ch.spravochnik_operatsii_own_id
                     WHERE a_o_j4_ch.avans_otchetlar_jur4_id = a_o_j4.id
                 ) AS schet_array
             FROM avans_otchetlar_jur4 a_o_j4
@@ -192,7 +191,6 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
     }
 };
 
-
 module.exports = {
-    getAllMonitoring,
+    getAllMonitoring
 };

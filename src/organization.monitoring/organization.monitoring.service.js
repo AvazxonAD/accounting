@@ -34,7 +34,14 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                                         b_r_ch.summa AS summa_prixod,
                                         u.id AS user_id,
                                         u.login,
-                                        u.fio 
+                                        u.fio,
+                                        (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
+                                            FROM bank_rasxod_child AS b_r_ch_ch
+                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch_ch.spravochnik_operatsii_id
+                                            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch_ch.main_schet_id
+                                            WHERE b_r_ch_ch.id_bank_rasxod = b_r_ch.id
+                                        ) AS schet_array,
+                                        1 AS check 
                                     FROM bank_rasxod b_r_ch
                                     JOIN users AS u ON u.id = b_r_ch.user_id 
                                     WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization = $7
@@ -49,7 +56,14 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                                         0 AS summa_prixod,
                                         u.id AS user_id,
                                         u.login,
-                                        u.fio 
+                                        u.fio,
+                                        (SELECT ARRAY_AGG(s_o.schet|| ' - ' || s_own.schet)
+                                            FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch_ch
+                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch_ch.spravochnik_operatsii_id
+                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3_ch_ch.spravochnik_operatsii_id
+                                            WHERE b_i_j3_ch_ch.bajarilgan_ishlar_jur3_id = b_i_j3_ch.id
+                                        ) AS schet_array,
+                                        2 AS check 
                                     FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
                                     JOIN users AS u ON b_i_j3_ch.user_id = u.id
                                     WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization = $7
@@ -64,7 +78,14 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                                         0 AS summa_prixod,
                                         u.id AS user_id,
                                         u.login,
-                                        u.fio 
+                                        u.fio,
+                                        (SELECT ARRAY_AGG(m_sch.jur2_schet || ' - ' || s_o.schet)
+                                            FROM bank_prixod_child AS b_p_ch_ch
+                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch_ch.spravochnik_operatsii_id
+                                            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch_ch.main_schet_id
+                                            WHERE b_p_ch_ch.id_bank_prixod = b_p_ch.id
+                                        ) AS schet_array,
+                                        3 AS check
                                     FROM bank_prixod AS b_p_ch
                                     JOIN users AS u ON u.id = b_p_ch.user_id
                                     WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization = $7
@@ -79,8 +100,16 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                                         k_h_j152_ch.summa AS summa_prixod,
                                         u.id AS user_id,
                                         u.login,
-                                        u.fio 
+                                        u.fio,
+                                        (SELECT ARRAY_AGG(s_own.schet || ' - ' || s_o.schet)
+                                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch_ch
+                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_h_j152_ch_ch.spravochnik_operatsii_id
+                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = k_h_j152_ch_ch.spravochnik_operatsii_own_id
+                                            WHERE k_h_j152_ch_ch.kursatilgan_hizmatlar_jur152_id = k_h_j152_ch.id
+                                        ) AS schet_array,
+                                        4 AS check 
                                     FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
+                                    JOIN users AS u ON u.id = k_h_j152_ch.user_id
                                     WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization = $7
                                 ) AS operatsii
                             ) 
