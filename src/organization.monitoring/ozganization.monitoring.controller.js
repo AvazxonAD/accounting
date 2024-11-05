@@ -9,13 +9,12 @@ const { getByIdShartnomaService } = require('../shartnoma/shartnoma.service')
 const ExcelJS = require('exceljs')
 const path = require('path')
 const { returnSleshDate } = require('../utils/date.function');
-const { returnStringSumma } = require("../utils/returnSumma");
 
 const getOrganizationMonitoring = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const { page, limit, main_schet_id, from, to, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
-        const offset = (page - 4) * limit;
+        const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdOrganizationService(region_id, spravochnik_organization_id)
         const { total, data, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getAllMonitoring(region_id, main_schet_id, offset, limit, from, to, spravochnik_organization_id);
