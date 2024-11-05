@@ -49,8 +49,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 a_o_j4.id, 
                 a_o_j4.doc_num,
                 TO_CHAR(a_o_j4.doc_date, 'YYYY-MM-DD') AS doc_date,
-                a_o_j4.summa AS prixod_sum,
-                0 AS rasxod_sum,
+                a_o_j4.summa AS rasxod_sum,
+                0 AS prixod_sum,
                 a_o_j4.opisanie,
                 a_o_j4.spravochnik_podotchet_litso_id AS podotchet_litso_id,
                 u.login,
@@ -61,7 +61,6 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             JOIN regions r ON u.region_id = r.id
             WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.isdeleted = false  AND a_o_j4.spravochnik_podotchet_litso_id = $7
             AND a_o_j4.doc_date BETWEEN $3 AND $4
-
             ORDER BY doc_date
             OFFSET $5 LIMIT $6
         )
@@ -154,6 +153,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             ARRAY_AGG(row_to_json(data)) AS data
           FROM data`, [region_id, main_schet_id, from, to, offset, limit, podotchet_id],
         );
+        console.log(rows[0].data)
         return {
             data: rows[0]?.data || [],
             total: rows[0].total_count,
