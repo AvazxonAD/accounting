@@ -17,7 +17,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 k_p.id_podotchet_litso AS podotchet_litso_id,
                 u.login,
                 u.fio,
-                u.id AS user_id
+                u.id AS user_id,
+                ARRAY[]::text[] AS schet_array
             FROM kassa_prixod k_p
             JOIN users u ON k_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -36,7 +37,13 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 k_r.id_podotchet_litso AS podotchet_litso_id,
                 u.login,
                 u.fio,
-                u.id AS user_id
+                u.id AS user_id,
+                (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur1_schet)
+                    FROM kassa_rasxod_child AS k_r_ch
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
+                    JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
+                    WHERE k_r_ch.kassa_rasxod_id = k_r.id
+                ) AS schet_array
             FROM kassa_rasxod k_r
             JOIN users u ON k_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -55,7 +62,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 a_o_j4.spravochnik_podotchet_litso_id AS podotchet_litso_id,
                 u.login,
                 u.fio,
-                u.id AS user_id
+                u.id AS user_id,
+                ARRAY[]::text[] AS schet_array
             FROM avans_otchetlar_jur4 a_o_j4
             JOIN users u ON a_o_j4.user_id = u.id
             JOIN regions r ON u.region_id = r.id
