@@ -12,7 +12,7 @@ const getPodotchetMonitoring = async (req, res) => {
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, prixod_sum, rasxod_sum, summaFrom, summaTo, data } = await getAllMonitoring(
+        const { total, prixod_sum, rasxod_sum, data, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getAllMonitoring(
             region_id,
             main_schet_id,
             offset,
@@ -30,8 +30,10 @@ const getPodotchetMonitoring = async (req, res) => {
             backPage: page === 1 ? null : page - 1,
             prixod_sum,
             rasxod_sum,
-            summaFrom,
-            summaTo
+            summa_from_prixod, 
+            summa_from_rasxod, 
+            summa_to_prixod, 
+            summa_to_rasxod
         }
         getLogger.info(`Muvaffaqiyatli podotchet monitoring doclar olindi. UserId: ${req.user.id}`)
         resFunc(res, 200, data, meta)

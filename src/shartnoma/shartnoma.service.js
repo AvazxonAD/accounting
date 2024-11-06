@@ -120,7 +120,7 @@ const getByIdShartnomaServiceForJur7 = async (region_id, id, organization_id) =>
   }
 }
 
-const getByIdShartnomaService = async (region_id, main_schet_id, id, organization_id, ignoreDeleted = false,) => {
+const getByIdShartnomaService = async (region_id, main_schet_id, id, organization_id = null, ignoreDeleted = false,) => {
   try {
     const params = [region_id, main_schet_id, id]
     let organization = ``;
