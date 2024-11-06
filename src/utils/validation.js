@@ -258,6 +258,13 @@ const aktSverkaValidation = Joi.object({
   to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
 })
 
+const orderOrganizationValidation = Joi.object({
+  from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+  to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+  schet: Joi.string().trim().required()
+})
+
+
 const shartnomaValidation = Joi.object({
   doc_num: Joi.string().trim(),
   doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
@@ -472,6 +479,7 @@ module.exports = {
   validationQuery,
   jur7PodrazdelenieValidation,
   jur7QueryValidation,
-  aktSverkaValidation
+  aktSverkaValidation,
+  orderOrganizationValidation
 };
 

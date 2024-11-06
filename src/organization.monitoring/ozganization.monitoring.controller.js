@@ -1,5 +1,5 @@
-const { getAllMonitoring, aktSverkaService } = require("./organization.monitoring.service");
-const { organizationMonitoringValidation, aktSverkaValidation } = require("../utils/validation");;
+const { getAllMonitoring, aktSverkaService, orderOrganizationService } = require("./organization.monitoring.service");
+const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
 const { validationResponse } = require("../utils/response-for-validation");
@@ -286,7 +286,19 @@ const aktSverka = async (req, res) => {
     }
 };
 
+const orderOrganization = async (req, res) => {
+    try {
+        const region_id = req.user.region_id
+        const { from, to, schet} = validationResponse(orderOrganizationValidation, req.query)
+        const data = await orderOrganizationService(region_id, schet, from, to,)
+        return res.send(data)
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
 module.exports = {
     getOrganizationMonitoring,
-    aktSverka
+    aktSverka,
+    orderOrganization
 };
