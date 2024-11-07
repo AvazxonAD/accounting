@@ -1,17 +1,16 @@
 const { Router } = require("express");
 const router = Router();
 
-const { protect } = require("../../middleware/auth");
 const {
   createOperatsii,
   getOperatsii,
   updateOperatsii,
   deleteOperatsii,
   getByIdOperatsii,
+  getSchet
 } = require("./operatsii.controller");
 
-const upload = require("../../utils/protect.file");
-
+router.get('/schet', getSchet)
 router.get("/:id", getByIdOperatsii);
 router.post("/", createOperatsii);
 router.get("/", getOperatsii);

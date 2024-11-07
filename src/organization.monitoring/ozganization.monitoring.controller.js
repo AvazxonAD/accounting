@@ -1,4 +1,4 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationService, schetRasxodService } = require("./organization.monitoring.service");
+const { getAllMonitoring, aktSverkaService, orderOrganizationService, getSchetRasxodService } = require("./organization.monitoring.service");
 const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
@@ -11,6 +11,7 @@ const path = require('path')
 const { returnSleshDate } = require('../utils/date.function');
 const { returnStringDate } = require('../utils/date.function')
 const { returnExcelColumn } = require('../utils/for-excel')
+const { getBySchetService } = require('../spravochnik/operatsii/operatsii.service')
 
 const getOrganizationMonitoring = async (req, res) => {
     try {
@@ -292,6 +293,7 @@ const orderOrganization = async (req, res) => {
     try {
         const region_id = req.user.region_id
         const { from, to, schet, main_schet_id } = validationResponse(orderOrganizationValidation, req.query)
+        await getBySchetService(schet)
         const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
         const workbook = new ExcelJS.Workbook();
         const fileName = `order_organization_${new Date().getTime()}.xlsx`;
@@ -299,9 +301,8 @@ const orderOrganization = async (req, res) => {
         worksheet.pageSetup.margins.left = 0
         worksheet.pageSetup.margins.header = 0
         worksheet.pageSetup.margins.footer = 0
-        const data = await orderOrganizationService(region_id, schet, from, to)
-        const rasxod_schets = await schetRasxodService(region_id, schet, from, to);
-        rasxod_schets.push({schet: main_schet.jur2_schet}, {schet: 'Итого КР'})
+        const { data, rasxod_schets } = await orderOrganizationService(region_id, schet, from, to, main_schet.id)
+        rasxod_schets.push({ schet: main_schet.jur2_schet }, { schet: 'Итого КР' })
         worksheet.mergeCells('A1', 'K1');
         worksheet.mergeCells('A2', 'K2');
         worksheet.mergeCells('A3', 'K3');
@@ -320,7 +321,7 @@ const orderOrganization = async (req, res) => {
         const prixod_titleCell = worksheet.getCell('K4')
         const schet_prixodCell = worksheet.getCell('K5')
         const rasxod_schetCell = worksheet.getCell('L4')
-        headCell.value = `Журнал-Ордер N_3`;
+        headCell.value = `Журнал-Ордер N_3. Счет: ${schet}`;
         titleCell.value = `Расчети c дебеторами и кредиторами`
         date_intervalCell.value = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
         organization_titleCell.value = `Организатсия`;
@@ -350,12 +351,12 @@ const orderOrganization = async (req, res) => {
             if (index === 1 || index === 2) size = 12
             if (index > 2) {
                 fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                }
+                    border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
             }
             const css = {
                 font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
@@ -374,8 +375,8 @@ const orderOrganization = async (req, res) => {
             Object.assign(schet, {
                 font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
                 alignment: { vertical: 'middle', horizontal: 'center' },
-                fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                border : {
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border: {
                     top: { style: 'thin' },
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
@@ -390,11 +391,11 @@ const orderOrganization = async (req, res) => {
         const to_dateCell_colletter = returnExcelColumn(col_letter, 2)
         const itogo_prixod_colletter = returnExcelColumn(col_letter, 2)
         const itogo_rasxod_colletter = returnExcelColumn(col_letter, 3)
-        schet_columns.push({schet: 'Остаток концу дня', colLetter: to_dateCell_colletter}, {schet: 'ДЕБИТ', colLetter: itogo_prixod_colletter}, {schet: 'КРЕДИТ', colLetter: itogo_rasxod_colletter})
+        schet_columns.push({ schet: 'Остаток концу дня', colLetter: to_dateCell_colletter }, { schet: 'ДЕБИТ', colLetter: itogo_prixod_colletter }, { schet: 'КРЕДИТ', colLetter: itogo_rasxod_colletter })
         const to_dateCell = worksheet.getCell(`${to_dateCell_colletter}4`)
         const itogo_prixod = worksheet.getCell(`${itogo_prixod_colletter}5`)
         const itogo_rasxod = worksheet.getCell(`${itogo_rasxod_colletter}5`)
-        to_dateCell.value =  `Остаток концу дня`;
+        to_dateCell.value = `Остаток концу дня`;
         itogo_prixod.value = `ДЕБИТ`
         itogo_rasxod.value = `КРЕДИТ`
         const itogo_array = [to_dateCell, itogo_prixod, itogo_rasxod]
@@ -402,8 +403,8 @@ const orderOrganization = async (req, res) => {
             Object.assign(col, {
                 font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
                 alignment: { vertical: 'middle', horizontal: 'center' },
-                fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                border : {
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border: {
                     top: { style: 'thin' },
                     left: { style: 'thin' },
                     bottom: { style: 'thin' },
@@ -411,9 +412,8 @@ const orderOrganization = async (req, res) => {
                 }
             });
         })
-        console.log(data)
-         row_number = 6
-        for(let organ of data){
+        row_number = 6
+        for (let organ of data) {
             worksheet.mergeCells(`A${row_number}`, `F${row_number}`)
             worksheet.mergeCells(`G${row_number}`, `H${row_number}`)
             worksheet.mergeCells(`I${row_number}`, `J${row_number}`)
@@ -421,18 +421,46 @@ const orderOrganization = async (req, res) => {
             const from_prixodCell = worksheet.getCell(`G${row_number}`)
             const from_rasxodCell = worksheet.getCell(`I${row_number}`)
             const prixodCell = worksheet.getCell(`K${row_number}`)
+            const column = schet_columns.find(item => item.schet === 'Итого КР')
+            const column_prixod = schet_columns.find(item => item.schet === 'ДЕБИТ')
+            const column_rasxod = schet_columns.find(item => item.schet === 'КРЕДИТ')
+            const itogo_rasxodCell = worksheet.getCell(`${column.colLetter}${row_number}`)
+            const total_raxodCell = worksheet.getCell(`${column_rasxod.colLetter}${row_number}`)
+            const total_prixodCell = worksheet.getCell(`${column_prixod.colLetter}${row_number}`)
+            for (let rasxod of organ.rasxod_array) {
+                const column = schet_columns.find(item => item.schet === rasxod.schet)
+                const schet = worksheet.getCell(`${column.colLetter}${row_number}`)
+                schet.value = rasxod.summa
+                Object.assign(schet, {
+                    numFmt: "#,##0.00",
+                    font: { size: 8, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal: 'right' },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            }
             organ_nameCell.value = `${organ.organization_name}`
             from_prixodCell.value = organ.summa_from > 0 ? organ.summa_from : 0
             from_rasxodCell.value = organ.summa_from < 0 ? Math.abs(organ.summa_from) : 0
             prixodCell.value = organ.prixod
-            const array = [organ_nameCell, from_prixodCell, from_rasxodCell, prixodCell]
+            itogo_rasxodCell.value = organ.itogo_rasxod
+            total_raxodCell.value = organ.summa_to < 0 ? Math.abs(organ.summa_to) : 0
+            total_prixodCell.value = organ.summa_to > 0 ? organ.summa_to : 0
+            const array = [organ_nameCell, from_prixodCell, from_rasxodCell, prixodCell, itogo_rasxodCell, total_raxodCell, total_prixodCell]
             array.forEach((item, index) => {
+                let horizontal = 'left'
+                if (index > 0) horizontal = 'right'
                 Object.assign(item, {
                     numFmt: "#,##0.00",
                     font: { size: 8, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal: 'right' },
-                    fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                    border : {
+                    alignment: { vertical: 'middle', horizontal },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
                         bottom: { style: 'thin' },
@@ -454,6 +482,14 @@ const orderOrganization = async (req, res) => {
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);
         });
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
+const getRasxodSchets = async (req, res) => {
+    try {
+        const rasxod_schets = await getSchetRasxodService()
     } catch (error) {
         errorCatch(error, res)
     }

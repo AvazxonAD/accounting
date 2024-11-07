@@ -4,6 +4,7 @@ const {
   updateOperatsiiService,
   deleteOperatsiiService,
   getByIdOperatsiiService,
+  getSchetService
 } = require("./operatsii.service");
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
@@ -13,6 +14,15 @@ const { getByIdSmeta } = require("../../smeta/smeta.service");
 const { errorCatch } = require('../../utils/errorCatch')
 const { resFunc } = require("../../utils/resFunc");
 const { validationResponse } = require("../../utils/response-for-validation");
+
+const getSchet = async (req, res) => {
+  try {
+    const result = await getSchetService()
+    resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
 
 // createOperatsii
 const createOperatsii = async (req, res) => {
@@ -29,9 +39,9 @@ const createOperatsii = async (req, res) => {
 // get all
 const getOperatsii = async (req, res) => {
   try {
-    const { page, limit, type_schet } = validationResponse(operatsiiQueryValidation, req.query)
+    const { page, limit, type_schet, search } = validationResponse(operatsiiQueryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet);
+    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search);
     const pageCount = Math.ceil(total / limit)
     const meta = {
       pageCount,
@@ -143,4 +153,5 @@ module.exports = {
   deleteOperatsii,
   updateOperatsii,
   importToExcel,
+  getSchet
 };
