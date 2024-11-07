@@ -69,7 +69,7 @@ const createSmetaGrafik = async (data) => {
 }
 
 
-const getAllSmetaGrafik = async (region_id, offset, limit) => {
+const getAllSmetaGrafik = async (region_id, offset, budjet_id, limit) => {
   try {
     const { rows } = await pool.query(
       `
@@ -100,20 +100,24 @@ const getAllSmetaGrafik = async (region_id, offset, limit) => {
             JOIN regions ON regions.id = users.region_id  
             JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s_g.spravochnik_budjet_name_id
             JOIN smeta ON smeta.id = s_g.smeta_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 OFFSET $2 LIMIT $3
+            WHERE s_g.isdeleted = false AND regions.id = $1 AND s_g.spravochnik_budjet_name_id = $4  
+            OFFSET $2 LIMIT $3 
           )
         SELECT
           ARRAY_AGG(row_to_json(data)) AS data,
-          (
-            SELECT COUNT(smeta_grafik.id) FROM smeta_grafik 
+          (SELECT COUNT(smeta_grafik.id) FROM smeta_grafik 
             JOIN users ON smeta_grafik.user_id = users.id
             JOIN regions ON regions.id = users.region_id
-            WHERE smeta_grafik.isdeleted = false AND regions.id = $1)::INTEGER total_count 
+            WHERE smeta_grafik.isdeleted = false AND regions.id = $1 AND smeta_grafik.spravochnik_budjet_name_id = $4)::INTEGER total_count,
+          (SELECT SUM(smeta_grafik.itogo) FROM smeta_grafik 
+            JOIN users ON smeta_grafik.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE smeta_grafik.isdeleted = false AND regions.id = $1 AND smeta_grafik.spravochnik_budjet_name_id = $4)::FLOAT itogo 
         FROM data
       `,
-      [region_id, offset, limit],
+      [region_id, offset, limit, budjet_id],
     );
-    return { data: rows[0]?.data, total: rows[0]?.total_count }
+    return { data: rows[0]?.data, total: rows[0]?.total_count, itogo: rows[0].itogo }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }

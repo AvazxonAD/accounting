@@ -48,9 +48,10 @@ const create = async (req, res) => {
 const getSmetaGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { page, limit } = validationResponse(queryValidation, req.query)
+    const { page, limit, budjet_id } = validationResponse(queryValidation, req.query)
+    await getByIdBudjetService(budjet_id)
     const offset = (page - 1) * limit;
-    const { data, total } = await getAllSmetaGrafik(region_id, offset, limit);
+    const { data, total, itogo } = await getAllSmetaGrafik(region_id, offset, budjet_id, limit);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -58,6 +59,7 @@ const getSmetaGrafik = async (req, res) => {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
+      itogo
     }
     resFunc(res, 200, data, meta)
   } catch (error) {
