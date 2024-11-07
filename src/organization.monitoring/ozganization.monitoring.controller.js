@@ -411,12 +411,44 @@ const orderOrganization = async (req, res) => {
                 }
             });
         })
-        console.log(schet_columns)
+        console.log(data)
+         row_number = 6
+        for(let organ of data){
+            worksheet.mergeCells(`A${row_number}`, `F${row_number}`)
+            worksheet.mergeCells(`G${row_number}`, `H${row_number}`)
+            worksheet.mergeCells(`I${row_number}`, `J${row_number}`)
+            const organ_nameCell = worksheet.getCell(`A${row_number}`)
+            const from_prixodCell = worksheet.getCell(`G${row_number}`)
+            const from_rasxodCell = worksheet.getCell(`I${row_number}`)
+            const prixodCell = worksheet.getCell(`K${row_number}`)
+            organ_nameCell.value = `${organ.organization_name}`
+            from_prixodCell.value = organ.summa_from > 0 ? organ.summa_from : 0
+            from_rasxodCell.value = organ.summa_from < 0 ? Math.abs(organ.summa_from) : 0
+            prixodCell.value = organ.prixod
+            const array = [organ_nameCell, from_prixodCell, from_rasxodCell, prixodCell]
+            array.forEach((item, index) => {
+                Object.assign(item, {
+                    numFmt: "#,##0.00",
+                    font: { size: 8, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal: 'right' },
+                    fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border : {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            })
+            row_number++
+        }
 
         worksheet.getRow(1).height = 25;
         worksheet.getRow(2).height = 25;
         worksheet.getRow(5).height = 25;
         worksheet.getColumn(11).width = 18
+        worksheet.getColumn(itogo_prixod_colletter).width = 18
+        worksheet.getColumn(itogo_rasxod_colletter).width = 18
         const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {

@@ -274,50 +274,29 @@ const orderOrganizationService = async (region_id, schet, from, to) => {
                         )
                     )
                 ) AS summa_from,
-                s_op.schet,
-                (SELECT SUM(b_r_ch.summa)::FLOAT
-                    FROM spravochnik_organization AS s_o
-                    JOIN users AS u ON u.id = s_o.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN bank_rasxod AS b_r ON b_r.id_spravochnik_organization = s_o.id
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
-                    JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
-                    WHERE r.id = $1 AND s_o.isdeleted = false AND s_op.schet = $2 AND b_r.doc_date BETWEEN $3 AND $4 AND b_r.id_spravochnik_organization = s_o.id
-                ) AS prixod,
                 (
-                    ( SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT
-                        FROM bank_rasxod_child AS b_r_ch 
-                        JOIN users AS u ON u.id = b_r_ch.user_id
-                        JOIN regions AS r ON r.id = u.region_id
-                        JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id 
-                        JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
-                        WHERE r.id = $1 AND s_op.schet = $2 AND b_r.doc_date <= $4 AND b_r.id_spravochnik_organization = s_o.id
-                    ) - 
-                    ( 
-                        (SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT
-                            FROM bank_prixod_child AS b_p_ch 
-                            JOIN users AS u ON u.id = b_p_ch.user_id
-                            JOIN regions AS r ON r.id = u.region_id
-                            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id 
-                            JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
-                            WHERE r.id = $1 AND s_op.schet = $2 AND b_p.doc_date <= $4 AND b_p.id_spravochnik_organization = s_o.id) + 
-                        (SELECT COALESCE(SUM(b_i_j3.summa), 0)
-                            FROM bajarilgan_ishlar_jur3 AS b_i_j3 
-                            JOIN users AS u ON u.id = b_i_j3.user_id
-                            JOIN regions AS r ON r.id = u.region_id
-                            JOIN spravochnik_operatsii AS s_own_o ON s_own_o.id = b_i_j3.spravochnik_operatsii_own_id 
-                            WHERE r.id = $1 AND s_own_o.schet = $2 AND b_i_j3.doc_date <= $4 AND b_i_j3.id_spravochnik_organization = s_o.id
-                        )
-                    )
-                ) AS summa_to
+                    SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT
+                    FROM spravochnik_organization AS s_organ
+                    JOIN bank_rasxod AS b_r ON b_r.id_spravochnik_organization = s_organ.id
+                    JOIN bank_rasxod_child AS b_r_ch ON b_r.id = b_r_ch.id_bank_rasxod
+                    JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
+                    JOIN users AS u ON u.id = s_organ.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    WHERE s_organ.isdeleted = false AND r.id = $1 AND s_op.schet = $2 AND b_r.doc_date BETWEEN $3 AND $4 AND s_organ.id = s_o.id 
+                ) AS prixod,
+                (SELECT ARRAY_AGG()
+                    FROM bank_rasxod_child AS b_r_ch_ch
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch_ch.spravochnik_operatsii_id
+                    JOIN main_schet AS m_sch ON m_sch.id = b_r_ch_ch.main_schet_id
+                    WHERE b_r_ch_ch.id_bank_rasxod = b_r_ch.id
+                ) AS schet_array,
+
+
             FROM spravochnik_organization AS s_o
             JOIN users AS u ON u.id = s_o.user_id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN bank_rasxod AS b_r ON b_r.id_spravochnik_organization = s_o.id
-            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 AND s_o.isdeleted = false AND s_op.schet = $2
-            GROUP BY s_o.name, s_op.schet, s_o.id
+            WHERE r.id = $1 AND s_o.isdeleted = false
+            GROUP BY s_o.name, s_o.id
         `, [ region_id, schet, from, to ])
         return main_data.rows
     } catch(error) {
