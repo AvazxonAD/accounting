@@ -325,6 +325,27 @@ const orderOrganizationService = async (region_id, schet, from, to) => {
     } 
 }
 
+
+const schetRasxodService = async (region_id, schet, from, to) => {
+    try {
+        const data = await pool.query(`
+            SELECT DISTINCT s_o.schet
+            FROM bajarilgan_ishlar_jur3 AS b_i_j3 
+            JOIN users AS u ON u.id = b_i_j3.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_operatsii AS s_own_o ON s_own_o.id = b_i_j3.spravochnik_operatsii_own_id 
+            JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch.spravochnik_operatsii_id  
+            WHERE r.id = $1 AND s_own_o.schet = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4
+            ORDER BY s_o.schet
+        `, [region_id, schet, from, to])
+        return data.rows
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
+
 const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to) => {
     try {
         const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 AND sh_o.id = $3`;
@@ -469,5 +490,6 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to
 module.exports = {
     getAllMonitoring,
     orderOrganizationService,
-    aktSverkaService
+    aktSverkaService,
+    schetRasxodService
 };

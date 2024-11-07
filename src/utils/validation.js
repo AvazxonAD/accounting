@@ -71,14 +71,14 @@ const jur3Validation = Joi.object({
   opisanie: Joi.string().trim(),
   spravochnik_operatsii_own_id: Joi.number().required(),
   id_spravochnik_organization: Joi.number().required(),
-  shartnomalar_organization_id: Joi.number(),
+  shartnomalar_organization_id: Joi.number().allow(null),
   childs: Joi.array().items(
     Joi.object({
       spravochnik_operatsii_id: Joi.number().required(),
       summa: Joi.number().required(),
-      id_spravochnik_podrazdelenie: Joi.number(),
-      id_spravochnik_sostav: Joi.number(),
-      id_spravochnik_type_operatsii: Joi.number(),
+      id_spravochnik_podrazdelenie: Joi.number().allow(null),
+      id_spravochnik_sostav: Joi.number().allow(null),
+      id_spravochnik_type_operatsii: Joi.number().allow(null),
     }),
   ),
 }).options({ stripUnknown: true });
@@ -261,6 +261,7 @@ const aktSverkaValidation = Joi.object({
 const orderOrganizationValidation = Joi.object({
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
   to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+  main_schet_id: Joi.number().required().min(1),
   schet: Joi.string().trim().required()
 })
 

@@ -1,4 +1,4 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationService } = require("./organization.monitoring.service");
+const { getAllMonitoring, aktSverkaService, orderOrganizationService, schetRasxodService } = require("./organization.monitoring.service");
 const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
@@ -9,6 +9,8 @@ const { getByIdShartnomaService } = require('../shartnoma/shartnoma.service')
 const ExcelJS = require('exceljs')
 const path = require('path')
 const { returnSleshDate } = require('../utils/date.function');
+const { returnStringDate } = require('../utils/date.function')
+const { returnExcelColumn } = require('../utils/for-excel')
 
 const getOrganizationMonitoring = async (req, res) => {
     try {
@@ -138,7 +140,7 @@ const aktSverka = async (req, res) => {
                 Object.assign(item, {
                     numFmt: '#,##0.00',
                     font: { size: 10, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal: 'right'},
+                    alignment: { vertical: 'middle', horizontal: 'right' },
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
                     border: {
                         top: { style: 'thin' },
@@ -202,11 +204,11 @@ const aktSverka = async (req, res) => {
         worksheet.mergeCells(`A${row_number}`, `D${row_number}`);
         const imzo1 = worksheet.getCell(`A${row_number}`)
         imzo1.value = ``
-        imzo1.border = { bottom: {style: 'thin'}}
+        imzo1.border = { bottom: { style: 'thin' } }
         worksheet.mergeCells(`G${row_number}`, `K${row_number}`);
         const imzo2 = worksheet.getCell(`G${row_number}`)
         imzo2.value = ``
-        imzo2.border = { bottom: {style: 'thin'}}
+        imzo2.border = { bottom: { style: 'thin' } }
         worksheet.getRow(row_number).height = 30
         const array_headers = [
             footer,
@@ -289,9 +291,137 @@ const aktSverka = async (req, res) => {
 const orderOrganization = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { from, to, schet} = validationResponse(orderOrganizationValidation, req.query)
-        const data = await orderOrganizationService(region_id, schet, from, to,)
-        return res.send(data)
+        const { from, to, schet, main_schet_id } = validationResponse(orderOrganizationValidation, req.query)
+        const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
+        const workbook = new ExcelJS.Workbook();
+        const fileName = `order_organization_${new Date().getTime()}.xlsx`;
+        const worksheet = workbook.addWorksheet('order organization');
+        worksheet.pageSetup.margins.left = 0
+        worksheet.pageSetup.margins.header = 0
+        worksheet.pageSetup.margins.footer = 0
+        const data = await orderOrganizationService(region_id, schet, from, to)
+        const rasxod_schets = await schetRasxodService(region_id, schet, from, to);
+        rasxod_schets.push({schet: main_schet.jur2_schet}, {schet: 'Итого КР'})
+        worksheet.mergeCells('A1', 'K1');
+        worksheet.mergeCells('A2', 'K2');
+        worksheet.mergeCells('A3', 'K3');
+        worksheet.mergeCells('A4', 'F5');
+        worksheet.mergeCells('G4', 'J4');
+        worksheet.mergeCells('G5', 'H5');
+        worksheet.mergeCells('I5', 'J5');
+        worksheet.mergeCells('L4', `${returnExcelColumn('L', rasxod_schets.length)}4`)
+        const headCell = worksheet.getCell('A1');
+        const titleCell = worksheet.getCell('A2');
+        const date_intervalCell = worksheet.getCell('A3')
+        const organization_titleCell = worksheet.getCell('B4')
+        const from_dateCell = worksheet.getCell('G4')
+        const prixodCell = worksheet.getCell('G5')
+        const rasxodCell = worksheet.getCell('I5')
+        const prixod_titleCell = worksheet.getCell('K4')
+        const schet_prixodCell = worksheet.getCell('K5')
+        const rasxod_schetCell = worksheet.getCell('L4')
+        headCell.value = `Журнал-Ордер N_3`;
+        titleCell.value = `Расчети c дебеторами и кредиторами`
+        date_intervalCell.value = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
+        organization_titleCell.value = `Организатсия`;
+        from_dateCell.value = `Остаток к началу дня`;
+        prixodCell.value = `ДЕБИТ`
+        rasxodCell.value = `КРЕДИТ`
+        prixod_titleCell.value = `ДЕБИТ СЧЕТ`
+        schet_prixodCell.value = `${schet}`
+        rasxod_schetCell.value = 'КРЕДИТ СЧЕТА'
+        const cell_array = [
+            headCell,
+            titleCell,
+            date_intervalCell,
+            organization_titleCell,
+            from_dateCell,
+            prixodCell,
+            rasxodCell,
+            prixod_titleCell,
+            schet_prixodCell,
+            rasxod_schetCell
+        ]
+        cell_array.forEach((item, index) => {
+            let border = null;
+            let fill = null;
+            let size = 10;
+            if (index === 0) size = 14
+            if (index === 1 || index === 2) size = 12
+            if (index > 2) {
+                fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            }
+            const css = {
+                font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal: 'center' },
+                fill,
+                border
+            }
+            Object.assign(item, css);
+        })
+        let col_letter = ``
+        const schet_columns = []
+        rasxod_schets.forEach((col, index) => {
+            const colLetter = returnExcelColumn('L', index + 1);
+            const schet = worksheet.getCell(`${colLetter}5`);
+            schet.value = `${col.schet}`;
+            Object.assign(schet, {
+                font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal: 'center' },
+                fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border : {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            });
+            col_letter = colLetter
+            worksheet.getColumn(colLetter).width = 18;
+            schet_columns.push({ colLetter, schet: col.schet })
+        });
+        worksheet.mergeCells(`${returnExcelColumn(col_letter, 2)}4`, `${returnExcelColumn(col_letter, 3)}4`)
+        const to_dateCell_colletter = returnExcelColumn(col_letter, 2)
+        const itogo_prixod_colletter = returnExcelColumn(col_letter, 2)
+        const itogo_rasxod_colletter = returnExcelColumn(col_letter, 3)
+        schet_columns.push({schet: 'Остаток концу дня', colLetter: to_dateCell_colletter}, {schet: 'ДЕБИТ', colLetter: itogo_prixod_colletter}, {schet: 'КРЕДИТ', colLetter: itogo_rasxod_colletter})
+        const to_dateCell = worksheet.getCell(`${to_dateCell_colletter}4`)
+        const itogo_prixod = worksheet.getCell(`${itogo_prixod_colletter}5`)
+        const itogo_rasxod = worksheet.getCell(`${itogo_rasxod_colletter}5`)
+        to_dateCell.value =  `Остаток концу дня`;
+        itogo_prixod.value = `ДЕБИТ`
+        itogo_rasxod.value = `КРЕДИТ`
+        const itogo_array = [to_dateCell, itogo_prixod, itogo_rasxod]
+        itogo_array.forEach(col => {
+            Object.assign(col, {
+                font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal: 'center' },
+                fill : { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border : {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            });
+        })
+        console.log(schet_columns)
+
+        worksheet.getRow(1).height = 25;
+        worksheet.getRow(2).height = 25;
+        worksheet.getRow(5).height = 25;
+        worksheet.getColumn(11).width = 18
+        const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+        await workbook.xlsx.writeFile(filePath);
+        return res.download(filePath, (err) => {
+            if (err) throw new ErrorResponse(err, err.statusCode);
+        });
     } catch (error) {
         errorCatch(error, res)
     }
