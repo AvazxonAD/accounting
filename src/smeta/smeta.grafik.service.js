@@ -104,7 +104,7 @@ const getAllSmetaGrafik = async (region_id, offset, budjet_id, limit) => {
             OFFSET $2 LIMIT $3 
           )
         SELECT
-          ARRAY_AGG(COALESCE(row_to_json(data), '[]'::JSON)) AS data,
+          ARRAY_AGG(row_to_json(data)) AS data,
           (SELECT COALESCE(COUNT(smeta_grafik.id), 0) FROM smeta_grafik 
             JOIN users ON smeta_grafik.user_id = users.id
             JOIN regions ON regions.id = users.region_id
@@ -117,7 +117,7 @@ const getAllSmetaGrafik = async (region_id, offset, budjet_id, limit) => {
       `,
       [region_id, offset, limit, budjet_id],
     );
-    return { data: rows[0]?.data, total: rows[0]?.total_count, itogo: rows[0].itogo }
+    return { data: rows[0]?.data || [], total: rows[0]?.total_count, itogo: rows[0].itogo }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
