@@ -104,12 +104,12 @@ const getAllSmetaGrafik = async (region_id, offset, budjet_id, limit) => {
             OFFSET $2 LIMIT $3 
           )
         SELECT
-          ARRAY_AGG(row_to_json(data)) AS data,
-          (SELECT COUNT(smeta_grafik.id) FROM smeta_grafik 
+          ARRAY_AGG(row_to_json(COALESCE(data), '[]'::JSON)) AS data,
+          (SELECT COALESCE(COUNT(smeta_grafik.id), 0) FROM smeta_grafik 
             JOIN users ON smeta_grafik.user_id = users.id
             JOIN regions ON regions.id = users.region_id
             WHERE smeta_grafik.isdeleted = false AND regions.id = $1 AND smeta_grafik.spravochnik_budjet_name_id = $4)::INTEGER total_count,
-          (SELECT SUM(smeta_grafik.itogo) FROM smeta_grafik 
+          (SELECT COALESCE(SUM(smeta_grafik.itogo), 0) FROM smeta_grafik 
             JOIN users ON smeta_grafik.user_id = users.id
             JOIN regions ON regions.id = users.region_id
             WHERE smeta_grafik.isdeleted = false AND regions.id = $1 AND smeta_grafik.spravochnik_budjet_name_id = $4)::FLOAT itogo 
