@@ -5,12 +5,16 @@ const { validationResponse } = require('../utils/response-for-validation');
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
 const { getAllMonitoring } = require('./podotchet.monitoring.service')
+const { getByIdPodotchetService } = require('../spravochnik/podotchet/podotchet.litso.service')
 
 const getPodotchetMonitoring = async (req, res) => {
     try {
         const { limit, page, main_schet_id, from, to, podotchet } = validationResponse(podotchetQueryValidation, req.query)
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
+        if(podotchet){
+            await getByIdPodotchetService(region_id, podotchet)
+        }
         await getByIdMainSchetService(region_id, main_schet_id);
         const { total, prixod_sum, rasxod_sum, data, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getAllMonitoring(
             region_id,
@@ -30,9 +34,9 @@ const getPodotchetMonitoring = async (req, res) => {
             backPage: page === 1 ? null : page - 1,
             prixod_sum,
             rasxod_sum,
-            summa_from_prixod, 
-            summa_from_rasxod, 
-            summa_to_prixod, 
+            summa_from_prixod,
+            summa_from_rasxod,
+            summa_to_prixod,
             summa_to_rasxod
         }
         getLogger.info(`Muvaffaqiyatli podotchet monitoring doclar olindi. UserId: ${req.user.id}`)
