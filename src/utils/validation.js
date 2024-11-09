@@ -58,9 +58,9 @@ const jur4Validation = Joi.object({
     Joi.object({
       spravochnik_operatsii_id: Joi.number().required(),
       summa: Joi.number().required(),
-      id_spravochnik_podrazdelenie: Joi.number(),
-      id_spravochnik_sostav: Joi.number(),
-      id_spravochnik_type_operatsii: Joi.number(),
+      id_spravochnik_podrazdelenie: Joi.number().allow(null),
+      id_spravochnik_sostav: Joi.number().allow(null),
+      id_spravochnik_type_operatsii: Joi.number().allow(null),
     }),
   ),
 }).options({ stripUnknown: true });
