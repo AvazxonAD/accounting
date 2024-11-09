@@ -340,7 +340,7 @@ const dailyExcelCreate = async (req, res) => {
         })
         row_number++
       })
-      worksheet.mergeCells(`A${row_number + 1}`, `D${row_number + 1}`);
+      worksheet.mergeCells(`A${row_number + 1}`, `E${row_number + 1}`);
       const schet = worksheet.getCell(`A${row_number + 1}`)
       schet.value = `Итого по счету ${object.schet}`
       const prixod_sum = worksheet.getCell(`F${row_number + 1}`)
@@ -357,11 +357,30 @@ const dailyExcelCreate = async (req, res) => {
         }
         Object.assign(item, {
           alignment: { vertical: 'middle', horizontal },
-          font: { name: 'Times New Roman', bold: true, size: 11 },
+          font: { name: 'Times New Roman', bold: true, size: 10 },
         });
       })
       row_number++
     }
+    const itogo_prixod = worksheet.getCell(`F${row_number + 1}`)
+    itogo_prixod.value = data.prixod_sum
+    const itogo_rasxod = worksheet.getCell(`G${row_number + 1}`)
+    itogo_rasxod.value = data.rasxod_sum
+    const itogo_array = [itogo_prixod, itogo_rasxod]
+    itogo_array.forEach((item, index) => {
+      Object.assign(item, {
+        numFmt: '#,##0.00',
+        font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+        alignment: { vertical: 'middle', horizontal: 'right' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      });
+    })
     worksheet.mergeCells(`A${row_number + 2}`, `H${row_number + 2}`);
     const balanceToCell = worksheet.getCell(`A${row_number + 2}`);
     balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
@@ -374,8 +393,8 @@ const dailyExcelCreate = async (req, res) => {
     worksheet.getColumn(3).width = 10
     worksheet.getColumn(4).width = 10
     worksheet.getColumn(5).width = 10
-    worksheet.getColumn(6).width = 15
-    worksheet.getColumn(7).width = 15
+    worksheet.getColumn(6).width = 18
+    worksheet.getColumn(7).width = 18
     worksheet.getColumn(8).width = 10
     worksheet.getRow(1).height = 25;
     worksheet.getRow(2).height = 20;

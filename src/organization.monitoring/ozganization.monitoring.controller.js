@@ -1,4 +1,4 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationService, getSchetRasxodService } = require("./organization.monitoring.service");
+const { getAllMonitoring, aktSverkaService, orderOrganizationServic, getAllMonitoringAll} = require("./organization.monitoring.service");
 const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
@@ -32,6 +32,27 @@ const getOrganizationMonitoring = async (req, res) => {
             summa_from_rasxod,
             summa_to_prixod,
             summa_to_rasxod
+        }
+        resFunc(res, 200, data, meta)
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
+const getOrganizationMonitoringAll = async (req, res) => {
+    try {
+        const region_id = req.user.region_id
+        const { page, limit, main_schet_id, from, to } = validationResponse(organizationMonitoringValidation, req.query)
+        const offset = (page - 1) * limit;
+        await getByIdMainSchetService(region_id, main_schet_id);
+        const { total, data } = await getAllMonitoringAll(region_id, main_schet_id, offset, limit, from, to);
+        const pageCount = Math.ceil(total / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1,
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
@@ -434,7 +455,13 @@ const orderOrganization = async (req, res) => {
                 Object.assign(schet, {
                     numFmt: "#,##0.00",
                     font: { size: 8, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal: 'right' },
+                    alignment: { vertical: 'middle', horizontal: 'right' }
+                });
+            }
+            schet_columns.forEach(col => {
+                const column = schet_columns.find(item => item.schet === col.schet)
+                const schet = worksheet.getCell(`${column.colLetter}${row_number}`)
+                Object.assign(schet, {
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
                     border: {
                         top: { style: 'thin' },
@@ -443,7 +470,7 @@ const orderOrganization = async (req, res) => {
                         right: { style: 'thin' }
                     }
                 });
-            }
+            })
             organ_nameCell.value = `${organ.organization_name}`
             from_prixodCell.value = organ.summa_from > 0 ? organ.summa_from : 0
             from_rasxodCell.value = organ.summa_from < 0 ? Math.abs(organ.summa_from) : 0
@@ -487,17 +514,9 @@ const orderOrganization = async (req, res) => {
     }
 }
 
-const getRasxodSchets = async (req, res) => {
-    try {
-        const rasxod_schets = await getSchetRasxodService()
-        
-    } catch (error) {
-        errorCatch(error, res)
-    }
-}
-
 module.exports = {
     getOrganizationMonitoring,
     aktSverka,
-    orderOrganization
+    orderOrganization,
+    getOrganizationMonitoringAll
 };

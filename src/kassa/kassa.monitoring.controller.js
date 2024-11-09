@@ -335,11 +335,30 @@ const dailyExcelCreate = async (req, res) => {
         }
         Object.assign(item, {
           alignment: { vertical: 'middle', horizontal },
-          font: { name: 'Times New Roman', bold: true, size: 9 },
+          font: { name: 'Times New Roman', bold: true, size: 9 }
         });
       })
       row_number++
     }
+    const itogo_prixod = worksheet.getCell(`E${row_number + 1}`)
+    itogo_prixod.value = data.prixod_sum
+    const itogo_rasxod = worksheet.getCell(`F${row_number + 1}`)
+    itogo_rasxod.value = data.rasxod_sum
+    const itogo_array = [itogo_prixod, itogo_rasxod]
+    itogo_array.forEach((item) => {
+      Object.assign(item, {
+        numFmt: '#,##0.00',
+        font: { size: 9, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+        alignment: { vertical: 'middle', horizontal: 'right' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+      });
+    })
     worksheet.mergeCells(`A${row_number + 2}`, `H${row_number + 2}`);
     const balanceToCell = worksheet.getCell(`A${row_number + 2}`);
     balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
@@ -350,8 +369,8 @@ const dailyExcelCreate = async (req, res) => {
     worksheet.getColumn(2).width = 10
     worksheet.getColumn(3).width = 12
     worksheet.getColumn(4).width = 10
-    worksheet.getColumn(5).width = 16
-    worksheet.getColumn(6).width = 16
+    worksheet.getColumn(5).width = 18
+    worksheet.getColumn(6).width = 18
     worksheet.getColumn(7).width = 9
     worksheet.getRow(1).height = 25;
     worksheet.getRow(2).height = 20;
