@@ -6,11 +6,15 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
         const params =[region_id, main_schet_id, from, to, offset, limit]
         let k_p_podotchet_filter = ``
         let k_r_podotchet_filter = ``
+        let b_r_podotchet_filter = ``
         let a_o_j4_podotchet_filter = ``
+        let b_p_podotchet_filter = ``
         if(podotchet_id){
             k_p_podotchet_filter = `AND k_p.id_podotchet_litso = $${params.length + 1}`
             k_r_podotchet_filter = `AND k_r.id_podotchet_litso = $${params.length + 1}`
             a_o_j4_podotchet_filter = `AND a_o_j4.spravochnik_podotchet_litso_id = $${params.length + 1}`
+            b_r_podotchet_filter = `AND b_r_ch.id_spravochnik_podotchet_litso = $${params.length + 1}`
+            b_p_podotchet_filter = `AND b_p_ch.id_spravochnik_podotchet_litso = $${params.length + 1}`
             params.push(podotchet_id)
 
         }
@@ -72,6 +76,70 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             UNION ALL
 
             SELECT 
+                b_r.id, 
+                b_r.doc_num,
+                TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date,
+                b_r_ch.summa AS prixod_sum,
+                0 AS rasxod_sum,
+                b_r.opisanie,
+                b_r_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
+                s_p_l.name AS podotchet_name,
+                u.login,
+                u.fio,
+                u.id AS user_id,
+                (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
+                FROM bank_rasxod_child AS inner_b_r_ch
+                JOIN bank_rasxod AS inner_b_r ON inner_b_r.id = inner_b_r_ch.id_bank_rasxod
+                JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_r_ch.spravochnik_operatsii_id
+                JOIN main_schet AS m_sch ON m_sch.id = inner_b_r.main_schet_id
+                WHERE inner_b_r_ch.id_bank_rasxod = b_r.id
+                ) AS schet_array
+            FROM bank_rasxod b_r
+            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            JOIN users u ON b_r.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            WHERE r.id = $1 
+                AND b_r.main_schet_id = $2 
+                AND b_r.isdeleted = false 
+                ${b_r_podotchet_filter}
+                AND b_r.doc_date BETWEEN $3 AND $4
+
+            UNION ALL
+
+            SELECT 
+                b_p.id, 
+                b_p.doc_num,
+                TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date,
+                0 AS prixod_sum,
+                b_p_ch.summa AS rasxod_sum,
+                b_p.opisanie,
+                b_p_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
+                s_p_l.name AS podotchet_name,
+                u.login,
+                u.fio,
+                u.id AS user_id,
+                (SELECT ARRAY_AGG(m_sch.jur2_schet || ' - ' || s_o.schet)
+                    FROM bank_prixod_child AS inner_b_p_ch
+                    JOIN bank_prixod AS inner_b_p ON inner_b_p.id = inner_b_p_ch.id_bank_prixod
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_p_ch.spravochnik_operatsii_id
+                    JOIN main_schet AS m_sch ON m_sch.id = inner_b_p.main_schet_id
+                    WHERE inner_b_p_ch.id_bank_prixod = b_p.id
+                ) AS schet_array
+            FROM bank_prixod b_p
+            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
+            JOIN users u ON b_p.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            WHERE r.id = $1 
+                AND b_p.main_schet_id = $2 
+                AND b_p.isdeleted = false 
+                ${b_p_podotchet_filter}
+                AND b_p.doc_date BETWEEN $3 AND $4
+
+            UNION ALL
+
+            SELECT 
                 a_o_j4.id, 
                 a_o_j4.doc_num,
                 TO_CHAR(a_o_j4.doc_date, 'YYYY-MM-DD') AS doc_date,
@@ -95,7 +163,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             JOIN regions r ON u.region_id = r.id
             WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.isdeleted = false ${a_o_j4_podotchet_filter}
             AND a_o_j4.doc_date BETWEEN $3 AND $4
-            ORDER BY doc_date
+            ORDER BY podotchet_litso_id DESC
             OFFSET $5 LIMIT $6
         )
         SELECT 
@@ -122,73 +190,156 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.isdeleted = false ${a_o_j4_podotchet_filter}
                     AND a_o_j4.doc_date BETWEEN $3 AND $4
+                    UNION ALL
+                    SELECT COUNT(b_p_ch.id) AS counts
+                    FROM bank_prixod_child b_p_ch
+                    JOIN users u ON b_p_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+                    WHERE r.id = $1 AND b_p.main_schet_id = $2 AND b_p_ch.isdeleted = false ${b_p_podotchet_filter}
+                    AND b_p.doc_date BETWEEN $3 AND $4
+                    UNION ALL
+                    SELECT COUNT(b_r_ch.id) AS counts
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN users u ON b_r_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+                    WHERE r.id = $1 AND b_r.main_schet_id = $2 AND b_r_ch.isdeleted = false ${b_r_podotchet_filter}
+                    AND b_r.doc_date BETWEEN $3 AND $4
             ) AS subquery) AS total_count,
-            COALESCE((SELECT SUM(a_o_j4.summa)
+            (
+                (SELECT COALESCE(SUM(a_o_j4.summa), 0)
                     FROM avans_otchetlar_jur4 a_o_j4
                     JOIN users u ON a_o_j4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 ${a_o_j4_podotchet_filter}
-                    AND a_o_j4.main_schet_id = $2 
-                    AND a_o_j4.isdeleted = false
-                    AND a_o_j4.doc_date < $3), 0) + 
-            COALESCE((SELECT SUM(k_p.summa)
+                        AND a_o_j4.main_schet_id = $2 
+                        AND a_o_j4.isdeleted = false
+                        AND a_o_j4.doc_date < $3 ) + 
+                (SELECT COALESCE(SUM(k_p.summa), 0)
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 ${k_p_podotchet_filter}
-                    AND k_p.main_schet_id = $2 
-                    AND k_p.isdeleted = false
-                    AND k_p.doc_date < $3), 0)::FLOAT AS summa_from_rasxod,
-            COALESCE((SELECT SUM(k_r.summa)
+                        AND k_p.main_schet_id = $2 
+                        AND k_p.isdeleted = false
+                        AND k_p.doc_date < $3 ) + 
+                (SELECT COALESCE(SUM(b_p_ch.summa), 0)
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
+                    JOIN users u ON b_p_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 ${b_p_podotchet_filter}
+                        AND b_p_ch.main_schet_id = $2 
+                        AND b_p_ch.isdeleted = false
+                        AND b_p.doc_date < $3 )
+            )::FLOAT AS summa_from_rasxod,
+            (   
+                (SELECT COALESCE(SUM(k_r.summa), 0)
                     FROM kassa_rasxod k_r
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false ${k_r_podotchet_filter}
-                    AND k_r.doc_date < $3), 0)::FLOAT AS summa_from_prixod, 
-            COALESCE((SELECT SUM(a_o_j4.summa)
+                    AND k_r.doc_date < $3) + 
+                (SELECT COALESCE(SUM(b_r_ch.summa), 0)
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod b_r ON b_r.id = b_r_ch.id_bank_rasxod
+                    JOIN users u ON b_r_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 ${b_r_podotchet_filter}
+                        AND b_r_ch.main_schet_id = $2 
+                        AND b_r_ch.isdeleted = false
+                        AND b_r.doc_date < $3 )
+            )::FLOAT AS summa_from_prixod, 
+            (
+                (SELECT COALESCE(SUM(a_o_j4.summa), 0)
                     FROM avans_otchetlar_jur4 a_o_j4
                     JOIN users u ON a_o_j4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 ${a_o_j4_podotchet_filter}
-                    AND a_o_j4.main_schet_id = $2 
-                    AND a_o_j4.isdeleted = false
-                    AND a_o_j4.doc_date BETWEEN $3 AND $4), 0) + 
-            COALESCE((SELECT SUM(k_p.summa)
+                        AND a_o_j4.main_schet_id = $2 
+                        AND a_o_j4.isdeleted = false
+                        AND a_o_j4.doc_date BETWEEN $3 AND $4) + 
+                (SELECT COALESCE(SUM(k_p.summa), 0)
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 ${k_p_podotchet_filter}
-                    AND k_p.main_schet_id = $2 
-                    AND k_p.isdeleted = false
-                    AND k_p.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS rasxod_sum,
-            COALESCE((SELECT SUM(k_r.summa)
+                        AND k_p.main_schet_id = $2 
+                        AND k_p.isdeleted = false
+                        AND k_p.doc_date BETWEEN $3 AND $4) + 
+                (SELECT COALESCE(SUM(b_p_ch.summa), 0)
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
+                    JOIN users u ON b_p_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 ${b_p_podotchet_filter}
+                        AND b_p_ch.main_schet_id = $2 
+                        AND b_p_ch.isdeleted = false
+                        AND b_p.doc_date BETWEEN $3 AND $4 )
+            )::FLOAT AS rasxod_sum,
+            (
+                (SELECT COALESCE(SUM(k_r.summa), 0)
                     FROM kassa_rasxod k_r
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false ${k_r_podotchet_filter}
-                    AND k_r.doc_date BETWEEN $3 AND $4), 0)::FLOAT AS prixod_sum,
-            COALESCE((SELECT SUM(a_o_j4.summa)
+                    WHERE r.id = $1 AND k_r.main_schet_id = $2 
+                        AND k_r.isdeleted = false ${k_r_podotchet_filter}
+                        AND k_r.doc_date BETWEEN $3 AND $4) + 
+                (SELECT COALESCE(SUM(b_r_ch.summa), 0)
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod b_r ON b_r.id = b_r_ch.id_bank_rasxod
+                    JOIN users u ON b_r_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 ${b_r_podotchet_filter}
+                        AND b_r_ch.main_schet_id = $2 
+                        AND b_r_ch.isdeleted = false
+                        AND b_r.doc_date BETWEEN $3 AND $4 )
+            )::FLOAT AS prixod_sum,
+            (
+                (SELECT COALESCE(SUM(a_o_j4.summa), 0)
                     FROM avans_otchetlar_jur4 a_o_j4
                     JOIN users u ON a_o_j4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 ${a_o_j4_podotchet_filter}
-                    AND a_o_j4.main_schet_id = $2 
-                    AND a_o_j4.isdeleted = false
-                    AND a_o_j4.doc_date < $4), 0) + 
-            COALESCE((SELECT SUM(k_p.summa)
+                        AND a_o_j4.main_schet_id = $2 
+                        AND a_o_j4.isdeleted = false
+                        AND a_o_j4.doc_date <= $4) + 
+                (SELECT COALESCE(SUM(k_p.summa), 0)
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 ${k_p_podotchet_filter}
-                    AND k_p.main_schet_id = $2 
-                    AND k_p.isdeleted = false
-                    AND k_p.doc_date < $4), 0)::FLOAT AS summa_to_rasxod,
-            COALESCE((SELECT SUM(k_r.summa)
+                        AND k_p.main_schet_id = $2 
+                        AND k_p.isdeleted = false
+                        AND k_p.doc_date <= $4) +
+                (SELECT COALESCE(SUM(b_p_ch.summa), 0)
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
+                    JOIN users u ON b_p_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 ${b_p_podotchet_filter}
+                        AND b_p_ch.main_schet_id = $2 
+                        AND b_p_ch.isdeleted = false
+                        AND b_p.doc_date <= $4 )
+            )::FLOAT AS summa_to_rasxod,
+            (   
+                (SELECT COALESCE(SUM(k_r.summa), 0)
                     FROM kassa_rasxod k_r
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false ${k_r_podotchet_filter}
-                    AND k_r.doc_date < $4), 0)::FLOAT AS summa_to_prixod,
+                    AND k_r.doc_date <= $4) + 
+                (SELECT COALESCE(SUM(b_r_ch.summa), 0)
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod b_r ON b_r.id = b_r_ch.id_bank_rasxod
+                    JOIN users u ON b_r_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 ${b_r_podotchet_filter}
+                        AND b_r_ch.main_schet_id = $2 
+                        AND b_r_ch.isdeleted = false
+                        AND b_r.doc_date <= $4 )
+            )::FLOAT AS summa_to_prixod,
             ARRAY_AGG(row_to_json(data)) AS data
             FROM data`, params,
         );

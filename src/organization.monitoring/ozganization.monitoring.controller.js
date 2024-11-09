@@ -490,6 +490,7 @@ const orderOrganization = async (req, res) => {
 const getRasxodSchets = async (req, res) => {
     try {
         const rasxod_schets = await getSchetRasxodService()
+        
     } catch (error) {
         errorCatch(error, res)
     }
