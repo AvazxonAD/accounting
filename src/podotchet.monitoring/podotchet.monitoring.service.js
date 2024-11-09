@@ -38,7 +38,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = k_p_ch.main_schet_id
                     WHERE k_p_ch.kassa_prixod_id = k_p.id
-                ) AS schet_array
+                ) AS schet_array,
+                'kassa prixod' AS type
             FROM kassa_prixod k_p
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
             JOIN users u ON k_p.user_id = u.id
@@ -65,7 +66,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
                     WHERE k_r_ch.kassa_rasxod_id = k_r.id
-                ) AS schet_array
+                ) AS schet_array,
+                'kassa rasxod' AS type
             FROM kassa_rasxod k_r
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
             JOIN users u ON k_r.user_id = u.id
@@ -93,7 +95,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_r_ch.spravochnik_operatsii_id
                 JOIN main_schet AS m_sch ON m_sch.id = inner_b_r.main_schet_id
                 WHERE inner_b_r_ch.id_bank_rasxod = b_r.id
-                ) AS schet_array
+                ) AS schet_array,
+                'bank rasxod' AS type
             FROM bank_rasxod b_r
             JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
@@ -125,7 +128,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_p_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = inner_b_p.main_schet_id
                     WHERE inner_b_p_ch.id_bank_prixod = b_p.id
-                ) AS schet_array
+                ) AS schet_array,
+                'bank prixod' AS type
             FROM bank_prixod b_p
             JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
@@ -156,7 +160,8 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = a_o_j4_ch.spravochnik_operatsii_id
                     JOIN spravochnik_operatsii AS s_own ON s_own.id = a_o_j4_ch.spravochnik_operatsii_own_id
                     WHERE a_o_j4_ch.avans_otchetlar_jur4_id = a_o_j4.id
-                ) AS schet_array
+                ) AS schet_array,
+                'avans_otchetlar_jur4' AS type
             FROM avans_otchetlar_jur4 a_o_j4
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_o_j4.spravochnik_podotchet_litso_id
             JOIN users u ON a_o_j4.user_id = u.id
