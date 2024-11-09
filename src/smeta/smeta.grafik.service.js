@@ -69,8 +69,14 @@ const createSmetaGrafik = async (data) => {
 }
 
 
-const getAllSmetaGrafik = async (region_id, offset, budjet_id, limit) => {
+const getAllSmetaGrafik = async (region_id, offset, limit, budjet_id) => {
   try {
+    const params = [region_id, offset, limit]
+    let budjet_filter = ``
+    if(budjet_id){
+      budjet_filter = `AND s_g.spravochnik_budjet_name_id = $${params.length + 1}`
+      params.push(budjet_id)
+    }
     const { rows } = await pool.query(
       `
         WITH data AS 
@@ -100,24 +106,86 @@ const getAllSmetaGrafik = async (region_id, offset, budjet_id, limit) => {
             JOIN regions ON regions.id = users.region_id  
             JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s_g.spravochnik_budjet_name_id
             JOIN smeta ON smeta.id = s_g.smeta_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 AND s_g.spravochnik_budjet_name_id = $4  
+            WHERE s_g.isdeleted = false AND regions.id = $1  ${budjet_filter}
             OFFSET $2 LIMIT $3 
           )
         SELECT
           ARRAY_AGG(row_to_json(data)) AS data,
-          (SELECT COALESCE(COUNT(smeta_grafik.id), 0) FROM smeta_grafik 
-            JOIN users ON smeta_grafik.user_id = users.id
+          (SELECT COALESCE(COUNT(s_g.id), 0) FROM smeta_grafik AS s_g 
+            JOIN users ON s_g.user_id = users.id
             JOIN regions ON regions.id = users.region_id
-            WHERE smeta_grafik.isdeleted = false AND regions.id = $1 AND smeta_grafik.spravochnik_budjet_name_id = $4)::INTEGER total_count,
-          (SELECT COALESCE(SUM(smeta_grafik.itogo), 0) FROM smeta_grafik 
-            JOIN users ON smeta_grafik.user_id = users.id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::INTEGER total_count,
+          (SELECT COALESCE(SUM(s_g.itogo), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
             JOIN regions ON regions.id = users.region_id
-            WHERE smeta_grafik.isdeleted = false AND regions.id = $1 AND smeta_grafik.spravochnik_budjet_name_id = $4)::FLOAT itogo 
-        FROM data
-      `,
-      [region_id, offset, limit, budjet_id],
-    );
-    return { data: rows[0]?.data || [], total: rows[0]?.total_count, itogo: rows[0].itogo }
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT itogo,
+          (SELECT COALESCE(SUM(s_g.oy_1), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_1,
+          (SELECT COALESCE(SUM(s_g.oy_2), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_2,
+          (SELECT COALESCE(SUM(s_g.oy_3), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_3,
+          (SELECT COALESCE(SUM(s_g.oy_4), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_4,
+          (SELECT COALESCE(SUM(s_g.oy_5), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_5,
+          (SELECT COALESCE(SUM(s_g.oy_6), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_6,
+          (SELECT COALESCE(SUM(s_g.oy_7), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_7,
+          (SELECT COALESCE(SUM(s_g.oy_8), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_8,
+          (SELECT COALESCE(SUM(s_g.oy_9), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_9,
+          (SELECT COALESCE(SUM(s_g.oy_10), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_10,
+          (SELECT COALESCE(SUM(s_g.oy_11), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_11,
+          (SELECT COALESCE(SUM(s_g.oy_12), 0) FROM smeta_grafik AS s_g
+            JOIN users ON s_g.user_id = users.id
+            JOIN regions ON regions.id = users.region_id
+            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_12
+          FROM data
+    `, params);
+    return { 
+      data: rows[0]?.data || [], 
+      total: rows[0]?.total_count, 
+      itogo: rows[0].itogo,
+      oy_1: rows[0].oy_1,
+      oy_2: rows[0].oy_2,
+      oy_3: rows[0].oy_3,
+      oy_4: rows[0].oy_4,
+      oy_5: rows[0].oy_5,
+      oy_6: rows[0].oy_6,
+      oy_7: rows[0].oy_7,
+      oy_8: rows[0].oy_8,
+      oy_9: rows[0].oy_9,
+      oy_10: rows[0].oy_10,
+      oy_11: rows[0].oy_11,
+      oy_12: rows[0].oy_12,
+    }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
