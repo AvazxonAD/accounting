@@ -16,11 +16,11 @@ const { getBySchetService } = require('../spravochnik/operatsii/operatsii.servic
 const getOrganizationMonitoring = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, from, to, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdOrganizationService(region_id, spravochnik_organization_id)
-        const { total, data, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getAllMonitoring(region_id, main_schet_id, offset, limit, from, to, spravochnik_organization_id);
+        const { total, data, prixod, rasxod,  shartnoma_null_array } = await getAllMonitoring(region_id, main_schet_id, offset, limit, spravochnik_organization_id);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -28,10 +28,9 @@ const getOrganizationMonitoring = async (req, res) => {
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
-            summa_from_prixod,
-            summa_from_rasxod,
-            summa_to_prixod,
-            summa_to_rasxod
+            prixod,
+            rasxod,
+            shartnoma_null_array
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
@@ -42,10 +41,10 @@ const getOrganizationMonitoring = async (req, res) => {
 const getOrganizationMonitoringAll = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, from, to } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, data } = await getAllMonitoringAll(region_id, main_schet_id, offset, limit, from, to);
+        const { total, data } = await getAllMonitoringAll(region_id, main_schet_id, offset, limit);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
