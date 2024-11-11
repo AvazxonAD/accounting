@@ -125,6 +125,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                             (SELECT COALESCE(ARRAY_AGG(row_to_json(operatsii)), ARRAY[]::JSON[])
                                 FROM (SELECT 
                                         b_r_ch.id,
+                                        b_r_ch.id_spravochnik_organization AS organ_id,
                                         b_r_ch.id_shartnomalar_organization AS shartnoma_id,
                                         b_r_ch.doc_num,
                                         b_r_ch.doc_date,
@@ -146,6 +147,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                     UNION ALL 
                                     SELECT 
                                         b_i_j3_ch.id,
+                                        b_i_j3_ch.id_spravochnik_organization AS organ_id,
                                         b_i_j3_ch.shartnomalar_organization_id AS shartnoma_id,
                                         b_i_j3_ch.doc_num,
                                         b_i_j3_ch.doc_date,
@@ -167,6 +169,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                     UNION ALL 
                                     SELECT 
                                         b_p_ch.id,
+                                        b_p_ch.id_spravochnik_organization AS organ_id,
                                         b_p_ch.id_shartnomalar_organization AS shartnoma_id,
                                         b_p_ch.doc_num,
                                         b_p_ch.doc_date,
@@ -188,6 +191,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                     UNION ALL
                                     SELECT 
                                         k_h_j152_ch.id,
+                                        k_h_j152_ch.id_spravochnik_organization AS organ_id,
                                         k_h_j152_ch.shartnomalar_organization_id AS shartnoma_id,
                                         k_h_j152_ch.doc_num,
                                         k_h_j152_ch.doc_date,

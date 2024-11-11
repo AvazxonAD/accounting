@@ -30,6 +30,7 @@ const getOrganizationMonitoring = async (req, res) => {
             backPage: page === 1 ? null : page - 1,
             prixod,
             rasxod,
+            shartnoma_null_count: shartnoma_null_array.length,
             shartnoma_null_array
         }
         resFunc(res, 200, data, meta)
