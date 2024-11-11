@@ -14,7 +14,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             k_r_podotchet_filter = `AND k_r.id_podotchet_litso = $${params.length + 1}`
             a_o_j4_podotchet_filter = `AND a_o_j4.spravochnik_podotchet_litso_id = $${params.length + 1}`
             b_r_podotchet_filter = `AND b_r_ch.id_spravochnik_podotchet_litso = $${params.length + 1}`
-            b_p_podotchet_filter = ` IS NOT NULL= $${params.length + 1}`
+            b_p_podotchet_filter = ` AND b_p_ch.id_spravochnik_podotchet_litso = $${params.length + 1}`
             params.push(podotchet_id)
 
         }
