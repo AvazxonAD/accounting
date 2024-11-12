@@ -33,6 +33,7 @@ routes.use("/spravochnik/operatsii", protect, police('spravochnik'), require("./
 routes.use("/spravochnik/main-schet", require("./spravochnik/main.schet/main_schet.routes"));
 routes.use("/spravochnik/budjet-name", protect, police('budjet'), require("./spravochnik/budjet/budjet_name.routes"));
 routes.use("/spravochnik/sostav", protect, police('spravochnik'), require("./spravochnik/sostav/sostav.routes"));
+routes.use("/spravochnik/podpis", protect, police('spravochnik'), require("./spravochnik/podpis/podpis.routes"));
 
 // Smeta routes
 routes.use("/smeta/grafik", protect, police('smeta_grafik'), require("./smeta/smeta.grafik.routes"));

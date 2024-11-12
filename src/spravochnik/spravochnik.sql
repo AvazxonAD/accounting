@@ -95,3 +95,15 @@ CREATE TABLE main_schet (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE spravochnik_podpis_dlya_doc (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    type_document VARCHAR(255), 
+    numeric_poryadok INT,  
+    doljnost_name VARCHAR(255), 
+    fio_name VARCHAR(255),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);

@@ -443,6 +443,13 @@ const typeOperatsiiValidation = Joi.object({
   rayon: Joi.string().trim().required(),
 }).options({ stripUnknown: true });
 
+const podpisValidation = Joi.object({
+  numeric_poryadok: Joi.number().integer().required(),
+  doljnost_name: Joi.string().trim().max(255).required(),
+  fio_name: Joi.string().trim().max(255).required(),
+  type_document: Joi.string().required().max(255).trim()
+}).options({ stripUnknown: true });
+
 module.exports = {
   kassaValidation,
   queryValidation,
@@ -487,6 +494,7 @@ module.exports = {
   jur7QueryValidation,
   aktSverkaValidation,
   orderOrganizationValidation,
-  jur3CapValidation
+  jur3CapValidation,
+  podpisValidation
 };
 
