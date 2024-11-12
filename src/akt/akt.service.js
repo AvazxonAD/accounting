@@ -313,6 +313,42 @@ const deleteJur3DB = async (id) => {
   }
 }
 
+const jur3CapService = async (region_id, from, to, schet ) => {
+  try {
+    const data = await pool.query(`
+      SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa
+      FROM bajarilgan_ishlar_jur3 AS b_i_j3 
+      JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+      JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3.spravochnik_operatsii_own_id
+      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = b_i_j3.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN smeta AS s ON s.id = s_o.smeta_id
+      WHERE b_i_j3.doc_date BETWEEN $1 AND $2 AND r.id = $3 AND s_own.schet = $4
+      GROUP BY s_o.schet, s.smeta_number
+    `, [from, to, region_id, schet])
+    return data.rows
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
+const getSchetService = async (region_id) => {
+  try {
+    const schets = await pool.query(`
+      SELECT DISTINCT s_o.schet 
+      FROM bajarilgan_ishlar_jur3 AS b_i_j3
+      JOIN spravochnik_operatsii AS s_o  ON b_i_j3.spravochnik_operatsii_own_id = s_o.id
+      JOIN users AS u ON u.id = b_i_j3.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE  r.id = $1 AND b_i_j3.isdeleted = false
+    `, [region_id])
+    return schets.rows
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
+  }
+}
+
 module.exports = {
   createJur3DB,
   createJur3ChildDB,
@@ -321,4 +357,6 @@ module.exports = {
   deleteJur3ChildDB,
   updateJur3DB,
   deleteJur3DB,
+  jur3CapService,
+  getSchetService
 };

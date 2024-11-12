@@ -485,15 +485,16 @@ const orderOrganizationService = async (region_id, schet, from, to) => {
                         ) t
                     ), '[]'::JSON) AS rasxod_array,
                     (
-                        (SELECT 
-                            COALESCE(SUM(b_i_j3_ch.summa), 0)::FLOAT
-                        FROM spravochnik_organization AS s_organ
-                        JOIN users AS u ON u.id = s_organ.user_id
-                        JOIN regions AS r ON r.id = u.region_id
-                        JOIN bajarilgan_ishlar_jur3 AS b_i_j3 ON b_i_j3.id_spravochnik_organization = s_organ.id
-                        JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
-                        JOIN spravochnik_operatsii AS s_own_o ON s_own_o.id = b_i_j3.spravochnik_operatsii_own_id
-                        WHERE r.id = $1 AND s_own_o.schet = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4 AND s_organ.id = s_o.id) +
+                        (   
+                            SELECT 
+                                COALESCE(SUM(b_i_j3_ch.summa), 0)::FLOAT
+                            FROM spravochnik_organization AS s_organ
+                            JOIN users AS u ON u.id = s_organ.user_id
+                            JOIN regions AS r ON r.id = u.region_id
+                            JOIN bajarilgan_ishlar_jur3 AS b_i_j3 ON b_i_j3.id_spravochnik_organization = s_organ.id
+                            JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+                            JOIN spravochnik_operatsii AS s_own_o ON s_own_o.id = b_i_j3.spravochnik_operatsii_own_id
+                            WHERE r.id = $1 AND s_own_o.schet = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4 AND s_organ.id = s_o.id) +
                         (
                             SELECT 
                                 COALESCE(SUM(b_p_ch.summa), 0)::FLOAT 
@@ -553,10 +554,33 @@ const orderOrganizationService = async (region_id, schet, from, to) => {
                             WHERE r.id = $1 AND s_own_o.schet = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4
                             ORDER BY s_o.schet
                         ) schet
-                    ), '[]'::JSON) AS schet_array
+                    ), '[]'::JSON) AS schet_array,
+                (
+                    (   
+                        SELECT 
+                            COALESCE(SUM(b_i_j3_ch.summa), 0)::FLOAT
+                        FROM spravochnik_organization AS s_organ
+                        JOIN users AS u ON u.id = s_organ.user_id
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN bajarilgan_ishlar_jur3 AS b_i_j3 ON b_i_j3.id_spravochnik_organization = s_organ.id
+                        JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+                        JOIN spravochnik_operatsii AS s_own_o ON s_own_o.id = b_i_j3.spravochnik_operatsii_own_id
+                        WHERE r.id = $1 AND s_own_o.schet = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4) +
+                    (
+                        SELECT 
+                            COALESCE(SUM(b_p_ch.summa), 0)::FLOAT 
+                        FROM bank_prixod_child AS b_p_ch 
+                        JOIN users AS u ON u.id = b_p_ch.user_id
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id 
+                        JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+                        JOIN spravochnik_organization AS s_organ ON s_organ.id = b_p.id_spravochnik_organization
+                        WHERE r.id = $1 AND s_op.schet = $2 AND b_p.doc_date BETWEEN $3 AND $4
+                    ) 
+                ) AS itogo_all_rasxod
             FROM data 
         `, [ region_id, schet, from, to ])
-        return {data: main_data.rows[0]?.data || [], rasxod_schets: main_data.rows[0].schet_array}
+        return {data: main_data.rows[0]?.data || [], rasxod_schets: main_data.rows[0].schet_array, itogo_all_rasxod: main_data.rows[0].itogo_all_rasxod}
     } catch(error) {
         throw new ErrorResponse(error, error.statusCode)
     } 

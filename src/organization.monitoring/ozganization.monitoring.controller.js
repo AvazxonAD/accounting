@@ -1,4 +1,4 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationServic, getAllMonitoringAll} = require("./organization.monitoring.service");
+const { getAllMonitoring, aktSverkaService, orderOrganizationService, getAllMonitoringAll} = require("./organization.monitoring.service");
 const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
@@ -322,7 +322,7 @@ const orderOrganization = async (req, res) => {
         worksheet.pageSetup.margins.left = 0
         worksheet.pageSetup.margins.header = 0
         worksheet.pageSetup.margins.footer = 0
-        const { data, rasxod_schets } = await orderOrganizationService(region_id, schet, from, to, main_schet.id)
+        const { data, rasxod_schets, itogo_all_rasxod } = await orderOrganizationService(region_id, schet, from, to, main_schet.id)
         rasxod_schets.push({ schet: main_schet.jur2_schet }, { schet: 'Итого КР' })
         worksheet.mergeCells('A1', 'K1');
         worksheet.mergeCells('A2', 'K2');
@@ -419,7 +419,7 @@ const orderOrganization = async (req, res) => {
         to_dateCell.value = `Остаток концу дня`;
         itogo_prixod.value = `ДЕБИТ`
         itogo_rasxod.value = `КРЕДИТ`
-        const itogo_array = [to_dateCell, itogo_prixod, itogo_rasxod]
+        const itogo_array = [   , itogo_prixod, itogo_rasxod, to_dateCell]
         itogo_array.forEach(col => {
             Object.assign(col, {
                 font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
@@ -434,6 +434,12 @@ const orderOrganization = async (req, res) => {
             });
         })
         row_number = 6
+        let debit_from = 0
+        let kridit_from = 0
+        let debit = 0
+        let debit_to = 0
+        let kridit_to = 0
+        const rasxod_schet_itogo = []
         for (let organ of data) {
             worksheet.mergeCells(`A${row_number}`, `F${row_number}`)
             worksheet.mergeCells(`G${row_number}`, `H${row_number}`)
@@ -446,10 +452,16 @@ const orderOrganization = async (req, res) => {
             const column_prixod = schet_columns.find(item => item.schet === 'ДЕБИТ')
             const column_rasxod = schet_columns.find(item => item.schet === 'КРЕДИТ')
             const itogo_rasxodCell = worksheet.getCell(`${column.colLetter}${row_number}`)
-            const total_raxodCell = worksheet.getCell(`${column_rasxod.colLetter}${row_number}`)
+            const total_rasxodCell = worksheet.getCell(`${column_rasxod.colLetter}${row_number}`)
             const total_prixodCell = worksheet.getCell(`${column_prixod.colLetter}${row_number}`)
             for (let rasxod of organ.rasxod_array) {
                 const column = schet_columns.find(item => item.schet === rasxod.schet)
+                const index = rasxod_schet_itogo.findIndex(item => item.schet === column.schet)
+                if(index !== -1){
+                    rasxod_schet_itogo[index] = {colLetter: column.colLetter, summa: rasxod_schet_itogo[index].summa + rasxod.summa}
+                }else {
+                    rasxod_schet_itogo.push({colLetter: column.colLetter, summa: rasxod.summa})
+                }
                 const schet = worksheet.getCell(`${column.colLetter}${row_number}`)
                 schet.value = rasxod.summa
                 Object.assign(schet, {
@@ -474,11 +486,16 @@ const orderOrganization = async (req, res) => {
             organ_nameCell.value = `${organ.organization_name}`
             from_prixodCell.value = organ.summa_from > 0 ? organ.summa_from : 0
             from_rasxodCell.value = organ.summa_from < 0 ? Math.abs(organ.summa_from) : 0
+            debit_from += from_prixodCell.value
+            kridit_from += from_rasxodCell.value
             prixodCell.value = organ.prixod
+            debit += prixodCell.value
             itogo_rasxodCell.value = organ.itogo_rasxod
-            total_raxodCell.value = organ.summa_to < 0 ? Math.abs(organ.summa_to) : 0
+            total_rasxodCell.value = organ.summa_to < 0 ? Math.abs(organ.summa_to) : 0
             total_prixodCell.value = organ.summa_to > 0 ? organ.summa_to : 0
-            const array = [organ_nameCell, from_prixodCell, from_rasxodCell, prixodCell, itogo_rasxodCell, total_raxodCell, total_prixodCell]
+            debit_to += total_prixodCell.value
+            kridit_to += total_rasxodCell.value
+            const array = [organ_nameCell, from_prixodCell, from_rasxodCell, prixodCell, itogo_rasxodCell, total_rasxodCell, total_prixodCell]
             array.forEach((item, index) => {
                 let horizontal = 'left'
                 if (index > 0) horizontal = 'right'
@@ -497,7 +514,43 @@ const orderOrganization = async (req, res) => {
             })
             row_number++
         }
-
+        worksheet.mergeCells(`G${row_number}`, `H${row_number}`)
+        worksheet.mergeCells(`I${row_number}`, `J${row_number}`) 
+        const debit_fromCell = worksheet.getCell(`G${row_number}`)  
+        const kridit_fromCell = worksheet.getCell(`J${row_number}`) 
+        const debitCell = worksheet.getCell(`K${row_number}`)
+        const itogo_rasxodColumn = schet_columns.find(item => item.schet === 'Итого КР')
+        const itogo_rasxodCell = worksheet.getCell(`${itogo_rasxodColumn.colLetter}${row_number}`)
+        const itogo_to_debitColumn = schet_columns.find(item => item.schet === 'ДЕБИТ')
+        const itogo_to_debitCell = worksheet.getCell(`${itogo_to_debitColumn.colLetter}${row_number}`)
+        const itogo_to_kriditColumn = schet_columns.find(item => item.schet === 'КРЕДИТ')
+        const itogo_to_kriditCell = worksheet.getCell(`${itogo_to_kriditColumn.colLetter}${row_number}`)
+        itogo_rasxodCell.value = itogo_all_rasxod
+        debit_fromCell.value = debit_from 
+        kridit_fromCell.value = kridit_from 
+        debitCell.value = debit
+        itogo_to_debitCell.value = debit_to
+        itogo_to_kriditCell.value = kridit_to
+        const itogo_css_array = [itogo_rasxodCell, debit_fromCell, kridit_fromCell, debitCell, itogo_to_debitCell, itogo_to_kriditCell]
+        for(let itogo of rasxod_schet_itogo){
+            const itogoCell = worksheet.getCell(`${itogo.colLetter}${row_number}`)
+            itogoCell.value = itogo.summa
+            itogo_css_array.push(itogoCell)
+        }
+        itogo_css_array.forEach(item => {
+            Object.assign(item, {
+                numFmt: "#,##0.00",
+                font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal: 'right' },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            });
+        })
         worksheet.getRow(1).height = 25;
         worksheet.getRow(2).height = 25;
         worksheet.getRow(5).height = 25;
