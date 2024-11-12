@@ -1,5 +1,5 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationService, getAllMonitoringAll} = require("./organization.monitoring.service");
-const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation } = require("../utils/validation");;
+const { getAllMonitoring, aktSverkaService, orderOrganizationService, getAllMonitoringAll, organizationPrixodRasxodService } = require("./organization.monitoring.service");
+const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation, organizationPrixodRasxodValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
 const { validationResponse } = require("../utils/response-for-validation");
@@ -12,6 +12,7 @@ const { returnSleshDate } = require('../utils/date.function');
 const { returnStringDate } = require('../utils/date.function')
 const { returnExcelColumn } = require('../utils/for-excel')
 const { getBySchetService } = require('../spravochnik/operatsii/operatsii.service')
+const { getByIdUserService } = require('../auth/auth.service')
 
 const getOrganizationMonitoring = async (req, res) => {
     try {
@@ -20,7 +21,7 @@ const getOrganizationMonitoring = async (req, res) => {
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdOrganizationService(region_id, spravochnik_organization_id)
-        const { total, data, prixod, rasxod,  shartnoma_null_array } = await getAllMonitoring(region_id, main_schet_id, offset, limit, spravochnik_organization_id);
+        const { total, data, prixod, rasxod, shartnoma_null_array } = await getAllMonitoring(region_id, main_schet_id, offset, limit, spravochnik_organization_id);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -419,7 +420,7 @@ const orderOrganization = async (req, res) => {
         to_dateCell.value = `Остаток концу дня`;
         itogo_prixod.value = `ДЕБИТ`
         itogo_rasxod.value = `КРЕДИТ`
-        const itogo_array = [   , itogo_prixod, itogo_rasxod, to_dateCell]
+        const itogo_array = [, itogo_prixod, itogo_rasxod, to_dateCell]
         itogo_array.forEach(col => {
             Object.assign(col, {
                 font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
@@ -457,10 +458,10 @@ const orderOrganization = async (req, res) => {
             for (let rasxod of organ.rasxod_array) {
                 const column = schet_columns.find(item => item.schet === rasxod.schet)
                 const index = rasxod_schet_itogo.findIndex(item => item.schet === column.schet)
-                if(index !== -1){
-                    rasxod_schet_itogo[index] = {colLetter: column.colLetter, summa: rasxod_schet_itogo[index].summa + rasxod.summa}
-                }else {
-                    rasxod_schet_itogo.push({colLetter: column.colLetter, summa: rasxod.summa})
+                if (index !== -1) {
+                    rasxod_schet_itogo[index] = { colLetter: column.colLetter, summa: rasxod_schet_itogo[index].summa + rasxod.summa }
+                } else {
+                    rasxod_schet_itogo.push({ colLetter: column.colLetter, summa: rasxod.summa })
                 }
                 const schet = worksheet.getCell(`${column.colLetter}${row_number}`)
                 schet.value = rasxod.summa
@@ -515,9 +516,9 @@ const orderOrganization = async (req, res) => {
             row_number++
         }
         worksheet.mergeCells(`G${row_number}`, `H${row_number}`)
-        worksheet.mergeCells(`I${row_number}`, `J${row_number}`) 
-        const debit_fromCell = worksheet.getCell(`G${row_number}`)  
-        const kridit_fromCell = worksheet.getCell(`J${row_number}`) 
+        worksheet.mergeCells(`I${row_number}`, `J${row_number}`)
+        const debit_fromCell = worksheet.getCell(`G${row_number}`)
+        const kridit_fromCell = worksheet.getCell(`J${row_number}`)
         const debitCell = worksheet.getCell(`K${row_number}`)
         const itogo_rasxodColumn = schet_columns.find(item => item.schet === 'Итого КР')
         const itogo_rasxodCell = worksheet.getCell(`${itogo_rasxodColumn.colLetter}${row_number}`)
@@ -526,13 +527,13 @@ const orderOrganization = async (req, res) => {
         const itogo_to_kriditColumn = schet_columns.find(item => item.schet === 'КРЕДИТ')
         const itogo_to_kriditCell = worksheet.getCell(`${itogo_to_kriditColumn.colLetter}${row_number}`)
         itogo_rasxodCell.value = itogo_all_rasxod
-        debit_fromCell.value = debit_from 
-        kridit_fromCell.value = kridit_from 
+        debit_fromCell.value = debit_from
+        kridit_fromCell.value = kridit_from
         debitCell.value = debit
         itogo_to_debitCell.value = debit_to
         itogo_to_kriditCell.value = kridit_to
         const itogo_css_array = [itogo_rasxodCell, debit_fromCell, kridit_fromCell, debitCell, itogo_to_debitCell, itogo_to_kriditCell]
-        for(let itogo of rasxod_schet_itogo){
+        for (let itogo of rasxod_schet_itogo) {
             const itogoCell = worksheet.getCell(`${itogo.colLetter}${row_number}`)
             itogoCell.value = itogo.summa
             itogo_css_array.push(itogoCell)
@@ -567,9 +568,123 @@ const orderOrganization = async (req, res) => {
     }
 }
 
+const organizationPrixodRasxod = async (req, res) => {
+    try {
+        const region_id = req.user.region_id
+        const { to } = validationResponse(organizationPrixodRasxodValidation, req.query)
+        const workbook = new ExcelJS.Workbook();
+        const fileName = `organization_prixod_rasxod_${new Date().getTime()}.xlsx`;
+        const worksheet = workbook.addWorksheet('organizatiod prixod rasxod');
+        worksheet.pageSetup.margins.left = 0
+        worksheet.pageSetup.margins.header = 0
+        worksheet.pageSetup.margins.footer = 0
+        worksheet.pageSetup.margins.right = 0
+        worksheet.mergeCells(`A1`, 'F1')
+        const title = worksheet.getCell(`A1`)
+        title.value = `${returnStringDate(new Date(to))} дебитор ва счет карзлари тугрисида маълумот`
+        const organ_nameCell = worksheet.getCell(`A2`)
+        organ_nameCell.value = 'Наименование организации'
+        const dataCell = worksheet.getCell(`B2`)
+        dataCell.value = `Дата`
+        const doc_numCell = worksheet.getCell(`C2`)
+        doc_numCell.value = `Доc-дата`
+        const becauseCell = worksheet.getCell(`D2`)
+        becauseCell.value = `За что`
+        const prixodCell = worksheet.getCell(`E2`)
+        prixodCell.value = `Дебит`
+        const rasxodCell = worksheet.getCell(`F2`)
+        rasxodCell.value = 'Кредит'
+        const css_array = [title, organ_nameCell, dataCell, doc_numCell, becauseCell, prixodCell, rasxodCell]
+        let itogo_rasxod = 0;
+        let itogo_prixod = 0;
+        const { data } = await organizationPrixodRasxodService(region_id, to)
+        let row_number = 3
+        for(let column of data){
+            const organ_nameCell = worksheet.getCell(`A${row_number}`)
+            organ_nameCell.value = column.name
+            const dataCell = worksheet.getCell(`B${row_number}`)
+            dataCell.value = `nimadur`
+            const doc_numCell = worksheet.getCell(`C${row_number}`)
+            doc_numCell.value = `???`
+            const becauseCell = worksheet.getCell(`D${row_number}`)
+            becauseCell.value = `buni ham bilmadim`
+            const prixodCell = worksheet.getCell(`E${row_number}`)
+            prixodCell.value = column.summa > 0 ? column.summa : 0
+            itogo_prixod += prixodCell.value
+            const rasxodCell = worksheet.getCell(`F${row_number}`)
+            rasxodCell.value = column.summa < 0 ? Math.abs(column.summa) : 0
+            itogo_rasxod += rasxodCell.value
+            const css_array = [organ_nameCell, dataCell, doc_numCell, becauseCell, prixodCell, rasxodCell]
+            css_array.forEach((item, index) => {
+                horizontal = 'center'
+                let size = 10;
+                if(index === 0 || index == 3) horizontal = 'left';
+                if(index === 4 || index === 5) horizontal = 'right';
+                Object.assign(item, {
+                    numFmt: '#,##0.00',
+                    font: { size, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal},
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            })
+            row_number++
+        }
+        const itogoStr = worksheet.getCell(`D${row_number}`)
+        itogoStr.value = 'Итого'
+        const prixod_itogoCell = worksheet.getCell(`E${row_number}`)
+        prixod_itogoCell.value = itogo_prixod
+        const rasxod_itogoCell = worksheet.getCell(`F${row_number}`)
+        rasxod_itogoCell.value = itogo_rasxod
+        css_array.push(itogoStr, prixod_itogoCell, rasxod_itogoCell)
+
+        css_array.forEach((item, index) => {
+            let fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+            let border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+            let horizontal = 'center' 
+            let size = 10;
+            if(index === 0) fill = {}, border = {}, size = 14;
+            if(index === 7) fill = {}, border = {}, horizontal = 'right';
+            if(index > 7) horizontal = 'right';
+            Object.assign(item, {
+                numFmt: '#,##0.00',
+                font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal },
+                fill,
+                border
+            });
+        })
+        worksheet.getColumn(1).width = 25;
+        worksheet.getColumn(2).width = 10;
+        worksheet.getColumn(3).width = 10;
+        worksheet.getColumn(4).width = 20;
+        worksheet.getColumn(5).width = 15;
+        worksheet.getColumn(6).width = 15;
+        worksheet.getRow(1).height = 35;
+        const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+        await workbook.xlsx.writeFile(filePath);
+        return res.download(filePath, (err) => {
+            if (err) throw new ErrorResponse(err, err.statusCode);
+        });
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
 module.exports = {
     getOrganizationMonitoring,
     aktSverka,
     orderOrganization,
-    getOrganizationMonitoringAll
+    getOrganizationMonitoringAll,
+    organizationPrixodRasxod
 };

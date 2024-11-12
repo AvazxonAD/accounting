@@ -730,10 +730,59 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to
     }
 }
 
+const organizationPrixodRasxodService = async (region_id, to) => {
+    try {
+        const main_data = await pool.query(`
+            WITH data AS (
+                SELECT
+                    s_o.id,
+                    s_o.name,
+                    (
+                        ( SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT
+                            FROM bank_rasxod_child AS b_r_ch 
+                            JOIN users AS u ON u.id = b_r_ch.user_id
+                            JOIN regions AS r ON r.id = u.region_id
+                            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id 
+                            JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
+                            WHERE r.id = $1  AND b_r.doc_date <= $2 AND b_r.id_spravochnik_organization = s_o.id
+                        ) - 
+                        ( 
+                            (SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT
+                                FROM bank_prixod_child AS b_p_ch 
+                                JOIN users AS u ON u.id = b_p_ch.user_id
+                                JOIN regions AS r ON r.id = u.region_id
+                                JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id 
+                                JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
+                                WHERE r.id = $1  AND b_p.doc_date <= $2 AND b_p.id_spravochnik_organization = s_o.id) + 
+                            (SELECT COALESCE(SUM(b_i_j3.summa), 0)
+                                FROM bajarilgan_ishlar_jur3 AS b_i_j3 
+                                JOIN users AS u ON u.id = b_i_j3.user_id
+                                JOIN regions AS r ON r.id = u.region_id
+                                JOIN spravochnik_operatsii AS s_own_o ON s_own_o.id = b_i_j3.spravochnik_operatsii_own_id 
+                                WHERE r.id = $1 AND b_i_j3.doc_date <= $2 AND b_i_j3.id_spravochnik_organization = s_o.id
+                            )
+                        )
+                    ) AS summa
+                FROM spravochnik_organization AS s_o
+                JOIN users AS u ON u.id = s_o.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $1 AND s_o.isdeleted = false
+                GROUP BY s_o.name, s_o.id
+            )
+            SELECT 
+                ARRAY_AGG(row_to_json(data)) AS data
+            FROM data 
+        `, [ region_id, to ])
+        return {data: main_data.rows[0]?.data || []}
+    } catch(error) {
+        throw new ErrorResponse(error, error.statusCode)
+    } 
+}
 
 module.exports = {
     getAllMonitoring,
     orderOrganizationService,
     aktSverkaService,
-    getAllMonitoringAll
+    getAllMonitoringAll,
+    organizationPrixodRasxodService
 };
