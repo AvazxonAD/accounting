@@ -11,6 +11,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                     SELECT 
                         sh_o.id,
                         sh_o.spravochnik_organization_id,
+                        s_organ.name AS organization_name,
                         sh_o.doc_num,
                         TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
                         sh_o.smeta_id,
@@ -111,6 +112,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                             ) 
                         ) AS array
                     FROM shartnomalar_organization AS sh_o
+                    JOIN spravochnik_organization AS s_organ ON s_organ.id = sh_o.spravochnik_organization_id
                     JOIN users AS u ON sh_o.user_id = u.id
                     JOIN regions AS r ON u.region_id = r.id
                     JOIN smeta ON sh_o.smeta_id = smeta.id
@@ -277,6 +279,7 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit) => {
                     SELECT 
                         sh_o.id,
                         sh_o.spravochnik_organization_id,
+                        s_organ.name AS organization_name,
                         sh_o.doc_num,
                         TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
                         sh_o.smeta_id,
@@ -377,6 +380,7 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit) => {
                             ) 
                         ) AS array
                     FROM shartnomalar_organization AS sh_o
+                    JOIN spravochnik_organization AS s_organ ON s_organ.id = sh_o.spravochnik_organization_id 
                     JOIN users AS u ON sh_o.user_id = u.id
                     JOIN regions AS r ON u.region_id = r.id
                     JOIN smeta ON sh_o.smeta_id = smeta.id
