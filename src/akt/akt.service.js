@@ -39,41 +39,38 @@ const createJur3DB = async (data) => {
       ],
     );
     const result = doc.rows[0]
-    const child_queries = []
-    for(let child of data.childs){
-      const child_query = client.query(
-        `
-          INSERT INTO bajarilgan_ishlar_jur3_child(
-              spravochnik_operatsii_id,
-              summa,
-              id_spravochnik_podrazdelenie,
-              id_spravochnik_sostav,
-              id_spravochnik_type_operatsii,
-              main_schet_id,
-              bajarilgan_ishlar_jur3_id,
-              user_id,
-              spravochnik_operatsii_own_id,
-              created_at,
-              updated_at
-          ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-        [
-          child.spravochnik_operatsii_id,
-          child.summa,
-          child.id_spravochnik_podrazdelenie,
-          child.id_spravochnik_sostav,
-          child.id_spravochnik_type_operatsii,
-          data.main_schet_id,
-          result.id,
-          data.user_id,
-          data.spravochnik_operatsii_own_id,
-          tashkentTime(),
-          tashkentTime()
-      ]);
-      child_queries.push(child_query)
-    }
-    const childs = await Promise.all(child_queries)
-    const docs = childs.map(item => item.rows[0])
-    result.childs = docs
+    const query = `
+      INSERT INTO bajarilgan_ishlar_jur3_child(
+        spravochnik_operatsii_id,
+        summa,
+        id_spravochnik_podrazdelenie,
+        id_spravochnik_sostav,
+        id_spravochnik_type_operatsii,
+        main_schet_id,
+        bajarilgan_ishlar_jur3_id,
+        user_id,
+        spravochnik_operatsii_own_id,
+        created_at,
+        updated_at
+      ) VALUES ${data.childs.map((child, index) =>
+        `(
+          ${child.spravochnik_operatsii_id},
+          ${child.summa},
+          ${child.id_spravochnik_podrazdelenie},
+          ${child.id_spravochnik_sostav},
+          ${child.id_spravochnik_type_operatsii},
+          ${data.main_schet_id},
+          ${result.id},
+          ${data.user_id},
+          ${data.spravochnik_operatsii_own_id},
+          '${tashkentTime()}',
+          '${tashkentTime()}'
+        )${index === data.childs.length - 1 ? '' : ','}`
+      ).join('')} RETURNING *
+    `;
+    const childs = await client.query(query);
+    const docs = childs.rows;
+    result.childs = docs;
     await client.query('COMMIT')
     return result;
   } catch (error) {
@@ -202,12 +199,12 @@ const getAllJur3DB = async (region_id, main_schet_id, from, to, offset, limit) =
 }
 
 const getElementByIdJur_3DB = async (region_id, main_schet_id, id, ignoreDeleted = false) => {
-    try {
-      let filter = `b_i_j3.main_schet_id = $2 AND r.id = $1 AND b_i_j3.id = $3`
-      if (!ignoreDeleted) {
-        filter += ` AND b_i_j3.isdeleted = false`;
-      }
-      const { rows } = await pool.query(`
+  try {
+    let filter = `b_i_j3.main_schet_id = $2 AND r.id = $1 AND b_i_j3.id = $3`
+    if (!ignoreDeleted) {
+      filter += ` AND b_i_j3.isdeleted = false`;
+    }
+    const { rows } = await pool.query(`
         SELECT 
           b_i_j3.id, 
           b_i_j3.doc_num,
@@ -254,14 +251,14 @@ const getElementByIdJur_3DB = async (region_id, main_schet_id, id, ignoreDeleted
         LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
         WHERE ${filter}
       `, [region_id, main_schet_id, id])
-      if(!rows[0]){
-        throw new ErrorResponse('bajarilgan_ishlar_jur3 doc not found', 404)
-      }
-      return rows[0];
-    } catch (error) {
-      throw new ErrorResponse(error, error.statusCode)
+    if (!rows[0]) {
+      throw new ErrorResponse('bajarilgan_ishlar_jur3 doc not found', 404)
     }
+    return rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode)
   }
+}
 
 const updateJur3DB = async (data) => {
   try {
@@ -289,7 +286,7 @@ const updateJur3DB = async (data) => {
         data.spravochnik_operatsii_own_id,
         tashkentTime(),
         data.id,
-    ]);
+      ]);
     return result.rows[0]
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -313,7 +310,7 @@ const deleteJur3DB = async (id) => {
   }
 }
 
-const jur3CapService = async (region_id, from, to, schet ) => {
+const jur3CapService = async (region_id, from, to, schet) => {
   try {
     const data = await pool.query(`
       SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa

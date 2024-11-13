@@ -46,6 +46,14 @@ const getPodotchetMonitoring = async (req, res) => {
     }
 }
 
+const prixodRasxodPodotchet = async (req, res) => {
+    try {
+        const data  = 0         
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
 module.exports = {
     getPodotchetMonitoring
 };
