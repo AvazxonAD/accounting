@@ -3,13 +3,13 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, to, podotchet_id = null) => {
     try {
-        const params =[region_id, main_schet_id, from, to, offset, limit]
+        const params = [region_id, main_schet_id, from, to, offset, limit]
         let k_p_podotchet_filter = ``
         let k_r_podotchet_filter = ``
         let b_r_podotchet_filter = ``
         let a_o_j4_podotchet_filter = ``
         let b_p_podotchet_filter = ``
-        if(podotchet_id){
+        if (podotchet_id) {
             k_p_podotchet_filter = `AND k_p.id_podotchet_litso = $${params.length + 1}`
             k_r_podotchet_filter = `AND k_r.id_podotchet_litso = $${params.length + 1}`
             a_o_j4_podotchet_filter = `AND a_o_j4.spravochnik_podotchet_litso_id = $${params.length + 1}`
@@ -374,33 +374,51 @@ const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
             JOIN users AS u ON u.id = s_p_l.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1
+            ORDER BY s_p_l.name
         `, [region_id])
-        const avans_rasxod = await client.query(`
-            SELECT COALESCE(SUM(a_o_j4.summa), 0)
-            FROM avans_otchetlar_jur4 a_o_j4
-            JOIN users u ON a_o_j4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.spravochnik_podotchet_litso_id = $3 AND a_o_j4.isdeleted = false AND a_o_j4.doc_date < $4
-        `, [region_id, main_schet_id, podotchet_id, to])
-        const kassa_rasxod = await pool.query(`
-            SELECT COALESCE(SUM(k_p.summa), 0)
-            FROM kassa_prixod k_p
-            JOIN users u ON k_p.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            WHERE r.id = $1 AND k_p.id_podotchet_litso $2 AND k_p.main_schet_id = $3 AND k_p.isdeleted = false AND k_p.doc_date < $4
-        `, [region_id, main_schet_id, podotchet_id, to])
-        const n = await client.query(`
-            (SELECT COALESCE(SUM(b_p_ch.summa), 0)
-            FROM bank_prixod_child b_p_ch
-            JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
-            JOIN users u ON b_p_ch.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            WHERE r.id = $1 ${b_p_podotchet_filter} AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL AND b_p_ch.main_schet_id = $2  AND b_p_ch.isdeleted = false AND b_p.doc_date BETWEEN $3 AND $4 )
-        `)
-
-
-
+        for (let podotchet of podotchets.rows) {
+            const avans_rasxod = await client.query(`
+                    SELECT COALESCE(SUM(a_o_j4.summa), 0)::FLOAT AS summa
+                    FROM avans_otchetlar_jur4 a_o_j4
+                    JOIN users u ON a_o_j4.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.isdeleted = false AND a_o_j4.doc_date <= $3 AND a_o_j4.spravochnik_podotchet_litso_id = $4 
+                `, [region_id, main_schet_id, to, podotchet.id])
+            const kassa_rasxod = await pool.query(`
+                    SELECT COALESCE(SUM(k_p.summa), 0)::FLOAT AS summa
+                    FROM kassa_prixod k_p
+                    JOIN users u ON k_p.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.doc_date <= $3 AND k_p.id_podotchet_litso = $4
+                `, [region_id, main_schet_id, to, podotchet.id])
+            const bank_rasxod = await client.query(`
+                    SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
+                    JOIN users u ON b_p_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 AND b_p_ch.main_schet_id = $2 AND b_p_ch.isdeleted = false AND b_p.doc_date <= $3 AND b_p_ch.id_spravochnik_podotchet_litso = $4 
+                `, [region_id, main_schet_id, to, podotchet.id])
+            const kassa_prixod = await client.query(`
+                    SELECT COALESCE(SUM(k_r.summa), 0)::FLOAT AS summa
+                    FROM kassa_rasxod k_r
+                    JOIN users u ON k_r.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.doc_date <= $3 AND k_r.id_podotchet_litso = $4
+                `, [region_id, main_schet_id, to, podotchet.id])
+            const bank_prixod = await client.query(`
+                    SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod b_r ON b_r.id = b_r_ch.id_bank_rasxod
+                    JOIN users u ON b_r_ch.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    WHERE r.id = $1 AND b_r_ch.main_schet_id = $2 AND b_r_ch.isdeleted = false AND b_r.doc_date <= $3 AND b_r_ch.id_spravochnik_podotchet_litso = $4    
+                `, [region_id, main_schet_id, to, podotchet.id])
+            const summa = (kassa_prixod.rows[0].summa + bank_prixod.rows[0].summa) - (avans_rasxod.rows[0].summa + bank_rasxod.rows[0].summa + kassa_rasxod.rows[0].summa)
+            podotchet.summa = summa
+        }
         await client.query(`COMMIT`)
+        return podotchets.rows
     } catch (error) {
         await client.query(`ROLLBACK`)
         throw new ErrorResponse(error, error.statusCode)
