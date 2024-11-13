@@ -1,10 +1,10 @@
-const { podotchetQueryValidation } = require("../utils/validation");;
+const { podotchetQueryValidation, prixodRasxodPodotchetValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getLogger } = require('../utils/logger')
 const { validationResponse } = require('../utils/response-for-validation');
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
-const { getAllMonitoring } = require('./podotchet.monitoring.service')
+const { getAllMonitoring, prixodRasxodPodotchetService } = require('./podotchet.monitoring.service')
 const { getByIdPodotchetService } = require('../spravochnik/podotchet/podotchet.litso.service')
 
 const getPodotchetMonitoring = async (req, res) => {
@@ -12,7 +12,7 @@ const getPodotchetMonitoring = async (req, res) => {
         const { limit, page, main_schet_id, from, to, podotchet } = validationResponse(podotchetQueryValidation, req.query)
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
-        if(podotchet){
+        if (podotchet) {
             await getByIdPodotchetService(region_id, podotchet)
         }
         await getByIdMainSchetService(region_id, main_schet_id);
@@ -48,12 +48,16 @@ const getPodotchetMonitoring = async (req, res) => {
 
 const prixodRasxodPodotchet = async (req, res) => {
     try {
-        const data  = 0         
+        const region_id = req.user.region_id;
+        const { from, main_schet_id } = validationResponse(prixodRasxodPodotchetValidation, req.query)
+        const data = await prixodRasxodPodotchetService(region_id, main_schet_id, from)
+
     } catch (error) {
         errorCatch(error, res)
     }
 }
 
 module.exports = {
-    getPodotchetMonitoring
+    getPodotchetMonitoring,
+    prixodRasxodPodotchet
 };

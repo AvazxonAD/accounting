@@ -421,6 +421,11 @@ const podotchetQueryValidation = Joi.object({
   podotchet: Joi.number().min(1)
 }).options({ stripUnknown: true });
 
+const prixodRasxodPodotchetValidation = Joi.object({
+  to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+  main_schet_id: Joi.number().required().min(1)
+})
+
 const podotchetLitsoValidation = Joi.object({
   name: Joi.string().trim().required(),
   rayon: Joi.string().trim().required()
@@ -499,6 +504,7 @@ module.exports = {
   orderOrganizationValidation,
   jur3CapValidation,
   podpisValidation,
-  organizationPrixodRasxodValidation
+  organizationPrixodRasxodValidation,
+  prixodRasxodPodotchetValidation
 };
 

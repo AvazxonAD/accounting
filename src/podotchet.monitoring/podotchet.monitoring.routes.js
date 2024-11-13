@@ -1,8 +1,10 @@
 const { Router } = require("express");
 const router = Router();
 
-const { getPodotchetMonitoring } = require("./podotchet.monitoring.controller");
+const { getPodotchetMonitoring, prixodRasxodPodotchet } = require("./podotchet.monitoring.controller");
 
 router.get("/", getPodotchetMonitoring);
+router.get('/prixod/rasxod', prixodRasxodPodotchet)
+
 
 module.exports = router;

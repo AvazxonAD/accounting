@@ -22,7 +22,7 @@ const createJur3DB = async (data) => {
                   updated_at
               ) 
               VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
-              RETURNING *
+              RETURNING * 
               `,
       [
         data.doc_num,
@@ -38,37 +38,45 @@ const createJur3DB = async (data) => {
         tashkentTime()
       ],
     );
+
     const result = doc.rows[0]
+    data.childs = data.childs.map(item => {
+          return {
+            spravochnik_operatsii_id: item.spravochnik_operatsii_id,
+            summa: item.summa,
+            id_spravochnik_podrazdelenie: item.id_spravochnik_podrazdelenie,
+            id_spravochnik_sostav: item.id_spravochnik_sostav,
+            id_spravochnik_type_operatsii: item.id_spravochnik_type_operatsii,
+            main_schet_id: data.main_schet_id,
+            bajarilgan_ishlar_jur3_id: result.id,
+            user_id: data.user_id,
+            spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id,
+            created_at: tashkentTime(),
+            updated_at: tashkentTime()
+          }
+    }) 
+    const values = data.childs.map((_, index) => `($${11 * index + 1}, $${11 * index + 2}, $${11 * index + 3}, $${11 * index + 4}, $${11 * index + 5}, $${11 * index + 6}, $${11 * index + 7}, $${11 * index + 8}, $${11 * index + 9}, $${11 * index + 10}, $${11 * index + 11})`);
+    const allValues = data.childs.reduce((acc, obj) => {
+      return acc.concat(Object.values(obj));
+    }, []);
+    const _values = values.join(", ")
     const query = `
       INSERT INTO bajarilgan_ishlar_jur3_child(
-        spravochnik_operatsii_id,
-        summa,
-        id_spravochnik_podrazdelenie,
-        id_spravochnik_sostav,
-        id_spravochnik_type_operatsii,
-        main_schet_id,
-        bajarilgan_ishlar_jur3_id,
-        user_id,
-        spravochnik_operatsii_own_id,
-        created_at,
-        updated_at
-      ) VALUES ${data.childs.map((child, index) =>
-        `(
-          ${child.spravochnik_operatsii_id},
-          ${child.summa},
-          ${child.id_spravochnik_podrazdelenie},
-          ${child.id_spravochnik_sostav},
-          ${child.id_spravochnik_type_operatsii},
-          ${data.main_schet_id},
-          ${result.id},
-          ${data.user_id},
-          ${data.spravochnik_operatsii_own_id},
-          '${tashkentTime()}',
-          '${tashkentTime()}'
-        )${index === data.childs.length - 1 ? '' : ','}`
-      ).join('')} RETURNING *
+          spravochnik_operatsii_id,
+          summa,
+          id_spravochnik_podrazdelenie,
+          id_spravochnik_sostav,
+          id_spravochnik_type_operatsii,
+          main_schet_id,
+          bajarilgan_ishlar_jur3_id,
+          user_id,
+          spravochnik_operatsii_own_id,
+          created_at,
+          updated_at
+        ) 
+        VALUES ${_values} RETURNING *
     `;
-    const childs = await client.query(query);
+    const childs = await client.query(query, allValues);
     const docs = childs.rows;
     result.childs = docs;
     await client.query('COMMIT')
