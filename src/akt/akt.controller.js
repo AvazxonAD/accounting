@@ -173,10 +173,14 @@ const jur3Cap = async (req, res) => {
     const schets = await getSchetService(reggion_id)
     const workbook = new ExcelJS.Workbook();
     const fileName = `jur3_cap${new Date().getTime()}.xlsx`;
+    let worksheet = null;
+    if(schets.length === 0){
+      worksheet = workbook.addWorksheet(`data not found`);
+    }
     for (let schet of schets) {
       const data = await jur3CapService(reggion_id, from, to, `${schet.schet}`)
       let row_number = 4
-      const worksheet = workbook.addWorksheet(`${schet.schet}`);
+      worksheet = workbook.addWorksheet(`${schet.schet}`);
       worksheet.pageSetup.margins.left = 0
       worksheet.pageSetup.margins.header = 0
       worksheet.pageSetup.margins.footer = 0
