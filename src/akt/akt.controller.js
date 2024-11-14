@@ -180,6 +180,7 @@ const jur3Cap = async (req, res) => {
       worksheet.pageSetup.margins.left = 0
       worksheet.pageSetup.margins.header = 0
       worksheet.pageSetup.margins.footer = 0
+      worksheet.pageSetup.margins.bottom = 0
       worksheet.mergeCells(`A1`, `H1`)
       const title = worksheet.getCell(`A1`)
       title.value = `Журнал-ордер № 3 Счет: ${schet.schet}`

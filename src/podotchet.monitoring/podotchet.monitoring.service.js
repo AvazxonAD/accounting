@@ -369,12 +369,12 @@ const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
     try {
         await client.query(`BEGIN`)
         const podotchets = await client.query(`
-            SELECT s_p_l.id, s_p_l.name
+            SELECT s_p_l.id, s_p_l.name, s_p_l.rayon
             FROM spravochnik_podotchet_litso AS s_p_l
             JOIN users AS u ON u.id = s_p_l.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1
-            ORDER BY s_p_l.name
+            ORDER BY s_p_l.name, s_p_l.rayon
         `, [region_id])
         for (let podotchet of podotchets.rows) {
             const avans_rasxod = await client.query(`

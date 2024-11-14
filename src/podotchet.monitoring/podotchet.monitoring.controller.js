@@ -67,7 +67,7 @@ const prixodRasxodPodotchet = async (req, res) => {
         worksheet.getCell('A1').value = `Список Дебеторов / Кредиторов на ${returnStringDate(new Date(to))}`;
         worksheet.getCell('A2').value = 'Подотчетное лицо';
         worksheet.getCell('B2').value = 'Управление';
-        worksheet.getCell('C2').value = 'Дата';
+        worksheet.getCell('C2').value = 'Дата'; 
         worksheet.getCell('D2').value = 'Дебет';
         worksheet.getCell('E2').value = 'Кредит';
         let row_number = 3
@@ -76,7 +76,7 @@ const prixodRasxodPodotchet = async (req, res) => {
         for (let column of data) {
             if (column.summa === 0) continue;
             worksheet.getCell(`A${row_number}`).value = column.name;
-            worksheet.getCell(`B${row_number}`).value = `Управление`;
+            worksheet.getCell(`B${row_number}`).value = column.rayon;
             worksheet.getCell(`C${row_number}`).value = returnLocalDate(new Date(to));
             worksheet.getCell(`D${row_number}`).value = column.summa > 0 ? column.summa : 0;
             worksheet.getCell(`E${row_number}`).value = column.summa < 0 ? Math.abs(column.summa) : 0;
