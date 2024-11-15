@@ -41,9 +41,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             FROM kassa_prixod k_p
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
             JOIN users u ON k_p.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN kassa_prxiod_child AS k_p_ch ON 
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = 
+            JOIN regions r ON u.region_id = r.id 
             WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false ${k_p_podotchet_filter} 
                 AND k_p.id_podotchet_litso IS NOT NULL  
                 AND k_p.doc_date BETWEEN $3 AND $4
@@ -181,7 +179,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 ) AS counts
             ) AS total_count,
             (
-                (SELECT COALESCE(SUM(k_p_ch.summa), 0)
+                (SELECT COALESCE(SUM(k_p.summa), 0)
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -217,7 +215,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                         AND b_r.doc_date < $3 )
             )::FLOAT AS summa_from_prixod, 
             ( 
-                (SELECT COALESCE(SUM(k_p_ch.summa), 0)
+                (SELECT COALESCE(SUM(k_p.summa), 0)
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -254,7 +252,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                         AND b_r.doc_date BETWEEN $3 AND $4 )
             )::FLOAT AS prixod_sum,
             ( 
-                (SELECT COALESCE(SUM(k_p_ch.summa), 0)
+                (SELECT COALESCE(SUM(k_p.summa), 0)
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -331,7 +329,7 @@ const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
                     WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.isdeleted = false AND a_o_j4.doc_date <= $3 AND a_o_j4.spravochnik_podotchet_litso_id = $4 
                 `, [region_id, main_schet_id, to, podotchet.id])
             const kassa_rasxod = await pool.query(`
-                    SELECT COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS summa
+                    SELECT COALESCE(SUM(k_p.summa), 0)::FLOAT AS summa
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
