@@ -329,7 +329,7 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit) => {
                                         (SELECT ARRAY_AGG(s_o.schet|| ' - ' || s_own.schet)
                                             FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch_ch
                                             JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3_ch.spravochnik_operatsii_id
+                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3_ch.spravochnik_operatsii_own_id
                                             WHERE b_i_j3_ch_ch.bajarilgan_ishlar_jur3_id = b_i_j3_ch.id
                                         ) AS schet_array
                                     FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
