@@ -44,7 +44,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM bank_rasxod b_r_ch
                                     JOIN users AS u ON u.id = b_r_ch.user_id 
-                                    WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization = $5 AND b_r_ch.id_shartnomalar_organization = sh_o.id
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE b_r_ch.isdeleted = false 
+                                        AND b_r_ch.id_spravochnik_organization = $5 
+                                        AND b_r_ch.id_shartnomalar_organization = sh_o.id
+                                        AND r.id = $1
+                                        AND b_r_ch.main_schet_id = $2
                                     UNION ALL 
                                     SELECT 
                                         b_i_j3_ch.id,
@@ -65,7 +70,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
                                     JOIN users AS u ON b_i_j3_ch.user_id = u.id
-                                    WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization = $5 AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE b_i_j3_ch.isdeleted = false 
+                                        AND b_i_j3_ch.id_spravochnik_organization = $5 
+                                        AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id
+                                        AND r.id = $1
+                                        AND b_i_j3_ch.main_schet_id = $2
                                     UNION ALL 
                                     SELECT 
                                         b_p_ch.id,
@@ -86,7 +96,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM bank_prixod AS b_p_ch
                                     JOIN users AS u ON u.id = b_p_ch.user_id
-                                    WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization = $5 AND b_p_ch.id_shartnomalar_organization = sh_o.id
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE b_p_ch.isdeleted = false 
+                                        AND b_p_ch.id_spravochnik_organization = $5 
+                                        AND b_p_ch.id_shartnomalar_organization = sh_o.id
+                                        AND r.id = $1
+                                        AND b_p_ch.main_schet_id = $2
                                     UNION ALL
                                     SELECT 
                                         k_h_j152_ch.id,
@@ -107,7 +122,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
                                     JOIN users AS u ON u.id = k_h_j152_ch.user_id
-                                    WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization = $5 AND k_h_j152_ch.shartnomalar_organization_id = sh_o.id
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE k_h_j152_ch.isdeleted = false 
+                                        AND k_h_j152_ch.id_spravochnik_organization = $5 
+                                        AND k_h_j152_ch.shartnomalar_organization_id = sh_o.id
+                                        AND r.id = $1
+                                        AND k_h_j152_ch.main_schet_id = $2
                                 ) AS operatsii
                             ) 
                         ) AS array
@@ -145,7 +165,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM bank_rasxod b_r_ch
                                     JOIN users AS u ON u.id = b_r_ch.user_id 
-                                    WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization = $5 AND b_r_ch.id_shartnomalar_organization IS NULL
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE b_r_ch.isdeleted = false 
+                                        AND b_r_ch.id_spravochnik_organization = $5 
+                                        AND b_r_ch.id_shartnomalar_organization IS NULL
+                                        AND r.id = $1
+                                        AND b_r_ch.main_schet_id = $2
                                     UNION ALL 
                                     SELECT 
                                         b_i_j3_ch.id,
@@ -167,7 +192,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
                                     JOIN users AS u ON b_i_j3_ch.user_id = u.id
-                                    WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization = $5 AND b_i_j3_ch.shartnomalar_organization_id IS NULL
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE b_i_j3_ch.isdeleted = false
+                                        AND b_i_j3_ch.id_spravochnik_organization = $5 
+                                        AND b_i_j3_ch.shartnomalar_organization_id IS NULL
+                                        AND r.id = $1
+                                        AND b_i_j3_ch.main_schet_id = $2
                                     UNION ALL 
                                     SELECT 
                                         b_p_ch.id,
@@ -189,7 +219,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM bank_prixod AS b_p_ch
                                     JOIN users AS u ON u.id = b_p_ch.user_id
-                                    WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization = $5 AND b_p_ch.id_shartnomalar_organization IS NULL
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE b_p_ch.isdeleted = false 
+                                        AND b_p_ch.id_spravochnik_organization = $5 
+                                        AND b_p_ch.id_shartnomalar_organization IS NULL
+                                        AND r.id = $1
+                                        AND b_p_ch.main_schet_id = $2
                                     UNION ALL
                                     SELECT 
                                         k_h_j152_ch.id,
@@ -211,7 +246,12 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                                         ) AS schet_array
                                     FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
                                     JOIN users AS u ON u.id = k_h_j152_ch.user_id
-                                    WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization = $5 AND k_h_j152_ch.shartnomalar_organization_id IS NULL
+                                    JOIN regions AS r ON r.id = u.region_id
+                                    WHERE k_h_j152_ch.isdeleted = false 
+                                        AND k_h_j152_ch.id_spravochnik_organization = $5 
+                                        AND k_h_j152_ch.shartnomalar_organization_id IS NULL
+                                        AND k_h_j152_ch.main_schet_id = $2
+                                        AND r.id = $1
                                 ) AS operatsii
                             ) 
                         ) AS shartnoma_null_array,
@@ -222,24 +262,44 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravoc
                             JOIN smeta ON sh_o.smeta_id = smeta.id
                             WHERE ${filter})::INTEGER AS total_count,
                         (
-                            SELECT COALESCE(SUM(k_h_j152.summa), 0) 
-                            FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
-                            WHERE k_h_j152.isdeleted = false AND k_h_j152.main_schet_id = $2 AND k_h_j152.shartnomalar_organization_id = $5
+                            SELECT COALESCE(SUM(k_h_j152_ch.summa), 0) 
+                            FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
+                            JOIN users AS u ON u.id = k_h_j152_ch.user_id
+                            JOIN regions AS r ON r.id = u.region_id
+                            WHERE k_h_j152_ch.isdeleted = false 
+                                AND k_h_j152_ch.id_spravochnik_organization = $5 
+                                AND r.id = $1
+                                AND k_h_j152_ch.main_schet_id = $2
                         ) + 
                         (
-                            SELECT COALESCE(SUM(b_r.summa), 0) 
-                            FROM bank_rasxod AS b_r
-                            WHERE b_r.isdeleted = false AND b_r.main_schet_id = $2 AND b_r.id_spravochnik_organization = $5
+                            SELECT COALESCE(SUM(b_r_ch.summa), 0) 
+                            FROM bank_rasxod b_r_ch
+                            JOIN users AS u ON u.id = b_r_ch.user_id 
+                            JOIN regions AS r ON r.id = u.region_id
+                            WHERE b_r_ch.isdeleted = false 
+                                AND b_r_ch.id_spravochnik_organization = $5 
+                                AND r.id = $1
+                                AND b_r_ch.main_schet_id = $2
                         )::FLOAT AS prixod,
                         (
-                            SELECT COALESCE(SUM(b_i_j152.summa), 0) 
-                            FROM bajarilgan_ishlar_jur3 AS b_i_j152 
-                            WHERE b_i_j152.isdeleted = false AND b_i_j152.main_schet_id = $2 AND b_i_j152.id_spravochnik_organization = $5
+                            SELECT COALESCE(SUM(b_i_j3_ch.summa), 0) 
+                            FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
+                            JOIN users AS u ON b_i_j3_ch.user_id = u.id
+                            JOIN regions AS r ON r.id = u.region_id
+                            WHERE b_i_j3_ch.isdeleted = false 
+                                AND b_i_j3_ch.id_spravochnik_organization = $5 
+                                AND r.id = $1
+                                AND b_i_j3_ch.main_schet_id = $2
                         ) + 
                         (
-                            SELECT COALESCE(SUM(b_p.summa), 0) 
-                            FROM bank_prixod AS b_p
-                            WHERE b_p.isdeleted = false AND b_p.main_schet_id = $2 AND b_p.id_spravochnik_organization = $5
+                            SELECT COALESCE(SUM(b_p_ch.summa), 0) 
+                            FROM bank_prixod AS b_p_ch
+                            JOIN users AS u ON u.id = b_p_ch.user_id
+                            JOIN regions AS r ON r.id = u.region_id
+                            WHERE b_p_ch.isdeleted = false 
+                                AND b_p_ch.id_spravochnik_organization = $5 
+                                AND r.id = $1
+                                AND b_p_ch.main_schet_id = $2
                         )::FLOAT AS rasxod
                     FROM data
             `, [region_id, main_schet_id, offset, limit, spravochnik_organization_id],
@@ -315,7 +375,11 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                                     JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
                                     JOIN users AS u ON u.id = b_r.user_id
                                     JOIN regions AS r ON r.id = u.region_id 
-                                    WHERE b_r.isdeleted = false AND r.id = $1 AND b_r.main_schet_id = $2 AND s_o.schet = $5 AND b_r.id_shartnomalar_organization = sh_o.id
+                                    WHERE b_r.isdeleted = false 
+                                        AND r.id = $1 
+                                        AND b_r.main_schet_id = $2 
+                                        AND s_o.schet = $5 
+                                        AND b_r.id_shartnomalar_organization = sh_o.id
                                     UNION ALL 
                                     SELECT 
                                         b_p.id,
@@ -339,7 +403,11 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                                     JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
                                     JOIN users AS u ON u.id = b_p.user_id
                                     JOIN regions AS r ON r.id = u.region_id
-                                    WHERE b_p.isdeleted = false AND r.id = $1 AND b_p.main_schet_id = $2 AND s_o.schet = $5 AND b_p.id_shartnomalar_organization = sh_o.id
+                                    WHERE b_p.isdeleted = false 
+                                        AND r.id = $1 
+                                        AND b_p.main_schet_id = $2 
+                                        AND s_o.schet = $5 
+                                        AND b_p.id_shartnomalar_organization = sh_o.id
                                 ) AS operatsii
                             ) 
                         ) AS array
