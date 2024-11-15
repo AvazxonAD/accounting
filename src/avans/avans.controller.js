@@ -31,7 +31,7 @@ const jur_4_create = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id);
     const data = validationResponse(jur4Validation, req.body)
     await getByIdPodotchetService(region_id, data.spravochnik_podotchet_litso_id)
-    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'avans_otchet')
+    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'avans_otchet_own')
     for (let child of data.childs) {
       if (child.spravochnik_operatsii_id) {
         await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
@@ -97,7 +97,7 @@ const jur_4_update = async (req, res) => {
     await getByIdJur4DB(region_id, main_schet_id, id)   
     const data = validationResponse(jur4Validation, req.body)
     await getByIdPodotchetService(region_id, data.spravochnik_podotchet_litso_id)
-    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'avans_otchet')
+    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'avans_otchet_own')
     for (let child of data.childs) {
       if (child.spravochnik_operatsii_id) {
         await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'avans_otchet')
