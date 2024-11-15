@@ -26,8 +26,19 @@ const createPodpisService = async (data) => {
   }
 };
 
-const getAllPodpisService = async (region_id, offset, limit) => {
+const getAllPodpisService = async (region_id, offset, limit, type = null) => {
   try {
+    const params = [region_id]
+    let offset_limit = ``
+    let type_filter = ``
+    if(type){
+      type_filter = `AND s_p.type_document = $${params.length + 1}`
+      params.push(type) 
+    } 
+    if(offset && limit){
+      offset_limit = `OFFSET $${params.length + 1} LIMIT $${params + 2}`
+      params.push(offset, limit)
+    }
     const result = await pool.query(
       `
         WITH data AS (
@@ -37,9 +48,8 @@ const getAllPodpisService = async (region_id, offset, limit) => {
           FROM spravochnik_podpis_dlya_doc AS s_p
           JOIN users AS u ON u.id = s_p.user_id
           JOIN regions AS r ON r.id = u.region_id
-          WHERE r.id = $1 AND s_p.isdeleted = false
-          ORDER BY numeric_poryadok
-          OFFSET $2 LIMIT $3
+          WHERE r.id = $1 AND s_p.isdeleted = false ${type_filter}
+          ORDER BY numeric_poryadok ${offset_limit}
         )
         SELECT 
           ARRAY_AGG(ROW_TO_JSON(data)) AS data,
@@ -49,12 +59,10 @@ const getAllPodpisService = async (region_id, offset, limit) => {
             FROM spravochnik_podpis_dlya_doc AS s_p
             JOIN users AS u ON u.id = s_p.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND s_p.isdeleted = false
+            WHERE r.id = $1 AND s_p.isdeleted = false ${type_filter}
           ) AS total_count
         FROM data
-      `,
-      [region_id, offset, limit]
-    );
+    `, params);
     const data = result.rows[0]
     return { data: data?.data || [], total: data.total_count }
   } catch (error) {

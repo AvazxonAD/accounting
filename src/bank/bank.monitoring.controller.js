@@ -10,6 +10,7 @@ const path = require('path');
 const ErrorResponse = require("../utils/errorResponse");
 const { returnStringDate, returnSleshDate } = require('../utils/date.function');
 const { returnStringSumma, probelNumber } = require('../utils/returnSumma')
+const { getAllPodpisService } = require('../spravochnik/podpis/podpis.service')
 
 const getAllBankMonitoring = async (req, res) => {
   try {
@@ -194,26 +195,21 @@ const capExcelCreate = async (req, res) => {
       font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
       alignment: { vertical: 'middle', horizontal: 'left' },
     });
-    row_number++
-    worksheet.mergeCells(`A${row_number + 2}`, `C${row_number + 2}`);
-    const signature = worksheet.getCell(`A${row_number + 2}`);
-    signature.value = 'Главный бухгалтер ___________________________'
-    worksheet.mergeCells(`A${row_number + 3}`, `C${row_number + 3}`);
-    const signature2 = worksheet.getCell(`A${row_number + 3}`);
-    signature2.value = 'Бухгалтер    __________________________________'
-    worksheet.mergeCells(`A${row_number + 4}`, `C${row_number + 4}`)
-    const signature3 = worksheet.getCell(`A${row_number + 4}`)
-    signature3.value = `Получил кассир  ______________________________`
-    const signature_array = [signature, signature2, signature3]
-    signature_array.forEach(row => {
-      Object.assign(row, {
+    row_number = row_number + 3
+    const podpis = await getAllPodpisService(region_id, null, null, 'template')
+    for (let pod of podpis.data) {
+      worksheet.mergeCells(`A${row_number}`, `D${row_number}`);
+      const signature = worksheet.getCell(`A${row_number}`);
+      signature.value = `${pod.doljnost_name}  ${pod.fio_name}`
+      worksheet.getRow(signature.row).height = 30;
+      Object.assign(signature, {
         font: { bold: true, size: 12, name: 'Times New Roman' },
-        alignment: { vertical: 'bottom', horizontal: 'left' }
+        alignment: { vertical: 'bottom', horizontal: 'left' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+        border: { bottom: { style: 'thin' } }
       });
-    });
-    worksheet.getRow(row_number + 2).height = 30;
-    worksheet.getRow(row_number + 3).height = 30;
-    worksheet.getRow(row_number + 4).height = 30;
+      row_number++
+    }
     const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
     await workbook.xlsx.writeFile(filePath);
     return res.download(filePath, (err) => {
@@ -279,7 +275,7 @@ const dailyExcelCreate = async (req, res) => {
     const headers = [date, comment, organization, doc_num, schet, prixod, rasxod, operatsii]
     headers.forEach((item, index) => {
       let horizontal = 'center'
-      if(index === 3){
+      if (index === 3) {
         horizontal = 'left'
       }
       Object.assign(item, {

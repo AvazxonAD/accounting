@@ -41,7 +41,6 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search) => {
     const params = [offset, limit];
     if (search) {
       search_filter = `AND (
-        type_schet ILIKE '%' || $${params.length + 1} || '%' OR
         name ILIKE '%' || $${params.length + 1} || '%' OR
         schet ILIKE '%' || $${params.length + 1} || '%' OR
         sub_schet ILIKE '%' || $${params.length + 1} || '%'
@@ -49,7 +48,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search) => {
       params.push(search)
     }
     if (type_schet) {
-      type_schet_filter = `AND type_schet ILIKE '%' || $${params.length + 1} || '%'`
+      type_schet_filter = `AND type_schet  = $${params.length + 1}`
       params.push(type_schet)
     }
     const result = await pool.query(`

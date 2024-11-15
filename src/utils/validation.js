@@ -225,7 +225,8 @@ const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
   search: Joi.string().trim(),
-  budjet_id: Joi.number()
+  budjet_id: Joi.number(),
+  type: Joi.string().trim()
 }).options({ stripUnknown: true });
 
 const jur7QueryValidation = Joi.object({
