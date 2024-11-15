@@ -168,9 +168,10 @@ const getElementByIdJur_3 = async (req, res) => {
 
 const jur3Cap = async (req, res) => {
   try {
-    const reggion_id = req.user.region_id
-    const { from, to } = validationResponse(jur3CapValidation, req.query)
-    const schets = await getSchetService(reggion_id)
+    const region_id = req.user.region_id
+    const { from, to, main_schet_id } = validationResponse(jur3CapValidation, req.query)
+    await getByIdMainSchetService(region_id, main_schet_id)
+    const schets = await getSchetService(region_id, main_schet_id, from, to)
     const workbook = new ExcelJS.Workbook();
     const fileName = `jur3_cap${new Date().getTime()}.xlsx`;
     let worksheet = null;
@@ -178,7 +179,7 @@ const jur3Cap = async (req, res) => {
       worksheet = workbook.addWorksheet(`data not found`);
     }
     for (let schet of schets) {
-      const data = await jur3CapService(reggion_id, from, to, `${schet.schet}`)
+      const data = await jur3CapService(region_id, from, to, schet.schet, main_schet_id)
       let row_number = 4
       worksheet = workbook.addWorksheet(`${schet.schet}`);
       worksheet.pageSetup.margins.left = 0
@@ -228,6 +229,9 @@ const jur3Cap = async (req, res) => {
             }
           });
         })
+      }
+      if(data.length === 0){
+        row_number = 5
       }
       worksheet.mergeCells(`D4`, `D${row_number - 1}`)
       const kriditSchetCell = worksheet.getCell(`D4`)

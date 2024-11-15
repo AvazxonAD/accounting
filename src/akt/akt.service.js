@@ -318,7 +318,7 @@ const deleteJur3DB = async (id) => {
   }
 }
 
-const jur3CapService = async (region_id, from, to, schet) => {
+const jur3CapService = async (region_id, from, to, schet, main_schet_id) => {
   try {
     const data = await pool.query(`
       SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa
@@ -329,16 +329,16 @@ const jur3CapService = async (region_id, from, to, schet) => {
       JOIN users AS u ON u.id = b_i_j3.user_id
       JOIN regions AS r ON r.id = u.region_id
       JOIN smeta AS s ON s.id = s_o.smeta_id
-      WHERE b_i_j3.doc_date BETWEEN $1 AND $2 AND r.id = $3 AND s_own.schet = $4
+      WHERE b_i_j3.doc_date BETWEEN $1 AND $2 AND r.id = $3 AND s_own.schet = $4 AND b_i_j3.main_schet_id = $5
       GROUP BY s_o.schet, s.smeta_number
-    `, [from, to, region_id, schet])
+    `, [from, to, region_id, schet, main_schet_id])
     return data.rows
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
 }
 
-const getSchetService = async (region_id) => {
+const getSchetService = async (region_id, main_schet_id, from, to) => {
   try {
     const schets = await pool.query(`
       SELECT DISTINCT s_o.schet 
@@ -346,8 +346,8 @@ const getSchetService = async (region_id) => {
       JOIN spravochnik_operatsii AS s_o  ON b_i_j3.spravochnik_operatsii_own_id = s_o.id
       JOIN users AS u ON u.id = b_i_j3.user_id
       JOIN regions AS r ON r.id = u.region_id
-      WHERE  r.id = $1 AND b_i_j3.isdeleted = false
-    `, [region_id])
+      WHERE  r.id = $1 AND b_i_j3.isdeleted = false AND b_i_j3.main_schet_id = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4 
+    `, [region_id, main_schet_id, from, to])
     return schets.rows
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
