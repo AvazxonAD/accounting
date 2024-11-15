@@ -12,7 +12,7 @@ const { returnSleshDate } = require('../utils/date.function');
 const { returnStringDate } = require('../utils/date.function')
 const { returnExcelColumn } = require('../utils/for-excel')
 const { getBySchetService } = require('../spravochnik/operatsii/operatsii.service')
-const { getByIdUserService } = require('../auth/auth.service')
+const { getByIdOperatsiiService } = require('../spravochnik/operatsii/operatsii.service')
 
 const getOrganizationMonitoring = async (req, res) => {
     try {
@@ -43,10 +43,11 @@ const getOrganizationMonitoring = async (req, res) => {
 const getOrganizationMonitoringAll = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id, operatsii_id } = validationResponse(organizationMonitoringValidation, req.query)
+        const operatsii = await getByIdOperatsiiService(operatsii_id, 'Akt_priyom_peresdach_own')
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, data } = await getAllMonitoringAll(region_id, main_schet_id, offset, limit);
+        const { total, data } = await getAllMonitoringAll(region_id, main_schet_id, offset, limit, operatsii.schet);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -599,7 +600,7 @@ const organizationPrixodRasxod = async (req, res) => {
         let itogo_prixod = 0;
         const { data } = await organizationPrixodRasxodService(region_id, to)
         let row_number = 3
-        for(let column of data){
+        for (let column of data) {
             const organ_nameCell = worksheet.getCell(`A${row_number}`)
             organ_nameCell.value = column.name
             const dataCell = worksheet.getCell(`B${row_number}`)
@@ -618,12 +619,12 @@ const organizationPrixodRasxod = async (req, res) => {
             css_array.forEach((item, index) => {
                 horizontal = 'center'
                 let size = 10;
-                if(index === 0 || index == 3) horizontal = 'left';
-                if(index === 4 || index === 5) horizontal = 'right';
+                if (index === 0 || index == 3) horizontal = 'left';
+                if (index === 4 || index === 5) horizontal = 'right';
                 Object.assign(item, {
                     numFmt: '#,##0.00',
                     font: { size, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal},
+                    alignment: { vertical: 'middle', horizontal },
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
                     border: {
                         top: { style: 'thin' },
@@ -651,11 +652,11 @@ const organizationPrixodRasxod = async (req, res) => {
                 bottom: { style: 'thin' },
                 right: { style: 'thin' }
             }
-            let horizontal = 'center' 
+            let horizontal = 'center'
             let size = 10;
-            if(index === 0) fill = {}, border = {}, size = 14;
-            if(index === 7) fill = {}, border = {}, horizontal = 'right';
-            if(index > 7) horizontal = 'right';
+            if (index === 0) fill = {}, border = {}, size = 14;
+            if (index === 7) fill = {}, border = {}, horizontal = 'right';
+            if (index > 7) horizontal = 'right';
             Object.assign(item, {
                 numFmt: '#,##0.00',
                 font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },

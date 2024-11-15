@@ -254,7 +254,8 @@ const organizationMonitoringValidation = Joi.object({
   main_schet_id: Joi.number().required().min(1),
   limit: Joi.number().min(1).default(10),
   page: Joi.number().min(1).default(1),
-  spravochnik_organization_id: Joi.number().min(1)
+  spravochnik_organization_id: Joi.number().min(1),
+  operatsii_id: Joi.number().min(1)
 }).options({ stripUnknown: true });
 
 const aktSverkaValidation = Joi.object({

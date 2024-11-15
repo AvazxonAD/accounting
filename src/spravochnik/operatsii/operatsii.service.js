@@ -141,7 +141,6 @@ const getSchetService = async () => {
   }
 }
 
-
 module.exports = {
   getByNameAndSchetOperatsiiService,
   createOperatsiiService,
