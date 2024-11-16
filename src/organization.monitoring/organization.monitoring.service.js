@@ -4,7 +4,7 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravochnik_organization_id) => {
     try {
-        const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2  AND sh_o.spravochnik_organization_id = $5`
+        const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2  AND sh_o.spravochnik_organization_id = $5 AND s_organ.isdeleted = false`
         const { rows } = await pool.query(
             `
                 WITH data AS (
@@ -365,10 +365,10 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                                         u.login,
                                         u.fio,
                                         (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
-                                            FROM bank_rasxod_child AS b_r_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch.main_schet_id
-                                            WHERE b_r_ch.id_bank_rasxod = b_r.id AND s_o.schet = $5
+                                            FROM bank_rasxod_child AS inner_b_r_ch
+                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_r_ch.spravochnik_operatsii_id
+                                            JOIN main_schet AS m_sch ON m_sch.id = inner_b_r_ch.main_schet_id
+                                            WHERE inner_b_r_ch.id = b_r_ch.id AND s_o.schet = $5
                                         ) AS schet_array
                                     FROM bank_rasxod_child b_r_ch
                                     JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
@@ -377,7 +377,7 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                                     JOIN regions AS r ON r.id = u.region_id 
                                     WHERE b_r.isdeleted = false 
                                         AND r.id = $1 
-                                        AND b_r.main_schet_id = $2 
+                                        AND b_r_ch.main_schet_id = $2 
                                         AND s_o.schet = $5 
                                         AND b_r.id_shartnomalar_organization = sh_o.id
                                     UNION ALL 
@@ -393,10 +393,10 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                                         u.login,
                                         u.fio,
                                         (SELECT ARRAY_AGG(m_sch.jur2_schet || ' - ' || s_o.schet)
-                                            FROM bank_prixod_child AS b_p_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
-                                            WHERE b_p_ch.id_bank_prixod = b_p.id AND b_p_ch.isdeleted = false AND s_o.schet = $5
+                                            FROM bank_prixod_child AS inner_b_p_ch
+                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_p_ch.spravochnik_operatsii_id
+                                            JOIN main_schet AS m_sch ON m_sch.id = inner_b_p_ch.main_schet_id
+                                            WHERE inner_b_p_ch.id = b_p_ch.id AND inner_b_p_ch.isdeleted = false AND s_o.schet = $5
                                         ) AS schet_array
                                     FROM bank_prixod_child AS b_p_ch
                                     JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
@@ -416,7 +416,10 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                     JOIN users AS u ON sh_o.user_id = u.id
                     JOIN regions AS r ON u.region_id = r.id
                     JOIN smeta ON sh_o.smeta_id = smeta.id
-                    WHERE sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 
+                    WHERE sh_o.isdeleted = false 
+                        AND r.id = $1 
+                        AND sh_o.main_schet_id = $2
+                        AND s_organ.isdeleted = false 
                     ORDER BY sh_o.doc_date 
                     OFFSET $3
                     LIMIT $4
@@ -429,7 +432,11 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                         JOIN users AS u ON sh_o.user_id = u.id
                         JOIN regions AS r ON u.region_id = r.id
                         JOIN smeta ON sh_o.smeta_id = smeta.id
-                        WHERE sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 
+                        JOIN spravochnik_organization AS s_organ ON s_organ.id = sh_o.spravochnik_organization_id
+                        WHERE sh_o.isdeleted = false 
+                            AND r.id = $1 
+                            AND sh_o.main_schet_id = $2
+                            AND s_organ.isdeleted = false 
                     )::INTEGER AS total_count
                 FROM data
             `, [region_id, main_schet_id, offset, limit, schet],

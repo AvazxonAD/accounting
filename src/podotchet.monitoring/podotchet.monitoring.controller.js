@@ -54,7 +54,7 @@ const podotchetMonitoring = async (req, res) => {
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const operatsii = await getByIdOperatsiiService(operatsii_id, 'Akt_priyom_peresdach_own')
+        const operatsii = await getByIdOperatsiiService(operatsii_id, 'avans_otchet_own')
         const { total, prixod_sum, rasxod_sum, data, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await podotchetMonitoringService(
             region_id,
             main_schet_id,
