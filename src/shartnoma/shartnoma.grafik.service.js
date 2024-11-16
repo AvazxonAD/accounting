@@ -56,6 +56,14 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
     const result = await pool.query(`
         SELECT 
           sh_g.id,
+          s_o.id AS spravochnik_organization_id,
+          s_o.name AS spravochnik_organization_name,
+          s_o.bank_klient AS spravochnik_organization_bank_klient,
+          s_o.mfo AS spravochnik_organization_mfo,
+          s_o.inn AS spravochnik_organization_inn,
+          s_o.raschet_schet AS spravochnik_organization_raschet_schet,
+          m_ch.account_number,
+          s.smeta_number,
           sh_g.id_shartnomalar_organization,
           sh_o.doc_num, 
           TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date, 
@@ -77,7 +85,10 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
         FROM shartnoma_grafik AS sh_g
         JOIN users  ON sh_g.user_id = users.id
         JOIN regions ON users.region_id = regions.id
+        JOIN main_schet AS m_ch ON m_ch.id = sh_g.main_schet_id
         JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
+        JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
+        JOIN smeta AS s ON s.id = sh_o.smeta_id
         WHERE regions.id = $1 AND sh_g.main_schet_id = $2 AND sh_g.id = $3 ${ignore}
       `, [region_id, main_schet_id, id])
     if (!result.rows[0]) {
@@ -102,7 +113,7 @@ const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, off
     const { rows } = await pool.query(`
       WITH data AS (
         SELECT
-          s_o.id AS spravochnik_organization_id,
+          sh_g.id,
           s_o.name AS spravochnik_organization_name,
           s_o.bank_klient AS spravochnik_organization_bank_klient,
           s_o.mfo AS spravochnik_organization_mfo,
@@ -116,7 +127,6 @@ const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, off
           sh_o.opisanie AS shartnomalar_organization_opisanie,
           sh_o.summa::FLOAT AS shartnomalar_organization_summa,
           sh_o.pudratchi_bool AS shartnomalar_organization_pudratchi_bool,
-          sh_g.id,
           sh_g.oy_1::FLOAT,
           sh_g.oy_2::FLOAT,
           sh_g.oy_3::FLOAT,
