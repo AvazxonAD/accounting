@@ -4,7 +4,8 @@ const {
   getByIdPodpisService,
   updatePodpisService,
   deletePodpisService,
-  getByAllPodpisService
+  getByAllPodpisService,
+  getByTypeANDNumberPodpisService
 } = require("./podpis.service");
 const { podpisValidation, queryValidation } = require("../../utils/validation");;
 const { validationResponse } = require("../../utils/response-for-validation");
@@ -18,6 +19,8 @@ const createpodpis = async (req, res) => {
     const region_id = req.user.region_id
     const data = validationResponse(podpisValidation, req.body)
     await getByAllPodpisService(region_id, data.type_document, data.doljnost_name, data.fio_name )
+    console.log(region_id, data.type_document, data.numeric_poryadok)
+    await getByTypeANDNumberPodpisService(region_id, data.type_document, data.numeric_poryadok)
     const result = await createPodpisService({...data, user_id});
     resFunc(res, 201, result)
   } catch (error) {
@@ -53,7 +56,10 @@ const updatepodpis = async (req, res) => {
     const region_id = req.user.region_id;
     const old_data = await getByIdPodpisService(region_id, id);
     const data = validationResponse(podpisValidation, req.body);
-    if(old_data.type_docuemnt !== data.type_document || data.doljnost_name !== old_data.doljnost_name, data.fio_name !== old_data.fio_name){
+    if(old_data.type_document !== data.type_document || old_data.numeric_poryadok !== data.numeric_poryadok){
+      await getByTypeANDNumberPodpisService(region_id, data.type_document, data.numeric_poryadok)
+    }
+    if(old_data.type_document !== data.type_document || data.doljnost_name !== old_data.doljnost_name, data.fio_name !== old_data.fio_name){
       await getByAllPodpisService(region_id, data.type_document, data.doljnost_name, data.fio_name )
     }
     const result = await updatePodpisService({ ...data, id });

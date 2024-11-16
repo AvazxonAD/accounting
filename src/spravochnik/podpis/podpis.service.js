@@ -114,6 +114,25 @@ const getByAllPodpisService = async (region_id, type_doc, doljnost_name, fio_nam
   }
 };
 
+const getByTypeANDNumberPodpisService = async (region_id, type_doc, numeric_poryadok) => {
+  try {
+    const result = await pool.query(
+      `SELECT s_p.id
+       FROM spravochnik_podpis_dlya_doc AS s_p
+       JOIN users AS u ON u.id = s_p.user_id
+       JOIN regions AS r ON r.id = u.region_id
+       WHERE r.id = $1 AND s_p.type_document = $2 AND s_p.numeric_poryadok = $3`,
+      [region_id, type_doc, numeric_poryadok]
+    );
+    if (result.rows[0]) {
+      throw new ErrorResponse(`This data already exist`, 409);
+    }
+    return result.rows[0];
+  } catch (error) {
+    throw new ErrorResponse(error, error.statusCode);
+  }
+};
+
 const updatePodpisService = async (data) => {
   try {
     const result = await pool.query(
@@ -154,5 +173,6 @@ module.exports = {
   getByIdPodpisService,
   updatePodpisService,
   deletePodpisService,
-  getByAllPodpisService
+  getByAllPodpisService,
+  getByTypeANDNumberPodpisService
 };
