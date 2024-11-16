@@ -22,13 +22,15 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = k_p_ch.main_schet_id
                     WHERE k_p_ch.kassa_prixod_id = k_p.id
-                ) AS schet_array,
-                'kassa prixod' AS type
+                ) AS schet_array
             FROM kassa_prixod k_p
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
             JOIN users u ON k_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id 
-            WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.id_podotchet_litso = $7 
+            WHERE r.id = $1 
+                AND k_p.main_schet_id = $2 
+                AND k_p.isdeleted = false 
+                AND k_p.id_podotchet_litso = $7 
                 AND k_p.id_podotchet_litso IS NOT NULL  
                 AND k_p.doc_date BETWEEN $3 AND $4
 
@@ -51,13 +53,15 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
                     WHERE k_r_ch.kassa_rasxod_id = k_r.id
-                ) AS schet_array,
-                'kassa rasxod' AS type
+                ) AS schet_array
             FROM kassa_rasxod k_r
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
             JOIN users u ON k_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
-            WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.id_podotchet_litso = $7
+            WHERE r.id = $1 
+                AND k_r.main_schet_id = $2 
+                AND k_r.isdeleted = false 
+                AND k_r.id_podotchet_litso = $7
                 AND k_r.doc_date BETWEEN $3 AND $4
 
             UNION ALL
@@ -75,15 +79,15 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 u.fio,
                 u.id AS user_id,
                 (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
-                FROM bank_rasxod_child AS inner_b_r_ch
-                JOIN bank_rasxod AS inner_b_r ON inner_b_r.id = inner_b_r_ch.id_bank_rasxod
-                JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_r_ch.spravochnik_operatsii_id
-                JOIN main_schet AS m_sch ON m_sch.id = inner_b_r.main_schet_id
-                WHERE inner_b_r_ch.id_bank_rasxod = b_r.id
-                ) AS schet_array,
-                'bank rasxod' AS type
-            FROM bank_rasxod b_r
-            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child AS inner_b_r_ch
+                    JOIN bank_rasxod AS inner_b_r ON inner_b_r.id = inner_b_r_ch.id_bank_rasxod
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_r_ch.spravochnik_operatsii_id
+                    JOIN main_schet AS m_sch ON m_sch.id = inner_b_r.main_schet_id
+                    WHERE inner_b_r_ch.id = b_r_ch.id
+                ) AS schet_array
+            FROM bank_rasxod_child b_r_ch
+            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -113,11 +117,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN bank_prixod AS inner_b_p ON inner_b_p.id = inner_b_p_ch.id_bank_prixod
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = inner_b_p_ch.spravochnik_operatsii_id
                     JOIN main_schet AS m_sch ON m_sch.id = inner_b_p.main_schet_id
-                    WHERE inner_b_p_ch.id_bank_prixod = b_p.id
-                ) AS schet_array,
-                'bank prixod' AS type
-            FROM bank_prixod b_p
-            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    WHERE inner_b_p_ch.id = b_p_ch.id
+                ) AS schet_array
+            FROM bank_prixod_child b_p_ch
+            JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -137,31 +140,47 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     FROM kassa_rasxod k_r
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.id_podotchet_litso = $7 AND k_r.id_podotchet_litso IS NOT NULL
-                    AND k_r.doc_date BETWEEN $3 AND $4
+                    WHERE r.id = $1 
+                        AND k_r.main_schet_id = $2 
+                        AND k_r.isdeleted = false 
+                        AND k_r.id_podotchet_litso = $7 
+                        AND k_r.id_podotchet_litso IS NOT NULL
+                        AND k_r.doc_date BETWEEN $3 AND $4
                     UNION ALL
                     SELECT COUNT(k_p.id) AS counts
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.id_podotchet_litso = $7 AND k_p.id_podotchet_litso IS NOT NULL 
-                    AND k_p.doc_date BETWEEN $3 AND $4
+                    WHERE r.id = $1 
+                        AND k_p.main_schet_id = $2 
+                        AND k_p.isdeleted = false 
+                        AND k_p.id_podotchet_litso = $7 
+                        AND k_p.id_podotchet_litso IS NOT NULL 
+                        AND k_p.doc_date BETWEEN $3 AND $4
                     UNION ALL
                     SELECT COUNT(b_p_ch.id) AS counts
                     FROM bank_prixod_child b_p_ch
                     JOIN users u ON b_p_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     JOIN bank_prixod AS b_p ON b_p.id = b_p_ch.id_bank_prixod
-                    WHERE r.id = $1 AND b_p.main_schet_id = $2 AND b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_podotchet_litso = $7 AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL
-                    AND b_p.doc_date BETWEEN $3 AND $4
+                    WHERE r.id = $1 
+                        AND b_p.main_schet_id = $2 
+                        AND b_p_ch.isdeleted = false 
+                        AND b_p_ch.id_spravochnik_podotchet_litso = $7 
+                        AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL
+                        AND b_p.doc_date BETWEEN $3 AND $4
                     UNION ALL
                     SELECT COUNT(b_r_ch.id) AS counts
                     FROM bank_rasxod_child b_r_ch
                     JOIN users u ON b_r_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     JOIN bank_rasxod AS b_r ON b_r.id = b_r_ch.id_bank_rasxod
-                    WHERE r.id = $1 AND b_r.main_schet_id = $2 AND b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_podotchet_litso = $7 AND b_r_ch.id_spravochnik_podotchet_litso IS NOT NULL
-                    AND b_r.doc_date BETWEEN $3 AND $4
+                    WHERE r.id = $1 
+                        AND b_r.main_schet_id = $2 
+                        AND b_r_ch.isdeleted = false 
+                        AND b_r_ch.id_spravochnik_podotchet_litso = $7 
+                        AND b_r_ch.id_spravochnik_podotchet_litso IS NOT NULL
+                        AND b_r.doc_date BETWEEN $3 AND $4
                 ) AS counts
             ) AS total_count,
             (
@@ -169,7 +188,9 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_p.id_podotchet_litso = $7 AND k_p.id_podotchet_litso IS NOT NULL 
+                    WHERE r.id = $1 
+                        AND k_p.id_podotchet_litso = $7 
+                        AND k_p.id_podotchet_litso IS NOT NULL 
                         AND k_p.main_schet_id = $2 
                         AND k_p.isdeleted = false
                         AND k_p.doc_date < $3 ) + 
@@ -178,7 +199,9 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
                     JOIN users u ON b_p_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND b_p_ch.id_spravochnik_podotchet_litso = $7 AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL
+                    WHERE r.id = $1 
+                        AND b_p_ch.id_spravochnik_podotchet_litso = $7 
+                        AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL
                         AND b_p_ch.main_schet_id = $2 
                         AND b_p_ch.isdeleted = false
                         AND b_p.doc_date < $3 )
@@ -188,14 +211,20 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     FROM kassa_rasxod k_r
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.id_podotchet_litso = $7 AND k_r.id_podotchet_litso IS NOT NULL
+                    WHERE r.id = $1 
+                        AND k_r.main_schet_id = $2 
+                        AND k_r.isdeleted = false 
+                        AND k_r.id_podotchet_litso = $7 
+                        AND k_r.id_podotchet_litso IS NOT NULL
                     AND k_r.doc_date < $3) + 
                 (SELECT COALESCE(SUM(b_r_ch.summa), 0)
                     FROM bank_rasxod_child b_r_ch
                     JOIN bank_rasxod b_r ON b_r.id = b_r_ch.id_bank_rasxod
                     JOIN users u ON b_r_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND b_r_ch.id_spravochnik_podotchet_litso = $7 AND b_r_ch.id_spravochnik_podotchet_litso IS NOT NULL
+                    WHERE r.id = $1 
+                        AND b_r_ch.id_spravochnik_podotchet_litso = $7 
+                        AND b_r_ch.id_spravochnik_podotchet_litso IS NOT NULL
                         AND b_r_ch.main_schet_id = $2 
                         AND b_r_ch.isdeleted = false
                         AND b_r.doc_date < $3 )
@@ -205,7 +234,9 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     FROM kassa_prixod k_p
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_p.id_podotchet_litso = $7 AND k_p.id_podotchet_litso IS NOT NULL 
+                    WHERE r.id = $1 
+                        AND k_p.id_podotchet_litso = $7 
+                        AND k_p.id_podotchet_litso IS NOT NULL 
                         AND k_p.main_schet_id = $2 
                         AND k_p.isdeleted = false
                         AND k_p.doc_date BETWEEN $3 AND $4) + 
@@ -214,7 +245,9 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
                     JOIN users u ON b_p_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND b_p_ch.id_spravochnik_podotchet_litso = $7 AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL
+                    WHERE r.id = $1 
+                        AND b_p_ch.id_spravochnik_podotchet_litso = $7 
+                        AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL
                         AND b_p_ch.main_schet_id = $2 
                         AND b_p_ch.isdeleted = false
                         AND b_p.doc_date BETWEEN $3 AND $4 )
@@ -225,7 +258,9 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 AND k_r.main_schet_id = $2 
-                        AND k_r.isdeleted = false AND k_r.id_podotchet_litso = $7 AND k_r.id_podotchet_litso IS NOT NULL
+                        AND k_r.isdeleted = false 
+                        AND k_r.id_podotchet_litso = $7 
+                        AND k_r.id_podotchet_litso IS NOT NULL
                         AND k_r.doc_date BETWEEN $3 AND $4) + 
                 (SELECT COALESCE(SUM(b_r_ch.summa), 0)
                     FROM bank_rasxod_child b_r_ch

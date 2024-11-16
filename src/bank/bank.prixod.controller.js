@@ -57,6 +57,7 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const region_id = req.user.region_id;
   const user_id = req.user.id;
+  await getByIdMainSchetService(region_id, main_schet_id)
   await getByIdPrixodService(region_id, main_schet_id, id);
   const data = validationResponse(bankPrixodValidation, req.body)
   await getByIdMainSchetService(region_id, main_schet_id);
