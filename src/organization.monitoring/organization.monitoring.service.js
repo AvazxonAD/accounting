@@ -420,7 +420,7 @@ const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit, sche
                         AND r.id = $1 
                         AND sh_o.main_schet_id = $2
                         AND s_organ.isdeleted = false 
-                    ORDER BY sh_o.doc_date 
+                    ORDER BY sh_o.doc_date
                     OFFSET $3
                     LIMIT $4
                 )
