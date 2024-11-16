@@ -47,11 +47,10 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                (SELECT ARRAY_AGG(s_o.schet || ' - ' || s_own.schet)
+                 (SELECT ARRAY_AGG(s_o.schet || ' - ' || s_own.schet)
                     FROM avans_otchetlar_jur4_child AS a_a_j4_ch
-                    JOIN spravochnik_operatsii AS s_own ON s_own.id = a_a_j4.spravochnik_operatsii_own_id
                     JOIN spravochnik_operatsii AS s_o ON s_o.id = a_a_j4_ch.spravochnik_operatsii_id
-                    JOIN main_schet AS m_sch ON m_sch.id = a_a_j4_ch.main_schet_id
+                    JOIN spravochnik_operatsii AS s_own ON s_own.id = a_a_j4.spravochnik_operatsii_own_id
                     WHERE a_a_j4_ch.avans_otchetlar_jur4_id = a_a_j4.id
                 ) AS schet_array
             FROM avans_otchetlar_jur4 a_a_j4
