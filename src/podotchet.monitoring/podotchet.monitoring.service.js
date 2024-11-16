@@ -322,6 +322,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                 AND k_p.id_podotchet_litso IS NOT NULL  
                 AND k_p.doc_date BETWEEN $3 AND $4 
                 AND s_o.schet = $7
+                AND s_p_l.isdeleted = false
 
             UNION ALL
 
@@ -351,6 +352,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                 AND k_r.id_podotchet_litso IS NOT NULL 
                 AND k_r.doc_date BETWEEN $3 AND $4  
                 AND s_o.schet = $7
+                AND s_p_l.isdeleted = false
  
             UNION ALL
 
@@ -380,6 +382,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                 AND b_r_ch.id_spravochnik_podotchet_litso IS NOT NULL 
                 AND b_r.doc_date BETWEEN $3 AND $4
                 AND s_o.schet = $7
+                AND s_p_l.isdeleted = false
 
             UNION ALL
 
@@ -409,6 +412,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                 AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL 
                 AND b_p.doc_date BETWEEN $3 AND $4
                 AND s_o.schet = $7
+                AND s_p_l.isdeleted = false
             OFFSET $5 LIMIT $6
         )
         SELECT 
@@ -428,6 +432,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                         AND k_r.id_podotchet_litso IS NOT NULL 
                         AND k_r.doc_date BETWEEN $3 AND $4  
                         AND s_o.schet = $7
+                        AND s_p_l.isdeleted = false
                     UNION ALL
                     SELECT COUNT(k_p_ch.id) AS counts
                     FROM kassa_prixod_child k_p_ch
@@ -443,6 +448,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                         AND k_p.id_podotchet_litso IS NOT NULL  
                         AND k_p.doc_date BETWEEN $3 AND $4 
                         AND s_o.schet = $7
+                        AND s_p_l.isdeleted = false
                     UNION ALL
                     SELECT COUNT(b_r_ch.id) AS counts
                     FROM bank_rasxod_child b_r_ch
@@ -458,6 +464,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                         AND b_r_ch.id_spravochnik_podotchet_litso IS NOT NULL 
                         AND b_r.doc_date BETWEEN $3 AND $4
                         AND s_o.schet = $7
+                        AND s_p_l.isdeleted = false
                     UNION ALL
                     SELECT COUNT(b_p_ch.id) AS counts
                     FROM bank_prixod_child b_p_ch
@@ -473,6 +480,7 @@ const podotchetMonitoringService = async (region_id, main_schet_id, offset, limi
                         AND b_p_ch.id_spravochnik_podotchet_litso IS NOT NULL 
                         AND b_p.doc_date BETWEEN $3 AND $4
                         AND s_o.schet = $7
+                        AND s_p_l.isdeleted = false
                 ) AS counts
             ) AS total_count,
             ARRAY_AGG(row_to_json(data)) AS data
