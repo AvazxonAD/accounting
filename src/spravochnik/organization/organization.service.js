@@ -113,7 +113,7 @@ const getByIdOrganizationService = async (region_id, id, ignoreDeleted = false) 
     }
     return result.rows[0];
   } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
+    throw new ErrorResponse(error, error.statusCode);
   }
 
 }
