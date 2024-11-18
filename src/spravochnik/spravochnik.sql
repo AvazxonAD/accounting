@@ -107,3 +107,13 @@ CREATE TABLE spravochnik_podpis_dlya_doc (
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE schet_operatsii (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  schet VARCHAR(200),
+  user_id INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);

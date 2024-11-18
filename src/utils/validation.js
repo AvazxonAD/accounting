@@ -26,6 +26,17 @@ const authValidation = Joi.object({
   main_schet_id: Joi.number(),
 }).options({ stripUnknown: true });
 
+const schetOperatsiiValidation = Joi.object({
+  name: Joi.string().trim().required(),
+  schet: Joi.string().trim().required()
+}).options({ stripUnknown: true });
+
+const schetOperatsiiQueryValidation = Joi.object({
+  search: Joi.string().trim(),
+  limit: Joi.number().min(1).default(10),
+  page: Joi.number().min(1).default(1)
+}).options({ stripUnknown: true });
+
 const authUpdateValidation = Joi.object({
   fio: Joi.string().trim().required().trim(),
   login: Joi.string().trim().required().trim(),
@@ -252,7 +263,8 @@ const organizationMonitoringValidation = Joi.object({
   main_schet_id: Joi.number().required().min(1),
   limit: Joi.number().min(1).default(10),
   page: Joi.number().min(1).default(1),
-  spravochnik_organization_id: Joi.number().min(1)
+  spravochnik_organization_id: Joi.number().min(1),
+  operatsii_id: Joi.number().min(1).required()
 }).options({ stripUnknown: true });
 
 const aktSverkaValidation = Joi.object({
@@ -505,6 +517,8 @@ module.exports = {
   jur3CapValidation,
   podpisValidation,
   organizationPrixodRasxodValidation,
-  prixodRasxodPodotchetValidation
+  prixodRasxodPodotchetValidation,
+  schetOperatsiiValidation,
+  schetOperatsiiQueryValidation
 };
 

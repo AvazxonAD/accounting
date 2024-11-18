@@ -1,4 +1,4 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationService, getAllMonitoringAll, organizationPrixodRasxodService } = require("./organization.monitoring.service");
+const { getOrganizationMonitoringService, aktSverkaService, orderOrganizationService, organizationPrixodRasxodService } = require("./organization.monitoring.service");
 const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation, organizationPrixodRasxodValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
@@ -12,16 +12,19 @@ const { returnSleshDate } = require('../utils/date.function');
 const { returnStringDate } = require('../utils/date.function')
 const { returnExcelColumn } = require('../utils/for-excel')
 const { getBySchetService } = require('../spravochnik/operatsii/operatsii.service')
-const { getByIdUserService } = require('../auth/auth.service')
+const { getByIdSchetOperatsiiService } = require('../spravochnik/schet.operatsii/schet.operatsii.service')
 
 const getOrganizationMonitoring = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id, operatsii_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        await getByIdOrganizationService(region_id, spravochnik_organization_id)
-        const { total, data, prixod, rasxod, shartnoma_null_array } = await getAllMonitoring(region_id, main_schet_id, offset, limit, spravochnik_organization_id);
+        const schet = await getByIdSchetOperatsiiService(region_id, operatsii_id)
+        if (spravochnik_organization_id) {
+            await getByIdOrganizationService(region_id, spravochnik_organization_id)
+        }
+        const { total, data, prixod, rasxod } = await getOrganizationMonitoringService(region_id, main_schet_id, offset, limit, schet.schet);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -30,30 +33,7 @@ const getOrganizationMonitoring = async (req, res) => {
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
             prixod,
-            rasxod,
-            shartnoma_null_count: shartnoma_null_array.length,
-            shartnoma_null_array
-        }
-        resFunc(res, 200, data, meta)
-    } catch (error) {
-        errorCatch(error, res)
-    }
-}
-
-const getOrganizationMonitoringAll = async (req, res) => {
-    try {
-        const region_id = req.user.region_id
-        const { page, limit, main_schet_id } = validationResponse(organizationMonitoringValidation, req.query)
-        const offset = (page - 1) * limit;
-        await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, data } = await getAllMonitoringAll(region_id, main_schet_id, offset, limit);
-        const pageCount = Math.ceil(total / limit);
-        const meta = {
-            pageCount: pageCount,
-            count: total,
-            currentPage: page,
-            nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1,
+            rasxod
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
@@ -599,7 +579,7 @@ const organizationPrixodRasxod = async (req, res) => {
         let itogo_prixod = 0;
         const { data } = await organizationPrixodRasxodService(region_id, to)
         let row_number = 3
-        for(let column of data){
+        for (let column of data) {
             const organ_nameCell = worksheet.getCell(`A${row_number}`)
             organ_nameCell.value = column.name
             const dataCell = worksheet.getCell(`B${row_number}`)
@@ -618,12 +598,12 @@ const organizationPrixodRasxod = async (req, res) => {
             css_array.forEach((item, index) => {
                 horizontal = 'center'
                 let size = 10;
-                if(index === 0 || index == 3) horizontal = 'left';
-                if(index === 4 || index === 5) horizontal = 'right';
+                if (index === 0 || index == 3) horizontal = 'left';
+                if (index === 4 || index === 5) horizontal = 'right';
                 Object.assign(item, {
                     numFmt: '#,##0.00',
                     font: { size, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal},
+                    alignment: { vertical: 'middle', horizontal },
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
                     border: {
                         top: { style: 'thin' },
@@ -651,11 +631,11 @@ const organizationPrixodRasxod = async (req, res) => {
                 bottom: { style: 'thin' },
                 right: { style: 'thin' }
             }
-            let horizontal = 'center' 
+            let horizontal = 'center'
             let size = 10;
-            if(index === 0) fill = {}, border = {}, size = 14;
-            if(index === 7) fill = {}, border = {}, horizontal = 'right';
-            if(index > 7) horizontal = 'right';
+            if (index === 0) fill = {}, border = {}, size = 14;
+            if (index === 7) fill = {}, border = {}, horizontal = 'right';
+            if (index > 7) horizontal = 'right';
             Object.assign(item, {
                 numFmt: '#,##0.00',
                 font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
@@ -685,6 +665,5 @@ module.exports = {
     getOrganizationMonitoring,
     aktSverka,
     orderOrganization,
-    getOrganizationMonitoringAll,
     organizationPrixodRasxod
 };

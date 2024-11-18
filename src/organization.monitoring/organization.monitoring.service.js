@@ -2,419 +2,108 @@ const pool = require("../config/db");
 const ErrorResponse = require("../utils/errorResponse");
 
 
-const getAllMonitoring = async (region_id, main_schet_id, offset, limit, spravochnik_organization_id) => {
+const getOrganizationMonitoringService = async (region_id, main_schet_id, offset, limit, schet, spravochnik_organization_id = null) => {
     try {
-        const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2  AND sh_o.spravochnik_organization_id = $5`
+        const params = [region_id, main_schet_id, schet, offset, limit];
+        if(spravochnik_organization_id){
+            params.push(spravochnik_organization_id)
+        }
         const { rows } = await pool.query(
             `
                 WITH data AS (
                     SELECT 
-                        sh_o.id,
-                        sh_o.spravochnik_organization_id,
-                        s_organ.name AS organization_name,
-                        sh_o.doc_num,
-                        TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-                        sh_o.smeta_id,
-                        sh_o.smeta2_id,
-                        sh_o.opisanie,
-                        sh_o.summa,
-                        sh_o.pudratchi_bool,
-                        smeta.smeta_number,
-                        u.login,
-                        u.fio,
+                        b_r.id,
+                        b_r.doc_num,
+                        b_r.doc_date,
+                        b_r.opisanie,
+                        0 AS summa_rasxod, 
+                        b_r.summa AS summa_prixod,
+                        sh_o.id AS shartnoma_id,
+                        sh_o.doc_num AS shartnoma_doc_num,
+                        s_o.id AS organ_id,
+                        s_o.name AS organ_name,
+                        s_o.inn AS organ_inn,
                         u.id AS user_id,
-                        (SELECT 
-                            (SELECT ARRAY_AGG(row_to_json(operatsii))
-                                FROM (SELECT 
-                                        b_r_ch.id,
-                                        b_r_ch.id_shartnomalar_organization AS shartnoma_id,
-                                        b_r_ch.doc_num,
-                                        b_r_ch.doc_date,
-                                        b_r_ch.opisanie,
-                                        0 AS summa_rasxod, 
-                                        b_r_ch.summa AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
-                                            FROM bank_rasxod_child AS b_r_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch_ch.main_schet_id
-                                            WHERE b_r_ch_ch.id_bank_rasxod = b_r_ch.id
-                                        ) AS schet_array
-                                    FROM bank_rasxod b_r_ch
-                                    JOIN users AS u ON u.id = b_r_ch.user_id 
-                                    WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization = $5 AND b_r_ch.id_shartnomalar_organization = sh_o.id
-                                    UNION ALL 
-                                    SELECT 
-                                        b_i_j3_ch.id,
-                                        b_i_j3_ch.shartnomalar_organization_id AS shartnoma_id,
-                                        b_i_j3_ch.doc_num,
-                                        b_i_j3_ch.doc_date,
-                                        b_i_j3_ch.opisanie,
-                                        b_i_j3_ch.summa AS summa_rasxod,  
-                                        0 AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_o.schet|| ' - ' || s_own.schet)
-                                            FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            WHERE b_i_j3_ch_ch.bajarilgan_ishlar_jur3_id = b_i_j3_ch.id
-                                        ) AS schet_array
-                                    FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
-                                    JOIN users AS u ON b_i_j3_ch.user_id = u.id
-                                    WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization = $5 AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id
-                                    UNION ALL 
-                                    SELECT 
-                                        b_p_ch.id,
-                                        b_p_ch.id_shartnomalar_organization AS shartnoma_id,
-                                        b_p_ch.doc_num,
-                                        b_p_ch.doc_date,
-                                        b_p_ch.opisanie,
-                                        b_p_ch.summa AS summa_rasxod, 
-                                        0 AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(m_sch.jur2_schet || ' - ' || s_o.schet)
-                                            FROM bank_prixod_child AS b_p_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch_ch.main_schet_id
-                                            WHERE b_p_ch_ch.id_bank_prixod = b_p_ch.id
-                                        ) AS schet_array
-                                    FROM bank_prixod AS b_p_ch
-                                    JOIN users AS u ON u.id = b_p_ch.user_id
-                                    WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization = $5 AND b_p_ch.id_shartnomalar_organization = sh_o.id
-                                    UNION ALL
-                                    SELECT 
-                                        k_h_j152_ch.id,
-                                        k_h_j152_ch.shartnomalar_organization_id AS shartnoma_id,
-                                        k_h_j152_ch.doc_num,
-                                        k_h_j152_ch.doc_date,
-                                        k_h_j152_ch.opisanie,
-                                        0 AS summa_rasxod, 
-                                        k_h_j152_ch.summa AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_own.schet || ' - ' || s_o.schet)
-                                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_h_j152_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = k_h_j152_ch_ch.spravochnik_operatsii_own_id
-                                            WHERE k_h_j152_ch_ch.kursatilgan_hizmatlar_jur152_id = k_h_j152_ch.id
-                                        ) AS schet_array
-                                    FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
-                                    JOIN users AS u ON u.id = k_h_j152_ch.user_id
-                                    WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization = $5 AND k_h_j152_ch.shartnomalar_organization_id = sh_o.id
-                                ) AS operatsii
-                            ) 
-                        ) AS array
-                    FROM shartnomalar_organization AS sh_o
-                    JOIN spravochnik_organization AS s_organ ON s_organ.id = sh_o.spravochnik_organization_id
-                    JOIN users AS u ON sh_o.user_id = u.id
-                    JOIN regions AS r ON u.region_id = r.id
-                    JOIN smeta ON sh_o.smeta_id = smeta.id
-                    WHERE ${filter}
-                    ORDER BY sh_o.doc_date 
-                    OFFSET $3
-                    LIMIT $4
-                    ) 
+                        u.login,
+                        u.fio
+                    FROM bank_rasxod b_r
+                    JOIN users AS u ON u.id = b_r.user_id
+                    JOIN regions AS r ON r.id = u.region_id 
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_r.id_shartnomalar_organization
+                    JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
+                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
+                    WHERE b_r.isdeleted = false
+                        AND r.id = $1 
+                        AND b_r.main_schet_id = $2
+                        AND s_o_p.schet = $3
+                        ${spravochnik_organization_id ? `AND b_r.id_spravochnik_organization = $${params.length + 1}` : ''}
+                    UNION ALL 
                     SELECT 
-                        ARRAY_AGG(row_to_json(data)) AS data,
-                        (SELECT 
-                            (SELECT COALESCE(ARRAY_AGG(row_to_json(operatsii)), ARRAY[]::JSON[])
-                                FROM (SELECT 
-                                        b_r_ch.id,
-                                        b_r_ch.id_spravochnik_organization AS organ_id,
-                                        b_r_ch.id_shartnomalar_organization AS shartnoma_id,
-                                        b_r_ch.doc_num,
-                                        b_r_ch.doc_date,
-                                        b_r_ch.opisanie,
-                                        0 AS summa_rasxod, 
-                                        b_r_ch.summa AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
-                                            FROM bank_rasxod_child AS b_r_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch_ch.main_schet_id
-                                            WHERE b_r_ch_ch.id_bank_rasxod = b_r_ch.id
-                                        ) AS schet_array
-                                    FROM bank_rasxod b_r_ch
-                                    JOIN users AS u ON u.id = b_r_ch.user_id 
-                                    WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization = $5 AND b_r_ch.id_shartnomalar_organization IS NULL
-                                    UNION ALL 
-                                    SELECT 
-                                        b_i_j3_ch.id,
-                                        b_i_j3_ch.id_spravochnik_organization AS organ_id,
-                                        b_i_j3_ch.shartnomalar_organization_id AS shartnoma_id,
-                                        b_i_j3_ch.doc_num,
-                                        b_i_j3_ch.doc_date,
-                                        b_i_j3_ch.opisanie,
-                                        b_i_j3_ch.summa AS summa_rasxod,  
-                                        0 AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_o.schet|| ' - ' || s_own.schet)
-                                            FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            WHERE b_i_j3_ch_ch.bajarilgan_ishlar_jur3_id = b_i_j3_ch.id
-                                        ) AS schet_array
-                                    FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
-                                    JOIN users AS u ON b_i_j3_ch.user_id = u.id
-                                    WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization = $5 AND b_i_j3_ch.shartnomalar_organization_id IS NULL
-                                    UNION ALL 
-                                    SELECT 
-                                        b_p_ch.id,
-                                        b_p_ch.id_spravochnik_organization AS organ_id,
-                                        b_p_ch.id_shartnomalar_organization AS shartnoma_id,
-                                        b_p_ch.doc_num,
-                                        b_p_ch.doc_date,
-                                        b_p_ch.opisanie,
-                                        b_p_ch.summa AS summa_rasxod, 
-                                        0 AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(m_sch.jur2_schet || ' - ' || s_o.schet)
-                                            FROM bank_prixod_child AS b_p_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch_ch.main_schet_id
-                                            WHERE b_p_ch_ch.id_bank_prixod = b_p_ch.id
-                                        ) AS schet_array
-                                    FROM bank_prixod AS b_p_ch
-                                    JOIN users AS u ON u.id = b_p_ch.user_id
-                                    WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization = $5 AND b_p_ch.id_shartnomalar_organization IS NULL
-                                    UNION ALL
-                                    SELECT 
-                                        k_h_j152_ch.id,
-                                        k_h_j152_ch.id_spravochnik_organization AS organ_id,
-                                        k_h_j152_ch.shartnomalar_organization_id AS shartnoma_id,
-                                        k_h_j152_ch.doc_num,
-                                        k_h_j152_ch.doc_date,
-                                        k_h_j152_ch.opisanie,
-                                        0 AS summa_rasxod, 
-                                        k_h_j152_ch.summa AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_own.schet || ' - ' || s_o.schet)
-                                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_h_j152_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = k_h_j152_ch_ch.spravochnik_operatsii_own_id
-                                            WHERE k_h_j152_ch_ch.kursatilgan_hizmatlar_jur152_id = k_h_j152_ch.id
-                                        ) AS schet_array
-                                    FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
-                                    JOIN users AS u ON u.id = k_h_j152_ch.user_id
-                                    WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization = $5 AND k_h_j152_ch.shartnomalar_organization_id IS NULL
-                                ) AS operatsii
-                            ) 
-                        ) AS shartnoma_null_array,
-                        (SELECT COALESCE(COUNT(sh_o.id), 0)
-                            FROM shartnomalar_organization AS sh_o
-                            JOIN users AS u ON sh_o.user_id = u.id
-                            JOIN regions AS r ON u.region_id = r.id
-                            JOIN smeta ON sh_o.smeta_id = smeta.id
-                            WHERE ${filter})::INTEGER AS total_count,
-                        (
-                            SELECT COALESCE(SUM(k_h_j152.summa), 0) 
-                            FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
-                            WHERE k_h_j152.isdeleted = false AND k_h_j152.main_schet_id = $2 AND k_h_j152.shartnomalar_organization_id = $5
-                        ) + 
-                        (
-                            SELECT COALESCE(SUM(b_r.summa), 0) 
-                            FROM bank_rasxod AS b_r
-                            WHERE b_r.isdeleted = false AND b_r.main_schet_id = $2 AND b_r.id_spravochnik_organization = $5
-                        )::FLOAT AS prixod,
-                        (
-                            SELECT COALESCE(SUM(b_i_j152.summa), 0) 
-                            FROM bajarilgan_ishlar_jur3 AS b_i_j152 
-                            WHERE b_i_j152.isdeleted = false AND b_i_j152.main_schet_id = $2 AND b_i_j152.id_spravochnik_organization = $5
-                        ) + 
-                        (
-                            SELECT COALESCE(SUM(b_p.summa), 0) 
-                            FROM bank_prixod AS b_p
-                            WHERE b_p.isdeleted = false AND b_p.main_schet_id = $2 AND b_p.id_spravochnik_organization = $5
-                        )::FLOAT AS rasxod
-                    FROM data
-            `, [region_id, main_schet_id, offset, limit, spravochnik_organization_id],
-        );
+                        b_p.id,
+                        b_p.doc_num,
+                        b_p.doc_date,
+                        b_p.opisanie,
+                        0 AS summa_rasxod, 
+                        b_p.summa AS summa_prixod,
+                        sh_o.id AS shartnoma_id,
+                        sh_o.doc_num AS shartnoma_doc_num,
+                        s_o.id AS organ_id,
+                        s_o.name AS organ_name,
+                        s_o.inn AS organ_inn,
+                        u.id AS user_id,
+                        u.login,
+                        u.fio
+                    FROM bank_prixod b_p
+                    JOIN users AS u ON u.id = b_p.user_id
+                    JOIN regions AS r ON r.id = u.region_id 
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_p.id_shartnomalar_organization
+                    JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
+                    JOIN bank_rasxod_child AS b_p_ch ON b_p_ch.id_bank_rasxod = b_p.id
+                    JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
+                    WHERE b_p.isdeleted = false
+                        AND r.id = $1 
+                        AND b_p.main_schet_id = $2
+                        AND s_o_p.schet = $3
+                        ${spravochnik_organization_id ? `AND b_p.id_spravochnik_organization = $${params.length + 1}` : ''}
+                    ORDER BY doc_date 
+                    OFFSET $4
+                    LIMIT $5
+                    ) 
+                SELECT 
+                    ARRAY_AGG(ROW_TO_JSON(data)) AS data,
+                    (
+                        SELECT COALESCE((b_p.id), 0)
+                    FROM bank_prixod b_p
+                    JOIN users AS u ON u.id = b_p.user_id
+                    JOIN regions AS r ON r.id = u.region_id 
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_p.id_shartnomalar_organization
+                    JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
+                    JOIN bank_rasxod_child AS b_p_ch ON b_p_ch.id_bank_rasxod = b_p.id
+                    JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
+                    WHERE b_p.isdeleted = false
+                        AND r.id = $1 
+                        AND b_p.main_schet_id = $2
+                        AND s_o_p.schet = $3
+                        ${spravochnik_organization_id ? `AND b_p.id_spravochnik_organization = $${params.length + 1}` : ''}
+                    ) + 
+                    
+                FROM data
+        `, params);
+        let summa_prixod = 0;
+        let summa_rasxod = 0;
         const data = rows[0].data?.map(obj => {
-            let summa_prixod = 0;
-            let summa_rasxod = 0;
-            if (obj.array) {
-                obj.array.forEach(item => {
-                    summa_rasxod += item.summa_rasxod;
-                    summa_prixod += item.summa_prixod;
-                });
-            } else {
-                obj.array = []
-            }
-            obj.summa_rasxod = summa_rasxod;
-            obj.summa_prixod = summa_prixod;
+            summa_rasxod += item.summa_rasxod;
+            summa_prixod += item.summa_prixod;
             return obj;
         });
         return {
             data: data || [],
-            shartnoma_null_array: rows[0].shartnoma_null_array,
-            total: rows[0].total_count,
-            prixod: rows[0].prixod,
-            rasxod: rows[0].rasxod
         };
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
     }
 }
-
-const getAllMonitoringAll = async (region_id, main_schet_id, offset, limit) => {
-    try {
-        const { rows } = await pool.query(
-            `
-                WITH data AS (
-                    SELECT 
-                        sh_o.id,
-                        sh_o.spravochnik_organization_id,
-                        s_organ.name AS organization_name,
-                        sh_o.doc_num,
-                        TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-                        sh_o.smeta_id,
-                        sh_o.smeta2_id,
-                        sh_o.opisanie,
-                        sh_o.summa,
-                        sh_o.pudratchi_bool,
-                        smeta.smeta_number,
-                        u.login,
-                        u.fio,
-                        u.id AS user_id,
-                        (SELECT 
-                            (SELECT COALESCE(ARRAY_AGG(row_to_json(operatsii)), ARRAY[]::json[])
-                                FROM (SELECT 
-                                        b_r_ch.id,
-                                        b_r_ch.id_shartnomalar_organization AS shartnoma_id,
-                                        b_r_ch.doc_num,
-                                        b_r_ch.doc_date,
-                                        b_r_ch.opisanie,
-                                        0 AS summa_rasxod, 
-                                        b_r_ch.summa AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_o.schet || ' - ' || m_sch.jur2_schet)
-                                            FROM bank_rasxod_child AS b_r_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch_ch.main_schet_id
-                                            WHERE b_r_ch_ch.id_bank_rasxod = b_r_ch.id
-                                        ) AS schet_array
-                                    FROM bank_rasxod b_r_ch
-                                    JOIN users AS u ON u.id = b_r_ch.user_id
-                                    JOIN regions AS r ON r.id = u.region_id 
-                                    WHERE b_r_ch.isdeleted = false AND b_r_ch.id_spravochnik_organization IS NOT NULL AND b_r_ch.id_shartnomalar_organization = sh_o.id AND r.id = $1 
-                                    UNION ALL 
-                                    SELECT 
-                                        b_i_j3_ch.id,
-                                        b_i_j3_ch.shartnomalar_organization_id AS shartnoma_id,
-                                        b_i_j3_ch.doc_num,
-                                        b_i_j3_ch.doc_date,
-                                        b_i_j3_ch.opisanie,
-                                        b_i_j3_ch.summa AS summa_rasxod,  
-                                        0 AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_o.schet|| ' - ' || s_own.schet)
-                                            FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3_ch_ch.spravochnik_operatsii_id
-                                            WHERE b_i_j3_ch_ch.bajarilgan_ishlar_jur3_id = b_i_j3_ch.id
-                                        ) AS schet_array
-                                    FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
-                                    JOIN users AS u ON b_i_j3_ch.user_id = u.id
-                                    JOIN regions AS r ON r.id = u.region_id
-                                    WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.id_spravochnik_organization IS NOT NULL AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id AND r.id = $1
-                                    UNION ALL 
-                                    SELECT 
-                                        b_p_ch.id,
-                                        b_p_ch.id_shartnomalar_organization AS shartnoma_id,
-                                        b_p_ch.doc_num,
-                                        b_p_ch.doc_date,
-                                        b_p_ch.opisanie,
-                                        b_p_ch.summa AS summa_rasxod, 
-                                        0 AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(m_sch.jur2_schet || ' - ' || s_o.schet)
-                                            FROM bank_prixod_child AS b_p_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch_ch.spravochnik_operatsii_id
-                                            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch_ch.main_schet_id
-                                            WHERE b_p_ch_ch.id_bank_prixod = b_p_ch.id
-                                        ) AS schet_array
-                                    FROM bank_prixod AS b_p_ch
-                                    JOIN users AS u ON u.id = b_p_ch.user_id
-                                    JOIN regions AS r ON r.id = u.region_id
-                                    WHERE b_p_ch.isdeleted = false AND b_p_ch.id_spravochnik_organization IS NOT NULL AND b_p_ch.id_shartnomalar_organization = sh_o.id AND r.id = $1
-                                    UNION ALL
-                                    SELECT 
-                                        k_h_j152_ch.id,
-                                        k_h_j152_ch.shartnomalar_organization_id AS shartnoma_id,
-                                        k_h_j152_ch.doc_num,
-                                        k_h_j152_ch.doc_date,
-                                        k_h_j152_ch.opisanie,
-                                        0 AS summa_rasxod, 
-                                        k_h_j152_ch.summa AS summa_prixod,
-                                        u.id AS user_id,
-                                        u.login,
-                                        u.fio,
-                                        (SELECT ARRAY_AGG(s_own.schet || ' - ' || s_o.schet)
-                                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch_ch
-                                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_h_j152_ch_ch.spravochnik_operatsii_id
-                                            JOIN spravochnik_operatsii AS s_own ON s_own.id = k_h_j152_ch_ch.spravochnik_operatsii_own_id
-                                            WHERE k_h_j152_ch_ch.kursatilgan_hizmatlar_jur152_id = k_h_j152_ch.id
-                                        ) AS schet_array
-                                    FROM kursatilgan_hizmatlar_jur152 AS k_h_j152_ch
-                                    JOIN users AS u ON u.id = k_h_j152_ch.user_id
-                                    JOIN regions AS r ON r.id = u.region_id
-                                    WHERE k_h_j152_ch.isdeleted = false AND k_h_j152_ch.id_spravochnik_organization IS NOT NULL AND k_h_j152_ch.shartnomalar_organization_id = sh_o.id AND r.id = $1
-                                ) AS operatsii
-                            ) 
-                        ) AS array
-                    FROM shartnomalar_organization AS sh_o
-                    JOIN spravochnik_organization AS s_organ ON s_organ.id = sh_o.spravochnik_organization_id 
-                    JOIN users AS u ON sh_o.user_id = u.id
-                    JOIN regions AS r ON u.region_id = r.id
-                    JOIN smeta ON sh_o.smeta_id = smeta.id
-                    WHERE sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 
-                    ORDER BY sh_o.doc_date 
-                    OFFSET $3
-                    LIMIT $4
-                )
-                SELECT 
-                    ARRAY_AGG(ROW_TO_JSON(data)) AS data,
-                    (
-                        SELECT COALESCE(COUNT(sh_o.id), 0)
-                        FROM shartnomalar_organization AS sh_o
-                        JOIN users AS u ON sh_o.user_id = u.id
-                        JOIN regions AS r ON u.region_id = r.id
-                        JOIN smeta ON sh_o.smeta_id = smeta.id
-                        WHERE sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 
-                    )::INTEGER AS total_count
-                FROM data
-            `, [region_id, main_schet_id, offset, limit],
-        );
-        return {
-            data: rows[0]?.data || [],
-            total: rows[0].total_count
-        };
-    } catch (error) {
-        throw new ErrorResponse(error, error.statusCode)
-    }
-}
-
 
 const orderOrganizationService = async (region_id, schet, from, to) => {
     try {
@@ -784,9 +473,8 @@ const organizationPrixodRasxodService = async (region_id, to) => {
 }
 
 module.exports = {
-    getAllMonitoring,
+    getOrganizationMonitoringService,
     orderOrganizationService,
     aktSverkaService,
-    getAllMonitoringAll,
     organizationPrixodRasxodService
 };
