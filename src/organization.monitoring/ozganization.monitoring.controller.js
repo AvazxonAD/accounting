@@ -684,6 +684,7 @@ const organizationPrixodRasxod = async (req, res) => {
 
 const restrOrganization = async (req, res) => {
     try {
+        console.log('///////////////')
         const region_id = req.user.region_id
         const { page, limit, main_schet_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
@@ -704,7 +705,7 @@ const restrOrganization = async (req, res) => {
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
-        throw new ErrorResponse(error, error.statusCode)
+        errorCatch(error, res)
     }
 }
 
