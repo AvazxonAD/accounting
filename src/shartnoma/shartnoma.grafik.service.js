@@ -114,6 +114,7 @@ const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, off
       WITH data AS (
         SELECT
           sh_g.id,
+          s_o.id AS spravochnik_organization_id,
           s_o.name AS spravochnik_organization_name,
           s_o.bank_klient AS spravochnik_organization_bank_klient,
           s_o.mfo AS spravochnik_organization_mfo,
