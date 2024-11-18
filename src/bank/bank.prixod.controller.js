@@ -82,7 +82,7 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
     }
   }
   const summa = returnAllChildSumma(data.childs);
-  const prixod = await bankPrixodUpdateService({ ...data, id, provodki_boolean: true, summa, user_id });
+  const prixod = await bankPrixodUpdateService({ ...data, id, provodki_boolean: true, summa, user_id, main_schet_id });
   putLogger.info(`Bank prixod doc yangilandi. UserId: ${req.user.id}`)
   resFunc(res, 200, prixod)
 });

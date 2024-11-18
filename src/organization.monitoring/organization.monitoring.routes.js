@@ -1,12 +1,13 @@
 const { Router } = require("express");
 const router = Router();
 
-const { getOrganizationMonitoring, aktSverka, orderOrganization, getOrganizationMonitoringAll, organizationPrixodRasxod } = require("./ozganization.monitoring.controller");
+const { getOrganizationMonitoring, aktSverka, orderOrganization, defaultMonitoring, organizationPrixodRasxod, restrOrganization } = require("./ozganization.monitoring.controller");
 
 router.get('/akt/sverka', aktSverka)
+router.get("/restr", restrOrganization);
 router.get("/", getOrganizationMonitoring);
 router.get('/order', orderOrganization)
-router.get('/all', getOrganizationMonitoringAll)
+router.get('/default', defaultMonitoring)
 router.get('/prixod/rasxod', organizationPrixodRasxod)
 
 
