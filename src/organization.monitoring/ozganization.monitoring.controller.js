@@ -1,5 +1,5 @@
-const { getAllMonitoring, aktSverkaService, orderOrganizationService, defaultMonitoringService, organizationPrixodRasxodService, restrOrganizationService } = require("./organization.monitoring.service");
-const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation, organizationPrixodRasxodValidation } = require("../utils/validation");;
+const { getAllMonitoring, aktSverkaService, orderOrganizationService, defaultMonitoringService, organizationPrixodRasxodService, getOperatsiiService } = require("./organization.monitoring.service");
+const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation, organizationPrixodRasxodValidation, operatsiiQueryValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
 const { validationResponse } = require("../utils/response-for-validation");
@@ -17,11 +17,11 @@ const { getByIdOperatsiiService } = require('../spravochnik/operatsii/operatsii.
 const getOrganizationMonitoring = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id, spravochnik_organization_id, pudratchi_bool } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdOrganizationService(region_id, spravochnik_organization_id)
-        const { total, data, prixod, rasxod, shartnoma_null_array } = await getAllMonitoring(region_id, main_schet_id, offset, limit, spravochnik_organization_id);
+        const { total, data, prixod, rasxod, shartnoma_null_array } = await getAllMonitoring(region_id, main_schet_id, offset, limit, spravochnik_organization_id, pudratchi_bool);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -682,27 +682,10 @@ const organizationPrixodRasxod = async (req, res) => {
     }
 }
 
-const restrOrganization = async (req, res) => {
+const getOperatsii = async (req, res) => {
     try {
-        const region_id = req.user.region_id
-        const { page, limit, main_schet_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
-        const offset = (page - 1) * limit;
-        await getByIdMainSchetService(region_id, main_schet_id);
-        await getByIdOrganizationService(region_id, spravochnik_organization_id)
-        const { total, data, prixod, rasxod, shartnoma_null_array } = await restrOrganizationService(region_id, main_schet_id, offset, limit, spravochnik_organization_id);
-        const pageCount = Math.ceil(total / limit);
-        const meta = {
-            pageCount: pageCount,
-            count: total,
-            currentPage: page,
-            nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1,
-            prixod,
-            rasxod,
-            shartnoma_null_count: shartnoma_null_array.length,
-            shartnoma_null_array
-        }
-        resFunc(res, 200, data, meta)
+        const {  } = validationResponse(operatsiiQueryValidation, req.query)
+        const data = await getOperatsiiService()
     } catch (error) {
         errorCatch(error, res)
     }
@@ -713,6 +696,5 @@ module.exports = {
     aktSverka,
     orderOrganization,
     defaultMonitoring,
-    organizationPrixodRasxod,
-    restrOrganization
+    organizationPrixodRasxod
 };
