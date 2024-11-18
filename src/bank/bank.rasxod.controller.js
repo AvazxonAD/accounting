@@ -2,7 +2,7 @@ const { createBankRasxodDb, createBankRasxodChild, getByIdRasxodService, updateR
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
-const { getByIdOperatsiiService } = require("../spravochnik/operatsii/operatsii.service");
+const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
@@ -14,6 +14,8 @@ const { errorCatch } = require('../utils/errorCatch')
 const { validationResponse } = require('../utils/response-for-validation');
 const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.litso.service");
 const { resFunc } = require('../utils/resFunc')
+const { checkSchetsEquality } = require('../utils/need.functios');
+const ErrorResponse = require("../utils/errorResponse");
 
 // bank rasxod
 const bank_rasxod = async (req, res) => {
@@ -43,9 +45,13 @@ const bank_rasxod = async (req, res) => {
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
-      if(child.id_spravochnik_podotchet_litso){
+      if (child.id_spravochnik_podotchet_litso) {
         await getByIdPodotchetService(region_id, child.id_spravochnik_podotchet_litso)
       }
+    }
+    const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_rasxod')
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
     }
     const summa = returnAllChildSumma(data.childs);
     const rasxod = await createBankRasxodDb({ ...data, main_schet_id, user_id, summa, });
@@ -87,9 +93,13 @@ const bank_rasxod_update = async (req, res) => {
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
-      if(child.id_spravochnik_podotchet_litso){
+      if (child.id_spravochnik_podotchet_litso) {
         await getByIdPodotchetService(region_id, child.id_spravochnik_podotchet_litso)
       }
+    }
+    const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_rasxod')
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
     }
     const summa = returnAllChildSumma(data.childs);
     const prixod = await updateRasxodService({ ...data, id, provodki_boolean: true, summa });
@@ -164,7 +174,7 @@ const delete_bank_rasxod = async (req, res) => {
 
 const getFioBankRasxod = async (req, res) => {
   try {
-    const region_id  = req.user.region_id
+    const region_id = req.user.region_id
     const main_schet_id = req.query.main_schet_id
     await getByIdMainSchetService(region_id, main_schet_id)
     const result = await getFioBankRasxodService(region_id, main_schet_id)
@@ -172,7 +182,7 @@ const getFioBankRasxod = async (req, res) => {
   } catch (error) {
     errorCatch(error, res)
   }
-} 
+}
 
 module.exports = {
   delete_bank_rasxod,

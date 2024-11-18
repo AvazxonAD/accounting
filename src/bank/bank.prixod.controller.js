@@ -6,13 +6,15 @@ const { returnAllChildSumma } = require("../utils/returnSumma");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
-const { getByIdOperatsiiService } = require("../spravochnik/operatsii/operatsii.service");
+const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService, } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
 const { getByIdTypeOperatsiiService, } = require("../spravochnik/type.operatsii/type_operatsii.service");
 const { getByIdPodotchetService, } = require("../spravochnik/podotchet/podotchet.litso.service");
 const { validationResponse } = require("../utils/response-for-validation");
 const { resFunc } = require("../utils/resFunc");
+const { checkSchetsEquality } = require('../utils/need.functios');
+const ErrorResponse = require("../utils/errorResponse");
 
 // bank prixod create
 const create = asyncHandler(async (req, res) => {
@@ -44,6 +46,10 @@ const create = asyncHandler(async (req, res) => {
     if (child.id_spravochnik_podotchet_litso) {
       await getByIdPodotchetService(region_id, child.id_spravochnik_podotchet_litso);
     }
+  }
+  const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_prixod')
+  if(!checkSchetsEquality(operatsiis)){
+    throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
   }
   const summa = returnAllChildSumma(data.childs);
   const result = await createBankPrixodService({ ...data, main_schet_id, user_id, provodki_boolean: true, summa, });
@@ -79,6 +85,10 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
     if (child.id_spravochnik_podotchet_litso) {
       await getByIdPodotchetService(region_id, child.id_spravochnik_podotchet_litso);
     }
+  }
+  const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_prixod')
+  if(!checkSchetsEquality(operatsiis)){
+    throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
   }
   const summa = returnAllChildSumma(data.childs);
   const prixod = await bankPrixodUpdateService({ ...data, id, provodki_boolean: true, summa, user_id });

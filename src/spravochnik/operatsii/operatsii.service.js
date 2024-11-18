@@ -67,6 +67,22 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search) => {
   }
 };
 
+const getOperatsiiByChildArray = async (childs, type) => {
+  try {
+    const ids = childs.map((item) => item.spravochnik_operatsii_id);
+    const placeHolders = ids.map((_, i) => `$${i + 2}`).join(', '); 
+    const values = [type, ...ids];
+    const operatsii = await pool.query(`SELECT schet
+      FROM spravochnik_operatsii 
+      WHERE type_schet = $1 AND isdeleted = false AND id IN (${placeHolders})
+    `, values);
+    return operatsii.rows;
+  } catch (error) {
+    throw new ErrorResponse(error.message, error.statusCode || 500);
+  }
+};
+
+
 const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = false) => {
   try {
     const params = [id]
@@ -151,5 +167,6 @@ module.exports = {
   updateOperatsiiService,
   deleteOperatsiiService,
   getBySchetService,
-  getSchetService
+  getSchetService,
+  getOperatsiiByChildArray
 };
