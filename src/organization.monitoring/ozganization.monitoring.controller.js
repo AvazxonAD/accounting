@@ -17,14 +17,14 @@ const { getByIdSchetOperatsiiService } = require('../spravochnik/schet.operatsii
 const getOrganizationMonitoring = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, operatsii_id, spravochnik_organization_id } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id, operatsii_id, spravochnik_organization_id, from, to } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         const schet = await getByIdSchetOperatsiiService(region_id, operatsii_id)
         if (spravochnik_organization_id) {
             await getByIdOrganizationService(region_id, spravochnik_organization_id)
         }
-        const { total, data, prixod, rasxod } = await getOrganizationMonitoringService(region_id, main_schet_id, offset, limit, schet.schet);
+        const { total, data, summa_prixod, summa_rasxod, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getOrganizationMonitoringService(region_id, main_schet_id, offset, limit, schet.schet, spravochnik_organization_id, from, to);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -32,8 +32,12 @@ const getOrganizationMonitoring = async (req, res) => {
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
-            prixod,
-            rasxod
+            summa_prixod,
+            summa_rasxod,
+            summa_from_prixod, 
+            summa_from_rasxod, 
+            summa_to_prixod, 
+            summa_to_rasxod
         }
         resFunc(res, 200, data, meta)
     } catch (error) {

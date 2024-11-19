@@ -143,7 +143,7 @@ const bankRasxodValidation = Joi.object({
       id_spravochnik_sostav: Joi.number(),
       id_spravochnik_type_operatsii: Joi.number(),
       main_zarplata_id: Joi.number().allow(null),
-      id_spravochnik_podotchet_litso: Joi.number()
+      id_spravochnik_podotchet_litso: Joi.number().allow(null).min(1)
     })
   )
 }).options({ stripUnknown: true });
@@ -264,7 +264,9 @@ const organizationMonitoringValidation = Joi.object({
   limit: Joi.number().min(1).default(10),
   page: Joi.number().min(1).default(1),
   spravochnik_organization_id: Joi.number().min(1),
-  operatsii_id: Joi.number().min(1).required()
+  operatsii_id: Joi.number().min(1).required(),
+  from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+  to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
 }).options({ stripUnknown: true });
 
 const aktSverkaValidation = Joi.object({
