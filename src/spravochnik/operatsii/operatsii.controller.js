@@ -4,7 +4,8 @@ const {
   updateOperatsiiService,
   deleteOperatsiiService,
   getByIdOperatsiiService,
-  getSchetService
+  getSchetService,
+  ForFilterService
 } = require("./operatsii.service");
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
@@ -42,6 +43,25 @@ const getOperatsii = async (req, res) => {
     const { page, limit, type_schet, search } = validationResponse(operatsiiQueryValidation, req.query)
     const offset = (page - 1) * limit;
     const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search);
+    const pageCount = Math.ceil(total / limit)
+    const meta = {
+      pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    }
+    resFunc(res, 200, result, meta)
+  } catch (error) {
+    return errorCatch(error, res)
+  }
+}
+
+const forFilter = async (req, res) => {
+  try {
+    const { page, limit, search } = validationResponse(operatsiiQueryValidation, req.query)
+    const offset = (page - 1) * limit;
+    const { result, total } = await ForFilterService(offset, limit, search);
     const pageCount = Math.ceil(total / limit)
     const meta = {
       pageCount,
@@ -153,5 +173,6 @@ module.exports = {
   deleteOperatsii,
   updateOperatsii,
   importToExcel,
-  getSchet
+  getSchet,
+  forFilter
 };
