@@ -27,7 +27,8 @@ const getOrganizationMonitoringService = async (region_id, main_schet_id, offset
                         s_o.inn AS organ_inn,
                         u.id AS user_id,
                         u.login,
-                        u.fio
+                        u.fio,
+                        '[]'::JSONB AS schhet_array
                     FROM bank_rasxod b_r
                     JOIN users AS u ON u.id = b_r.user_id
                     JOIN regions AS r ON r.id = u.region_id 
@@ -59,7 +60,8 @@ const getOrganizationMonitoringService = async (region_id, main_schet_id, offset
                         s_o.inn AS organ_inn,
                         u.id AS user_id,
                         u.login,
-                        u.fio
+                        u.fio,
+                        '[]'::JSONB AS schhet_array
                     FROM bajarilgan_ishlar_jur3 AS b_i_j3
                     JOIN users AS u ON b_i_j3.user_id = u.id
                     JOIN regions AS r ON r.id = u.region_id
@@ -90,7 +92,8 @@ const getOrganizationMonitoringService = async (region_id, main_schet_id, offset
                         s_o.inn AS organ_inn,
                         u.id AS user_id,
                         u.login,
-                        u.fio
+                        u.fio,
+                        '[]'::JSONB AS schhet_array
                     FROM bank_prixod b_p
                     JOIN users AS u ON u.id = b_p.user_id
                     JOIN regions AS r ON r.id = u.region_id 
