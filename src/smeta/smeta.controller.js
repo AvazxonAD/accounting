@@ -10,6 +10,7 @@ const { smetaValidation, queryValidation } = require("../utils/validation");;
 const { errorCatch } = require("../utils/errorCatch");
 const { validationResponse } = require("../utils/response-for-validation");
 const { resFunc } = require("../utils/resFunc");
+const xlsx = require('xlsx')
 
 // create
 const create = async (req, res) => {
@@ -84,10 +85,36 @@ const deleteValue = async (req, res) => {
   }
 }
 
+const importExcelData = async (req, res) => {
+  try {
+    if (!req.file) {
+      return next(new ErrorResponse("File not found", 400));
+    }
+    const filePath = req.file.path;
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet).map((row) => {
+      const newRow = {};
+      for (const key in row) {
+        newRow[key.trim()] = row[key];
+      }
+      return newRow;
+    });
+    for(let smeta of data){
+      await createSmeta(smeta.smeta_name, Number(smeta.smeta_number) ?  smeta.smeta_number : 1000000000, smeta.father_smeta_name);
+    }
+    return resFunc(res, 200, 'Created success true');
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
+
 module.exports = {
   create,
   getAll,
   deleteValue,
   update,
   getElementById,
+  importExcelData
 };
