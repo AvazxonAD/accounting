@@ -1,0 +1,44 @@
+{
+    PersonalInfo: {
+        "Umumiy Ma'lumot": {
+            "F.I.O": "Urazov Kayrat Nurmuradovich",
+            "Tug'ilgan Sana": "07.05.1996",
+            "Jinsi": "Erkak",
+            "Millati": "Qozoq",
+            "Fuqaroligi": "O'zbekiston",
+            "Shahar": "Toshkent",
+            "Tuman": "Yashnobod",
+            "Yashash Manzili": "Izzat ko'chasi 58/6 xonadon",
+            "Oilaviy Holati": "Uylangan",
+            "Ma'lumoti": "O'rta",
+            "Kasbi": "Dasturchi"
+        },
+        "Passport Ma'lumotlari": {
+            "Seriya va Passport Raqami": "AA1234567",
+            "PINFL": "12345678912345",
+            "Berilgan Sana": "01.01.2023",
+            "Amal Qilish Muddati": "01.01.2025"
+        },
+        "Jinoiy Ish": {
+            "Hukm": "1-hukm",
+            "Manzil": "Olmaliq shahridagi jinoiy ish hukmi",
+            "Sana": "10.01.2024",
+            "Muddat": "2 yil 3 oy 15 kun",
+            "Moddalar": {
+                "1. 123-modda": "O'zlashtirish va firibgarlik",
+                "2. 112-modda": "Muddatidan avval shartli ozod qilish"
+            }
+        },
+        "Sherik": {
+            "F.I.O": "Asqarov Avazxon Donyorivich",
+            "Seriya va Passport Raqami": "AA1231122",
+            "PINFL": "42345678912322",
+            "Sana": "01.01.2011",
+            "Muddat": "1 yil 4 oy 0 kun"
+        },
+        "Qarindoshlar": {
+            "Ota": "Eshmatov Toshmat Valiyevich",
+            "Ona": "Anvarova Lobar Ernazarovich"
+        }
+    }
+}
