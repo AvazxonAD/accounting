@@ -181,7 +181,7 @@ const ForFilterService = async (offset, limit, search) => {
       )
       SELECT 
         ARRAY_AGG(row_to_json(data)) AS data,
-        (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter})::INTEGER AS total_count
+        (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter} AND (type_schet = 'Akt_priyom_peresdach_own' OR type_schet = 'avans_otchet_own' OR type_schet = 'show_service_own') )::INTEGER AS total_count
       FROM data
     `, params);
     return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 }
