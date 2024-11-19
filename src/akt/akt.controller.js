@@ -34,7 +34,7 @@ const jur_3_create = async (req, res) => {
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
     await getByIdMainSchetService(region_id, main_schet_id);
-    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
+    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach_own");
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
     if (data.shartnomalar_organization_id) {
       const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
@@ -97,7 +97,7 @@ const jur_3_update = async (req, res) => {
     await getElementByIdJur_3DB(region_id, main_schet_id, id);
     await getByIdMainSchetService(region_id, main_schet_id);
     const data = validationResponse(jur3Validation, req.body)
-    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach");
+    await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "Akt_priyom_peresdach_own");
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
     if (data.shartnomalar_organization_id) {
       const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
