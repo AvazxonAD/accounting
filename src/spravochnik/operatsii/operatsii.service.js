@@ -164,9 +164,9 @@ const ForFilterService = async (offset, limit, search) => {
     const params = [offset, limit];
     if (search) {
       search_filter = `AND (
+        schet ILIKE '%' || $${params.length + 1} || '%' OR
         type_schet ILIKE '%' || $${params.length + 1} || '%' OR
-        name ILIKE '%' || $${params.length + 1} || '%' OR
-        schet ILIKE '%' || $${params.length + 1} || '%'
+        name ILIKE '%' || $${params.length + 1} || '%' 
       )`
       params.push(search)
     }
