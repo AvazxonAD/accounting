@@ -11,8 +11,8 @@ const {
   forFilter
 } = require("./operatsii.controller");
 
-router.get('/schet', getSchet)
 router.get('/filter', forFilter)
+router.get('/schet', getSchet)
 router.get("/:id", getByIdOperatsii);
 router.post("/", createOperatsii);
 router.get("/", getOperatsii);
