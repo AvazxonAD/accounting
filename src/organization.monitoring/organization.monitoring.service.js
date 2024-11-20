@@ -104,9 +104,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                   AND b_r.doc_date BETWEEN $4 AND $5
             ) AS total_count
         `, [region_id, main_schet_id, schet, from, to]);
+
         const summa_from = await pool.query(`
             WITH rasxod_sum AS (
-                SELECT COALESCE(SUM(b_r.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
                 FROM bank_rasxod b_r
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -118,10 +119,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND r.id = $1
                 AND b_r.main_schet_id = $2
                 AND s_o_p.schet = $3
-                AND b_r.doc_date < $4
+                AND b_r.doc_date < $4 
             ),
             prixod_sum AS (
-                SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod b_p
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -136,12 +137,12 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND b_p.doc_date < $4
             )
             SELECT 
-                (rasxod_sum.summa - prixod_sum.summa)::FLOAT AS total_summa
+                ( rasxod_sum.summa - prixod_sum.summa )::FLOAT AS total_summa
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, from]);
         const summa_to = await pool.query(`
             WITH rasxod_sum AS (
-                SELECT COALESCE(SUM(b_r.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
                 FROM bank_rasxod b_r
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -155,7 +156,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND b_r.doc_date <= $4
             ),
             prixod_sum AS (
-                SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod b_p
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -168,7 +169,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND s_o_p.schet = $3
                 AND b_p.doc_date <= $4
             )
-            SELECT ( rasxod_sum.summa - prixod_sum.summa   )::FLOAT AS total_summa
+            SELECT ( rasxod_sum.summa - prixod_sum.summa )::FLOAT AS total_summa
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, to]);
         let summa_prixod = 0;
@@ -179,7 +180,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
         }
         return {
             data: data.rows,
-            total: total.total_count || 0,
+            total: total.rows[0].total || 0,
             summa_prixod,
             summa_rasxod,
             summa_from: summa_from.rows[0].total_summa || 0,
@@ -425,7 +426,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                   AND b_i_j3.id_spravochnik_organization = $5
             ),
             rasxod_sum AS (
-                SELECT COALESCE(SUM(b_r.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
                 FROM bank_rasxod b_r
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -440,7 +441,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                   AND b_r.id_spravochnik_organization = $5
             ),
             prixod_sum AS (
-                SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod b_p
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -458,9 +459,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                 (
                     (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa) 
                     - (bajarilgan_ishlar_sum.summa + prixod_sum.summa)
-                ) AS summa_from,
-                (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa)::FLOAT AS summa_from_prixod,
-                (bajarilgan_ishlar_sum.summa + prixod_sum.summa)::FLOAT AS summa_from_rasxod
+                ) AS summa_from
             FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, from, organ_id]);
 
@@ -499,7 +498,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                   AND b_i_j3.id_spravochnik_organization = $5
             ),
             rasxod_sum AS (
-                SELECT COALESCE(SUM(b_r.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
                 FROM bank_rasxod b_r
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -514,7 +513,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                   AND b_r.id_spravochnik_organization = $5
             ),
             prixod_sum AS (
-                SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
+                SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod b_p
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -532,9 +531,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                 (
                     (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa) 
                     - (bajarilgan_ishlar_sum.summa + prixod_sum.summa)
-                ) AS summa_to,
-                (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa)::FLOAT AS summa_to_prixod,
-                (bajarilgan_ishlar_sum.summa + prixod_sum.summa)::FLOAT AS summa_to_rasxod
+                ) AS summa_to
             FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, to, organ_id]);
 
@@ -550,10 +547,6 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
             summa_prixod,
             summa_rasxod,
             summa_from: summa_from.rows[0].summa_from || 0,
-            summa_from_rasxod: summa_from.rows[0].summa_from_rasxod || 0,
-            summa_from_prixod: summa_from.rows[0].summa_from_prixod || 0,
-            summa_to_rasxod: summa_to.rows[0].summa_to_rasxod || 0,
-            summa_to_prixod: summa_to.rows[0].summa_to_prixod || 0,
             summa_to: summa_to.rows[0].summa_to || 0
         };
     } catch (error) {
