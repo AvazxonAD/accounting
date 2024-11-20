@@ -134,9 +134,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND b_p.doc_date < $4
             )
             SELECT 
-                (rasxod_sum.summa - prixod_sum.summa)::FLOAT AS total_summa,
-                rasxod_sum.summa::FLOAT summa_from_prixod,
-                prixod_sum.summa::FLOAT AS summa_from_rasxod
+                (rasxod_sum.summa - prixod_sum.summa)::FLOAT AS total_summa
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, from]);
         const summa_to = await pool.query(`
@@ -168,9 +166,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND s_o_p.schet = $3
                 AND b_p.doc_date <= $4
             )
-            SELECT ( rasxod_sum.summa - prixod_sum.summa   )::FLOAT AS total_summa,
-            rasxod_sum.summa::FLOAT summa_to_prixod,
-            prixod_sum.summa::FLOAT AS summa_to_rasxod
+            SELECT ( rasxod_sum.summa - prixod_sum.summa   )::FLOAT AS total_summa
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, to]);
         let summa_prixod = 0;
@@ -185,10 +181,6 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
             summa_prixod,
             summa_rasxod,
             summa_from: summa_from.rows[0].total_summa || 0,
-            summa_from_rasxod: summa_from.rows[0].summa_from_rasxod || 0,
-            summa_from_prixod: summa_from.rows[0].summa_from_prixod || 0,
-            summa_to_rasxod: summa_to.rows[0].summa_to_rasxod || 0,
-            summa_to_prixod: summa_to.rows[0].summa_to_prixod || 0,
             summa_to: summa_to.rows[0].total_summa || 0
         };
     } catch (error) {

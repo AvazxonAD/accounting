@@ -20,9 +20,7 @@ const getMonitoring = async (req, res) => {
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         const { 
-            total, data, summa_prixod, summa_rasxod,
-             summa_from, summa_to, summa_from_prixod,
-             summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getMonitoringService(
+            total, data, summa_prixod, summa_rasxod, summa_from, summa_to  } = await getMonitoringService(
             region_id, main_schet_id, offset, limit, operatsii, from, to
         );
         const pageCount = Math.ceil(total / limit);
@@ -35,11 +33,7 @@ const getMonitoring = async (req, res) => {
             summa_prixod,
             summa_rasxod,
             summa_from, 
-            summa_to,
-            summa_from_prixod,
-            summa_from_rasxod, 
-            summa_to_prixod, 
-            summa_to_rasxod
+            summa_to
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
