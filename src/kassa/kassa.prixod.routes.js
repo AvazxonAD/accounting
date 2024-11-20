@@ -9,7 +9,7 @@ const {
   updateKassaPrixodBank,
   deleteKassaPrixodRasxod,
   getElementByIdKassaPrixod,
-} = require("./kassa.prixod.controler");
+} = require("./kassa.prixod.controller");
 
 router.post("/", kassaPrixodCreate);
 router.get("/", getAllKassaPrixod);

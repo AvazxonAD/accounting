@@ -165,7 +165,6 @@ const ForFilterService = async (offset, limit, search) => {
     if (search) {
       search_filter = `AND (
         schet ILIKE '%' || $${params.length + 1} || '%' OR
-        type_schet ILIKE '%' || $${params.length + 1} || '%' OR
         name ILIKE '%' || $${params.length + 1} || '%' 
       )`
       params.push(search)
@@ -176,7 +175,7 @@ const ForFilterService = async (offset, limit, search) => {
         FROM spravochnik_operatsii  
         WHERE isdeleted = false 
           ${search_filter} 
-          AND (type_schet = 'Akt_priyom_peresdach_own' OR type_schet = 'avans_otchet_own' OR type_schet = 'show_service_own')  
+          AND type_schet = 'general'  
         OFFSET $1 LIMIT $2
       )
       SELECT 

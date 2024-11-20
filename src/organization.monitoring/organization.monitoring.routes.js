@@ -1,10 +1,11 @@
 const { Router } = require("express");
 const router = Router();
 
-const { getOrganizationMonitoring, aktSverka, orderOrganization, organizationPrixodRasxod } = require("./ozganization.monitoring.controller");
+const { getMonitoring, aktSverka, orderOrganization, organizationPrixodRasxod, getBYOrganizationMonitoring } = require("./ozganization.monitoring.controller");
 
 router.get('/akt/sverka', aktSverka)
-router.get("/", getOrganizationMonitoring);
+router.get("/:id", getBYOrganizationMonitoring);
+router.get("/", getMonitoring);
 router.get('/order', orderOrganization)
 router.get('/prixod/rasxod', organizationPrixodRasxod)
 

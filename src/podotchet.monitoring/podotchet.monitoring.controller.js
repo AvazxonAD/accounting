@@ -4,7 +4,7 @@ const { getLogger } = require('../utils/logger')
 const { validationResponse } = require('../utils/response-for-validation');
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
-const { getAllMonitoring, prixodRasxodPodotchetService } = require('./podotchet.monitoring.service')
+const { getMonitoringService, prixodRasxodPodotchetService } = require('./podotchet.monitoring.service')
 const { getByIdPodotchetService } = require('../spravochnik/podotchet/podotchet.litso.service')
 const ExcelJS = require('exceljs')
 const { returnStringDate, returnLocalDate } = require('../utils/date.function')
@@ -12,21 +12,22 @@ const path = require(`path`)
 
 const getPodotchetMonitoring = async (req, res) => {
     try {
-        const { limit, page, main_schet_id, from, to, podotchet } = validationResponse(podotchetQueryValidation, req.query)
+        const { limit, page, main_schet_id, from, to, podotchet, operatsii } = validationResponse(podotchetQueryValidation, req.query)
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         if (podotchet) {
             await getByIdPodotchetService(region_id, podotchet)
         }
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, prixod_sum, rasxod_sum, data, summa_from_prixod, summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getAllMonitoring(
+        const { total, prixod_sum, rasxod_sum, data, summa_from, summa_to } = await getMonitoringService(
             region_id,
             main_schet_id,
             offset,
             limit,
             from,
             to,
-            podotchet
+            podotchet,
+            operatsii
         );
         const pageCount = Math.ceil(total / limit);
         const meta = {

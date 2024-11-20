@@ -1,4 +1,4 @@
-const { getOrganizationMonitoringService, aktSverkaService, orderOrganizationService, organizationPrixodRasxodService } = require("./organization.monitoring.service");
+const { getMonitoringService, aktSverkaService, orderOrganizationService, organizationPrixodRasxodService, getByOrganizationMonitoringService } = require("./organization.monitoring.service");
 const { organizationMonitoringValidation, aktSverkaValidation, orderOrganizationValidation, organizationPrixodRasxodValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { errorCatch } = require("../utils/errorCatch");
@@ -13,17 +13,43 @@ const { returnStringDate } = require('../utils/date.function')
 const { returnExcelColumn } = require('../utils/for-excel')
 const { getBySchetService } = require('../spravochnik/operatsii/operatsii.service')
 
-const getOrganizationMonitoring = async (req, res) => {
+const getMonitoring = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, operatsii, spravochnik_organization_id, from, to } = validationResponse(organizationMonitoringValidation, req.query)
+        const { page, limit, main_schet_id, operatsii, from, to } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        if (spravochnik_organization_id) {
-            await getByIdOrganizationService(region_id, spravochnik_organization_id)
+        const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to } = await getMonitoringService(
+            region_id, main_schet_id, offset, limit, operatsii, from, to
+        );
+        const pageCount = Math.ceil(total / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1,
+            summa_prixod,
+            summa_rasxod,
+            summa_from, 
+            summa_to
         }
-        const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to } = await getOrganizationMonitoringService(
-            region_id, main_schet_id, offset, limit, operatsii, spravochnik_organization_id, from, to
+        resFunc(res, 200, data, meta)
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
+const getBYOrganizationMonitoring = async (req, res) => {
+    try {
+        const region_id = req.user.region_id;
+        const organ_id = req.params.id;
+        await getByIdOrganizationService(region_id, organ_id);
+        const { page, limit, main_schet_id, operatsii, from, to } = validationResponse(organizationMonitoringValidation, req.query)
+        const offset = (page - 1) * limit;
+        await getByIdMainSchetService(region_id, main_schet_id);
+        const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to } = await getByOrganizationMonitoringService(
+            region_id, main_schet_id, offset, limit, operatsii, from, to, organ_id
         );
         const pageCount = Math.ceil(total / limit);
         const meta = {
@@ -664,8 +690,9 @@ const organizationPrixodRasxod = async (req, res) => {
 }
 
 module.exports = {
-    getOrganizationMonitoring,
+    getMonitoring,
     aktSverka,
     orderOrganization,
-    organizationPrixodRasxod
+    organizationPrixodRasxod,
+    getBYOrganizationMonitoring
 };
