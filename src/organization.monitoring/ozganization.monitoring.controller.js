@@ -19,7 +19,10 @@ const getMonitoring = async (req, res) => {
         const { page, limit, main_schet_id, operatsii, from, to } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to } = await getMonitoringService(
+        const { 
+            total, data, summa_prixod, summa_rasxod,
+             summa_from, summa_to, summa_from_prixod,
+             summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getMonitoringService(
             region_id, main_schet_id, offset, limit, operatsii, from, to
         );
         const pageCount = Math.ceil(total / limit);
@@ -32,7 +35,11 @@ const getMonitoring = async (req, res) => {
             summa_prixod,
             summa_rasxod,
             summa_from, 
-            summa_to
+            summa_to,
+            summa_from_prixod,
+            summa_from_rasxod, 
+            summa_to_prixod, 
+            summa_to_rasxod
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
@@ -48,7 +55,8 @@ const getBYOrganizationMonitoring = async (req, res) => {
         const { page, limit, main_schet_id, operatsii, from, to } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to } = await getByOrganizationMonitoringService(
+        const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to, summa_from_prixod,
+            summa_from_rasxod, summa_to_prixod, summa_to_rasxod  } = await getByOrganizationMonitoringService(
             region_id, main_schet_id, offset, limit, operatsii, from, to, organ_id
         );
         const pageCount = Math.ceil(total / limit);
@@ -61,7 +69,11 @@ const getBYOrganizationMonitoring = async (req, res) => {
             summa_prixod,
             summa_rasxod,
             summa_from, 
-            summa_to
+            summa_to, 
+            summa_from_prixod,
+            summa_from_rasxod, 
+            summa_to_prixod, 
+            summa_to_rasxod 
         }
         resFunc(res, 200, data, meta)
     } catch (error) {

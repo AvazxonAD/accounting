@@ -133,7 +133,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND s_o_p.schet = $3
                 AND b_p.doc_date < $4
             )
-            SELECT (rasxod_sum.summa - prixod_sum.summa)::FLOAT AS total_summa
+            SELECT 
+                (rasxod_sum.summa - prixod_sum.summa)::FLOAT AS total_summa,
+                rasxod_sum.summa::FLOAT summa_from_prixod,
+                prixod_sum.summa::FLOAT AS summa_from_rasxod
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, from]);
         const summa_to = await pool.query(`
@@ -149,7 +152,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND r.id = $1
                 AND b_r.main_schet_id = $2
                 AND s_o_p.schet = $3
-                AND b_r.doc_date < $4
+                AND b_r.doc_date <= $4
             ),
             prixod_sum AS (
                 SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
@@ -163,9 +166,11 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND r.id = $1
                 AND b_p.main_schet_id = $2
                 AND s_o_p.schet = $3
-                AND b_p.doc_date < $4
+                AND b_p.doc_date <= $4
             )
-            SELECT (rasxod_sum.summa - prixod_sum.summa)::FLOAT AS total_summa
+            SELECT ( rasxod_sum.summa - prixod_sum.summa   )::FLOAT AS total_summa,
+            rasxod_sum.summa::FLOAT summa_to_prixod,
+            prixod_sum.summa::FLOAT AS summa_to_rasxod
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, to]);
         let summa_prixod = 0;
@@ -180,6 +185,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
             summa_prixod,
             summa_rasxod,
             summa_from: summa_from.rows[0].total_summa || 0,
+            summa_from_rasxod: summa_from.rows[0].summa_from_rasxod || 0,
+            summa_from_prixod: summa_from.rows[0].summa_from_prixod || 0,
+            summa_to_rasxod: summa_to.rows[0].summa_to_rasxod || 0,
+            summa_to_prixod: summa_to.rows[0].summa_to_prixod || 0,
             summa_to: summa_to.rows[0].total_summa || 0
         };
     } catch (error) {
@@ -386,166 +395,153 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
                     AND b_r.id_spravochnik_organization = $6
             ) AS total_count
         `, [region_id, main_schet_id, schet, from, to, organ_id]);
+        
         const summa_from = await pool.query(`
+            WITH 
+            kursatilgan_hizmatlar_sum AS (
+                SELECT COALESCE(SUM(k_h_j152.summa), 0)::FLOAT AS summa
+                FROM kursatilgan_hizmatlar_jur152 AS k_h_j152
+                JOIN users AS u ON k_h_j152.user_id = u.id
+                JOIN regions AS r ON r.id = u.region_id
+                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j152.shartnomalar_organization_id
+                LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+                JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j152.id_spravochnik_organization
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_j152.spravochnik_operatsii_own_id
+                WHERE k_h_j152.isdeleted = false
+                  AND r.id = $1
+                  AND k_h_j152.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND k_h_j152.doc_date < $4
+                  AND k_h_j152.id_spravochnik_organization = $5
+            ),
+            bajarilgan_ishlar_sum AS (
+                SELECT COALESCE(SUM(b_i_j3.summa), 0)::FLOAT AS summa
+                FROM bajarilgan_ishlar_jur3 AS b_i_j3
+                JOIN users AS u ON b_i_j3.user_id = u.id
+                JOIN regions AS r ON r.id = u.region_id
+                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
+                LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_i_j3.spravochnik_operatsii_own_id
+                WHERE b_i_j3.isdeleted = false
+                  AND r.id = $1
+                  AND b_i_j3.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND b_i_j3.doc_date < $4
+                  AND b_i_j3.id_spravochnik_organization = $5
+            ),
+            rasxod_sum AS (
+                SELECT COALESCE(SUM(b_r.summa), 0)::FLOAT AS summa
+                FROM bank_rasxod b_r
+                JOIN users AS u ON u.id = b_r.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
+                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
+                WHERE b_r.isdeleted = false
+                  AND r.id = $1
+                  AND b_r.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND b_r.doc_date < $4
+                  AND b_r.id_spravochnik_organization = $5
+            ),
+            prixod_sum AS (
+                SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
+                FROM bank_prixod b_p
+                JOIN users AS u ON u.id = b_p.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
+                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
+                WHERE b_p.isdeleted = false
+                  AND r.id = $1
+                  AND b_p.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND b_p.doc_date < $4
+                  AND b_p.id_spravochnik_organization = $5
+            )
             SELECT 
-            (
                 (
-                    COALESCE((
-                        SELECT SUM(k_h_j152.summa)::FLOAT 
-                        FROM kursatilgan_hizmatlar_jur152 AS k_h_j152
-                        JOIN users AS u ON k_h_j152.user_id = u.id
-                        JOIN regions AS r ON r.id = u.region_id
-                        LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j152.shartnomalar_organization_id
-                        LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
-                        JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j152.id_spravochnik_organization
-                        JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_j152.spravochnik_operatsii_own_id
-                        WHERE k_h_j152.isdeleted = false 
-                            AND r.id = $1
-                            AND k_h_j152.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND k_h_j152.doc_date < $4 
-                            AND k_h_j152.id_spravochnik_organization = $5
-                    ), 0)) 
-                    +
-                    (COALESCE((
-                        SELECT SUM(subquery.summa)::FLOAT 
-                        FROM (
-                            SELECT b_r.summa
-                            FROM bank_rasxod b_r
-                            JOIN users AS u ON u.id = b_r.user_id
-                            JOIN regions AS r ON r.id = u.region_id
-                            JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
-                            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
-                            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
-                            WHERE b_r.isdeleted = false
-                            AND r.id = $1
-                            AND b_r.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND b_r.doc_date < $4
-                            AND b_r.id_spravochnik_organization = $5
-                        ) AS subquery 
-                    ), 0))
-                ) 
-                - 
-                ( 
-                    (COALESCE((
-                        SELECT SUM(b_i_j3.summa)::FLOAT 
-                        FROM bajarilgan_ishlar_jur3 AS b_i_j3
-                        JOIN users AS u ON b_i_j3.user_id = u.id
-                        JOIN regions AS r ON r.id = u.region_id
-                        LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
-                        LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
-                        JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
-                        JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_i_j3.spravochnik_operatsii_own_id
-                        WHERE b_i_j3.isdeleted = false 
-                            AND r.id = $1
-                            AND b_i_j3.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND b_i_j3.doc_date < $4 
-                            AND b_i_j3.id_spravochnik_organization = $5
-                    ), 0)) 
-                    +  
-                    (COALESCE((
-                        SELECT SUM(subquery.summa)::FLOAT 
-                        FROM (
-                            SELECT b_p.summa
-                            FROM bank_prixod b_p
-                            JOIN users AS u ON u.id = b_p.user_id
-                            JOIN regions AS r ON r.id = u.region_id
-                            JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
-                            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
-                            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
-                            WHERE b_p.isdeleted = false
-                            AND r.id = $1
-                            AND b_p.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND b_p.doc_date < $4
-                            AND b_p.id_spravochnik_organization = $5
-                        ) AS subquery 
-                    ), 0)
-                )
-            ) AS summa_from
+                    (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa) 
+                    - (bajarilgan_ishlar_sum.summa + prixod_sum.summa)
+                ) AS summa_from,
+                (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa)::FLOAT AS summa_from_prixod,
+                (bajarilgan_ishlar_sum.summa + prixod_sum.summa)::FLOAT AS summa_from_rasxod
+            FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, from, organ_id]);
 
         const summa_to = await pool.query(`
+            WITH 
+            kursatilgan_hizmatlar_sum AS (
+                SELECT COALESCE(SUM(k_h_j152.summa), 0)::FLOAT AS summa
+                FROM kursatilgan_hizmatlar_jur152 AS k_h_j152
+                JOIN users AS u ON k_h_j152.user_id = u.id
+                JOIN regions AS r ON r.id = u.region_id
+                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j152.shartnomalar_organization_id
+                LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+                JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j152.id_spravochnik_organization
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_j152.spravochnik_operatsii_own_id
+                WHERE k_h_j152.isdeleted = false
+                  AND r.id = $1
+                  AND k_h_j152.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND k_h_j152.doc_date <= $4
+                  AND k_h_j152.id_spravochnik_organization = $5
+            ),
+            bajarilgan_ishlar_sum AS (
+                SELECT COALESCE(SUM(b_i_j3.summa), 0)::FLOAT AS summa
+                FROM bajarilgan_ishlar_jur3 AS b_i_j3
+                JOIN users AS u ON b_i_j3.user_id = u.id
+                JOIN regions AS r ON r.id = u.region_id
+                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
+                LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_i_j3.spravochnik_operatsii_own_id
+                WHERE b_i_j3.isdeleted = false
+                  AND r.id = $1
+                  AND b_i_j3.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND b_i_j3.doc_date <= $4
+                  AND b_i_j3.id_spravochnik_organization = $5
+            ),
+            rasxod_sum AS (
+                SELECT COALESCE(SUM(b_r.summa), 0)::FLOAT AS summa
+                FROM bank_rasxod b_r
+                JOIN users AS u ON u.id = b_r.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
+                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
+                WHERE b_r.isdeleted = false
+                  AND r.id = $1
+                  AND b_r.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND b_r.doc_date <= $4
+                  AND b_r.id_spravochnik_organization = $5
+            ),
+            prixod_sum AS (
+                SELECT COALESCE(SUM(b_p.summa), 0)::FLOAT AS summa
+                FROM bank_prixod b_p
+                JOIN users AS u ON u.id = b_p.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
+                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
+                WHERE b_p.isdeleted = false
+                  AND r.id = $1
+                  AND b_p.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND b_p.doc_date <= $4
+                  AND b_p.id_spravochnik_organization = $5
+            )
             SELECT 
-            (
                 (
-                    COALESCE((
-                        SELECT SUM(k_h_j152.summa)::FLOAT 
-                        FROM kursatilgan_hizmatlar_jur152 AS k_h_j152
-                        JOIN users AS u ON k_h_j152.user_id = u.id
-                        JOIN regions AS r ON r.id = u.region_id
-                        LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j152.shartnomalar_organization_id
-                        LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
-                        JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j152.id_spravochnik_organization
-                        JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_j152.spravochnik_operatsii_own_id
-                        WHERE k_h_j152.isdeleted = false 
-                            AND r.id = $1
-                            AND k_h_j152.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND k_h_j152.doc_date < $4 
-                            AND k_h_j152.id_spravochnik_organization = $5
-                    ), 0)) 
-                    +
-                    (COALESCE((
-                        SELECT SUM(subquery.summa)::FLOAT 
-                        FROM (
-                            SELECT b_r.summa
-                            FROM bank_rasxod b_r
-                            JOIN users AS u ON u.id = b_r.user_id
-                            JOIN regions AS r ON r.id = u.region_id
-                            JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
-                            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
-                            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
-                            WHERE b_r.isdeleted = false
-                            AND r.id = $1
-                            AND b_r.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND b_r.doc_date < $4
-                            AND b_r.id_spravochnik_organization = $5
-                        ) AS subquery 
-                    ), 0))
-                ) 
-                - 
-                ( 
-                    (COALESCE((
-                        SELECT SUM(b_i_j3.summa)::FLOAT 
-                        FROM bajarilgan_ishlar_jur3 AS b_i_j3
-                        JOIN users AS u ON b_i_j3.user_id = u.id
-                        JOIN regions AS r ON r.id = u.region_id
-                        LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
-                        LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
-                        JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
-                        JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_i_j3.spravochnik_operatsii_own_id
-                        WHERE b_i_j3.isdeleted = false 
-                            AND r.id = $1
-                            AND b_i_j3.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND b_i_j3.doc_date < $4 
-                            AND b_i_j3.id_spravochnik_organization = $5
-                    ), 0)) 
-                    +  
-                    (COALESCE((
-                        SELECT SUM(subquery.summa)::FLOAT 
-                        FROM (
-                            SELECT b_p.summa
-                            FROM bank_prixod b_p
-                            JOIN users AS u ON u.id = b_p.user_id
-                            JOIN regions AS r ON r.id = u.region_id
-                            JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
-                            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
-                            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
-                            WHERE b_p.isdeleted = false
-                            AND r.id = $1
-                            AND b_p.main_schet_id = $2
-                            AND s_o_p.schet = $3
-                            AND b_p.doc_date < $4
-                            AND b_p.id_spravochnik_organization = $5
-                        ) AS subquery 
-                    ), 0)
-                )
-            ) AS summa_to
+                    (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa) 
+                    - (bajarilgan_ishlar_sum.summa + prixod_sum.summa)
+                ) AS summa_to,
+                (kursatilgan_hizmatlar_sum.summa + rasxod_sum.summa)::FLOAT AS summa_to_prixod,
+                (bajarilgan_ishlar_sum.summa + prixod_sum.summa)::FLOAT AS summa_to_rasxod
+            FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, to, organ_id]);
 
         let summa_prixod = 0;
@@ -559,8 +555,12 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
             total: total.rows[0].total_count || 0,
             summa_prixod,
             summa_rasxod,
-            summa_from: summa_from.rows[0].summa_from,
-            summa_to: summa_to.rows[0].summa_to
+            summa_from: summa_from.rows[0].summa_from || 0,
+            summa_from_rasxod: summa_from.rows[0].summa_from_rasxod || 0,
+            summa_from_prixod: summa_from.rows[0].summa_from_prixod || 0,
+            summa_to_rasxod: summa_to.rows[0].summa_to_rasxod || 0,
+            summa_to_prixod: summa_to.rows[0].summa_to_prixod || 0,
+            summa_to: summa_to.rows[0].summa_to || 0
         };
     } catch (error) {
         throw new ErrorResponse(error, error.statusCode)
