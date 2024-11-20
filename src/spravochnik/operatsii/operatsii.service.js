@@ -158,37 +158,6 @@ const getSchetService = async () => {
   }
 }
 
-const ForFilterService = async (offset, limit, search) => {
-  try {
-    let search_filter = ``
-    const params = [offset, limit];
-    if (search) {
-      search_filter = `AND (
-        schet ILIKE '%' || $${params.length + 1} || '%' OR
-        name ILIKE '%' || $${params.length + 1} || '%' 
-      )`
-      params.push(search)
-    }
-    const result = await pool.query(`
-      WITH data AS (
-        SELECT name, schet, type_schet
-        FROM spravochnik_operatsii  
-        WHERE isdeleted = false 
-          ${search_filter} 
-          AND type_schet = 'general'  
-        OFFSET $1 LIMIT $2
-      )
-      SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
-        (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter} AND (type_schet = 'Akt_priyom_peresdach_own' OR type_schet = 'avans_otchet_own' OR type_schet = 'show_service_own') )::INTEGER AS total_count
-      FROM data
-    `, params);
-    return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 }
-  } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
-  }
-}
-
 module.exports = {
   getByNameAndSchetOperatsiiService,
   createOperatsiiService,
@@ -198,6 +167,5 @@ module.exports = {
   deleteOperatsiiService,
   getBySchetService,
   getSchetService,
-  getOperatsiiByChildArray,
-  ForFilterService
+  getOperatsiiByChildArray
 };

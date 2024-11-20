@@ -8,10 +8,8 @@ const {
   deleteOperatsii,
   getByIdOperatsii,
   getSchet,
-  forFilter
 } = require("./operatsii.controller");
 
-router.get('/filter', forFilter)
 router.get('/schet', getSchet)
 router.get("/:id", getByIdOperatsii);
 router.post("/", createOperatsii);
