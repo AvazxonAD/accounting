@@ -41,20 +41,20 @@ const createJur3DB = async (data) => {
 
     const result = doc.rows[0]
     data.childs = data.childs.map(item => {
-          return {
-            spravochnik_operatsii_id: item.spravochnik_operatsii_id,
-            summa: item.summa,
-            id_spravochnik_podrazdelenie: item.id_spravochnik_podrazdelenie,
-            id_spravochnik_sostav: item.id_spravochnik_sostav,
-            id_spravochnik_type_operatsii: item.id_spravochnik_type_operatsii,
-            main_schet_id: data.main_schet_id,
-            bajarilgan_ishlar_jur3_id: result.id,
-            user_id: data.user_id,
-            spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id,
-            created_at: tashkentTime(),
-            updated_at: tashkentTime()
-          }
-    }) 
+      return {
+        spravochnik_operatsii_id: item.spravochnik_operatsii_id,
+        summa: item.summa,
+        id_spravochnik_podrazdelenie: item.id_spravochnik_podrazdelenie,
+        id_spravochnik_sostav: item.id_spravochnik_sostav,
+        id_spravochnik_type_operatsii: item.id_spravochnik_type_operatsii,
+        main_schet_id: data.main_schet_id,
+        bajarilgan_ishlar_jur3_id: result.id,
+        user_id: data.user_id,
+        spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id,
+        created_at: tashkentTime(),
+        updated_at: tashkentTime()
+      }
+    })
     const values = data.childs.map((_, index) => `($${11 * index + 1}, $${11 * index + 2}, $${11 * index + 3}, $${11 * index + 4}, $${11 * index + 5}, $${11 * index + 6}, $${11 * index + 7}, $${11 * index + 8}, $${11 * index + 9}, $${11 * index + 10}, $${11 * index + 11})`);
     const allValues = data.childs.reduce((acc, obj) => {
       return acc.concat(Object.values(obj));
@@ -320,7 +320,7 @@ const deleteJur3DB = async (id) => {
 
 const jur3CapService = async (region_id, from, to, schet) => {
   try {
-    const data = await pool.query(`
+    const data = await pool.query(`--sql
       SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa
       FROM bajarilgan_ishlar_jur3 AS b_i_j3 
       JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
