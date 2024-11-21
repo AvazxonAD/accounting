@@ -733,7 +733,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
     } catch (error) {
         throw new ErrorResponse(error.message, error.statusCode);
     }
-}
+};
 
 const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
     const client = await pool.connect()
@@ -796,7 +796,8 @@ const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
     } finally {
         client.release()
     }
-}
+};
+
 
 
 module.exports = {

@@ -328,7 +328,7 @@ const aktSverka = async (req, res) => {
 const orderOrganization = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { from, to, schet, main_schet_id } = validationResponse(orderOrganizationValidation, req.query)
+        const { from, to, operatsii, main_schet_id } = validationResponse(orderOrganizationValidation, req.query)
         await getBySchetService(schet)
         const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
         const workbook = new ExcelJS.Workbook();
@@ -585,59 +585,50 @@ const orderOrganization = async (req, res) => {
 const organizationPrixodRasxod = async (req, res) => {
     try {
         const region_id = req.user.region_id
-        const { to } = validationResponse(organizationPrixodRasxodValidation, req.query)
+        const { to, main_schet_id, operatsii } = validationResponse(organizationPrixodRasxodValidation, req.query)
         const workbook = new ExcelJS.Workbook();
         const fileName = `organization_prixod_rasxod_${new Date().getTime()}.xlsx`;
-        const worksheet = workbook.addWorksheet('organizatiod prixod rasxod');
+        const worksheet = workbook.addWorksheet('organization prixod rasxod');
         worksheet.pageSetup.margins.left = 0
         worksheet.pageSetup.margins.header = 0
         worksheet.pageSetup.margins.footer = 0
         worksheet.pageSetup.margins.right = 0
-        worksheet.mergeCells(`A1`, 'F1')
-        const title = worksheet.getCell(`A1`)
-        title.value = `${returnStringDate(new Date(to))} дебитор ва счет карзлари тугрисида маълумот`
+        const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
+        worksheet.mergeCells(`A1`, 'D1');
+        const title = worksheet.getCell(`A1`);
+        const schet = worksheet.getCell(`E1`)
+        schet.value = `${operatsii}`
+        title.value = `${main_schet.tashkilot_nomi} ${returnStringDate(new Date(to))} холатига дебитор-кредитор  карздорлик тугрисида маълумот `
         const organ_nameCell = worksheet.getCell(`A2`)
         organ_nameCell.value = 'Наименование организации'
-        const dataCell = worksheet.getCell(`B2`)
-        dataCell.value = `Дата`
-        const doc_numCell = worksheet.getCell(`C2`)
-        doc_numCell.value = `Доc-дата`
-        const becauseCell = worksheet.getCell(`D2`)
-        becauseCell.value = `За что`
-        const prixodCell = worksheet.getCell(`E2`)
+        const prixodCell = worksheet.getCell(`B2`)
         prixodCell.value = `Дебит`
-        const rasxodCell = worksheet.getCell(`F2`)
+        const rasxodCell = worksheet.getCell(`C2`)
         rasxodCell.value = 'Кредит'
-        const css_array = [title, organ_nameCell, dataCell, doc_numCell, becauseCell, prixodCell, rasxodCell]
+        const css_array = [title, schet, organ_nameCell, prixodCell, rasxodCell]
         let itogo_rasxod = 0;
         let itogo_prixod = 0;
-        const { data } = await organizationPrixodRasxodService(region_id, to)
+        const { data } = await organizationPrixodRasxodService(region_id, to, main_schet_id, operatsii)
         let row_number = 3
         for (let column of data) {
             const organ_nameCell = worksheet.getCell(`A${row_number}`)
             organ_nameCell.value = column.name
-            const dataCell = worksheet.getCell(`B${row_number}`)
-            dataCell.value = `nimadur`
-            const doc_numCell = worksheet.getCell(`C${row_number}`)
-            doc_numCell.value = `???`
-            const becauseCell = worksheet.getCell(`D${row_number}`)
-            becauseCell.value = `buni ham bilmadim`
-            const prixodCell = worksheet.getCell(`E${row_number}`)
+            const prixodCell = worksheet.getCell(`B${row_number}`)
             prixodCell.value = column.summa > 0 ? column.summa : 0
             itogo_prixod += prixodCell.value
-            const rasxodCell = worksheet.getCell(`F${row_number}`)
+            const rasxodCell = worksheet.getCell(`C${row_number}`)
             rasxodCell.value = column.summa < 0 ? Math.abs(column.summa) : 0
             itogo_rasxod += rasxodCell.value
-            const css_array = [organ_nameCell, dataCell, doc_numCell, becauseCell, prixodCell, rasxodCell]
+            const css_array = [organ_nameCell, prixodCell, rasxodCell]
             css_array.forEach((item, index) => {
                 horizontal = 'center'
                 let size = 10;
-                if (index === 0 || index == 3) horizontal = 'left';
-                if (index === 4 || index === 5) horizontal = 'right';
+                if (index === 0) horizontal = 'left';
+                if (index === 1 || index === 2) horizontal = 'right';
                 Object.assign(item, {
                     numFmt: '#,##0.00',
                     font: { size, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal },
+                    alignment: { vertical: 'middle', horizontal, wrapText: true },
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
                     border: {
                         top: { style: 'thin' },
@@ -649,11 +640,11 @@ const organizationPrixodRasxod = async (req, res) => {
             })
             row_number++
         }
-        const itogoStr = worksheet.getCell(`D${row_number}`)
+        const itogoStr = worksheet.getCell(`A${row_number}`)
         itogoStr.value = 'Итого'
-        const prixod_itogoCell = worksheet.getCell(`E${row_number}`)
+        const prixod_itogoCell = worksheet.getCell(`B${row_number}`)
         prixod_itogoCell.value = itogo_prixod
-        const rasxod_itogoCell = worksheet.getCell(`F${row_number}`)
+        const rasxod_itogoCell = worksheet.getCell(`C${row_number}`)
         rasxod_itogoCell.value = itogo_rasxod
         css_array.push(itogoStr, prixod_itogoCell, rasxod_itogoCell)
 
@@ -667,24 +658,22 @@ const organizationPrixodRasxod = async (req, res) => {
             }
             let horizontal = 'center'
             let size = 10;
-            if (index === 0) fill = {}, border = {}, size = 14;
-            if (index === 7) fill = {}, border = {}, horizontal = 'right';
-            if (index > 7) horizontal = 'right';
+            if (index === 0) fill = {}, border = {}, size = 12;
+            if (index === 1) fill = {}, border = {bottom: { style: 'thin' }}, size = 12;
+            if (index === 5) fill = {}, border = {}, horizontal = 'right';
+            if (index > 5) horizontal = 'right';
             Object.assign(item, {
                 numFmt: '#,##0.00',
                 font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                alignment: { vertical: 'middle', horizontal },
+                alignment: { vertical: 'middle', horizontal, wrapText: true },
                 fill,
                 border
             });
         })
-        worksheet.getColumn(1).width = 25;
-        worksheet.getColumn(2).width = 10;
-        worksheet.getColumn(3).width = 10;
-        worksheet.getColumn(4).width = 20;
-        worksheet.getColumn(5).width = 15;
-        worksheet.getColumn(6).width = 15;
-        worksheet.getRow(1).height = 35;
+        worksheet.getColumn(1).width = 40;
+        worksheet.getColumn(2).width = 20;
+        worksheet.getColumn(3).width = 20;
+        worksheet.getRow(1).height = 30;
         const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
