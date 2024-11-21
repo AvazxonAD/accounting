@@ -442,34 +442,6 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                 AND s_op.schet = $5
         
             UNION ALL
-
-            SELECT DISTINCT 
-                a_tj4.id, 
-                a_tj4.doc_num,
-                TO_CHAR(a_tj4.doc_date, 'YYYY-MM-DD') AS doc_date,
-                0::FLOAT AS prixod_sum,
-                a_tj4.summa::FLOAT AS rasxod_sum,
-                a_tj4.opisanie,
-                s_p_l.id AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'avans_otchet' AS type
-            FROM avans_otchetlar_jur4 a_tj4
-            JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-            JOIN users u ON a_tj4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-            WHERE r.id = $1 AND a_tj4.main_schet_id = $2 
-                AND a_tj4.isdeleted = false  
-                AND a_tj4.doc_date BETWEEN $3 AND $4
-                AND s_op.schet = $5
-        
-            UNION ALL
         
             SELECT DISTINCT
                 k_r.id, 
@@ -577,21 +549,6 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT a_tj4.id), 0) AS total_count
-                FROM avans_otchetlar_jur4 a_tj4
-                JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-                JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id
-                JOIN users u ON a_tj4.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-                WHERE r.id = $1 
-                    AND a_tj4.main_schet_id = $2
-                    AND a_tj4.isdeleted = false
-                    AND a_tj4.doc_date BETWEEN $3 AND $4
-                    AND s_op.schet = $5
-        
-                UNION ALL
-        
                 SELECT COALESCE(COUNT(DISTINCT k_r.id), 0) AS total_count
                 FROM kassa_rasxod k_r
                 JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
@@ -678,19 +635,6 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND k_p.isdeleted = false  
                         AND k_p.doc_date < $3
                         AND s_op.schet = $4),
-                avans_otchetlar AS 
-                    (SELECT COALESCE(SUM(a_tj4_ch.summa), 0) AS summa
-                    FROM avans_otchetlar_jur4 a_tj4
-                    JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-                    JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-                    JOIN users u ON a_tj4.user_id = u.id
-                    JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-                    WHERE r.id = $1 
-                        AND a_tj4.main_schet_id = $2 
-                        AND a_tj4.isdeleted = false  
-                        AND a_tj4.doc_date < $3
-                        AND s_op.schet = $4),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
                     FROM bank_prixod b_p
@@ -706,9 +650,9 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4)
             SELECT (
                 (kassa_rasxod.summa + bank_rasxod.summa) - 
-                (kassa_prixod.summa + bank_prixod.summa + avans_otchetlar.summa)
+                (kassa_prixod.summa + bank_prixod.summa)
             )::FLOAT AS summa
-            FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod, avans_otchetlar
+            FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod
         `, [region_id, main_schet_id, from, operatsii]);
         
         const summa_to = await pool.query(`--sql
@@ -752,19 +696,6 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND k_p.isdeleted = false  
                         AND k_p.doc_date < $3
                         AND s_op.schet = $4),
-                avans_otchetlar AS 
-                    (SELECT COALESCE(SUM(a_tj4_ch.summa), 0) AS summa
-                    FROM avans_otchetlar_jur4 a_tj4
-                    JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-                    JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-                    JOIN users u ON a_tj4.user_id = u.id
-                    JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-                    WHERE r.id = $1 
-                        AND a_tj4.main_schet_id = $2 
-                        AND a_tj4.isdeleted = false  
-                        AND a_tj4.doc_date < $3
-                        AND s_op.schet = $4),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
                     FROM bank_prixod b_p
@@ -780,9 +711,9 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4)
             SELECT (
                 (kassa_rasxod.summa + bank_rasxod.summa) - 
-                (kassa_prixod.summa + bank_prixod.summa + avans_otchetlar.summa)
+                (kassa_prixod.summa + bank_prixod.summa)
             )::FLOAT AS summa
-            FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod, avans_otchetlar
+            FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod
         `, [region_id, main_schet_id, to, operatsii]);
 
         let summa_prixod = 0;
