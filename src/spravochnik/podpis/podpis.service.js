@@ -28,8 +28,7 @@ const createPodpisService = async (data) => {
 
 const getAllPodpisService = async (region_id, offset, limit) => {
   try {
-    const result = await pool.query(
-      `
+    const result = await pool.query(`--sql
         WITH data AS (
           SELECT 
             s_p.id, s_p.type_document, s_p.numeric_poryadok, 
@@ -38,7 +37,7 @@ const getAllPodpisService = async (region_id, offset, limit) => {
           JOIN users AS u ON u.id = s_p.user_id
           JOIN regions AS r ON r.id = u.region_id
           WHERE r.id = $1 AND s_p.isdeleted = false
-          ORDER BY numeric_poryadok
+          ORDER BY s_p.type_document
           OFFSET $2 LIMIT $3
         )
         SELECT 

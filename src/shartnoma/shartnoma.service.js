@@ -57,11 +57,11 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
       pudratchi_filter = `AND sh_o.pudratchi_bool = false`
     }
     if(search){
-      search_filter = `AND sh_o.doc_num ILIKE '%' || $${params.length + 1} || '%'`
+      search_filter = `AND (sh_o.doc_num ILIKE '%' || $${params.length + 1} || '%' OR sh_o.opisanie ILIKE '%' || $${params.length + 1} || '%')`
       params.push(search)
     }
-    const { rows } = await pool.query(
-      `WITH data AS (
+    const { rows } = await pool.query(`--sql
+      WITH data AS (
           SELECT 
               sh_o.id,
               sh_o.spravochnik_organization_id,
