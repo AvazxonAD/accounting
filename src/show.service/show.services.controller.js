@@ -29,11 +29,11 @@ const createController = async (req, res) => {
         const user_id = req.user.id
         const main_schet_id = req.query.main_schet_id
         const data = validationResponse(showServicesValidation, req.body)
-        await getByIdMainSchetService(region_id, main_schet_id)
+        const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'general')
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization)
         if (data.shartnomalar_organization_id) {
-            const contract = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
+            const contract = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
             if (contract.pudratchi_bool) {
                 throw new ErrorResponse(`contract not found`, 404)
             }
@@ -113,14 +113,14 @@ const updateShowService = async (req, res) => {
         const main_schet_id = req.query.main_schet_id;
         const id = req.params.id;
         const data = validationResponse(showServicesValidation, req.body)
-        await getByIdMainSchetService(region_id, main_schet_id);
+        const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdShowServiceService(region_id, main_schet_id, id);
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "general");
         await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(
                 region_id,
-                main_schet_id,
+                main_schet.spravochnik_budjet_name_id,
                 data.shartnomalar_organization_id,
                 data.id_spravochnik_organization
             );

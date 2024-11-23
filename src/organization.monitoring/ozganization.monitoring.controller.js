@@ -79,8 +79,8 @@ const aktSverka = async (req, res) => {
     try {
         const region_id = req.user.region_id;
         const { main_schet_id, shartnoma_id, from, to } = validationResponse(aktSverkaValidation, req.query);
-        await getByIdMainSchetService(region_id, main_schet_id);
-        await getByIdShartnomaService(region_id, main_schet_id, shartnoma_id);
+        const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
+        await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, shartnoma_id);
         const data = await aktSverkaService(region_id, main_schet_id, shartnoma_id, from, to);
         const head = `Акт сверки взаимарасчетов`;
         const title = `Мы, нижеподписавшиеся Начальник ФЭО Ж.Д. Абраматов О.Мухторов и "${data.organization_name}" АЖ произвели сверку взаимных расчетов между Ж.Д.Абраматов и "${data.organization_name}" АЖ по состоянию на 7/31/2024`;

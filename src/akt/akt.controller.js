@@ -33,11 +33,11 @@ const jur_3_create = async (req, res) => {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
-    await getByIdMainSchetService(region_id, main_schet_id);
+    const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "general");
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
     if (data.shartnomalar_organization_id) {
-      const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
+      const shartnoma = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
       if (!shartnoma.pudratchi_bool) {
         throw new ErrorResponse("conrtact not found", 404)
       }
@@ -95,12 +95,12 @@ const jur_3_update = async (req, res) => {
     const main_schet_id = req.query.main_schet_id;
     const id = req.params.id;
     await getElementByIdJur_3DB(region_id, main_schet_id, id);
-    await getByIdMainSchetService(region_id, main_schet_id);
+    const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     const data = validationResponse(jur3Validation, req.body)
     await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "general");
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
     if (data.shartnomalar_organization_id) {
-      const shartnoma = await getByIdShartnomaService(region_id, main_schet_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
+      const shartnoma = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
       if (!shartnoma.pudratchi_bool) {
         throw new ErrorResponse("conrtact not found", 404)
       }

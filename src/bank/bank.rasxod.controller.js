@@ -24,12 +24,12 @@ const bank_rasxod = async (req, res) => {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const data = validationResponse(bankRasxodValidation, req.body)
-    await getByIdMainSchetService(region_id, main_schet_id);
+    const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
     if (data.id_shartnomalar_organization) {
       await getByIdShartnomaService(
         region_id,
-        main_schet_id,
+        main_schet.spravochnik_budjet_name_id,
         data.id_shartnomalar_organization,
         data.id_spravochnik_organization,
       );
@@ -77,10 +77,10 @@ const bank_rasxod_update = async (req, res) => {
     const user_id = req.user.id;
     await getByIdRasxodService(region_id, main_schet_id, id);
     const data = validationResponse(bankRasxodValidation, req.body)
-    await getByIdMainSchetService(region_id, main_schet_id);
+    const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
     if (data.id_shartnomalar_organization) {
-      await getByIdShartnomaService(region_id, main_schet_id, data.id_shartnomalar_organization, data.id_spravochnik_organization);
+      await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.id_shartnomalar_organization, data.id_spravochnik_organization);
     }
     for (let child of data.childs) {
       await getByIdOperatsiiService(child.spravochnik_operatsii_id, "bank_rasxod");
