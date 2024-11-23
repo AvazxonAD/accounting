@@ -611,6 +611,9 @@ const organizationPrixodRasxod = async (req, res) => {
         const { data } = await organizationPrixodRasxodService(region_id, to, main_schet_id, operatsii)
         let row_number = 3
         for (let column of data) {
+            if(column.summa === 0){
+                continue
+            }
             const organ_nameCell = worksheet.getCell(`A${row_number}`)
             organ_nameCell.value = column.name
             const prixodCell = worksheet.getCell(`B${row_number}`)
