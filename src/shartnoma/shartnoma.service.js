@@ -9,12 +9,12 @@ const createShartnoma = async (data) => {
           doc_date, 
           summa, 
           opisanie, 
-          smeta_id, 
-          user_id, 
+          smeta_id,
+          user_id,
           smeta2_id, 
           spravochnik_organization_id, 
           pudratchi_bool, 
-          main_schet_id,
+          budjet_id,
           yillik_oylik
         )
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -30,7 +30,7 @@ const createShartnoma = async (data) => {
         data.smeta2_id,
         data.spravochnik_organization_id,
         data.pudratchi_bool,
-        data.main_schet_id,
+        data.budjet_id,
         data.yillik_oylik
       ],
     );
@@ -40,12 +40,12 @@ const createShartnoma = async (data) => {
   }
 }
 
-const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organization, pudratchi, search) => {
+const getAllShartnoma = async (region_id, budjet_id, offset, limit, organization, pudratchi, search) => {
   try {
     let search_filter = ``
     let filter_organization = ``
     let pudratchi_filter = ``
-    const params = [region_id, main_schet_id, offset, limit]
+    const params = [region_id, budjet_id, offset, limit]
     if (organization) {
       filter_organization = `AND sh_o.spravochnik_organization_id = $5`
       params.push(organization)
@@ -73,7 +73,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
               sh_o.summa,
               sh_o.pudratchi_bool,
               smeta.smeta_number,
-              sh_o.main_schet_id,
+              sh_o.budjet_id,
               sh_o.yillik_oylik
           FROM shartnomalar_organization AS sh_o
           JOIN users AS u ON sh_o.user_id = u.id
@@ -81,7 +81,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
           JOIN smeta ON sh_o.smeta_id = smeta.id
           WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
               AND r.id = $1
-              AND sh_o.main_schet_id = $2
+              AND sh_o.budjet_id = $2
           ORDER BY sh_o.doc_date 
           OFFSET $3 
           LIMIT $4
@@ -94,7 +94,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
            JOIN regions AS r ON u.region_id = r.id
            WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
              AND r.id = $1
-             AND sh_o.main_schet_id = $2)::INTEGER AS total_count
+             AND sh_o.budjet_id = $2)::INTEGER AS total_count
         FROM data`, params);
     return { data: rows[0]?.data || [], total: rows[0]?.total_count }
   } catch (error) {
@@ -104,7 +104,7 @@ const getAllShartnoma = async (region_id, main_schet_id, offset, limit, organiza
 
 const getByIdShartnomaServiceForJur7 = async (region_id, id, organization_id) => {
   try {
-    const result = await pool.query(`
+    const result = await pool.query(`--sql
         SELECT sh_o.id
         FROM shartnomalar_organization AS sh_o
         JOIN users  ON sh_o.user_id = users.id
@@ -120,9 +120,9 @@ const getByIdShartnomaServiceForJur7 = async (region_id, id, organization_id) =>
   }
 }
 
-const getByIdShartnomaService = async (region_id, main_schet_id, id, organization_id = null, ignoreDeleted = false,) => {
+const getByIdShartnomaService = async (region_id, budjet_id, id, organization_id = null, ignoreDeleted = false,) => {
   try {
-    const params = [region_id, main_schet_id, id]
+    const params = [region_id, budjet_id, id]
     let organization = ``;
     let ignore = ``;
 
@@ -149,7 +149,7 @@ const getByIdShartnomaService = async (region_id, main_schet_id, id, organizatio
         JOIN users  ON sh_o.user_id = users.id
         JOIN regions ON users.region_id = regions.id
         WHERE regions.id = $1
-          AND sh_o.main_schet_id = $2
+          AND sh_o.budjet_id = $2
           AND sh_o.id = $3 ${ignore} ${organization}
       `, params);
     if (!result.rows[0]) {

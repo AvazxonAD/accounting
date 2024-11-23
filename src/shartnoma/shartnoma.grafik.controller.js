@@ -2,18 +2,20 @@ const { getByIdGrafikDB, getAllGrafikDB, updateShartnomaGrafikDB } = require("..
 const ErrorResponse = require("../utils/errorResponse");
 const { sum } = require("../utils/returnSumma");
 const { shartnomaGarfikValidation, ShartnomaqueryValidation } = require("../utils/validation");;
-const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
+const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
 const { validationResponse } = require('../utils/response-for-validation')
+const { getByIdBudjetService } = require('../spravochnik/budjet/budjet.name.service')
 
 // update conctract grafik 
 const updateShartnomaGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query.budjet_id;
     const id = req.params.id;
-    const grafik = await getByIdGrafikDB(region_id, main_schet_id, id);
+    await getByIdBudjetService(budjet_id)
+    const grafik = await getByIdGrafikDB(region_id, budjet_id, id);
     const data = validationResponse(shartnomaGarfikValidation, req.body)
     const { oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, oy_7, oy_8, oy_9, oy_10, oy_11, oy_12 } = data
     const summa = sum(
@@ -43,10 +45,13 @@ const updateShartnomaGrafik = async (req, res) => {
 const getAllGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { organization, main_schet_id, page, limit } = validationResponse(ShartnomaqueryValidation, req.query)
+    const { organization, budjet_id, page, limit } = validationResponse(ShartnomaqueryValidation, req.query)
     const offset = (page - 1) * limit;
-    await getByIdMainSchetService(region_id, main_schet_id);
-    const { data, total } = await getAllGrafikDB(region_id, main_schet_id, organization, limit, offset);
+    await getByIdBudjetService(budjet_id);
+    if(organization){
+      await getByIdOrganizationService(region_id, organization)
+    }
+    const { data, total } = await getAllGrafikDB(region_id, budjet_id, organization, limit, offset);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -64,10 +69,10 @@ const getAllGrafik = async (req, res) => {
 const getElementByIdGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query.budjet_id;
     const id = req.params.id;
-    await getByIdMainSchetService(region_id, main_schet_id);
-    const result = await getByIdGrafikDB(region_id, main_schet_id, id, true);
+    await getByIdBudjetService(budjet_id);
+    const result = await getByIdGrafikDB(region_id, budjet_id, id, true);
     resFunc(res, 200, result);
   } catch (error) {
     errorCatch(error, res)

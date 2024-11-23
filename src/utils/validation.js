@@ -318,7 +318,7 @@ const shartnomaGarfikValidation = Joi.object({
 const ShartnomaqueryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
-  main_schet_id: Joi.number().min(1),
+  budjet_id: Joi.number().min(1),
   organization: Joi.number().min(1),
   pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
   search: Joi.string().trim()

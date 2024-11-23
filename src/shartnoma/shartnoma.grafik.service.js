@@ -7,7 +7,7 @@ const createShartnomaGrafik = async (data) => {
       (
         id_shartnomalar_organization, 
         user_id, 
-        main_schet_id, 
+        budjet_id, 
         year, 
         oy_1,
         oy_2,
@@ -28,7 +28,7 @@ const createShartnomaGrafik = async (data) => {
     `, [
     data.shartnoma_id,
     data.user_id,
-    data.main_schet_id,
+    data.budjet_id,
     data.year,
     data.oy_1 || 0,
     data.oy_2 || 0,
@@ -47,7 +47,7 @@ const createShartnomaGrafik = async (data) => {
   return grafik.rows[0]
 }
 
-const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = false) => {
+const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) => {
   try {
     let ignore = ``
     if (!ignoreDeleted) {
@@ -78,8 +78,8 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
         JOIN users  ON sh_g.user_id = users.id
         JOIN regions ON users.region_id = regions.id
         JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
-        WHERE regions.id = $1 AND sh_g.main_schet_id = $2 AND sh_g.id = $3 ${ignore}
-      `, [region_id, main_schet_id, id])
+        WHERE regions.id = $1 AND sh_g.budjet_id = $2 AND sh_g.id = $3 ${ignore}
+      `, [region_id, budjet_id, id])
     if (!result.rows[0]) {
       throw new ErrorResponse('shartnoma_grafik not found', 404)
     }
@@ -90,10 +90,10 @@ const getByIdGrafikDB = async (region_id, main_schet_id, id, ignoreDeleted = fal
 }
 
 
-const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, offset) => {
+const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset) => {
   try {
     let organization_filter = '';
-    const params = [region_id, main_schet_id, offset, limit];
+    const params = [region_id, budjet_id, offset, limit];
     if (typeof organization === "number") {
       organization_filter = `AND s_o.id = $${params.length + 1}`;
       params.push(organization);
@@ -137,7 +137,7 @@ const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, off
         JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
         JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
         LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
-        WHERE sh_g.isdeleted = false AND r.id = $1 AND sh_g.main_schet_id = $2 ${organization_filter}
+        WHERE sh_g.isdeleted = false AND r.id = $1 AND sh_g.budjet_id = $2 ${organization_filter}
         ORDER BY sh_o.doc_date 
         OFFSET $3 
         LIMIT $4
@@ -155,7 +155,7 @@ const getAllGrafikDB = async (region_id, main_schet_id, organization, limit, off
           LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
           WHERE sh_g.isdeleted = false 
             AND r.id = $1 
-            AND sh_g.main_schet_id = $2 
+            AND sh_g.budjet_id = $2 
             ${organization_filter}
         ), 0)::INTEGER AS total_count
       FROM data
