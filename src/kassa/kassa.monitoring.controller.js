@@ -39,7 +39,7 @@ const capExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-    const title = `Дневной отчет по Журнал-Ордеру №1. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${returnStringSumma(main_schet.account_number)}`;
+    const title = `Дневной отчет по Журнал-Ордеру №1. Счет: ${main_schet.jur1_schet}. Ҳисоб рақами: ${returnStringSumma(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await kassaCapService(region_id, main_schet_id, from, to);
     const workbook = new ExcelJS.Workbook();
@@ -219,7 +219,7 @@ const dailyExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-    const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${probelNumber(main_schet.account_number)}`;
+    const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur1_schet}. Ҳисоб рақами: ${probelNumber(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
     const workbook = new ExcelJS.Workbook();
@@ -292,7 +292,7 @@ const dailyExcelCreate = async (req, res) => {
         prixod.numFmt = '#,##0.00'
         rasxod.value = item.rasxod_sum
         rasxod.numFmt = '#,##0.00'
-        operatsii.value = item.rasxod_sum ? `${item.schet} - ${main_schet.jur2_schet}` : `${main_schet.jur2_schet} - ${item.schet}`;
+        operatsii.value = item.rasxod_sum ? `${item.schet} - ${main_schet.jur1_schet}` : `${main_schet.jur1_schet} - ${item.schet}`;
         const array = [doc_num, date, comment, schet, operatsii, rasxod, prixod]
         array.forEach((item, index) => {
           const alignment = { vertical: 'middle' }
