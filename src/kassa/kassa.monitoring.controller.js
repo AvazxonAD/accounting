@@ -219,7 +219,7 @@ const dailyExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-    const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur1_schet}. Ҳисоб рақами: ${probelNumber(main_schet.account_number)}`;
+    const title = `Дневной отчет по Мемориал ордер №1. Счет: ${main_schet.jur1_schet}. Ҳисоб рақами: ${probelNumber(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await dailyReportService(region_id, main_schet_id, from, to);
     const workbook = new ExcelJS.Workbook();
