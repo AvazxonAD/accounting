@@ -252,15 +252,13 @@ const dailyExcelCreate = async (req, res) => {
     const schet = worksheet.getCell('D5')
     const prixod = worksheet.getCell('E5')
     const rasxod = worksheet.getCell('F5')
-    const operatsii = worksheet.getCell('G5')
     date.value = `Дата`
     comment.value = 'Разъяснительный текст'
     doc_num.value = `№ док`;
     schet.value = `Счет`
     prixod.value = 'Приход'
     rasxod.value = 'Расход'
-    operatsii.value = 'Операции'
-    const headers = [date, comment, doc_num, schet, prixod, rasxod, operatsii]
+    const headers = [date, comment, doc_num, schet, prixod, rasxod]
     headers.forEach(item => {
       Object.assign(item, {
         font: { bold: true, size: 10, name: 'Times New Roman' },
@@ -283,7 +281,6 @@ const dailyExcelCreate = async (req, res) => {
         const schet = worksheet.getCell(`D${row_number + 1}`)
         const rasxod = worksheet.getCell(`F${row_number + 1}`)
         const prixod = worksheet.getCell(`E${row_number + 1}`)
-        const operatsii = worksheet.getCell(`G${row_number + 1}`)
         date.value = returnSleshDate(new Date(item.doc_date))
         comment.value = item.opisanie
         doc_num.value = item.doc_num
@@ -292,14 +289,13 @@ const dailyExcelCreate = async (req, res) => {
         prixod.numFmt = '#,##0.00'
         rasxod.value = item.rasxod_sum
         rasxod.numFmt = '#,##0.00'
-        operatsii.value = item.rasxod_sum ? `${item.schet} - ${main_schet.jur1_schet}` : `${main_schet.jur1_schet} - ${item.schet}`;
-        const array = [doc_num, date, comment, schet, operatsii, rasxod, prixod]
+        const array = [doc_num, date, comment, schet, rasxod, prixod]
         array.forEach((item, index) => {
           const alignment = { vertical: 'middle' }
           if (index === 2) {
             alignment.horizontal = 'left'
             alignment.wrapText = true
-          } else if (index === 5 || index === 6) {
+          } else if (index === 4 || index === 5) {
             alignment.horizontal = 'right'
           } else {
             alignment.horizontal = 'center'
