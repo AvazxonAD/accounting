@@ -14,7 +14,7 @@ const { jur3Validation, validationQuery, jur3CapValidation } = require("../utils
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
-const { getByIdOperatsiiService } = require("../spravochnik/operatsii/operatsii.service");
+const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
@@ -53,6 +53,10 @@ const jur_3_create = async (req, res) => {
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
+    }
+    const operatsiis = await getOperatsiiByChildArray(data.childs, 'Akt_priyom_peresdach')
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
     }
     const summa = returnAllChildSumma(data.childs);
     const result = await createJur3DB({ ...data, main_schet_id, user_id, summa });
@@ -117,6 +121,10 @@ const jur_3_update = async (req, res) => {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
     }
+    const operatsiis = await getOperatsiiByChildArray(data.childs, 'Akt_priyom_peresdach')
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+    }
     const summa = returnAllChildSumma(data.childs);
     const akt = await updateJur3DB({ ...data, id, summa });
     const childs = []
@@ -174,7 +182,7 @@ const jur3Cap = async (req, res) => {
     const workbook = new ExcelJS.Workbook();
     const fileName = `jur3_cap${new Date().getTime()}.xlsx`;
     let worksheet = null;
-    if(schets.length === 0){
+    if (schets.length === 0) {
       worksheet = workbook.addWorksheet(`data not found`);
     }
     for (let schet of schets) {

@@ -1,6 +1,6 @@
 const ErrorResponse = require('../utils/errorResponse')
 const { showServicesValidation } = require("../utils/validation");
-const { getByIdOperatsiiService } = require('../spravochnik/operatsii/operatsii.service')
+const { getByIdOperatsiiService, getOperatsiiByChildArray } = require('../spravochnik/operatsii/operatsii.service')
 const { getByIdOrganizationService } = require('../spravochnik/organization/organization.service')
 const { getByIdShartnomaService } = require('../shartnoma/shartnoma.service')
 const { getByIdPodrazlanieService } = require('../spravochnik/podrazdelenie/podrazdelenie.service')
@@ -50,6 +50,10 @@ const createController = async (req, res) => {
                 await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
             }
         }
+        const operatsiis = await getOperatsiiByChildArray(data.childs, 'show_service')
+        if (!checkSchetsEquality(operatsiis)) {
+            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+        }
         const summa = returnAllChildSumma(data.childs)
         const doc = await createShowServiceService({ ...data, main_schet_id, user_id, summa })
         const childs = []
@@ -72,7 +76,7 @@ const getShowService = async (req, res) => {
         const { page, limit, from, to, main_schet_id } = validationResponse(validationQuery, req.query)
         await getByIdMainSchetService(region_id, main_schet_id);
         const offset = (page - 1) * limit;
-        const {data, summa, total} = await getShowServiceService(region_id, main_schet_id, from, to, offset, limit);
+        const { data, summa, total } = await getShowServiceService(region_id, main_schet_id, from, to, offset, limit);
         const pageCount = Math.ceil(total / limit);
         getLogger.info(`show servise doclar muvaffaqiyatli olindi. UserId : ${req.user.id}`)
         const meta = {
@@ -139,9 +143,11 @@ const updateShowService = async (req, res) => {
                 await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
             }
         }
-
+        const operatsiis = await getOperatsiiByChildArray(data.childs, 'show_service')
+        if (!checkSchetsEquality(operatsiis)) {
+            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+        }
         const summa = returnAllChildSumma(data.childs);
-
         const service = await updateShowServiceService({ ...data, id, summa });
         await deleteShowServiceChildService(id);
         const childs = []

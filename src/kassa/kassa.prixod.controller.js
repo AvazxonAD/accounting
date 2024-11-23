@@ -11,7 +11,7 @@ const { kassaValidation } = require("../utils/validation");;
 const { bankQueryValidation } = require("../utils/validation");;
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
 const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.litso.service");
-const { getByIdOperatsiiService } = require("../spravochnik/operatsii/operatsii.service");
+const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
@@ -42,6 +42,10 @@ const kassaPrixodCreate = async (req, res) => {
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
+    }
+    const operatsiis = await getOperatsiiByChildArray(data.childs, 'kassa_prixod')
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
     }
     const summa = returnAllChildSumma(data.childs);
     const kassa_prixod = await kassaPrixodCreateDB({ ...data, user_id, main_schet_id, summa });
@@ -104,6 +108,10 @@ const updateKassaPrixodBank = async (req, res) => {
       if (child.id_spravochnik_type_operatsii) {
         await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii);
       }
+    }
+    const operatsiis = await getOperatsiiByChildArray(data.childs, 'kassa_prixod')
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
     }
     const summa = returnAllChildSumma(data.childs);
     const prixod = await updateKassaPrixodDB({ ...data, id, summa });
