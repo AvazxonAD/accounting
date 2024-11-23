@@ -9,6 +9,7 @@ const {
   jur3CapService,
   getSchetService
 } = require("./akt.service");
+const { checkSchetsEquality } = require('../utils/need.functios');
 const ErrorResponse = require("../utils/errorResponse");
 const { jur3Validation, validationQuery, jur3CapValidation } = require("../utils/validation");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");

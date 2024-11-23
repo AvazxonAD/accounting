@@ -78,7 +78,7 @@ const getOperatsiiByChildArray = async (childs, type) => {
     `, values);
     return operatsii.rows;
   } catch (error) {
-    throw new ErrorResponse(error.message, error.statusCode || 500);
+    throw new ErrorResponse(error, error.statusCode || 500);
   }
 };
 
