@@ -556,7 +556,7 @@ const getByOrganizationMonitoringService = async (region_id, main_schet_id, offs
 
 const orderOrganizationService = async (region_id, schet, from, to) => {
     try {
-        const main_data = await pool.query(`
+        const main_data = await pool.query(`--sql
             WITH data AS (
                 SELECT
                     s_o.id AS organization_id,
@@ -596,7 +596,7 @@ const orderOrganizationService = async (region_id, schet, from, to) => {
                         JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
                         JOIN users AS u ON u.id = s_organ.user_id
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE s_organ.isdeleted = false AND r.id = $1 AND s_op.schet = $2 AND b_r.doc_date BETWEEN $3 AND $4 AND s_organ.id = s_o.id 
+                        WHERE s_organ.isdeleted = false AND r.id = $1 AND s_op.schet = $2 AND b_r.doc_date <= $3 AND s_organ.id = s_o.id 
                     ) AS prixod,
                     COALESCE((
                         SELECT JSON_AGG(ROW_TO_JSON(t)) AS rasxod_array
@@ -732,11 +732,16 @@ const orderOrganizationService = async (region_id, schet, from, to) => {
     } 
 }
 
-const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to) => {
+const aktSverkaService = async (region_id, shartnoma_id, from, to, organization_id) => {
     try {
-        const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.main_schet_id = $2 AND sh_o.id = $3`;
-        const { rows } = await pool.query(
-            `
+        let shartnoma_filter = ``
+        const params = [region_id, organization_id, from, to]
+        if(shartnoma_id){
+            shartnoma_filter = `AND sh_o.id = $${params.length + 1}`
+            params.push(shartnoma_id)
+        };
+        const filter = `sh_o.isdeleted = false AND r.id = $1 AND sh_o.spravochnik_organization_id = $2 ${shartnoma_filter}`;
+        const { rows } = await pool.query(`--sql
                 SELECT 
                     sh_o.id,
                     sh_o.doc_num,
@@ -755,7 +760,7 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to
                                     b_r_ch.summa AS summa_prixod 
                                 FROM bank_rasxod b_r_ch
                                 JOIN users AS u ON u.id = b_r_ch.user_id 
-                                WHERE b_r_ch.isdeleted = false AND b_r_ch.id_shartnomalar_organization = sh_o.id AND b_r_ch.doc_date BETWEEN $4 AND $5
+                                WHERE b_r_ch.isdeleted = false AND b_r_ch.id_shartnomalar_organization = sh_o.id AND b_r_ch.doc_date BETWEEN $3 AND $4
                                 UNION ALL 
                                 SELECT 
                                     b_i_j3_ch.id,
@@ -767,7 +772,7 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to
                                     0 AS summa_prixod 
                                 FROM bajarilgan_ishlar_jur3 AS b_i_j3_ch
                                 JOIN users AS u ON b_i_j3_ch.user_id = u.id
-                                WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id AND b_i_j3_ch.doc_date BETWEEN $4 AND $5
+                                WHERE b_i_j3_ch.isdeleted = false AND b_i_j3_ch.shartnomalar_organization_id = sh_o.id AND b_i_j3_ch.doc_date BETWEEN $3 AND $4
                                 UNION ALL 
                                 SELECT 
                                     b_p_ch.id,
@@ -779,7 +784,7 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to
                                     0 AS summa_prixod
                                 FROM bank_prixod AS b_p_ch
                                 JOIN users AS u ON u.id = b_p_ch.user_id
-                                WHERE b_p_ch.isdeleted = false AND  b_p_ch.id_shartnomalar_organization = sh_o.id AND b_p_ch.doc_date BETWEEN $4 AND $5
+                                WHERE b_p_ch.isdeleted = false AND  b_p_ch.id_shartnomalar_organization = sh_o.id AND b_p_ch.doc_date BETWEEN $3 AND $4
                                 UNION ALL
                                 SELECT 
                                     k_h_j152.id, -- O'zgartirilgan qism
@@ -790,81 +795,92 @@ const aktSverkaService = async (region_id, main_schet_id, shartnoma_id, from, to
                                     0 AS summa_rasxod, 
                                     k_h_j152.summa AS summa_prixod 
                                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j152
-                                WHERE k_h_j152.isdeleted = false AND k_h_j152.shartnomalar_organization_id = sh_o.id AND k_h_j152.doc_date BETWEEN $4 AND $5
+                                WHERE k_h_j152.isdeleted = false AND k_h_j152.shartnomalar_organization_id = sh_o.id AND k_h_j152.doc_date BETWEEN $3 AND $4
                             ) AS operatsii
                         ) 
                     ) AS array,
                     (
-                        (COALESCE((SELECT SUM(k_h_j152.summa) 
+                        COALESCE((SELECT SUM(k_h_j152.summa) 
                             FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
                             JOIN shartnomalar_organization AS sh_o 
                             ON sh_o.id = k_h_j152.shartnomalar_organization_id
-                            WHERE k_h_j152.isdeleted = false AND ${filter} AND k_h_j152.doc_date < $4), 0) + 
+                            WHERE k_h_j152.isdeleted = false AND ${filter} AND k_h_j152.doc_date BETWEEN $3 AND $4), 0) + 
                         COALESCE((SELECT SUM(b_r.summa) 
                             FROM bank_rasxod AS b_r
                             JOIN shartnomalar_organization AS sh_o 
                             ON sh_o.id = b_r.id_shartnomalar_organization
-                            WHERE b_r.isdeleted = false AND ${filter} AND b_r.doc_date < $4), 0)) - 
-                        (COALESCE((SELECT SUM(b_i_j152.summa) 
-                            FROM bajarilgan_ishlar_jur3 AS b_i_j152 
-                            JOIN shartnomalar_organization AS sh_o 
-                            ON sh_o.id = b_i_j152.shartnomalar_organization_id
-                            WHERE b_i_j152.isdeleted = false AND ${filter} AND b_i_j152.doc_date < $4), 0) + 
-                        COALESCE((SELECT SUM(b_p.summa) 
-                            FROM bank_prixod AS b_p
-                            JOIN shartnomalar_organization AS sh_o 
-                            ON sh_o.id = b_p.id_shartnomalar_organization
-                            WHERE b_p.isdeleted = false AND ${filter} AND b_p.doc_date < $4), 0))
-                    )::FLOAT AS summa_from,
-                    (COALESCE((SELECT SUM(k_h_j152.summa) 
-                        FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
-                        JOIN shartnomalar_organization AS sh_o 
-                        ON sh_o.id = k_h_j152.shartnomalar_organization_id
-                        WHERE k_h_j152.isdeleted = false AND ${filter} AND k_h_j152.doc_date BETWEEN $4 AND $5), 0) + 
-                    COALESCE((SELECT SUM(b_r.summa) 
-                        FROM bank_rasxod AS b_r
-                        JOIN shartnomalar_organization AS sh_o 
-                        ON sh_o.id = b_r.id_shartnomalar_organization
-                        WHERE b_r.isdeleted = false AND ${filter} AND b_r.doc_date BETWEEN $4 AND $5), 0))::FLOAT AS summa_prixod,
-                    (COALESCE((SELECT SUM(b_i_j152.summa) 
-                        FROM bajarilgan_ishlar_jur3 AS b_i_j152 
-                        JOIN shartnomalar_organization AS sh_o 
-                        ON sh_o.id = b_i_j152.shartnomalar_organization_id
-                        WHERE b_i_j152.isdeleted = false AND ${filter} AND b_i_j152.doc_date BETWEEN $4 AND $5), 0) + 
-                    COALESCE((SELECT SUM(b_p.summa) 
-                        FROM bank_prixod AS b_p
-                        JOIN shartnomalar_organization AS sh_o 
-                        ON sh_o.id = b_p.id_shartnomalar_organization
-                        WHERE b_p.isdeleted = false AND ${filter} AND b_p.doc_date BETWEEN $4 AND $5), 0))::FLOAT AS summa_rasxod,
+                            WHERE b_r.isdeleted = false AND ${filter} AND b_r.doc_date BETWEEN $3 AND $4), 0)
+                    )::FLOAT AS summa_prixod,
                     (
-                        (COALESCE((SELECT SUM(k_h_j152.summa) 
-                            FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
-                            JOIN shartnomalar_organization AS sh_o 
-                            ON sh_o.id = k_h_j152.shartnomalar_organization_id
-                            WHERE k_h_j152.isdeleted = false AND ${filter} AND k_h_j152.doc_date <= $5), 0) + 
-                        COALESCE((SELECT SUM(b_r.summa) 
-                            FROM bank_rasxod AS b_r
-                            JOIN shartnomalar_organization AS sh_o 
-                            ON sh_o.id = b_r.id_shartnomalar_organization
-                            WHERE b_r.isdeleted = false AND ${filter} AND b_r.doc_date <= $5), 0)) - 
-                        (COALESCE((SELECT SUM(b_i_j152.summa) 
+                        COALESCE((SELECT SUM(b_i_j152.summa) 
                             FROM bajarilgan_ishlar_jur3 AS b_i_j152 
                             JOIN shartnomalar_organization AS sh_o 
                             ON sh_o.id = b_i_j152.shartnomalar_organization_id
-                            WHERE b_i_j152.isdeleted = false AND ${filter} AND b_i_j152.doc_date <= $5), 0) + 
+                            WHERE b_i_j152.isdeleted = false AND ${filter} AND b_i_j152.doc_date BETWEEN $3 AND $4), 0) + 
                         COALESCE((SELECT SUM(b_p.summa) 
                             FROM bank_prixod AS b_p
                             JOIN shartnomalar_organization AS sh_o 
                             ON sh_o.id = b_p.id_shartnomalar_organization
-                            WHERE b_p.isdeleted = false AND ${filter} AND b_p.doc_date <= $5), 0))
+                            WHERE b_p.isdeleted = false AND ${filter} AND b_p.doc_date BETWEEN $3 AND $4), 0)
+                    )::FLOAT AS summa_rasxod,
+                    (
+                        (
+                            COALESCE((SELECT SUM(k_h_j152.summa) 
+                                FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = k_h_j152.shartnomalar_organization_id
+                                WHERE k_h_j152.isdeleted = false AND ${filter} AND k_h_j152.doc_date <= $3), 0) + 
+                            COALESCE((SELECT SUM(b_r.summa) 
+                                FROM bank_rasxod AS b_r
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = b_r.id_shartnomalar_organization
+                                WHERE b_r.isdeleted = false AND ${filter} AND b_r.doc_date <= $3), 0)
+                        ) - 
+                        (
+                            COALESCE((SELECT SUM(b_i_j152.summa) 
+                                FROM bajarilgan_ishlar_jur3 AS b_i_j152 
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = b_i_j152.shartnomalar_organization_id
+                                WHERE b_i_j152.isdeleted = false AND ${filter} AND b_i_j152.doc_date <= $3), 0) + 
+                            COALESCE((SELECT SUM(b_p.summa) 
+                                FROM bank_prixod AS b_p
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = b_p.id_shartnomalar_organization
+                                WHERE b_p.isdeleted = false AND ${filter} AND b_p.doc_date <= $3), 0)
+                        )
+                    )::FLOAT AS summa_from,
+                    (
+                        (
+                            COALESCE((SELECT SUM(k_h_j152.summa) 
+                                FROM kursatilgan_hizmatlar_jur152 AS k_h_j152 
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = k_h_j152.shartnomalar_organization_id
+                                WHERE k_h_j152.isdeleted = false AND ${filter} AND k_h_j152.doc_date <= $4), 0) + 
+                            COALESCE((SELECT SUM(b_r.summa) 
+                                FROM bank_rasxod AS b_r
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = b_r.id_shartnomalar_organization
+                                WHERE b_r.isdeleted = false AND ${filter} AND b_r.doc_date <= $4), 0)
+                        ) - 
+                        (
+                            COALESCE((SELECT SUM(b_i_j152.summa) 
+                                FROM bajarilgan_ishlar_jur3 AS b_i_j152 
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = b_i_j152.shartnomalar_organization_id
+                                WHERE b_i_j152.isdeleted = false AND ${filter} AND b_i_j152.doc_date <= $4), 0) + 
+                            COALESCE((SELECT SUM(b_p.summa) 
+                                FROM bank_prixod AS b_p
+                                JOIN shartnomalar_organization AS sh_o 
+                                ON sh_o.id = b_p.id_shartnomalar_organization
+                                WHERE b_p.isdeleted = false AND ${filter} AND b_p.doc_date <= $4), 0)
+                        )
                     )::FLOAT AS summa_to
                 FROM shartnomalar_organization AS sh_o
                 JOIN spravochnik_organization AS o ON o.id = sh_o.spravochnik_organization_id
                 JOIN users AS u ON sh_o.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
                 WHERE ${filter}
-            `, [region_id, main_schet_id, shartnoma_id, from, to],
-        );
+        `, params);
         const data = rows[0]
         return data
     } catch (error) {

@@ -26,8 +26,19 @@ const createPodpisService = async (data) => {
   }
 };
 
-const getAllPodpisService = async (region_id, offset, limit) => {
+const getAllPodpisService = async (region_id, offset, limit, search, type) => {
   try {
+    let search_filter = ``
+    let type_filter = ``
+    const params = [region_id, offset, limit]
+    if(search){
+      search_filter = `AND (s_p.doljnost_name ILIKE '%' || $${params.length + 1} || '%' OR s_p.fio_name ILIKE '%' || $${params.length + 1} || '%')`
+      params.push(search)
+    }
+    if(type){
+      type_filter = `AND s_p.type_document = $${params.length + 1}`
+      params.push(type)
+    }
     const result = await pool.query(`--sql
         WITH data AS (
           SELECT 
@@ -36,7 +47,7 @@ const getAllPodpisService = async (region_id, offset, limit) => {
           FROM spravochnik_podpis_dlya_doc AS s_p
           JOIN users AS u ON u.id = s_p.user_id
           JOIN regions AS r ON r.id = u.region_id
-          WHERE r.id = $1 AND s_p.isdeleted = false
+          WHERE r.id = $1 AND s_p.isdeleted = false ${search_filter} ${type_filter} 
           ORDER BY s_p.type_document
           OFFSET $2 LIMIT $3
         )
@@ -48,12 +59,10 @@ const getAllPodpisService = async (region_id, offset, limit) => {
             FROM spravochnik_podpis_dlya_doc AS s_p
             JOIN users AS u ON u.id = s_p.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND s_p.isdeleted = false
+            WHERE r.id = $1 AND s_p.isdeleted = false ${search_filter} ${type_filter}
           ) AS total_count
         FROM data
-      `,
-      [region_id, offset, limit]
-    );
+    `,params);
     const data = result.rows[0]
     return { data: data?.data || [], total: data.total_count }
   } catch (error) {

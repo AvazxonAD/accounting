@@ -29,9 +29,9 @@ const createpodpis = async (req, res) => {
 const getpodpis = async (req, res) => {
   try {
     const region_id = req.user.region_id
-    const { page, limit, search } = validationResponse(queryValidation, req.query)
+    const { page, limit, search, type } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { data, total } = await getAllPodpisService(region_id, offset, limit);
+    const { data, total } = await getAllPodpisService(region_id, offset, limit, search, type);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,

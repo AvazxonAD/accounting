@@ -12,6 +12,9 @@ const { returnSleshDate } = require('../utils/date.function');
 const { returnStringDate } = require('../utils/date.function')
 const { returnExcelColumn } = require('../utils/for-excel')
 const { getBySchetService } = require('../spravochnik/operatsii/operatsii.service')
+const { getAllPodpisService } = require('../spravochnik/podpis/podpis.service')
+const { getByIdRegionService } = require('../auth/region.service')
+const { returnStringSumma } = require('../utils/returnSumma')
 
 const getMonitoring = async (req, res) => {
     try {
@@ -19,10 +22,10 @@ const getMonitoring = async (req, res) => {
         const { page, limit, main_schet_id, operatsii, from, to } = validationResponse(organizationMonitoringValidation, req.query)
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
-        const { 
-            total, data, summa_prixod, summa_rasxod, summa_from, summa_to  } = await getMonitoringService(
-            region_id, main_schet_id, offset, limit, operatsii, from, to
-        );
+        const {
+            total, data, summa_prixod, summa_rasxod, summa_from, summa_to } = await getMonitoringService(
+                region_id, main_schet_id, offset, limit, operatsii, from, to
+            );
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -32,7 +35,7 @@ const getMonitoring = async (req, res) => {
             backPage: page === 1 ? null : page - 1,
             summa_prixod,
             summa_rasxod,
-            summa_from, 
+            summa_from,
             summa_to
         }
         resFunc(res, 200, data, meta)
@@ -50,9 +53,9 @@ const getBYOrganizationMonitoring = async (req, res) => {
         const offset = (page - 1) * limit;
         await getByIdMainSchetService(region_id, main_schet_id);
         const { total, data, summa_prixod, summa_rasxod, summa_from, summa_to, summa_from_prixod,
-            summa_from_rasxod, summa_to_prixod, summa_to_rasxod  } = await getByOrganizationMonitoringService(
-            region_id, main_schet_id, offset, limit, operatsii, from, to, organ_id
-        );
+            summa_from_rasxod, summa_to_prixod, summa_to_rasxod } = await getByOrganizationMonitoringService(
+                region_id, main_schet_id, offset, limit, operatsii, from, to, organ_id
+            );
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -62,12 +65,12 @@ const getBYOrganizationMonitoring = async (req, res) => {
             backPage: page === 1 ? null : page - 1,
             summa_prixod,
             summa_rasxod,
-            summa_from, 
-            summa_to, 
+            summa_from,
+            summa_to,
             summa_from_prixod,
-            summa_from_rasxod, 
-            summa_to_prixod, 
-            summa_to_rasxod 
+            summa_from_rasxod,
+            summa_to_prixod,
+            summa_to_rasxod
         }
         resFunc(res, 200, data, meta)
     } catch (error) {
@@ -78,18 +81,22 @@ const getBYOrganizationMonitoring = async (req, res) => {
 const aktSverka = async (req, res) => {
     try {
         const region_id = req.user.region_id;
-        const { main_schet_id, shartnoma_id, from, to } = validationResponse(aktSverkaValidation, req.query);
+        const region = await getByIdRegionService(region_id)
+        const { main_schet_id, shartnoma_id, to, organ_id, from } = validationResponse(aktSverkaValidation, req.query);
         const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-        await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, shartnoma_id);
-        const data = await aktSverkaService(region_id, main_schet_id, shartnoma_id, from, to);
+        const podpis = await getAllPodpisService(region_id, 0, 10, null, 'akt_sverka')
+        if(shartnoma_id){
+            await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, shartnoma_id);
+        }
+        const data = await aktSverkaService(region_id, shartnoma_id, from, to, organ_id);
         const head = `Акт сверки взаимарасчетов`;
-        const title = `Мы, нижеподписавшиеся Начальник ФЭО Ж.Д. Абраматов О.Мухторов и "${data.organization_name}" АЖ произвели сверку взаимных расчетов между Ж.Д.Абраматов и "${data.organization_name}" АЖ по состоянию на 7/31/2024`;
+        const title = `Мы, нижеподписавшиеся Начальник ${main_schet.tashkilot_nomi} " OOO ${data.organization_name}" АЖ произвели сверку взаимных расчетов между ${main_schet.tashkilot_nomi} "${data.organization_name}" АЖ по состоянию на ${returnStringDate(new Date(to))}`;
         const workbook = new ExcelJS.Workbook();
         const fileName = `akt_sverki_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('Акт сверки');
-        worksheet.pageSetup.margins.left = 0
-        worksheet.pageSetup.margins.header = 0
-        worksheet.pageSetup.margins.footer = 0
+        worksheet.pageSetup.margins.left = 0;
+        worksheet.pageSetup.margins.header = 0;
+        worksheet.pageSetup.margins.footer = 0;
         worksheet.mergeCells('A1', 'K1');
         const headCell = worksheet.getCell('A1');
         Object.assign(headCell, {
@@ -102,29 +109,28 @@ const aktSverka = async (req, res) => {
         worksheet.mergeCells('D3', 'G3');
         worksheet.mergeCells('H3', 'K3');
         const titleCell = worksheet.getCell('A2');
-        titleCell.value = title
+        titleCell.value = title;
         const row1Cell = worksheet.getCell('A3');
         row1Cell.value = `Содержание записей`
         const row2Cell = worksheet.getCell('D3');
-        row2Cell.value = 'Ж.Д.Абрама'
+        row2Cell.value = main_schet.tashkilot_nomi;
         const row3Cell = worksheet.getCell('H3');
         row3Cell.value = `${data.organization_name}`
         worksheet.mergeCells('A4', 'C4');
         const empty = worksheet.getCell('A4');
-        empty.value = ''
+        empty.value = '';
         worksheet.mergeCells('D4', 'E4');
         const debit1 = worksheet.getCell('D4');
-        debit1.value = `Дебит`
+        debit1.value = `Дебит`;
         worksheet.mergeCells('F4', 'G4');
         const kridit1 = worksheet.getCell('F4')
-        kridit1.value = 'Кредит'
+        kridit1.value = 'Кредит';
         worksheet.mergeCells('H4', 'I4');
         const debit2 = worksheet.getCell('H4');
-        debit2.value = `Дебит`
+        debit2.value = `Дебит`;
         worksheet.mergeCells('J4', 'K4');
         const kridit2 = worksheet.getCell('J4')
-        kridit2.value = 'Кредит'
-
+        kridit2.value = 'Кредит';
         worksheet.mergeCells('A5', 'C5');
         const empty2 = worksheet.getCell('A5');
         empty2.value = ''
@@ -143,7 +149,7 @@ const aktSverka = async (req, res) => {
         for (let item of data.array) {
             const row_number = worksheet.lastRow.number + 1
             worksheet.mergeCells(`A${row_number}`, `C${row_number}`);
-            const text = `N_${item.doc_num} ${item.opisanie} от ${returnSleshDate(new Date(item.doc_date))}`;
+            const text = `${item.opisanie}`;
             const row1 = worksheet.getCell(`A${row_number}`);
             Object.assign(row1, {
                 value: text,
@@ -187,7 +193,7 @@ const aktSverka = async (req, res) => {
                     }
                 });
             })
-        }
+        };
         let row_number = worksheet.lastRow.number + 1
         worksheet.mergeCells(`A${row_number}`, `C${row_number}`);
         const empty3 = worksheet.getCell(`A${row_number}`);
@@ -225,13 +231,13 @@ const aktSverka = async (req, res) => {
 
         worksheet.mergeCells(`A${row_number}`, `K${row_number}`);
         const footer = worksheet.getCell(`A${row_number}`)
-        footer.value = `Сальдо в пользу : Ж.Д. Абраматов. Двести девятнадцать миллионов триста пятьдесят шесть тысяч триста двадцать шесть сум 98 т.`
+        footer.value = `Сальдо в пользу : ${podpis.data[0].fio_name} ${returnStringSumma(data.summa_to)}`
         worksheet.getRow(row_number).height = 40
         row_number = row_number + 1
 
         worksheet.mergeCells(`A${row_number}`, `D${row_number}`);
         const podotchet = worksheet.getCell(`A${row_number}`)
-        podotchet.value = `Началник ФЭО Ж.Д.Абрама тов О.Мухторов`
+        podotchet.value = `Началник ${main_schet.tashkilot_nomi} ${podpis.data[0].fio_name}`
         worksheet.mergeCells(`G${row_number}`, `K${row_number}`);
         const organ = worksheet.getCell(`G${row_number}`)
         organ.value = `Руководитель "${data.organization_name}" АЖ`
@@ -315,7 +321,7 @@ const aktSverka = async (req, res) => {
         worksheet.getColumn(9).width = 8;
         worksheet.getColumn(10).width = 8;
         worksheet.getColumn(11).width = 8;
-        const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);
@@ -611,7 +617,7 @@ const organizationPrixodRasxod = async (req, res) => {
         const { data } = await organizationPrixodRasxodService(region_id, to, main_schet_id, operatsii)
         let row_number = 3
         for (let column of data) {
-            if(column.summa === 0){
+            if (column.summa === 0) {
                 continue
             }
             const organ_nameCell = worksheet.getCell(`A${row_number}`)
@@ -662,7 +668,7 @@ const organizationPrixodRasxod = async (req, res) => {
             let horizontal = 'center'
             let size = 10;
             if (index === 0) fill = {}, border = {}, size = 12;
-            if (index === 1) fill = {}, border = {bottom: { style: 'thin' }}, size = 12;
+            if (index === 1) fill = {}, border = { bottom: { style: 'thin' } }, size = 12;
             if (index === 5) fill = {}, border = {}, horizontal = 'right';
             if (index > 5) horizontal = 'right';
             Object.assign(item, {

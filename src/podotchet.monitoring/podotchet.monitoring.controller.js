@@ -166,7 +166,7 @@ const prixodRasxodPodotchet = async (req, res) => {
         worksheet.getRow(1).height = 35
         worksheet.getRow(2).height = 20
 
-        const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
 
         return res.download(filePath, (err) => {
@@ -177,8 +177,17 @@ const prixodRasxodPodotchet = async (req, res) => {
     }
 };
 
+const prixodRasxodPodotchetToExcel = async (req, res) => {
+    try {
+
+    } catch (error) {
+        errorCatch(error, res)
+    }
+}
+
 module.exports = {
     getByPodotchetIdMonitoring,
     prixodRasxodPodotchet,
-    getMonitoring
+    getMonitoring,
+    prixodRasxodPodotchetToExcel
 };
