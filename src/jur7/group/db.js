@@ -20,7 +20,12 @@ exports.GroupDB = class {
         const result = await db.query(query, params)
         return result;
     }
-    static async getGroup(params) {
+    static async getGroup(params, search = null) {
+        let search_filter = ``
+        if(search){
+            search_filter = `AND g_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
+            params.push(search)
+        }
         const query = `--sql
             WITH data AS (
                 SELECT 
@@ -37,7 +42,7 @@ exports.GroupDB = class {
                 JOIN users AS u ON u.id = g_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN pereotsenka_jur7 AS p_j7 ON p_j7.id = g_j7.pereotsenka_jur7_id
-                WHERE g_j7.isdeleted = false AND r.id = $1
+                WHERE g_j7.isdeleted = false AND r.id = $1 ${search_filter}
                 OFFSET $2 LIMIT $3
             )
             SELECT 
@@ -47,7 +52,7 @@ exports.GroupDB = class {
                     FROM group_jur7 AS g_j7
                     JOIN users AS u ON u.id = g_j7.user_id
                     JOIN regions AS r ON r.id = u.region_id
-                    WHERE g_j7.isdeleted = false AND r.id = $1
+                    WHERE g_j7.isdeleted = false AND r.id = $1 ${search_filter}
                 ) AS total
             FROM data
         `

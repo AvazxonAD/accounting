@@ -41,9 +41,9 @@ exports.GroupService = class {
 
     static async getGroup(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit } = req.query;
+        const { page, limit, search } = req.query;
         const offset = (page - 1) * limit;
-        const { data, total } = await GroupDB.getGroup([region_id, offset, limit])
+        const { data, total } = await GroupDB.getGroup([region_id, offset, limit], search)
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,

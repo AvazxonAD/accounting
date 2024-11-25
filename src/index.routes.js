@@ -57,8 +57,8 @@ routes.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), req
 
 // jur 7 routes 
 routes.use('/jur_7/group', protect, require('./jur7/group/index'))
-//routes.use('/jur_7/pereotsenka', protect, require('./jur7/pereotsenka.routes'))
-// routes.use('/jur_7/podrazdelenie', protect, require('./jur7/podrazdelenie.routes'))
+routes.use('/jur_7/pereotsenka', protect, require('./jur7/pereotsenka/index'))
+routes.use('/jur_7/podrazdelenie', protect, require('./jur7/podrazdelenie/index'))
 // routes.use('/jur_7/responsible', protect, require('./jur7/responsible.routes'))
 // routes.use('/jur_7/naimenovanie', protect, require('./jur7/naimenovanie.routes'))
 // routes.use('/jur_7/doc_prixod', protect, require('./jur7/operatsii/doc_prixxod_jur7.routes'))

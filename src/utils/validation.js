@@ -148,22 +148,6 @@ const bankRasxodValidation = Joi.object({
   )
 }).options({ stripUnknown: true });
 
-const pereotsenkaValidation = Joi.object({
-  name: Joi.string().trim(),
-  oy_1: Joi.number(),
-  oy_2: Joi.number(),
-  oy_3: Joi.number(),
-  oy_4: Joi.number(),
-  oy_5: Joi.number(),
-  oy_6: Joi.number(),
-  oy_7: Joi.number(),
-  oy_8: Joi.number(),
-  oy_9: Joi.number(),
-  oy_10: Joi.number(),
-  oy_11: Joi.number(),
-  oy_12: Joi.number()
-}).options({ stripUnknown: true });
-
 const responsibleValidation = Joi.object({
   fio: Joi.string().trim(),
   spravochnik_podrazdelenie_jur7_id: Joi.number().required()
@@ -500,7 +484,6 @@ module.exports = {
   bankQueryValidation,
   bankCapValidation,
   bankRasxodValidation,
-  pereotsenkaValidation,
   responsibleValidation,
   naimenovanieValidation,
   docPrixodJur7Validation,
