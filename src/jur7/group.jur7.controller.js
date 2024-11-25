@@ -20,7 +20,7 @@ const groupCreate = async (req, res) => {
         const result = await groupCreateService({...data, user_id})
         resFunc(res, 200, result)
     } catch (error) {
-        errorCatch(error, res)
+        errorCatch(error, res);
     }
 }
 

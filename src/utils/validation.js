@@ -164,16 +164,6 @@ const pereotsenkaValidation = Joi.object({
   oy_12: Joi.number()
 }).options({ stripUnknown: true });
 
-const groupValidation = Joi.object({
-  pereotsenka_jur7_id: Joi.number().required(),
-  name: Joi.string().trim(),
-  schet: Joi.string().trim(),
-  iznos_foiz: Joi.number(),
-  provodka_debet: Joi.string().trim(),
-  provodka_subschet: Joi.string().trim(),
-  provodka_kredit: Joi.string().trim()
-}).options({ stripUnknown: true });
-
 const responsibleValidation = Joi.object({
   fio: Joi.string().trim(),
   spravochnik_podrazdelenie_jur7_id: Joi.number().required()
@@ -511,7 +501,6 @@ module.exports = {
   bankCapValidation,
   bankRasxodValidation,
   pereotsenkaValidation,
-  groupValidation,
   responsibleValidation,
   naimenovanieValidation,
   docPrixodJur7Validation,
