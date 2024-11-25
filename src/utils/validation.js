@@ -153,13 +153,6 @@ const responsibleValidation = Joi.object({
   spravochnik_podrazdelenie_jur7_id: Joi.number().required()
 }).options({ stripUnknown: true });
 
-const naimenovanieValidation = Joi.object({
-  spravochnik_budjet_name_id: Joi.number().required(),
-  name: Joi.string().trim(),
-  edin: Joi.string().trim(),
-  group_jur7_id: Joi.number().required()
-}).options({ stripUnknown: true });
-
 const docPrixodJur7Validation = Joi.object({
   doc_num: Joi.string().trim(),
   doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
@@ -485,7 +478,6 @@ module.exports = {
   bankCapValidation,
   bankRasxodValidation,
   responsibleValidation,
-  naimenovanieValidation,
   docPrixodJur7Validation,
   validationQuery,
   jur7PodrazdelenieValidation,
