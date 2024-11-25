@@ -612,7 +612,7 @@ const organizationPrixodRasxod = async (req, res) => {
         const css_array = [title, organ_nameCell, prixodCell, rasxodCell]
         let itogo_rasxod = 0;
         let itogo_prixod = 0;
-        const { data } = await organizationPrixodRasxodService(region_id, to, main_schet_id, operatsii)
+        const { data } = await organizationPrixodRasxodService(region_id, to, main_schet.spravochnik_budjet_name_id, operatsii)
         let row_number = 3
         for (let column of data) {
             if (column.summa === 0) {
