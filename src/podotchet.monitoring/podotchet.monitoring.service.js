@@ -4,12 +4,12 @@ const ErrorResponse = require("../utils/errorResponse");
 const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offset, limit, from, to, podotchet_id, operatsii) => {
     try {
         const data = await pool.query(`--sql
-            SELECT DISTINCT 
+            SELECT 
                 k_p.id, 
                 k_p.doc_num,
                 TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                k_p.summa::FLOAT AS rasxod_sum,
+                k_p_ch.summa::FLOAT AS rasxod_sum,
                 k_p.opisanie,
                 k_p.id_podotchet_litso AS podotchet_litso_id,
                 s_p_l.name AS podotchet_name,
@@ -17,10 +17,10 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'kassa_prixod' AS type
-            FROM kassa_prixod k_p
-            JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                m_sch.jur1_schet AS operatsii
+            FROM kassa_prixod_child k_p_ch
+            JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
+            JOIN main_schet AS m_sch ON m_sch.id = k_p.main_schet_id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
             JOIN users u ON k_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -33,12 +33,12 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
             UNION ALL
 
-            SELECT DISTINCT 
+            SELECT  
                 a_tj4.id, 
                 a_tj4.doc_num,
                 TO_CHAR(a_tj4.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                a_tj4.summa::FLOAT AS rasxod_sum,
+                a_tj4_ch.summa::FLOAT AS rasxod_sum,
                 a_tj4.opisanie,
                 s_p_l.id AS podotchet_litso_id,
                 s_p_l.name AS podotchet_name,
@@ -46,10 +46,10 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'avans_otchet' AS type
-            FROM avans_otchetlar_jur4 a_tj4
-            JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                m_sch.jur4_schet AS operatsii
+            FROM avans_otchetlar_jur4_child a_tj4_ch
+            JOIN main_schet AS m_sch ON m_sch.id = a_tj4_ch.main_schet_id
+            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
             JOIN users u ON a_tj4.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -62,11 +62,11 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
             UNION ALL
         
-            SELECT DISTINCT
+            SELECT 
                 k_r.id, 
                 k_r.doc_num,
                 TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_r.summa::FLOAT AS prixod_sum,
+                k_r_ch.summa::FLOAT AS prixod_sum,
                 0::FLOAT AS rasxod_sum,
                 k_r.opisanie,
                 k_r.id_podotchet_litso AS podotchet_litso_id,
@@ -75,10 +75,10 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'kassa_rasxod' AS type
-            FROM kassa_rasxod k_r
-            JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                m_sch.jur1_schet AS operatsii
+            FROM kassa_rasxod_child k_r_ch
+            JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
+            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
             JOIN users u ON k_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -92,11 +92,11 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
             UNION ALL
         
-            SELECT DISTINCT 
+            SELECT 
                 b_r.id, 
                 b_r.doc_num,
                 TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                b_r.summa::FLOAT AS prixod_sum,
+                b_r_ch.summa::FLOAT AS prixod_sum,
                 0::FLOAT AS rasxod_sum,
                 b_r.opisanie,
                 b_r_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
@@ -105,10 +105,10 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'bank_rasxod' AS type
-            FROM bank_rasxod b_r
-            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                m_sch.jur2_schet AS operatsii
+            FROM bank_rasxod_child b_r_ch
+            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch.main_schet_id
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -122,12 +122,12 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
             UNION ALL
         
-            SELECT DISTINCT 
+            SELECT 
                 b_p.id, 
                 b_p.doc_num,
                 TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                b_p.summa::FLOAT AS rasxod_sum,
+                b_p_ch.summa::FLOAT AS rasxod_sum,
                 b_p.opisanie,
                 b_p_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
                 s_p_l.name AS podotchet_name,
@@ -135,10 +135,10 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'bank_prixod' AS type
-            FROM bank_prixod b_p
-            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                m_sch.jur2_schet AS operatsii
+            FROM bank_prixod_child b_p_ch
+            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
+            JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -155,9 +155,9 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         const total = await pool.query(`--sql
             SELECT SUM(total_count)::INTEGER AS total_count 
             FROM (
-                SELECT COALESCE(COUNT(DISTINCT k_p.id), 0) AS total_count
-                FROM kassa_prixod k_p
-                JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                SELECT COALESCE(COUNT(k_p_ch.id), 0) AS total_count
+                FROM kassa_prixod_child k_p_ch
+                JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
                 JOIN users u ON k_p.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -171,9 +171,9 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT a_tj4.id), 0) AS total_count
-                FROM avans_otchetlar_jur4 a_tj4
-                JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                SELECT COALESCE(COUNT(a_tj4_ch.id), 0) AS total_count
+                FROM avans_otchetlar_jur4_child a_tj4_ch
+                JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id
                 JOIN users u ON a_tj4.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -187,9 +187,9 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT k_r.id), 0) AS total_count
-                FROM kassa_rasxod k_r
-                JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                SELECT COALESCE(COUNT(k_r.id), 0) AS total_count
+                FROM kassa_rasxod_child k_r_ch
+                JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
                 JOIN users u ON k_r.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -203,9 +203,9 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT b_r.id), 0) AS total_count
-                FROM bank_rasxod b_r
-                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                SELECT COALESCE(COUNT(b_r.id), 0) AS total_count
+                FROM bank_rasxod_child b_r_ch
+                JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
                 JOIN users u ON b_r.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -219,9 +219,9 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT b_p.id), 0) AS total_count
-                FROM bank_prixod b_p
-                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                SELECT COALESCE(COUNT(b_p.id), 0) AS total_count
+                FROM bank_prixod_child b_p_ch
+                JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
                 JOIN users u ON b_p.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -234,13 +234,13 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     AND s_op.schet = $6
             ) AS total_count
         `, [region_id, main_schet_id, from, to, podotchet_id, operatsii]);
-        
+
         const summa_from = await pool.query(`--sql
             WITH 
                 kassa_rasxod AS 
                     (SELECT COALESCE(SUM(k_r_ch.summa), 0) AS summa
-                    FROM kassa_rasxod k_r
-                    JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                    FROM kassa_rasxod_child k_r_ch
+                    JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -253,8 +253,8 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                         AND s_op.schet = $5),
                 bank_rasxod AS 
                     (SELECT COALESCE(SUM(b_r_ch.summa), 0) AS summa
-                    FROM bank_rasxod b_r
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -267,8 +267,8 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                         AND s_op.schet = $5),
                 kassa_prixod AS 
                     (SELECT COALESCE(SUM(k_p_ch.summa), 0) AS summa
-                    FROM kassa_prixod k_p
-                    JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                    FROM kassa_prixod_child k_p_ch
+                    JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -281,8 +281,8 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                         AND s_op.schet = $5),
                 avans_otchetlar AS 
                     (SELECT COALESCE(SUM(a_tj4_ch.summa), 0) AS summa
-                    FROM avans_otchetlar_jur4 a_tj4
-                    JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                    FROM avans_otchetlar_jur4_child a_tj4_ch
+                    JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
                     JOIN users u ON a_tj4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -295,8 +295,8 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                         AND s_op.schet = $5),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod b_p
-                    JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -313,13 +313,13 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
             )::FLOAT AS summa
             FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod, avans_otchetlar
         `, [region_id, main_schet_id, from, podotchet_id, operatsii]);
-        
+
         const summa_to = await pool.query(`--sql
             WITH 
                 kassa_rasxod AS 
                     (SELECT COALESCE(SUM(k_r_ch.summa), 0) AS summa
-                    FROM kassa_rasxod k_r
-                    JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                    FROM kassa_rasxod_child k_r_ch
+                    JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -327,13 +327,13 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     WHERE r.id = $1 
                         AND k_r.main_schet_id = $2 
                         AND k_r.isdeleted = false
-                        AND k_r.doc_date < $3
+                        AND k_r.doc_date <= $3
                         AND k_r.id_podotchet_litso = $4
                         AND s_op.schet = $5),
                 bank_rasxod AS 
                     (SELECT COALESCE(SUM(b_r_ch.summa), 0) AS summa
-                    FROM bank_rasxod b_r
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -341,13 +341,13 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     WHERE r.id = $1 
                         AND b_r.main_schet_id = $2 
                         AND b_r.isdeleted = false  
-                        AND b_r.doc_date < $3
+                        AND b_r.doc_date <= $3
                         AND b_r_ch.id_spravochnik_podotchet_litso = $4
                         AND s_op.schet = $5),
                 kassa_prixod AS 
                     (SELECT COALESCE(SUM(k_p_ch.summa), 0) AS summa
-                    FROM kassa_prixod k_p
-                    JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                    FROM kassa_prixod_child k_p_ch
+                    JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -355,13 +355,13 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     WHERE r.id = $1 
                         AND k_p.main_schet_id = $2 
                         AND k_p.isdeleted = false  
-                        AND k_p.doc_date < $3
+                        AND k_p.doc_date <= $3
                         AND k_p.id_podotchet_litso = $4
                         AND s_op.schet = $5),
                 avans_otchetlar AS 
                     (SELECT COALESCE(SUM(a_tj4_ch.summa), 0) AS summa
-                    FROM avans_otchetlar_jur4 a_tj4
-                    JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                    FROM avans_otchetlar_jur4_child a_tj4_ch
+                    JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
                     JOIN users u ON a_tj4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -369,13 +369,13 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     WHERE r.id = $1 
                         AND a_tj4.main_schet_id = $2 
                         AND a_tj4.isdeleted = false  
-                        AND a_tj4.doc_date < $3
+                        AND a_tj4.doc_date <= $3
                         AND s_p_l.id = $4
                         AND s_op.schet = $5),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod b_p
-                    JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -383,7 +383,7 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     WHERE r.id = $1 
                         AND b_p.main_schet_id = $2 
                         AND b_p.isdeleted = false   
-                        AND b_p.doc_date < $3
+                        AND b_p.doc_date <= $3
                         AND b_p_ch.id_spravochnik_podotchet_litso = $4
                         AND s_op.schet = $5)
             SELECT (
@@ -395,7 +395,7 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
 
         let summa_prixod = 0;
         let summa_rasxod = 0;
-        for(let item of data.rows){
+        for (let item of data.rows) {
             summa_rasxod += item.rasxod_sum
             summa_prixod += item.prixod_sum
         }
@@ -415,12 +415,12 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
 const getMonitoringService = async (region_id, main_schet_id, offset, limit, from, to, operatsii) => {
     try {
         const data = await pool.query(`--sql
-            SELECT DISTINCT 
+            SELECT  
                 k_p.id, 
                 k_p.doc_num,
                 TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                k_p.summa::FLOAT AS rasxod_sum,
+                k_p_ch.summa::FLOAT AS rasxod_sum,
                 k_p.opisanie,
                 k_p.id_podotchet_litso AS podotchet_litso_id,
                 s_p_l.name AS podotchet_name,
@@ -428,10 +428,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'kassa_prixod' AS type
-            FROM kassa_prixod k_p
-            JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                m_sch.jur1_schet AS operatsii
+            FROM kassa_prixod_child k_p_ch
+            JOIN main_schet AS m_sch ON m_sch.id = k_p_ch.main_schet_id
+            JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
             JOIN users u ON k_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -443,11 +443,11 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         
             UNION ALL
         
-            SELECT DISTINCT
+            SELECT 
                 k_r.id, 
                 k_r.doc_num,
                 TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_r.summa::FLOAT AS prixod_sum,
+                k_r_ch.summa::FLOAT AS prixod_sum,
                 0::FLOAT AS rasxod_sum,
                 k_r.opisanie,
                 k_r.id_podotchet_litso AS podotchet_litso_id,
@@ -456,10 +456,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'kassa_rasxod' AS type
-            FROM kassa_rasxod k_r
-            JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                m_sch.jur1_schet AS operatsii
+            FROM kassa_rasxod_child k_r_ch
+            JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
+            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
             JOIN users u ON k_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -472,11 +472,11 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         
             UNION ALL
         
-            SELECT DISTINCT 
+            SELECT 
                 b_r.id, 
                 b_r.doc_num,
                 TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                b_r.summa::FLOAT AS prixod_sum,
+                b_r_ch.summa::FLOAT AS prixod_sum,
                 0::FLOAT AS rasxod_sum,
                 b_r.opisanie,
                 b_r_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
@@ -485,10 +485,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'bank_rasxod' AS type
-            FROM bank_rasxod b_r
-            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                m_sch.jur2_schet AS operatsii
+            FROM bank_rasxod_child b_r_ch
+            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch.main_schet_id
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -506,7 +506,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                 b_p.doc_num,
                 TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                b_p.summa::FLOAT AS rasxod_sum,
+                b_p_ch.summa::FLOAT AS rasxod_sum,
                 b_p.opisanie,
                 b_p_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
                 s_p_l.name AS podotchet_name,
@@ -514,10 +514,10 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                '[]'::JSONB AS schet_array,
-                'bank_prixod' AS type
-            FROM bank_prixod b_p
-            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                m_sch.jur2_schet AS operatsii
+            FROM bank_prixod_child b_p_ch
+            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
+            JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -534,9 +534,9 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         const total = await pool.query(`--sql
             SELECT SUM(total_count)::INTEGER AS total_count 
             FROM (
-                SELECT COALESCE(COUNT(DISTINCT k_p.id), 0) AS total_count
-                FROM kassa_prixod k_p
-                JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                SELECT COALESCE(COUNT(k_p_ch.id), 0) AS total_count
+                FROM kassa_prixod_child k_p_ch
+                JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
                 JOIN users u ON k_p.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -549,9 +549,9 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT k_r.id), 0) AS total_count
-                FROM kassa_rasxod k_r
-                JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                SELECT COALESCE(COUNT(k_r_ch.id), 0) AS total_count
+                FROM kassa_rasxod_child k_r_ch
+                JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
                 JOIN users u ON k_r.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -564,9 +564,9 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT b_r.id), 0) AS total_count
-                FROM bank_rasxod b_r
-                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                SELECT COALESCE(COUNT(b_r_ch.id), 0) AS total_count
+                FROM bank_rasxod_child b_r_ch
+                JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
                 JOIN users u ON b_r.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -579,9 +579,9 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT b_p.id), 0) AS total_count
-                FROM bank_prixod b_p
-                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                SELECT COALESCE(COUNT(b_p_ch.id), 0) AS total_count
+                FROM bank_prixod_child b_p_ch
+                JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
                 JOIN users u ON b_p.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -593,13 +593,13 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                     AND s_op.schet = $5
             ) AS total_count
         `, [region_id, main_schet_id, from, to, operatsii]);
-        
+
         const summa_from = await pool.query(`--sql
             WITH 
                 kassa_rasxod AS 
                     (SELECT COALESCE(SUM(k_r_ch.summa), 0) AS summa
-                    FROM kassa_rasxod k_r
-                    JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                    FROM kassa_rasxod_child k_r_ch
+                    JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -611,8 +611,8 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4),
                 bank_rasxod AS 
                     (SELECT COALESCE(SUM(b_r_ch.summa), 0) AS summa
-                    FROM bank_rasxod b_r
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -624,8 +624,8 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4),
                 kassa_prixod AS 
                     (SELECT COALESCE(SUM(k_p_ch.summa), 0) AS summa
-                    FROM kassa_prixod k_p
-                    JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                    FROM kassa_prixod_child k_p_ch
+                    JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -637,8 +637,8 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod b_p
-                    JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -654,13 +654,13 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
             )::FLOAT AS summa
             FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod
         `, [region_id, main_schet_id, from, operatsii]);
-        
+
         const summa_to = await pool.query(`--sql
             WITH 
                 kassa_rasxod AS 
                     (SELECT COALESCE(SUM(k_r_ch.summa), 0) AS summa
-                    FROM kassa_rasxod k_r
-                    JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                    FROM kassa_rasxod_child k_r_ch
+                    JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -672,8 +672,8 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4),
                 bank_rasxod AS 
                     (SELECT COALESCE(SUM(b_r_ch.summa), 0) AS summa
-                    FROM bank_rasxod b_r
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -685,8 +685,8 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4),
                 kassa_prixod AS 
                     (SELECT COALESCE(SUM(k_p_ch.summa), 0) AS summa
-                    FROM kassa_prixod k_p
-                    JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                    FROM kassa_prixod_child k_p_ch
+                    JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -698,8 +698,8 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
                         AND s_op.schet = $4),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod b_p
-                    JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -718,7 +718,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
 
         let summa_prixod = 0;
         let summa_rasxod = 0;
-        for(let item of data.rows){
+        for (let item of data.rows) {
             summa_rasxod += item.rasxod_sum
             summa_prixod += item.prixod_sum
         }
@@ -735,7 +735,7 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, fro
     }
 };
 
-const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
+const prixodRasxodPodotchetService = async (region_id, budjet_id, to) => {
     const client = await pool.connect()
     try {
         await client.query(`BEGIN`)
@@ -751,42 +751,47 @@ const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
             const avans_rasxod = await client.query(`--sql
                     SELECT COALESCE(SUM(a_o_j4.summa), 0)::FLOAT AS summa
                     FROM avans_otchetlar_jur4 a_o_j4
+                    JOIN main_schet AS m_sch ON m_sch.id = a_o_j4.main_schet_id 
                     JOIN users u ON a_o_j4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND a_o_j4.main_schet_id = $2 AND a_o_j4.isdeleted = false AND a_o_j4.doc_date <= $3 AND a_o_j4.spravochnik_podotchet_litso_id = $4 
-                `, [region_id, main_schet_id, to, podotchet.id])
+                    WHERE r.id = $1 AND m_sch.spravochnik_budjet_name_id = $2 AND a_o_j4.isdeleted = false AND a_o_j4.doc_date <= $3 AND a_o_j4.spravochnik_podotchet_litso_id = $4 
+                `, [region_id, budjet_id, to, podotchet.id])
             const kassa_rasxod = await pool.query(`--sql
                     SELECT COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS summa
                     FROM kassa_prixod k_p
+                    JOIN main_schet AS m_sch ON m_sch.id = k_p.main_schet_id
                     JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.doc_date <= $3 AND k_p.id_podotchet_litso = $4
-                `, [region_id, main_schet_id, to, podotchet.id])
+                    WHERE r.id = $1 AND m_sch.spravochnik_budjet_name_id = $2 AND k_p.isdeleted = false AND k_p.doc_date <= $3 AND k_p.id_podotchet_litso = $4
+                `, [region_id, budjet_id, to, podotchet.id])
             const bank_rasxod = await client.query(`--sql
                     SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
                     FROM bank_prixod_child b_p_ch
+                    JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
                     JOIN bank_prixod b_p ON b_p.id = b_p_ch.id_bank_prixod
                     JOIN users u ON b_p_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND b_p_ch.main_schet_id = $2 AND b_p_ch.isdeleted = false AND b_p.doc_date <= $3 AND b_p_ch.id_spravochnik_podotchet_litso = $4 
-                `, [region_id, main_schet_id, to, podotchet.id])
+                    WHERE r.id = $1 AND m_sch.spravochnik_budjet_name_id = $2 AND b_p_ch.isdeleted = false AND b_p.doc_date <= $3 AND b_p_ch.id_spravochnik_podotchet_litso = $4 
+                `, [region_id, budjet_id, to, podotchet.id])
             const kassa_prixod = await client.query(`--sql
                     SELECT COALESCE(SUM(k_r.summa), 0)::FLOAT AS summa
                     FROM kassa_rasxod k_r
+                    JOIN main_schet AS m_sch ON m_sch.id = k_r.main_schet_id
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.isdeleted = false AND k_r.doc_date <= $3 AND k_r.id_podotchet_litso = $4
-                `, [region_id, main_schet_id, to, podotchet.id])
+                    WHERE r.id = $1 AND m_sch.spravochnik_budjet_name_id = $2 AND k_r.isdeleted = false AND k_r.doc_date <= $3 AND k_r.id_podotchet_litso = $4
+                `, [region_id, budjet_id, to, podotchet.id])
             const bank_prixod = await client.query(`--sql
                     SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
                     FROM bank_rasxod_child b_r_ch
+                    JOIN main_schet AS m_sch ON m_sch.id = b_r_ch.main_schet_id
                     JOIN bank_rasxod b_r ON b_r.id = b_r_ch.id_bank_rasxod
                     JOIN users u ON b_r_ch.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    WHERE r.id = $1 AND b_r_ch.main_schet_id = $2 AND b_r_ch.isdeleted = false AND b_r.doc_date <= $3 AND b_r_ch.id_spravochnik_podotchet_litso = $4    
-                `, [region_id, main_schet_id, to, podotchet.id])
-            const summa = (kassa_prixod.rows[0].summa + bank_prixod.rows[0].summa) - (avans_rasxod.rows[0].summa + bank_rasxod.rows[0].summa + kassa_rasxod.rows[0].summa)
+                    WHERE r.id = $1 AND m_sch.spravochnik_budjet_name_id = $2 AND b_r_ch.isdeleted = false AND b_r.doc_date <= $3 AND b_r_ch.id_spravochnik_podotchet_litso = $4    
+                `, [region_id, budjet_id, to, podotchet.id])
+            const summa = (bank_rasxod.rows[0].summa + kassa_rasxod.rows[0].summa) - (avans_rasxod.rows[0].summa + kassa_prixod.rows[0].summa + bank_prixod.rows[0].summa)
             podotchet.summa = summa
         }
         await client.query(`COMMIT`)
@@ -799,19 +804,21 @@ const prixodRasxodPodotchetService = async (region_id, main_schet_id, to) => {
     }
 };
 
-const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, from, to, podotchet_id, operatsii) => {
+const podotchetMonitoringToExcelService = async (region_id, main_schet_id, from, to, podotchet_id, operatsii) => {
     try {
         const data = await pool.query(`--sql
-            SELECT DISTINCT 
+            SELECT 
                 k_p.id, 
                 k_p.doc_num,
                 TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                k_p.summa::FLOAT AS rasxod_sum,
+                k_p_ch.summa::FLOAT AS rasxod_sum,
                 k_p.opisanie,
-                'kassa_prixod' AS type
-            FROM kassa_prixod k_p
-            JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                m_sch.jur1_schet AS operatsii,
+                s_op.sub_schet
+            FROM kassa_prixod_child k_p_ch
+            JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
+            JOIN main_schet AS m_sch ON m_sch.id = k_p.main_schet_id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
             JOIN users u ON k_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -824,16 +831,18 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
         
             UNION ALL
 
-            SELECT DISTINCT 
+            SELECT  
                 a_tj4.id, 
                 a_tj4.doc_num,
                 TO_CHAR(a_tj4.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                a_tj4.summa::FLOAT AS rasxod_sum,
+                a_tj4_ch.summa::FLOAT AS rasxod_sum,
                 a_tj4.opisanie,
-                'avans_otchet' AS type
-            FROM avans_otchetlar_jur4 a_tj4
-            JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                m_sch.jur4_schet AS operatsii,
+                s_op.sub_schet
+            FROM avans_otchetlar_jur4_child a_tj4_ch
+            JOIN main_schet AS m_sch ON m_sch.id = a_tj4_ch.main_schet_id
+            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
             JOIN users u ON a_tj4.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -846,16 +855,18 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
         
             UNION ALL
         
-            SELECT DISTINCT
+            SELECT 
                 k_r.id, 
                 k_r.doc_num,
                 TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_r.summa::FLOAT AS prixod_sum,
+                k_r_ch.summa::FLOAT AS prixod_sum,
                 0::FLOAT AS rasxod_sum,
                 k_r.opisanie,
-                'kassa_rasxod' AS type
-            FROM kassa_rasxod k_r
-            JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                m_sch.jur1_schet AS operatsii,
+                s_op.sub_schet
+            FROM kassa_rasxod_child k_r_ch
+            JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
+            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
             JOIN users u ON k_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -869,16 +880,18 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
         
             UNION ALL
         
-            SELECT DISTINCT 
+            SELECT 
                 b_r.id, 
                 b_r.doc_num,
                 TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                b_r.summa::FLOAT AS prixod_sum,
+                b_r_ch.summa::FLOAT AS prixod_sum,
                 0::FLOAT AS rasxod_sum,
                 b_r.opisanie,
-                'bank_rasxod' AS type
-            FROM bank_rasxod b_r
-            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                m_sch.jur2_schet AS operatsii,
+                s_op.sub_schet
+            FROM bank_rasxod_child b_r_ch
+            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch.main_schet_id
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -892,16 +905,18 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
         
             UNION ALL
         
-            SELECT DISTINCT 
+            SELECT 
                 b_p.id, 
                 b_p.doc_num,
                 TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
-                b_p.summa::FLOAT AS rasxod_sum,
+                b_p_ch.summa::FLOAT AS rasxod_sum,
                 b_p.opisanie,
-                'bank_prixod' AS type
-            FROM bank_prixod b_p
-            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                m_sch.jur2_schet AS operatsii,
+                s_op.sub_schet
+            FROM bank_prixod_child b_p_ch
+            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
+            JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -913,14 +928,14 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                 AND b_p_ch.id_spravochnik_podotchet_litso = $5
                 AND s_op.schet = $6
             ORDER BY doc_date DESC
-        `, [region_id, main_schet_id, from, to, podotchet_id, operatsii, offset, limit]);
+        `, [region_id, main_schet_id, from, to, podotchet_id, operatsii]);
 
         const summa_from = await pool.query(`--sql
             WITH 
                 kassa_rasxod AS 
                     (SELECT COALESCE(SUM(k_r_ch.summa), 0) AS summa
-                    FROM kassa_rasxod k_r
-                    JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                    FROM kassa_rasxod_child k_r_ch
+                    JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -933,8 +948,8 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                         AND s_op.schet = $5),
                 bank_rasxod AS 
                     (SELECT COALESCE(SUM(b_r_ch.summa), 0) AS summa
-                    FROM bank_rasxod b_r
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -947,8 +962,8 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                         AND s_op.schet = $5),
                 kassa_prixod AS 
                     (SELECT COALESCE(SUM(k_p_ch.summa), 0) AS summa
-                    FROM kassa_prixod k_p
-                    JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                    FROM kassa_prixod_child k_p_ch
+                    JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -961,8 +976,8 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                         AND s_op.schet = $5),
                 avans_otchetlar AS 
                     (SELECT COALESCE(SUM(a_tj4_ch.summa), 0) AS summa
-                    FROM avans_otchetlar_jur4 a_tj4
-                    JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                    FROM avans_otchetlar_jur4_child a_tj4_ch
+                    JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
                     JOIN users u ON a_tj4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -975,8 +990,8 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                         AND s_op.schet = $5),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod b_p
-                    JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -993,13 +1008,13 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
             )::FLOAT AS summa
             FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod, avans_otchetlar
         `, [region_id, main_schet_id, from, podotchet_id, operatsii]);
-        
+
         const summa_to = await pool.query(`--sql
             WITH 
                 kassa_rasxod AS 
                     (SELECT COALESCE(SUM(k_r_ch.summa), 0) AS summa
-                    FROM kassa_rasxod k_r
-                    JOIN kassa_rasxod_child AS k_r_ch ON k_r_ch.kassa_rasxod_id = k_r.id
+                    FROM kassa_rasxod_child k_r_ch
+                    JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
                     JOIN users u ON k_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -1007,13 +1022,13 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                     WHERE r.id = $1 
                         AND k_r.main_schet_id = $2 
                         AND k_r.isdeleted = false
-                        AND k_r.doc_date < $3
+                        AND k_r.doc_date <= $3
                         AND k_r.id_podotchet_litso = $4
                         AND s_op.schet = $5),
                 bank_rasxod AS 
                     (SELECT COALESCE(SUM(b_r_ch.summa), 0) AS summa
-                    FROM bank_rasxod b_r
-                    JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                    FROM bank_rasxod_child b_r_ch
+                    JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_r.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -1021,13 +1036,13 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                     WHERE r.id = $1 
                         AND b_r.main_schet_id = $2 
                         AND b_r.isdeleted = false  
-                        AND b_r.doc_date < $3
+                        AND b_r.doc_date <= $3
                         AND b_r_ch.id_spravochnik_podotchet_litso = $4
                         AND s_op.schet = $5),
                 kassa_prixod AS 
                     (SELECT COALESCE(SUM(k_p_ch.summa), 0) AS summa
-                    FROM kassa_prixod k_p
-                    JOIN kassa_prixod_child AS k_p_ch ON k_p_ch.kassa_prixod_id = k_p.id
+                    FROM kassa_prixod_child k_p_ch
+                    JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
                     JOIN users u ON k_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -1035,13 +1050,13 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                     WHERE r.id = $1 
                         AND k_p.main_schet_id = $2 
                         AND k_p.isdeleted = false  
-                        AND k_p.doc_date < $3
+                        AND k_p.doc_date <= $3
                         AND k_p.id_podotchet_litso = $4
                         AND s_op.schet = $5),
                 avans_otchetlar AS 
                     (SELECT COALESCE(SUM(a_tj4_ch.summa), 0) AS summa
-                    FROM avans_otchetlar_jur4 a_tj4
-                    JOIN avans_otchetlar_jur4_child AS a_tj4_ch ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
+                    FROM avans_otchetlar_jur4_child a_tj4_ch
+                    JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
                     JOIN users u ON a_tj4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -1049,13 +1064,13 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                     WHERE r.id = $1 
                         AND a_tj4.main_schet_id = $2 
                         AND a_tj4.isdeleted = false  
-                        AND a_tj4.doc_date < $3
+                        AND a_tj4.doc_date <= $3
                         AND s_p_l.id = $4
                         AND s_op.schet = $5),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod b_p
-                    JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                    FROM bank_prixod_child b_p_ch
+                    JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -1063,7 +1078,7 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
                     WHERE r.id = $1 
                         AND b_p.main_schet_id = $2 
                         AND b_p.isdeleted = false   
-                        AND b_p.doc_date < $3
+                        AND b_p.doc_date <= $3
                         AND b_p_ch.id_spravochnik_podotchet_litso = $4
                         AND s_op.schet = $5)
             SELECT (
@@ -1075,13 +1090,12 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
 
         let summa_prixod = 0;
         let summa_rasxod = 0;
-        for(let item of data.rows){
+        for (let item of data.rows) {
             summa_rasxod += item.rasxod_sum
             summa_prixod += item.prixod_sum
         }
         return {
             data: data.rows,
-            total: total.rows[0].total_count || 0,
             summa_prixod,
             summa_rasxod,
             summa_from: summa_from.rows[0].summa || 0,
@@ -1092,10 +1106,9 @@ const prixodRasxodPodotchetToExcelService = async (region_id, main_schet_id, fro
     }
 };
 
-
-
 module.exports = {
     getMonitoringService,
     prixodRasxodPodotchetService,
-    getByIdPodotchetMonitoringService
+    getByIdPodotchetMonitoringService,
+    podotchetMonitoringToExcelService
 };

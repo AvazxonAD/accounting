@@ -4,14 +4,14 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getMonitoringService = async (region_id, main_schet_id, offset, limit, schet, from, to) => {
     try {
-        const data = await pool.query(`
-            SELECT DISTINCT
-                b_r.id,
+        const data = await pool.query(`--sql
+            SELECT
+      0         b_r.id,
                 b_r.doc_num,
                 b_r.doc_date,
                 b_r.opisanie,
                 0::FLOAT AS summa_rasxod, 
-                b_r.summa::FLOAT AS summa_prixod,
+                b_r_ch.summa::FLOAT AS summa_prixod,
                 sh_o.id AS shartnoma_id,
                 sh_o.doc_num AS shartnoma_doc_num,
                 TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
@@ -23,13 +23,13 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 u.login,
                 u.fio,
                 '[]'::JSONB AS schhet_array
-            FROM bank_rasxod b_r
+            FROM bank_rasxod_child b_r_ch
             JOIN users AS u ON u.id = b_r.user_id
             JOIN regions AS r ON r.id = u.region_id 
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_r.id_shartnomalar_organization
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
             JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
-            JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
             WHERE b_r.isdeleted = false
                 AND r.id = $1 
@@ -37,12 +37,12 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 AND s_o_p.schet = $3
                 AND b_r.doc_date BETWEEN $6 AND $7
             UNION ALL
-            SELECT DISTINCT
+            SELECT 
                 b_p.id,
                 b_p.doc_num,
                 b_p.doc_date,
                 b_p.opisanie,
-                b_p.summa::FLOAT AS summa_rasxod,
+                b_p_ch.summa::FLOAT AS summa_rasxod,
                 0::FLOAT AS summa_prixod, 
                 sh_o.id AS shartnoma_id,
                 sh_o.doc_num AS shartnoma_doc_num,
@@ -55,13 +55,13 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 u.login,
                 u.fio,
                 '[]'::JSONB AS schhet_array
-            FROM bank_prixod b_p
+            FROM bank_prixod_child b_p_ch
             JOIN users AS u ON u.id = b_p.user_id
             JOIN regions AS r ON r.id = u.region_id 
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_p.id_shartnomalar_organization
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
             JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
-            JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+            JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
             WHERE b_p.isdeleted = false
                 AND r.id = $1 
@@ -72,15 +72,15 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
             OFFSET $4
             LIMIT $5    
         `, [region_id, main_schet_id, schet, offset, limit, from, to])
-        const total = await pool.query(`
+        const total = await pool.query(`--sql
             SELECT SUM(total_count)::INTEGER AS total 
             FROM (
-                SELECT COALESCE(COUNT(DISTINCT b_p.id), 0) AS total_count
-                FROM bank_prixod b_p
+                SELECT COALESCE(COUNT(b_p_ch.id), 0) AS total_count
+                FROM bank_prixod_child b_p_ch
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id 
                 JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
-                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
                 WHERE b_p.isdeleted = false
                   AND r.id = $1 
@@ -90,12 +90,12 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
         
                 UNION ALL
         
-                SELECT COALESCE(COUNT(DISTINCT b_r.id), 0) AS total_count
-                FROM bank_rasxod b_r
+                SELECT COALESCE(COUNT(b_r_ch.id), 0) AS total_count
+                FROM bank_rasxod_child b_r_ch
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id 
                 JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
-                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                 JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
                 WHERE b_r.isdeleted = false
                   AND r.id = $1 
@@ -105,14 +105,14 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
             ) AS total_count
         `, [region_id, main_schet_id, schet, from, to]);
 
-        const summa_from = await pool.query(`
+        const summa_from = await pool.query(`--sql
             WITH rasxod_sum AS (
                 SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
-                FROM bank_rasxod b_r
+                FROM bank_rasxod_child b_r_ch
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
-                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                 JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
                 WHERE b_r.isdeleted = false
                 AND b_r_ch.isdeleted = false
@@ -123,11 +123,11 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
             ),
             prixod_sum AS (
                 SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
-                FROM bank_prixod b_p
+                FROM bank_prixod_child b_p_ch
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
-                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
                 WHERE b_p.isdeleted = false
                 AND b_p_ch.isdeleted = false
@@ -140,36 +140,39 @@ const getMonitoringService = async (region_id, main_schet_id, offset, limit, sch
                 ( rasxod_sum.summa - prixod_sum.summa )::FLOAT AS total_summa
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, from]);
-        const summa_to = await pool.query(`
+        const summa_to = await pool.query(`--sql
             WITH rasxod_sum AS (
                 SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
-                FROM bank_rasxod b_r
+                FROM bank_rasxod_child b_r_ch
                 JOIN users AS u ON u.id = b_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
-                JOIN bank_rasxod_child AS b_r_ch ON b_r_ch.id_bank_rasxod = b_r.id
+                JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
                 JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
                 WHERE b_r.isdeleted = false
+                AND b_r_ch.isdeleted = false
                 AND r.id = $1
                 AND b_r.main_schet_id = $2
                 AND s_o_p.schet = $3
-                AND b_r.doc_date <= $4
+                AND b_r.doc_date < $4 
             ),
             prixod_sum AS (
                 SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
-                FROM bank_prixod b_p
+                FROM bank_prixod_child b_p_ch
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
-                JOIN bank_prixod_child AS b_p_ch ON b_p_ch.id_bank_prixod = b_p.id
+                JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_p_ch.spravochnik_operatsii_id
                 WHERE b_p.isdeleted = false
+                AND b_p_ch.isdeleted = false
                 AND r.id = $1
                 AND b_p.main_schet_id = $2
                 AND s_o_p.schet = $3
-                AND b_p.doc_date <= $4
+                AND b_p.doc_date < $4
             )
-            SELECT ( rasxod_sum.summa - prixod_sum.summa )::FLOAT AS total_summa
+            SELECT 
+                ( rasxod_sum.summa - prixod_sum.summa )::FLOAT AS total_summa
             FROM rasxod_sum, prixod_sum
         `, [region_id, main_schet_id, schet, to]);
         let summa_prixod = 0;

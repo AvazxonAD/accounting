@@ -75,7 +75,7 @@ const getAllPodotChetService = async (region_id, offset, limit, search) => {
 
 const getByIdPodotchetService = async (region_id, id, ignoreDeleted = false) => {
   try {
-    let query = `
+    let query = `--sql
       SELECT 
           s_p_l.id, 
           s_p_l.name, 
