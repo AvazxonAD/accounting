@@ -602,16 +602,14 @@ const organizationPrixodRasxod = async (req, res) => {
         const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
         worksheet.mergeCells(`A1`, 'D1');
         const title = worksheet.getCell(`A1`);
-        const schet = worksheet.getCell(`E1`)
-        schet.value = `${operatsii}`
-        title.value = `${main_schet.tashkilot_nomi} ${returnStringDate(new Date(to))} холатига дебитор-кредитор  карздорлик тугрисида маълумот `
+        title.value = `${main_schet.tashkilot_nomi} ${returnStringDate(new Date(to))} холатига  ${operatsii} счет бўйича дебитор-кредитор  карздорлик тугрисида маълумот `
         const organ_nameCell = worksheet.getCell(`A2`)
         organ_nameCell.value = 'Наименование организации'
         const prixodCell = worksheet.getCell(`B2`)
         prixodCell.value = `Дебит`
         const rasxodCell = worksheet.getCell(`C2`)
         rasxodCell.value = 'Кредит'
-        const css_array = [title, schet, organ_nameCell, prixodCell, rasxodCell]
+        const css_array = [title, organ_nameCell, prixodCell, rasxodCell]
         let itogo_rasxod = 0;
         let itogo_prixod = 0;
         const { data } = await organizationPrixodRasxodService(region_id, to, main_schet_id, operatsii)
@@ -669,8 +667,8 @@ const organizationPrixodRasxod = async (req, res) => {
             let size = 10;
             if (index === 0) fill = {}, border = {}, size = 12;
             if (index === 1) fill = {}, border = { bottom: { style: 'thin' } }, size = 12;
-            if (index === 5) fill = {}, border = {}, horizontal = 'right';
-            if (index > 5) horizontal = 'right';
+            if (index === 4) fill = {}, border = {}, horizontal = 'right';
+            if (index > 4) horizontal = 'right';
             Object.assign(item, {
                 numFmt: '#,##0.00',
                 font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
@@ -683,7 +681,7 @@ const organizationPrixodRasxod = async (req, res) => {
         worksheet.getColumn(2).width = 20;
         worksheet.getColumn(3).width = 20;
         worksheet.getRow(1).height = 30;
-        const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);
