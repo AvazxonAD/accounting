@@ -1,6 +1,6 @@
 const { NaimenovanieDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
-const { BudjetDB } = require('../../spravochnik/_budjet/db')
+const { BudjetDB } = require('../../spravochnik/budjet/db')
 const { GroupDB } = require('../group/db')
 
 exports.NaimenovanieService = class {

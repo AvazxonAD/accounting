@@ -3,179 +3,7 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offset, limit, from, to, podotchet_id, operatsii) => {
     try {
-        const data = await pool.query(`--sql
-            SELECT 
-                k_p.id, 
-                k_p.doc_num,
-                TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date,
-                0::FLOAT AS prixod_sum,
-                k_p_ch.summa::FLOAT AS rasxod_sum,
-                k_p.opisanie,
-                k_p.id_podotchet_litso AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet
-            FROM kassa_prixod_child k_p_ch
-            JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
-            JOIN main_schet AS m_sch ON m_sch.id = k_p.main_schet_id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso 
-            JOIN users u ON k_p.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_p_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 AND k_p.main_schet_id = $2 
-                AND k_p.isdeleted = false  
-                AND k_p.doc_date BETWEEN $3 AND $4
-                AND k_p.id_podotchet_litso = $5
-                AND s_op.schet = $6
-        
-            UNION ALL
-
-            SELECT  
-                a_tj4.id, 
-                a_tj4.doc_num,
-                TO_CHAR(a_tj4.doc_date, 'YYYY-MM-DD') AS doc_date,
-                0::FLOAT AS prixod_sum,
-                a_tj4_ch.summa::FLOAT AS rasxod_sum,
-                a_tj4.opisanie,
-                s_p_l.id AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet
-            FROM avans_otchetlar_jur4_child a_tj4_ch
-            JOIN main_schet AS m_sch ON m_sch.id = a_tj4_ch.main_schet_id
-            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-            JOIN users u ON a_tj4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-            WHERE r.id = $1 AND a_tj4.main_schet_id = $2 
-                AND a_tj4.isdeleted = false  
-                AND a_tj4.doc_date BETWEEN $3 AND $4
-                AND s_p_l.id = $5
-                AND s_op.schet = $6
-        
-            UNION ALL
-        
-            SELECT 
-                k_r.id, 
-                k_r.doc_num,
-                TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_r_ch.summa::FLOAT AS prixod_sum,
-                0::FLOAT AS rasxod_sum,
-                k_r.opisanie,
-                k_r.id_podotchet_litso AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet
-            FROM kassa_rasxod_child k_r_ch
-            JOIN main_schet AS m_sch ON m_sch.id = k_r_ch.main_schet_id
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND k_r.main_schet_id = $2 
-                AND k_r.isdeleted = false
-                AND k_r.doc_date BETWEEN $3 AND $4
-                AND k_r.id_podotchet_litso = $5
-                AND s_op.schet = $6
-        
-            UNION ALL
-        
-            SELECT 
-                b_r.id, 
-                b_r.doc_num,
-                TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                b_r_ch.summa::FLOAT AS prixod_sum,
-                0::FLOAT AS rasxod_sum,
-                b_r.opisanie,
-                b_r_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet
-            FROM bank_rasxod_child b_r_ch
-            JOIN main_schet AS m_sch ON m_sch.id = b_r_ch.main_schet_id
-            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
-            JOIN users u ON b_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND b_r.main_schet_id = $2 
-                AND b_r.isdeleted = false  
-                AND b_r.doc_date BETWEEN $3 AND $4
-                AND b_r_ch.id_spravochnik_podotchet_litso = $5
-                AND s_op.schet = $6
-        
-            UNION ALL
-        
-            SELECT 
-                b_p.id, 
-                b_p.doc_num,
-                TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date,
-                0::FLOAT AS prixod_sum,
-                b_p_ch.summa::FLOAT AS rasxod_sum,
-                b_p.opisanie,
-                b_p_ch.id_spravochnik_podotchet_litso AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet
-            FROM bank_prixod_child b_p_ch
-            JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
-            JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
-            JOIN users u ON b_p.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND b_p.main_schet_id = $2 
-                AND b_p.isdeleted = false   
-                AND b_p.doc_date BETWEEN $3 AND $4
-                AND b_p_ch.id_spravochnik_podotchet_litso = $5
-                AND s_op.schet = $6
-            ORDER BY doc_date DESC
-            OFFSET $7 LIMIT $8
-        `, [region_id, main_schet_id, from, to, podotchet_id, operatsii, offset, limit]);
         const total = await pool.query(`--sql
-            SELECT SUM(total_count)::INTEGER AS total_count 
-            FROM (
-                SELECT COALESCE(COUNT(k_p_ch.id), 0) AS total_count
-                FROM kassa_prixod_child k_p_ch
-                JOIN kassa_prixod AS k_p ON k_p_ch.kassa_prixod_id = k_p.id
-                JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
-                JOIN users u ON k_p.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS s_op ON s_op.id = k_p_ch.spravochnik_operatsii_id
-                WHERE r.id = $1 
-                    AND k_p.main_schet_id = $2
-                    AND k_p.isdeleted = false
-                    AND k_p.doc_date BETWEEN $3 AND $4
-                    AND k_p.id_podotchet_litso = $5
-                    AND s_op.schet = $6
-        
-                UNION ALL
-        
                 SELECT COALESCE(COUNT(a_tj4_ch.id), 0) AS total_count
                 FROM avans_otchetlar_jur4_child a_tj4_ch
                 JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
@@ -300,8 +128,9 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                         AND s_op.schet = $5),
                 bank_prixod AS 
                     (SELECT COALESCE(SUM(b_p_ch.summa), 0) AS summa
-                    FROM bank_prixod_child b_p_ch
+                    FROM bank_prixod_child AS b_p_ch
                     JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
+                    JOIN main_schet AS m_sch ON m_sch.id = b_p_ch.main_schet_id
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
                     JOIN users u ON b_p.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
@@ -315,9 +144,16 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
             SELECT (
                 (kassa_rasxod.summa + bank_rasxod.summa) - 
                 (kassa_prixod.summa + bank_prixod.summa + avans_otchetlar.summa)
-            )::FLOAT AS summa
+            )::FLOAT AS summa,
+            kassa_prixod.summa AS kassa_prixod_summa, 
+            bank_prixod.summa AS bank_prixod_summa, 
+            avans_otchetlar.summa AS avans_otchetlar_summa,
+            kassa_rasxod.summa AS kassa_rasxod_summa,  
+            bank_rasxod.summa AS bank_rasxod_summa
             FROM kassa_prixod, kassa_rasxod, bank_prixod, bank_rasxod, avans_otchetlar
         `, [region_id, main_schet_id, from, podotchet_id, operatsii]);
+
+        console.log(summa_from.rows)
 
         const summa_to = await pool.query(`--sql
             WITH 
@@ -846,7 +682,7 @@ const podotchetMonitoringToExcelService = async (region_id, main_schet_id, from,
                 0::FLOAT AS prixod_sum,
                 a_tj4_ch.summa::FLOAT AS rasxod_sum,
                 a_tj4.opisanie,
-                m_sch.jur4_schet AS operatsii,
+                s_op.schet AS operatsii,
                 s_op.sub_schet
             FROM avans_otchetlar_jur4_child a_tj4_ch
             JOIN main_schet AS m_sch ON m_sch.id = a_tj4_ch.main_schet_id
