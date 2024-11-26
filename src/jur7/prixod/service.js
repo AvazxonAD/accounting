@@ -1,6 +1,165 @@
-const pool = require("../../config/db");
-const { tashkentTime } = require('../../utils/date.function');
-const ErrorResponse = require("../../utils/errorResponse");
+const { PereotsenkaDB } = require('../pereotsenka/db');
+const { PrixodDB } = require('./db');
+const { tashkentTime } = require('../../helper/functions');
+const { OrganizationDB } = require('../../spravochnik/organization/db')
+const { ResponsibleDB } = require('../responsible/db')
+const { ContractDB } = require('../../shartnoma/shartnoma/db')
+const { db } = require('../../db/index')
+
+exports.PrixodService = class {
+  static async createPrixod(req, res) {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const {
+      doc_num,
+      doc_date,
+      j_o_num,
+      opisanie,
+      doverennost,
+      summa,
+      kimdan_id,
+      kimdan_name,
+      kimga_id,
+      kimga_name,
+      id_shartnomalar_organization,
+      budjet_id
+    } = req.body;
+
+    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id])
+    if (!organization) {
+      return res.status(404).json({
+        message: "organization not found"
+      })
+    }
+    const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
+    if (!responsible) {
+      return res.status(404).json({
+        message: "responsible not found"
+      })
+    }
+    if (id_shartnomalar_organization) {
+      const contract = ContractDB.getByIdContract([region_id, budjet_id, id_shartnomalar_organization])
+      if (!contract) {
+        return res.status(404).json({
+          message: "contract not found"
+        })
+      }
+    }
+    const result = db.transaction(client => ())
+    const result = await PrixodDB.createPrixod([
+      user_id,
+      doc_num,
+      doc_date,
+      j_o_num,
+      opisanie,
+      doverennost,
+      summa,
+      kimdan_id,
+      kimdan_name,
+      kimga_id,
+      kimga_name,
+      id_shartnomalar_organization,
+      tashkentTime(),
+      tashkentTime()
+    ], db.client)
+    return res.status(201).json({
+      message: "Create group successfully",
+      data: result
+    })
+  }
+
+  static async getPrixod(req, res) {
+    const region_id = req.user.region_id;
+    const { page, limit, search } = req.query;
+    const offset = (page - 1) * limit;
+    const { data, total } = await PrixodDB.getPrixod([region_id, offset, limit], search)
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    }
+    return res.status(200).json({
+      message: "group successfully get",
+      meta,
+      data: data || []
+    })
+  }
+
+  static async getByIdPrixod(req, res) {
+    const region_id = req.user.region_id
+    const id = req.params.id
+    const data = await PrixodDB.getByIdPrixod([region_id, id], true)
+    if (!data) {
+      return res.status(404).json({
+        message: "group not found"
+      })
+    }
+    return res.status(201).json({
+      message: "group successfully get",
+      data
+    });
+  }
+
+  static async updatePrixod(req, res) {
+    const region_id = req.user.region_id
+    const {
+      pereotsenka_jur7_id,
+      name,
+      schet,
+      iznos_foiz,
+      provodka_debet,
+      provodka_subschet,
+      provodka_kredit
+    } = req.body;
+    const id = req.params.id
+    const group = await PrixodDB.getByIdPrixod([region_id, id])
+    if (!group) {
+      return res.status(404).json({
+        message: "group not found"
+      })
+    }
+    const pereotsenka = await PereotsenkaDB.getByIdPereotsenka([pereotsenka_jur7_id])
+    if (!pereotsenka) {
+      return res.status(404).json({
+        message: "pereotsenka not found"
+      })
+    }
+    const result = await PrixodDB.updatePrixod([
+      pereotsenka_jur7_id,
+      name,
+      schet,
+      iznos_foiz,
+      provodka_debet,
+      provodka_subschet,
+      provodka_kredit,
+      tashkentTime(),
+      id
+    ])
+    return res.status(200).json({
+      message: 'Update successful',
+      data: result
+    });
+  }
+
+  static async deletePrixod(req, res) {
+    const region_id = req.user.region_id
+    const id = req.params.id
+    const group = await PrixodDB.getByIdPrixod([region_id, id])
+    if (!group) {
+      return res.status(404).json({
+        message: "group not found"
+      })
+    }
+    await PrixodDB.deletePrixod([id])
+    return res.status(200).json({
+      message: 'delete group successfully'
+    })
+  }
+
+}
 
 const createDocumentJur7 = async (data) => {
   const client = await pool.connect()
@@ -208,7 +367,7 @@ const updateDocumentJur7DB = async (data) => {
   const client = await pool.connect()
   try {
     await client.query(`BEGIN`)
-    const result = await client.query(`--sql
+    const result = await client.query(`
           UPDATE document_prixod_jur7 SET 
               doc_num = $1, 
               doc_date = $2, 
@@ -236,7 +395,7 @@ const updateDocumentJur7DB = async (data) => {
       data.kimga_name,
       data.id_shartnomalar_organization,
       tashkentTime(),
-      data.id
+      data.id,
     ]);
     const document = result.rows[0];
     await client.query(`DELETE FROM document_prixod_jur7_child WHERE document_prixod_jur7_id = $1`, [document.id]);

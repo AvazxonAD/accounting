@@ -185,7 +185,6 @@ const getByPodotchetIdMonitoringToExcel = async (req, res) => {
         const { main_schet_id, from, to, operatsii } = validationResponse(podotchetQueryValidation, req.query);
         const region_id = req.user.region_id;
         const podotchet = await getByIdPodotchetService(region_id, podotchet_id)
-        const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
         const { summa_prixod, summa_rasxod, data, summa_from, summa_to } = await podotchetMonitoringToExcelService(
             region_id,
             main_schet_id,
@@ -195,7 +194,7 @@ const getByPodotchetIdMonitoringToExcel = async (req, res) => {
             operatsii
         );
         const workbook = new ExcelJS.Workbook();
-        const fileName = `лицевой_карточка_${new Date().getTime()}.xlsx`;
+        const fileName = `litsavoy_kartochka_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('лицевой карточка');
         worksheet.pageSetup.margins.left = 0
         worksheet.pageSetup.margins.header = 0
@@ -301,13 +300,13 @@ const getByPodotchetIdMonitoringToExcel = async (req, res) => {
         const subSchetCell3 = worksheet.getCell(`E${row_number}`)
         subSchetCell3.value = ''
         const summaCell3 = worksheet.getCell(`F${row_number}`)
-        summaCell3.value = summa_rasxod
+        summaCell3.value = summa_prixod
         const schetCell4 = worksheet.getCell(`G${row_number}`)
         schetCell4.value = ``
         const subSchetCell4 = worksheet.getCell(`H${row_number}`)
         subSchetCell4.value = ``
         const summaCell4 = worksheet.getCell(`I${row_number}`)
-        summaCell4.value = summa_prixod
+        summaCell4.value = summa_rasxod
         row_number++
         
         worksheet.mergeCells(`A${row_number}`, `C${row_number}`)
