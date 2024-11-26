@@ -53,7 +53,7 @@ routes.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));
 routes.use("/services/show", protect, police('jur152'), require("./show.service/show.services.routes"));
 
 // podotchet monitoring 
-routes.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet.monitoring/podotchet.monitoring.routes'))
+routes.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet.monitoring/index'))
 
 // jur 7 routes 
 routes.use('/jur_7/group', protect, require('./jur7/group/index'))

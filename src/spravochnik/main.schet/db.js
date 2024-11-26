@@ -1,3 +1,4 @@
+const { db } = require('../../db/index')
 exports.MainSchetDB = class {
     static async getByIdMainSchet(params, isdeleted = null) {
         const ignore = `AND m_s.isdeleted = false`
@@ -27,7 +28,7 @@ exports.MainSchetDB = class {
             WHERE r.id = $1
                 AND m_s.id = $2 ${isdeleted ? '' : ignore}
         `;
-        const result = await pool.query(query, params);
+        const result = await db.query(query, params);
         return result[0];
     }
 }

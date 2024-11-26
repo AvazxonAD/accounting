@@ -11,42 +11,6 @@ const { returnStringDate, returnLocalDate } = require('../utils/date.function')
 const path = require(`path`)
 const { returnStringSumma } = require('../utils/returnSumma')
 
-const getByPodotchetIdMonitoring = async (req, res) => {
-    try {
-        const podotchet_id = req.params.id
-        const { limit, page, main_schet_id, from, to, operatsii } = validationResponse(podotchetQueryValidation, req.query);
-        const region_id = req.user.region_id;
-        const offset = (page - 1) * limit;
-        await getByIdPodotchetService(region_id, podotchet_id)
-        await getByIdMainSchetService(region_id, main_schet_id);
-        const { total, summa_prixod, summa_rasxod, data, summa_from, summa_to } = await getByIdPodotchetMonitoringService(
-            region_id,
-            main_schet_id,
-            offset,
-            limit,
-            from,
-            to,
-            podotchet_id,
-            operatsii
-        );
-        const pageCount = Math.ceil(total / limit);
-        const meta = {
-            pageCount: pageCount,
-            count: total,
-            currentPage: page,
-            nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1,
-            summa_from,
-            summa_to,
-            summa_prixod,
-            summa_rasxod
-        }
-        getLogger.info(`Muvaffaqiyatli podotchet monitoring doclar olindi. UserId: ${req.user.id}`)
-        resFunc(res, 200, data, meta)
-    } catch (error) {
-        errorCatch(error, res)
-    }
-}
 
 const getMonitoring = async (req, res) => {
     try {
@@ -391,7 +355,6 @@ const getByPodotchetIdMonitoringToExcel = async (req, res) => {
 }
 
 module.exports = {
-    getByPodotchetIdMonitoring,
     prixodRasxodPodotchet,
     getMonitoring,
     getByPodotchetIdMonitoringToExcel

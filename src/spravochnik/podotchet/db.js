@@ -1,3 +1,5 @@
+const { db } = require('../../db/index')
+
 exports.PodotchetDB = class {
     static async getByIdPodotchet(params, isdeleted) {
         const ignore = `AND s_p_l.isdeleted = false`
@@ -11,7 +13,7 @@ exports.PodotchetDB = class {
             JOIN regions ON users.region_id = regions.id
             WHERE regions.id = $1 AND s_p_l.id = $2 ${isdeleted ? '' : ignore}
         `;
-        const result = await pool.query(query, params);
+        const result = await db.query(query, params);
         return result[0];
     }
 }
