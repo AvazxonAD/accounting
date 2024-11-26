@@ -37,7 +37,7 @@ exports.KassaPrixodDB = class {
     static async getByPodotchetIdTotalKassaPrixod(params){
         const query = `--sql
             SELECT COALESCE(COUNT(k_r_ch.id), 0) AS total_count
-                FROM kassa_rasxod_child k_r_ch
+                FROM      k_r_ch
                 JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
                 JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
                 JOIN users u ON k_r.user_id = u.id
