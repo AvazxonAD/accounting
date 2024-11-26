@@ -3,7 +3,6 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offset, limit, from, to, podotchet_id, operatsii) => {
     try {
-        console.log(operatsii)
         const data = await pool.query(`--sql
             SELECT 
                 k_p.id, 
@@ -292,7 +291,7 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
                     JOIN users u ON a_tj4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
+                    JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4_ch.spravochnik_operatsii_id
                     WHERE r.id = $1 
                         AND a_tj4.main_schet_id = $2 
                         AND a_tj4.isdeleted = false  
@@ -371,7 +370,7 @@ const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offse
                     JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
                     JOIN users u ON a_tj4.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
+                    JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4_ch.spravochnik_operatsii_id
                     WHERE r.id = $1 
                         AND a_tj4.main_schet_id = $2 
                         AND a_tj4.isdeleted = false  
