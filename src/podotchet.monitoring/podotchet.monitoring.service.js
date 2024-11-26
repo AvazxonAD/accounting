@@ -3,6 +3,7 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getByIdPodotchetMonitoringService = async (region_id, main_schet_id, offset, limit, from, to, podotchet_id, operatsii) => {
     try {
+        console.log(operatsii)
         const data = await pool.query(`--sql
             SELECT 
                 k_p.id, 
