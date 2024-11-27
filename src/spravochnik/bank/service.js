@@ -116,8 +116,8 @@ exports.BankMfoService = class {
         });
         for (let bank of data) {
             await BankMfoDB.createBankMfo([
-                String(bank.mfo),
-                String(bank.bank_name),
+                String(bank.mfo).trim(),
+                String(bank.bank_name).trim(),
                 tashkentTime(),
                 tashkentTime()]);
         }
