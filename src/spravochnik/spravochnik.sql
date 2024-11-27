@@ -113,7 +113,16 @@ CREATE TABLE schet_operatsii (
   name VARCHAR(200),
   schet VARCHAR(200),
   user_id INTEGER REFERENCES users(id),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE spravochnik_bank_mfo (
+  id SERIAL PRIMARY KEY,
+  mfo VARCHAR(255) NOT NULL,
+  bank_name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
