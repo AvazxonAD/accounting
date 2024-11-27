@@ -73,6 +73,9 @@ const getAll = async (req, res) => {
     const { page, limit, budjet_id, organization, pudratchi_bool, search } = validationResponse(ShartnomaqueryValidation, req.query)
     await getByIdBudjetService(budjet_id);
     const offset = (page - 1) * limit;
+    if(organization){
+      await getByIdOrganizationService(region_id, organization)
+    }
     const { data, total } = await getAllShartnoma(region_id, budjet_id, offset, limit, organization, pudratchi_bool, search);
     const pageCount = Math.ceil(total / limit);
     const meta = {

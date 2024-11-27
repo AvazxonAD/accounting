@@ -1,27 +1,16 @@
 CREATE TABLE pereotsenka_jur7 (
   id SERIAL PRIMARY KEY,
+  group_jur7_id INT NOT NULL REFERENCES group_jur7(id),
   name VARCHAR(255),
-  oy_1 DECIMAL,
-  oy_2 DECIMAL,
-  oy_3 DECIMAL,
-  oy_4 DECIMAL,
-  oy_5 DECIMAL,
-  oy_6 DECIMAL,
-  oy_7 DECIMAL,
-  oy_8 DECIMAL,
-  oy_9 DECIMAL,
-  oy_10 DECIMAL,
-  oy_11 DECIMAL,
-  oy_12 DECIMAL,
+  pereotsenka_foiz DECIMAL,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE group_jur7 (
-  id SERIAL PRIMARY KEY ,
-  pereotsenka_jur7_id INT NOT NULL REFERENCES pereotsenka_jur7(id),
-  user_id INT NOT NULL REFERENCES users(id),
+  id SERIAL PRIMARY KEY,
+  smeta_id INT NOT NULL REFERENCES smeta(id),
   name VARCHAR(255),
   schet VARCHAR(255),
   iznos_foiz INT,
@@ -34,7 +23,7 @@ CREATE TABLE group_jur7 (
 );
 
 CREATE TABLE spravochnik_podrazdelenie_jur7 (
-  id SERIAL PRIMARY KEY ,
+  id SERIAL PRIMARY KEY,
   name VARCHAR(255),
   user_id INT NOT NULL REFERENCES users(id),
   created_at TIMESTAMP,
@@ -43,7 +32,7 @@ CREATE TABLE spravochnik_podrazdelenie_jur7 (
 );
 
 CREATE TABLE spravochnik_javobgar_shaxs_jur7 (
-  id SERIAL PRIMARY KEY ,
+  id SERIAL PRIMARY KEY,
   spravochnik_podrazdelenie_jur7_id INT NOT NULL REFERENCES spravochnik_podrazdelenie_jur7(id),
   fio VARCHAR(255),
   user_id INT NOT NULL REFERENCES users(id),
@@ -53,7 +42,7 @@ CREATE TABLE spravochnik_javobgar_shaxs_jur7 (
 );
 
 CREATE TABLE naimenovanie_tovarov_jur7 (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
   spravochnik_budjet_name_id INT REFERENCES spravochnik_budjet_name(id),
   name VARCHAR(255),
@@ -64,6 +53,7 @@ CREATE TABLE naimenovanie_tovarov_jur7 (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
+--prixod rasxod internal
 CREATE TABLE document_prixod_jur7 (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),

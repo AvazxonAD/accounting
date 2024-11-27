@@ -1,8 +1,8 @@
-const Joi = require('joi')
+const Joi = require('joi');
 
 exports.createGroupSchema = Joi.object({
-  body : Joi.object({
-    pereotsenka_jur7_id: Joi.number().required(),
+  body: Joi.object({
+    smeta_id: Joi.number().min(1).integer().required(),
     name: Joi.string().trim(),
     schet: Joi.string().trim(),
     iznos_foiz: Joi.number(),
@@ -14,7 +14,7 @@ exports.createGroupSchema = Joi.object({
 
 exports.updateGroupSchema = Joi.object({
   body: Joi.object({
-    pereotsenka_jur7_id: Joi.number().required(),
+    smeta_id: Joi.number().required().min(1).integer(),
     name: Joi.string().trim(),
     schet: Joi.string().trim(),
     iznos_foiz: Joi.number(),
@@ -25,7 +25,7 @@ exports.updateGroupSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
   })
-})
+});
 
 exports.getGroupSchema = Joi.object({
   query: Joi.object({

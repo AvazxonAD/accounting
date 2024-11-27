@@ -263,7 +263,7 @@ const shartnomaValidation = Joi.object({
   summa: Joi.number(),
   opisanie: Joi.string().trim(),
   smeta_id: Joi.number().required(),
-  smeta2_id: Joi.number(),
+  smeta2_id: Joi.number().allow(null),
   spravochnik_organization_id: Joi.number().required(),
   pudratchi_bool: Joi.boolean(),
   yillik_oylik: Joi.boolean().required()

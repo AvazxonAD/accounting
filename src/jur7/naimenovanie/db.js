@@ -45,12 +45,12 @@ exports.NaimenovanieDB = class {
             SELECT 
                 ARRAY_AGG(row_to_json(data)) AS data,
                 (
-                    SELECT COALESCE(COUNT(n_t_j7.id), 0)::INTEGER 
+                    SELECT COALESCE(COUNT(n_t_j7.id), 0)::INTEGER  
                     FROM naimenovanie_tovarov_jur7 AS n_t_j7
                     JOIN users AS u ON u.id = n_t_j7.user_id
                     JOIN regions AS r ON r.id = u.region_id
                     WHERE n_t_j7.isdeleted = false AND r.id = $1 ${search_filter}
-                ) AS total_count
+                ) AS total
             FROM data
         `
 

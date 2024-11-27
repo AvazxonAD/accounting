@@ -20,7 +20,7 @@ exports.NaimenovanieService = class {
                 message: "bedjet not found"
             })
         }
-        const group = await GroupDB.getByIdGroup([region_id, group_jur7_id])
+        const group = await GroupDB.getByIdGroup([group_jur7_id])
         if (!group) {
             return res.status(404).json({
                 message: "group not found"
@@ -97,7 +97,7 @@ exports.NaimenovanieService = class {
                 message: "bedjet not found"
             })
         }
-        const proup = await GroupDB.getByIdGroup([region_id, group_jur7_id])
+        const proup = await GroupDB.getByIdGroup([group_jur7_id])
         if (!proup) {
             return res.status(404).json({
                 message: "proup not found"
