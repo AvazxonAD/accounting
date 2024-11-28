@@ -1,21 +1,21 @@
-const { PrixodService } = require('./service');
+const { InternalService } = require('./service');
 const { Controller } = require('../../helper/controller');
 const {
-    createPrixodSchema,
-    getPrixodSchema,
-    updatePrixodSchema,
-    getByIdPrixodSchema,
-    deletePrixodSchema
+    createInternalSchema,
+    getInternalSchema,
+    updateInternalSchema,
+    getByIdInternalSchema,
+    deleteInternalSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(PrixodService.createPrixod, createPrixodSchema));
-router.get('/:id', Controller(PrixodService.getByIdPrixod, getByIdPrixodSchema));
-router.put('/:id', Controller(PrixodService.updatePrixod, updatePrixodSchema));
-router.delete('/:id', Controller(PrixodService.deletePrixod, deletePrixodSchema));
-router.get('/', Controller(PrixodService.getPrixod, getPrixodSchema));
+router.post('/', Controller(InternalService.createInternal, createInternalSchema));
+router.get('/:id', Controller(InternalService.getByIdInternal, getByIdInternalSchema));
+router.put('/:id', Controller(InternalService.updateInternal, updateInternalSchema));
+router.delete('/:id', Controller(InternalService.deleteInternal, deleteInternalSchema));
+router.get('/', Controller(InternalService.getInternal, getInternalSchema));
 
 
 module.exports = router;

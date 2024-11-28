@@ -1,4 +1,3 @@
-const { PereotsenkaDB } = require('../spravochnik/pereotsenka');
 const { PrixodDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')

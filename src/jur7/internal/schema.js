@@ -1,6 +1,6 @@
 const Joi = require('joi')
 
-exports.createPrixodSchema = Joi.object({
+exports.createInternalSchema = Joi.object({
   body: Joi.object({
     doc_num: Joi.string().trim(),
     doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
@@ -11,7 +11,6 @@ exports.createPrixodSchema = Joi.object({
     kimdan_name: Joi.string().trim(),
     kimga_id: Joi.number().integer().min(1).required(),
     kimga_name: Joi.string().trim(),
-    id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({
         naimenovanie_tovarov_jur7_id: Joi.number().required(),
@@ -28,7 +27,7 @@ exports.createPrixodSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.updatePrixodSchema = Joi.object({
+exports.updateInternalSchema = Joi.object({
   body: Joi.object({
     doc_num: Joi.string().trim(),
     doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
@@ -39,7 +38,6 @@ exports.updatePrixodSchema = Joi.object({
     kimdan_name: Joi.string().trim(),
     kimga_id: Joi.number().integer().min(1).required(),
     kimga_name: Joi.string().trim(),
-    id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({
         naimenovanie_tovarov_jur7_id: Joi.number().required(),
@@ -59,7 +57,7 @@ exports.updatePrixodSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.getPrixodSchema = Joi.object({
+exports.getInternalSchema = Joi.object({
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).default(10),
@@ -69,13 +67,13 @@ exports.getPrixodSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.getByIdPrixodSchema = Joi.object({
+exports.getByIdInternalSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
-exports.deletePrixodSchema = Joi.object({
+exports.deleteInternalSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
   })

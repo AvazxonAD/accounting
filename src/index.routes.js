@@ -64,6 +64,6 @@ routes.use('/jur_7/responsible', protect, require('./jur7/spravochnik/responsibl
 routes.use('/jur_7/naimenovanie', protect, require('./jur7/spravochnik/naimenovanie/index'))
 routes.use('/jur_7/doc_prixod', protect, require('./jur7/prixod/index'))
 routes.use('/jur_7/doc_rasxod', protect, require('./jur7/rasxod/index'))
-// routes.use('/jur_7/internal', protect, require('./jur7/operatsii/internal.transfer.routes'))
+routes.use('/jur_7/internal', protect, require('./jur7/internal/index'))
 
 module.exports = routes;

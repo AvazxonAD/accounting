@@ -1,14 +1,13 @@
-const { PereotsenkaDB } = require('../pereotsenka/db');
-const { PrixodDB } = require('./db');
+const { InternalDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
-const { ResponsibleDB } = require('../responsible/db')
+const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
 const { childsSumma } = require('../../helper/functions')
 
-exports.PrixodService = class {
-  static async createPrixod(req, res) {
+exports.InternalService = class {
+  static async createInternal(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const {
@@ -21,33 +20,24 @@ exports.PrixodService = class {
       kimdan_name,
       kimga_id,
       kimga_name,
-      id_shartnomalar_organization,
       childs
     } = req.body;
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id])
-    if (!organization) {
-      return res.status(404).json({
-        message: "organization not found"
-      })
-    }
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
     if (!responsible) {
       return res.status(404).json({
         message: "responsible not found"
       })
     }
-    if (id_shartnomalar_organization) {
-      const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id)
-      if (!contract) {
-        return res.status(404).json({
-          message: "contract not found"
-        })
-      }
+    const responsible2 = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
+    if (!responsible2) {
+      return res.status(404).json({
+        message: "responsible not found"
+      })
     }
     const summa = childsSumma(childs)
     let doc;
     await db.transaction(async client => {
-      doc = await PrixodDB.createPrixod([
+      doc = await InternalDB.createInternal([
         user_id,
         doc_num,
         doc_date,
@@ -59,31 +49,30 @@ exports.PrixodService = class {
         kimdan_name,
         kimga_id,
         kimga_name,
-        id_shartnomalar_organization,
         tashkentTime(),
         tashkentTime()
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_prixod_jur7_id = doc.id
+        item.document_internal_jur7_id = doc.id
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
       })
-      doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
+      doc.childs = await InternalDB.createInternalChild(result_childs, client)
     })
 
     return res.status(201).json({
-      message: "Create doc prixod successfully",
+      message: "Create doc internal successfully",
       data: doc
     })
   }
 
-  static async getPrixod(req, res) {
+  static async getInternal(req, res) {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to } = req.query;
     const offset = (page - 1) * limit;
-    const { data, total } = await PrixodDB.getPrixod([region_id, from, to, offset, limit], search)
+    const { data, total } = await InternalDB.getInternal([region_id, from, to, offset, limit], search)
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -99,10 +88,10 @@ exports.PrixodService = class {
     })
   }
 
-  static async getByIdPrixod(req, res) {
+  static async getByIdInternal(req, res) {
     const region_id = req.user.region_id
     const id = req.params.id
-    const data = await PrixodDB.getByIdPrixod([region_id, id], true)
+    const data = await InternalDB.getByIdInternal([region_id, id], true)
     if (!data) {
       return res.status(404).json({
         message: "group not found"
@@ -114,7 +103,7 @@ exports.PrixodService = class {
     });
   }
 
-  static async updatePrixod(req, res) {
+  static async updateInternal(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
@@ -128,19 +117,12 @@ exports.PrixodService = class {
       kimdan_name,
       kimga_id,
       kimga_name,
-      id_shartnomalar_organization,
       childs
     } = req.body;
-    const oldData = await PrixodDB.getByIdPrixod([region_id, id])
+    const oldData = await InternalDB.getByIdInternal([region_id, id])
     if(!oldData){
       return res.status(404).json({
-        message: "prixod doc not found"
-      })
-    }
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id])
-    if (!organization) {
-      return res.status(404).json({
-        message: "organization not found"
+        message: "internal doc not found"
       })
     }
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
@@ -149,18 +131,16 @@ exports.PrixodService = class {
         message: "responsible not found"
       })
     }
-    if (id_shartnomalar_organization) {
-      const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id)
-      if (!contract) {
-        return res.status(404).json({
-          message: "contract not found"
-        })
-      }
+    const responsible2 = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
+    if (!responsible2) {
+      return res.status(404).json({
+        message: "responsible not found"
+      })
     }
     const summa = childsSumma(childs)
     let doc;
     await db.transaction(async client => {
-      doc = await PrixodDB.updatePrixod([
+      doc = await InternalDB.updateInternal([
         doc_num,
         doc_date,
         j_o_num,
@@ -171,41 +151,40 @@ exports.PrixodService = class {
         kimdan_name,
         kimga_id,
         kimga_name,
-        id_shartnomalar_organization,
         tashkentTime(),
         id
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_prixod_jur7_id = doc.id
+        item.document_internal_jur7_id = doc.id
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
       })
-      await PrixodDB.deletePrixodChild([id], client)
-      doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
+      await InternalDB.deleteInternalChild([id], client)
+      doc.childs = await InternalDB.createInternalChild(result_childs, client)
     })
 
     return res.status(201).json({
-      message: "Update doc prixod successfully",
+      message: "Update doc internal successfully",
       data: doc
     })
   }
 
-  static async deletePrixod(req, res) {
+  static async deleteInternal(req, res) {
     const region_id = req.user.region_id
     const id = req.params.id
-    const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id])
-    if (!prixod_doc) {
+    const internal_doc = await InternalDB.getByIdInternal([region_id, id])
+    if (!internal_doc) {
       return res.status(404).json({
-        message: "prixod doc not found"
+        message: "internal doc not found"
       })
     }
     await db.transaction(async (client) => {
-      await PrixodDB.deletePrixod([id], client)
+      await InternalDB.deleteInternal([id], client)
     })
     return res.status(200).json({
-      message: 'delete prixod doc successfully'
+      message: 'delete internal doc successfully'
     })
   }
 

@@ -1,4 +1,3 @@
-const { PereotsenkaDB } = require('../spravochnik/pereotsenka/db');
 const { RasxodDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
@@ -65,7 +64,7 @@ exports.RasxodService = class {
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_prixod_jur7_id = doc.id
+        item.document_rasxod_jur7_id = doc.id
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
@@ -74,7 +73,7 @@ exports.RasxodService = class {
     })
 
     return res.status(201).json({
-      message: "Create doc prixod successfully",
+      message: "Create doc rasxod successfully",
       data: doc
     })
   }
@@ -134,7 +133,7 @@ exports.RasxodService = class {
     const oldData = await RasxodDB.getByIdRasxod([region_id, id])
     if(!oldData){
       return res.status(404).json({
-        message: "prixod doc not found"
+        message: "rasxod doc not found"
       })
     }
     const organization = await OrganizationDB.getByIdorganization([region_id, kimga_id])
@@ -177,7 +176,7 @@ exports.RasxodService = class {
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_prixod_jur7_id = doc.id
+        item.document_rasxod_jur7_id = doc.id
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
@@ -187,7 +186,7 @@ exports.RasxodService = class {
     })
 
     return res.status(201).json({
-      message: "Update doc prixod successfully",
+      message: "Update doc rasxod successfully",
       data: doc
     })
   }
@@ -195,17 +194,17 @@ exports.RasxodService = class {
   static async deleteRasxod(req, res) {
     const region_id = req.user.region_id
     const id = req.params.id
-    const prixod_doc = await RasxodDB.getByIdRasxod([region_id, id])
-    if (!prixod_doc) {
+    const rasxod_doc = await RasxodDB.getByIdRasxod([region_id, id])
+    if (!rasxod_doc) {
       return res.status(404).json({
-        message: "prixod doc not found"
+        message: "rasxod doc not found"
       })
     }
     await db.transaction(async (client) => {
       await RasxodDB.deleteRasxod([id], client)
     })
     return res.status(200).json({
-      message: 'delete prixod doc successfully'
+      message: 'delete rasxod doc successfully'
     })
   }
 
