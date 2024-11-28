@@ -20,7 +20,12 @@ const create = async (req, res) => {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const data = validationResponse(smetaGrafikValidation, req.body)
-    await getByIdSmeta(data.smeta_id);
+    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    if(!smeta){
+      return res.status(404).json({
+        message: "smeta not found"
+      })
+    };
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
     await getByAllSmetaGrafik(region_id, data.smeta_id, data.spravochnik_budjet_name_id, data.year);
     const itogo = sum(
@@ -119,7 +124,12 @@ const update = async (req, res) => {
     if(old_data.smeta_id !== data.smeta_id || old_data.spravochnik_budjet_name_id !== data.spravochnik_budjet_name_id || old_data.year !== data.year){
       await getByAllSmetaGrafik(region_id, data.smeta_id, data.spravochnik_budjet_name_id, data.year);
     }
-    await getByIdSmeta(data.smeta_id);
+    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    if(!smeta){
+      return res.status(404).json({
+        message: "smeta not found"
+      })
+    };
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
     const itogo = sum(
       data.oy_1,

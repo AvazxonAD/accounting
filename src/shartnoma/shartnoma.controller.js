@@ -5,7 +5,7 @@ const {
   getByIdShartnomaService,
   deleteShartnomaDB,
 } = require("../shartnoma/shartnoma.service.js");
-const { getByIdSmeta } = require("../smeta/smeta.service.js");
+const { SmetaDB } = require("../smeta/smeta/db.js");
 const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service.js");
 const { shartnomaValidation, ShartnomaqueryValidation } = require("../utils/validation");;
 const { createShartnomaGrafik, updateShartnomaGrafikService } = require("../shartnoma/shartnoma.grafik.service.js");
@@ -21,7 +21,12 @@ const create = async (req, res) => {
     const user_id = req.user.id;
     const budjet_id = req.query.budjet_id
     const data = validationResponse(shartnomaValidation, req.body)
-    await getByIdSmeta(data.smeta_id);
+    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    if(!smeta){
+      return res.status(404).json({
+        message: "smeta not found"
+      })
+    }
     await getByIdBudjetService(budjet_id)
     if (data.smeta2_id) {
       await getByIdSmeta(data.smeta2_id)
@@ -114,7 +119,12 @@ const update_shartnoma = async (req, res) => {
     await getByIdShartnomaService(region_id, budjet_id, id);
     const data = validationResponse(shartnomaValidation, req.body)
     await getByIdBudjetService(budjet_id);
-    await getByIdSmeta(data.smeta_id);
+    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    if(!smeta){
+      return res.status(404).json({
+        message: "smeta not found"
+      })
+    };
     await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
     const result = await updateShartnomaDB({ ...data, id });
     const grafik_data = { shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik }

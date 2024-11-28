@@ -11,7 +11,7 @@ const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
 const { operatsiiValidation, operatsiiQueryValidation } = require("../../utils/validation");;
-const { getByIdSmeta } = require("../../smeta/smeta.service");
+const { SmetaDB } = require("../../smeta/smeta/db");
 const { errorCatch } = require('../../utils/errorCatch')
 const { resFunc } = require("../../utils/resFunc");
 const { validationResponse } = require("../../utils/response-for-validation");
@@ -29,7 +29,12 @@ const getSchet = async (req, res) => {
 const createOperatsii = async (req, res) => {
   try {
     const data = validationResponse(operatsiiValidation, req.body)
-    await getByIdSmeta(data.smeta_id);
+    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    if(!smeta){
+      return res.status(404).json({
+        message: "smeta not found"
+      })
+    };
     const result = await createOperatsiiService({ ...data });
     resFunc(res, 200, result)
   } catch (error) {
@@ -63,7 +68,12 @@ const updateOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
     const data = validationResponse(operatsiiValidation, req.body)
-    await getByIdSmeta(data.smeta_id);
+    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    if(!smeta){
+      return res.status(404).json({
+        message: "smeta not found"
+      })
+    };
     const result = await updateOperatsiiService({ ...data, id });
     resFunc(res, 200, result)
   } catch (error) {

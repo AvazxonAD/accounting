@@ -4,3 +4,10 @@ exports.tashkentTime = () => {
     const tashkentDate = new Date(currentUtcDate.getTime() + tashkentOffset);
     return tashkentDate.toISOString();
 };
+
+exports.sum = (...args) => {
+    let sum = 0;
+    args.map((arg) => (sum += Number(arg)));
+    return sum;
+  };
+  

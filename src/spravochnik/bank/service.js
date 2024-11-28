@@ -119,7 +119,8 @@ exports.BankMfoService = class {
                 String(bank.mfo).trim(),
                 String(bank.bank_name).trim(),
                 tashkentTime(),
-                tashkentTime()]);
+                tashkentTime()
+            ]);
         }
         return res.status(200).json({
             message: "'Created successfully!"

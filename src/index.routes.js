@@ -37,8 +37,8 @@ routes.use("/spravochnik/podpis", protect, police('spravochnik'), require("./spr
 routes.use("/spravochnik/bank", protect, police('spravochnik'), require("./spravochnik/bank/index"));
 
 // Smeta routes
-routes.use("/smeta/grafik", protect, police('smeta_grafik'), require("./smeta/smeta.grafik.routes"));
-routes.use("/smeta", protect, police('smeta'), require("./smeta/smeta.routes"));
+routes.use("/smeta/grafik", protect, police('smeta_grafik'), require("./smeta/grafik/index"));
+routes.use("/smeta", protect, police('smeta'), require("./smeta/smeta/index"));
 
 // shartnoma routes
 routes.use("/shartnoma/grafik", protect, police('shartnoma'), require("./shartnoma/shartnoma.grafik.routes"));

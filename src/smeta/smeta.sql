@@ -1,6 +1,7 @@
 CREATE TABLE smeta (
     id SERIAL PRIMARY KEY,
     father_smeta_name VARCHAR(255),
+    group_number VARCHAR,
     smeta_name VARCHAR(255) NOT NULL,
     smeta_number INTEGER NOT NULL,
     created_at TIMESTAMP,
@@ -27,6 +28,7 @@ CREATE TABLE smeta_grafik (
   oy_11 DECIMAL DEFAULT 0,
   oy_12 DECIMAL DEFAULT 0,
   year INT,
+  itogo DECIMAL,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
