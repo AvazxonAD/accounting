@@ -49,8 +49,8 @@ const getMonitoring = async (req, res) => {
 const prixodRasxodPodotchet = async (req, res) => {
     try {
         const region_id = req.user.region_id;
-        const { to, main_schet_id } = validationResponse(prixodRasxodPodotchetValidation, req.query);
-        const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
+        const { to, main_schet_id } = req.query
+        const main_schet = await Main(region_id, main_schet_id)
         const data = await prixodRasxodPodotchetService(region_id, main_schet.spravochnik_budjet_name_id, to);
 
         const workbook = new ExcelJS.Workbook();

@@ -1,7 +1,11 @@
 const { db } = require('../../db/index')
 
 exports.BankRasxodDB = class {
-    static async getByPodotchetIdBankRasxod(params) {
+    static async getByPodotchetIdBankRasxod(params, offset, limit) {
+        let offset_limit = ``
+        if(offset && limit) {
+            offset_limit = `OFFSET $7 LIMIT $8`
+        }
         const query = `--sql
             SELECT 
                 b_r.id, 
@@ -30,8 +34,8 @@ exports.BankRasxodDB = class {
                 AND b_r.isdeleted = false  
                 AND b_r.doc_date BETWEEN $3 AND $4
                 AND b_r_ch.id_spravochnik_podotchet_litso = $5
-                AND s_op.schet = $6
-            OFFSET $7 LIMIT $8
+                AND s_op.schet = $6 
+            ORDER BY doc_date DESC ${offset_limit}
         `;
         const result = await db.query(query, params)
         return result;
@@ -125,7 +129,7 @@ exports.BankRasxodDB = class {
                 AND b_r.main_schet_id = $2
                 AND b_r.isdeleted = false
                 AND b_r.doc_date BETWEEN $3 AND $4
-                AND s_op.schet = $4
+                AND s_op.schet = $5
         `;
         const result = await db.query(query, params)
         return result[0].total;
@@ -148,5 +152,26 @@ exports.BankRasxodDB = class {
         `;
         const result = await db.query(query, params)
         return result[0].summa
+    }
+
+    static async getByPodotchetIdAndBudjetSummaBankRasxod(params, client) {
+        const query = `--sql
+            SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
+            FROM bank_rasxod_child AS b_r_ch
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
+            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            JOIN users u ON b_r.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
+            JOIN main_schet AS m_sch ON m_sch.id = b_r.main_schet_id  
+            JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = m_sch.spravochnik_budjet_name_id 
+            WHERE r.id = $1 
+                AND s_b_n.id = $2 
+                AND b_r.isdeleted = false  
+                AND b_r.doc_date <= $3
+                AND b_r_ch.id_spravochnik_podotchet_litso = $4
+        `;
+        const result = await client.query(query, params)
+        return result.rows[0].summa
     }
 }
