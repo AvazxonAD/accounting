@@ -1,9 +1,9 @@
 const { db } = require('../../db/index')
 
-exports.PrixodDB = class {
-    static async createPrixod(params, client) {
+exports.RasxodDB = class {
+    static async createRasxod(params, client) {
         const query = `--sql
-            INSERT INTO document_prixod_jur7 (
+            INSERT INTO document_rasxod_jur7 (
                 user_id,
                 doc_num,
                 doc_date,
@@ -26,7 +26,7 @@ exports.PrixodDB = class {
         return result.rows[0];
     }
 
-    static async createPrixodChild(params, client) {
+    static async createRasxodChild(params, client) {
         const values = params.map((_, index) => {
             return `
                 ($${13 * index + 1}, 
@@ -50,7 +50,7 @@ exports.PrixodDB = class {
         }, []);
 
         const query = `--sql
-            INSERT INTO document_prixod_jur7_child (
+            INSERT INTO document_rasxod_jur7_child (
                 naimenovanie_tovarov_jur7_id,
                 kol,
                 sena,
@@ -61,7 +61,7 @@ exports.PrixodDB = class {
                 kredit_sub_schet,
                 data_pereotsenka,
                 user_id,
-                document_prixod_jur7_id,
+                document_rasxod_jur7_id,
                 created_at,
                 updated_at
             ) 
@@ -71,7 +71,7 @@ exports.PrixodDB = class {
         return result.rows;
     }
 
-    static async getPrixod(params, search) {
+    static async getRasxod(params, search) {
         let search_filter = ``
         if (search) {
             search_filter = `AND (
@@ -91,7 +91,7 @@ exports.PrixodDB = class {
               d_j.summa, 
               d_j.kimdan_name, 
               d_j.kimga_name
-            FROM document_prixod_jur7 AS d_j
+            FROM document_rasxod_jur7 AS d_j
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 
@@ -104,7 +104,7 @@ exports.PrixodDB = class {
             ARRAY_AGG(row_to_json(data)) AS data,
             (
               SELECT COALESCE(SUM(d_j.summa), 0)
-              FROM document_prixod_jur7 AS d_j
+              FROM document_rasxod_jur7 AS d_j
               JOIN users AS u ON u.id = d_j.user_id
               JOIN regions AS r ON r.id = u.region_id  
               WHERE r.id = $1 
@@ -113,7 +113,7 @@ exports.PrixodDB = class {
             )::FLOAT AS summa,
             (
               SELECT COALESCE(COUNT(d_j.id), 0)
-              FROM document_prixod_jur7 AS d_j
+              FROM document_rasxod_jur7 AS d_j
               JOIN users AS u ON u.id = d_j.user_id
               JOIN regions AS r ON r.id = u.region_id  
               WHERE r.id = $1 
@@ -126,7 +126,7 @@ exports.PrixodDB = class {
         return result[0];
     }
 
-    static async getByIdPrixod(params, isdeleted) {
+    static async getByIdRasxod(params, isdeleted) {
         let ignore = 'AND d_j.isdeleted = false';
         const query = `--sql
             SELECT 
@@ -152,11 +152,11 @@ exports.PrixodDB = class {
                         d_j_ch.kredit_schet,
                         d_j_ch.kredit_sub_schet,
                         TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
-                    FROM document_prixod_jur7_child AS d_j_ch
-                    WHERE d_j_ch.document_prixod_jur7_id = d_j.id
+                    FROM document_rasxod_jur7_child AS d_j_ch
+                    WHERE d_j_ch.document_rasxod_jur7_id = d_j.id
                 ) AS d_j_ch
                 ) AS childs
-            FROM document_prixod_jur7 AS d_j
+            FROM document_rasxod_jur7 AS d_j
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 AND d_j.id = $2  ${isdeleted ? `` : ignore}
@@ -165,9 +165,9 @@ exports.PrixodDB = class {
         return result[0];
     }
 
-    static async updatePrixod(params) {
+    static async updateRasxod(params) {
         const query = `--sql
-            UPDATE document_prixod_jur7 SET 
+            UPDATE document_rasxod_jur7 SET 
               doc_num = $1,
               doc_date = $2,
               j_o_num = $3,
@@ -186,13 +186,13 @@ exports.PrixodDB = class {
         return result[0];
     }
 
-    static async deletePrixod(params, client) {
-        await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
-        await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
+    static async deleteRasxod(params, client) {
+        await client.query(`UPDATE document_rasxod_jur7_child SET isdeleted = true WHERE document_rasxod_jur7_id = $1`, params);
+        await client.query(`UPDATE document_rasxod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
     }
 
-    static async deletePrixodChild(params, client) {
-        const query = `DELETE FROM document_prixod_jur7_child WHERE document_prixod_jur7_id = $1 AND isdeleted = false`
+    static async deleteRasxodChild(params, client) {
+        const query = `DELETE FROM document_rasxod_jur7_child WHERE document_rasxod_jur7_id = $1 AND isdeleted = false`
         await client.query(query, params);
     }
 }

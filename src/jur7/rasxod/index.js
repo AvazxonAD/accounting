@@ -1,21 +1,21 @@
-const { PrixodService } = require('./service');
+const { RasxodService } = require('./service');
 const { Controller } = require('../../helper/controller');
 const {
-    createPrixodSchema,
-    getPrixodSchema,
-    updatePrixodSchema,
-    getByIdPrixodSchema,
-    deletePrixodSchema
+    createRasxodSchema,
+    getRasxodSchema,
+    updateRasxodSchema,
+    getByIdRasxodSchema,
+    deleteRasxodSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(PrixodService.createPrixod, createPrixodSchema));
-router.get('/:id', Controller(PrixodService.getByIdPrixod, getByIdPrixodSchema));
-router.put('/:id', Controller(PrixodService.updatePrixod, updatePrixodSchema));
-router.delete('/:id', Controller(PrixodService.deletePrixod, deletePrixodSchema));
-router.get('/', Controller(PrixodService.getPrixod, getPrixodSchema));
+router.post('/', Controller(RasxodService.createRasxod, createRasxodSchema));
+router.get('/:id', Controller(RasxodService.getByIdRasxod, getByIdRasxodSchema));
+router.put('/:id', Controller(RasxodService.updateRasxod, updateRasxodSchema));
+router.delete('/:id', Controller(RasxodService.deleteRasxod, deleteRasxodSchema));
+router.get('/', Controller(RasxodService.getRasxod, getRasxodSchema));
 
 
 module.exports = router;
