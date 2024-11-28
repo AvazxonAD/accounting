@@ -1,4 +1,4 @@
-const { PrixodService } = require("./service");
+const { PrixodService } = require('./service');
 const { Controller } = require('../../helper/controller');
 const {
     createPrixodSchema,

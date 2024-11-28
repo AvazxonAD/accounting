@@ -18,6 +18,7 @@ exports.OrganizationDB = class {
             JOIN regions ON users.region_id = regions.id 
             WHERE regions.id = $1 AND s_o.id = $2 ${isdeleted ? '' : ignore}
         `;
-        db.query(query, params)
+        const result = await db.query(query, params)
+        return result;
     }
 }

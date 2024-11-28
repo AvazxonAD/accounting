@@ -23,7 +23,7 @@ exports.PrixodDB = class {
             RETURNING * 
         `
         const result = await client.query(query, params)
-        return result;
+        return result.rows[0];
     }
 
     static async createPrixodChild(params, client) {
@@ -51,8 +51,6 @@ exports.PrixodDB = class {
 
         const query = `--sql
             INSERT INTO document_prixod_jur7_child (
-                user_id,
-                document_prixod_jur7_id,
                 naimenovanie_tovarov_jur7_id,
                 kol,
                 sena,
@@ -62,16 +60,18 @@ exports.PrixodDB = class {
                 kredit_schet,
                 kredit_sub_schet,
                 data_pereotsenka,
+                user_id,
+                document_prixod_jur7_id,
                 created_at,
                 updated_at
             ) 
             VALUES ${_values} RETURNING *
         `;
         const result = await client.query(query, allValues)
-        return result;
+        return result.rows;
     }
 
-    static async getPrixod(params, search = null) {
+    static async getPrixod(params, search) {
         let search_filter = ``
         if (search) {
             search_filter = `AND (
@@ -119,7 +119,7 @@ exports.PrixodDB = class {
               WHERE r.id = $1 
                 AND d_j.doc_date BETWEEN $2 AND $3 
                 AND d_j.isdeleted = false ${search_filter}
-            )::INTEGER AS total_count
+            )::INTEGER AS total
           FROM data
         `;
         const result = await db.query(query, params)
@@ -180,15 +180,15 @@ exports.PrixodDB = class {
               kimga_name = $10, 
               id_shartnomalar_organization = $11, 
               updated_at = $12
-            WHERE id = $13 RETURNING
+            WHERE id = $13 RETURNING * 
         `;
         const result = await db.query(query, params);
         return result[0];
     }
 
     static async deletePrixod(params, client) {
-        await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $2`, [params]);
-        await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, [params]);
+        await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
+        await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
     }
 
     static async deletePrixodChild(params, client) {

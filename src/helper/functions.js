@@ -7,7 +7,13 @@ exports.tashkentTime = () => {
 
 exports.sum = (...args) => {
     let sum = 0;
+    console.log(args)
     args.map((arg) => (sum += Number(arg)));
     return sum;
-  };
-  
+};
+
+exports.childsSumma = (args) => {
+    let sum = 0;
+    args.map((arg) => (sum += Number(arg.summa)));
+    return sum;
+};
