@@ -4,14 +4,7 @@ const { tashkentTime } = require('../../helper/functions');
 exports.PodrazdelenieService = class {
     static async createPodrazdelenie(req, res) {
         const user_id = req.user.id;
-        const region_id = req.user.region_id;
         const { name } = req.body;
-        const podrazdelenie = await PodrazdelenieDB.getByNamePodrazdelenie([region_id, name])
-        if (podrazdelenie) {
-            res.status(409).json({
-                message: "this data already exists"
-            })
-        }
         const result = await PodrazdelenieDB.createPodrazdelenie([
             user_id,
             name,
@@ -68,14 +61,6 @@ exports.PodrazdelenieService = class {
             return res.status(404).json({
                 message: "podrazdelenie not found"
             })
-        }
-        if (old_podrazdelenie.name !== name) {
-            const podrazdelenie = await PodrazdelenieDB.getByNamePodrazdelenie([region_id, name])
-            if (podrazdelenie) {
-                res.status(409).json({
-                    message: "this data already exists"
-                })
-            }
         }
         const result = await PodrazdelenieDB.updatePodrazdelenie([
             name,

@@ -5,30 +5,21 @@ const { GroupDB } = require('../group/db')
 
 exports.PereotsenkaService = class {
     static async createPereotsenka(req, res) {
-        const { name, pereotsenka_foiz, group_jur7_id } = req.body;
-
-        const existingPereotsenka = await PereotsenkaDB.getBYNamePereotsenka([name]);
-        if (existingPereotsenka) {
-            return res.status(409).json({
-                message: "This data already exists"
-            });
+        const { data } = req.body;
+        for(let item of data){
+            const group = await GroupDB.getByIdGroup([item.group_jur7_id])
+            if (!group) {
+                return res.status(404).json({
+                    message: "group not found"
+                })
+            }
         }
-
-        const group = await GroupDB.getByIdGroup([group_jur7_id])
-        if (!group) {
-            return res.status(404).json({
-                message: "group not found"
-            })
-        }
-
-        const result = await PereotsenkaDB.createPereotsenka([
-            name,
-            group_jur7_id,
-            pereotsenka_foiz,
-            tashkentTime(),
-            tashkentTime()
-        ]);
-
+        const result_data = data.map(item => {
+            item.created_at = tashkentTime(),
+            item.updated_at = tashkentTime()
+            return item;
+        })
+        const result = await PereotsenkaDB.createPereotsenka(result_data);
         return res.status(201).json({
             message: "Create pereotsenka successfully",
             data: result
@@ -38,7 +29,7 @@ exports.PereotsenkaService = class {
     static async getPereotsenka(req, res) {
         const { page, limit, search } = req.query;
         let offset;
-        if(page && limit){
+        if (page && limit) {
             offset = (page - 1) * limit;
         }
         const { data, total } = await PereotsenkaDB.getPereotsenka([offset, limit], search);
@@ -83,16 +74,6 @@ exports.PereotsenkaService = class {
                 message: "Pereotsenka not found"
             });
         }
-
-        if(existingPereotsenka.group_jur7_id !== group_jur7_id){
-            const group = await GroupDB.getByIdGroup(group_jur7_id)
-            if(!group){
-                return res.status(404).json({
-                    message: "group not found"
-                })
-            } 
-        }
-
         const result = await PereotsenkaDB.updatePereotsenka([
             name,
             group_jur7_id,

@@ -2,13 +2,26 @@ const { db } = require('../../db/index')
 
 exports.PereotsenkaDB = class {
     static async createPereotsenka(params) {
+        const values = params.map((_, index) => {
+            return `
+                ($${5 * index + 1}, 
+                $${5 * index + 2}, 
+                $${5 * index + 3}, 
+                $${5 * index + 4}, 
+                $${5 * index + 5})
+            `
+        })
+        const _values = values.join(", ")
+        const allValues = params.reduce((acc, obj) => {
+            return acc.concat(Object.values(obj));
+        }, []);
         const query = `--sql
             INSERT INTO 
             pereotsenka_jur7 (name, group_jur7_id, pereotsenka_foiz, created_at, updated_at) 
-            VALUES ($1, $2, $3, $4, $5) RETURNING *
+            VALUES ${_values} RETURNING *
         `;
-        const result = await db.query(query, params);
-        return result[0];
+        const result = await db.query(query, allValues);
+        return result;
     }
 
     static async getBYNamePereotsenka(params) {
@@ -20,9 +33,9 @@ exports.PereotsenkaDB = class {
     static async getPereotsenka(params, search) {
         let search_filter = ``;
         let offset_limit = ``;
-        if(params[0] && params[1]){
+        if (params[0] && params[1]) {
             offset_limit = 'OFFSET $1 LIMIT $2'
-        }else {
+        } else {
             params.splice(0, 2);
         }
         if (search) {
