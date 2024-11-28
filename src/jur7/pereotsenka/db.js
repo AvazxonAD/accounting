@@ -19,19 +19,26 @@ exports.PereotsenkaDB = class {
 
     static async getPereotsenka(params, search) {
         let search_filter = ``;
+        let offset_limit = ``;
+        if(params[0] && params[1]){
+            offset_limit = 'OFFSET $1 LIMIT $2'
+        }else {
+            params.splice(0, 2);
+        }
         if (search) {
-            search_filter = `AND name ILIKE '%' || $${params.length + 1} || '%'`;
+            search_filter = `AND p.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search);
         }
         const query = `--sql
             WITH data AS (
-                SELECT id, name, group_jur7_id, pereotsenka_foiz, created_at, updated_at
-                FROM pereotsenka_jur7 WHERE isdeleted = false ${search_filter}
-                OFFSET $1 LIMIT $2
+                SELECT p.id, p.name, p.group_jur7_id, p.pereotsenka_foiz, p.created_at, p.updated_at, g.name AS group_name
+                FROM pereotsenka_jur7 AS p 
+                JOIN group_jur7 AS g ON g.id = p.group_jur7_id
+                WHERE p.isdeleted = false ${search_filter}
             )
             SELECT 
                 ARRAY_AGG(row_to_json(data)) AS data,
-                (SELECT COALESCE(COUNT(id), 0)::INTEGER FROM pereotsenka_jur7 WHERE isdeleted = false ${search_filter}) AS total
+                (SELECT COALESCE(COUNT(id), 0)::INTEGER FROM pereotsenka_jur7 AS p WHERE p.isdeleted = false ${search_filter}) AS total
             FROM data
         `;
         const result = await db.query(query, params);
@@ -39,11 +46,13 @@ exports.PereotsenkaDB = class {
     }
 
     static async getByIdPereotsenka(params, isdeleted = null) {
-        const ignore = `AND isdeleted = false`;
+        const ignore = `AND p.isdeleted = false`;
         const query = `--sql
             SELECT 
-                id, name, group_jur7_id, pereotsenka_foiz, created_at, updated_at
-            FROM pereotsenka_jur7 WHERE id = $1 ${isdeleted ? '' : ignore}
+                p.id, p.name, p.group_jur7_id, p.pereotsenka_foiz, p.created_at, p.updated_at, g.name AS group_name
+            FROM pereotsenka_jur7 AS p 
+            JOIN group_jur7 AS g ON g.id = p.group_jur7_id 
+            WHERE p.id = $1 ${isdeleted ? '' : ignore}
         `;
         const result = await db.query(query, params);
         return result[0];

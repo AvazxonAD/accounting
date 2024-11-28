@@ -195,5 +195,4 @@ exports.PrixodDB = class {
         const query = `DELETE FROM document_prixod_jur7_child WHERE document_prixod_jur7_id = $1 AND isdeleted = false`
         await client.query(query, params);
     }
-
 }

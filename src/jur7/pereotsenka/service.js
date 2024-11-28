@@ -36,10 +36,13 @@ exports.PereotsenkaService = class {
     }
 
     static async getPereotsenka(req, res) {
-        const { page = 1, limit = 10, search } = req.query;
-        const offset = (page - 1) * limit;
+        const { page, limit, search } = req.query;
+        let offset;
+        if(page && limit){
+            offset = (page - 1) * limit;
+        }
         const { data, total } = await PereotsenkaDB.getPereotsenka([offset, limit], search);
-        const pageCount = Math.ceil(total / limit);
+        const pageCount = Math.ceil(total / limit) || 1;
         const meta = {
             pageCount: pageCount,
             count: total,

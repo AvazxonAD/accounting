@@ -21,8 +21,8 @@ exports.updatePereotsenkaSchema = Joi.object({
 
 exports.getPereotsenkaSchema = Joi.object({
   query: Joi.object({
-    page: Joi.number().integer().min(1).default(1), 
-    limit: Joi.number().integer().min(1).default(10), 
+    page: Joi.number().integer().min(1), 
+    limit: Joi.number().integer().min(1), 
     search: Joi.string().trim() 
   })
 }).options({ stripUnknown: true });
