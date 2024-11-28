@@ -57,11 +57,11 @@ routes.use("/services/show", protect, police('jur152'), require("./show.service/
 routes.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet.monitoring/index'))
 
 // jur 7 routes 
-routes.use('/jur_7/group', protect, require('./jur7/group/index'))
-routes.use('/jur_7/pereotsenka', protect, require('./jur7/pereotsenka/index'))
-routes.use('/jur_7/podrazdelenie', protect, require('./jur7/podrazdelenie/index'))
-routes.use('/jur_7/responsible', protect, require('./jur7/responsible/index'))
-routes.use('/jur_7/naimenovanie', protect, require('./jur7/naimenovanie/index'))
+routes.use('/jur_7/group', protect, require('./jur7/spravochnik/group/index'))
+routes.use('/jur_7/pereotsenka', protect, require('./jur7/spravochnik/pereotsenka/index'))
+routes.use('/jur_7/podrazdelenie', protect, require('./jur7/spravochnik/podrazdelenie/index'))
+routes.use('/jur_7/responsible', protect, require('./jur7/spravochnik/responsible/index'))
+routes.use('/jur_7/naimenovanie', protect, require('./jur7/spravochnik/naimenovanie/index'))
 routes.use('/jur_7/doc_prixod', protect, require('./jur7/prixod/index'))
 // routes.use('/jur_7/doc_rasxod', protect, require('./jur7/operatsii/doc_rasxod_jur7.routes'))
 // routes.use('/jur_7/internal', protect, require('./jur7/operatsii/internal.transfer.routes'))

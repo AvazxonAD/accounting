@@ -1,5 +1,5 @@
 const { PereotsenkaDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime } = require('../../../helper/functions');
 const { GroupDB } = require('../group/db')
 
 

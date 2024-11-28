@@ -1,6 +1,6 @@
-const { SmetaDB } = require('./../../smeta/smeta/db');
+const { SmetaDB } = require('.././../../smeta/smeta/db');
 const { GroupDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime } = require('../../../helper/functions');
 
 exports.GroupService = class {
     static async createGroup(req, res) {

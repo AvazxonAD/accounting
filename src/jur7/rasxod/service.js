@@ -1,8 +1,8 @@
-const { PereotsenkaDB } = require('../spravochnik/pereotsenka');
+const { PereotsenkaDB } = require('../pereotsenka/db');
 const { PrixodDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
-const { ResponsibleDB } = require('../spravochnik/responsible/db')
+const { ResponsibleDB } = require('../responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
 const { childsSumma } = require('../../helper/functions')

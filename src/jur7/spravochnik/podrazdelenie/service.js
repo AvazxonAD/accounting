@@ -1,5 +1,5 @@
 const { PodrazdelenieDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime } = require('../../../helper/functions');
 
 exports.PodrazdelenieService = class {
     static async createPodrazdelenie(req, res) {

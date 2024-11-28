@@ -1,4 +1,4 @@
-const { db } = require('../../db/index')
+const { db } = require('../../../db/index')
 
 exports.PereotsenkaDB = class {
     static async createPereotsenka(params) {

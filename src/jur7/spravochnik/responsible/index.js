@@ -1,5 +1,5 @@
 const { ResponsibleService } = require("./service");
-const { Controller } = require('../../helper/controller');
+const { Controller } = require('../../../helper/controller');
 const {
     createResponsibleSchema,
     getResponsibleSchema,

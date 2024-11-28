@@ -1,6 +1,6 @@
 const { PodrazdelenieDB } = require('../podrazdelenie/db');
 const { ResponsibleDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime } = require('../../../helper/functions');
 
 exports.ResponsibleService = class {
     static async createResponsible(req, res) {

@@ -1,5 +1,5 @@
 const { PodrazdelenieService } = require("./service");
-const { Controller } = require('../../helper/controller');
+const { Controller } = require('../../../helper/controller');
 const {
     createPodrazdelenieSchema,
     getPodrazdelenieSchema,
