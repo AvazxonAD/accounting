@@ -54,7 +54,7 @@ exports.InternalService = class {
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_internal_jur7_id = doc.id
+        item.document_vnutr_peremesh_jur7_id = doc.id
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
@@ -156,7 +156,7 @@ exports.InternalService = class {
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_internal_jur7_id = doc.id
+        item.document_vnutr_peremesh_jur7_id = doc.id
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item

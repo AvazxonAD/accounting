@@ -147,7 +147,7 @@ exports.BankPrixodDB = class {
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
             WHERE r.id = $1 
                 AND b_p.main_schet_id = $2 
-                AND b_p.isdeleted = false   
+                AND b_p.isdeleted = false
                 AND b_p.doc_date <= $3
                 AND s_op.schet = $4
         `;
@@ -176,5 +176,5 @@ exports.BankPrixodDB = class {
         return result.rows[0].summa
     }
 
-    
+
 }

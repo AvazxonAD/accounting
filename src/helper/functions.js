@@ -7,7 +7,6 @@ exports.tashkentTime = () => {
 
 exports.sum = (...args) => {
     let sum = 0;
-    console.log(args)
     args.map((arg) => (sum += Number(arg)));
     return sum;
 };
@@ -55,3 +54,10 @@ exports.returnStringDate = (date) => {
     month = getMonth(month);
     return (topshiriqSana = `${year} ${day}-${month}`);
 };
+
+exports.designParams = (params, design_keys) => {
+    return allValues = params.reduce((acc, obj) => {
+        const sortValues = design_keys.map(key => obj[key]);
+        return acc.concat(Object.values(sortValues));
+    }, []);
+}

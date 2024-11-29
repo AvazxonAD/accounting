@@ -1,4 +1,5 @@
 const { db } = require('../../../db/index')
+const { designParams } = require('../../../helper/functions')
 
 exports.PereotsenkaDB = class {
     static async createPereotsenka(params) {
@@ -12,9 +13,8 @@ exports.PereotsenkaDB = class {
             `
         })
         const _values = values.join(", ")
-        const allValues = params.reduce((acc, obj) => {
-            return acc.concat(Object.values(obj));
-        }, []);
+        const designKeys = ["name", "group_jur7_id", "pereotsenka_foiz", "created_at", "updated_at"]
+        const allValues = designParams(params, designKeys)
         const query = `--sql
             INSERT INTO 
             pereotsenka_jur7 (name, group_jur7_id, pereotsenka_foiz, created_at, updated_at) 

@@ -1,4 +1,6 @@
 const { db } = require('../../db/index')
+const { designParams } = require('../../helper/functions')
+
 
 exports.PrixodDB = class {
     static async createPrixod(params, client) {
@@ -45,10 +47,22 @@ exports.PrixodDB = class {
             `
         })
         const _values = values.join(", ")
-        const allValues = params.reduce((acc, obj) => {
-            return acc.concat(Object.values(obj));
-        }, []);
-
+        const design_params = [
+            "naimenovanie_tovarov_jur7_id",
+                "kol",
+                "sena",
+                "summa",
+                "debet_schet",
+                "debet_sub_schet",
+                "kredit_schet",
+                "kredit_sub_schet",
+                "data_pereotsenka",
+                "user_id",
+                "document_prixod_jur7_id",
+                "created_at",
+                "updated_at"
+        ]
+        const allValues = designParams(params, design_params)
         const query = `--sql
             INSERT INTO document_prixod_jur7_child (
                 naimenovanie_tovarov_jur7_id,

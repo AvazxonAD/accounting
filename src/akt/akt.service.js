@@ -1,6 +1,7 @@
 const pool = require("../config/db");
 const { tashkentTime } = require('../utils/date.function');
 const ErrorResponse = require("../utils/errorResponse");
+//const {}
 
 const createJur3DB = async (data) => {
   const client = await pool.connect()
@@ -8,23 +9,22 @@ const createJur3DB = async (data) => {
     await client.query(`BEGIN`)
     const doc = await client.query(
       `
-              INSERT INTO bajarilgan_ishlar_jur3(
-                  doc_num, 
-                  doc_date, 
-                  opisanie, 
-                  summa, 
-                  id_spravochnik_organization, 
-                  shartnomalar_organization_id, 
-                  main_schet_id,
-                  user_id,
-                  spravochnik_operatsii_own_id,
-                  created_at,
-                  updated_at
-              ) 
-              VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
-              RETURNING * 
-              `,
-      [
+        INSERT INTO bajarilgan_ishlar_jur3(
+            doc_num, 
+            doc_date, 
+            opisanie, 
+            summa, 
+            id_spravochnik_organization, 
+            shartnomalar_organization_id, 
+            main_schet_id,
+            user_id,
+            spravochnik_operatsii_own_id,
+            created_at,
+            updated_at
+        ) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+        RETURNING * 
+      `,[
         data.doc_num,
         data.doc_date,
         data.opisanie,

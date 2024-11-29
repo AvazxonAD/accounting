@@ -1,4 +1,5 @@
-const { db } = require('../../db/index')
+const { db } = require('../../db/index');
+const { designParams } = require('../../helper/functions')
 
 exports.RasxodDB = class {
     static async createRasxod(params, client) {
@@ -44,11 +45,23 @@ exports.RasxodDB = class {
                 $${13 * index + 13})
             `
         })
+        const design_params = [
+                "naimenovanie_tovarov_jur7_id",
+                "kol",
+                "sena",
+                "summa",
+                "debet_schet",
+                "debet_sub_schet",
+                "kredit_schet",
+                "kredit_sub_schet",
+                "data_pereotsenka",
+                "user_id",
+                "document_rasxod_jur7_id",
+                "created_at",
+                "updated_at"
+        ]
         const _values = values.join(", ")
-        const allValues = params.reduce((acc, obj) => {
-            return acc.concat(Object.values(obj));
-        }, []);
-
+        const allValues = designParams(params, design_params)
         const query = `--sql
             INSERT INTO document_rasxod_jur7_child (
                 naimenovanie_tovarov_jur7_id,
