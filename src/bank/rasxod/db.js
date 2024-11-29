@@ -25,7 +25,7 @@ exports.BankRasxodDB = class {
                 'bank_rasxod' AS type
             FROM bank_rasxod_child b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
@@ -46,7 +46,7 @@ exports.BankRasxodDB = class {
             SELECT COALESCE(COUNT(b_r_ch.id), 0)::INTEGER AS total
             FROM bank_rasxod_child b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
@@ -66,7 +66,7 @@ exports.BankRasxodDB = class {
             SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
             FROM bank_rasxod_child AS b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
@@ -101,7 +101,7 @@ exports.BankRasxodDB = class {
                 'bank_rasxod' AS type
             FROM bank_rasxod_child b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
@@ -121,7 +121,7 @@ exports.BankRasxodDB = class {
             SELECT COALESCE(COUNT(b_r_ch.id), 0)::INTEGER AS total
             FROM bank_rasxod_child b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
@@ -140,7 +140,7 @@ exports.BankRasxodDB = class {
             SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
             FROM bank_rasxod_child AS b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id
@@ -159,7 +159,7 @@ exports.BankRasxodDB = class {
             SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
             FROM bank_rasxod_child AS b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_r.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_r_ch.spravochnik_operatsii_id

@@ -92,7 +92,7 @@ exports.PrixodService = class {
       backPage: page === 1 ? null : page - 1
     }
     return res.status(200).json({
-      message: "group successfully get",
+      message: "prixod successfully get",
       meta,
       data: data || []
     })
@@ -104,11 +104,11 @@ exports.PrixodService = class {
     const data = await PrixodDB.getByIdPrixod([region_id, id], true)
     if (!data) {
       return res.status(404).json({
-        message: "group not found"
+        message: "prixod not found"
       })
     }
     return res.status(201).json({
-      message: "group successfully get",
+      message: "prixod successfully get",
       data
     });
   }

@@ -25,7 +25,7 @@ exports.BankPrixodDB = class {
                 'bank_prixod' AS type
             FROM bank_prixod_child b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
@@ -46,7 +46,7 @@ exports.BankPrixodDB = class {
             SELECT COALESCE(COUNT(b_p_ch.id), 0)::INTEGER AS total
             FROM bank_prixod_child b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
@@ -66,7 +66,7 @@ exports.BankPrixodDB = class {
             SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
             FROM bank_prixod_child AS b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
@@ -101,7 +101,7 @@ exports.BankPrixodDB = class {
                 'bank_prixod' AS type
             FROM bank_prixod_child b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
@@ -122,7 +122,7 @@ exports.BankPrixodDB = class {
             SELECT COALESCE(COUNT(b_p_ch.id), 0)::INTEGER AS total
             FROM bank_prixod_child b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
@@ -141,7 +141,7 @@ exports.BankPrixodDB = class {
             SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
             FROM bank_prixod_child AS b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso 
             JOIN users u ON b_p.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id

@@ -149,9 +149,13 @@ exports.PrixodDB = class {
                 TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 d_j.opisanie, 
                 d_j.summa::FLOAT, 
+                d_j.kimdan_id,
                 d_j.kimdan_name, 
+                d_j.kimga_id,
                 d_j.kimga_name, 
                 d_j.doverennost,
+                d_j.j_o_num,
+                d_j.id_shartnomalar_organization,
                 (
                 SELECT ARRAY_AGG(row_to_json(d_j_ch))
                 FROM (

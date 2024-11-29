@@ -82,7 +82,7 @@ exports.InternalService = class {
       backPage: page === 1 ? null : page - 1
     }
     return res.status(200).json({
-      message: "group successfully get",
+      message: "doc successfully get",
       meta,
       data: data || []
     })
@@ -94,11 +94,11 @@ exports.InternalService = class {
     const data = await InternalDB.getByIdInternal([region_id, id], true)
     if (!data) {
       return res.status(404).json({
-        message: "group not found"
+        message: "doc not found"
       })
     }
     return res.status(201).json({
-      message: "group successfully get",
+      message: "doc successfully get",
       data
     });
   }
