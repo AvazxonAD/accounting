@@ -101,9 +101,11 @@ exports.InternalDB = class {
               TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
               d_j.opisanie, 
               d_j.summa, 
-              d_j.kimdan_name, 
-              d_j.kimga_name
+              s_j_sh_kimga.fio AS kimdan_name, 
+              s_j_sh_kimga.fio AS kimga_name
             FROM document_vnutr_peremesh_jur7 AS d_j
+            JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh_kimga ON s_j_sh_kimga.id = d_j.kimga_id 
+            JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh_kimdan ON s_j_sh_kimdan.id = d_j.kimdan_id 
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 
