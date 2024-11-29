@@ -175,4 +175,6 @@ exports.BankPrixodDB = class {
         const result = await client.query(query, params)
         return result.rows[0].summa
     }
+
+    
 }

@@ -1,16 +1,15 @@
-const { PodotchetDB } = require('../spravochnik/podotchet/db')
-const { MainSchetDB } = require('../spravochnik/main.schet/db')
-const { BankRasxodDB } = require('../bank/rasxod/db')
-const { BankPrixodDB } = require('../bank/prixod/db')
-const { KassaPrixodDB } = require('../kassa/prixod/db')
-const { KassaRasxodDB } = require('../kassa/rasxod/db')
-const { AvansDB } = require('../avans/db')
-const { BudjetDB } = require('../spravochnik/budjet/db')
-const ExcelJS = require('exceljs')
-const { db } = require('../db/index')
-const { returnStringDate } = require('../helper/functions')
-const path = require('path')
-
+const { PodotchetDB } = require('../spravochnik/podotchet/db');
+const { MainSchetDB } = require('../spravochnik/main.schet/db');
+const { BankRasxodDB } = require('../bank/rasxod/db');
+const { BankPrixodDB } = require('../bank/prixod/db');
+const { KassaPrixodDB } = require('../kassa/prixod/db');
+const { KassaRasxodDB } = require('../kassa/rasxod/db');
+const { AvansDB } = require('../avans/db');
+const { BudjetDB } = require('../spravochnik/budjet/db');
+const ExcelJS = require('exceljs');
+const { db } = require('../db/index');
+const { returnStringDate } = require('../helper/functions');
+const path = require('path');
 
 exports.PodotchetMonitoringService = class {
 
@@ -330,17 +329,17 @@ exports.PodotchetMonitoringService = class {
         const schetKriditCell = worksheet.getCell(`G2`);
         schetKriditCell.value = `Кредит ${operatsii}  /  Дебет разных счетов`
         const schetCell = worksheet.getCell(`D3`)
-        schetCell.value = `счет`
+        schetCell.value = `счет`;
         const subSchetCell = worksheet.getCell(`E3`)
         subSchetCell.value = `суб счет`
         const summaCell = worksheet.getCell(`F3`)
-        summaCell.value = `сумма`
+        summaCell.value = `сумма`;
         const schetCell2 = worksheet.getCell(`G3`)
-        schetCell2.value = `счет`
+        schetCell2.value = `счет`;
         const subSchetCell2 = worksheet.getCell(`H3`)
         subSchetCell2.value = `суб счет`
         const summaCell2 = worksheet.getCell(`I3`)
-        summaCell2.value = `сумма`
+        summaCell2.value = `сумма`;
         worksheet.mergeCells(`A4`, 'C4')
         const summaFromCell = worksheet.getCell(`A4`)
         summaFromCell.value = `Сальдо на начало :  ${returnStringDate(new Date(from))}`
@@ -353,7 +352,6 @@ exports.PodotchetMonitoringService = class {
 
         let row_number = 5
         for (let column of data) {
-            console.log(column)
             const doc_numCell = worksheet.getCell(`A${row_number}`)
             doc_numCell.value = column.doc_num
             const doc_dateCell = worksheet.getCell(`B${row_number}`)

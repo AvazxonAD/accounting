@@ -88,6 +88,7 @@ const aktSverka = async (req, res) => {
         if(shartnoma_id){
             await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, shartnoma_id);
         }
+        await getByIdOrganizationService(region_id, organ_id)
         const data = await aktSverkaService(region_id, shartnoma_id, from, to, organ_id);
         const head = `Акт сверки взаимарасчетов`;
         const title = `Мы, нижеподписавшиеся Начальник ${main_schet.tashkilot_nomi} " OOO ${data.organization_name}" АЖ произвели сверку взаимных расчетов между ${main_schet.tashkilot_nomi} "${data.organization_name}" АЖ по состоянию на ${returnStringDate(new Date(to))}`;
@@ -231,13 +232,13 @@ const aktSverka = async (req, res) => {
 
         worksheet.mergeCells(`A${row_number}`, `K${row_number}`);
         const footer = worksheet.getCell(`A${row_number}`)
-        footer.value = `Сальдо в пользу : ${podpis.data[0].fio_name} ${returnStringSumma(data.summa_to)}`
+        footer.value = `Сальдо в пользу : ${podpis.data[0]?.fio_name || 'podis'} ${returnStringSumma(data.summa_to)}`
         worksheet.getRow(row_number).height = 40
         row_number = row_number + 1
 
         worksheet.mergeCells(`A${row_number}`, `D${row_number}`);
         const podotchet = worksheet.getCell(`A${row_number}`)
-        podotchet.value = `Началник ${main_schet.tashkilot_nomi} ${podpis.data[0].fio_name}`
+        podotchet.value = `Началник ${main_schet.tashkilot_nomi} ${podpis.data[0]?.fio_name || 'podis'}`
         worksheet.mergeCells(`G${row_number}`, `K${row_number}`);
         const organ = worksheet.getCell(`G${row_number}`)
         organ.value = `Руководитель "${data.organization_name}" АЖ`

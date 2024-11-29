@@ -22,7 +22,7 @@ routes.use("/auth/user", protect, police('users'), require('./auth/user.routes')
 routes.use("/auth/admin", protect, police('region_users'), require('./auth/admin.routes'));
 
 // organization monitoring 
-routes.use('/organization/monitoring', protect, police('organization_monitoring'), require('./organization.monitoring/organization.monitoring.routes'))
+routes.use('/organization/monitoring', protect, police('organization_monitoring'), require('./organization.monitoring/index'))
 
 // spravochnik  routes
 routes.use("/spravochnik/podotchet-litso", protect, police('spravochnik'), require("./spravochnik/podotchet/podochet.litso.routes"));
