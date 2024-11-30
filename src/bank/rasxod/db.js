@@ -174,4 +174,44 @@ exports.BankRasxodDB = class {
         const result = await client.query(query, params)
         return result.rows[0].summa
     }
+
+    static async getByOrganizationIdBankRasxod(params, client) {
+        const query = `--sql
+            SELECT
+                b_r.id,
+                b_r.doc_num,
+                b_r.doc_date,
+                b_r.opisanie,
+                0::FLOAT AS summa_rasxod, 
+                b_r_ch.summa::FLOAT AS summa_prixod,
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                s_o.id AS organ_id,
+                s_o.name AS organ_name,
+                s_o.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                s_o_p.schet AS provodki_schet, 
+                s_o_p.sub_schet AS provodki_sub_schet
+            FROM bank_rasxod_child b_r_ch
+            JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
+            JOIN users AS u ON u.id = b_r.user_id
+            JOIN regions AS r ON r.id = u.region_id 
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_r.id_shartnomalar_organization
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
+            JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization
+            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_r_ch.spravochnik_operatsii_id
+            WHERE b_r.isdeleted = false
+                AND r.id = $1 
+                AND b_r.main_schet_id = $2
+                AND s_o_p.schet = $3
+                AND b_r.doc_date BETWEEN $4 AND $5
+                AND b_r.id_spravochnik_organization = $6 OFFSET $7 LIMIT $8 ORDER BY doc_date
+        `;
+        const result = await client.query(query, params)
+        return result.rows;
+    }
 }
