@@ -209,7 +209,6 @@ exports.SmetaGrafikService = class {
         const id = req.params.id;
         const region_id = req.user.region_id;
         const smeta_grafik = await SmetaGrafikDB.getByIdSmetaGrafik([region_id, id]);
-        console.log(smeta_grafik)
         if (!smeta_grafik) {
             return res.status(404).json({
                 message: "smeta grafik not found"

@@ -61,3 +61,20 @@ exports.designParams = (params, design_keys) => {
         return acc.concat(Object.values(sortValues));
     }, []);
 }
+
+exports.sqlFilter = (column_name, index_contract_id) => {
+    return `AND ${column_name} = $${index_contract_id}`;
+};
+
+exports.returnStringSumma = (num) => {
+    const formatNumber = (number) => {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    };
+    if (Number.isInteger(num)) {
+        return formatNumber(num) + ".00";
+    } else {
+        let parts = num.toString().split(".");
+        parts[0] = formatNumber(parts[0]);
+        return parts.join(".");
+    }
+}

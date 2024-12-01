@@ -19,6 +19,6 @@ exports.OrganizationDB = class {
             WHERE regions.id = $1 AND s_o.id = $2 ${isdeleted ? '' : ignore}
         `;
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
 }

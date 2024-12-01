@@ -3,4 +3,5 @@ function checkSchetsEquality(childs) {
     return childs.every(child => child.schet === firstSchet);
 }
 
+
 module.exports = { checkSchetsEquality }

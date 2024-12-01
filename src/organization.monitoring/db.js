@@ -1,4 +1,5 @@
 const { db } = require('../db/index');
+const { sqlFilter } = require('../helper/functions')
 
 exports.OrganizationMonitoringDB = class {
     static async getData(params) {
@@ -154,7 +155,7 @@ exports.OrganizationMonitoringDB = class {
         const result = await db.query(query, params);
         return result[0].summa;
     }
-    
+
     static async getByOrganIdData(params) {
         const query = `--sql
             SELECT
@@ -447,6 +448,148 @@ exports.OrganizationMonitoringDB = class {
                     - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa)
                 ) AS summa
             FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum
+        `;
+        const result = await db.query(query, params);
+        return result[0].summa;
+    }
+
+    static async getByContractIdData(params, contract_id) {
+        let index_contract_id;
+        if (contract_id) {
+            index_contract_id = params.length + 1
+            params.push(contract_id)
+        }
+        const query = `--sql
+            SELECT 
+                data.id,
+                data.shartnoma_id,
+                data.doc_num,
+                data.doc_date,
+                data.opisanie,
+                data.summa_rasxod::FLOAT,
+                data.summa_prixod::FLOAT,
+                data.type,
+                data.id_spravochnik_organization,
+                data.isdeleted
+            FROM (
+                SELECT 
+                    b_r.id,
+                    b_r.id_shartnomalar_organization AS shartnoma_id,
+                    b_r.doc_num,
+                    b_r.doc_date,
+                    b_r.opisanie,
+                    0 AS summa_rasxod, 
+                    b_r.summa AS summa_prixod,
+                    'bank_rasxod' AS type,
+                    b_r.id_spravochnik_organization,
+                    b_r.isdeleted
+                FROM bank_rasxod b_r
+    
+                UNION ALL 
+    
+                SELECT 
+                    b_i_j3.id,
+                    b_i_j3.shartnomalar_organization_id AS shartnoma_id,
+                    b_i_j3.doc_num,
+                    b_i_j3.doc_date,
+                    b_i_j3.opisanie,
+                    b_i_j3.summa AS summa_rasxod,  
+                    0 AS summa_prixod,
+                    'bajarilgan_ishlar_jur3' AS type,
+                    b_i_j3.id_spravochnik_organization,
+                    b_i_j3.isdeleted
+                FROM bajarilgan_ishlar_jur3 AS b_i_j3
+    
+                UNION ALL 
+    
+                SELECT 
+                    b_p.id,
+                    b_p.id_shartnomalar_organization AS shartnoma_id,
+                    b_p.doc_num,
+                    b_p.doc_date,
+                    b_p.opisanie,
+                    b_p.summa AS summa_rasxod, 
+                    0 AS summa_prixod,
+                    'bank_prixod' AS type,
+                    b_p.id_spravochnik_organization,
+                    b_p.isdeleted
+                FROM bank_prixod AS b_p 
+    
+                UNION ALL
+    
+                SELECT 
+                    k_h.id,
+                    k_h.shartnomalar_organization_id AS shartnoma_id,
+                    k_h.doc_num,
+                    k_h.doc_date,
+                    k_h.opisanie,
+                    0 AS summa_rasxod, 
+                    k_h.summa AS summa_prixod,
+                    'kursatilgan_hizmatlar_jur152' AS type,
+                    k_h.id_spravochnik_organization,
+                    k_h.isdeleted
+                FROM kursatilgan_hizmatlar_jur152 AS k_h
+            ) AS data
+            WHERE data.doc_date BETWEEN $1 AND $2 
+                AND data.isdeleted = false
+                AND data.id_spravochnik_organization = $3
+                ${contract_id ? sqlFilter('data.shartnoma_id', index_contract_id) : 'AND data.shartnoma_id IS NOT NULL'}
+            ORDER BY data.doc_date
+        `;
+        const data = await db.query(query, params);
+        return data;
+    }
+
+    static async getByContractIdSumma(params, operator, contract_id) {
+        let index_contract_id;
+        if (contract_id) {
+            index_contract_id = params.length + 1;
+            params.push(contract_id);
+        }
+        const query = `--sql
+            WITH 
+                kursatilgan_hizmatlar AS (
+                    SELECT COALESCE(SUM(k_h_j152.summa), 0) AS summa
+                    FROM kursatilgan_hizmatlar_jur152 AS k_h_j152
+                    WHERE k_h_j152.isdeleted = false
+                    AND k_h_j152.doc_date ${operator} $1
+                    AND k_h_j152.id_spravochnik_organization = $2
+                    ${contract_id ? sqlFilter('k_h_j152.shartnomalar_organization_id', index_contract_id) : 'AND k_h_j152.shartnomalar_organization_id IS NOT NULL'}
+                ),
+                bank_rasxod AS (
+                    SELECT COALESCE(SUM(b_r.summa), 0) AS summa
+                    FROM bank_rasxod AS b_r
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_r.id_shartnomalar_organization
+                    WHERE b_r.isdeleted = false
+                    AND b_r.doc_date ${operator} $1
+                    AND b_r.id_spravochnik_organization = $2
+                    ${contract_id ? sqlFilter('b_r.id_shartnomalar_organization', index_contract_id) : 'AND b_r.id_shartnomalar_organization IS NOT NULL'}
+                ),
+                bajarilgan_ishlar AS (
+                    SELECT COALESCE(SUM(b_i_j152.summa), 0) AS summa
+                    FROM bajarilgan_ishlar_jur3 AS b_i_j152
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j152.shartnomalar_organization_id
+                    WHERE b_i_j152.isdeleted = false
+                    AND b_i_j152.doc_date ${operator} $1
+                    AND b_i_j152.id_spravochnik_organization = $2
+                    ${contract_id ? sqlFilter('b_i_j152.shartnomalar_organization_id', index_contract_id) : 'AND b_i_j152.shartnomalar_organization_id IS NOT NULL'}
+                ),
+                bank_prixod AS (
+                    SELECT COALESCE(SUM(b_p.summa), 0) AS summa
+                    FROM bank_prixod AS b_p
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_p.id_shartnomalar_organization
+                    WHERE b_p.isdeleted = false
+                    AND b_p.doc_date ${operator} $1
+                    AND b_p.id_spravochnik_organization = $2
+                    ${contract_id ? sqlFilter('b_p.id_shartnomalar_organization', index_contract_id) : 'AND b_p.id_shartnomalar_organization IS NOT NULL'}
+                )
+            SELECT 
+                (k.summa + r.summa) - (i.summa + p.summa) ::FLOAT AS summa
+            FROM 
+                kursatilgan_hizmatlar k,
+                bank_rasxod r,
+                bajarilgan_ishlar i,
+                bank_prixod p;
         `;
         const result = await db.query(query, params);
         return result[0].summa;
