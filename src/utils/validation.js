@@ -486,7 +486,6 @@ module.exports = {
   orderOrganizationValidation,
   jur3CapValidation,
   podpisValidation,
-  organizationPrixodRasxodValidation,
   prixodRasxodPodotchetValidation,
   schetOperatsiiValidation,
   schetOperatsiiQueryValidation

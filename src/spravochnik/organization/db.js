@@ -21,4 +21,16 @@ exports.OrganizationDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
+
+    static async getOrganization(params) {
+        const query = `--sql
+            SELECT organ.id, organ.name 
+            FROM spravochnik_organization AS organ
+            JOIN users AS u ON u.id = organ.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 AND organ.isdeleted = false
+        `;
+        const result = await db.query(query, params)
+        return result;
+    }
 }

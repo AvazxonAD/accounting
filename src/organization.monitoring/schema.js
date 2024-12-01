@@ -32,3 +32,11 @@ exports.aktSverkaSchema = Joi.object({
     organ_id: Joi.number().min(1),
   })
 }).options({ stripUnknown: true });
+
+exports.prixodRasxodOrganizationSchema = Joi.object({
+  query: Joi.object({
+    to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+    operatsii: Joi.string().trim().required(),
+    main_schet_id: Joi.number().min(1).required()
+  })
+}).options({ stripUnknown: true });

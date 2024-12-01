@@ -375,4 +375,111 @@ exports.OrganizationMonitoringService = class {
             if (err) throw new ErrorResponse(err, err.statusCode);
         });
     }
+
+    static async prixodRasxodOrganization(req, res) {
+        const region_id = req.user.region_id
+        const { to, main_schet_id, operatsii } = req.query
+        const workbook = new ExcelJS.Workbook();
+        const fileName = `organization_prixod_rasxod_${new Date().getTime()}.xlsx`;
+        const worksheet = workbook.addWorksheet('organization prixod rasxod');
+        worksheet.pageSetup.margins.left = 0
+        worksheet.pageSetup.margins.header = 0
+        worksheet.pageSetup.margins.footer = 0
+        worksheet.pageSetup.margins.right = 0
+        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+        if(!main_schet){
+            return res.status(404).json({
+                message: "main schet not found"
+            })
+        }
+        worksheet.mergeCells(`A1`, 'D1');
+        const title = worksheet.getCell(`A1`);
+        title.value = `${main_schet.tashkilot_nomi} ${returnStringDate(new Date(to))} холатига  ${operatsii} счет бўйича дебитор-кредитор  карздорлик тугрисида маълумот `
+        const organ_nameCell = worksheet.getCell(`A2`)
+        organ_nameCell.value = 'Наименование организации'
+        const prixodCell = worksheet.getCell(`B2`)
+        prixodCell.value = `Дебит`
+        const rasxodCell = worksheet.getCell(`C2`)
+        rasxodCell.value = 'Кредит'
+        const css_array = [title, organ_nameCell, prixodCell, rasxodCell]
+        let itogo_rasxod = 0;
+        let itogo_prixod = 0;
+        const data = await OrganizationDB.getOrganization([region_id])
+        for(let item of data){
+            item.summa = await OrganizationMonitoringDB.getPrixodRasxod([operatsii, to, item.id,  main_schet.spravochnik_budjet_name_id])
+        }
+        let row_number = 3
+        for (let column of  data) {
+            if (column.summa === 0) {
+                continue
+            }
+            const organ_nameCell = worksheet.getCell(`A${row_number}`)
+            organ_nameCell.value = column.name
+            const prixodCell = worksheet.getCell(`B${row_number}`)
+            prixodCell.value = column.summa > 0 ? column.summa : 0
+            itogo_prixod += prixodCell.value
+            const rasxodCell = worksheet.getCell(`C${row_number}`)
+            rasxodCell.value = column.summa < 0 ? Math.abs(column.summa) : 0
+            itogo_rasxod += rasxodCell.value
+            const css_array = [organ_nameCell, prixodCell, rasxodCell]
+            css_array.forEach((item, index) => {
+                let horizontal = 'center'
+                let size = 10;
+                if (index === 0) horizontal = 'left';
+                if (index === 1 || index === 2) horizontal = 'right';
+                Object.assign(item, {
+                    numFmt: '#,##0.00',
+                    font: { size, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal, wrapText: true },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            })
+            row_number++
+        }
+        const itogoStr = worksheet.getCell(`A${row_number}`)
+        itogoStr.value = 'Итого'
+        const prixod_itogoCell = worksheet.getCell(`B${row_number}`)
+        prixod_itogoCell.value = itogo_prixod
+        const rasxod_itogoCell = worksheet.getCell(`C${row_number}`)
+        rasxod_itogoCell.value = itogo_rasxod
+        css_array.push(itogoStr, prixod_itogoCell, rasxod_itogoCell)
+
+        css_array.forEach((item, index) => {
+            let fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+            let border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+            let horizontal = 'center'
+            let size = 10;
+            if (index === 0) fill = {}, border = {}, size = 12;
+            if (index === 1) fill = {}, border = { bottom: { style: 'thin' } }, size = 12;
+            if (index === 4) fill = {}, border = {}, horizontal = 'right';
+            if (index > 4) horizontal = 'right';
+            Object.assign(item, {
+                numFmt: '#,##0.00',
+                font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal, wrapText: true },
+                fill,
+                border
+            });
+        })
+        worksheet.getColumn(1).width = 40;
+        worksheet.getColumn(2).width = 20;
+        worksheet.getColumn(3).width = 20;
+        worksheet.getRow(1).height = 30;
+        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        await workbook.xlsx.writeFile(filePath);
+        return res.download(filePath, (err) => {
+            if (err) throw new ErrorResponse(err, err.statusCode);
+        });
+    }
 }
