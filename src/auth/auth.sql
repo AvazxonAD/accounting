@@ -49,6 +49,7 @@ CREATE TABLE access (
   region_users BOOLEAN DEFAULT FALSE, 
   podotchet_monitoring BOOLEAN DEFAULT FALSE, 
   organization_monitoring BOOLEAN DEFAULT FALSE, 
+  jur7 BOOLEAN DEFAULT FALSE, 
   role_id INT REFERENCES role(id),
   user_id INT REFERENCES users(id),
   created_at TIMESTAMP,

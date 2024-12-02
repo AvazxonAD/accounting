@@ -34,7 +34,8 @@ const getByRoleIdAccessService = async (region_id, role_id) => {
                 access.jur4,
                 access.region_users,
                 access.podotchet_monitoring,
-                access.organization_monitoring
+                access.organization_monitoring,
+                access.jur7
             FROM access
             JOIN role ON role.id = access.role_id
             WHERE region_id = $1 AND role.id = $2
@@ -78,7 +79,8 @@ const updateAccessDB = async (object) => {
                 budjet = $15,
                 access = $16,
                 smeta_grafik = $17,
-                jur152 = $18
+                jur152 = $18,
+                jur7 = $19
             WHERE id = $13
             RETURNING * 
         `, [
@@ -99,7 +101,8 @@ const updateAccessDB = async (object) => {
             object.budjet,
             object.access,
             object.smeta_grafik,
-            object.jur152
+            object.jur152,
+            object.jur7
         ])
         return result.rows[0]
     } catch (error) {

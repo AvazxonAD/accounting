@@ -17,7 +17,8 @@ const accessValidation = Joi.object({
   budjet: Joi.boolean().default(false),
   access: Joi.boolean().default(false),
   smeta_grafik: Joi.boolean().default(false),
-  jur152: Joi.boolean().default(false)
+  jur152: Joi.boolean().default(false),
+  jur7: Joi.boolean().default(false)
 }).options({ stripUnknown: true });
 
 const authValidation = Joi.object({

@@ -596,7 +596,6 @@ exports.OrganizationMonitoringDB = class {
     }
 
     static async getPrixodRasxod(params) {
-        console.log(params)
         const query = `--sql
             WITH 
                 kursatilgan_hizmatlar_sum AS (
@@ -664,4 +663,5 @@ exports.OrganizationMonitoringDB = class {
         const data = await db.query(query, params)
         return data[0].summa;
     }
+    
 }
