@@ -596,6 +596,7 @@ exports.OrganizationMonitoringDB = class {
     }
 
     static async getPrixodRasxod(params) {
+        console.log(params)
         const query = `--sql
             WITH 
                 kursatilgan_hizmatlar_sum AS (
@@ -653,7 +654,11 @@ exports.OrganizationMonitoringDB = class {
                     (
                         (kursatilgan_hizmatlar_sum.summa + bank_rasxod.summa) 
                         - (bajarilgan_ishlar_sum.summa + bank_prixod.summa)
-                    ) AS summa
+                    ) AS summa,
+                    kursatilgan_hizmatlar_sum.summa AS kursatilgan_hizmatlar_sum,
+                    bank_rasxod.summa AS bank_rasxod_sum,
+                    bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum,
+                    bank_prixod.summa AS bank_prixod_sum
                 FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod, bank_prixod
         `;
         const data = await db.query(query, params)

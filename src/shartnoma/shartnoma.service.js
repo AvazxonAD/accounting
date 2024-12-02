@@ -133,25 +133,26 @@ const getByIdShartnomaService = async (region_id, budjet_id, id, organization_id
       organization = `AND sh_o.spravochnik_organization_id = $4`
       params.push(organization_id)
     }
-    const result = await pool.query(`
-        SELECT
-              sh_o.id, 
-              sh_o.spravochnik_organization_id,
-              sh_o.doc_num,
-              TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-              sh_o.smeta2_id,
-              sh_o.smeta_id,
-              sh_o.opisanie,
-              sh_o.summa,
-              sh_o.pudratchi_bool,
-              sh_o.yillik_oylik
-        FROM shartnomalar_organization AS sh_o
-        JOIN users  ON sh_o.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        WHERE regions.id = $1
-          AND sh_o.budjet_id = $2
-          AND sh_o.id = $3 ${ignore} ${organization}
-      `, params);
+    const query = `--sql
+      SELECT
+        sh_o.id, 
+        sh_o.spravochnik_organization_id,
+        sh_o.doc_num,
+        TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
+        sh_o.smeta2_id,
+        sh_o.smeta_id,
+        sh_o.opisanie,
+        sh_o.summa,
+        sh_o.pudratchi_bool,
+        sh_o.yillik_oylik
+      FROM shartnomalar_organization AS sh_o
+      JOIN users  ON sh_o.user_id = users.id
+      JOIN regions ON users.region_id = regions.id
+      WHERE regions.id = $1
+        AND sh_o.budjet_id = $2
+        AND sh_o.id = $3 ${ignore} ${organization}
+    `;
+    const result = await pool.query(query, params);
     if (!result.rows[0]) {
       throw new ErrorResponse(`Shartnoma not found`, 404);
     }

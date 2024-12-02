@@ -60,7 +60,7 @@ const createJur3DB = async (data) => {
       return acc.concat(Object.values(obj));
     }, []);
     const _values = values.join(", ")
-    const query = `
+    const query = `--sql
       INSERT INTO bajarilgan_ishlar_jur3_child(
           spravochnik_operatsii_id,
           summa,

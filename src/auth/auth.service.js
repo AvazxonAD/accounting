@@ -40,8 +40,7 @@ const getByLoginUserService = async (login) => {
     if (user.rows[0].role_name !== 'super-admin' && user.rows[0].role_name !== 'region-admin') {
       filter = `AND users.region_id = access.region_id`
     }
-    const result = await pool.query(
-      `
+    const result = await pool.query(`--sql
         SELECT 
           users.id, 
           users.fio, 

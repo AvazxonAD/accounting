@@ -3,8 +3,7 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, to) => {
   try {
-    const data = await pool.query(
-      `
+    const data = await pool.query(`--sql
           WITH data AS (
             SELECT 
                 bp.id,
