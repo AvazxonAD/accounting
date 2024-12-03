@@ -1,5 +1,6 @@
-const xlsx = require('xlsx')
-const { SmetaDB } = require('./db')
+const xlsx = require('xlsx');
+const { SmetaDB } = require('./db');
+const { tashkentTime } = require('../../helper/functions')
 
 exports.SmetaService = class {
     static async createSmeta(req, res) {
@@ -59,7 +60,7 @@ exports.SmetaService = class {
         }
         if (smeta.smeta_name !== smeta_name ||
             smeta.smeta_number !== smeta_number ||
-            smeta.father_smeta_name !== father_smeta_name || 
+            smeta.father_smeta_name !== father_smeta_name ||
             smeta.group_number !== group_number
         ) {
             const smeta = await SmetaDB.getByNameSmeta([smeta_name, smeta_number, father_smeta_name, group_number]);
@@ -92,7 +93,9 @@ exports.SmetaService = class {
 
     static async importSmetaData(req, res) {
         if (!req.file) {
-            return next(new ErrorResponse("File not found", 400));
+            return res.status(400).json({
+                message: "file not found"
+            })
         }
         const filePath = req.file.path;
         const workbook = xlsx.readFile(filePath);
@@ -106,12 +109,14 @@ exports.SmetaService = class {
             return newRow;
         });
         for (let smeta of data) {
-            await createSmeta(
-                String(smeta.smeta_name).trim(), 
-                Number(smeta.smeta_number) ? smeta.smeta_number : 1000000000, 
-                String(smeta.father_smeta_name).trim(), 
-                String(smeta.group_number).trim()
-            );
+            await SmetaDB.createSmeta([
+                smeta.smeta_name ? String(smeta.smeta_name).trim() : '',
+                smeta.smeta_number ? String(smeta.smeta_number) : '',
+                smeta.father_smeta_name ? String(smeta.father_smeta_name).trim() : '',
+                smeta.group_number ? String(smeta.group_number).trim() : '',
+                tashkentTime(),
+                tashkentTime()
+            ]);
         }
         return res.status(200).json({
             message: "import data successfully"

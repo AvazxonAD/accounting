@@ -2,7 +2,7 @@ const { db } = require('../../db/index')
 
 exports.SmetaDB = class {
     static async createSmeta(params) {
-        const query = `INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name, group_number) VALUES($1, $2, $3, $4) RETURNING *`
+        const query = `INSERT INTO smeta(smeta_name, smeta_number, father_smeta_name, group_number, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`
         const result = await db.query(query, params);
         return result[0]
     }

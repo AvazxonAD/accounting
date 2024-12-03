@@ -49,7 +49,7 @@ const capExcelCreate = async (req, res) => {
     const { from, to, main_schet_id } = validationResponse(bankCapValidation, req.query);
     const region_id = req.user.region_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id); 0
-    const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${returnStringSumma(main_schet.account_number)}`;
+    const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${main_schet.jur2_schet}. Ҳисоб рақами: ${probelNumber(main_schet.account_number)}`;
     const dateBetween = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
     const data = await bankCapService(region_id, main_schet_id, from, to);
     const workbook = new ExcelJS.Workbook();
@@ -214,7 +214,7 @@ const capExcelCreate = async (req, res) => {
     worksheet.getRow(row_number + 2).height = 30;
     worksheet.getRow(row_number + 3).height = 30;
     worksheet.getRow(row_number + 4).height = 30;
-    const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+    const filePath = path.join(__dirname, '../../public/exports/' + fileName);
     await workbook.xlsx.writeFile(filePath);
     return res.download(filePath, (err) => {
       if (err) throw new ErrorResponse(err, err.statusCode);
@@ -395,7 +395,7 @@ const dailyExcelCreate = async (req, res) => {
     worksheet.getRow(1).height = 25;
     worksheet.getRow(2).height = 20;
     worksheet.getRow(5).height = 25;
-    const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+    const filePath = path.join(__dirname, '../../public/exports/' + fileName);
     await workbook.xlsx.writeFile(filePath);
 
     return res.download(filePath, (err) => {

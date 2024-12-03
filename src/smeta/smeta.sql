@@ -2,8 +2,8 @@ CREATE TABLE smeta (
     id SERIAL PRIMARY KEY,
     father_smeta_name VARCHAR(255),
     group_number VARCHAR,
-    smeta_name VARCHAR(255) NOT NULL,
-    smeta_number INTEGER NOT NULL,
+    smeta_name VARCHAR(255),
+    smeta_number VARCHAR,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
