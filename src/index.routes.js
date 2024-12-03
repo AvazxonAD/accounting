@@ -15,7 +15,7 @@ routes.use("/kassa/expense", protect, police('kassa'), require("./kassa/kassa.ra
 
 // Auth routes
 routes.use("/auth", require("./auth/auth.routes"));
-routes.use("/auth/region", protect, police('region'), require("./auth/region.routes"));
+routes.use("/auth/region", protect, police('region'), require("./auth/region/index"));
 routes.use("/auth/role", protect, police('role'), require("./auth/role.routes"));
 routes.use("/auth/access", protect, police('access'), require('./auth/access.routes'));
 routes.use("/auth/user", protect, police('users'), require('./auth/user.routes'));

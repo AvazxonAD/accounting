@@ -1,107 +1,89 @@
-const { RegionDB } = require('./db');
-const { RoleDb } = require('../role/db');
-const {} = require('../access/db');
+const { RegionDB } = require('./db')
+const { RoleDB } = require('../role/db')
+const { tashkentTime } = require('../../helper/functions')
+const { AccessDB } = require('../access/db')
+const { db } = require('../../db/index')
 
 exports.RegionService = class {
     static async createRegion(req, res) {
-        const { name } = req.body
-        const test = await RegionDB.getByNameRegion(name)
-        if (test) {
+        const { name } = req.body;
+        const existRegion = await RegionDB.getByNameRegion([name]);
+        if (existRegion) {
             return res.status(409).json({
-                message: 'this data already exists'
+                message: "This data already exists"
             })
         }
-        const result = await RegionDB.createRegion(data.name);
-        const roles = await RoleDb.getRole()
-        for (let role of roles) {
-            await createAccessService(role.id, result.id)
-        }
+        let result = null;
+        await db.transaction(async (client) => {
+            result = await RegionDB.createRegion([name, tashkentTime(), tashkentTime()], client);
+            const roles = await RoleDB.getRole(client)
+            const params = roles.reduce((acc, obj) => {
+                return acc.concat(obj.id, result.id, tashkentTime(), tashkentTime())
+            }, [])
+            await AccessDB.createAccess(params, client)
+        })
+        return res.status(201).json({
+            message: "region created sucessfully",
+            data: result
+        })
     }
-}
 
-
-// create region
-const createRegion = async (req, res) => {
-    try {
-        const data = validationResponse(regionValidation, req.body)
-        const test = await getByNameRegionService(data.name);
-        if (test) {
-            throw new ErrorResponse("This region has already been entered", 409)
-        }
-        const result = await createRegionService(data.name);
-        const roles = await getRoleService()
-        for (let role of roles) {
-            await createAccessService(role.id, result.id)
-        }
-        postLogger.info(`Viloyat yaratildi: ${data.name}. Foydalanuvchi ID: ${req.user.id}`);
-        return resFunc(res, 201, result)
-    } catch (error) {
-        return errorCatch(error, res)
+    static async getRegion(req, res) {
+        const regions = await RegionDB.getRegion()
+        return res.status(200).json({
+            message: "Regions get successfully",
+            data: regions
+        })
     }
-}
 
-// get all region
-const getAllReegion = async (req, res) => {
-    try {
-        const result = await getRegionService();
-        getLogger.info(`Barcha mintaqalar olindi. Foydalanuvchi ID: ${req.user.id}`);
-        return resFunc(res, 200, result)
-    } catch (error) {
-        return errorCatch(error, res)
+    static async getByIdRegion(req, res) {
+        const id = req.params.id
+        const data = await RegionDB.getByIdRegion([id], true)
+        return res.status(200).json({
+            message: "region get successfully",
+            data
+        })
     }
-}
 
-// update region
-const updateRegion = async (req, res) => {
-    try {
+    static async updateRegion(req, res) {
         const id = req.params.id;
-        const region = await getByIdRegionService(id);
-        const data = validationResponse(regionValidation, req.body)
-        if (region.name !== data.name.trim()) {
-            const test = await getByNameRegionService(data.name);
-            if (test) {
-                throw new ErrorResponse("This region has already been entered", 409)
+        const { name } = req.body;
+        const old_data = await RegionDB.getByIdRegion([id])
+        if (!old_data) {
+            return res.status(404).json({
+                message: "region not found!"
+            })
+        }
+        if (old_data.name !== name) {
+            const existRegion = await RegionDB.getByNameRegion([name]);
+            if (existRegion) {
+                return res.status(409).json({
+                    message: "This data already exists"
+                })
             }
         }
-        const result = await update_region(id, data.name.trim());
-        putLogger.info(`Viloyat yangilandi: ${data.name}. Foydalanuvchi ID: ${req.user.id}`);
+        const data = await RegionDB.updateRegion([name, tashkentTime(), id])
+        return res.status(200).json({
+            message: 'update region successfully',
+            data
+        })
+    }
 
-        return resFunc(res, 200, result)
-    } catch (error) {
-        return errorCatch(error, res)
+    static async deleteRegion(req, res) {
+        const id = req.params.id;
+        const data = await RegionDB.getByIdRegion([id])
+        if (!data) {
+            return res.status(404).json({
+                message: "region not found!"
+            })
+        }
+        await db.transaction(async (client) => {
+            await RegionDB.deleteRegion([id], client)
+            await AccessDB.deleteAccess([id], client)
+        })
+
+        return res.status(200).json({
+            message: 'delete region successfully'
+        })
     }
 }
-
-// delete region
-const deleteRegion = asyncHandler(async (req, res) => {
-    try {
-        const id = req.params.id;
-        await getByIdRegionService(id);
-        await delete_region(id);
-        deleteLogger.info(`Viloyat o'chirildi. Viloyat ID: ${id}. Foydalanuvchi ID: ${req.user.id}`);
-        return resFunc(res, 200, 'delete success true')
-    } catch (error) {
-        return errorCatch(error, res)
-    }
-});
-
-
-// get region by ID
-const getElementById = asyncHandler(async (req, res) => {
-    try {
-        const result = await getByIdRegionService(req.params.id, true);
-        getLogger.info(`Viloyat olindi. Viloyat ID: ${req.params.id}. Foydalanuvchi ID: ${req.user.id}`);
-        return resFunc(res, 200, result)
-    } catch (error) {
-        return errorCatch(error, res)
-    }
-});
-
-
-module.exports = {
-    createRegion,
-    getAllReegion,
-    updateRegion,
-    deleteRegion,
-    getElementById,
-};
