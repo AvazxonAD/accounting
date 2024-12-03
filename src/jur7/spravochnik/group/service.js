@@ -10,7 +10,7 @@ exports.GroupService = class {
             schet,
             iznos_foiz,
             provodka_debet,
-            provodka_subschet,
+            group_number,
             provodka_kredit
         } = req.body;
 
@@ -26,7 +26,7 @@ exports.GroupService = class {
             schet,
             iznos_foiz,
             provodka_debet,
-            provodka_subschet,
+            group_number,
             provodka_kredit,
             tashkentTime(),
             tashkentTime()
@@ -77,7 +77,7 @@ exports.GroupService = class {
             schet,
             iznos_foiz,
             provodka_debet,
-            provodka_subschet,
+            group_number,
             provodka_kredit
         } = req.body;
         const id = req.params.id;
@@ -99,7 +99,7 @@ exports.GroupService = class {
             schet,
             iznos_foiz,
             provodka_debet,
-            provodka_subschet,
+            group_number,
             provodka_kredit,
             tashkentTime(),
             id

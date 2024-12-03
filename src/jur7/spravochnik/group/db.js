@@ -9,7 +9,7 @@ exports.GroupDB = class {
                 schet, 
                 iznos_foiz, 
                 provodka_debet, 
-                provodka_subschet, 
+                group_number, 
                 provodka_kredit, 
                 created_at, 
                 updated_at
@@ -35,7 +35,7 @@ exports.GroupDB = class {
                     g_j7.schet, 
                     g_j7.iznos_foiz, 
                     g_j7.provodka_debet, 
-                    g_j7.provodka_subschet, 
+                    g_j7.group_number, 
                     g_j7.provodka_kredit,
                     s.smeta_name
                 FROM group_jur7 AS g_j7
@@ -67,7 +67,7 @@ exports.GroupDB = class {
                 g_j7.schet, 
                 g_j7.iznos_foiz, 
                 g_j7.provodka_debet, 
-                g_j7.provodka_subschet, 
+                g_j7.group_number, 
                 g_j7.provodka_kredit,
                 s.smeta_name
             FROM group_jur7 AS g_j7
@@ -87,7 +87,7 @@ exports.GroupDB = class {
                 schet = $3,
                 iznos_foiz = $4,
                 provodka_debet = $5,
-                provodka_subschet = $6,
+                group_number = $6,
                 provodka_kredit = $7,
                 updated_at = $8
             WHERE id = $9 AND isdeleted = false RETURNING *

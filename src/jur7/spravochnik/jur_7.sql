@@ -15,7 +15,7 @@ CREATE TABLE group_jur7 (
   schet VARCHAR(255),
   iznos_foiz INT,
   provodka_debet VARCHAR(255),
-  provodka_subschet VARCHAR(255),
+  group_number VARCHAR(255),
   provodka_kredit VARCHAR(255),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
