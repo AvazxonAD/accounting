@@ -78,3 +78,25 @@ exports.returnStringSumma = (num) => {
         return parts.join(".");
     }
 }
+
+exports.returnParamsValues = (params, column_count) => {
+    const index_max = params.length;
+    let values = '('
+    for (let i = 1; i <= index_max; i++) {
+        if (index_max === i) {
+            values += ` $${i})`
+        } else if(i % column_count === 0) {
+            values += ` $${i}), (`
+        } else {
+            values += `$${i}, `
+        }
+    }
+    return values;
+}
+
+exports.returnValues = (array) => {
+    const result = array.reduce((acc, obj) => {
+        return acc.concat(Object.values(obj));
+    }, []);
+    return result;
+}

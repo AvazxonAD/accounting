@@ -48,6 +48,7 @@ const authUpdateValidation = Joi.object({
 const regionValidation = Joi.object({
   name: Joi.string().trim().required(),
 }).options({ stripUnknown: true });
+
 const roleValidation = Joi.object({
   name: Joi.string().trim().required(),
 }).options({ stripUnknown: true });
