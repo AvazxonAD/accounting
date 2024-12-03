@@ -10,17 +10,12 @@ exports.SmetaDB = class {
     static async getSmeta(params, search, group_number) {
         let search_filter = ``;
         let group_number_filter = ``;
-        if (search && !Number.isInteger(Number(search))) {
-            search_filter = `AND smeta_name ILIKE '%' || $${params.length + 1} || '%'`
-            params.push(search)
-        }
-        if (Number.isInteger(Number(search))) {
-            search_filter = `AND smeta_number = $${params.length + 1}`
-            search = Number(search)
+        if (search) {
+            search_filter = `AND (smeta_name ILIKE '%' || $${params.length + 1} || '%' OR smeta_number ILIKE '%' || $${params.length + 1} || '%')`
             params.push(search)
         }
         if(group_number){
-            group_number_filter = `AND group_number = $${params.length + 1}`
+            group_number_filter = `AND group_number ILIKE '%' || $${params.length + 1} || '%'`
             params.push(group_number)
         }
         const query = `--sql
