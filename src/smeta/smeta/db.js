@@ -21,7 +21,7 @@ exports.SmetaDB = class {
         const query = `--sql
             WITH data AS (
             SELECT id, smeta_name, smeta_number, father_smeta_name, group_number FROM smeta  
-            WHERE isdeleted = false ${search_filter} ${group_number_filter} ORDER BY group_number OFFSET $1 LIMIT $2
+            WHERE isdeleted = false ${search_filter} ${group_number_filter} ORDER BY group_number, smeta_number OFFSET $1 LIMIT $2
             )
             SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
