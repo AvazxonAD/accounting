@@ -2,6 +2,7 @@ const { NaimenovanieDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
 const { BudjetDB } = require('../../../spravochnik/budjet/db')
 const { GroupDB } = require('../group/db')
+const { ResponsibleDB } = require('../responsible/db')
 
 exports.NaimenovanieService = class {
     static async createNaimenovanie(req, res) {
@@ -104,9 +105,9 @@ exports.NaimenovanieService = class {
             })
         }
         const result = await NaimenovanieDB.updateNaimenovanie([
-            name, 
-            edin, 
-            spravochnik_budjet_name_id, 
+            name,
+            edin,
+            spravochnik_budjet_name_id,
             group_jur7_id,
             tashkentTime(),
             id
@@ -132,4 +133,20 @@ exports.NaimenovanieService = class {
         })
     }
 
+    static async getProductKol(req, res) {
+        const { kimdan_id, search } = req.query;
+        const region_id = req.user.region_id;
+        const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
+        if(!responsible){
+            return res.status(404).json({
+                message: "responsible not found"
+            })
+        } 
+        const data = await NaimenovanieDB.getProductKol([region_id, kimdan_id], search)
+        const result = data.filter(item => item.result > 0)
+        return res.status(200).json({
+            message: "product get succcessfully!",
+            data: result
+        })
+    }
 }

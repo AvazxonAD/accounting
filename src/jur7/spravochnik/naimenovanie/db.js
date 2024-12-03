@@ -18,6 +18,7 @@ exports.NaimenovanieDB = class {
         const result = await db.query(query, params)
         return result;
     }
+
     static async getNaimenovanie(params, search = null) {
         let search_filter = ``
         if (search) {
@@ -57,6 +58,7 @@ exports.NaimenovanieDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
+
     static async getByIdNaimenovanie(params, isdeleted) {
         let ignore = 'AND n_t_j7.isdeleted = false';
         const query = `--sql
@@ -78,6 +80,7 @@ exports.NaimenovanieDB = class {
         const result = await db.query(query, params)
         return result[0]
     }
+
     static async updateNaimenovanie(params) {
         const query = `--sql
             UPDATE naimenovanie_tovarov_jur7 
@@ -88,9 +91,71 @@ exports.NaimenovanieDB = class {
         const result = await db.query(query, params)
         return result[0]
     }
+
     static async deleteNaimenovanie(params) {
         const query = `UPDATE naimenovanie_tovarov_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`
         await db.query(query, params)
     }
+
+    static async getProductKol(params, searchFilter) {
+        const query = `--sql
+            WITH data AS (
+                SELECT 
+                    n_t_j7.id::INTEGER, 
+                    n_t_j7.name, 
+                    n_t_j7.edin,
+                    n_t_j7.group_jur7_id,
+                    g_j7.name AS group_jur7_name,
+                    n_t_j7.spravochnik_budjet_name_id,
+                    s_b_n.name AS spravochnik_budjet_name,
+                    (
+                        SELECT COALESCE(SUM(d_ch.kol), 0)
+                        FROM document_prixod_jur7 AS d
+                        JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
+                        JOIN users AS u ON u.id = d.user_id 
+                        JOIN regions AS r ON r.id = u.region_id
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2
+                    )::FLOAT AS prixod1,
+                    (
+                        SELECT COALESCE(SUM(d_ch.kol), 0)
+                        FROM document_vnutr_peremesh_jur7 AS d
+                        JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
+                        JOIN users AS u ON u.id = d.user_id 
+                        JOIN regions AS r ON r.id = u.region_id
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2
+                    )::FLOAT AS prixod2,
+                    (
+                        SELECT COALESCE(SUM(d_ch.kol), 0)
+                        FROM document_rasxod_jur7 AS d
+                        JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
+                        JOIN users AS u ON u.id = d.user_id 
+                        JOIN regions AS r ON r.id = u.region_id
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2
+                    )::FLOAT AS rasxod1,
+                    (
+                        SELECT COALESCE(SUM(d_ch.kol), 0)
+                        FROM document_vnutr_peremesh_jur7 AS d
+                        JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
+                        JOIN users AS u ON u.id = d.user_id 
+                        JOIN regions AS r ON r.id = u.region_id
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2
+                    )::FLOAT AS rasxod2
+                FROM naimenovanie_tovarov_jur7 AS n_t_j7
+                JOIN users AS u ON u.id = n_t_j7.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
+                JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id
+                WHERE n_t_j7.isdeleted = false AND r.id = $1 
+            )
+            SELECT *
+            FROM (
+                SELECT *, (prixod1 + prixod2 - rasxod1 - rasxod2)::FLOAT AS result
+                FROM data
+            ) AS subquery
+        `;
+        const data = await db.query(query, params);
+        return data;
+    }
+    
 
 }

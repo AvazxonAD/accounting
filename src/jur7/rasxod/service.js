@@ -131,7 +131,7 @@ exports.RasxodService = class {
       childs
     } = req.body;
     const oldData = await RasxodDB.getByIdRasxod([region_id, id])
-    if(!oldData){
+    if (!oldData) {
       return res.status(404).json({
         message: "rasxod doc not found"
       })

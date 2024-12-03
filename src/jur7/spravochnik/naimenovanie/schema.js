@@ -40,3 +40,10 @@ exports.deleteNaimenovanieSchema = Joi.object({
     id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
+
+exports.getProductKolSchema = Joi.object({
+  query: Joi.object({
+    kimdan_id: Joi.number().integer().min(1).required(),
+    search: Joi.string().trim()
+  })
+}).options({ stripUnknown: true });

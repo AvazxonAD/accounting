@@ -8,9 +8,9 @@ exports.createPrixodSchema = Joi.object({
     opisanie: Joi.string().trim(),
     doverennost: Joi.string().trim(),
     kimdan_id: Joi.number().integer().min(1).required(),
-    kimdan_name: Joi.string().trim(),
+    kimdan_name: Joi.string().trim().allow(null),
     kimga_id: Joi.number().integer().min(1).required(),
-    kimga_name: Joi.string().trim(),
+    kimga_name: Joi.string().trim().allow(null),
     id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({

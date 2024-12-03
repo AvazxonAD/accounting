@@ -5,6 +5,7 @@ const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
 const { childsSumma } = require('../../helper/functions')
+const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 
 exports.PrixodService = class {
   static async createPrixod(req, res) {
@@ -40,6 +41,14 @@ exports.PrixodService = class {
       if (!contract) {
         return res.status(404).json({
           message: "contract not found"
+        })
+      }
+    }
+    for (let child of childs) {
+      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+      if(!product){
+        return res.status(404).json({
+          message: "product not found"
         })
       }
     }
@@ -131,7 +140,7 @@ exports.PrixodService = class {
       childs
     } = req.body;
     const oldData = await PrixodDB.getByIdPrixod([region_id, id])
-    if(!oldData){
+    if (!oldData) {
       return res.status(404).json({
         message: "prixod doc not found"
       })

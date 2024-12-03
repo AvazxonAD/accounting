@@ -22,7 +22,8 @@ exports.OrganizationMonitoringDB = class {
                 u.login,
                 u.fio,
                 s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
+                s_op.sub_schet AS provodki_sub_schet,
+                'bank_rasxod' AS type
             FROM bank_rasxod_child b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN users AS u ON u.id = b_r.user_id
@@ -57,7 +58,8 @@ exports.OrganizationMonitoringDB = class {
                 u.login,
                 u.fio,
                 s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
+                s_op.sub_schet AS provodki_sub_schet,
+                'bank_prixod' AS type
             FROM bank_prixod_child b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN users AS u ON u.id = b_p.user_id
@@ -176,7 +178,8 @@ exports.OrganizationMonitoringDB = class {
                 u.login,
                 u.fio,
                 s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
+                s_op.sub_schet AS provodki_sub_schet,
+                'bank_rasxod' AS type
             FROM bank_rasxod_child b_r_ch
             JOIN bank_rasxod AS b_r ON b_r_ch.id_bank_rasxod = b_r.id
             JOIN users AS u ON u.id = b_r.user_id
@@ -212,7 +215,8 @@ exports.OrganizationMonitoringDB = class {
                 u.login,
                 u.fio,
                 s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
+                s_op.sub_schet AS provodki_sub_schet,
+                'akt' AS type
             FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch
             JOIN bajarilgan_ishlar_jur3 AS b_i_j3 ON b_i_j3.id = b_i_j3_ch.bajarilgan_ishlar_jur3_id
             JOIN users AS u ON b_i_j3.user_id = u.id
@@ -249,7 +253,8 @@ exports.OrganizationMonitoringDB = class {
                 u.login,
                 u.fio,
                 s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
+                s_op.sub_schet AS provodki_sub_schet,
+                'show_service' AS type
             FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch
             JOIN kursatilgan_hizmatlar_jur152 AS k_h_j152 ON k_h_j152.id = k_h_j152_ch.kursatilgan_hizmatlar_jur152_id 
             JOIN users AS u ON k_h_j152.user_id = u.id
@@ -286,7 +291,8 @@ exports.OrganizationMonitoringDB = class {
                 u.login,
                 u.fio,
                 s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
+                s_op.sub_schet AS provodki_sub_schet,
+                'bank_prixod' AS type
             FROM bank_prixod_child b_p_ch
             JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
             JOIN users AS u ON u.id = b_p.user_id
@@ -495,7 +501,7 @@ exports.OrganizationMonitoringDB = class {
                     b_i_j3.opisanie,
                     b_i_j3.summa AS summa_rasxod,  
                     0 AS summa_prixod,
-                    'bajarilgan_ishlar_jur3' AS type,
+                    'akt' AS type,
                     b_i_j3.id_spravochnik_organization,
                     b_i_j3.isdeleted
                 FROM bajarilgan_ishlar_jur3 AS b_i_j3
@@ -525,7 +531,7 @@ exports.OrganizationMonitoringDB = class {
                     k_h.opisanie,
                     0 AS summa_rasxod, 
                     k_h.summa AS summa_prixod,
-                    'kursatilgan_hizmatlar_jur152' AS type,
+                    'show_service' AS type,
                     k_h.id_spravochnik_organization,
                     k_h.isdeleted
                 FROM kursatilgan_hizmatlar_jur152 AS k_h
