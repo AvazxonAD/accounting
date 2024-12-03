@@ -11,7 +11,7 @@ exports.SmetaService = class {
                 message: "This information already exist"
             })
         }
-        const result = await SmetaDB.createSmeta([smeta_name, smeta_number, father_smeta_name, group_number]);
+        const result = await SmetaDB.createSmeta([smeta_name, smeta_number, father_smeta_name, group_number, tashkentTime(), tashkentTime()]);
         return res.status(201).json({
             message: "created smeta successfully",
             data: result
@@ -70,7 +70,7 @@ exports.SmetaService = class {
                 })
             }
         }
-        const result = await SmetaDB.updateSmeta([smeta_name, smeta_number, father_smeta_name, group_number, id]);
+        const result = await SmetaDB.updateSmeta([smeta_name, smeta_number, father_smeta_name, group_number, tashkentTime(), id]);
         return res.status(200).json({
             message: "smeta updagte successfully",
             data: result

@@ -26,7 +26,7 @@ exports.SmetaDB = class {
         const query = `--sql
             WITH data AS (
             SELECT id, smeta_name, smeta_number, father_smeta_name, group_number FROM smeta  
-            WHERE isdeleted = false ${search_filter} ${group_number_filter} OFFSET $1 LIMIT $2
+            WHERE isdeleted = false ${search_filter} ${group_number_filter} ORDER BY group_number OFFSET $1 LIMIT $2
             )
             SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
@@ -60,7 +60,7 @@ exports.SmetaDB = class {
     }
 
     static async updateSmeta(params) {
-        const query = `UPDATE  smeta SET smeta_name = $1, smeta_number = $2, father_smeta_name = $3, group_number = $4 WHERE  id = $5 RETURNING *`
+        const query = `UPDATE  smeta SET smeta_name = $1, smeta_number = $2, father_smeta_name = $3, group_number = $4, updated_at = $5 WHERE  id = $6 RETURNING *`
         const result = await db.query(query, params);
         return result[0]
     }

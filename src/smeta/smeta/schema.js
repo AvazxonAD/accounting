@@ -3,7 +3,7 @@ const Joi = require('joi')
 exports.createSchema = Joi.object({
     body: Joi.object({
         smeta_name: Joi.string().trim().required(),
-        smeta_number: Joi.number().required().required(),
+        smeta_number: Joi.string().trim().required(),
         father_smeta_name: Joi.string().trim().required(),
         group_number: Joi.string().trim().required()
     })
@@ -12,7 +12,7 @@ exports.createSchema = Joi.object({
 exports.updateSchema = Joi.object({
     body: Joi.object({
         smeta_name: Joi.string().trim().required(),
-        smeta_number: Joi.number().required().required(),
+        smeta_number: Joi.string().trim().required(),
         father_smeta_name: Joi.string().trim().required(),
         group_number: Joi.string().trim().required()
     }),
