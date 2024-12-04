@@ -23,8 +23,7 @@ const accessValidation = Joi.object({
 
 const authValidation = Joi.object({
   login: Joi.string().trim().required(),
-  password: Joi.string().trim().required(),
-  main_schet_id: Joi.number(),
+  password: Joi.string().trim().required()
 }).options({ stripUnknown: true });
 
 const schetOperatsiiValidation = Joi.object({

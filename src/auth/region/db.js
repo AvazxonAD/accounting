@@ -20,9 +20,15 @@ exports.RegionDB = class {
         return result.rows[0];
     }
 
-    static async getRegion() {
+    static async getRegion(client) {
         const query = `SELECT id, name FROM regions WHERE isdeleted = false ORDER BY id`;
-        const result = await db.query(query)
+        let result;
+        if(client){
+            result = await client.query(query);
+            result = result.rows
+        }else {
+            result = await db.query(query);
+        }
         return result;
     }
 

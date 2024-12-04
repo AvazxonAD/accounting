@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken')
+
 exports.tashkentTime = () => {
     const currentUtcDate = new Date();
     const tashkentOffset = 10 * 60 * 60 * 1000;
@@ -85,7 +87,7 @@ exports.returnParamsValues = (params, column_count) => {
     for (let i = 1; i <= index_max; i++) {
         if (index_max === i) {
             values += ` $${i})`
-        } else if(i % column_count === 0) {
+        } else if (i % column_count === 0) {
             values += ` $${i}), (`
         } else {
             values += `$${i}, `
@@ -100,3 +102,13 @@ exports.returnValues = (array) => {
     }, []);
     return result;
 }
+
+exports.generateToken = (user) => {
+    const payload = user
+    const secret = process.env.JWT_SECRET;
+    const options = {
+        expiresIn: process.env.JWT_EXPIRE || "30d",
+    };
+    const token = jwt.sign(payload, secret, options);
+    return token;
+};

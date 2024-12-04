@@ -14,12 +14,12 @@ routes.use("/kassa/income", protect, police('kassa'), require("./kassa/kassa.pri
 routes.use("/kassa/expense", protect, police('kassa'), require("./kassa/kassa.rasxod.routes"));
 
 // Auth routes
-routes.use("/auth", require("./auth/auth.routes"));
+routes.use("/auth", require("./auth/auth/index"));
 routes.use("/auth/region", protect, police('region'), require("./auth/region/index"));
-routes.use("/auth/role", protect, police('role'), require("./auth/role.routes"));
-routes.use("/auth/access", protect, police('access'), require('./auth/access.routes'));
-routes.use("/auth/user", protect, police('users'), require('./auth/user.routes'));
-routes.use("/auth/admin", protect, police('region_users'), require('./auth/admin.routes'));
+routes.use("/auth/role", protect, police('role'), require("./auth/role/index"));
+routes.use("/auth/access", protect, police('access'), require('./auth/access/index'));
+routes.use("/auth/user", protect, police('users'), require('./auth/user/index'));
+routes.use("/auth/admin", protect, police('region_users'), require('./auth/admin/index'));
 
 // organization monitoring 
 routes.use('/organization/monitoring', protect, police('organization_monitoring'), require('./organization.monitoring/index'))
