@@ -11,6 +11,7 @@ const {
 const { Router } = require('express')
 const router = Router()
 
+router.get('/percent', Controller(PereotsenkaService.getPescentPereotsenka));
 router.post('/', Controller(PereotsenkaService.createPereotsenka, createPereotsenkaSchema));
 router.get('/:id', Controller(PereotsenkaService.getByIdPereotsenka, getByIdPereotsenkaSchema));
 router.put('/:id', Controller(PereotsenkaService.updatePereotsenka, updatePereotsenkaSchema));

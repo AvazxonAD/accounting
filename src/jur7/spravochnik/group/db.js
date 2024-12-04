@@ -37,7 +37,8 @@ exports.GroupDB = class {
                     g_j7.provodka_debet, 
                     g_j7.group_number, 
                     g_j7.provodka_kredit,
-                    s.smeta_name
+                    s.smeta_name,
+                    s.smeta_number
                 FROM group_jur7 AS g_j7
                 JOIN smeta AS s ON s.id = g_j7.smeta_id
                 WHERE g_j7.isdeleted = false ${search_filter}
@@ -69,7 +70,8 @@ exports.GroupDB = class {
                 g_j7.provodka_debet, 
                 g_j7.group_number, 
                 g_j7.provodka_kredit,
-                s.smeta_name
+                s.smeta_name,
+                s.smeta_number
             FROM group_jur7 AS g_j7
             JOIN smeta AS s ON s.id = g_j7.smeta_id
             WHERE g_j7.id = $1 ${isdeleted ? `` : ignore}

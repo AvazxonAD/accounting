@@ -1,44 +1,248 @@
 const { db } = require('../db/index');
+const { designParams, returnParamsValues } = require('../helper/functions')
 
 exports.AktDB = class {
-    static async getByOrganizationIdAkt(params, client) {
+    static async getAkt(params, client) {
         const query = `--sql
             SELECT 
-                b_i_j3.id,
+                b_i_j3.id, 
                 b_i_j3.doc_num,
-                b_i_j3.doc_date,
-                b_i_j3.opisanie,
-                b_i_j3_ch.summa::FLOAT AS summa_rasxod, 
-                0::FLOAT AS summa_prixod,
-                sh_o.id AS shartnoma_id,
-                sh_o.doc_num AS shartnoma_doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
-                s.smeta_number,
-                s_o.id AS organ_id,
-                s_o.name AS organ_name,
-                s_o.inn AS organ_inn,
-                u.id AS user_id,
-                u.login,
-                u.fio,
-                s_op.schet AS provodki_schet, 
-                s_op.sub_schet AS provodki_sub_schet
-            FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch
-            JOIN bajarilgan_ishlar_jur3 AS b_i_j3 ON b_i_j3.id = b_i_j3_ch.bajarilgan_ishlar_jur3_id
+                TO_CHAR(b_i_j3.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                b_i_j3.opisanie, 
+                b_i_j3.summa::FLOAT, 
+                b_i_j3.id_spravochnik_organization,
+                s_o.name AS spravochnik_organization_name,
+                s_o.raschet_schet AS spravochnik_organization_raschet_schet,
+                s_o.inn AS spravochnik_organization_inn, 
+                b_i_j3.shartnomalar_organization_id,
+                sh_o.doc_num AS shartnomalar_organization_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                b_i_j3.spravochnik_operatsii_own_id,
+                (
+                    SELECT ARRAY_AGG(row_to_json(b_i_j_ch))
+                    FROM (
+                        SELECT 
+                            s_o.schet AS provodki_schet,
+                            s_o.sub_schet AS provodki_sub_schet
+                        FROM bajarilgan_ishlar_jur3_child AS b_i_j_ch
+                        JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j_ch.spravochnik_operatsii_id
+                        WHERE  b_i_j_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id 
+                    ) AS b_i_j_ch
+                ) AS provodki_array
+            FROM  bajarilgan_ishlar_jur3 AS b_i_j3 
             JOIN users AS u ON b_i_j3.user_id = u.id
-            JOIN regions AS r ON r.id = u.region_id
-            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
-            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
+            JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
-            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_i_j3.spravochnik_operatsii_own_id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = b_i_j3_ch.spravochnik_operatsii_id
-            WHERE b_i_j3.isdeleted = false 
-                AND r.id = $1
-                AND b_i_j3.main_schet_id = $2
-                AND s_o_p.schet = $3
-                AND b_i_j3.doc_date BETWEEN $4 AND $5
-                AND b_i_j3.id_spravochnik_organization = $6 OFFSET $7 LIMIT $8 ORDER BY doc_date
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
+            WHERE r.id = $1 
+                AND b_i_j3.main_schet_id = $2 
+                AND b_i_j3.isdeleted = false 
+                AND b_i_j3.doc_date BETWEEN $3 AND $4
+            ORDER BY b_i_j3.doc_date 
+            OFFSET $5 LIMIT $6
         `;
         const result = await client.query(query, params);
         return result.rows;
+    }
+    
+    static async getTotalAkt(params) {
+        const query = `--sql
+            SELECT COALESCE(COUNT(b_i_j3.id), 0)::INTEGER AS total
+              FROM bajarilgan_ishlar_jur3 AS b_i_j3 
+              JOIN users AS u  ON b_i_j3.user_id = u.id
+              JOIN regions AS r ON u.region_id = r.id
+            WHERE r.id = $1 
+                AND b_i_j3.main_schet_id = $2 
+                AND b_i_j3.isdeleted = false 
+                AND b_i_j3.doc_date BETWEEN $3 AND $4
+        `;
+        const data = await db.query(query, params)
+        return data[0].total;
+    }
+
+    static async createAkt(params, client) {
+        const query = `--sql 
+            INSERT INTO bajarilgan_ishlar_jur3(
+                doc_num, 
+                doc_date, 
+                opisanie, 
+                summa, 
+                id_spravochnik_organization, 
+                shartnomalar_organization_id, 
+                main_schet_id,
+                user_id,
+                spravochnik_operatsii_own_id,
+                created_at,
+                updated_at
+            ) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            RETURNING *
+        `;
+        const result = await client.query(query, params)
+        return result;
+    }
+
+    static async createAktChild(params, client) {
+        const design_params = [
+            "spravochnik_operatsii_id",
+            "summa",
+            "id_spravochnik_podrazdelenie",
+            "id_spravochnik_sostav",
+            "id_spravochnik_type_operatsii",
+            "main_schet_id",
+            "bajarilgan_ishlar_jur3_id",
+            "user_id",
+            "spravochnik_operatsii_own_id",
+            "created_at",
+            "updated_at"
+        ]
+        const allValues = designParams(params, design_params)
+        const _values =  returnParamsValues(params, 11)
+        const query = `--sql
+            INSERT INTO bajarilgan_ishlar_jur3_child(
+                spravochnik_operatsii_id,
+                summa,
+                id_spravochnik_podrazdelenie,
+                id_spravochnik_sostav,
+                id_spravochnik_type_operatsii,
+                main_schet_id,
+                bajarilgan_ishlar_jur3_id,
+                user_id,
+                spravochnik_operatsii_own_id,
+                created_at,
+                updated_at
+            ) 
+            VALUES ${_values} RETURNING *
+        `;
+        const result = await client.query(query, allValues)
+        return result;
+    }
+
+    static async getByIdAkt(params) {
+        const query = `--sql
+            SELECT 
+                b_i_j3.id, 
+                b_i_j3.doc_num,
+                TO_CHAR(b_i_j3.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                b_i_j3.opisanie, 
+                b_i_j3.summa::FLOAT, 
+                b_i_j3.id_spravochnik_organization,
+                s_o.name AS spravochnik_organization_name,
+                s_o.raschet_schet AS spravochnik_organization_raschet_schet,
+                s_o.inn AS spravochnik_organization_inn, 
+                b_i_j3.shartnomalar_organization_id,
+                sh_o.doc_num AS shartnomalar_organization_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                b_i_j3.spravochnik_operatsii_own_id,
+                (
+                    SELECT ARRAY_AGG(row_to_json(b_i_j_ch))
+                    FROM (
+                        SELECT  
+                        b_i_j_ch.id,
+                        b_i_j_ch.bajarilgan_ishlar_jur3_id,
+                        b_i_j_ch.spravochnik_operatsii_id,
+                        s_o.name AS spravochnik_operatsii_name,
+                        b_i_j_ch.summa::FLOAT,
+                        b_i_j_ch.id_spravochnik_podrazdelenie,
+                        s_p.name AS spravochnik_podrazdelenie_name,
+                        b_i_j_ch.id_spravochnik_sostav,
+                        s_s.name AS spravochnik_sostav_name,
+                        b_i_j_ch.id_spravochnik_type_operatsii,
+                        s_t_o.name AS spravochnik_type_operatsii_name
+                        FROM bajarilgan_ishlar_jur3_child AS b_i_j_ch
+                        JOIN users AS u ON b_i_j_ch.user_id = u.id
+                        JOIN regions AS r ON u.region_id = r.id
+                        JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j_ch.spravochnik_operatsii_id
+                        LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_i_j_ch.id_spravochnik_podrazdelenie
+                        LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = b_i_j_ch.id_spravochnik_sostav
+                        LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_i_j_ch.id_spravochnik_type_operatsii
+                        WHERE b_i_j_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+                    ) AS b_i_j_ch
+                ) AS childs
+            FROM  bajarilgan_ishlar_jur3 AS b_i_j3 
+            JOIN users AS u ON b_i_j3.user_id = u.id
+            JOIN regions AS r ON u.region_id = r.id
+            JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
+            WHERE r.id = $1 AND b_i_j3.main_schet_id = $2 AND b_i_j3.id = $3 AND b_i_j3.isdeleted = false       
+        `;
+        const data = await db.query(query, params);
+        return data[0];
+    }
+
+    static async updateAkt(params, client) {
+        const query = `--sql
+            UPDATE bajarilgan_ishlar_jur3
+            SET 
+            doc_num = $1, 
+            doc_date = $2, 
+            opisanie = $3, 
+            summa = $4, 
+            id_spravochnik_organization = $5, 
+            shartnomalar_organization_id = $6, 
+            spravochnik_operatsii_own_id = $7,
+            updated_at = $8
+            WHERE id = $9 RETURNING * 
+        `;
+        const result = await client.query(query, params);
+        return result;
+    }
+
+    static async deleteAkt(params) {
+        const query = `--sql `
+    }
+}
+
+
+const deleteJur3ChildDB = async (id) => {
+    try {
+        await pool.query(``, [id]);
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
+const deleteJur3DB = async (id) => {
+    try {
+        await pool.query(`UPDATE bajarilgan_ishlar_jur3 SET  isdeleted = true WHERE id = $1`, [id]);
+        await pool.query(`UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true WHERE bajarilgan_ishlar_jur3_id = $1 AND isdeleted = false`, [id]);
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
+const jur3CapService = async (region_id, from, to, schet) => {
+    try {
+        const data = await pool.query(`--sql
+      SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa
+      FROM bajarilgan_ishlar_jur3 AS b_i_j3 
+      JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+      JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3.spravochnik_operatsii_own_id
+      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = b_i_j3.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN smeta AS s ON s.id = s_o.smeta_id
+      WHERE b_i_j3.doc_date BETWEEN $1 AND $2 AND r.id = $3 AND s_own.schet = $4
+      GROUP BY s_o.schet, s.smeta_number
+    `, [from, to, region_id, schet])
+        return data.rows
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
+    }
+}
+
+const getSchetService = async (region_id) => {
+    try {
+        const schets = await pool.query(`
+      SELECT DISTINCT s_o.schet 
+      FROM bajarilgan_ishlar_jur3 AS b_i_j3
+      JOIN spravochnik_operatsii AS s_o  ON b_i_j3.spravochnik_operatsii_own_id = s_o.id
+      JOIN users AS u ON u.id = b_i_j3.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE  r.id = $1 AND b_i_j3.isdeleted = false
+    `, [region_id])
+        return schets.rows
+    } catch (error) {
+        throw new ErrorResponse(error, error.statusCode)
     }
 }

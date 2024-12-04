@@ -103,4 +103,12 @@ exports.PereotsenkaService = class {
             message: "Delete pereotsenka successfully"
         });
     }
+
+    static async getPescentPereotsenka(req, res) {
+        const data = await PereotsenkaDB.getPescentPereotsenka()
+        return res.status(200).json({
+            message: "pereotsenka with percent successfully",
+            data
+        }) 
+    }
 };
