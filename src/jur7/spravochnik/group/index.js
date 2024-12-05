@@ -11,6 +11,7 @@ const {
 const { Router } = require('express')
 const router = Router()
 
+router.get('/percent', Controller(GroupService.getGroupWithPercent))
 router.post('/', Controller(GroupService.createGroup, createGroupSchema));
 router.get('/:id', Controller(GroupService.getByIdGroup, getByIdGroupSchema));
 router.put('/:id', Controller(GroupService.updateGroup, updateGroupSchema));

@@ -86,24 +86,14 @@ exports.PereotsenkaDB = class {
         await db.query(query, params);
     }
 
-    static async getPescentPereotsenka() {
-        const query = `--sql
-            SELECT 
-                p.group_jur7_id, 
-                p.pereotsenka_foiz, 
-                p.created_at, 
-                g_j7.name, 
-                g_j7.schet, 
-                g_j7.iznos_foiz, 
-                g_j7.provodka_debet, 
-                g_j7.group_number, 
-                g_j7.provodka_kredit
-            FROM group_jur7  AS g_j7 
-            LEFT JOIN pereotsenka_jur7 AS p ON g_j7.id = p.group_jur7_id
-            WHERE g_j7.isdeleted = false 
-            ORDER BY p.created_at DESC
+    static async getByGroupId(params) {
+        const query = `
+            SELECT pereotsenka_foiz::FLOAT
+            FROM pereotsenka_jur7 
+            WHERE isdeleted = false AND group_jur7_id = $1
+            ORDER BY created_at DESC
         `;
-        const data = db.query(query);
-        return data;
+        const data = await db.query(query, params)
+        return data[0];
     }
 };

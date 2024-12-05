@@ -102,4 +102,25 @@ exports.GroupDB = class {
         const query = `UPDATE group_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`;
         await db.query(query, params);
     }
+
+    static async getGroupWithPercent() {
+        const query = `
+            SELECT
+                g_j7.id, 
+                g_j7.smeta_id,
+                g_j7.name, 
+                g_j7.schet, 
+                g_j7.iznos_foiz, 
+                g_j7.provodka_debet, 
+                g_j7.group_number, 
+                g_j7.provodka_kredit,
+                s.smeta_name,
+                s.smeta_number
+            FROM group_jur7 AS g_j7
+            JOIN smeta AS s ON s.id = g_j7.smeta_id
+            WHERE g_j7.isdeleted = false
+        `;
+        const data = await db.query(query)
+        return data;
+    }
 };

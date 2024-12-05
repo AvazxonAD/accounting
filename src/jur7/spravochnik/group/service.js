@@ -1,6 +1,7 @@
 const { SmetaDB } = require('.././../../smeta/smeta/db');
 const { GroupDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
+const { PereotsenkaDB } = require('../pereotsenka/db')
 
 exports.GroupService = class {
     static async createGroup(req, res) {
@@ -122,5 +123,17 @@ exports.GroupService = class {
         return res.status(200).json({
             message: 'Delete group successfully'
         });
+    }
+
+    static async getGroupWithPercent(req, res) {
+        const data = await GroupDB.getGroupWithPercent()
+        for (let item of data) {
+            const percent = await PereotsenkaDB.getByGroupId([item.id])
+            item.percent = percent?.pereotsenka_foiz || 0
+        }   
+        return res.status(200).json({
+            message: "get group successfully",
+            data
+        })
     }
 };
