@@ -1,5 +1,5 @@
-const { db } = require('../db/index');
-const { designParams, returnParamsValues } = require('../helper/functions')
+const { db } = require('../../db/index');
+const { designParams, returnParamsValues } = require('../../helper/functions')
 
 exports.AktDB = class {
     static async getAkt(params, client) {

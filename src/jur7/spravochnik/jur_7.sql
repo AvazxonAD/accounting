@@ -164,3 +164,10 @@ CREATE TABLE document_vnutr_peremesh_jur7_child (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE storage_unit (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  is_deleted BOOLEAN DEFAULT FALSE
+);

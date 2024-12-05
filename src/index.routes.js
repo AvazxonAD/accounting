@@ -65,5 +65,7 @@ routes.use('/jur_7/naimenovanie', protect, require('./jur7/spravochnik/naimenova
 routes.use('/jur_7/doc_prixod', protect, require('./jur7/prixod/index'))
 routes.use('/jur_7/doc_rasxod', protect, require('./jur7/rasxod/index'))
 routes.use('/jur_7/internal', protect, require('./jur7/internal/index'))
+routes.use('/jur_7/unit', protect, require('./jur7/spravochnik/unit'))
+
 
 module.exports = routes;
