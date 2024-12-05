@@ -112,3 +112,8 @@ exports.generateToken = (user) => {
     const token = jwt.sign(payload, secret, options);
     return token;
 };
+
+exports.checkSchetsEquality = (childs) => {
+    const firstSchet = childs[0].schet;
+    return childs.every(child => child.schet === firstSchet);
+}

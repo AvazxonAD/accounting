@@ -98,9 +98,9 @@ exports.PereotsenkaDB = class {
                 g_j7.provodka_debet, 
                 g_j7.group_number, 
                 g_j7.provodka_kredit
-            FROM pereotsenka_jur7 AS p 
-            JOIN group_jur7 AS g_j7 ON g_j7.id = p.group_jur7_id
-            WHERE p.isdeleted = false
+            FROM group_jur7  AS g_j7 
+            LEFT JOIN pereotsenka_jur7 AS p ON g_j7.id = p.group_jur7_id
+            WHERE g_j7.isdeleted = false 
             ORDER BY p.created_at DESC
         `;
         const data = db.query(query);
