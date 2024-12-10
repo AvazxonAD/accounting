@@ -25,7 +25,12 @@ exports.ShowServiceDB = class {
                                 k_h_j_ch.summa::FLOAT,
                                 k_h_j_ch.id_spravochnik_podrazdelenie,
                                 k_h_j_ch.id_spravochnik_sostav,
-                                k_h_j_ch.id_spravochnik_type_operatsii
+                                k_h_j_ch.id_spravochnik_type_operatsii,
+                                k_h_j_ch.kol,
+                                k_h_j_ch.sena,
+                                k_h_j_ch.nds_foiz,
+                                k_h_j_ch.nds_summa,
+                                k_h_j_ch.summa_s_nds
                             FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
                             JOIN users AS u ON k_h_j_ch.user_id = u.id
                             JOIN regions AS r ON u.region_id = r.id
@@ -128,20 +133,14 @@ exports.ShowServiceDB = class {
                     (
                         SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
                         FROM (
-                                SELECT  
-                                    k_h_j_ch.id,
-                                    k_h_j_ch.kursatilgan_hizmatlar_jur152_id,
-                                    k_h_j_ch.spravochnik_operatsii_id,
-                                    k_h_j_ch.summa::FLOAT,
-                                    k_h_j_ch.id_spravochnik_podrazdelenie,
-                                    k_h_j_ch.id_spravochnik_sostav,
-                                    k_h_j_ch.id_spravochnik_type_operatsii
-                                FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
-                                JOIN users AS u ON k_h_j_ch.user_id = u.id
-                                JOIN regions AS r ON u.region_id = r.id
-                                WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = k_h_j.id
-                            ) AS k_h_j_ch
-                    ) AS childs
+                            SELECT 
+                                s_o.schet AS provodki_schet,
+                                s_o.sub_schet AS provodki_sub_schet
+                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
+                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_h_j_ch.spravochnik_operatsii_id
+                            WHERE  k_h_j_ch.kursatilgan_hizmatlar_jur152_id = k_h_j.id 
+                        ) AS k_h_j_ch
+                    ) AS provodki_array
                 FROM kursatilgan_hizmatlar_jur152 AS k_h_j
                 JOIN users AS u ON u.id = k_h_j.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -167,7 +166,7 @@ exports.ShowServiceDB = class {
             FROM data
         `;
         const result = await db.query(query, params);
-        return {data: result[0]?.data || [], total: result[0]?.total_count || 0, summa: result[0]?.summa || 0};
+        return { data: result[0]?.data || [], total: result[0]?.total_count || 0, summa: result[0]?.summa || 0 };
     }
 
     static async updateShowService(params, client) {

@@ -1,5 +1,5 @@
-const { db } = require('../../db/index');
-const { designParams, returnParamsValues } = require('../../helper/functions')
+const { db } = require('../db/index');
+const { designParams, returnParamsValues } = require('../helper/functions')
 
 exports.AktDB = class {
     static async getAkt(params, client) {
@@ -93,11 +93,16 @@ exports.AktDB = class {
             "bajarilgan_ishlar_jur3_id",
             "user_id",
             "spravochnik_operatsii_own_id",
+            "kol",
+            "sena",
+            "nds_foiz",
+            "nds_summa",
+            "summa_s_nds",
             "created_at",
             "updated_at"
         ]
         const allValues = designParams(params, design_params)
-        const _values =  returnParamsValues(params, 11)
+        const _values =  returnParamsValues(allValues, 15)
         const query = `--sql
             INSERT INTO bajarilgan_ishlar_jur3_child(
                 spravochnik_operatsii_id,
@@ -109,6 +114,11 @@ exports.AktDB = class {
                 bajarilgan_ishlar_jur3_id,
                 user_id,
                 spravochnik_operatsii_own_id,
+                kol,
+                sena,
+                nds_foiz,
+                nds_summa,
+                summa_s_nds,
                 created_at,
                 updated_at
             ) 
@@ -148,7 +158,12 @@ exports.AktDB = class {
                         b_i_j_ch.id_spravochnik_sostav,
                         s_s.name AS spravochnik_sostav_name,
                         b_i_j_ch.id_spravochnik_type_operatsii,
-                        s_t_o.name AS spravochnik_type_operatsii_name
+                        s_t_o.name AS spravochnik_type_operatsii_name,
+                        b_i_j_ch.kol,
+                        b_i_j_ch.sena,
+                        b_i_j_ch.nds_foiz,
+                        b_i_j_ch.nds_summa,
+                        b_i_j_ch.summa_s_nds
                         FROM bajarilgan_ishlar_jur3_child AS b_i_j_ch
                         JOIN users AS u ON b_i_j_ch.user_id = u.id
                         JOIN regions AS r ON u.region_id = r.id
