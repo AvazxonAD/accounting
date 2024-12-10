@@ -61,7 +61,7 @@ exports.OrganizationDB = class {
                 FROM spravochnik_organization AS s_o  
                 JOIN users AS u ON s_o.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id 
-                WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter}
+                WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter} AND s_o.parent_id IS NULL
                 OFFSET $2
                 LIMIT $3
             )
