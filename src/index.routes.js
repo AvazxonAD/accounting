@@ -51,7 +51,7 @@ routes.use("/akt", protect, police('jur3'), require("./akt/akt.routes"));
 routes.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));
 
 // show service  routes
-routes.use("/services/show", protect, police('jur152'), require("./show.service/show.services.routes"));
+routes.use("/services/show", protect, police('jur152'), require("./show.service/index"));
 
 // podotchet monitoring 
 routes.use('/podotchet/monitoring', protect, police('podotchet_monitoring'), require('./podotchet.monitoring/index'))

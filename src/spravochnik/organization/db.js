@@ -21,23 +21,25 @@ exports.OrganizationDB = class {
             WHERE regions.id = $1 AND s_o.id = $2 ${isdeleted ? '' : ignore}
         `;
         const result = await db.query(query, params)
-        const child_query = `--sql
-            SELECT 
-                s_o.id, 
-                s_o.name, 
-                s_o.bank_klient, 
-                s_o.raschet_schet, 
-                s_o.raschet_schet_gazna, 
-                s_o.mfo, 
-                s_o.inn, 
-                s_o.okonx,
-                s_o.parent_id
-            FROM spravochnik_organization AS s_o 
-            JOIN users ON s_o.user_id = users.id
-            JOIN regions ON users.region_id = regions.id 
-            WHERE regions.id = $1 AND s_o.parent_id = $2 ${isdeleted ? '' : ignore}
-        `;
-        result[0].childs = await db.query(child_query, params);
+        if (result[0]) {
+            const child_query = `--sql
+                SELECT 
+                    s_o.id, 
+                    s_o.name, 
+                    s_o.bank_klient, 
+                    s_o.raschet_schet, 
+                    s_o.raschet_schet_gazna, 
+                    s_o.mfo, 
+                    s_o.inn, 
+                    s_o.okonx,
+                    s_o.parent_id
+                FROM spravochnik_organization AS s_o 
+                JOIN users ON s_o.user_id = users.id
+                JOIN regions ON users.region_id = regions.id 
+                WHERE regions.id = $1 AND s_o.parent_id = $2 ${isdeleted ? '' : ignore}
+            `;
+            result[0].childs = await db.query(child_query, params);
+        }
         return result[0];
     }
 

@@ -24,51 +24,6 @@ const {
 } = require('./show.services.service')
 const { checkSchetsEquality } = require('../utils/need.functios');
 
-const createController = async (req, res) => {
-    try {
-        const region_id = req.user.region_id
-        const user_id = req.user.id
-        const main_schet_id = req.query.main_schet_id
-        const data = validationResponse(showServicesValidation, req.body)
-        const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
-        await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'general')
-        await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization])
-        if (data.shartnomalar_organization_id) {
-            const contract = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
-            if (contract.pudratchi_bool) {
-                throw new ErrorResponse(`contract not found`, 404)
-            }
-        }
-        for (let child of data.childs) {
-            await getByIdOperatsiiService(child.spravochnik_operatsii_id, 'show_service')
-            if (child.id_spravochnik_podrazdelenie) {
-                await getByIdPodrazlanieService(region_id, child.id_spravochnik_podrazdelenie)
-            }
-            if (child.id_spravochnik_sostav) {
-                await getByIdSostavService(region_id, child.id_spravochnik_sostav)
-            }
-            if (child.id_spravochnik_type_operatsii) {
-                await getByIdTypeOperatsiiService(region_id, child.id_spravochnik_type_operatsii)
-            }
-        }
-        const operatsiis = await getOperatsiiByChildArray(data.childs, 'show_service')
-        if (!checkSchetsEquality(operatsiis)) {
-            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
-        }
-        const summa = returnAllChildSumma(data.childs)
-        const doc = await createShowServiceService({ ...data, main_schet_id, user_id, summa })
-        const childs = []
-        for (let child of data.childs) {
-            const result = await createShowServiceChildService({ ...child, main_schet_id, user_id, spravochnik_operatsii_own_id: data.spravochnik_operatsii_own_id, kursatilgan_hizmatlar_jur152_id: doc.id })
-            childs.push(result)
-        }
-        doc.childs = childs
-        postLogger.info(`show servise doclar muvaffaqiyatli kritildi. UserId : ${req.user.id}`)
-        resFunc(res, 201, doc)
-    } catch (error) {
-        errorCatch(error, res)
-    }
-}
 
 // get show service 
 const getShowService = async (req, res) => {

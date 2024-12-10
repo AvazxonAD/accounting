@@ -25,8 +25,12 @@ CREATE TABLE kursatilgan_hizmatlar_jur152_child (
     id_spravochnik_type_operatsii INT REFERENCES spravochnik_type_operatsii(id),
     kursatilgan_hizmatlar_jur152_id INT NOT NULL REFERENCES kursatilgan_hizmatlar_jur152(id),
     main_schet_id INT NOT NULL REFERENCES main_schet(id),
+    kol DECIMAL,
+    sena DECIMAL,
+    nds_foiz DECIMAL,
+    nds_summa DECIMAL,
+    summa_s_nds DECIMAL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
-

@@ -13,6 +13,6 @@ exports.TypeOperatsiiDB = class {
             WHERE s.id = $2  AND r.id = $1 ${!isdeleted ? "AND s.isdeleted = false" : ''} 
         `;
         const result = await db.query(query, params);
-        return result;
+        return result[0];
     }
 }
