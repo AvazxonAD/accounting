@@ -9,7 +9,7 @@ exports.createOrganizationSchema = Joi.object({
         mfo: Joi.string().trim().required(),
         inn: Joi.string().trim().required(),
         okonx: Joi.string().trim().required(),
-        parent_id: Joi.number().min(1)
+        parent_id: Joi.number().min(1).allow(null)
     })
 }).options({ stripUnknown: true });
 
@@ -22,7 +22,7 @@ exports.updateOrganizationSchema = Joi.object({
         mfo: Joi.string().trim().required(),
         inn: Joi.string().trim().required(),
         okonx: Joi.string().trim().required(),
-        parent_id: Joi.number().min(1)
+        parent_id: Joi.number().min(1).allow(null)
     }),
     params: Joi.object({
         id: Joi.number().integer().min(1).required()
@@ -41,11 +41,10 @@ exports.getByIdSchema = Joi.object({
     })
 })
 
-exports.getSchema = Joi.object({
+exports.getOrganizationSchema = Joi.object({
     query: Joi.object({
         page: Joi.number().min(1).default(1),
         limit: Joi.number().min(1).default(10),
-        inn: Joi.number(),
         search: Joi.string()
     })
 }).options({ stripUnknown: true });

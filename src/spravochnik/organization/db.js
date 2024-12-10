@@ -13,17 +13,40 @@ exports.OrganizationDB = class {
                 s_o.raschet_schet_gazna, 
                 s_o.mfo, 
                 s_o.inn, 
-                s_o.okonx  
+                s_o.okonx,
+                s_o.parent_id
             FROM spravochnik_organization AS s_o 
             JOIN users ON s_o.user_id = users.id
             JOIN regions ON users.region_id = regions.id 
             WHERE regions.id = $1 AND s_o.id = $2 ${isdeleted ? '' : ignore}
         `;
         const result = await db.query(query, params)
+        const child_query = `--sql
+            SELECT 
+                s_o.id, 
+                s_o.name, 
+                s_o.bank_klient, 
+                s_o.raschet_schet, 
+                s_o.raschet_schet_gazna, 
+                s_o.mfo, 
+                s_o.inn, 
+                s_o.okonx,
+                s_o.parent_id
+            FROM spravochnik_organization AS s_o 
+            JOIN users ON s_o.user_id = users.id
+            JOIN regions ON users.region_id = regions.id 
+            WHERE regions.id = $1 AND s_o.parent_id = $2 ${isdeleted ? '' : ignore}
+        `;
+        result[0].childs = await db.query(child_query, params);
         return result[0];
     }
 
-    static async getOrganizationDataAndTotal(params) {
+    static async getOrganizationDataAndTotal(params, search) {
+        let search_filter = ``
+        if (search) {
+            search_filter = `AND ( s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR s_o.name ILIKE '%' || $${params.length + 1} || '%' )`;
+            params.push(search);
+        }
         const query = `--sql
             WITH data AS (SELECT 
                   s_o.id, 
@@ -33,7 +56,8 @@ exports.OrganizationDB = class {
                   s_o.raschet_schet_gazna, 
                   s_o.mfo, 
                   s_o.inn, 
-                  s_o.okonx 
+                  s_o.okonx,
+                  s_o.parent_id 
                 FROM spravochnik_organization AS s_o  
                 JOIN users AS u ON s_o.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id 
@@ -50,13 +74,8 @@ exports.OrganizationDB = class {
                 WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter})::INTEGER AS total_count
             FROM data
         `;
-        let search_filter = ``
-        if (search) {
-            search_filter = `AND ( s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR s_o.name ILIKE '%' || $${params.length + 1} || '%' )`;
-            params.push(search);
-        }
-        result = await pool.query(query, params);
-        return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 };
+        const result = await db.query(query, params);
+        return { result: result[0]?.data || [], total: result[0]?.total_count || 0 };
     }
 
     static async getOrganization(params) {

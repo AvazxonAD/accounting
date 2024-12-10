@@ -23,19 +23,16 @@ exports.OrganizationService = class {
 
     static async getOrganization(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, inn, search } = req.query;
+        const { page, limit, search } = req.query;
         const offset = (page - 1) * limit;
-        const { result, total } = await OrganizationDB.getOrganizationDataAndTotal([
-            region_id, offset,
-            limit, inn, search
-        ]);
+        const { result, total } = await OrganizationDB.getOrganizationDataAndTotal([region_id, offset, limit], search);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
             count: total,
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1,
+            backPage: Number(page) === 1 ? null : page - 1,
         }
         return res.status(200).json({
             message: "get organization successfully!",
@@ -58,7 +55,7 @@ exports.OrganizationService = class {
         } = req.body;
         const result = await OrganizationDB.updateOrganization([
             name, bank_klient, raschet_schet,
-            raschet_schet_gazna, mfo, inn, okonx
+            raschet_schet_gazna, mfo, inn, okonx, id
         ]);
         return res.status(200).json({
             message: 'update organization successfully!',
@@ -83,12 +80,15 @@ exports.OrganizationService = class {
 
     static async getByIdOrganization(req, res) {
         const result = await OrganizationDB.getByIdorganization([req.user.region_id, req.params.id], true);
-        if(!result){
+        if (!result) {
             return res.status(404).json({
                 message: "organization not found"
             })
         }
-        return result;
+        return res.status(200).json({
+            message: "organization get successfully",
+            data: result
+        })
     }
 
 }
