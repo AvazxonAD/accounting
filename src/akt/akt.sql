@@ -25,6 +25,11 @@ CREATE TABLE bajarilgan_ishlar_jur3_child (
     bajarilgan_ishlar_jur3_id INT REFERENCES bajarilgan_ishlar_jur3(id),
     user_id INT REFERENCES users(id),
     main_schet_id INT REFERENCES main_schet(id),
+    kol DECIMAL,
+    sena DECIMAL,
+    nds_foiz DECIMAL,
+    nds_summa DECIMAL,
+    summa_s_nds DECIMAL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

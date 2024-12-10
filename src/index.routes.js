@@ -45,7 +45,7 @@ routes.use("/shartnoma/grafik", protect, police('shartnoma'), require("./shartno
 routes.use("/shartnoma", protect, police('shartnoma'), require("./shartnoma/shartnoma.routes"));
 
 // akt routes
-routes.use("/akt", protect, police('jur3'), require("./akt/akt.routes"));
+routes.use("/akt", protect, police('jur3'), require("./akt/index"));
 
 // avans routes 
 routes.use("/avans", protect, police('jur4'), require("./avans/avans.routes"));

@@ -2,7 +2,7 @@ const { db } = require('../db/index');
 const { designParams, returnParamsValues } = require('../helper/functions')
 
 exports.AktDB = class {
-    static async getAkt(params, client) {
+    static async getAkt(params) {
         const query = `--sql
             SELECT 
                 b_i_j3.id, 
@@ -41,8 +41,8 @@ exports.AktDB = class {
             ORDER BY b_i_j3.doc_date 
             OFFSET $5 LIMIT $6
         `;
-        const result = await client.query(query, params);
-        return result.rows;
+        const result = await db.query(query, params);
+        return result;
     }
     
     static async getTotalAkt(params) {
@@ -59,7 +59,7 @@ exports.AktDB = class {
         const data = await db.query(query, params)
         return data[0].total;
     }
-
+ss
     static async createAkt(params, client) {
         const query = `--sql 
             INSERT INTO bajarilgan_ishlar_jur3(
@@ -79,7 +79,7 @@ exports.AktDB = class {
             RETURNING *
         `;
         const result = await client.query(query, params)
-        return result;
+        return result.rows[0];
     }
 
     static async createAktChild(params, client) {
@@ -100,9 +100,9 @@ exports.AktDB = class {
             "summa_s_nds",
             "created_at",
             "updated_at"
-        ]
-        const allValues = designParams(params, design_params)
-        const _values =  returnParamsValues(allValues, 15)
+        ];
+        const _params = designParams(params, design_params)
+        const _values =  returnParamsValues(_params, 16)
         const query = `--sql
             INSERT INTO bajarilgan_ishlar_jur3_child(
                 spravochnik_operatsii_id,
@@ -124,11 +124,12 @@ exports.AktDB = class {
             ) 
             VALUES ${_values} RETURNING *
         `;
-        const result = await client.query(query, allValues)
-        return result;
+        const result = await client.query(query, _params)
+        return result.rows;
     }
 
-    static async getByIdAkt(params) {
+    static async getByIdAkt(params, isdeleted) {
+        const ignore = `AND b_i_j3.isdeleted = false`
         const query = `--sql
             SELECT 
                 b_i_j3.id, 
@@ -179,7 +180,7 @@ exports.AktDB = class {
             JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
-            WHERE r.id = $1 AND b_i_j3.main_schet_id = $2 AND b_i_j3.id = $3 AND b_i_j3.isdeleted = false       
+            WHERE r.id = $1 AND b_i_j3.main_schet_id = $2 AND b_i_j3.id = $3 ${!isdeleted ? ignore : ''}   
         `;
         const data = await db.query(query, params);
         return data[0];
@@ -200,7 +201,7 @@ exports.AktDB = class {
             WHERE id = $9 RETURNING * 
         `;
         const result = await client.query(query, params);
-        return result;
+        return result.rows[0];
     }
 
     static async deleteAktChild(params, client) {
@@ -210,7 +211,7 @@ exports.AktDB = class {
 
     static async deleteAkt(params, client) {
         await client.query(`UPDATE bajarilgan_ishlar_jur3 SET  isdeleted = true WHERE id = $1`, params);
-        await client.query(`UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true WHERE bajarilgan_ishlar_jur3_id = $1 AND isdeleted = false`, params);
+        await client.query(`UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true WHERE bajarilgan_ishlar_jur3_id = $1`, params);
     }
     
     static async aktCap(params) {
