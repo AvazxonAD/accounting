@@ -1,7 +1,7 @@
 const ErrorResponse = require('../utils/errorResponse')
 const { showServicesValidation } = require("../utils/validation");
 const { getByIdOperatsiiService, getOperatsiiByChildArray } = require('../spravochnik/operatsii/operatsii.service')
-const { getByIdOrganizationService } = require('../spravochnik/organization/organization.service')
+const { OrganizationDB } = require('../spravochnik/organization/db.js')
 const { getByIdShartnomaService } = require('../shartnoma/shartnoma.service')
 const { getByIdPodrazlanieService } = require('../spravochnik/podrazdelenie/podrazdelenie.service')
 const { getByIdSostavService } = require('../spravochnik/sostav/sostav.service')
@@ -32,7 +32,7 @@ const createController = async (req, res) => {
         const data = validationResponse(showServicesValidation, req.body)
         const main_schet = await getByIdMainSchetService(region_id, main_schet_id)
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, 'general')
-        await getByIdOrganizationService(region_id, data.id_spravochnik_organization)
+        await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization])
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization)
             if (contract.pudratchi_bool) {
@@ -121,7 +121,7 @@ const updateShowService = async (req, res) => {
         const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
         await getByIdShowServiceService(region_id, main_schet_id, id);
         await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "general");
-        await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
+        await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
         if (data.shartnomalar_organization_id) {
             const contract = await getByIdShartnomaService(
                 region_id,

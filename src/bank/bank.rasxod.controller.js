@@ -1,6 +1,6 @@
 const { createBankRasxodDb, createBankRasxodChild, getByIdRasxodService, updateRasxodService, getBankRasxodService, deleteRasxodChild, deleteBankRasxod, getFioBankRasxodService } = require("./bank.rasxod.service");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
-const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
+const { OrganizationDB } = require("../spravochnik/organization/db.js");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
 const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
@@ -25,7 +25,12 @@ const bank_rasxod = async (req, res) => {
     const user_id = req.user.id;
     const data = validationResponse(bankRasxodValidation, req.body)
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-    await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
+    const organization = await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
+    if(!organization){
+      return res.status(404).json({
+        message: "organization not found"
+      })
+    }
     if (data.id_shartnomalar_organization) {
       await getByIdShartnomaService(
         region_id,
@@ -78,7 +83,7 @@ const bank_rasxod_update = async (req, res) => {
     await getByIdRasxodService(region_id, main_schet_id, id);
     const data = validationResponse(bankRasxodValidation, req.body)
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-    await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
+    await OrganizationDB([region_id, data.id_spravochnik_organization]);
     if (data.id_shartnomalar_organization) {
       await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.id_shartnomalar_organization, data.id_spravochnik_organization);
     }

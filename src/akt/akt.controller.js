@@ -13,7 +13,7 @@ const { checkSchetsEquality } = require('../utils/need.functios');
 const ErrorResponse = require("../utils/errorResponse");
 const { jur3Validation, validationQuery, jur3CapValidation } = require("../utils/validation");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
-const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
+const { OrganizationDB } = require("../spravochnik/organization/db");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
 const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
@@ -36,7 +36,12 @@ const jur_3_create = async (req, res) => {
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "general");
-    await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
+    const organization = await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
+    if(!organization){
+      return res.status(404).json({
+        message: "organization not found"
+      })
+    }
     if (data.shartnomalar_organization_id) {
       const shartnoma = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
       if (!shartnoma.pudratchi_bool) {
@@ -103,7 +108,12 @@ const jur_3_update = async (req, res) => {
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     const data = validationResponse(jur3Validation, req.body)
     await getByIdOperatsiiService(data.spravochnik_operatsii_own_id, "general");
-    await getByIdOrganizationService(region_id, data.id_spravochnik_organization,);
+    const organization = await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
+    if(!organization){
+      return res.status(404).json({
+        message: "organization not found"
+      })
+    }
     if (data.shartnomalar_organization_id) {
       const shartnoma = await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.shartnomalar_organization_id, data.id_spravochnik_organization);
       if (!shartnoma.pudratchi_bool) {

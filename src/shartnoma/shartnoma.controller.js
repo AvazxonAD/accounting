@@ -6,7 +6,7 @@ const {
   deleteShartnomaDB,
 } = require("../shartnoma/shartnoma.service.js");
 const { SmetaDB } = require("../smeta/smeta/db.js");
-const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service.js");
+const { OrganizationDB } = require("../spravochnik/organization/db.js");
 const { shartnomaValidation, ShartnomaqueryValidation } = require("../utils/validation");;
 const { createShartnomaGrafik, updateShartnomaGrafikService } = require("../shartnoma/shartnoma.grafik.service.js");
 const { validationResponse } = require('../utils/response-for-validation.js')
@@ -31,7 +31,7 @@ const create = async (req, res) => {
     if (data.smeta2_id) {
       await getByIdSmeta(data.smeta2_id)
     }
-    await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
+    await OrganizationDB([region_id, data.spravochnik_organization_id]);
     const shartnoma = await createShartnoma({ ...data, user_id, budjet_id });
     const grafik_data = {
       user_id,
@@ -79,7 +79,7 @@ const getAll = async (req, res) => {
     await getByIdBudjetService(budjet_id);
     const offset = (page - 1) * limit;
     if(organization){
-      await getByIdOrganizationService(region_id, organization)
+      await OrganizationDB.getByIdorganization([region_id, organization])
     }
     const { data, total } = await getAllShartnoma(region_id, budjet_id, offset, limit, organization, pudratchi_bool, search);
     const pageCount = Math.ceil(total / limit);
@@ -125,7 +125,7 @@ const update_shartnoma = async (req, res) => {
         message: "smeta not found"
       })
     };
-    await getByIdOrganizationService(region_id, data.spravochnik_organization_id);
+    await OrganizationDB.getByIdorganization([region_id, data.spravochnik_organization_id]);
     const result = await updateShartnomaDB({ ...data, id });
     const grafik_data = { shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik }
     if (result.yillik_oylik) {

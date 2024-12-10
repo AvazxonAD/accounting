@@ -28,7 +28,7 @@ routes.use('/organization/monitoring', protect, police('organization_monitoring'
 routes.use("/spravochnik/podotchet-litso", protect, police('spravochnik'), require("./spravochnik/podotchet/podochet.litso.routes"));
 routes.use("/spravochnik/podrazdelenie", protect, police('spravochnik'), require("./spravochnik/podrazdelenie/podrazdelenie.routes"));
 routes.use("/spravochnik/type-operatsii", protect, police('spravochnik'), require("./spravochnik/type.operatsii/type_operatsii.routes"));
-routes.use("/spravochnik/organization", protect, police('spravochnik'), require("./spravochnik/organization/organization.routes"));
+routes.use("/spravochnik/organization", protect, police('spravochnik'), require("./spravochnik/organization/index"));
 routes.use("/spravochnik/operatsii", protect, police('spravochnik'), require("./spravochnik/operatsii/operatsii.routes"));
 routes.use("/spravochnik/main-schet", require("./spravochnik/main.schet/main_schet.routes"));
 routes.use("/spravochnik/budjet-name", protect, police('budjet'), require("./spravochnik/budjet/budjet_name.routes"));

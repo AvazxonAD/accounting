@@ -48,6 +48,7 @@ CREATE TABLE spravochnik_organization (
   inn VARCHAR(40),
   raschet_schet VARCHAR(200),
   user_id INTEGER REFERENCES users(id),
+  parent_id INTEGER REFERENCES spravochnik_organization(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

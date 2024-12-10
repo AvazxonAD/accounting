@@ -5,7 +5,7 @@ const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/log
 const { returnAllChildSumma } = require("../utils/returnSumma");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
-const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
+const { OrganizationDB } = require("../spravochnik/organization/db.js");
 const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
 const { getByIdPodrazlanieService, } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
@@ -23,7 +23,12 @@ const create = asyncHandler(async (req, res) => {
   const user_id = req.user.id;
   const data = validationResponse(bankPrixodValidation, req.body)
   const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
+  const organization = await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
+  if(!organization){
+    return res.status(404).json({
+      message: "organization not found"
+    })
+  }
   if (data.id_shartnomalar_organization) {
     await getByIdShartnomaService(
       region_id,
@@ -66,7 +71,7 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
   await getByIdPrixodService(region_id, main_schet_id, id);
   const data = validationResponse(bankPrixodValidation, req.body)
   const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
-  await getByIdOrganizationService(region_id, data.id_spravochnik_organization);
+  const organization = await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
   if (data.id_shartnomalar_organization) {
     await getByIdShartnomaService(region_id, main_schet.spravochnik_budjet_name_id, data.id_shartnomalar_organization, data.id_spravochnik_organization);
   }

@@ -2,7 +2,7 @@ const { getByIdGrafikDB, getAllGrafikDB, updateShartnomaGrafikDB } = require("..
 const ErrorResponse = require("../utils/errorResponse");
 const { sum } = require("../utils/returnSumma");
 const { shartnomaGarfikValidation, ShartnomaqueryValidation } = require("../utils/validation");;
-const { getByIdOrganizationService } = require("../spravochnik/organization/organization.service");
+const { OrganizationDB } = require("../spravochnik/organization/db.js");
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
 const { validationResponse } = require('../utils/response-for-validation')
@@ -49,7 +49,7 @@ const getAllGrafik = async (req, res) => {
     const offset = (page - 1) * limit;
     await getByIdBudjetService(budjet_id);
     if(organization){
-      await getByIdOrganizationService(region_id, organization)
+      await (region_id, organization)
     }
     const { data, total } = await getAllGrafikDB(region_id, budjet_id, organization, limit, offset);
     const pageCount = Math.ceil(total / limit);

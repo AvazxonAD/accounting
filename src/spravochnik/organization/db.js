@@ -1,4 +1,5 @@
-const { db } = require('../../db/index')
+const { db } = require('../../db/index');
+const { returnParamsValues, returnValues, designParams } = require('../../helper/functions');
 
 exports.OrganizationDB = class {
     static async getByIdorganization(params, isdeleted) {
@@ -22,6 +23,42 @@ exports.OrganizationDB = class {
         return result[0];
     }
 
+    static async getOrganizationDataAndTotal(params) {
+        const query = `--sql
+            WITH data AS (SELECT 
+                  s_o.id, 
+                  s_o.name, 
+                  s_o.bank_klient, 
+                  s_o.raschet_schet, 
+                  s_o.raschet_schet_gazna, 
+                  s_o.mfo, 
+                  s_o.inn, 
+                  s_o.okonx 
+                FROM spravochnik_organization AS s_o  
+                JOIN users AS u ON s_o.user_id = u.id
+                JOIN regions AS r ON u.region_id = r.id 
+                WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter}
+                OFFSET $2
+                LIMIT $3
+            )
+            SELECT 
+              ARRAY_AGG(row_to_json(data)) AS data,
+              (SELECT COUNT(s_o.id)
+                FROM spravochnik_organization AS s_o  
+                JOIN users AS u ON s_o.user_id = u.id
+                JOIN regions AS r ON u.region_id = r.id 
+                WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter})::INTEGER AS total_count
+            FROM data
+        `;
+        let search_filter = ``
+        if (search) {
+            search_filter = `AND ( s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR s_o.name ILIKE '%' || $${params.length + 1} || '%' )`;
+            params.push(search);
+        }
+        result = await pool.query(query, params);
+        return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 };
+    }
+
     static async getOrganization(params) {
         const query = `--sql
             SELECT organ.id, organ.name 
@@ -33,4 +70,79 @@ exports.OrganizationDB = class {
         const result = await db.query(query, params)
         return result;
     }
+
+    static async createOrganization(params) {
+        const query = `--sql
+           INSERT INTO spravochnik_organization(
+                name, bank_klient, raschet_schet, raschet_schet_gazna, 
+                mfo, inn, user_id, okonx, parent_id, created_at, updated_at 
+            ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            RETURNING *
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
+
+    static async updateOrganization(params) {
+        const query = `--sql
+            UPDATE spravochnik_organization 
+            SET name = $1, bank_klient = $2, raschet_schet = $3, 
+                raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $7
+            WHERE id = $8 AND isdeleted = false RETURNING *
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
+
+    static async deleteOrganization(params) {
+        const query = `UPDATE spravochnik_organization SET isdeleted = true WHERE id = $1`;
+        await db.query(query, params);
+    }
+
+    // static async createOrganization(params, array, client) {
+    //     const query = `--sql
+    //         INSERT INTO spravochnik_organization(
+    //             name, bank_klient, raschet_schet, raschet_schet_gazna, 
+    //             mfo, inn, user_id, okonx, created_at, updated_at 
+    //         ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+    //         RETURNING *
+    //     `;
+    //     let result;
+    //     if (!client) {
+    //         result = await db.query(query, params);
+    //     } else {
+    //         result = await client.query(query)
+    //     }
+    //     if (array.length > 0) {
+    //         array = array.map(item => {
+    //             item.parent_id = result.rows[0].id;
+    //             return item;
+    //         })
+    //         const _values = returnParamsValues(array);
+    //         const design_params = [
+    //             "name",
+    //             "bank_klient",
+    //             "raschet_schet",
+    //             "raschet_schet_gazna",
+    //             "mfo",
+    //             "inn",
+    //             "user_id",
+    //             "okonx",
+    //             "parent_id",
+    //             "created_at",
+    //             "updated_at"
+    //         ]
+    //         const query = `--sql
+    //             INSERT INTO spravochnik_organization(
+    //                 name, bank_klient, raschet_schet, raschet_schet_gazna, 
+    //                 mfo, inn, user_id, okonx, parent_id, created_at, updated_at 
+    //             )  ${_values}
+    //             RETURNING *
+    //         `;
+    //         const allValues = designParams(params, design_params)
+    //         const childs = await client.query(query, allValues)
+    //         result.array = childs.rows;
+    //     }
+    //     return result;
+    //}
 }
