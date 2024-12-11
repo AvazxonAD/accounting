@@ -77,7 +77,7 @@ exports.AccessService = class {
         }
         return res.status(200).json({
             message: "access get successfully!",
-            access
+            data: access
         })
     }
 }
