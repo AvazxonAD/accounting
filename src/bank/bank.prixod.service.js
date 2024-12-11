@@ -163,8 +163,8 @@ const bankPrixodUpdateService = async (data) => {
 
 const getPrixodService = async (region_id, main_schet_id, offset, limit, from, to) => {
   try {
-    const result = await pool.query(
-      ` WITH data AS (SELECT 
+    const result = await pool.query(`--sql 
+      WITH data AS (SELECT 
               b_p.id,
               b_p.doc_num, 
               TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date, 
@@ -181,31 +181,17 @@ const getPrixodService = async (region_id, main_schet_id, offset, limit, from, t
               s_o.mfo AS spravochnik_organization_mfo,
               s_o.inn AS spravochnik_organization_inn,
               b_p.id_shartnomalar_organization,
-              (SELECT ARRAY_AGG(row_to_json(b_p_ch))
+              (
+                SELECT ARRAY_AGG(row_to_json(b_p_ch))
                 FROM (
-                  SELECT 
-                      b_p_ch.id,
-                      b_p_ch.spravochnik_operatsii_id,
-                      s_o.name AS spravochnik_operatsii_name,
-                      b_p_ch.summa,
-                      b_p_ch.id_spravochnik_podrazdelenie,
-                      s_p.name AS spravochnik_podrazdelenie_name,
-                      b_p_ch.id_spravochnik_sostav,
-                      s_s.name AS spravochnik_sostav_name,
-                      b_p_ch.id_spravochnik_type_operatsii,
-                      s_t_o.name AS spravochnik_type_operatsii_name,
-                      b_p_ch.id_spravochnik_podotchet_litso,
-                      s_p_l.name AS spravochnik_podotchet_litso_name,
-                      b_p_ch.main_zarplata_id
-                  FROM bank_prixod_child AS b_p_ch
-                  JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
-                  LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_p_ch.id_spravochnik_podrazdelenie
-                  LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = b_p_ch.id_spravochnik_sostav
-                  LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_p_ch.id_spravochnik_type_operatsii
-                  LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_p_ch.id_spravochnik_podotchet_litso
-                  WHERE b_p_ch.id_bank_prixod = b_p.id 
+                    SELECT 
+                        s_o.schet AS provodki_schet,
+                        s_o.sub_schet AS provodki_sub_schet
+                    FROM bank_prixod_child AS b_p_ch
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
+                    WHERE  b_p_ch.id_bank_prixod = b_p.id 
                 ) AS b_p_ch
-              ) AS childs 
+            ) AS provodki_array 
           FROM bank_prixod AS b_p
           JOIN users AS u ON b_p.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id

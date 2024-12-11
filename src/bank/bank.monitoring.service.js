@@ -22,7 +22,18 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 bp.doc_date AS combined_date,
                 u.login,
                 u.fio,
-                u.id AS user_id
+                u.id AS user_id,
+                (
+                  SELECT ARRAY_AGG(row_to_json(b_p_ch))
+                  FROM (
+                      SELECT 
+                          s_o.schet AS provodki_schet,
+                          s_o.sub_schet AS provodki_sub_schet
+                      FROM bank_prixod_child AS b_p_ch
+                      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
+                      WHERE  b_p_ch.id_bank_prixod = bp.id 
+                  ) AS b_p_ch
+              ) AS provodki_array
             FROM bank_prixod bp
             JOIN users u ON bp.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -50,7 +61,18 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
                 br.doc_date AS combined_date,
                 u.login,
                 u.fio,
-                u.id AS user_id
+                u.id AS user_id,
+                (
+                  SELECT ARRAY_AGG(row_to_json(b_r_ch))
+                  FROM (
+                      SELECT 
+                          s_o.schet AS provodki_schet,
+                          s_o.sub_schet AS provodki_sub_schet
+                      FROM bank_rasxod_child b_r_ch
+                      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
+                      WHERE  b_r_ch.id_bank_rasxod = br.id 
+                  ) AS b_r_ch
+              ) AS provodki_array
             FROM bank_rasxod br
             JOIN users u ON br.user_id = u.id
             JOIN regions r ON u.region_id = r.id
@@ -130,7 +152,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
 }
 
 const bankCapService = async (region_id, main_schet_id, from, to) => {
-  const { rows } = await pool.query(`
+  const { rows } = await pool.query(`--sql
     WITH data AS (
       SELECT s_o.schet, COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
       FROM bank_prixod b_p
@@ -196,7 +218,7 @@ const bankCapService = async (region_id, main_schet_id, from, to) => {
 }
 
 const dailyReportService = async (region_id, main_schet_id, from, to) => {
-  const { rows } = await pool.query(`
+  const { rows } = await pool.query(`--sql
     WITH data AS (
       SELECT 
       s_o.schet,

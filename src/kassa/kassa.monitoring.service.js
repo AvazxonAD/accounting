@@ -17,7 +17,18 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
               kp.doc_date AS combined_date,
               u.login,
               u.fio,
-              u.id AS user_id
+              u.id AS user_id,
+              (
+                SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                FROM (
+                    SELECT 
+                        s_o.schet AS provodki_schet,
+                        s_o.sub_schet AS provodki_sub_schet
+                    FROM kassa_prixod_child AS k_p_ch
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                    WHERE  k_p_ch.kassa_prixod_id = kp.id 
+                ) AS k_p_ch
+            ) AS provodki_array
           FROM kassa_prixod kp
           JOIN users u ON kp.user_id = u.id
           JOIN regions r ON u.region_id = r.id
@@ -39,7 +50,18 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
               kr.doc_date AS combined_date,
               u.login,
               u.fio,
-              u.id AS user_id
+              u.id AS user_id,
+              (
+                SELECT ARRAY_AGG(row_to_json(k_r_ch))
+                FROM (
+                    SELECT 
+                        s_o.schet AS provodki_schet,
+                        s_o.sub_schet AS provodki_sub_schet
+                    FROM kassa_rasxod_child AS k_r_ch
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
+                    WHERE  k_r_ch.kassa_rasxod_id = kr.id 
+                ) AS k_r_ch
+            ) AS provodki_array
           FROM kassa_rasxod kr
           JOIN users u ON kr.user_id = u.id
           JOIN regions r ON u.region_id = r.id

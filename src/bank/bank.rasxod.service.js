@@ -131,31 +131,17 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
               b_r.id_shartnomalar_organization,
               b_r.rukovoditel,
               b_r.glav_buxgalter,
-              (SELECT ARRAY_AGG(row_to_json(b_r_ch))
-                FROM (
-                  SELECT 
-                      b_r_ch.id,
-                      b_r_ch.spravochnik_operatsii_id,
-                      s_o.name AS spravochnik_operatsii_name,
-                      b_r_ch.summa,
-                      b_r_ch.id_spravochnik_podrazdelenie,
-                      s_p.name AS spravochnik_podrazdelenie_name,
-                      b_r_ch.id_spravochnik_sostav,
-                      s_s.name AS spravochnik_sostav_name,
-                      b_r_ch.id_spravochnik_type_operatsii,
-                      s_t_o.name AS spravochnik_type_operatsii_name,
-                      b_r_ch.main_zarplata_id,
-                      b_r_ch.id_spravochnik_podotchet_litso,
-                      s_p_l.name AS spravochnik_podotchet_litso_name
-                  FROM bank_rasxod_child AS b_r_ch
-                  JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
-                  LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_r_ch.id_spravochnik_podrazdelenie
-                  LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = b_r_ch.id_spravochnik_sostav
-                  LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = b_r_ch.id_spravochnik_type_operatsii
-                  LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = b_r_ch.id_spravochnik_podotchet_litso
-                  WHERE b_r_ch.id_bank_rasxod = b_r.id 
-                ) AS b_r_ch
-              ) AS childs 
+              (
+                  SELECT ARRAY_AGG(row_to_json(b_r_ch))
+                  FROM (
+                      SELECT 
+                          s_o.schet AS provodki_schet,
+                          s_o.sub_schet AS provodki_sub_schet
+                      FROM bank_rasxod_child AS b_r_ch
+                      JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
+                      WHERE  b_r_ch.id_bank_rasxod = b_r.id 
+                  ) AS b_r_ch
+              ) AS provodki_array 
           FROM bank_rasxod AS b_r
           JOIN users AS u ON b_r.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id

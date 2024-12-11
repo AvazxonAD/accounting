@@ -91,23 +91,16 @@ const getAllKassaPrixodDb = async (region_id, main_schet_id, from, to, offset, l
                   s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
                   k_p.main_zarplata_id,
                   (
-                      SELECT ARRAY_AGG(row_to_json(k_p_ch))
-                      FROM (
-                          SELECT  
-                              k_p_ch.id,
-                              k_p_ch.spravochnik_operatsii_id,
-                              k_p_ch.summa,
-                              k_p_ch.id_spravochnik_podrazdelenie,
-                              k_p_ch.id_spravochnik_sostav,
-                              k_p_ch.id_spravochnik_type_operatsii
-                          FROM kassa_prixod_child AS k_p_ch 
-                          JOIN users AS u ON u.id = k_p.user_id
-                          JOIN regions AS r ON r.id = u.region_id   
-                          WHERE r.id = $1 
-                            AND k_p_ch.main_schet_id = $2 
-                            AND k_p_ch.kassa_prixod_id = k_p.id
-                      ) AS k_p_ch
-                  ) AS childs
+                    SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                    FROM (
+                        SELECT 
+                            s_o.schet AS provodki_schet,
+                            s_o.sub_schet AS provodki_sub_schet
+                        FROM kassa_prixod_child AS k_p_ch
+                        JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                        WHERE  k_p_ch.kassa_prixod_id = k_p.id 
+                    ) AS k_p_ch
+                  ) AS provodki_array
               FROM kassa_prixod AS k_p
               JOIN users AS u ON u.id = k_p.user_id
               JOIN regions AS r ON r.id = u.region_id

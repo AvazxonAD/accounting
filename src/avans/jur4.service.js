@@ -89,29 +89,16 @@ const getAllJur4DB = async (region_id, main_schet_id, from, to, offset, limit) =
                     s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
                     a_o_j_4.spravochnik_operatsii_own_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(a_o_j_4_child))
+                        SELECT ARRAY_AGG(row_to_json(a_j_ch))
                         FROM (
-                            SELECT   
-                                a_o_j_4_ch.id,
-                                a_o_j_4_ch.spravochnik_operatsii_id,
-                                s_o.name AS spravochnik_operatsii_name,
-                                a_o_j_4_ch.summa::FLOAT,
-                                a_o_j_4_ch.id_spravochnik_podrazdelenie,
-                                s_p.name AS spravochnik_podrazdelenie_name,
-                                a_o_j_4_ch.id_spravochnik_sostav,
-                                s_s.name AS spravochnik_sostav_name,
-                                a_o_j_4_ch.id_spravochnik_type_operatsii,
-                                s_t_o.name AS spravochnik_type_operatsii_name
-                            FROM  avans_otchetlar_jur4_child AS a_o_j_4_ch 
-                            JOIN users AS u ON u.id =  a_o_j_4_ch.user_id
-                            JOIN regions AS r ON u.region_id = r.id
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = a_o_j_4_ch.spravochnik_operatsii_id
-                            LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = a_o_j_4_ch.id_spravochnik_podrazdelenie
-                            LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = a_o_j_4_ch.id_spravochnik_sostav
-                            LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = a_o_j_4_ch.id_spravochnik_type_operatsii
-                            WHERE r.id = $1  AND a_o_j_4_ch.main_schet_id = $2 AND a_o_j_4_ch.avans_otchetlar_jur4_id = a_o_j_4.id
-                        ) AS a_o_j_4_child
-                    ) AS childs
+                            SELECT 
+                                s_o.schet AS provodki_schet,
+                                s_o.sub_schet AS provodki_sub_schet
+                            FROM avans_otchetlar_jur4_child AS a_j_ch
+                            JOIN spravochnik_operatsii AS s_o ON s_o.id = a_j_ch.spravochnik_operatsii_id
+                            WHERE  a_j_ch.avans_otchetlar_jur4_id = a_o_j_4.id 
+                        ) AS a_j_ch
+                    ) AS provodki_array
                 FROM avans_otchetlar_jur4 AS a_o_j_4
                 JOIN users AS u ON u.id =  a_o_j_4.user_id
                 JOIN regions AS r ON u.region_id = r.id
