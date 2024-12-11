@@ -11,10 +11,11 @@ exports.GroupDB = class {
                 provodka_debet, 
                 group_number, 
                 provodka_kredit, 
+                provodka_subschet,
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
         `;
         const result = await db.query(query, params);
         return result;
@@ -37,6 +38,7 @@ exports.GroupDB = class {
                     g_j7.provodka_debet, 
                     g_j7.group_number, 
                     g_j7.provodka_kredit,
+                    g_j7.provodka_subschet,
                     s.smeta_name,
                     s.smeta_number
                 FROM group_jur7 AS g_j7
@@ -70,6 +72,7 @@ exports.GroupDB = class {
                 g_j7.provodka_debet, 
                 g_j7.group_number, 
                 g_j7.provodka_kredit,
+                g_j7.provodka_subschet,
                 s.smeta_name,
                 s.smeta_number
             FROM group_jur7 AS g_j7
@@ -91,8 +94,9 @@ exports.GroupDB = class {
                 provodka_debet = $5,
                 group_number = $6,
                 provodka_kredit = $7,
-                updated_at = $8
-            WHERE id = $9 AND isdeleted = false RETURNING *
+                provodka_subschet = $8,
+                updated_at = $9
+            WHERE id = $10 AND isdeleted = false RETURNING *
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -114,6 +118,7 @@ exports.GroupDB = class {
                 g_j7.provodka_debet, 
                 g_j7.group_number, 
                 g_j7.provodka_kredit,
+                g_j7.provodka_subschet,
                 s.smeta_name,
                 s.smeta_number
             FROM group_jur7 AS g_j7

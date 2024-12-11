@@ -12,7 +12,8 @@ exports.GroupService = class {
             iznos_foiz,
             provodka_debet,
             group_number,
-            provodka_kredit
+            provodka_kredit,
+            provodka_subschet,
         } = req.body;
 
         const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
@@ -29,6 +30,7 @@ exports.GroupService = class {
             provodka_debet,
             group_number,
             provodka_kredit,
+            provodka_subschet,
             tashkentTime(),
             tashkentTime()
         ]);
@@ -79,7 +81,8 @@ exports.GroupService = class {
             iznos_foiz,
             provodka_debet,
             group_number,
-            provodka_kredit
+            provodka_kredit,
+            provodka_subschet
         } = req.body;
         const id = req.params.id;
         const group = await GroupDB.getByIdGroup([id]);
@@ -102,6 +105,7 @@ exports.GroupService = class {
             provodka_debet,
             group_number,
             provodka_kredit,
+            provodka_subschet,
             tashkentTime(),
             id
         ]);

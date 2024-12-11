@@ -12,7 +12,9 @@ exports.NaimenovanieService = class {
             spravochnik_budjet_name_id,
             name,
             edin,
-            group_jur7_id
+            group_jur7_id,
+            inventar_num,
+            serial_num
         } = req.body;
 
         const bedjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id])
@@ -33,6 +35,8 @@ exports.NaimenovanieService = class {
             name,
             edin,
             group_jur7_id,
+            inventar_num,
+            serial_num,
             tashkentTime(),
             tashkentTime()
         ])
@@ -83,7 +87,9 @@ exports.NaimenovanieService = class {
             spravochnik_budjet_name_id,
             name,
             edin,
-            group_jur7_id
+            group_jur7_id,
+            inventar_num,
+            serial_num
         } = req.body;
         const id = req.params.id
         const old_naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, id])
@@ -109,6 +115,8 @@ exports.NaimenovanieService = class {
             edin,
             spravochnik_budjet_name_id,
             group_jur7_id,
+            inventar_num,
+            serial_num,
             tashkentTime(),
             id
         ])

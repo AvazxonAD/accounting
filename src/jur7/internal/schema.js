@@ -24,6 +24,9 @@ exports.createInternalSchema = Joi.object({
         data_pereotsenka: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       })
     )
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
@@ -54,6 +57,9 @@ exports.updateInternalSchema = Joi.object({
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
@@ -62,6 +68,7 @@ exports.getInternalSchema = Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).default(10),
     search: Joi.string().trim(),
+    main_schet_id: Joi.number().integer().min(1).required(),
     from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
     to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
   })
@@ -70,11 +77,17 @@ exports.getInternalSchema = Joi.object({
 exports.getByIdInternalSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
 exports.deleteInternalSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
+  }),  
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });

@@ -9,10 +9,12 @@ exports.NaimenovanieDB = class {
                 name, 
                 edin, 
                 group_jur7_id, 
+                inventar_num,
+                serial_num,
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *
         `
         const result = await db.query(query, params)
@@ -32,8 +34,10 @@ exports.NaimenovanieDB = class {
                     n_t_j7.name, 
                     n_t_j7.edin,
                     n_t_j7.group_jur7_id,
-                    g_j7.name AS group_jur7_name,
                     n_t_j7.spravochnik_budjet_name_id,
+                    n_t_j7.inventar_num,
+                    n_t_j7.serial_num,
+                    g_j7.name AS group_jur7_name,
                     s_b_n.name AS spravochnik_budjet_name
                 FROM naimenovanie_tovarov_jur7 AS n_t_j7
                 JOIN users AS u ON u.id = n_t_j7.user_id
@@ -69,6 +73,8 @@ exports.NaimenovanieDB = class {
                 g_j7.name AS group_jur7_name,
                 n_t_j7.group_jur7_id,
                 n_t_j7.spravochnik_budjet_name_id,
+                n_t_j7.inventar_num,
+                n_t_j7.serial_num,
                 s_b_n.name AS spravochnik_budjet_name
             FROM naimenovanie_tovarov_jur7 AS n_t_j7
             JOIN users AS u ON u.id = n_t_j7.user_id
@@ -84,8 +90,10 @@ exports.NaimenovanieDB = class {
     static async updateNaimenovanie(params) {
         const query = `--sql
             UPDATE naimenovanie_tovarov_jur7 
-            SET name = $1, edin = $2, spravochnik_budjet_name_id = $3, group_jur7_id = $4, updated_at = $5
-            WHERE id = $6 AND isdeleted = false
+            SET 
+                name = $1, edin = $2, spravochnik_budjet_name_id = $3, 
+                group_jur7_id = $4, inventar_num = $5, serial_num = $6, updated_at = $7
+            WHERE id = $8 AND isdeleted = false
             RETURNING *
         `
         const result = await db.query(query, params)
@@ -97,14 +105,21 @@ exports.NaimenovanieDB = class {
         await db.query(query, params)
     }
 
-    static async getProductKol(params, searchFilter) {
+    static async getProductKol(params, search) {
+        let search_filter = ''
+        if (search) {
+            search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
+            params.push(search); 
+        }
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    n_t_j7.id::INTEGER, 
                     n_t_j7.name, 
+                    n_t_j7.id::INTEGER, 
                     n_t_j7.edin,
                     n_t_j7.group_jur7_id,
+                    n_t_j7.inventar_num,
+                    n_t_j7.serial_num,
                     g_j7.name AS group_jur7_name,
                     n_t_j7.spravochnik_budjet_name_id,
                     s_b_n.name AS spravochnik_budjet_name,
@@ -145,7 +160,7 @@ exports.NaimenovanieDB = class {
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
                 JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id
-                WHERE n_t_j7.isdeleted = false AND r.id = $1 
+                WHERE n_t_j7.isdeleted = false AND r.id = $1 ${search_filter} 
             )
             SELECT *
             FROM (
@@ -156,6 +171,6 @@ exports.NaimenovanieDB = class {
         const data = await db.query(query, params);
         return data;
     }
-    
+
 
 }

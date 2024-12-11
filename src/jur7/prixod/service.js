@@ -6,11 +6,13 @@ const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
 const { childsSumma } = require('../../helper/functions')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
+const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 
 exports.PrixodService = class {
   static async createPrixod(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
+    const main_schet_id = req.query.main_schet_id;
     const {
       doc_num,
       doc_date,
@@ -24,6 +26,12 @@ exports.PrixodService = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if (!main_schet) {
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id])
     if (!organization) {
       return res.status(404).json({
@@ -46,7 +54,7 @@ exports.PrixodService = class {
     }
     for (let child of childs) {
       const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-      if(!product){
+      if (!product) {
         return res.status(404).json({
           message: "product not found"
         })
@@ -68,15 +76,17 @@ exports.PrixodService = class {
         kimga_id,
         kimga_name,
         id_shartnomalar_organization,
+        main_schet_id,
         tashkentTime(),
         tashkentTime()
       ], client);
       const result_childs = childs.map(item => {
-        item.user_id = user_id
-        item.document_prixod_jur7_id = doc.id
-        item.created_at = tashkentTime()
-        item.updated_at = tashkentTime()
-        return item
+        item.user_id = user_id;
+        item.document_prixod_jur7_id = doc.id;
+        item.main_schet_id = main_schet_id;
+        item.created_at = tashkentTime();
+        item.updated_at = tashkentTime();
+        return item;
       })
       doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
     })
@@ -89,9 +99,15 @@ exports.PrixodService = class {
 
   static async getPrixod(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to } = req.query;
+    const { page, limit, search, from, to, main_schet_id } = req.query;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if (!main_schet) {
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
     const offset = (page - 1) * limit;
-    const { data, total } = await PrixodDB.getPrixod([region_id, from, to, offset, limit], search)
+    const { data, total } = await PrixodDB.getPrixod([region_id, from, to, main_schet_id, offset, limit], search)
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -110,7 +126,14 @@ exports.PrixodService = class {
   static async getByIdPrixod(req, res) {
     const region_id = req.user.region_id
     const id = req.params.id
-    const data = await PrixodDB.getByIdPrixod([region_id, id], true)
+    const main_schet_id = req.query.main_schet_id;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const data = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id], true)
     if (!data) {
       return res.status(404).json({
         message: "prixod not found"
@@ -126,6 +149,7 @@ exports.PrixodService = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
+    const main_schet_id = req.query.main_schet_id;
     const {
       doc_num,
       doc_date,
@@ -139,7 +163,13 @@ exports.PrixodService = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
-    const oldData = await PrixodDB.getByIdPrixod([region_id, id])
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const oldData = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!oldData) {
       return res.status(404).json({
         message: "prixod doc not found"
@@ -184,11 +214,12 @@ exports.PrixodService = class {
         id
       ], client);
       const result_childs = childs.map(item => {
-        item.user_id = user_id
-        item.document_prixod_jur7_id = doc.id
-        item.created_at = tashkentTime()
-        item.updated_at = tashkentTime()
-        return item
+        item.user_id = user_id;
+        item.document_prixod_jur7_id = doc.id;
+        item.main_schet_id = main_schet_id;
+        item.created_at = tashkentTime();
+        item.updated_at = tashkentTime();
+        return item;
       })
       await PrixodDB.deletePrixodChild([id], client)
       doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
@@ -201,9 +232,16 @@ exports.PrixodService = class {
   }
 
   static async deletePrixod(req, res) {
-    const region_id = req.user.region_id
-    const id = req.params.id
-    const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id])
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const main_schet_id = req.query.main_schet_id;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!prixod_doc) {
       return res.status(404).json({
         message: "prixod doc not found"

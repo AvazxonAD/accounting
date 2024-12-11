@@ -16,10 +16,11 @@ exports.InternalDB = class {
                 kimdan_name,
                 kimga_id,
                 kimga_name,
+                main_schet_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING * 
         `
         const result = await client.query(query, params)
@@ -29,20 +30,21 @@ exports.InternalDB = class {
     static async createInternalChild(params, client) {
         const values = params.map((_, index) => {
             return `
-                ($${13 * index + 1}, 
-                $${13 * index + 2}, 
-                $${13 * index + 3}, 
-                $${13 * index + 4}, 
-                $${13 * index + 5}, 
-                $${13 * index + 6}, 
-                $${13 * index + 7}, 
-                $${13 * index + 8}, 
-                $${13 * index + 9}, 
-                $${13 * index + 10}, 
-                $${13 * index + 11}, 
-                $${13 * index + 12}, 
-                $${13 * index + 13})
-            `
+                ($${14 * index + 1}, 
+                $${14 * index + 2}, 
+                $${14 * index + 3}, 
+                $${14 * index + 4}, 
+                $${14 * index + 5}, 
+                $${14 * index + 6}, 
+                $${14 * index + 7}, 
+                $${14 * index + 8}, 
+                $${14 * index + 9}, 
+                $${14 * index + 10}, 
+                $${14 * index + 11}, 
+                $${14 * index + 12}, 
+                $${14 * index + 13},
+                $${14 * index + 14})
+            `;
         })
         const design_params = [
             "naimenovanie_tovarov_jur7_id",
@@ -56,6 +58,7 @@ exports.InternalDB = class {
             "data_pereotsenka",
             "user_id",
             "document_vnutr_peremesh_jur7_id",
+            "main_schet_id",
             "created_at",
             "updated_at"
         ]
@@ -74,6 +77,7 @@ exports.InternalDB = class {
                 data_pereotsenka,
                 user_id,
                 document_vnutr_peremesh_jur7_id,
+                main_schet_id,
                 created_at,
                 updated_at
             ) 
@@ -102,7 +106,8 @@ exports.InternalDB = class {
               d_j.opisanie, 
               d_j.summa, 
               s_j_sh_kimga.fio AS kimdan_name, 
-              s_j_sh_kimga.fio AS kimga_name
+              s_j_sh_kimga.fio AS kimga_name,
+              d_j.main_schet_id
             FROM document_vnutr_peremesh_jur7 AS d_j
             JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh_kimga ON s_j_sh_kimga.id = d_j.kimga_id 
             JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh_kimdan ON s_j_sh_kimdan.id = d_j.kimdan_id 
@@ -111,8 +116,9 @@ exports.InternalDB = class {
             WHERE r.id = $1 
               AND d_j.isdeleted = false 
               AND d_j.doc_date BETWEEN $2 AND $3 ${search_filter}
+              AND d_j.main_schet_id = $4
             ORDER BY d_j.doc_date
-            OFFSET $4 LIMIT $5
+            OFFSET $5 LIMIT $6
           )
           SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
@@ -124,6 +130,7 @@ exports.InternalDB = class {
               WHERE r.id = $1 
                 AND d_j.doc_date BETWEEN $2 AND $3 
                 AND d_j.isdeleted = false ${search_filter}
+                AND d_j.main_schet_id = $4
             )::FLOAT AS summa,
             (
               SELECT COALESCE(COUNT(d_j.id), 0)
@@ -133,6 +140,7 @@ exports.InternalDB = class {
               WHERE r.id = $1 
                 AND d_j.doc_date BETWEEN $2 AND $3 
                 AND d_j.isdeleted = false ${search_filter}
+                AND d_j.main_schet_id = $4
             )::INTEGER AS total
           FROM data
         `;
@@ -156,6 +164,7 @@ exports.InternalDB = class {
                 d_j.kimga_id,
                 d_j.doverennost,
                 d_j.j_o_num,
+                d_j.main_schet_id,
                 (
                 SELECT ARRAY_AGG(row_to_json(d_j_ch))
                 FROM (
@@ -177,7 +186,7 @@ exports.InternalDB = class {
             FROM document_vnutr_peremesh_jur7 AS d_j
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d_j.id = $2  ${isdeleted ? `` : ignore}
+            WHERE r.id = $1 AND d_j.id = $2 AND d_j.main_schet_id = $3 ${isdeleted ? `` : ignore}
         `;
         const result = await db.query(query, params);
         return result[0];

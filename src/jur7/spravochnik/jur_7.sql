@@ -15,6 +15,7 @@ CREATE TABLE group_jur7 (
   schet VARCHAR(255),
   iznos_foiz INT,
   provodka_debet VARCHAR(255),
+  provodka_subschet VARCHAR(255),
   group_number VARCHAR(255),
   provodka_kredit VARCHAR(255),
   created_at TIMESTAMP,
@@ -68,6 +69,7 @@ CREATE TABLE document_prixod_jur7 (
   kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
   kimga_name VARCHAR(255),
   id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -86,6 +88,7 @@ CREATE TABLE document_prixod_jur7_child (
   kredit_schet VARCHAR(255),
   kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -105,6 +108,7 @@ CREATE TABLE document_rasxod_jur7 (
   kimga_id INT NOT NULL REFERENCES spravochnik_organization(id),
   kimga_name VARCHAR(255),
   id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -123,6 +127,7 @@ CREATE TABLE document_rasxod_jur7_child (
   kredit_schet VARCHAR(255),
   kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -141,6 +146,7 @@ CREATE TABLE document_vnutr_peremesh_jur7 (
   kimdan_name VARCHAR(255),
   kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
   kimga_name VARCHAR(255),
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -159,6 +165,7 @@ CREATE TABLE document_vnutr_peremesh_jur7_child (
   kredit_schet VARCHAR(255),
   kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
+  main_schet_id INTEGER REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

@@ -5,7 +5,9 @@ exports.createNaimenovanieSchema = Joi.object({
     spravochnik_budjet_name_id: Joi.number().required(),
     name: Joi.string().trim(),
     edin: Joi.string().trim(),
-    group_jur7_id: Joi.number().required()
+    group_jur7_id: Joi.number().required(),
+    inventar_num: Joi.string().trim(),
+    serial_num: Joi.string().trim()
   })
 }).options({ stripUnknown: true });
 
@@ -14,7 +16,9 @@ exports.updateNaimenovanieSchema = Joi.object({
     spravochnik_budjet_name_id: Joi.number().required(),
     name: Joi.string().trim(),
     edin: Joi.string().trim(),
-    group_jur7_id: Joi.number().required()
+    group_jur7_id: Joi.number().required(),
+    inventar_num: Joi.string().trim(),
+    serial_num: Joi.string().trim()
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1).required()

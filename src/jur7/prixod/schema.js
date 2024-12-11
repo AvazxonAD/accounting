@@ -25,6 +25,9 @@ exports.createPrixodSchema = Joi.object({
         data_pereotsenka: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       })
     )
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
@@ -36,9 +39,9 @@ exports.updatePrixodSchema = Joi.object({
     opisanie: Joi.string().trim(),
     doverennost: Joi.string().trim(),
     kimdan_id: Joi.number().integer().min(1).required(),
-    kimdan_name: Joi.string().trim(),
+    kimdan_name: Joi.string().trim().allow(null),
     kimga_id: Joi.number().integer().min(1).required(),
-    kimga_name: Joi.string().trim(),
+    kimga_name: Joi.string().trim().allow(null),
     id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({
@@ -56,6 +59,9 @@ exports.updatePrixodSchema = Joi.object({
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
@@ -65,18 +71,25 @@ exports.getPrixodSchema = Joi.object({
     limit: Joi.number().integer().min(1).default(10),
     search: Joi.string().trim(),
     from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-    to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+    to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
 exports.getByIdPrixodSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
 exports.deletePrixodSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
+  }),
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
