@@ -5,11 +5,13 @@ const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
 const { childsSumma } = require('../../helper/functions')
+const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 
 exports.RasxodService = class {
   static async createRasxod(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
+    const main_schet_id = req.query.main_schet_id;
     const {
       doc_num,
       doc_date,
@@ -23,6 +25,12 @@ exports.RasxodService = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if (!main_schet) {
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
     const organization = await OrganizationDB.getByIdorganization([region_id, kimga_id])
     if (!organization) {
       return res.status(404).json({
@@ -59,12 +67,14 @@ exports.RasxodService = class {
         kimga_id,
         kimga_name,
         id_shartnomalar_organization,
+        main_schet_id,
         tashkentTime(),
         tashkentTime()
       ], client);
       const result_childs = childs.map(item => {
         item.user_id = user_id
-        item.document_rasxod_jur7_id = doc.id
+        item.document_rasxod_jur7_id = doc.id;
+        item.main_schet_id = main_schet_id;
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
@@ -80,9 +90,15 @@ exports.RasxodService = class {
 
   static async getRasxod(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to } = req.query;
+    const { page, limit, search, from, to, main_schet_id } = req.query;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
     const offset = (page - 1) * limit;
-    const { data, total } = await RasxodDB.getRasxod([region_id, from, to, offset, limit], search)
+    const { data, total } = await RasxodDB.getRasxod([region_id, from, to, main_schet_id, offset, limit], search)
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -101,7 +117,14 @@ exports.RasxodService = class {
   static async getByIdRasxod(req, res) {
     const region_id = req.user.region_id
     const id = req.params.id
-    const data = await RasxodDB.getByIdRasxod([region_id, id], true)
+    const main_schet_id = req.query.main_schet_id;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const data = await RasxodDB.getByIdRasxod([region_id, id, main_schet_id], true)
     if (!data) {
       return res.status(404).json({
         message: "group not found"
@@ -117,6 +140,7 @@ exports.RasxodService = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
+    const main_schet_id = req.query.main_schet_id;
     const {
       doc_num,
       doc_date,
@@ -130,7 +154,13 @@ exports.RasxodService = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
-    const oldData = await RasxodDB.getByIdRasxod([region_id, id])
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const oldData = await RasxodDB.getByIdRasxod([region_id, id, main_schet_id])
     if (!oldData) {
       return res.status(404).json({
         message: "rasxod doc not found"
@@ -177,6 +207,7 @@ exports.RasxodService = class {
       const result_childs = childs.map(item => {
         item.user_id = user_id
         item.document_rasxod_jur7_id = doc.id
+        item.main_schet_id = main_schet_id;
         item.created_at = tashkentTime()
         item.updated_at = tashkentTime()
         return item
@@ -194,7 +225,14 @@ exports.RasxodService = class {
   static async deleteRasxod(req, res) {
     const region_id = req.user.region_id
     const id = req.params.id
-    const rasxod_doc = await RasxodDB.getByIdRasxod([region_id, id])
+    const main_schet_id = req.query.main_schet_id;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if(!main_schet){
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const rasxod_doc = await RasxodDB.getByIdRasxod([region_id, id, main_schet_id])
     if (!rasxod_doc) {
       return res.status(404).json({
         message: "rasxod doc not found"
