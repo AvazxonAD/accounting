@@ -48,6 +48,8 @@ CREATE TABLE naimenovanie_tovarov_jur7 (
   spravochnik_budjet_name_id INT REFERENCES spravochnik_budjet_name(id),
   name VARCHAR(255),
   edin VARCHAR(50),
+  inventar_num VARCHAR(255),
+  serial_num VARCHAR(255),
   group_jur7_id INT NOT NULL REFERENCES group_jur7(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
