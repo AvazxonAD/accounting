@@ -13,7 +13,7 @@ exports.createSchema = Joi.object({
             Joi.object({
                 kol: Joi.number().min(1).required(),
                 sena: Joi.number().min(1).required(),
-                nds_foiz: Joi.number().min(1).allow(null),
+                nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
                 spravochnik_operatsii_id: Joi.number().required().min(1).integer(),
                 id_spravochnik_podrazdelenie: Joi.number().min(1).integer().allow(null),
                 id_spravochnik_sostav: Joi.number().min(1).integer().allow(null),
@@ -38,7 +38,7 @@ exports.updateSchema = Joi.object({
             Joi.object({
                 kol: Joi.number().min(1).required(),
                 sena: Joi.number().min(1).required(),
-                nds_foiz: Joi.number().min(1).allow(null),
+                nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
                 spravochnik_operatsii_id: Joi.number().required().min(1).integer(),
                 id_spravochnik_podrazdelenie: Joi.number().min(1).integer().allow(null),
                 id_spravochnik_sostav: Joi.number().min(1).integer().allow(null),

@@ -14,9 +14,9 @@ exports.createInternalSchema = Joi.object({
     childs: Joi.array().required().items(
       Joi.object({
         naimenovanie_tovarov_jur7_id: Joi.number().required(),
-        kol: Joi.number(),
-        sena: Joi.number(),
-        summa: Joi.number().integer().min(1),
+        kol: Joi.number().min(1).required(),
+        sena: Joi.number().min(1).required(),
+        nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
         debet_schet: Joi.string().trim(),
         debet_sub_schet: Joi.string().trim(),
         kredit_schet: Joi.string().trim(),
@@ -44,9 +44,9 @@ exports.updateInternalSchema = Joi.object({
     childs: Joi.array().required().items(
       Joi.object({
         naimenovanie_tovarov_jur7_id: Joi.number().required(),
-        kol: Joi.number(),
-        sena: Joi.number(),
-        summa: Joi.number().integer().min(1),
+        kol: Joi.number().min(1).required(),
+        sena: Joi.number().min(1).required(),
+        nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
         debet_schet: Joi.string().trim(),
         debet_sub_schet: Joi.string().trim(),
         kredit_schet: Joi.string().trim(),

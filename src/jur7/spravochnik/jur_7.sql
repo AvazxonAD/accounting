@@ -54,6 +54,14 @@ CREATE TABLE naimenovanie_tovarov_jur7 (
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE storage_unit (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR NOT NULL,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  is_deleted BOOLEAN DEFAULT FALSE
+);
+
 --prixod rasxod internal
 CREATE TABLE document_prixod_jur7 (
   id SERIAL PRIMARY KEY,
@@ -82,6 +90,9 @@ CREATE TABLE document_prixod_jur7_child (
   naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
+  nds_foiz DECIMAL,
+  nds_summa DECIMAL,
+  summa_s_nds DECIMAL,
   summa DECIMAL,
   debet_schet VARCHAR(255),
   debet_sub_schet VARCHAR(255),
@@ -121,6 +132,9 @@ CREATE TABLE document_rasxod_jur7_child (
   naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
+  nds_foiz DECIMAL,
+  nds_summa DECIMAL,
+  summa_s_nds DECIMAL,
   summa DECIMAL,
   debet_schet VARCHAR(255),
   debet_sub_schet VARCHAR(255),
@@ -159,6 +173,9 @@ CREATE TABLE document_vnutr_peremesh_jur7_child (
   naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
+  nds_foiz DECIMAL,
+  nds_summa DECIMAL,
+  summa_s_nds DECIMAL,
   summa DECIMAL,
   debet_schet VARCHAR(255),
   debet_sub_schet VARCHAR(255),
@@ -169,12 +186,4 @@ CREATE TABLE document_vnutr_peremesh_jur7_child (
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE storage_unit (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR NOT NULL,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP,
-  is_deleted BOOLEAN DEFAULT FALSE
 );

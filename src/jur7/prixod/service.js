@@ -60,7 +60,10 @@ exports.PrixodService = class {
         })
       }
     }
-    const summa = childsSumma(childs)
+    let summa = 0;
+    for (let child of childs) {
+      summa += child.kol * child.sena;
+    }
     let doc;
     await db.transaction(async client => {
       doc = await PrixodDB.createPrixod([
@@ -81,6 +84,13 @@ exports.PrixodService = class {
         tashkentTime()
       ], client);
       const result_childs = childs.map(item => {
+        item.summa = item.kol * item.sena
+        if (item.nds_foiz) {
+          item.nds_summa = item.nds_foiz / 100 * item.summa;
+        } else {
+          item.nds_summa = 0;
+        }
+        item.summa_s_nds = item.summa + item.nds_summa;
         item.user_id = user_id;
         item.document_prixod_jur7_id = doc.id;
         item.main_schet_id = main_schet_id;
@@ -195,7 +205,10 @@ exports.PrixodService = class {
         })
       }
     }
-    const summa = childsSumma(childs)
+    let summa = 0;
+    for (let child of childs) {
+      summa += child.kol * child.sena;
+    }
     let doc;
     await db.transaction(async client => {
       doc = await PrixodDB.updatePrixod([
@@ -214,6 +227,13 @@ exports.PrixodService = class {
         id
       ], client);
       const result_childs = childs.map(item => {
+        item.summa = item.kol * item.sena
+        if (item.nds_foiz) {
+          item.nds_summa = item.nds_foiz / 100 * item.summa;
+        } else {
+          item.nds_summa = 0;
+        }
+        item.summa_s_nds = item.summa + item.nds_summa;
         item.user_id = user_id;
         item.document_prixod_jur7_id = doc.id;
         item.main_schet_id = main_schet_id;

@@ -23,7 +23,7 @@ exports.InternalService = class {
       childs
     } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -40,7 +40,10 @@ exports.InternalService = class {
         message: "responsible not found"
       })
     }
-    const summa = childsSumma(childs)
+    let summa = 0;
+    for (let child of childs) {
+      summa += child.kol * child.sena;
+    }
     let doc;
     await db.transaction(async client => {
       doc = await InternalDB.createInternal([
@@ -60,6 +63,13 @@ exports.InternalService = class {
         tashkentTime()
       ], client);
       const result_childs = childs.map(item => {
+        item.summa = item.kol * item.sena
+        if (item.nds_foiz) {
+          item.nds_summa = item.nds_foiz / 100 * item.summa;
+        } else {
+          item.nds_summa = 0;
+        }
+        item.summa_s_nds = item.summa + item.nds_summa;
         item.user_id = user_id;
         item.document_vnutr_peremesh_jur7_id = doc.id;
         item.main_schet_id = main_schet_id;
@@ -80,7 +90,7 @@ exports.InternalService = class {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -107,7 +117,7 @@ exports.InternalService = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -142,7 +152,7 @@ exports.InternalService = class {
       childs
     } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -165,7 +175,10 @@ exports.InternalService = class {
         message: "responsible not found"
       })
     }
-    const summa = childsSumma(childs)
+    let summa = 0;
+    for (let child of childs) {
+      summa += child.kol * child.sena;
+    }
     let doc;
     await db.transaction(async client => {
       doc = await InternalDB.updateInternal([
@@ -183,6 +196,13 @@ exports.InternalService = class {
         id
       ], client);
       const result_childs = childs.map(item => {
+        item.summa = item.kol * item.sena
+        if (item.nds_foiz) {
+          item.nds_summa = item.nds_foiz / 100 * item.summa;
+        } else {
+          item.nds_summa = 0;
+        }
+        item.summa_s_nds = item.summa + item.nds_summa;
         item.user_id = user_id;
         item.document_vnutr_peremesh_jur7_id = doc.id;
         item.main_schet_id = main_schet_id;
@@ -205,7 +225,7 @@ exports.InternalService = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })

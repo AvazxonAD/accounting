@@ -51,7 +51,10 @@ exports.RasxodService = class {
         })
       }
     }
-    const summa = childsSumma(childs)
+    let summa = 0;
+    for (let child of childs) {
+      summa += child.kol * child.sena;
+    }
     let doc;
     await db.transaction(async client => {
       doc = await RasxodDB.createRasxod([
@@ -72,6 +75,13 @@ exports.RasxodService = class {
         tashkentTime()
       ], client);
       const result_childs = childs.map(item => {
+        item.summa = item.kol * item.sena
+        if (item.nds_foiz) {
+          item.nds_summa = item.nds_foiz / 100 * item.summa;
+        } else {
+          item.nds_summa = 0;
+        }
+        item.summa_s_nds = item.summa + item.nds_summa;
         item.user_id = user_id
         item.document_rasxod_jur7_id = doc.id;
         item.main_schet_id = main_schet_id;
@@ -92,7 +102,7 @@ exports.RasxodService = class {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -119,7 +129,7 @@ exports.RasxodService = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -127,7 +137,7 @@ exports.RasxodService = class {
     const data = await RasxodDB.getByIdRasxod([region_id, id, main_schet_id], true)
     if (!data) {
       return res.status(404).json({
-        message: "group not found"
+        message: "rasxod doc not found"
       })
     }
     return res.status(201).json({
@@ -155,7 +165,7 @@ exports.RasxodService = class {
       childs
     } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -186,7 +196,10 @@ exports.RasxodService = class {
         })
       }
     }
-    const summa = childsSumma(childs)
+    let summa = 0;
+    for (let child of childs) {
+      summa += child.kol * child.sena;
+    }
     let doc;
     await db.transaction(async client => {
       doc = await RasxodDB.updateRasxod([
@@ -205,6 +218,13 @@ exports.RasxodService = class {
         id
       ], client);
       const result_childs = childs.map(item => {
+        item.summa = item.kol * item.sena
+        if (item.nds_foiz) {
+          item.nds_summa = item.nds_foiz / 100 * item.summa;
+        } else {
+          item.nds_summa = 0;
+        }
+        item.summa_s_nds = item.summa + item.nds_summa;
         item.user_id = user_id
         item.document_rasxod_jur7_id = doc.id
         item.main_schet_id = main_schet_id;
@@ -227,7 +247,7 @@ exports.RasxodService = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })

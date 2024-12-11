@@ -31,20 +31,23 @@ exports.RasxodDB = class {
     static async createRasxodChild(params, client) {
         const values = params.map((_, index) => {
             return `
-                ($${14 * index + 1}, 
-                $${14 * index + 2}, 
-                $${14 * index + 3}, 
-                $${14 * index + 4}, 
-                $${14 * index + 5}, 
-                $${14 * index + 6}, 
-                $${14 * index + 7}, 
-                $${14 * index + 8}, 
-                $${14 * index + 9}, 
-                $${14 * index + 10}, 
-                $${14 * index + 11}, 
-                $${14 * index + 12}, 
-                $${14 * index + 13},
-                $${14 * index + 14})
+                ($${17 * index + 1}, 
+                $${17 * index + 2}, 
+                $${17 * index + 3}, 
+                $${17 * index + 4}, 
+                $${17 * index + 5}, 
+                $${17 * index + 6}, 
+                $${17 * index + 7}, 
+                $${17 * index + 8}, 
+                $${17 * index + 9}, 
+                $${17 * index + 10}, 
+                $${17 * index + 11}, 
+                $${17 * index + 12}, 
+                $${17 * index + 13},
+                $${17 * index + 14},
+                $${17 * index + 15},
+                $${17 * index + 16},
+                $${17 * index + 17})
             `;
         })
         const design_params = [
@@ -52,6 +55,9 @@ exports.RasxodDB = class {
             "kol",
             "sena",
             "summa",
+            "nds_foiz",
+            "nds_summa",
+            "summa_s_nds", 
             "debet_schet",
             "debet_sub_schet",
             "kredit_schet",
@@ -71,6 +77,9 @@ exports.RasxodDB = class {
                 kol,
                 sena,
                 summa,
+                nds_foiz,
+                nds_summa,
+                summa_s_nds, 
                 debet_schet,
                 debet_sub_schet,
                 kredit_schet,
@@ -184,7 +193,10 @@ exports.RasxodDB = class {
                         d_j_ch.debet_sub_schet,
                         d_j_ch.kredit_schet,
                         d_j_ch.kredit_sub_schet,
-                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
+                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
+                        d_j_ch.nds_foiz,
+                        d_j_ch.nds_summa,
+                        d_j_ch.summa_s_nds
                     FROM document_rasxod_jur7_child AS d_j_ch
                     WHERE d_j_ch.document_rasxod_jur7_id = d_j.id
                 ) AS d_j_ch
