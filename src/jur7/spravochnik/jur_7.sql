@@ -10,14 +10,16 @@ CREATE TABLE pereotsenka_jur7 (
 
 CREATE TABLE group_jur7 (
   id SERIAL PRIMARY KEY,
-  smeta_id INT NOT NULL REFERENCES smeta(id),
-  name VARCHAR(255),
+  smeta_id INT REFERENCES smeta(id),
+  name VARCHAR(10000),
   schet VARCHAR(255),
   iznos_foiz INT,
   provodka_debet VARCHAR(255),
   provodka_subschet VARCHAR(255),
   group_number VARCHAR(255),
   provodka_kredit VARCHAR(255),
+  roman_numeral VARCHAR(255),
+  pod_group VARCHAR(255),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

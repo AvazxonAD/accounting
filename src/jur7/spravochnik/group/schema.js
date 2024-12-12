@@ -9,7 +9,10 @@ exports.createGroupSchema = Joi.object({
     provodka_debet: Joi.string().trim(),
     group_number: Joi.string().trim(),
     provodka_kredit: Joi.string().trim(),
-    provodka_subschet: Joi.string().trim()
+    provodka_subschet: Joi.string().trim(),
+      roman_numeral: Joi.string().trim(),
+      pod_group: Joi.string().trim()
+                    
   })
 }).options({ stripUnknown: true });
 
@@ -22,7 +25,9 @@ exports.updateGroupSchema = Joi.object({
     provodka_debet: Joi.string().trim(),
     group_number: Joi.string().trim(),
     provodka_kredit: Joi.string().trim(),
-    provodka_subschet: Joi.string().trim()
+    provodka_subschet: Joi.string().trim(),
+    roman_numeral: Joi.string().trim(),
+    pod_group: Joi.string().trim()
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1).required()

@@ -2,6 +2,7 @@ const { SmetaDB } = require('.././../../smeta/smeta/db');
 const { GroupDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
 const { PereotsenkaDB } = require('../pereotsenka/db')
+const xlsx = require('xlsx')
 
 exports.GroupService = class {
     static async createGroup(req, res) {
@@ -14,6 +15,8 @@ exports.GroupService = class {
             group_number,
             provodka_kredit,
             provodka_subschet,
+            roman_numeral,
+            pod_group
         } = req.body;
 
         const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
@@ -31,6 +34,8 @@ exports.GroupService = class {
             group_number,
             provodka_kredit,
             provodka_subschet,
+            roman_numeral,
+            pod_group,
             tashkentTime(),
             tashkentTime()
         ]);
@@ -82,7 +87,9 @@ exports.GroupService = class {
             provodka_debet,
             group_number,
             provodka_kredit,
-            provodka_subschet
+            provodka_subschet,
+            roman_numeral,
+            pod_group
         } = req.body;
         const id = req.params.id;
         const group = await GroupDB.getByIdGroup([id]);
@@ -106,6 +113,8 @@ exports.GroupService = class {
             group_number,
             provodka_kredit,
             provodka_subschet,
+            roman_numeral,
+            pod_group,
             tashkentTime(),
             id
         ]);
@@ -134,10 +143,49 @@ exports.GroupService = class {
         for (let item of data) {
             const percent = await PereotsenkaDB.getByGroupId([item.id])
             item.percent = percent?.pereotsenka_foiz || 0
-        }   
+        }
         return res.status(200).json({
             message: "get group successfully",
             data
+        })
+    }
+
+    static async importExcel(req, res) {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "file not found"
+            })
+        }
+        const filePath = req.file.path;
+        const workbook = xlsx.readFile(filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(sheet).map((row) => {
+            const newRow = {};
+            for (const key in row) {
+                newRow[key.trim()] = row[key];
+            }
+            return newRow;
+        });
+        console.log(data)
+        for (let group of data) {
+            await GroupDB.createGroup([
+                null, 
+                group.name ? group.name : '', 
+                group.schet ? group.schet : '', 
+                group.iznos_foiz ? group.iznos_foiz : 0, 
+                group.provodka_debet ? group.provodka_debet : '', 
+                null, 
+                null, 
+                group.provodka_subschet ? group.provodka_subschet : '',
+                group.roman_numeral ? group.roman_numeral : '',
+                group.pod_group ? group.pod_group : '',
+                tashkentTime(), 
+                tashkentTime()
+            ])
+        }
+        return res.status(200).json({
+            message: "import data successfully"
         })
     }
 };
