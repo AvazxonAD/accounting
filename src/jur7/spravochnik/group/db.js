@@ -132,7 +132,7 @@ exports.GroupDB = class {
                 s.smeta_name,
                 s.smeta_number
             FROM group_jur7 AS g_j7
-            JOIN smeta AS s ON s.id = g_j7.smeta_id
+            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
             WHERE g_j7.isdeleted = false
         `;
         const data = await db.query(query)
