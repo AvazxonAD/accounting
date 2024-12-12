@@ -14,7 +14,7 @@ exports.RoleDB = class {
     }
 
     static async getByNameRole(params) {
-        const query = `SELECT * FROM role WHERE name = $1`;
+        const query = `SELECT * FROM role WHERE name = $1 AND isdeleted = false`;
         const result = await db.query(query, params)
         return result[0];
     }

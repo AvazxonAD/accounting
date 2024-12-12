@@ -64,6 +64,20 @@ CREATE TABLE storage_unit (
   is_deleted BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE iznos_tovar_jur7 (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    inventar_num VARCHAR(255),
+    serial_num VARCHAR(255),
+    naimenovanie_tovarov_jur7_id INT NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+    kol DECIMAL,
+    sena DECIMAL,
+    iznos_start_date DATE,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
+
 --prixod rasxod internal
 CREATE TABLE document_prixod_jur7 (
   id SERIAL PRIMARY KEY,
@@ -79,7 +93,7 @@ CREATE TABLE document_prixod_jur7 (
   kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
   kimga_name VARCHAR(255),
   id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
-  main_schet_id INTEGER REFERENCES main_schet(id),
+  main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -89,7 +103,7 @@ CREATE TABLE document_prixod_jur7_child (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
   document_prixod_jur7_id INT NOT NULL REFERENCES document_prixod_jur7(id),
-  naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+  naimenovanie_tovarov_jur7_id INT NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
   nds_foiz DECIMAL,
@@ -101,7 +115,8 @@ CREATE TABLE document_prixod_jur7_child (
   kredit_schet VARCHAR(255),
   kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
-  main_schet_id INTEGER REFERENCES main_schet(id),
+  main_schet_id INT REFERENCES main_schet(id),
+  iznos BOOLEAN,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -121,7 +136,7 @@ CREATE TABLE document_rasxod_jur7 (
   kimga_id INT NOT NULL REFERENCES spravochnik_organization(id),
   kimga_name VARCHAR(255),
   id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
-  main_schet_id INTEGER REFERENCES main_schet(id),
+  main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -131,7 +146,7 @@ CREATE TABLE document_rasxod_jur7_child (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
   document_rasxod_jur7_id INT NOT NULL REFERENCES document_rasxod_jur7(id),
-  naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+  naimenovanie_tovarov_jur7_id INT NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
   nds_foiz DECIMAL,
@@ -143,7 +158,7 @@ CREATE TABLE document_rasxod_jur7_child (
   kredit_schet VARCHAR(255),
   kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
-  main_schet_id INTEGER REFERENCES main_schet(id),
+  main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -162,7 +177,7 @@ CREATE TABLE document_vnutr_peremesh_jur7 (
   kimdan_name VARCHAR(255),
   kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
   kimga_name VARCHAR(255),
-  main_schet_id INTEGER REFERENCES main_schet(id),
+  main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
@@ -172,7 +187,7 @@ CREATE TABLE document_vnutr_peremesh_jur7_child (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
   document_vnutr_peremesh_jur7_id INT NOT NULL REFERENCES document_vnutr_peremesh_jur7(id),
-  naimenovanie_tovarov_jur7_id INTEGER NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+  naimenovanie_tovarov_jur7_id INT NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,
   nds_foiz DECIMAL,
@@ -184,7 +199,7 @@ CREATE TABLE document_vnutr_peremesh_jur7_child (
   kredit_schet VARCHAR(255),
   kredit_sub_schet VARCHAR(255),
   data_pereotsenka DATE,
-  main_schet_id INTEGER REFERENCES main_schet(id),
+  main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE

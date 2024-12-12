@@ -105,11 +105,16 @@ exports.NaimenovanieDB = class {
         await db.query(query, params)
     }
 
-    static async getProductKol(params, search) {
+    static async getProductKol(params, search, tovar_id, client) {
+        let tovar_filter = '';
         let search_filter = ''
         if (search) {
             search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search); 
+        }
+        if(tovar_id){
+            tovar_filter = `AND n_t_j7.id = $${params.length + 1}`;
+            params.push(tovar_id);
         }
         const query = `--sql
             WITH data AS (
@@ -160,7 +165,7 @@ exports.NaimenovanieDB = class {
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
                 JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id
-                WHERE n_t_j7.isdeleted = false AND r.id = $1 ${search_filter} 
+                WHERE n_t_j7.isdeleted = false AND r.id = $1 ${tovar_filter} ${search_filter} 
             )
             SELECT *
             FROM (
@@ -168,7 +173,13 @@ exports.NaimenovanieDB = class {
                 FROM data
             ) AS subquery
         `;
-        const data = await db.query(query, params);
+        let data;
+        if(client){
+            data = await client.query(query, params);
+            data = data.rows;
+        } else {
+            data = await db.query(query, params)
+        }
         return data;
     }
 

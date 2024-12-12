@@ -1,10 +1,10 @@
 const { PrixodDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime, checkTovarId } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
-const { childsSumma } = require('../../helper/functions')
+const { IznosDB } = require('../iznos/db')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 
@@ -60,6 +60,12 @@ exports.PrixodService = class {
         })
       }
     }
+    const testTovarId = checkTovarId(childs)
+    if(testTovarId){
+      return res.status(409).json({
+        message: "The product ID was sent incorrectly"
+      })
+    }
     let summa = 0;
     for (let child of childs) {
       summa += child.kol * child.sena;
@@ -98,9 +104,28 @@ exports.PrixodService = class {
         item.updated_at = tashkentTime();
         return item;
       })
+      for (let child of result_childs) {
+        if (child.iznos) {
+          let iznos_array = []
+          for (let i = 1; i <= child.kol; i++) {
+            const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+              iznos_array.push({
+                user_id: user_id,
+                inventar_num: naimenovanie.inventar_num,
+                serial_num: naimenovanie.serial_num,
+                naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
+                kol: 1,
+                sena: child.sena,
+                iznos_start_date: tashkentTime(),
+                created_at: tashkentTime(),
+                updated_at: tashkentTime()
+              })
+          }
+          await IznosDB.createIznos(iznos_array, client);
+        }
+      }
       doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
     })
-
     return res.status(201).json({
       message: "Create doc prixod successfully",
       data: doc
@@ -138,7 +163,7 @@ exports.PrixodService = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -174,7 +199,7 @@ exports.PrixodService = class {
       childs
     } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
@@ -204,6 +229,20 @@ exports.PrixodService = class {
           message: "contract not found"
         })
       }
+    }
+    for (let child of childs) {
+      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+      if (!product) {
+        return res.status(404).json({
+          message: "product not found"
+        })
+      }
+    }
+    const testTovarId = checkTovarId(childs)
+    if(testTovarId){
+      return res.status(409).json({
+        message: "The product ID was sent incorrectly"
+      })
     }
     let summa = 0;
     for (let child of childs) {
@@ -241,7 +280,27 @@ exports.PrixodService = class {
         item.updated_at = tashkentTime();
         return item;
       })
-      await PrixodDB.deletePrixodChild([id], client)
+      await PrixodDB.deletePrixodChild([id], client);
+      for (let child of result_childs) {
+        if (child.iznos) {
+          let iznos_array = []
+          for (let i = 1; i <= child.kol; i++) {
+            const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+              iznos_array.push({
+                user_id: user_id,
+                inventar_num: naimenovanie.inventar_num,
+                serial_num: naimenovanie.serial_num,
+                naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
+                kol: 1,
+                sena: child.sena,
+                iznos_start_date: tashkentTime(),
+                created_at: tashkentTime(),
+                updated_at: tashkentTime()
+              })
+          }
+          await IznosDB.createIznos(iznos_array, client);
+        }
+      }
       doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
     })
 
@@ -256,7 +315,7 @@ exports.PrixodService = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if(!main_schet){
+    if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })

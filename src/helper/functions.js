@@ -96,13 +96,6 @@ exports.returnParamsValues = (params, column_count) => {
     return values;
 }
 
-exports.returnValues = (array) => {
-    const result = array.reduce((acc, obj) => {
-        return acc.concat(Object.values(obj));
-    }, []);
-    return result;
-}
-
 exports.generateToken = (user) => {
     const payload = user
     const secret = process.env.JWT_SECRET;
@@ -116,4 +109,17 @@ exports.generateToken = (user) => {
 exports.checkSchetsEquality = (childs) => {
     const firstSchet = childs[0].schet;
     return childs.every(child => child.schet === firstSchet);
+}
+
+exports.checkTovarId = (array) => {
+    let test;
+    for(let item of array){
+        test = array.filter(element => element.naimenovanie_tovarov_jur7_id === item.naimenovanie_tovarov_jur7_id)
+        if(test.length > 1){
+            test = true;
+        } else {
+            test = false;
+        }
+    }
+    return test;
 }

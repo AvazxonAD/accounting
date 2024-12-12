@@ -1,10 +1,10 @@
 const { RasxodDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime, checkTovarId } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
 const { db } = require('../../db/index')
-const { childsSumma } = require('../../helper/functions')
+const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 
 exports.RasxodService = class {
@@ -50,6 +50,26 @@ exports.RasxodService = class {
           message: "contract not found"
         })
       }
+    }
+    for (let child of childs) {
+      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+      if (!product) {
+        return res.status(404).json({
+          message: "product not found"
+        })
+      }
+      const tovar = await NaimenovanieDB.getProductKol([region_id, kimdan_id], null, child.naimenovanie_tovarov_jur7_id)
+      if (tovar[0].result < child.kol) {
+        return res.status(400).json({
+          message: "The responsible person does not have sufficient information regarding this product."
+        })
+      }
+    }
+    const testTovarId = checkTovarId(childs)
+    if (testTovarId) {
+      return res.status(409).json({
+        message: "The product ID was sent incorrectly"
+      })
     }
     let summa = 0;
     for (let child of childs) {
@@ -196,9 +216,31 @@ exports.RasxodService = class {
         })
       }
     }
+    for (let child of childs) {
+      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+      if (!product) {
+        return res.status(404).json({
+          message: "product not found"
+        })
+      }
+      const tovar = await NaimenovanieDB.getProductKol([region_id, kimdan_id], null, child.naimenovanie_tovarov_jur7_id)
+      const old_tovar = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)
+      const add = old_tovar ? old_tovar.kol : 0;
+      if ((tovar[0].result + add) < child.kol) {
+        return res.status(400).json({
+          message: "The responsible person does not have sufficient information regarding this product."
+        })
+      }
+    }
     let summa = 0;
     for (let child of childs) {
       summa += child.kol * child.sena;
+    }
+    const testTovarId = checkTovarId(childs)
+    if (testTovarId) {
+      return res.status(409).json({
+        message: "The product ID was sent incorrectly"
+      })
     }
     let doc;
     await db.transaction(async client => {
