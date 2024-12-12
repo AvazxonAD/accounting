@@ -169,6 +169,7 @@ exports.GroupService = class {
         });
         console.log(data)
         for (let group of data) {
+            console.log(group.iznos_foiz)
             await GroupDB.createGroup([
                 null, 
                 group.name ? group.name : '', 
