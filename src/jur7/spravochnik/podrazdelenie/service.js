@@ -5,6 +5,7 @@ exports.PodrazdelenieService = class {
     static async createPodrazdelenie(req, res) {
         const user_id = req.user.id;
         const { name } = req.body;
+        const region_id = req.user.region_id;
         const check = await PodrazdelenieDB.getByNamePodrazdelenie([region_id, name])
         if(check){
             return res.status(409).json({
