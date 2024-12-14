@@ -1,7 +1,7 @@
 const winston = require('winston');
 const path = require('path');
 
-const logDir = path.join(__dirname, '../../../logs');
+const logDir = path.join(__dirname, '../../logs');
 
 const createLogger = (filename) => {
   return winston.createLogger({
@@ -9,15 +9,15 @@ const createLogger = (filename) => {
     format: winston.format.combine(
       winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
       winston.format.printf(({ timestamp, level, message, ...meta }) => {
-        const logMessage = `${timestamp} ${message}`;
-        if (meta.type && meta.id && meta.user_id) {
-          return `${logMessage}. ${meta.type}. id:${meta.id}. user_id:${meta.user_id}`;
+        let logMessage = `${timestamp}. ${meta.type || 'unknown'}.`; // Type ni tekshirib qo'shamiz
+        if (meta.id && meta.user_id) {
+          logMessage += ` id:${meta.id}. user_id:${meta.user_id}`;
         }
         return logMessage;
       })
     ),
     transports: [
-      new winston.transports.File({ filename: path.join(logDir, filename) }),
+      new winston.transports.File({ filename: path.join(logDir, filename) })
     ],
   });
 };
@@ -27,17 +27,15 @@ const postLogger = createLogger('post.log');
 const putLogger = createLogger('put.log');
 const deleteLogger = createLogger('delete.log');
 
-const logRequest = (type_log, type, role, id, user_id) => {
-  const meta = { role, id, user_id };
-
+const logRequest = (type_log, meta) => {
   if (type_log === 'get') {
-    getLogger.info(type, meta);
+    getLogger.info('', meta); // meta ni to'g'ri uzatish
   } else if (type_log === 'put') {
-    putLogger.info(type, meta);
+    putLogger.info('', meta);
   } else if (type_log === 'post') {
-    postLogger.info(type, meta);
+    postLogger.info('', meta);
   } else {
-    deleteLogger.info(type, meta);
+    deleteLogger.info('', meta);
   }
 };
 

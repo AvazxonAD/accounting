@@ -3,6 +3,7 @@ const { tashkentTime } = require('../../helper/functions')
 const { AccessDB } = require('../access/db')
 const { db } = require('../../db/index')
 const { RegionDB } = require('../region/db')
+const { logRequest } = require('../../helper/log')
 
 exports.RoleService = class {
     static async createRole(req, res) {
@@ -22,6 +23,7 @@ exports.RoleService = class {
             }, [])
             await AccessDB.createAccess(params, client)
         })
+        logRequest('post', 'role', result.id, req.user.id)
         return res.status(201).json({
             message: "role created sucessfully",
             data: result
@@ -39,7 +41,7 @@ exports.RoleService = class {
     static async getByIdRole(req, res) {
         const id = req.params.id
         const data = await RoleDB.getByIdRole([id], true)
-        if(!data){
+        if (!data) {
             return res.status(404).json({
                 message: "role not found"
             })

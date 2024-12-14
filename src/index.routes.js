@@ -67,5 +67,7 @@ routes.use('/jur_7/internal', protect, require('./jur7/internal/index'))
 routes.use('/jur_7/unit', protect, require('./jur7/spravochnik/unit'))
 routes.use('/jur_7/iznos', protect, require('./jur7/iznos/index'))
 
+// logs 
+routes.use('/log', protect, require('./log/index'))
 
 module.exports = routes;

@@ -113,13 +113,30 @@ exports.checkSchetsEquality = (childs) => {
 
 exports.checkTovarId = (array) => {
     let test;
-    for(let item of array){
+    for (let item of array) {
         test = array.filter(element => element.naimenovanie_tovarov_jur7_id === item.naimenovanie_tovarov_jur7_id)
-        if(test.length > 1){
+        if (test.length > 1) {
             test = true;
         } else {
             test = false;
         }
     }
     return test;
+}
+
+exports.filterLogs = (array) => {
+    const logPattern = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\s*(\w+)\.\s*id:(\d+)\.\s*user_id:(\d+)/;
+    const logs = array.map(line => {
+        const match = line.match(logPattern);
+        if (match) {
+            return {
+                date: match[1],
+                type: match[2],
+                id: match[3],
+                user_id: match[4]
+            };
+        }
+        return null;
+    }).filter(log => log !== null);
+    return logs;
 }

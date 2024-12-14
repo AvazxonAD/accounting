@@ -3,6 +3,7 @@ const { RoleDB } = require('../role/db')
 const { tashkentTime } = require('../../helper/functions')
 const { AccessDB } = require('../access/db')
 const { db } = require('../../db/index')
+const { logRequest } = require('../../helper/log')
 
 exports.RegionService = class {
     static async createRegion(req, res) {
@@ -22,6 +23,7 @@ exports.RegionService = class {
             }, [])
             await AccessDB.createAccess(params, client)
         })
+        logRequest('post',{type: 'region', id: result.id, user_id: req.user.id});
         return res.status(201).json({
             message: "region created sucessfully",
             data: result
@@ -30,6 +32,7 @@ exports.RegionService = class {
 
     static async getRegion(req, res) {
         const regions = await RegionDB.getRegion()
+        logRequest('get', {type: 'region', id: 0.1, user_id: req.user.id});
         return res.status(200).json({
             message: "Regions get successfully",
             data: regions
@@ -39,6 +42,12 @@ exports.RegionService = class {
     static async getByIdRegion(req, res) {
         const id = req.params.id
         const data = await RegionDB.getByIdRegion([id], true)
+        if(!data){
+            return res.status(404).json({
+                message: "region not found"
+            })
+        }
+        logRequest('get',{type: 'region', id: data.id, user_id: req.user.id});
         return res.status(200).json({
             message: "region get successfully",
             data
@@ -63,6 +72,7 @@ exports.RegionService = class {
             }
         }
         const data = await RegionDB.updateRegion([name, tashkentTime(), id])
+        logRequest('put',{type: 'region', id: data.id, user_id: req.user.id});
         return res.status(200).json({
             message: 'update region successfully',
             data
@@ -81,7 +91,7 @@ exports.RegionService = class {
             await RegionDB.deleteRegion([id], client)
             await AccessDB.deleteAccess([id], client)
         })
-
+        logRequest('delete',{type: 'region', id: data.id, user_id: req.user.id});
         return res.status(200).json({
             message: 'delete region successfully'
         })

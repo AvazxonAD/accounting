@@ -7,7 +7,7 @@ exports.AuthDB = class {
         return result[0]
     }
 
-    static async getByIdAuth(params) {
+    static async getByIdAuth(params, isdeleted = false) {
         const query = `--sql
             SELECT 
                 u.id, 
@@ -21,7 +21,7 @@ exports.AuthDB = class {
             FROM users AS u
             LEFT JOIN regions AS r_g ON r_g.id = u.region_id
             JOIN role AS r ON r.id = u.role_id
-            WHERE u.id = $1 AND u.isdeleted = false
+            WHERE u.id = $1 ${!isdeleted ? 'AND u.isdeleted = false' : ''}
         `;
         const result = await db.query(query, params);
         return result[0];
