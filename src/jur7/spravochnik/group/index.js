@@ -1,5 +1,6 @@
 const { GroupService } = require("./service");
 const { Controller } = require('../../../helper/controller');
+const upload = require('../../../helper/upload')
 const {
     createGroupSchema,
     getGroupSchema,
@@ -12,6 +13,7 @@ const { Router } = require('express')
 const router = Router()
 
 router.get('/percent', Controller(GroupService.getGroupWithPercent))
+router.post('/import', upload.single('file'), Controller(GroupService.importExcel));
 router.post('/', Controller(GroupService.createGroup, createGroupSchema));
 router.get('/:id', Controller(GroupService.getByIdGroup, getByIdGroupSchema));
 router.put('/:id', Controller(GroupService.updateGroup, updateGroupSchema));

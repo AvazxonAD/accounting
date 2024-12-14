@@ -46,7 +46,7 @@ exports.PereotsenkaDB = class {
             WITH data AS (
                 SELECT p.id, p.name, p.group_jur7_id, p.pereotsenka_foiz, p.created_at, p.updated_at, g.name AS group_name
                 FROM pereotsenka_jur7 AS p 
-                JOIN group_jur7 AS g ON g.id = p.group_jur7_id
+                LEFT JOIN group_jur7 AS g ON g.id = p.group_jur7_id
                 WHERE p.isdeleted = false ${search_filter}
             )
             SELECT 
@@ -64,7 +64,7 @@ exports.PereotsenkaDB = class {
             SELECT 
                 p.id, p.name, p.group_jur7_id, p.pereotsenka_foiz, p.created_at, p.updated_at, g.name AS group_name
             FROM pereotsenka_jur7 AS p 
-            JOIN group_jur7 AS g ON g.id = p.group_jur7_id 
+            LEFT JOIN group_jur7 AS g ON g.id = p.group_jur7_id 
             WHERE p.id = $1 ${isdeleted ? '' : ignore}
         `;
         const result = await db.query(query, params);

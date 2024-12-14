@@ -12,10 +12,12 @@ exports.GroupDB = class {
                 group_number, 
                 provodka_kredit, 
                 provodka_subschet,
+                roman_numeral,
+                pod_group,
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
         `;
         const result = await db.query(query, params);
         return result;
@@ -39,10 +41,12 @@ exports.GroupDB = class {
                     g_j7.group_number, 
                     g_j7.provodka_kredit,
                     g_j7.provodka_subschet,
+                    g_j7.roman_numeral,
+                    g_j7.pod_group,
                     s.smeta_name,
                     s.smeta_number
                 FROM group_jur7 AS g_j7
-                JOIN smeta AS s ON s.id = g_j7.smeta_id
+                LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
                 WHERE g_j7.isdeleted = false ${search_filter}
                 OFFSET $1 LIMIT $2
             )
@@ -73,10 +77,12 @@ exports.GroupDB = class {
                 g_j7.group_number, 
                 g_j7.provodka_kredit,
                 g_j7.provodka_subschet,
+                g_j7.roman_numeral,
+                g_j7.pod_group,
                 s.smeta_name,
                 s.smeta_number
             FROM group_jur7 AS g_j7
-            JOIN smeta AS s ON s.id = g_j7.smeta_id
+            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
             WHERE g_j7.id = $1 ${isdeleted ? `` : ignore}
         `;
         const result = await db.query(query, params);
@@ -95,8 +101,10 @@ exports.GroupDB = class {
                 group_number = $6,
                 provodka_kredit = $7,
                 provodka_subschet = $8,
-                updated_at = $9
-            WHERE id = $10 AND isdeleted = false RETURNING *
+                roman_numeral = $9,
+                pod_group = $10,
+                updated_at = $11
+            WHERE id = $12 AND isdeleted = false RETURNING *
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -108,7 +116,7 @@ exports.GroupDB = class {
     }
 
     static async getGroupWithPercent() {
-        const query = `
+        const query = `--sql
             SELECT
                 g_j7.id, 
                 g_j7.smeta_id,
@@ -119,10 +127,12 @@ exports.GroupDB = class {
                 g_j7.group_number, 
                 g_j7.provodka_kredit,
                 g_j7.provodka_subschet,
+                g_j7.roman_numeral,
+                g_j7.pod_group,
                 s.smeta_name,
                 s.smeta_number
             FROM group_jur7 AS g_j7
-            JOIN smeta AS s ON s.id = g_j7.smeta_id
+            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
             WHERE g_j7.isdeleted = false
         `;
         const data = await db.query(query)
