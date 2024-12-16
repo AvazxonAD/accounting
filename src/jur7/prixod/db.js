@@ -244,4 +244,50 @@ exports.PrixodDB = class {
         const query = `DELETE FROM document_prixod_jur7_child WHERE document_prixod_jur7_id = $1 AND isdeleted = false`
         await client.query(query, params);
     }
+
+    static async prixodReport(params) {
+        const query = `--sql
+            SELECT 
+              d_j.id, 
+              d_j.doc_num,
+              TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
+              d_j.opisanie, 
+              d_j.summa::FLOAT,
+              d_j.main_schet_id, 
+              s_o.name AS organization,
+              sh_o.doc_date AS c_doc_date,
+              sh_o.doc_num AS c_doc_num
+            FROM document_prixod_jur7 AS d_j
+            JOIN users AS u ON u.id = d_j.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimdan_id
+            LEFT JOIN shartnomalar_organization AS sh_o ON d_j.id_shartnomalar_organization = sh_o.id
+            WHERE r.id = $1 
+              AND d_j.isdeleted = false 
+              AND d_j.doc_date BETWEEN $2 AND $3
+              AND d_j.main_schet_id = $4
+            ORDER BY d_j.doc_date
+        `; 
+        const result = await db.query(query, params)
+        return result;
+    }
+
+    static async prixodReportChild(params) {
+        const query = `--sql
+            SELECT  
+                d_j_ch.id,
+                n_t.name AS product_name,
+                n_t.edin,
+                d_j_ch.kol::FLOAT,
+                d_j_ch.sena::FLOAT,
+                d_j_ch.summa::FLOAT,
+                d_j_ch.debet_schet AS schet, 
+                d_j_ch.debet_sub_schet AS sub_schet
+            FROM document_prixod_jur7_child AS d_j_ch
+            JOIN naimenovanie_tovarov_jur7 AS n_t ON n_t.id = d_j_ch.naimenovanie_tovarov_jur7_id
+            WHERE d_j_ch.document_prixod_jur7_id = $1 AND d_j_ch.isdeleted = false
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
 }

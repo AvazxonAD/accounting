@@ -1,5 +1,5 @@
 const { PrixodDB } = require('./db');
-const { tashkentTime, checkTovarId } = require('../../helper/functions');
+const { tashkentTime, checkTovarId, returnLocalDate, returnSleshDate } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/shartnoma/db')
@@ -7,6 +7,7 @@ const { db } = require('../../db/index')
 const { IznosDB } = require('../iznos/db')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
+const ExcelJS = require('exceljs')
 
 exports.PrixodService = class {
   static async createPrixod(req, res) {
@@ -61,7 +62,7 @@ exports.PrixodService = class {
       }
     }
     const testTovarId = checkTovarId(childs)
-    if(testTovarId){
+    if (testTovarId) {
       return res.status(409).json({
         message: "The product ID was sent incorrectly"
       })
@@ -109,17 +110,17 @@ exports.PrixodService = class {
           let iznos_array = []
           for (let i = 1; i <= child.kol; i++) {
             const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-              iznos_array.push({
-                user_id: user_id,
-                inventar_num: naimenovanie.inventar_num,
-                serial_num: naimenovanie.serial_num,
-                naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
-                kol: 1,
-                sena: child.sena,
-                iznos_start_date: tashkentTime(),
-                created_at: tashkentTime(),
-                updated_at: tashkentTime()
-              })
+            iznos_array.push({
+              user_id: user_id,
+              inventar_num: naimenovanie.inventar_num,
+              serial_num: naimenovanie.serial_num,
+              naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
+              kol: 1,
+              sena: child.sena,
+              iznos_start_date: tashkentTime(),
+              created_at: tashkentTime(),
+              updated_at: tashkentTime()
+            })
           }
           await IznosDB.createIznos(iznos_array, client);
         }
@@ -239,7 +240,7 @@ exports.PrixodService = class {
       }
     }
     const testTovarId = checkTovarId(childs)
-    if(testTovarId){
+    if (testTovarId) {
       return res.status(409).json({
         message: "The product ID was sent incorrectly"
       })
@@ -286,17 +287,17 @@ exports.PrixodService = class {
           let iznos_array = []
           for (let i = 1; i <= child.kol; i++) {
             const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-              iznos_array.push({
-                user_id: user_id,
-                inventar_num: naimenovanie.inventar_num,
-                serial_num: naimenovanie.serial_num,
-                naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
-                kol: 1,
-                sena: child.sena,
-                iznos_start_date: tashkentTime(),
-                created_at: tashkentTime(),
-                updated_at: tashkentTime()
-              })
+            iznos_array.push({
+              user_id: user_id,
+              inventar_num: naimenovanie.inventar_num,
+              serial_num: naimenovanie.serial_num,
+              naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
+              kol: 1,
+              sena: child.sena,
+              iznos_start_date: tashkentTime(),
+              created_at: tashkentTime(),
+              updated_at: tashkentTime()
+            })
           }
           await IznosDB.createIznos(iznos_array, client);
         }
@@ -332,6 +333,193 @@ exports.PrixodService = class {
     return res.status(200).json({
       message: 'delete prixod doc successfully'
     })
+  }
+
+  static async getPrixodReport(req, res) {
+    const region_id = 21; // ozgartr
+    const { from, to, main_schet_id } = req.query;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
+
+    if (!main_schet) {
+      return res.status(404).json({
+        message: "main schet not found"
+      });
+    }
+
+    const data = await PrixodDB.prixodReport([region_id, from, to, main_schet_id]);
+
+    await Promise.all(data.map(async (item) => {
+      item.childs = await PrixodDB.prixodReportChild([item.id]);
+      return item;
+    }));
+
+    const Workbook = new ExcelJS.Workbook();
+    const worksheet = Workbook.addWorksheet('jur_7_prixod');
+
+    // Birinchi qatorda sarlavhalar uchun joy ajratish
+    worksheet.mergeCells('A1', 'D1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = `Приходные накладные от ${returnLocalDate(new Date(from))} до ${returnLocalDate(new Date(to))}`;
+
+    // Sarlavhalarni ikkinchi qatordan boshlash
+    worksheet.getRow(2).values = [
+      '№ док', 'дата', 'Наименование организации', 'Наим_тов',
+      'Един', 'Кол', 'Цена', 'Сумма', '№ дов', 'Дата', 'счет', 'суб.счет'
+    ];
+
+    worksheet.columns = [
+      { key: 'doc_num', width: 30 },
+      { key: 'doc_date', width: 30 },
+      { key: 'organization', width: 30 },
+      { key: 'product', width: 30 },
+      { key: 'edim', width: 15 },
+      { key: 'count', width: 15 },
+      { key: 'cost', width: 15 },
+      { key: 'amount', width: 15 },
+      { key: 'c_doc_num', width: 15 },
+      { key: 'c_doc_date', width: 15 },
+      { key: 'schet', width: 15 },
+      { key: 'sub_schet', width: 15 }
+    ];
+    for (let item of data) {
+      worksheet.addRow({
+        doc_num: '№',
+        doc_date: item.doc_num,
+        organization: '',
+        product: 'от',
+        edim: returnSleshDate(new Date(item.doc_date)),
+        count: '',
+        cost: '',
+        amount: '',
+        c_doc_num: '',
+        c_doc_date: '',
+        schet: '',
+        sub_schet: ''
+      })
+      for (let i of item.childs) {
+        worksheet.addRow({
+          doc_num: item.doc_num,
+          doc_date: returnSleshDate(new Date(item.doc_date)),
+          organization: item.organization,
+          product: i.product_name,
+          edim: i.edin,
+          count: i.kol,
+          cost: i.sena,
+          amount: i.summa,
+          c_doc_num: item.c_doc_num || '',
+          c_doc_date: item.c_doc_date ? returnSleshDate(new Date(item.c_doc_date)) : '',
+          schet: i.schet,
+          sub_schet: i.sub_schet
+        })
+      }
+      worksheet.addRow({
+        doc_num: '',
+        doc_date: '',
+        organization: '',
+        product: '',
+        edim: '',
+        count: '',
+        cost: '',
+        amount: item.summa,
+        c_doc_num: '',
+        c_doc_date: '',
+        schet: '',
+        sub_schet: ''
+      })
+    }
+
+    let summa = 0;
+    for (let item of data) {
+      summa += item.summa
+    }
+
+    worksheet.addRow({
+      doc_num: 'обший итог',
+      doc_date: '',
+      organization: '',
+      product: '',
+      edim: '',
+      count: '',
+      cost: '',
+      amount: summa,
+      c_doc_num: '',
+      c_doc_date: '',
+      schet: '',
+      sub_schet: ''
+    })
+
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell, index) => {
+        let bold = false;
+        let size = 12;
+        let argb = 'FF000000';
+        let horizontal = 'center';
+        let fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: "FFFFFFFF" } }
+        let border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+        if (rowNumber < 3) {
+          bold = true;
+          size = 14;
+          argb = "FF0000FF";
+        }
+        if (rowNumber > 2 && (cell.value === '№' || cell.value === 'от')) {
+          argb = 'FF0000FF'
+        }
+        if (rowNumber > 2 && index === 2 && !/\/.*/.test(cell.value)) {
+          horizontal = 'left';
+          bold = true;
+        }
+        if (rowNumber > 2 && index === 5 && /\/.*/.test(cell.value)) {
+          horizontal = 'right';
+          bold = true;
+        }
+        if (rowNumber > 2 && (index === 1 || index === 3 || index === 5 || index === 9)) {
+          horizontal = 'left';
+        }
+        if (rowNumber > 2 && (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)) {
+          horizontal = 'right';
+        }
+        if (rowNumber > 2 && index === 8 && cell.value !== '' && '' === worksheet.getRow(rowNumber).getCell(index - 1).value) {
+          bold = true;
+        }
+        if (fill && border) {
+          Object.assign(cell, {
+            numFmt: "#,##0",
+            font: { size, name: 'Times New Roman', bold, color: { argb } },
+            alignment: { vertical: "middle", horizontal, wrapText: true },
+            fill,
+            border
+          });
+        } else {
+          Object.assign(cell, {
+            numFmt: "#,##0",
+            font: { size, name: 'Times New Roman', bold, color: { argb } },
+            alignment: { vertical: "middle", horizontal, wrapText: true }
+          });
+        }
+      });
+    });
+
+    worksheet.getRow(1).height = 80;
+    worksheet.getColumn(1).width = 10;
+    worksheet.getColumn(2).width = 15;
+    worksheet.getColumn(3).width = 25;
+    worksheet.getColumn(4).width = 20;
+    worksheet.getColumn(5).width = 15;
+    worksheet.getColumn(6).width = 20;
+    worksheet.getColumn(7).width = 20;
+    worksheet.getColumn(8).width = 27;
+
+    const buffer = await Workbook.xlsx.writeBuffer();
+    const fileName = `inspectors_${returnLocalDate(new Date(from))}_${returnLocalDate(new Date(to))}.xlsx`;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    return res.send(buffer);
   }
 
 }

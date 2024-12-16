@@ -57,6 +57,20 @@ exports.returnStringDate = (date) => {
     return (topshiriqSana = `${year} ${day}-${month}`);
 };
 
+exports.returnLocalDate = (date) => {
+    const day = date.getDate().toString().padStart(2, "0"); // "05"
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
+    const year = date.getFullYear().toString(); // "2024"
+    return `${day}.${month}.${year}`;
+};
+
+exports.returnSleshDate = (date) => {
+    const day = date.getDate().toString().padStart(2, "0"); // "05"
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
+    const year = date.getFullYear().toString(); // "2024"
+    return `${day}/${month}/${year}`;
+};
+
 exports.designParams = (params, design_keys) => {
     return allValues = params.reduce((acc, obj) => {
         const sortValues = design_keys.map(key => obj[key]);

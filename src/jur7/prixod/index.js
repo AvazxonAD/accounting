@@ -5,12 +5,14 @@ const {
     getPrixodSchema,
     updatePrixodSchema,
     getByIdPrixodSchema,
-    deletePrixodSchema
+    deletePrixodSchema,
+    getPrixodReport
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
+router.get('/report', Controller(PrixodService.getPrixodReport, getPrixodReport));
 router.post('/', Controller(PrixodService.createPrixod, createPrixodSchema));
 router.get('/:id', Controller(PrixodService.getByIdPrixod, getByIdPrixodSchema));
 router.put('/:id', Controller(PrixodService.updatePrixod, updatePrixodSchema));
