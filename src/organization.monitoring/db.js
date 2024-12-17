@@ -307,6 +307,40 @@ exports.OrganizationMonitoringDB = class {
                 AND s_op.schet = $3
                 AND b_p.doc_date BETWEEN $4 AND $5
                 AND b_p.id_spravochnik_organization = $6
+            UNION ALL 
+            SELECT 
+                d_j.id,
+                d_j.doc_num,
+                d_j.doc_date,
+                d_j.opisanie,
+                d_j_ch.summa::FLOAT AS summa_rasxod,
+                0::FLOAT AS summa_prixod, 
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                s_o.id AS organ_id,
+                s_o.name AS organ_name,
+                s_o.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                d_j_ch.kredit_schet AS provodki_schet, 
+                d_j_ch.kredit_sub_schet AS provodki_sub_schet,
+                'jur7_prixod' AS type
+            FROM document_prixod_jur7_child AS d_j_ch
+            JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+            JOIN users AS u ON u.id = d_j.user_id
+            JOIN regions AS r ON r.id = u.region_id 
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d_j.id_shartnomalar_organization
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+            JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimdan_id
+            WHERE d_j.isdeleted = false
+                AND r.id = $1 
+                AND d_j.main_schet_id = $2
+                AND d_j_ch.kredit_schet = $3
+                AND d_j.doc_date BETWEEN $4 AND $5
+                AND d_j.kimdan_id = $6
 
             ORDER BY doc_date 
             OFFSET $7 LIMIT $8
@@ -434,6 +468,52 @@ exports.OrganizationMonitoringDB = class {
                   AND b_r.doc_date ${operator} $4
                   AND b_r.id_spravochnik_organization = $5
             ),
+            jur7_prixod_sum AS (
+                SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
+                FROM document_prixod_jur7_child d_j_ch
+                JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+                JOIN users AS u ON u.id = d_j.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE d_j.isdeleted = false
+                  AND r.id = $1
+                  AND d_j.main_schet_id = $2
+                  AND d_j_ch.kredit_schet = $3
+                  AND d_j.doc_date ${operator} $4
+                  AND d_j.id_spravochnik_organization = $5
+            ),
+            SELECT 
+                d_j.id,
+                d_j.doc_num,
+                d_j.doc_date,
+                d_j.opisanie,
+                d_j_ch.summa::FLOAT AS summa_rasxod,
+                0::FLOAT AS summa_prixod, 
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                s_o.id AS organ_id,
+                s_o.name AS organ_name,
+                s_o.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                d_j_ch.kredit_schet AS provodki_schet, 
+                d_j_ch.kredit_sub_schet AS provodki_sub_schet,
+                'jur7_prixod' AS type
+            FROM document_prixod_jur7_child AS d_j_ch
+            JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+            JOIN users AS u ON u.id = d_j.user_id
+            JOIN regions AS r ON r.id = u.region_id 
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d_j.id_shartnomalar_organization
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+            JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimdan_id
+            WHERE d_j.isdeleted = false
+                AND r.id = $1 
+                AND d_j.main_schet_id = $2
+                AND d_j_ch.kredit_schet = $3
+                AND d_j.doc_date BETWEEN $4 AND $5
+                AND d_j.kimdan_id = $6
             bank_prixod_sum AS (
                 SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod_child AS b_p_ch
