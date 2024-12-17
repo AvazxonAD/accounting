@@ -1,19 +1,24 @@
 const path = require('path');
 const { access, constants, readFile } = require('fs/promises');
-const { filterLogs } = require('../helper/functions')
+const { filterLogs, parseLogs } = require('../helper/functions')
 const { AuthDB } = require('../auth/auth/db')
 
 exports.LogService = class {
     static async getLogs(req, res) {
-        const { type } = req.query;
-        const filePath = path.join(__dirname, `../../logs/${type}.log`);
+        const type_logs = ['get', 'post', 'put', 'delete']
+        const result = []
         try {
-            await access(filePath, constants.F_OK);
-            const data = await readFile(filePath, 'utf8')
-            const result_data = filterLogs(data.split('\r\n'));
+            for(let type of type_logs) {
+                const filePath = path.join(__dirname, `../../logs/${type}.log`);
+                await access(filePath, constants.F_OK);
+                const data = await readFile(filePath, 'utf8')
+                const result_data = parseLogs(data.split(/\r?\n/), type);
+                result.push(...result_data)
+            }
+            result.sort((a, b) => a.date - b.date)
             return res.json({
                 message: "log get successfully",
-                data: result_data
+                data: result
             });
         } catch (error) {
             return res.status(500).json({

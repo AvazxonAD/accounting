@@ -32,7 +32,8 @@ exports.RegionService = class {
 
     static async getRegion(req, res) {
         const regions = await RegionDB.getRegion()
-        logRequest('get', {type: 'region', id: 0.1, user_id: req.user.id});
+        const ids = regions.map(item => item.id)
+        logRequest('get', {type: 'region', id: ids, user_id: req.user.id});
         return res.status(200).json({
             message: "Regions get successfully",
             data: regions

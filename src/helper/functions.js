@@ -154,3 +154,21 @@ exports.filterLogs = (array) => {
     }).filter(log => log !== null);
     return logs;
 }
+
+exports.parseLogs = (logs, type) => {
+    return logs
+        .map(log => {
+            const match = log.match(/^(.*?)\. (\w+)\. id:([\d,]+)\. user_id:(\d+)/);
+            if (match) {
+                return {
+                    date: match[1],
+                    type: match[2], 
+                    ids: match[3].split(',').map(id => parseInt(id)), 
+                    user_id: match[4],
+                    type: type 
+                };
+            }
+            return null;
+        })
+        .filter(entry => entry !== null); 
+};
