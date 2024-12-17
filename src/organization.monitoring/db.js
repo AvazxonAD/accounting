@@ -527,6 +527,7 @@ exports.OrganizationMonitoringDB = class {
             index_contract_id = params.length + 1
             params.push(contract_id)
         }
+        
         const query = `--sql
             SELECT 
                 data.id,
@@ -597,6 +598,21 @@ exports.OrganizationMonitoringDB = class {
                     k_h.id_spravochnik_organization,
                     k_h.isdeleted
                 FROM kursatilgan_hizmatlar_jur152 AS k_h
+                
+                UNION ALL 
+
+                SELECT 
+                    d_j.id,
+                    d_j.shartnomalar_organization_id AS shartnoma_id,
+                    d_j.doc_num,
+                    d_j.doc_date,
+                    d_j.opisanie,
+                    d_j.summa AS summa_rasxod, 
+                    o AS summa_prixod,
+                    'jur7_prixod' AS type,
+                    d_j.kimdan_id AS id_spravochnik_organization,
+                    d_j.isdeleted
+                FROM document_prixod_jur7 AS d_j
             ) AS data
             WHERE data.doc_date BETWEEN $1 AND $2 
                 AND data.isdeleted = false
