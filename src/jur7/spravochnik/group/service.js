@@ -174,7 +174,7 @@ exports.GroupService = class {
                 group.schet ? group.schet : '', 
                 group.iznos_foiz ? group.iznos_foiz : 0, 
                 group.provodka_debet ? group.provodka_debet : '', 
-                group.group_number ? group.group_number : '',
+                group.group_number ? group.group_number.replace(/\s+/g, '') : '',
                 group.provodka_kredit ? group.provodka_kredit : '',
                 group.provodka_subschet ? group.provodka_subschet : '',
                 group.roman_numeral ? group.roman_numeral : '',
