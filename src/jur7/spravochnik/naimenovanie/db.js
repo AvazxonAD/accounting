@@ -79,8 +79,8 @@ exports.NaimenovanieDB = class {
             FROM naimenovanie_tovarov_jur7 AS n_t_j7
             JOIN users AS u ON u.id = n_t_j7.user_id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
-            JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
+            LEFT JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
+            LEFT JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
             WHERE r.id = $1 AND n_t_j7.id = $2  ${isdeleted ? `` : ignore}
         `
         const result = await db.query(query, params)
