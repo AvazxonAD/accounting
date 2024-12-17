@@ -111,7 +111,7 @@ exports.SmetaService = class {
         for (let smeta of data) {
             await SmetaDB.createSmeta([
                 smeta.smeta_name ? String(smeta.smeta_name).trim() : '',
-                smeta.smeta_number ? String(smeta.smeta_number) : '',
+                smeta.smeta_number ? String(smeta.smeta_number).replace(/\s+/g, '') : '',
                 smeta.father_smeta_name ? String(smeta.father_smeta_name).trim() : '',
                 smeta.group_number ? String(smeta.group_number).trim() : '',
                 tashkentTime(),

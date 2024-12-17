@@ -196,8 +196,8 @@ exports.SmetaGrafikService = class {
         const result = await SmetaGrafikDB.updateSmetaGrafik([
             itogo, oy_1, oy_2, oy_3,
             oy_4, oy_5, oy_6, oy_7,
-            oy_8, oy_9, oy_10, oy_11, oy_12, 
-            smeta_id, spravochnik_budjet_name_id, year, id 
+            oy_8, oy_9, oy_10, oy_11, oy_12,
+            smeta_id, spravochnik_budjet_name_id, year, id
         ]);
         return res.status(200).json({
             message: "smeta grafik updagte successfully",
