@@ -72,61 +72,67 @@ exports.PrixodService = class {
       summa += child.kol * child.sena;
     }
     let doc;
-    await db.transaction(async client => {
-      doc = await PrixodDB.createPrixod([
-        user_id,
-        doc_num,
-        doc_date,
-        j_o_num,
-        opisanie,
-        doverennost,
-        summa,
-        kimdan_id,
-        kimdan_name,
-        kimga_id,
-        kimga_name,
-        id_shartnomalar_organization,
-        main_schet_id,
-        tashkentTime(),
-        tashkentTime()
-      ], client);
-      const result_childs = childs.map(item => {
-        item.summa = item.kol * item.sena
-        if (item.nds_foiz) {
-          item.nds_summa = item.nds_foiz / 100 * item.summa;
-        } else {
-          item.nds_summa = 0;
-        }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.user_id = user_id;
-        item.document_prixod_jur7_id = doc.id;
-        item.main_schet_id = main_schet_id;
-        item.created_at = tashkentTime();
-        item.updated_at = tashkentTime();
-        return item;
-      })
-      for (let child of result_childs) {
-        if (child.iznos) {
-          let iznos_array = []
-          for (let i = 1; i <= child.kol; i++) {
-            const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-            iznos_array.push({
-              user_id: user_id,
-              inventar_num: naimenovanie.inventar_num,
-              serial_num: naimenovanie.serial_num,
-              naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
-              kol: 1,
-              sena: child.sena,
-              iznos_start_date: tashkentTime(),
-              created_at: tashkentTime(),
-              updated_at: tashkentTime()
-            })
+    try {
+      await db.transaction(async client => {
+        doc = await PrixodDB.createPrixod([
+          user_id,
+          doc_num,
+          doc_date,
+          j_o_num,
+          opisanie,
+          doverennost,
+          summa,
+          kimdan_id,
+          kimdan_name,
+          kimga_id,
+          kimga_name,
+          id_shartnomalar_organization,
+          main_schet_id,
+          tashkentTime(),
+          tashkentTime()
+        ], client);
+        const result_childs = childs.map(item => {
+          item.summa = item.kol * item.sena
+          if (item.nds_foiz) {
+            item.nds_summa = item.nds_foiz / 100 * item.summa;
+          } else {
+            item.nds_summa = 0;
           }
-          await IznosDB.createIznos(iznos_array, client);
+          item.summa_s_nds = item.summa + item.nds_summa;
+          item.user_id = user_id;
+          item.document_prixod_jur7_id = doc.id;
+          item.main_schet_id = main_schet_id;
+          item.created_at = tashkentTime();
+          item.updated_at = tashkentTime();
+          return item;
+        })
+        for (let child of result_childs) {
+          if (child.iznos) {
+            let iznos_array = []
+            for (let i = 1; i <= child.kol; i++) {
+              const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+              iznos_array.push({
+                user_id: user_id,
+                inventar_num: naimenovanie.inventar_num,
+                serial_num: naimenovanie.serial_num,
+                naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
+                kol: 1,
+                sena: child.sena,
+                iznos_start_date: tashkentTime(),
+                created_at: tashkentTime(),
+                updated_at: tashkentTime()
+              })
+            }
+            await IznosDB.createIznos(iznos_array, client);
+          }
         }
-      }
-      doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
-    })
+        doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
+      })
+    } catch (error) {
+      return res.status(500).json({
+        message: `Interval server error : ${error.message}`
+      })
+    }
     return res.status(201).json({
       message: "Create doc prixod successfully",
       data: doc
