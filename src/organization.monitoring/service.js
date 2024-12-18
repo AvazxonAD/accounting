@@ -4,10 +4,10 @@ const { OrganizationDB } = require('../spravochnik/organization/db');
 const { RegionDB } = require('../auth/region/db')
 const { ContractDB } = require('../shartnoma/shartnoma/db')
 const { PodpisDB } = require('../spravochnik/podpis/db')
-const { returnStringDate } = require('../helper/functions')
-const { returnStringSumma } = require('../helper/functions')
+const { returnStringDate, returnStringSumma, returnExcelColumn } = require('../helper/functions')
 const ExcelJS = require('exceljs')
 const path = require('path')
+const fs = require('fs').promises;
 
 exports.OrganizationMonitoringService = class {
     static async getMonitoring(req, res) {
@@ -21,7 +21,7 @@ exports.OrganizationMonitoringService = class {
             })
         }
         const data = await OrganizationMonitoringDB.getData([region_id, main_schet_id, operatsii, from, to, offset, limit])
-        const summa_from = await OrganizationMonitoringDB.getSumma([region_id, main_schet_id, operatsii, to], '<')
+        const summa_from = await OrganizationMonitoringDB.getSumma([region_id, main_schet_id, operatsii, from], '<')
         const summa_to = await OrganizationMonitoringDB.getSumma([region_id, main_schet_id, operatsii, to], '<=')
         const total = await OrganizationMonitoringDB.getTotal([region_id, main_schet_id, operatsii, from, to])
 
@@ -387,7 +387,7 @@ exports.OrganizationMonitoringService = class {
         worksheet.pageSetup.margins.footer = 0
         worksheet.pageSetup.margins.right = 0
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-        if(!main_schet){
+        if (!main_schet) {
             return res.status(404).json({
                 message: "main schet not found"
             })
@@ -405,11 +405,11 @@ exports.OrganizationMonitoringService = class {
         let itogo_rasxod = 0;
         let itogo_prixod = 0;
         const data = await OrganizationDB.getOrganization([region_id])
-        for(let item of data){
-            item.summa = await OrganizationMonitoringDB.getPrixodRasxod([operatsii, to, item.id,  main_schet.spravochnik_budjet_name_id])
+        for (let item of data) {
+            item.summa = await OrganizationMonitoringDB.getPrixodRasxod([operatsii, to, item.id, main_schet.spravochnik_budjet_name_id])
         }
         let row_number = 3
-        for (let column of  data) {
+        for (let column of data) {
             if (column.summa === 0) {
                 continue
             }
@@ -483,5 +483,138 @@ exports.OrganizationMonitoringService = class {
         });
     }
 
-    
+    static async orderorganization(req, res) {
+        const region_id = 21 // req.user.region_id
+        const { from, to, main_schet_id } = req.query;
+        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+        if (!main_schet) {
+            return res.status(404).json({
+                message: "main schet not found"
+            })
+        }
+        const rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([main_schet_id, from, to])
+        const prixodSchets = await OrganizationMonitoringDB.getPrixodSchets([main_schet_id, from, to])
+        const organizations = await OrganizationDB.getOrganization([region_id])
+        for (let organ of organizations) {
+            organ.summaFrom = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, from, organ.id], '<');
+            organ.summaTo = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, to, organ.id], '<=');
+
+            organ.rasxodSchets = rasxodSchets.map((schet) => ({ ...schet }));
+            organ.prixodSchets = prixodSchets.map((schet) => ({ ...schet }));
+            organ.summaPrixod = 0;
+            organ.summa_rasxod = 0;
+            await Promise.all(
+                organ.rasxodSchets.map(async (schet) => {
+                    schet.summa = await OrganizationMonitoringDB.getOrganizationRasxodSumOrder([main_schet_id, from, to, organ.id, schet.schet]);
+                    organ.summa_rasxod += schet.summa;
+                })
+            );
+
+            await Promise.all(
+                organ.prixodSchets.map(async (schet) => {
+                    schet.summa = await OrganizationMonitoringDB.getOrganiztionPrixodSumOrder([main_schet_id, from, to, organ.id, schet.schet]);
+                    organ.summaPrixod += schet.summa;
+                })
+            );
+
+            organ.prixodSchets.push({ schet: 'Итого Дебит', summa: organ.summaPrixod })
+            organ.rasxodSchets.push({ schet: 'Итого Кредит', summa: organ.summa_rasxod })
+        }
+        rasxodSchets.push({ schet: 'Итого Дебит' });
+        prixodSchets.push({ schet: 'Итого Кредит' });
+        const result_data = await organizations.filter(item => item.summaFrom.summa !== 0 || item.summaTo.summa !== 0)
+
+        const workbook = new ExcelJS.Workbook();
+        const fileName = `order_organization_${new Date().getTime()}.xlsx`;
+        const worksheet = workbook.addWorksheet('order organization');
+        worksheet.pageSetup.margins.left = 0
+        worksheet.pageSetup.margins.header = 0
+        worksheet.pageSetup.margins.footer = 0
+
+        worksheet.mergeCells('A1', 'K1');
+        const headCell = worksheet.getCell('A1');
+        headCell.value = `Журнал-Ордер N_3`;
+
+        worksheet.mergeCells('A2', 'K2');
+        const titleCell = worksheet.getCell('A2');
+        titleCell.value = `Расчети c дебеторами и кредиторами`
+
+        worksheet.mergeCells('A3', 'K3');
+        const date_intervalCell = worksheet.getCell('A3')
+        date_intervalCell.value = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
+
+        worksheet.mergeCells('A4', 'A5')
+        const organTitleCell = worksheet.getCell('A4')
+        organTitleCell.value = 'Организатсия';
+
+        worksheet.mergeCells(`B4`, 'C4')
+        const summaFromTitle = worksheet.getCell('B4')
+        summaFromTitle.value = 'Остаток к началу дня'
+
+        const prixodLength = prixodSchets.length;
+        const rasxodLength = rasxodSchets.length;
+        worksheet.mergeCells('D4', `${returnExcelColumn([prixodLength + 3])}4`)
+        const prixodTitleCell = worksheet.getCell('D4')
+        prixodTitleCell.value = 'ДЕБИТ СЧЕТА'
+
+        worksheet.mergeCells(`${returnExcelColumn([prixodLength + 4])}4`, `${returnExcelColumn([prixodLength + rasxodLength + 3])}4`)
+        const rasxodTitleCell = worksheet.getCell(`${returnExcelColumn([prixodLength + 4])}4`)
+        rasxodTitleCell.value = 'КРЕДИТ СЧЕТА'
+
+        worksheet.mergeCells(`${returnExcelColumn([prixodLength + rasxodLength + 4])}4`, `${returnExcelColumn([prixodLength + rasxodLength + 5])}4`)
+        const summaToCell = worksheet.getCell(`${returnExcelColumn([prixodLength + rasxodLength + 4])}4`)
+        summaToCell.value = 'Остаток к началу дня'
+
+
+        const values = ['', 'ДЕБИТ', 'КРЕДИТ']
+        prixodSchets.forEach(item => { values.push(item.schet) })
+        rasxodSchets.forEach(item => { values.push(item.schet) })
+        values.push('ДЕБИТ', 'КРЕДИТ')
+        worksheet.getRow(5).values = values;
+
+        const columns = [{ key: 'organ', width: 40 }, { key: 'prixodFrom', width: 15 }, { key: 'rasxodFrom', width: 15 }]
+        prixodSchets.forEach(item => { columns.push({ key: `p/${item.schet}`, width: 12 }) })
+        rasxodSchets.forEach(item => { columns.push({ key: `r/${item.schet}`, width: 12 }) })
+        columns.push({ key: 'prixodTo', width: 15 }, { key: 'rasxodTo', width: 15 })
+        worksheet.columns = columns;
+
+        for (let organ of result_data) {
+            let rowData = {
+                organ: organ.name,
+                prixodFrom: organ.summaFrom > 0 ? organ.summaFrom : 0,
+                rasxodFrom: organ.summaFrom < 0 ? Math.abs(organ.summaFrom) : 0,
+                prixodTo: organ.summaTo > 0 ? organ.summaTo : 0,
+                rasxodTo: organ.summaTo < 0 ? Math.abs(organ.summaTo) : 0,
+            };
+
+            for (let schet of organ.prixodSchets) {
+                rowData[`p/${schet.schet}`] = schet.summa;
+                console.log(schet.schet)
+            }
+
+            for (let schet of organ.rasxodSchets) {
+                rowData[`r/${schet.schet}`] = schet.summa;
+            }
+            
+            worksheet.addRow(rowData);
+        }
+
+        const folderPath = path.join(__dirname, '../../public/exports')
+        try {
+            await fs.access(folderPath)
+        } catch (error) {
+            try {
+                await fs.mkdir(folderPath);
+            } catch (error) {
+                return res.status(500).json({
+                    message: "INternal server error"
+                })
+            }
+        }
+        const filePath = folderPath + '/' + fileName
+        await workbook.xlsx.writeFile(filePath);
+        return res.download(filePath, (err) => {
+            if (err) throw new ErrorResponse(err, err.statusCode);
+        });
+    }
 }

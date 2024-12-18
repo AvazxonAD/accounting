@@ -1,7 +1,6 @@
 const { getAllMonitoring, bankCapService, dailyReportService } = require("./bank.monitoring.service");
 const { bankQueryValidation, bankCapValidation } = require("../utils/validation");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
-const { getLogger } = require('../utils/logger')
 const { validationResponse } = require('../utils/response-for-validation');
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
@@ -37,7 +36,6 @@ const getAllBankMonitoring = async (req, res) => {
       summa_from: summaFrom,
       summa_to: summaTo
     }
-    getLogger.info(`Muvaffaqiyatli bank monitoring doclar olindi. UserId: ${req.user.id}`)
     resFunc(res, 200, data, meta)
   } catch (error) {
     errorCatch(error, res)

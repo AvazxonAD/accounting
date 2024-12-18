@@ -18,7 +18,6 @@ const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podr
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
 const { returnAllChildSumma } = require("../utils/returnSumma");
-const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/logger');
 const { validationResponse } = require('../utils/response-for-validation');
 const { resFunc } = require('../utils/resFunc');
 const { errorCatch } = require('../utils/errorCatch')
@@ -59,7 +58,6 @@ const jur_4_create = async (req, res) => {
       childs.push(child_data)
     }
     result.childs = childs
-    postLogger.info(`Jur4 doc muvaffaqiyatli kiritildi. UserId : ${user_id}`)
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
@@ -76,7 +74,6 @@ const getAllJur_4 = async (req, res) => {
     const {data, total, summa} = await getAllJur4DB(region_id, main_schet_id, from, to, offset, limit)
     await getByIdMainSchetService(region_id, main_schet_id);
     const pageCount = Math.ceil(total / limit);
-    getLogger.info(`Jur4 doclar muvaffaqiyatli olindi. UserId : ${user_id}`)
     const meta = {
       pageCount: pageCount,
       count: total,
@@ -130,7 +127,6 @@ const jur_4_update = async (req, res) => {
       childs.push(result)
     }
     result.childs = childs
-    putLogger.info(`Jur4 doc muvaffaqiyatli yangilandi. UserId : ${user_id}`)
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)
@@ -147,7 +143,7 @@ const delete_jur_4 = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdJur4DB(region_id, main_schet_id, id)
     await deleteJur4DB(id)
-    deleteLogger.info(`Jur4 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
+    .info(`Jur4 doc muvaffaqiyatli ochirildi. UserId : ${user_id}`)
     resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
@@ -163,7 +159,6 @@ const getElementByIdjur_4 = async (req, res) => {
     const user_id = req.user.id
     await getByIdMainSchetService(region_id, main_schet_id);  
     const result = await getByIdJur4DB(region_id, main_schet_id, id, true)
-    postLogger.info(`Jur4 doc muvaffaqiyatli olindi. UserId : ${user_id}`)
     resFunc(res, 200, result)
   } catch (error) {
     errorCatch(error, res)

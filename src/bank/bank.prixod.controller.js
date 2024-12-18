@@ -1,7 +1,6 @@
 const { createBankPrixodService, createBankPrixodServiceChild, bankPrixodUpdateService, deleteBankPrixodChild, getPrixodService, getByIdPrixodService, deleteBankPrixod } = require("./bank.prixod.service");
 const asyncHandler = require("../middleware/asyncHandler");
 const { bankPrixodValidation, bankQueryValidation } = require("../utils/validation");;
-const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/logger');
 const { returnAllChildSumma } = require("../utils/returnSumma");
 const { getByIdShartnomaService } = require("../shartnoma/shartnoma.service");
 const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
@@ -58,7 +57,6 @@ const create = asyncHandler(async (req, res) => {
   }
   const summa = returnAllChildSumma(data.childs);
   const result = await createBankPrixodService({ ...data, main_schet_id, user_id, provodki_boolean: true, summa, });
-  postLogger.info(`Bank prixod doc yaratildi. UserId: ${req.user.id}`)
   resFunc(res, 201, result)
 });
 
@@ -97,7 +95,6 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
   }
   const summa = returnAllChildSumma(data.childs);
   const prixod = await bankPrixodUpdateService({ ...data, id, provodki_boolean: true, summa, user_id });
-  putLogger.info(`Bank prixod doc yangilandi. UserId: ${req.user.id}`)
   resFunc(res, 200, prixod)
 });
 
@@ -109,7 +106,6 @@ const delete_bank_prixod = asyncHandler(async (req, res) => {
   await getByIdMainSchetService(region_id, main_schet_id);
   await getByIdPrixodService(region_id, main_schet_id, id);
   await deleteBankPrixod(id);
-  deleteLogger.info(`Bank prixod doc ochirildi. UserId: ${req.user.id}`)
   resFunc(res, 200, 'delete success true')
 });
 
@@ -120,7 +116,6 @@ const getElementByIdBankPrixod = asyncHandler(async (req, res) => {
   const region_id = req.user.region_id;
   await getByIdMainSchetService(region_id, main_schet_id)
   const prixod = await getByIdPrixodService(region_id, main_schet_id, id, true);
-  postLogger.info(`Bank prixod doc olindi. UserId: ${req.user.id}`)
   resFunc(res, 200, prixod)
 });
 
@@ -132,7 +127,6 @@ const getAllBankPrixod = asyncHandler(async (req, res) => {
   await getByIdMainSchetService(region_id, main_schet_id);
   const { data, summa, total } = await getPrixodService(region_id, main_schet_id, offset, limit, from, to,);
   const pageCount = Math.ceil(total / limit);
-  getLogger.info(`Bank prixod doclar olindi. UserId: ${req.user.id}`)
   const meta = {
     pageCount: pageCount,
     count: total,

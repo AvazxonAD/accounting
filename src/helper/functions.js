@@ -172,3 +172,28 @@ exports.parseLogs = (logs, type) => {
         })
         .filter(entry => entry !== null); 
 };
+
+exports.returnExcelColumn = (columns) => {
+    if (columns.length === 1) {
+        let columnNumber = columns[0];
+        let result = '';
+        while (columnNumber > 0) {
+            let remainder = (columnNumber - 1) % 26;
+            result = String.fromCharCode(65 + remainder) + result;
+            columnNumber = Math.floor((columnNumber - 1) / 26);
+        }
+        return result;
+    }
+    
+    let results = [];
+    columns.forEach(columnNumber => {
+        let result = '';
+        while (columnNumber > 0) {
+            let remainder = (columnNumber - 1) % 26;
+            result = String.fromCharCode(65 + remainder) + result;
+            columnNumber = Math.floor((columnNumber - 1) / 26);
+        }
+        results.push(result);
+    });
+    return results;
+}

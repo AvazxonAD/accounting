@@ -21,7 +21,7 @@ routes.use("/auth/user", protect, require('./auth/user/index'));
 routes.use("/auth/admin", protect, require('./auth/admin/index'));
 
 // organization monitoring 
-routes.use('/organization/monitoring', protect, require('./organization.monitoring/index'))
+routes.use('/organization/monitoring',  require('./organization.monitoring/index'))
 
 // spravochnik  routes
 routes.use("/spravochnik/podotchet-litso", protect, require("./spravochnik/podotchet/podochet.litso.routes"));

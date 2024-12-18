@@ -5,7 +5,8 @@ const {
     getMonitoringSchema, 
     getByOrganizationIdMonitoringSchema,
     aktSverkaSchema,
-    prixodRasxodOrganizationSchema
+    prixodRasxodOrganizationSchema,
+    orderOrganizationSchema
  } = require('./schema')
 
 
@@ -16,5 +17,6 @@ router.get('/', Controller(OrganizationMonitoringService.getMonitoring, getMonit
 router.get('/id', Controller(OrganizationMonitoringService.getByOrganizationIdMonitoring, getByOrganizationIdMonitoringSchema))
 router.get('/akt/sverka', Controller(OrganizationMonitoringService.aktSverka, aktSverkaSchema))
 router.get('/prixod/rasxod', Controller(OrganizationMonitoringService.prixodRasxodOrganization, prixodRasxodOrganizationSchema))
+router.get('/order', Controller(OrganizationMonitoringService.orderorganization, orderOrganizationSchema))
 
 module.exports = router;

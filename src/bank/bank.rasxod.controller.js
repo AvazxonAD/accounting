@@ -9,7 +9,6 @@ const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/t
 const { bankRasxodValidation } = require("../utils/validation");;
 const { returnAllChildSumma } = require("../utils/returnSumma");
 const { bankQueryValidation } = require("../utils/validation");;
-const { getLogger, postLogger, putLogger, deleteLogger } = require('../utils/logger');
 const { errorCatch } = require('../utils/errorCatch')
 const { validationResponse } = require('../utils/response-for-validation');
 const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.litso.service");
@@ -66,7 +65,6 @@ const bank_rasxod = async (req, res) => {
       childs.push(result)
     }
     rasxod.childs = childs
-    postLogger.info(`Bank rasxod doc yaratildi. UserId: ${req.user.id}`)
     resFunc(res, 201, rasxod)
   } catch (error) {
     errorCatch(error, res)
@@ -115,7 +113,6 @@ const bank_rasxod_update = async (req, res) => {
       childs.push(result)
     }
     prixod.childs = childs
-    putLogger.info(`Bank rasxod doc yangilandi. UserId: ${req.user.id}`)
     resFunc(res, 200, prixod)
   } catch (error) {
     errorCatch(error, res)
@@ -131,7 +128,6 @@ const getAllBankRasxod = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id);
     const { data, summa, total } = await getBankRasxodService(region_id, main_schet_id, offset, limit, from, to,);
     const pageCount = Math.ceil(total / limit);
-    getLogger.info(`Bank rasxod doclar olindi. UserId: ${req.user.id}`)
     const meta = {
       pageCount: pageCount,
       count: total,
@@ -154,7 +150,6 @@ const getElementByIdBankRasxod = async (req, res) => {
     const region_id = req.user.region_id;
     await getByIdMainSchetService(region_id, main_schet_id)
     const prixod = await getByIdRasxodService(region_id, main_schet_id, id, true);
-    postLogger.info(`Bank rasxod doc olindi. UserId: ${req.user.id}`)
     resFunc(res, 200, prixod)
   } catch (error) {
     errorCatch(error, res)
@@ -170,7 +165,6 @@ const delete_bank_rasxod = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id);
     await getByIdRasxodService(region_id, main_schet_id, id);
     await deleteBankRasxod(id);
-    deleteLogger.info(`Bank rasxod doc ochirildi. UserId: ${req.user.id}`)
     resFunc(res, 200, 'delete success true')
   } catch (error) {
     errorCatch(error, res)
