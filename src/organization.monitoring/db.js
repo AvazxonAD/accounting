@@ -664,12 +664,12 @@ exports.OrganizationMonitoringDB = class {
 
                 SELECT 
                     d_j.id,
-                    d_j.shartnomalar_organization_id AS shartnoma_id,
+                    d_j.id_shartnomalar_organization AS shartnoma_id,
                     d_j.doc_num,
                     d_j.doc_date,
                     d_j.opisanie,
                     d_j.summa AS summa_rasxod, 
-                    o AS summa_prixod,
+                    0 AS summa_prixod,
                     'jur7_prixod' AS type,
                     d_j.kimdan_id AS id_spravochnik_organization,
                     d_j.isdeleted
@@ -727,6 +727,15 @@ exports.OrganizationMonitoringDB = class {
                     AND b_p.doc_date ${operator} $1
                     AND b_p.id_spravochnik_organization = $2
                     ${contract_id ? sqlFilter('b_p.id_shartnomalar_organization', index_contract_id) : 'AND b_p.id_shartnomalar_organization IS NOT NULL'}
+                ),
+                jur7_prixod AS (
+                    SELECT COALESCE(SUM(d_j.summa), 0) AS summa
+                    FROM document_prixod_jur7 AS d_j
+                    JOIN shartnomalar_organization AS sh_o ON sh_o.id = d_j.id_shartnomalar_organization
+                    WHERE d_j.isdeleted = false
+                    AND d_j.doc_date ${operator} $1
+                    AND d_j.kimdan_id = $2
+                    ${contract_id ? sqlFilter('d_j.id_shartnomalar_organization', index_contract_id) : 'AND d_j.id_shartnomalar_organization IS NOT NULL'}
                 )
             SELECT 
                 (k.summa + r.summa) - (i.summa + p.summa) ::FLOAT AS summa
@@ -793,17 +802,29 @@ exports.OrganizationMonitoringDB = class {
                       AND b_p.doc_date <= $2
                       AND b_p.id_spravochnik_organization = $3
                       AND m_sch.spravochnik_budjet_name_id = $4
+                ),
+                jur7_prixod AS (
+                    SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
+                    FROM document_prixod_jur7_child d_j_ch
+                    JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+                    JOIN main_schet AS m_sch ON m_sch.id = d_j.main_schet_id
+                    WHERE d_j.isdeleted = false
+                      AND d_j_ch.kredit_schet = $1
+                      AND d_j.doc_date <= $2
+                      AND d_j.kimdan_id = $3
+                      AND m_sch.spravochnik_budjet_name_id = $4
                 )
                 SELECT 
                     (
                         (kursatilgan_hizmatlar_sum.summa + bank_rasxod.summa) 
-                        - (bajarilgan_ishlar_sum.summa + bank_prixod.summa)
+                        - (bajarilgan_ishlar_sum.summa + bank_prixod.summa + jur7_prixod.summa)
                     ) AS summa,
                     kursatilgan_hizmatlar_sum.summa AS kursatilgan_hizmatlar_sum,
                     bank_rasxod.summa AS bank_rasxod_sum,
                     bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum,
-                    bank_prixod.summa AS bank_prixod_sum
-                FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod, bank_prixod
+                    bank_prixod.summa AS bank_prixod_sum,
+                    jur7_prixod.summa AS jur7_prixod_sum
+                FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod, bank_prixod, jur7_prixod
         `;
         const data = await db.query(query, params)
         return data[0].summa;
@@ -953,7 +974,7 @@ exports.OrganizationMonitoringDB = class {
                   AND b_p.id_spravochnik_organization = $4 
                   AND s_op.schet = $5
             ),
-            jur7_prixod AS (
+            jur7_prixod_sum AS (
                 SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
                 FROM document_prixod_jur7_child AS d_j_ch
                 JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
@@ -965,9 +986,9 @@ exports.OrganizationMonitoringDB = class {
             )
             SELECT 
                 (
-                    bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa
+                    bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa
                 ) AS summa
-            FROM bajarilgan_ishlar_sum, bank_prixod_sum
+            FROM bajarilgan_ishlar_sum, bank_prixod_sum, jur7_prixod_sum
         `;
         const result = await db.query(query, params);
         return result[0].summa;

@@ -460,9 +460,9 @@ exports.OrganizationMonitoringService = class {
             }
             let horizontal = 'center'
             let size = 10;
-            if (index === 0) fill = {}, border = {}, size = 12;
-            if (index === 1) fill = {}, border = { bottom: { style: 'thin' } }, size = 12;
-            if (index === 4) fill = {}, border = {}, horizontal = 'right';
+            if (index === 0) fill = null, border = null, size = 12;
+            if (index === 1) fill = null, border = { bottom: { style: 'thin' } }, size = 12;
+            if (index === 4) fill = null, border = null, horizontal = 'right';
             if (index > 4) horizontal = 'right';
             Object.assign(item, {
                 numFmt: '#,##0.00',
