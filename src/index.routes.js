@@ -19,6 +19,7 @@ routes.use("/auth/role", protect, require("./auth/role/index"));
 routes.use("/auth/access", protect, require('./auth/access/index'));
 routes.use("/auth/user", protect, require('./auth/user/index'));
 routes.use("/auth/admin", protect, require('./auth/admin/index'));
+routes.use("/auth/control", protect, require('./auth/control/index'));
 
 // organization monitoring 
 routes.use('/organization/monitoring', protect, require('./organization.monitoring/index'))
