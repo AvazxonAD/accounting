@@ -738,12 +738,13 @@ exports.OrganizationMonitoringDB = class {
                     ${contract_id ? sqlFilter('d_j.id_shartnomalar_organization', index_contract_id) : 'AND d_j.id_shartnomalar_organization IS NOT NULL'}
                 )
             SELECT 
-                (k.summa + r.summa) - (i.summa + p.summa) ::FLOAT AS summa
+                (k.summa + r.summa) - (i.summa + p.summa + j_p.summa) ::FLOAT AS summa
             FROM 
                 kursatilgan_hizmatlar k,
                 bank_rasxod r,
                 bajarilgan_ishlar i,
-                bank_prixod p;
+                bank_prixod p,
+                jur7_prixod j_P
         `;
         const result = await db.query(query, params);
         return result[0].summa;

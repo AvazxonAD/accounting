@@ -66,6 +66,7 @@ routes.use('/jur_7/doc_rasxod', protect, require('./jur7/rasxod/index'))
 routes.use('/jur_7/internal', protect, require('./jur7/internal/index'))
 routes.use('/jur_7/unit', protect, require('./jur7/spravochnik/unit'))
 routes.use('/jur_7/iznos', protect, require('./jur7/iznos/index'))
+routes.use('/jur_7/monitoring', protect, require('./jur7/monitoring/index'))
 
 // logs 
 routes.use('/log', protect, require('./log/index'))

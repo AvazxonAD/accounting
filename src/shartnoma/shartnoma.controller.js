@@ -31,7 +31,12 @@ const create = async (req, res) => {
     if (data.smeta2_id) {
       await getByIdSmeta(data.smeta2_id)
     }
-    await OrganizationDB.getByIdorganization([region_id, data.spravochnik_organization_id]);
+    const organization = await OrganizationDB.getByIdorganization([region_id, data.spravochnik_organization_id]);
+    if(!organization) {
+      return res.status(404).json({
+        message: "organization not found"
+      })
+    }
     const shartnoma = await createShartnoma({ ...data, user_id, budjet_id });
     const grafik_data = {
       user_id,

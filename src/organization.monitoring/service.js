@@ -125,7 +125,6 @@ exports.OrganizationMonitoringService = class {
                     message: "contract not found"
                 })
             }
-
         }
         const data = await OrganizationMonitoringDB.getByContractIdData([from, to, organ_id], contract_id);
         const summa_from = await OrganizationMonitoringDB.getByContractIdSumma([from, organ_id], '<', contract_id)

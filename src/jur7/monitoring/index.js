@@ -1,12 +1,12 @@
-const { IznosService } = require('./service');
+const { MonitoringService } = require('./service');
 const { Controller } = require('../../helper/controller');
 const {
-    getByTovarIdSchema
+    getObrotkaSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.get('/', Controller(IznosService.getByTovarIdIznos, getByTovarIdSchema));
+router.get('/obrotka', Controller(MonitoringService.obrotkaReport, getObrotkaSchema));
 
 module.exports = router;
