@@ -520,8 +520,8 @@ exports.OrganizationMonitoringService = class {
             organ.prixodSchets.push({ schet: 'Итого Дебит', summa: organ.summaPrixod })
             organ.rasxodSchets.push({ schet: 'Итого Кредит', summa: organ.summa_rasxod })
         }
-        rasxodSchets.push({ schet: 'Итого Дебит' });
-        prixodSchets.push({ schet: 'Итого Кредит' });
+        rasxodSchets.push({ schet: 'Итого Кредит' });
+        prixodSchets.push({ schet: 'Итого Дебит' });
         const result_data = await organizations.filter(item => item.summaFrom.summa !== 0 || item.summaTo.summa !== 0)
 
         const workbook = new ExcelJS.Workbook();
@@ -581,23 +581,49 @@ exports.OrganizationMonitoringService = class {
         for (let organ of result_data) {
             let rowData = {
                 organ: organ.name,
-                prixodFrom: organ.summaFrom > 0 ? organ.summaFrom : 0,
-                rasxodFrom: organ.summaFrom < 0 ? Math.abs(organ.summaFrom) : 0,
-                prixodTo: organ.summaTo > 0 ? organ.summaTo : 0,
-                rasxodTo: organ.summaTo < 0 ? Math.abs(organ.summaTo) : 0,
+                prixodFrom: organ.summaFrom.summa > 0 ? organ.summaFrom.summa : 0,
+                rasxodFrom: organ.summaFrom.summa < 0 ? Math.abs(organ.summaFrom.summa) : 0,
+                prixodTo: organ.summaTo.summa > 0 ? organ.summaTo.summa : 0,
+                rasxodTo: organ.summaTo.summa < 0 ? Math.abs(organ.summaTo.summa) : 0,
             };
 
             for (let schet of organ.prixodSchets) {
                 rowData[`p/${schet.schet}`] = schet.summa;
-                console.log(schet.schet)
             }
 
             for (let schet of organ.rasxodSchets) {
                 rowData[`r/${schet.schet}`] = schet.summa;
             }
-            
+
             worksheet.addRow(rowData);
         }
+
+        worksheet.eachRow((row, rowNumber) => {
+            row.eachCell((cell, index) => {
+                let bold = false;
+                let horizontal = 'center'
+                let size = 10;
+                if (rowNumber < 4) {
+                    bold = true;
+                    size = 15;
+                }
+                if(typeof cell.value === "number"){
+                    horizontal = 'right'
+                }
+                Object.assign(cell, {
+                    numFmt: '#,##0',
+                    font: { size, color: { argb: 'FF000000' }, bold, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal, wrapText: true },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            });
+        });
 
         const folderPath = path.join(__dirname, '../../public/exports')
         try {

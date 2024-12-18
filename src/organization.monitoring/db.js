@@ -833,7 +833,9 @@ exports.OrganizationMonitoringDB = class {
                 WHERE b_i.isdeleted = false
                     AND b_i.main_schet_id = $1 
                     AND b_i.doc_date BETWEEN $2 AND $3
+
                 UNION
+
                 SELECT s_op.schet
                 FROM bank_prixod_child AS b_p_ch
                 JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
@@ -841,6 +843,15 @@ exports.OrganizationMonitoringDB = class {
                 WHERE b_p.isdeleted = false
                 AND b_p.main_schet_id = $1
                 AND b_p.doc_date BETWEEN $2 AND $3
+                
+                UNION 
+                
+                SELECT d_j_ch.kredit_schet AS schet
+                FROM document_prixod_jur7_child AS d_j_ch
+                JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+                WHERE d_j.isdeleted = false
+                AND d_j.main_schet_id = $1
+                AND d_j.doc_date BETWEEN $2 AND $3
             ) AS combined_schets;
         `;
         const result = await db.query(query, params)
@@ -879,14 +890,23 @@ exports.OrganizationMonitoringDB = class {
                   AND b_p.main_schet_id = $1
                   AND b_p.doc_date ${operator} $2
                   AND b_p.id_spravochnik_organization = $3
+            ),
+            jur7_prixod AS (
+                SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
+                FROM document_prixod_jur7_child AS d_j_ch
+                JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+                WHERE d_j.isdeleted = false
+                  AND d_j.main_schet_id = $1
+                  AND d_j.doc_date ${operator} $2
+                  AND d_j.kimdan_id = $3
             )
             SELECT 
                 (
-                    (bank_rasxod_sum.summa) - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa)
+                    (bank_rasxod_sum.summa) - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod.summa)
                 ) AS summa,
                 bank_rasxod_sum.summa AS prixod_sum,
-                (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa) AS rasxod_sum
-            FROM bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum
+                (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod.summa) AS rasxod_sum
+            FROM bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -932,6 +952,16 @@ exports.OrganizationMonitoringDB = class {
                   AND b_p.doc_date BETWEEN $2 AND $3
                   AND b_p.id_spravochnik_organization = $4 
                   AND s_op.schet = $5
+            ),
+            jur7_prixod AS (
+                SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
+                FROM document_prixod_jur7_child AS d_j_ch
+                JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
+                WHERE d_j.isdeleted = false
+                  AND d_j.main_schet_id = $1
+                  AND d_j.doc_date BETWEEN $2 AND $3
+                  AND d_j.kimdan_id = $4
+                  AND d_j_ch.kredit_schet = $5
             )
             SELECT 
                 (
