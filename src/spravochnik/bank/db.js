@@ -20,7 +20,7 @@ exports.BankMfoDB = class {
         let search_filter = ``;
         if (search) {
             search_filter = `AND s_b_m.mfo ILIKE '%' || $${params.length + 1} || '%' OR s_b_m.bank_name ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search);
+            params.push(search); 
         }
         const query = `--sql
             WITH data AS (

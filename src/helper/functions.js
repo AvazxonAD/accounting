@@ -162,15 +162,15 @@ exports.parseLogs = (logs, type) => {
             if (match) {
                 return {
                     date: match[1],
-                    type: match[2], 
-                    ids: match[3].split(',').map(id => parseInt(id)), 
+                    type: match[2],
+                    ids: match[3].split(',').map(id => parseInt(id)),
                     user_id: match[4],
-                    type: type 
+                    type: type
                 };
             }
             return null;
         })
-        .filter(entry => entry !== null); 
+        .filter(entry => entry !== null);
 };
 
 exports.returnExcelColumn = (columns) => {
@@ -184,7 +184,7 @@ exports.returnExcelColumn = (columns) => {
         }
         return result;
     }
-    
+
     let results = [];
     columns.forEach(columnNumber => {
         let result = '';
@@ -196,4 +196,41 @@ exports.returnExcelColumn = (columns) => {
         results.push(result);
     });
     return results;
+}
+
+exports.getMonthStartEnd = (year, month) => {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    return [startDate, endDate];
+}
+
+exports.returnMonth = (month) => {
+    switch (month) {
+        case 1:
+            return "январь";
+        case 2:
+            return "февраль";
+        case 3:
+            return "март";
+        case 4:
+            return "апрель";
+        case 5:
+            return "май";
+        case 6:
+            return "июнь";
+        case 7:
+            return "июль";
+        case 8:
+            return "август";
+        case 9:
+            return "сентябрь";
+        case 10:
+            return "октябрь";
+        case 11:
+            return "ноябрь";
+        case 12:
+            return "декабрь";
+        default:
+            return "server xatolik";
+    }
 }

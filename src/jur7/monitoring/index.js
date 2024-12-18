@@ -7,6 +7,6 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/obrotka', Controller(MonitoringService.obrotkaReport, getObrotkaSchema));
+router.get('/obrotka/report', Controller(MonitoringService.obrotkaReport, getObrotkaSchema));
 
 module.exports = router;
