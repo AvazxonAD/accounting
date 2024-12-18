@@ -31,12 +31,6 @@ exports.RasxodService = class {
         message: "main schet not found"
       })
     }
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimga_id])
-    if (!organization) {
-      return res.status(404).json({
-        message: "organization not found"
-      })
-    }
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
     if (!responsible) {
       return res.status(404).json({
@@ -194,12 +188,6 @@ exports.RasxodService = class {
     if (!oldData) {
       return res.status(404).json({
         message: "rasxod doc not found"
-      })
-    }
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimga_id])
-    if (!organization) {
-      return res.status(404).json({
-        message: "organization not found"
       })
     }
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])

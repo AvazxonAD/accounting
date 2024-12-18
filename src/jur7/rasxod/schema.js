@@ -9,7 +9,7 @@ exports.createRasxodSchema = Joi.object({
     doverennost: Joi.string().trim(),
     kimdan_id: Joi.number().integer().min(1).required(),
     kimdan_name: Joi.string().trim(),
-    kimga_id: Joi.number().integer().min(1).required(),
+    kimga_id: Joi.number().integer().min(1).allow(null),
     kimga_name: Joi.string().trim(),
     id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
@@ -40,7 +40,7 @@ exports.updateRasxodSchema = Joi.object({
     doverennost: Joi.string().trim(),
     kimdan_id: Joi.number().integer().min(1).required(),
     kimdan_name: Joi.string().trim(),
-    kimga_id: Joi.number().integer().min(1).required(),
+    kimga_id: Joi.number().integer().min(1).allow(null),
     kimga_name: Joi.string().trim(),
     id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(

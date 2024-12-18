@@ -183,5 +183,16 @@ exports.NaimenovanieDB = class {
         return data;
     }
 
-
+    static async needdFunction(params) {
+        const query = `--sql
+            SELECT d.doc_date, d_ch.sena
+            FROM document_prixod_jur7_child AS d_ch
+            JOIN document_prixod_jur7 AS d ON d.id = d_ch.document_prixod_jur7_id
+            JOIN users AS u ON u.id = d.user_id 
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = $2 AND d.kimga_id = $3
+        `;
+        const result = await db.query(query, params);
+        return result[0]
+    }
 }
