@@ -82,4 +82,21 @@ exports.ResponsibleDB = class {
         const query = `UPDATE spravochnik_javobgar_shaxs_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`
         await db.query(query, params)
     }
+
+    static async getResponsibleReport(params){
+        const query = `--sql
+            SELECT 
+                s_j_s_j7.id, 
+                s_j_s_j7.fio,
+                s_j_s_j7.spravochnik_podrazdelenie_jur7_id,
+                s_p_j7.name AS spravochnik_podrazdelenie_jur7_name
+            FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
+            JOIN users AS u ON u.id = s_j_s_j7.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
+            WHERE s_j_s_j7.isdeleted = false AND r.id = $1
+        `;
+        const result = await db.query(query, params)
+        return result;
+    }
 }

@@ -272,6 +272,44 @@ exports.PrixodDB = class {
         return result;
     }
 
+    static async getByProductIdPrixod(params) {
+        const query = `--sql
+            SELECT 
+                d_j.id, 
+                d_j.doc_num,
+                TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d_j.opisanie, 
+                d_j.summa::FLOAT, 
+                d_j.kimdan_id,
+                d_j.kimdan_name, 
+                d_j.kimga_id,
+                d_j.kimga_name, 
+                d_j.doverennost,
+                d_j.j_o_num,
+                d_j.id_shartnomalar_organization, 
+                d_j_ch.id,
+                d_j_ch.naimenovanie_tovarov_jur7_id,
+                d_j_ch.kol,
+                d_j_ch.sena,
+                d_j_ch.summa,
+                d_j_ch.debet_schet,
+                d_j_ch.debet_sub_schet,
+                d_j_ch.kredit_schet,
+                d_j_ch.kredit_sub_schet,
+                TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
+                d_j_ch.nds_foiz,
+                d_j_ch.nds_summa,
+                d_j_ch.summa_s_nds
+            FROM document_prixod_jur7 AS d_j
+            JOIN document_prixod_jur7_child AS d_j_ch ON d_j.id = d_j_ch.document_prixod_jur7_id 
+            JOIN users AS u ON u.id = d_j.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 AND d_j.main_schet_id = $2 AND d_j.isdeleted = false AND d_j_ch.naimenovanie_tovarov_jur7_id = $3
+        `;
+        const result = await db.query(query, params);
+        return result[0];
+    }
+
     static async prixodReportChild(params) {
         const query = `--sql
             SELECT  

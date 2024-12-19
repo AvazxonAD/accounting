@@ -10,6 +10,14 @@ exports.OrganizationService = class {
             raschet_schet_gazna,
             mfo, inn, okonx, parent_id
         } = req.body;
+        if(parent_id){
+            const organization = await OrganizationDB.getByIdorganization([region_id, parent_id])
+            if(!organization){
+                return res.status(404).json({
+                    message: "organization not found"
+                })
+            }
+        }
         const result = await OrganizationDB.createOrganization([
             name, bank_klient, raschet_schet,
             raschet_schet_gazna, mfo, inn, user_id,
@@ -51,11 +59,20 @@ exports.OrganizationService = class {
         }
         const {
             name, bank_klient, raschet_schet,
-            raschet_schet_gazna, mfo, inn, okonx
+            raschet_schet_gazna, mfo, inn, okonx, parent_id
         } = req.body;
+        
+        if(parent_id){
+            const organization = await OrganizationDB.getByIdorganization([region_id, parent_id])
+            if(!organization){
+                return res.status(404).json({
+                    message: "organization not found"
+                })
+            }
+        }
         const result = await OrganizationDB.updateOrganization([
             name, bank_klient, raschet_schet,
-            raschet_schet_gazna, mfo, inn, okonx, id
+            raschet_schet_gazna, mfo, inn, okonx, parent_id, id
         ]);
         return res.status(200).json({
             message: 'update organization successfully!',

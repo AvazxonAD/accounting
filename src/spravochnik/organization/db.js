@@ -108,8 +108,8 @@ exports.OrganizationDB = class {
         const query = `--sql
             UPDATE spravochnik_organization 
             SET name = $1, bank_klient = $2, raschet_schet = $3, 
-                raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $7
-            WHERE id = $8 AND isdeleted = false RETURNING *
+                raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $7, parent_id = $8
+            WHERE id = $9 AND isdeleted = false RETURNING *
         `;
         const result = await db.query(query, params);
         return result;

@@ -1,4 +1,5 @@
 const { Monitoringjur7DB } = require('./db')
+const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const ExcelJS = require('exceljs')
 const { getMonthStartEnd, returnMonth } = require('../../helper/functions')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
@@ -114,7 +115,6 @@ exports.MonitoringService = class {
     static async materialReport(req, res) {
         const { month, year, main_schet_id } = req.query;
         const region_id = req.user.region_id;
-        const schets = await Monitoringjur7DB.getSchets([year, month, main_schet_id])
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
         if (!main_schet) {
             return res.status(404).json({
@@ -173,7 +173,7 @@ exports.MonitoringService = class {
         const date_prixod = worksheet.getCell('K6')
         date_prixod.value = 'Дата приход'
 
-        worksheet.getRow(7).values =  [
+        worksheet.getRow(7).values = [
             '',
             '',
             'Кол',
@@ -200,7 +200,17 @@ exports.MonitoringService = class {
             { key: 'date', width: 15 }
         ];
 
-        
+        const responsibles = await ResponsibleDB.getResponsibleReport([region_id])
+        for (let responsible of responsibles) {
+            responsible.schets = await Monitoringjur7DB.getSchets([year, month, main_schet_id], responsible.id)
+            for (let schet of responsible.schets) {
+                
+                schet.summa_from = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0]], '<', responsible.id)
+                schet.internal = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0], dates[1]], null, responsible.id)
+                schet.summa_to = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[1]], '<=', responsible.id)
+            }
+        }
+
         worksheet.eachRow((row, rowNumber) => {
             let size = 12;
             let bold = false;

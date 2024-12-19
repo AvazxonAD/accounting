@@ -60,6 +60,12 @@ exports.PrixodService = class {
           message: "product not found"
         })
       }
+      const checkProduct = await PrixodDB.getByProductIdPrixod([region_id, main_schet_id, child.naimenovanie_tovarov_jur7_id])
+      if(checkProduct){
+        return res.status(409).json({
+          message: "This item has already been received"
+        })
+      }
     }
     const testTovarId = checkTovarId(childs)
     if (testTovarId) {
@@ -527,5 +533,4 @@ exports.PrixodService = class {
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     return res.send(buffer);
   }
-
 }
