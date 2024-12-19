@@ -36,7 +36,7 @@ exports.OrganizationDB = class {
                 FROM spravochnik_organization AS s_o 
                 JOIN users ON s_o.user_id = users.id
                 JOIN regions ON users.region_id = regions.id 
-                WHERE regions.id = $1 AND s_o.parent_id = $2 ${isdeleted ? '' : ignore}
+                WHERE regions.id = $1 AND s_o.parent_id = $2 AND s_o.isdeleted = false
             `;
             result[0].childs = await db.query(child_query, params);
         }

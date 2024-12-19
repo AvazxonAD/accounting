@@ -53,16 +53,15 @@ class Db {
         } catch (error) {
             await client.query('ROLLBACK');
             console.error(`Error on transaction: ${error}`.red);
-            throw error; 
+            throw new Error(error); 
         } finally {
             client.release();
             
             if (isTransactionSuccessfully) {
                 console.log('Transaction committed successfully!');
-                return isTransactionSuccessfully;
             } else {
                 console.log('Transaction was rolled back!'.red);
-                return isTransactionSuccessfully;  
+                return null;  
             }
         }
     }

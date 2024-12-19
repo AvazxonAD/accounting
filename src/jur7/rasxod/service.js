@@ -71,7 +71,7 @@ exports.RasxodService = class {
     }
     let doc;
     try {
-      await db.transaction(async client => {
+    const test =  await db.transaction(async client => {
         doc = await RasxodDB.createRasxod([
           user_id,
           doc_num,
@@ -106,6 +106,7 @@ exports.RasxodService = class {
         })
         doc.childs = await RasxodDB.createRasxodChild(result_childs, client)
       })
+      console.log(test)
     } catch (error) {
       console.log(error, '//////////////')
     }
