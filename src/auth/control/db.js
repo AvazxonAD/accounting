@@ -72,6 +72,55 @@ exports.ControlDB = class {
                 JOIN users AS u ON u.id = r.user_id
                 JOIN regions AS r10 ON r10.id = u.region_id
                 WHERE EXTRACT(YEAR FROM r.doc_date) = $1 AND EXTRACT(MONTH FROM r.doc_date) = $2 AND r10.id = $3 
+            ),
+            contractCount AS (
+                SELECT COALESCE(COUNT(sh.id), 0)::INTEGER AS count
+                FROM shartnomalar_organization AS sh
+                JOIN users AS u ON u.id = sh.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE  r.id = $3 
+            ),
+            main_schetCount AS (
+                SELECT COALESCE(COUNT(c.id), 0)::INTEGER AS count
+                FROM main_schet AS c
+                JOIN users AS u ON u.id = c.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $3 
+            ),
+            organizationCount AS (
+                SELECT COALESCE(COUNT(c.id), 0)::INTEGER AS count
+                FROM spravochnik_organization AS c
+                JOIN users AS u ON u.id = c.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $3 
+            ),
+            podotchetCount AS (
+                SELECT COALESCE(COUNT(c.id), 0)::INTEGER AS count
+                FROM spravochnik_podotchet_litso AS c
+                JOIN users AS u ON u.id = c.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $3 
+            ),
+            podrazdelenieCount AS (
+                SELECT COALESCE(COUNT(c.id), 0)::INTEGER AS count
+                FROM spravochnik_podrazdelenie AS c
+                JOIN users AS u ON u.id = c.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $3 
+            ),
+            sostavCount AS (
+                SELECT COALESCE(COUNT(c.id), 0)::INTEGER AS count
+                FROM spravochnik_sostav AS c
+                JOIN users AS u ON u.id = c.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $3 
+            ),
+            type_operatsiiCount AS (
+                SELECT COALESCE(COUNT(c.id), 0)::INTEGER AS count
+                FROM spravochnik_type_operatsii AS c
+                JOIN users AS u ON u.id = c.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE r.id = $3 
             )
             SELECT
                 (
@@ -86,6 +135,7 @@ exports.ControlDB = class {
                 ( 
                     (SELECT count FROM avans_otchetlar_jur4Count) +
                     (SELECT count FROM kursatilgan_hizmatlar_jur152Count) +
+                    (SELECT count FROM contractCount) +
                     (SELECT count FROM bajarilgan_ishlar_jur3Count) 
                 ) AS organ_count,
                 (
@@ -93,6 +143,14 @@ exports.ControlDB = class {
                     (SELECT count FROM document_prixod_jur7Count) +
                     (SELECT count FROM document_rasxod_jur7Count)
                 ) AS jur7_count,
+                (
+                    (SELECT count FROM main_schetCount) +
+                    (SELECT count FROM organizationCount) +
+                    (SELECT count FROM podrazdelenieCount) +
+                    (SELECT count FROM sostavCount) +
+                    (SELECT count FROM organizationCount) +
+                    (SELECT count FROM podotchetCount)
+                ) AS storage_count,
                 (
                     (SELECT count FROM kassa_rasxodCount) +
                     (SELECT count FROM kassa_prixodCount) +
@@ -103,7 +161,13 @@ exports.ControlDB = class {
                     (SELECT count FROM bajarilgan_ishlar_jur3Count) +
                     (SELECT count FROM document_vnutr_peremesh_jur7Count) +
                     (SELECT count FROM document_prixod_jur7Count) +
-                    (SELECT count FROM document_rasxod_jur7Count)
+                    (SELECT count FROM document_rasxod_jur7Count) + 
+                    (SELECT count FROM main_schetCount) +
+                    (SELECT count FROM organizationCount) +
+                    (SELECT count FROM podrazdelenieCount) +
+                    (SELECT count FROM sostavCount) +
+                    (SELECT count FROM organizationCount) +
+                    (SELECT count FROM podotchetCount)
                 ) AS total_count
         `;
         const result = await db.query(query, params);

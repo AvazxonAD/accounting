@@ -79,7 +79,7 @@ exports.RasxodDB = class {
                 summa,
                 nds_foiz,
                 nds_summa,
-                summa_s_nds, 
+                summa_s_nds, qwiddfdsu
                 debet_schet,
                 debet_sub_schet,
                 kredit_schet,

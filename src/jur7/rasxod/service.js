@@ -70,42 +70,45 @@ exports.RasxodService = class {
       summa += child.kol * child.sena;
     }
     let doc;
-    await db.transaction(async client => {
-      doc = await RasxodDB.createRasxod([
-        user_id,
-        doc_num,
-        doc_date,
-        j_o_num,
-        opisanie,
-        doverennost,
-        summa,
-        kimdan_id,
-        kimdan_name,
-        kimga_id,
-        kimga_name,
-        id_shartnomalar_organization,
-        main_schet_id,
-        tashkentTime(),
-        tashkentTime()
-      ], client);
-      const result_childs = childs.map(item => {
-        item.summa = item.kol * item.sena
-        if (item.nds_foiz) {
-          item.nds_summa = item.nds_foiz / 100 * item.summa;
-        } else {
-          item.nds_summa = 0;
-        }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.user_id = user_id
-        item.document_rasxod_jur7_id = doc.id;
-        item.main_schet_id = main_schet_id;
-        item.created_at = tashkentTime()
-        item.updated_at = tashkentTime()
-        return item
+    try {
+      await db.transaction(async client => {
+        doc = await RasxodDB.createRasxod([
+          user_id,
+          doc_num,
+          doc_date,
+          j_o_num,
+          opisanie,
+          doverennost,
+          summa,
+          kimdan_id,
+          kimdan_name,
+          kimga_id,
+          kimga_name,
+          id_shartnomalar_organization,
+          main_schet_id,
+          tashkentTime(),
+          tashkentTime()
+        ], client);
+        const result_childs = childs.map(item => {
+          item.summa = item.kol * item.sena
+          if (item.nds_foiz) {
+            item.nds_summa = item.nds_foiz / 100 * item.summa;
+          } else {
+            item.nds_summa = 0;
+          }
+          item.summa_s_nds = item.summa + item.nds_summa;
+          item.user_id = user_id
+          item.document_rasxod_jur7_id = doc.id;
+          item.main_schet_id = main_schet_id;
+          item.created_at = tashkentTime()
+          item.updated_at = tashkentTime()
+          return item
+        })
+        doc.childs = await RasxodDB.createRasxodChild(result_childs, client)
       })
-      doc.childs = await RasxodDB.createRasxodChild(result_childs, client)
-    })
-
+    } catch (error) {
+      console.log(error, '//////////////')
+    }
     return res.status(201).json({
       message: "Create doc rasxod successfully",
       data: doc

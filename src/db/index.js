@@ -59,9 +59,10 @@ class Db {
             
             if (isTransactionSuccessfully) {
                 console.log('Transaction committed successfully!');
+                return isTransactionSuccessfully;
             } else {
                 console.log('Transaction was rolled back!'.red);
-                return null;  
+                return isTransactionSuccessfully;  
             }
         }
     }
