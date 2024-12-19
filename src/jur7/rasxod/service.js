@@ -70,8 +70,8 @@ exports.RasxodService = class {
       summa += child.kol * child.sena;
     }
     let doc;
-    try {
-    const test =  await db.transaction(async client => {
+    await db.transaction(async client => {
+      try {
         doc = await RasxodDB.createRasxod([
           user_id,
           doc_num,
@@ -89,57 +89,30 @@ exports.RasxodService = class {
           tashkentTime(),
           tashkentTime()
         ], client);
+
         const result_childs = childs.map(item => {
-          item.summa = item.kol * item.sena
-          if (item.nds_foiz) {
-            item.nds_summa = item.nds_foiz / 100 * item.summa;
-          } else {
-            item.nds_summa = 0;
-          }
+          item.summa = item.kol * item.sena;
+          item.nds_summa = item.nds_foiz ? item.nds_foiz / 100 * item.summa : 0;
           item.summa_s_nds = item.summa + item.nds_summa;
-          item.user_id = user_id
+          item.user_id = user_id;
           item.document_rasxod_jur7_id = doc.id;
           item.main_schet_id = main_schet_id;
-          item.created_at = tashkentTime()
-          item.updated_at = tashkentTime()
-          return item
+          item.created_at = tashkentTime();
+          item.updated_at = tashkentTime();
+          return item;
+        });
+        doc.childs = await RasxodDB.createRasxodChild(result_childs, client);
+      } catch (error) {
+        return res.status(500).json({
+          message: `Interval server error: ${error.message}`
         })
-        doc.childs = await RasxodDB.createRasxodChild(result_childs, client)
-      })
-      console.log(test)
-    } catch (error) {
-      console.log(error, '//////////////')
-    }
+      }
+    });
+
     return res.status(201).json({
       message: "Create doc rasxod successfully",
       data: doc
-    })
-  }
-
-  static async getRasxod(req, res) {
-    const region_id = req.user.region_id;
-    const { page, limit, search, from, to, main_schet_id } = req.query;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
-    }
-    const offset = (page - 1) * limit;
-    const { data, total } = await RasxodDB.getRasxod([region_id, from, to, main_schet_id, offset, limit], search)
-    const pageCount = Math.ceil(total / limit);
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
-    }
-    return res.status(200).json({
-      message: "group successfully get",
-      meta,
-      data: data || []
-    })
+    });
   }
 
   static async getByIdRasxod(req, res) {
@@ -300,4 +273,29 @@ exports.RasxodService = class {
     })
   }
 
+  static async getRasxod(req, res) {
+    const region_id = req.user.region_id;
+    const { page, limit, search, from, to, main_schet_id } = req.query;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if (!main_schet) {
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const offset = (page - 1) * limit;
+    const { data, total } = await RasxodDB.getRasxod([region_id, from, to, main_schet_id, offset, limit], search)
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    }
+    return res.status(200).json({
+      message: "group successfully get",
+      meta,
+      data: data || []
+    })
+  }
 }

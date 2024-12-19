@@ -79,7 +79,7 @@ exports.RasxodDB = class {
                 summa,
                 nds_foiz,
                 nds_summa,
-                summa_s_nds, qwiddfdsu
+                summa_s_nds,
                 debet_schet,
                 debet_sub_schet,
                 kredit_schet,
@@ -124,7 +124,7 @@ exports.RasxodDB = class {
               s_o.inn AS spravochnik_organization_inn,
               s_j_sh.fio AS kimdan_name
             FROM document_rasxod_jur7 AS d_j
-            JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimga_id
+            LEFT JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimga_id
             JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh ON s_j_sh.id = d_j.kimdan_id 
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -143,8 +143,8 @@ exports.RasxodDB = class {
               JOIN users AS u ON u.id = d_j.user_id
               JOIN regions AS r ON r.id = u.region_id  
               WHERE r.id = $1 
-                AND d_j.doc_date BETWEEN $2 AND $3 
-                AND d_j.isdeleted = false ${search_filter}
+                AND d_j.isdeleted = false 
+                AND d_j.doc_date BETWEEN $2 AND $3 ${search_filter}
                 AND d_j.main_schet_id = $4
             )::FLOAT AS summa,
             (
@@ -153,8 +153,8 @@ exports.RasxodDB = class {
               JOIN users AS u ON u.id = d_j.user_id
               JOIN regions AS r ON r.id = u.region_id  
               WHERE r.id = $1 
-                AND d_j.doc_date BETWEEN $2 AND $3 
-                AND d_j.isdeleted = false ${search_filter}
+                AND d_j.isdeleted = false 
+                AND d_j.doc_date BETWEEN $2 AND $3 ${search_filter}
                 AND d_j.main_schet_id = $4
             )::INTEGER AS total
           FROM data

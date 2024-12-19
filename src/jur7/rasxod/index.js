@@ -17,5 +17,4 @@ router.put('/:id', Controller(RasxodService.updateRasxod, updateRasxodSchema));
 router.delete('/:id', Controller(RasxodService.deleteRasxod, deleteRasxodSchema));
 router.get('/', Controller(RasxodService.getRasxod, getRasxodSchema));
 
-
 module.exports = router;
