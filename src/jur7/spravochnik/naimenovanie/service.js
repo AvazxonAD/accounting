@@ -150,7 +150,6 @@ exports.NaimenovanieService = class {
                 message: "responsible not found"
             })
         } 
-        
         const data = await NaimenovanieDB.getProductKol([region_id, kimdan_id], search)
         const result = data.filter(item => item.result > 0)
         return res.status(200).json({
