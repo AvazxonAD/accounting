@@ -151,9 +151,6 @@ exports.NaimenovanieService = class {
             })
         } 
         const data = await NaimenovanieDB.getProductKol([region_id, kimdan_id], search)
-        for(let product of data) {
-            product.data = await NaimenovanieDB.needdFunction([region_id, product.id, kimdan_id])
-        }
         const result = data.filter(item => item.result > 0)
         return res.status(200).json({
             message: "product get succcessfully!",

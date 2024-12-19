@@ -128,6 +128,8 @@ exports.NaimenovanieDB = class {
                     g_j7.name AS group_jur7_name,
                     n_t_j7.spravochnik_budjet_name_id,
                     s_b_n.name AS spravochnik_budjet_name,
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                    d_ch.sena::FLOAT,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
                         FROM document_prixod_jur7 AS d
@@ -161,6 +163,8 @@ exports.NaimenovanieDB = class {
                         WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2
                     )::FLOAT AS rasxod2
                 FROM naimenovanie_tovarov_jur7 AS n_t_j7
+                JOIN document_prixod_jur7_child AS d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id
+                JOIN document_prixod_jur7 AS d ON d_ch.document_prixod_jur7_id = d.id
                 JOIN users AS u ON u.id = n_t_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
@@ -181,18 +185,5 @@ exports.NaimenovanieDB = class {
             data = await db.query(query, params)
         }
         return data;
-    }
-
-    static async needdFunction(params) {
-        const query = `--sql
-            SELECT d.doc_date, d_ch.sena
-            FROM document_prixod_jur7_child AS d_ch
-            JOIN document_prixod_jur7 AS d ON d.id = d_ch.document_prixod_jur7_id
-            JOIN users AS u ON u.id = d.user_id 
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = $2 AND d.kimga_id = $3
-        `;
-        const result = await db.query(query, params);
-        return result[0]
     }
 }
