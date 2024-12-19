@@ -127,6 +127,7 @@ exports.OrganizationMonitoringService = class {
             }
         }
         const data = await OrganizationMonitoringDB.getByContractIdData([from, to, organ_id], contract_id);
+        console.log(data)
         const summa_from = await OrganizationMonitoringDB.getByContractIdSumma([from, organ_id], '<', contract_id)
         const summa_to = await OrganizationMonitoringDB.getByContractIdSumma([to, organ_id], '<=', contract_id)
         const podpis = await PodpisDB.getPodpis([region_id], 'akkt_sverka');
