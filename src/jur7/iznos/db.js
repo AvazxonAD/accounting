@@ -1,21 +1,38 @@
 const { db } = require('../../db/index');
-const { returnParamsValues, designParams} = require('../../helper/functions')
+const { returnParamsValues, designParams } = require('../../helper/functions')
 
 exports.IznosDB = class {
     static async createIznos(params, client) {
-        const design_params = [
-            "user_id",
-            "inventar_num",
-            "serial_num",
-            "naimenovanie_tovarov_jur7_id",
-            "kol",
-            "sena",
-            "iznos_start_date",
-            "created_at",
-            "updated_at"
-        ];
-        const all_values = designParams(params, design_params)
-        const _values = returnParamsValues(all_values, 9);
+        /*  const design_params = [
+                "user_id",
+                "inventar_num",
+                "serial_num",
+                "naimenovanie_tovarov_jur7_id",
+                "kol",
+                "sena",
+                "iznos_start_date",
+                "created_at",
+                "updated_at"
+            ];
+            const all_values = designParams(params, design_params)
+            const _values = returnParamsValues(all_values, 9);
+            const query = `--sql
+                INSERT INTO iznos_tovar_jur7(
+                    user_id,
+                    inventar_num,
+                    serial_num,
+                    naimenovanie_tovarov_jur7_id,
+                    kol,
+                    sena,
+                    iznos_start_date,
+                    created_at,
+                    updated_at
+                )
+                VALUES ${_values}
+            `;
+            const result = await client.query(query, all_values);
+            return result.rows; 
+        */
         const query = `--sql
             INSERT INTO iznos_tovar_jur7(
                 user_id,
@@ -28,10 +45,21 @@ exports.IznosDB = class {
                 created_at,
                 updated_at
             )
-            VALUES ${_values}
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         `;
-        const result = await client.query(query, all_values);
-        return result.rows; 
+        for(let object of params){
+            await client.query(query, [
+                object.user_id,
+                object.inventar_num,
+                object.serial_num,
+                object.naimenovanie_tovarov_jur7_id,
+                object.kol,
+                object.sena,
+                object.iznos_start_date,
+                object.created_at,
+                object.updated_at
+            ]);
+        }
     }
 
     static async getByTovarIdIznos(params) {

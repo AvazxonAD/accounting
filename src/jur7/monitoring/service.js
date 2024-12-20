@@ -204,15 +204,73 @@ exports.MonitoringService = class {
         for (let responsible of responsibles) {
             responsible.schets = await Monitoringjur7DB.getSchets([year, month, main_schet_id], responsible.id)
             for (let schet of responsible.schets) {
-                schet.products = await Monitoringjur7DB.getBySchetProducts([region_id, main_schet_id, schet.schet])
+                schet.products = await Monitoringjur7DB.getBySchetProducts([region_id, main_schet_id, schet.schet, responsible.id])
+                schet.kol_from = 0;
+                schet.summa_from = 0;
+                schet.kol_prixod = 0;
+                schet.prixod = 0;
+                schet.kol_rasxod = 0;
+                schet.rasxod = 0;
+                schet.kol_to = 0;
+                schet.summa_to = 0;
                 for (let product of schet.products) {
-                    schet.summa_from = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0]], '<', responsible.id, product.id)
-                    schet.internal = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0], dates[1]], null, responsible.id. product.id)
-                    schet.summa_to = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[1]], '<=', responsible.id, product.id)
+                    product.summa_from = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0]], '<', responsible.id, product.id)
+                    product.internal = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0], dates[1]], null, responsible.id, product.id)
+                    product.summa_to = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[1]], '<=', responsible.id, product.id)
+                    schet.kol_from += product.summa_from.kol
+                    schet.summa_from += product.summa_from.summa;
+                    schet.kol_prixod += product.internal.prixod_kol;
+                    schet.prixod += product.internal.prixod;
+                    schet.kol_rasxod += product.internal.rasxod_kol;
+                    schet.rasxod += product.internal.rasxod;
+                    schet.kol_to += product.summa_to.kol;
+                    schet.summa_to += product.summa_to.summa;
                 }
             }
         }
-        return res.send(responsibles)
+
+        for (let responsible of responsibles) {
+            for (let schet of responsible.schets) {
+                if (schet.products.length) {
+                    worksheet.addRow({})
+                    worksheet.addRow({ product_name: responsible.fio })
+                    worksheet.addRow({ product_name: `Счет ${schet.schet}` })
+                    for (let product of schet.products) {
+                        worksheet.addRow(
+                            {
+                                product_name: product.name,
+                                edin: product.edin,
+                                from_kol: product.summa_from.kol ,
+                                from_summa: product.summa_from.summa,
+                                prixod_kol: product.internal.prixod_kol,
+                                prixod: product.internal.prixod,
+                                rasxod_kol: product.internal.rasxod_kol,
+                                rasxod: product.internal.rasxod,
+                                to_kol: product.summa_to.kol,
+                                to_summa: product.summa_to.summa,
+                                date: product.date
+                            }
+                        )
+                    }
+                    worksheet.addRow(
+                        {
+                            product_name: '',
+                            edin: '',
+                            from_kol: schet.kol_from,
+                            from_summa: schet.summa_from,
+                            prixod_kol: schet.kol_prixod,
+                            prixod: schet.prixod,
+                            rasxod_kol: schet.kol_rasxod,
+                            rasxod: schet.rasxod,
+                            to_kol: schet.kol_to,
+                            to_summa: schet.summa_to,
+                            date: ''
+                        }
+                    )
+                }
+            }
+        }
+
 
         worksheet.eachRow((row, rowNumber) => {
             let size = 12;
