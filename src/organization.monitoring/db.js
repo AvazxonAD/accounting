@@ -851,10 +851,12 @@ exports.OrganizationMonitoringDB = class {
             FROM (
                 SELECT s_o.schet
                 FROM bajarilgan_ishlar_jur3 AS b_i
-                JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i.spravochnik_operatsii_own_id
+                JOIN bajarilgan_ishlar_jur3_child b_i_ch ON b_i.id = b_i_ch.bajarilgan_ishlar_jur3_id
+                JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_ch.spravochnik_operatsii_id
                 WHERE b_i.isdeleted = false
                     AND b_i.main_schet_id = $1 
                     AND b_i.doc_date BETWEEN $2 AND $3
+                    AND b_i.spravochnik_operatsii_own_id = $4
 
                 UNION
 
@@ -865,6 +867,7 @@ exports.OrganizationMonitoringDB = class {
                 WHERE b_p.isdeleted = false
                 AND b_p.main_schet_id = $1
                 AND b_p.doc_date BETWEEN $2 AND $3
+                AND b_i.spravochnik_operatsii_own_id = $4
                 
                 UNION 
                 
@@ -874,6 +877,7 @@ exports.OrganizationMonitoringDB = class {
                 WHERE d_j.isdeleted = false
                 AND d_j.main_schet_id = $1
                 AND d_j.doc_date BETWEEN $2 AND $3
+                AND b_i.d_j_ch = $4
             ) AS combined_schets;
         `;
         const result = await db.query(query, params)
