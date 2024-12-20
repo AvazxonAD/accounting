@@ -861,7 +861,7 @@ exports.OrganizationMonitoringDB = class {
 
                 UNION
 
-                SELECT m.jur2_schet
+                SELECT s_o.schet
                 FROM bank_prixod_child AS b_p_ch
                 JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
@@ -993,7 +993,7 @@ exports.OrganizationMonitoringDB = class {
                   AND d_j.main_schet_id = $1
                   AND d_j.doc_date BETWEEN $2 AND $3
                   AND d_j.kimdan_id = $4
-                  AND d_j_ch.debit_schet = $5
+                  AND d_j_ch.debet_schet = $5
             )
             SELECT 
                 (
