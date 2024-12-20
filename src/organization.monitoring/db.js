@@ -993,7 +993,7 @@ exports.OrganizationMonitoringDB = class {
                   AND d_j.main_schet_id = $1
                   AND d_j.doc_date BETWEEN $2 AND $3
                   AND d_j.kimdan_id = $4
-                  AND d_j_ch.kredit_schet = $5
+                  AND d_j_ch.debit_schet = $5
             )
             SELECT 
                 (
