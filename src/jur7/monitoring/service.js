@@ -248,7 +248,7 @@ exports.MonitoringService = class {
                                 rasxod: product.internal.rasxod,
                                 to_kol: product.summa_to.kol,
                                 to_summa: product.summa_to.summa,
-                                date: product.date
+                                date: product.doc_date
                             }
                         )
                     }
