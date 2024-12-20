@@ -491,12 +491,12 @@ exports.OrganizationMonitoringService = class {
                 message: "main schet not found"
             })
         }
-        const rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([main_schet_id, from, to])
+        const rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([main_schet_id, from, to, schet])
         const prixodSchets = ([{schet: schet}])
         const organizations = await OrganizationDB.getOrganization([region_id])
         for (let organ of organizations) {
-            organ.summaFrom = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, from, organ.id], '<');
-            organ.summaTo = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, to, organ.id], '<=');
+            organ.summaFrom = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, from, organ.id, schet], '<');
+            organ.summaTo = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, to, organ.id, schet], '<=');
 
             organ.rasxodSchets = rasxodSchets.map((schet) => ({ ...schet }));
             organ.prixodSchets = prixodSchets.map((schet) => ({ ...schet }));

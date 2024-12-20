@@ -853,31 +853,33 @@ exports.OrganizationMonitoringDB = class {
                 FROM bajarilgan_ishlar_jur3 AS b_i
                 JOIN bajarilgan_ishlar_jur3_child b_i_ch ON b_i.id = b_i_ch.bajarilgan_ishlar_jur3_id
                 JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS s_op ON s_op.id = b_i.spravochnik_operatsii_own_id
                 WHERE b_i.isdeleted = false
                     AND b_i.main_schet_id = $1 
                     AND b_i.doc_date BETWEEN $2 AND $3
-                    AND b_i.spravochnik_operatsii_own_id = $4
+                    AND s_op.schet = $4
 
                 UNION
 
-                SELECT s_op.schet
+                SELECT m.jur2_schet
                 FROM bank_prixod_child AS b_p_ch
                 JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
-                JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS s_o ON s_o.id = b_p_ch.spravochnik_operatsii_id
+                JOIN main_schet AS m ON m.id = b_p.main_schet_id 
                 WHERE b_p.isdeleted = false
-                AND b_p.main_schet_id = $1
-                AND b_p.doc_date BETWEEN $2 AND $3
-                AND b_i.spravochnik_operatsii_own_id = $4
+                    AND b_p.main_schet_id = $1
+                    AND b_p.doc_date BETWEEN $2 AND $3
+                    AND s_o.schet = $4
                 
                 UNION 
                 
-                SELECT d_j_ch.kredit_schet AS schet
+                SELECT d_j_ch.debet_schet AS schet
                 FROM document_prixod_jur7_child AS d_j_ch
                 JOIN document_prixod_jur7 AS d_j ON d_j_ch.document_prixod_jur7_id = d_j.id
                 WHERE d_j.isdeleted = false
-                AND d_j.main_schet_id = $1
-                AND d_j.doc_date BETWEEN $2 AND $3
-                AND b_i.d_j_ch = $4
+                    AND d_j.main_schet_id = $1
+                    AND d_j.doc_date BETWEEN $2 AND $3
+                    AND d_j_ch.kredit_schet = $4
             ) AS combined_schets;
         `;
         const result = await db.query(query, params)
@@ -896,6 +898,7 @@ exports.OrganizationMonitoringDB = class {
                   AND b_i_j3.main_schet_id = $1
                   AND b_i_j3.doc_date ${operator} $2
                   AND b_i_j3.id_spravochnik_organization = $3
+                  AND s_o_p.schet = $4
             ),
             bank_rasxod_sum AS (
                 SELECT COALESCE(SUM(b_r_ch.summa), 0)::FLOAT AS summa
@@ -906,6 +909,7 @@ exports.OrganizationMonitoringDB = class {
                   AND b_r.main_schet_id = $1
                   AND b_r.doc_date ${operator} $2
                   AND b_r.id_spravochnik_organization = $3
+                  AND s_op.schet = $4
             ),
             bank_prixod_sum AS (
                 SELECT COALESCE(SUM(b_p_ch.summa), 0)::FLOAT AS summa
@@ -916,6 +920,7 @@ exports.OrganizationMonitoringDB = class {
                   AND b_p.main_schet_id = $1
                   AND b_p.doc_date ${operator} $2
                   AND b_p.id_spravochnik_organization = $3
+                  AND s_op.schet = $4
             ),
             jur7_prixod AS (
                 SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
@@ -925,6 +930,7 @@ exports.OrganizationMonitoringDB = class {
                   AND d_j.main_schet_id = $1
                   AND d_j.doc_date ${operator} $2
                   AND d_j.kimdan_id = $3
+                  AND d_j_ch.kredit_schet = $4
             )
             SELECT 
                 (
