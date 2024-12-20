@@ -204,12 +204,15 @@ exports.MonitoringService = class {
         for (let responsible of responsibles) {
             responsible.schets = await Monitoringjur7DB.getSchets([year, month, main_schet_id], responsible.id)
             for (let schet of responsible.schets) {
-                
-                schet.summa_from = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0]], '<', responsible.id)
-                schet.internal = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0], dates[1]], null, responsible.id)
-                schet.summa_to = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[1]], '<=', responsible.id)
+                schet.products = await Monitoringjur7DB.getBySchetProducts([region_id, main_schet_id, schet.schet])
+                for (let product of schet.products) {
+                    schet.summa_from = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0]], '<', responsible.id, product.id)
+                    schet.internal = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[0], dates[1]], null, responsible.id. product.id)
+                    schet.summa_to = await Monitoringjur7DB.getSummaReport([main_schet_id, schet.schet, dates[1]], '<=', responsible.id, product.id)
+                }
             }
         }
+        return res.send(responsibles)
 
         worksheet.eachRow((row, rowNumber) => {
             let size = 12;

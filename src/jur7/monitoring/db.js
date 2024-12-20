@@ -47,7 +47,7 @@ exports.Monitoringjur7DB = class {
         return result;
     }
 
-    static async getSummaReport(params, operator, responsible_id = null) {
+    static async getSummaReport(params, operator, responsible_id = null, product_id = null) {
         let internal_filter = ``;
         if (params.length === 3) {
             internal_filter = `${operator} $3`
@@ -56,10 +56,16 @@ exports.Monitoringjur7DB = class {
             internal_filter = 'BETWEEN $3 AND $4'
         }
         let index_responsible_id = null;
-        if(responsible_id){
+        if (responsible_id) {
             params.push(responsible_id);
             index_responsible_id = params.length;
         }
+        let product_filter = ``;
+        if (product_id) {
+            product_filter = `AND d_j_ch.naimenovanie_tovarov_jur7 = $${params.length + 1}`;
+            params.push(product_id);
+        }
+
 
         const query = `--sql
             WITH 
@@ -68,28 +74,28 @@ exports.Monitoringjur7DB = class {
                 FROM document_prixod_jur7 d_j
                 JOIN document_prixod_jur7_child d_j_ch ON d_j_ch.document_prixod_jur7_id = d_j.id
                 WHERE d_j.main_schet_id = $1 AND  d_j_ch.debet_schet = $2 AND d_j.doc_date ${internal_filter}
-                ${responsible_id ? sqlFilter('d_j.kimga_id', index_responsible_id) : ''}
+                ${responsible_id ? sqlFilter('d_j.kimga_id', index_responsible_id) : ''} ${product_filter} 
             ),
             jur7_rasxodSum AS (
                 SELECT COALESCE(SUM(d_j_ch.summa), 0) AS summa, COALESCE(SUM(d_j_ch.kol), 0) AS kol
                 FROM document_rasxod_jur7 d_j
                 JOIN document_rasxod_jur7_child d_j_ch ON d_j_ch.document_rasxod_jur7_id = d_j.id
                 WHERE d_j.main_schet_id = $1 AND  d_j_ch.kredit_schet = $2 AND d_j.doc_date ${internal_filter}
-                ${responsible_id ? sqlFilter('d_j.kimdan_id', index_responsible_id) : ''}
+                ${responsible_id ? sqlFilter('d_j.kimdan_id', index_responsible_id) : ''} ${product_filter}
             ),
             jur7_internal_rasxodSum AS (
                 SELECT COALESCE(SUM(d_j_ch.summa), 0) AS summa, COALESCE(SUM(d_j_ch.kol), 0) AS kol
                 FROM document_vnutr_peremesh_jur7 d_j
                 JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
                 WHERE d_j.main_schet_id = $1 AND  d_j_ch.kredit_schet = $2 AND d_j.doc_date ${internal_filter}
-                ${responsible_id ? sqlFilter('d_j.kimdan_id', index_responsible_id) : ''}
+                ${responsible_id ? sqlFilter('d_j.kimdan_id', index_responsible_id) : ''} ${product_filter}
             ),
             jur7_internal_PrixodSum AS (
                 SELECT COALESCE(SUM(d_j_ch.summa), 0) AS summa, COALESCE(SUM(d_j_ch.kol), 0) AS kol
                 FROM document_vnutr_peremesh_jur7 d_j
                 JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
                 WHERE d_j.main_schet_id = $1 AND  d_j_ch.debet_schet = $2 AND d_j.doc_date ${internal_filter}
-                ${responsible_id ? sqlFilter('d_j.kimga_id', index_responsible_id) : ''}
+                ${responsible_id ? sqlFilter('d_j.kimga_id', index_responsible_id) : ''} ${product_filter}
             )
             SELECT 
                 ((jur7_prixodSum.summa + jur7_internal_PrixodSum.summa) - (jur7_rasxodSum.summa + jur7_internal_rasxodSum.summa)) AS summa,
@@ -105,25 +111,24 @@ exports.Monitoringjur7DB = class {
         return result[0]
     }
 
-    static async getSchetProducts(params){
+    static async getBySchetProducts(params) {
         const query = `--sql
             SELECT 
               TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
-              d_j.opisanie, 
-              d_j.summa::FLOAT,
-              d_j.main_schet_id, 
-              s_o.name AS organization,
-              sh_o.doc_date AS c_doc_date,
-              sh_o.doc_num AS c_doc_num
-            FROM document_prixod_jur7 AS d_j
+              n.id, 
+              n.edin,
+              n.name
+            FROM document_prixod_jur7  d_j
             JOIN users AS u ON u.id = d_j.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimdan_id
-            LEFT JOIN shartnomalar_organization AS sh_o ON d_j.id_shartnomalar_organization = sh_o.id
-            WHERE r.id = $1 
-              AND d_j.isdeleted = false 
-              AND d_j.doc_date BETWEEN $2 AND $3
-              AND d_j.main_schet_id = $4
+            JOIN regions r ON r.id = u.region_id
+            JOIN document_prixod_jur7_child d_ch ON d_ch.document_prixod_jur7_id = d_j.id
+            JOIN naimenovanie_tovarov_jur7 n ON n.id = d_ch.naimenovanie_tovarov_jur7_id
+            WHERE d_j.isdeleted = false 
+              AND r.id = $1
+              AND d_j.main_schet_id = $2
+              AND d_ch.kredit_schet = $3
         `;
+        const result = await db.query(query, params)
+        return result;
     }
 }

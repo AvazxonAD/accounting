@@ -485,7 +485,7 @@ exports.OrganizationMonitoringService = class {
 
     static async orderorganization(req, res) {
         const region_id = 21 // req.user.region_id
-        const { from, to, main_schet_id } = req.query;
+        const { from, to, main_schet_id, schet} = req.query;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
         if (!main_schet) {
             return res.status(404).json({
@@ -493,7 +493,7 @@ exports.OrganizationMonitoringService = class {
             })
         }
         const rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([main_schet_id, from, to])
-        const prixodSchets = await OrganizationMonitoringDB.getPrixodSchets([main_schet_id, from, to])
+        const prixodSchets = ([{schet: schet}])
         const organizations = await OrganizationDB.getOrganization([region_id])
         for (let organ of organizations) {
             organ.summaFrom = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, from, organ.id], '<');
