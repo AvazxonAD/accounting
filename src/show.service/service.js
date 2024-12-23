@@ -321,13 +321,13 @@ exports.ShowServiceService = class {
                 message: "main schet not found"
             })
         }
-        const result = await ShowServiceDB.getByIdShowService([region_id, id, main_schet_id], true);
+        const result = await ShowServiceDB.getByIdShowService([region_id, id, main_schet_id]);
         if(!result){
             return res.status(404).json({
                 message: "show service doc not found"
             })
         }
-        await db.tranzaction( async (client) => {
+        await db.transaction( async (client) => {
             await ShowServiceDB.deleteShowService([id], client)
         })
         return res.status(200).json({
