@@ -65,7 +65,7 @@ exports.DocService = class {
     const { data, total } = await DocMainBookDB.getDoc([region_id, year, month, main_schet.spravochnik_budjet_name_id], offset, limit, type)
     let debet_sum = 0;
     let kredit_sum = 0;
-    data.forEach(item => {
+    data?.forEach(item => {
       debet_sum += item.debet_sum;
       kredit_sum += item.kredit_sum;
     })
@@ -97,8 +97,7 @@ exports.DocService = class {
         message: "main schet not found"
       })
     }
-    console.log('//////////')
-    const data = await DocMainBookDB.getByIdDoc([region_id, id, main_schet_id], true)
+    const data = await DocMainBookDB.getByIdDoc([region_id, id, main_schet.spravochnik_budjet_name_id], true)
     if (!data) {
       return res.status(404).json({
         message: "doc not found"
