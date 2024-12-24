@@ -2,7 +2,7 @@ const { DocMainBookDB } = require('./db');
 const { tashkentTime, checkTovarId, getDayStartEnd } = require('../../helper/functions');
 const { MainSchetDB } = require('../../spravochnik/main.schet/db');
 const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
-const {db} = require('../../db/index')
+const { db } = require('../../db/index')
 
 exports.DocService = class {
   static async createDoc(req, res) {
@@ -72,23 +72,23 @@ exports.DocService = class {
 
   static async getByIdDoc(req, res) {
     const region_id = req.user.region_id
-    const id = req.params.id
-    const main_schet_id = req.query.main_schet_id
+    const { month, year, main_schet_id, type_document } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
     }
-    const data = await DocMainBookDB.getByIdDoc([region_id, id, main_schet.spravochnik_budjet_name_id], true)
-    if (!data) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
-    }
+    const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
+
     return res.status(201).json({
       message: "doc successfully get",
-      data
+      data: {
+        year,
+        month,
+        type_document,
+        childs : docs
+      }
     });
   }
 
@@ -132,10 +132,15 @@ exports.DocService = class {
         tashkentTime()
       );
     });
-
+    let doc;
     await db.transaction(async client => {
       try {
-        const doc = await DocMainBookDB.createDoc(result);
+        await DocMainBookDB.dropDoc([
+          month,
+          year,
+          type_document
+        ], client)
+        doc = await DocMainBookDB.createDoc(result);
       } catch (error) {
         return res.status(500).json({
           message: "Internat server error"

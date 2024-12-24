@@ -44,8 +44,7 @@ exports.DocMainBookDB = class {
         return result;
     }
 
-    static async getByIdDoc(params, isdeleted) {
-        let ignore = 'AND d.isdeleted = false';
+    static async getByIdDoc(params) {
         const query = `--sql
             SELECT 
                 d.id,
@@ -64,11 +63,14 @@ exports.DocMainBookDB = class {
             JOIN regions AS r ON r.id = u.region_id
             JOIN main_schet AS m ON m.id = d.main_schet_id
             WHERE r.id = $1 
-            AND d.id = $2 
-            AND m.spravochnik_budjet_name_id = $3 ${isdeleted ? `` : ignore}
+                AND d.year = $2
+                AND  d.month = $3
+                AND d.type_document = $4
+                AND m.spravochnik_budjet_name_id = $5
+                AND d.isdeleted = false
         `;
         const result = await db.query(query, params);
-        return result[0];
+        return result;
     }
 
     static async updateDoc(params) {
@@ -88,8 +90,8 @@ exports.DocMainBookDB = class {
         return result[0];
     }
 
-    static async deleteDoc(params) {
-        await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE id = $1`, params);
+    static async deleteDoc(params, client) {
+        await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE month = $1 AND year = $2 AND type_document = $3`, params);
     }
 
     static async dropDoc(params, client) {

@@ -43,19 +43,19 @@ exports.getDocSchema = Joi.object({
 }).options({ stripUnknown: true });
 
 exports.getByIdDocSchema = Joi.object({
-  params: Joi.object({
-    id: Joi.number().integer().min(1).required()
-  }),
   query: Joi.object({
-    main_schet_id: Joi.number().integer().min(1).required()
+    main_schet_id: Joi.number().integer().min(1).required(),
+    month: Joi.number().integer().min(1).max(12).required(),
+    type_document: Joi.string().trim(),
+    year: Joi.number().integer().min(1900).required()
   })
 }).options({ stripUnknown: true });
 
 exports.deleteDocSchema = Joi.object({
-  params: Joi.object({
-    id: Joi.number().integer().min(1).required()
-  }),  
   query: Joi.object({
-    main_schet_id: Joi.number().integer().min(1).required()
+    main_schet_id: Joi.number().integer().min(1).required(),
+    month: Joi.number().integer().min(1).max(12).required(),
+    type_document: Joi.string().trim(),
+    year: Joi.number().integer().min(1900).required()
   })
 }).options({ stripUnknown: true });
