@@ -1,8 +1,8 @@
 const { db } = require('../../db/index')
 const { returnParamsValues, } = require('../../helper/functions')
 
-exports.DocMainBookDB = class {
-    static async createDoc(params) {
+exports.EndMainBookDB = class {
+    static async createEnd(params) {
         const _values = returnParamsValues(params, 14)
         const query = `--sql
             INSERT INTO zakonchit_glavniy_kniga (
@@ -27,7 +27,7 @@ exports.DocMainBookDB = class {
         return result;
     }
 
-    static async getDoc(params) {
+    static async getEnd(params) {
         const query = `--sql
             SELECT 
                 d.type_document,
@@ -48,7 +48,7 @@ exports.DocMainBookDB = class {
         return result;
     }
 
-    static async getByIdDoc(params) {
+    static async getByIdEnd(params) {
         const query = `--sql
             SELECT 
                 d.id,

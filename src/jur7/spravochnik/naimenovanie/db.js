@@ -136,7 +136,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2 AND d.isdeleted = false
                     )::FLOAT AS prixod1,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -144,7 +144,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2 AND d.isdeleted = false
                     )::FLOAT AS prixod2,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -152,7 +152,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2 AND d.isdeleted = false
                     )::FLOAT AS rasxod1,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -160,7 +160,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2 AND d.isdeleted = false
                     )::FLOAT AS rasxod2
                 FROM naimenovanie_tovarov_jur7 AS n_t_j7
                 JOIN document_prixod_jur7_child AS d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id

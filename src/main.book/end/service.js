@@ -1,4 +1,5 @@
 const { DocMainBookDB } = require('../doc/db');
+const { EndMainBookDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { MainSchetDB } = require('../../spravochnik/main.schet/db');
 const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
@@ -45,9 +46,7 @@ exports.EndService = class {
     const main_schet_id = req.query.main_schet_id;
     const {
       month,
-      year,
-      type_document,
-      childs
+      year
     } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
@@ -55,44 +54,40 @@ exports.EndService = class {
         message: "main schet not found"
       })
     }
-    const checkType = await OperatsiiDB.getByTypeOperatsii(['main_book'], type_document)
-    if (!checkType.length) {
-      return res.status(404).json({
-        message: "type document not found"
-      })
-    }
-    const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
-    if (docs.length) {
-      return res.status(409).json({
-        message: "This data already exist"
-      })
-    }
-    for (let child of childs) {
-      const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id])
-      if (!operatsii) {
-        return res.status(404).json({
-          message: "operatsii not found"
-        })
+    // const docs = await EndMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
+    // if (docs.length) {
+    //   return res.status(409).json({
+    //     message: "This data already exist"
+    //   })
+    // }
+    const { data } = await OperatsiiDB.getOperatsii([])
+    for (let type of typeDocuments) {
+      type.schets = data.map(item => ({ ...item }));
+      type.debet_sum = 0;
+      type.kredit_sum = 0;
+      for(let schet of type.schets){
+        schet.summa = await DocMainBookDB.getTypeDocSumna([
+          region_id, 
+          main_schet.spravochnik_budjet_name_id, 
+          type.key, 
+          month, 
+          year,
+          schet.id
+        ]);
+        type.debet_sum += schet.summa.debet_sum;
+        type.kredit_sum += schet.summa.kredit_sum;
       }
     }
+
     const result = [];
 
     childs.forEach(item => {
       result.push(
-        user_id,
-        main_schet_id,
-        item.spravochnik_operatsii_id,
-        type_document,
-        month,
-        year,
-        item.debet_sum,
-        item.kredit_sum,
-        tashkentTime(),
-        tashkentTime()
+        user_id
       );
     });
 
-    const doc = await DocMainBookDB.createDoc(result);
+    const doc = await EndMainBookDB.createEnd(result);
     return res.status(201).json({
       message: "Create doc successfully",
       data: doc
