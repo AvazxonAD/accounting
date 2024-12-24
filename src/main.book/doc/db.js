@@ -91,13 +91,6 @@ exports.DocMainBookDB = class {
     }
 
     static async deleteDoc(params, client) {
-        await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE month = $1 AND year = $2 AND type_document = $3`, params);
-    }
-
-    static async dropDoc(params, client) {
-        const query = `--sql
-            UPDATE documents_glavniy_kniga SET isdeleted = true WHERE month = $1 AND year = $2 AND type_document = $3 
-        `;
-        await client.query(query, params);
+        await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE id = $1`, params);
     }
 }

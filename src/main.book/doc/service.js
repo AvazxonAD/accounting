@@ -80,14 +80,18 @@ exports.DocService = class {
       })
     }
     const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
-
+    if (!docs.length) {
+      return res.status(404).json({
+        message: "doc not found"
+      })
+    }
     return res.status(201).json({
       message: "doc successfully get",
       data: {
         year,
         month,
         type_document,
-        childs : docs
+        childs: docs
       }
     });
   }
@@ -106,6 +110,12 @@ exports.DocService = class {
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
+      })
+    }
+    const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
+    if (!docs.length) {
+      return res.status(404).json({
+        message: "doc not found"
       })
     }
     for (let child of childs) {
@@ -135,11 +145,9 @@ exports.DocService = class {
     let doc;
     await db.transaction(async client => {
       try {
-        await DocMainBookDB.dropDoc([
-          month,
-          year,
-          type_document
-        ], client)
+        for (let doc of docs) {
+          await DocMainBookDB.deleteDoc([doc.id], client);
+        }
         doc = await DocMainBookDB.createDoc(result);
       } catch (error) {
         return res.status(500).json({
@@ -154,26 +162,33 @@ exports.DocService = class {
   }
 
   static async deleteDoc(req, res) {
-    const region_id = req.user.region_id;
-    const id = req.params.id;
-    const main_schet_id = req.query.main_schet_id;
+    const region_id = req.user.region_id
+    const { month, year, main_schet_id, type_document } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
     }
-    const internal_doc = await DocMainBookDB.getByIdDoc([region_id, id, main_schet_id])
-    if (!internal_doc) {
+    const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
+    if (!docs.length) {
       return res.status(404).json({
-        message: "internal doc not found"
+        message: "doc not found"
       })
     }
-    await db.transaction(async (client) => {
-      await DocMainBookDB.deleteDoc([id], client)
+    await db.transaction(async client => {
+      try {
+        for (let doc of docs) {
+          await DocMainBookDB.deleteDoc([doc.id], client);
+        }
+      } catch (error) {
+        return res.status(500).json({
+          message: "doc not found"
+        })
+      }
     })
     return res.status(200).json({
-      message: 'delete internal doc successfully'
+      message: 'delete doc successfully'
     })
   }
 }

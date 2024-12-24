@@ -14,7 +14,7 @@ const router = Router()
 router.post('/', Controller(DocService.createDoc, createDocSchema));
 router.get('/id', Controller(DocService.getByIdDoc, getByIdDocSchema));
 router.put('/', Controller(DocService.updateDoc, updateDocSchema));
-router.delete('/:id', Controller(DocService.deleteDoc, deleteDocSchema));
+router.delete('/', Controller(DocService.deleteDoc, deleteDocSchema));
 router.get('/', Controller(DocService.getDoc, getDocSchema));
 
 
