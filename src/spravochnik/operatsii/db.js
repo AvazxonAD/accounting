@@ -27,14 +27,47 @@ exports.OperatsiiDB = class {
         return result;
     }
 
-    static async getByTypeOperatsii(params, schet = null, isdeleted = null){
+    static async getByTypeOperatsii(params, schet = null, isdeleted = null) {
         let schet_filter = ``;
-        if(schet){
+        if (schet) {
             schet_filter = `AND schet = $${params.length + 1}`
             params.push(schet);
         }
         const query = `SELECT schet FROM spravochnik_operatsii WHERE type_schet = $1 ${!isdeleted ? "AND isdeleted = false" : ""} ${schet_filter}`
         const result = await db.query(query, params);
         return result;
+    }
+
+    static async getOperatsii(params, offset, limit, search, type_schet) {
+        let type_schet_filter = '';
+        let search_filter = ``;
+        let offset_limit = ``;
+        if (search) {
+            search_filter = `AND (
+                name ILIKE '%' || $${params.length + 1} || '%' OR
+                schet ILIKE '%' || $${params.length + 1} || '%' OR
+                sub_schet ILIKE '%' || $${params.length + 1} || '%')
+            `
+            params.push(search)
+        }
+        if (type_schet) {
+            type_schet_filter = `AND type_schet = $${params.length + 1}`
+            params.push(type_schet)
+        };
+        if((offset !== undefined && offset !== null) && limit){
+            offset_limit = `OFFSET $${params.length + 1} LIMIT $${params.length + 2}`;
+            params.push(offset, limit);
+        };
+        const query = `--sql
+            WITH data AS (
+                SELECT id, name, schet, sub_schet, type_schet, smeta_id
+                FROM spravochnik_operatsii  WHERE isdeleted = false ${search_filter} ${type_schet_filter})
+            SELECT 
+                ARRAY_AGG(row_to_json(data)) AS data,
+                (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter} ${type_schet_filter})::INTEGER AS total_count
+            FROM data
+        `;
+        const result = await db.query(query, params);
+        return result[0];
     }
 }

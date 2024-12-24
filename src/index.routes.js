@@ -71,6 +71,7 @@ routes.use('/jur_7/monitoring', protect, require('./jur7/monitoring/index'))
 
 // Main book
 routes.use('/main/book/doc', protect, require('./main.book/doc/index'));
+routes.use('/main/book/end', protect, require('./main.book/end/index'));
 
 
 // logs 

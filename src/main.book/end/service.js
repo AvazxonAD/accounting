@@ -1,10 +1,44 @@
-const { DocMainBookDB } = require('./db');
-const { tashkentTime, checkTovarId, getDayStartEnd } = require('../../helper/functions');
+const { DocMainBookDB } = require('../doc/db');
+const { tashkentTime } = require('../../helper/functions');
 const { MainSchetDB } = require('../../spravochnik/main.schet/db');
 const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
 const { db } = require('../../db/index')
+const { typeDocuments } = require('../../helper/data')
 
-exports.DocService = class {
+exports.EndService = class {
+  static async getInfo(req, res) {
+    const region_id = req.user.region_id;
+    const { main_schet_id, month, year } = req.query;
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+    if (!main_schet) {
+      return res.status(404).json({
+        message: "main schet not found"
+      })
+    }
+    const { data } = await OperatsiiDB.getOperatsii([])
+    for (let type of typeDocuments) {
+      type.schets = data.map(item => ({ ...item }));
+      type.debet_sum = 0;
+      type.kredit_sum = 0;
+      for(let schet of type.schets){
+        schet.summa = await DocMainBookDB.getTypeDocSumna([
+          region_id, 
+          main_schet.spravochnik_budjet_name_id, 
+          type.key, 
+          month, 
+          year,
+          schet.id
+        ]);
+        type.debet_sum += schet.summa.debet_sum;
+        type.kredit_sum += schet.summa.kredit_sum;
+      }
+    }
+    return res.status(200).json({
+      message: 'get successfully',
+      data: typeDocuments
+    })
+  }
+  
   static async createDoc(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -19,6 +53,12 @@ exports.DocService = class {
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
+      })
+    }
+    const checkType = await OperatsiiDB.getByTypeOperatsii(['main_book'], type_document)
+    if (!checkType.length) {
+      return res.status(404).json({
+        message: "type document not found"
       })
     }
     const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
@@ -116,6 +156,12 @@ exports.DocService = class {
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
+      })
+    }
+    const checkType = await OperatsiiDB.getByTypeOperatsii(['main_book'], type_document, true)
+    if (!checkType.length) {
+      return res.status(404).json({
+        message: "type document not found"
       })
     }
     const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])

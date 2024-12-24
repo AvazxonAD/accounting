@@ -36,7 +36,7 @@ const getByNameAndSchetOperatsiiService = async (name, type_schet, smeta_id) => 
 
 const getAllOperatsiiService = async (offset, limit, type_schet, search) => {
   try {
-    type_schet_filter = ''
+    let type_schet_filter = ''
     let search_filter = ``
     const params = [offset, limit];
     if (search) {

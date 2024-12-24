@@ -1,10 +1,10 @@
 const Joi = require('joi')
 
-exports.createDocSchema = Joi.object({
+exports.createEndSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
     year: Joi.number().integer().min(1900).required(),
-    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
+    type_document: Joi.string().trim(),
     childs: Joi.array().required().items(
       Joi.object({
         spravochnik_operatsii_id: Joi.number().required().min(1),
@@ -18,11 +18,11 @@ exports.createDocSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.updateDocSchema = Joi.object({
+exports.updateEndSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
     year: Joi.number().integer().min(1900).required(),
-    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'jur9', 'jur10'),
+    type_document: Joi.string().trim(),
     childs: Joi.array().required().items(
       Joi.object({
         spravochnik_operatsii_id: Joi.number().required().min(1),
@@ -36,26 +36,26 @@ exports.updateDocSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.getDocSchema = Joi.object({
+exports.getEndSchema = Joi.object({
   query: Joi.object({
     main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
-exports.getByIdDocSchema = Joi.object({
+exports.getByIdEndSchema = Joi.object({
   query: Joi.object({
     main_schet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().min(1).max(12).required(),
-    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'jur9', 'jur10'),
+    type_document: Joi.string().trim(),
     year: Joi.number().integer().min(1900).required()
   })
 }).options({ stripUnknown: true });
 
-exports.deleteDocSchema = Joi.object({
+exports.deleteEndSchema = Joi.object({
   query: Joi.object({
     main_schet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().min(1).max(12).required(),
-    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'jur9', 'jur10'),
+    type_document: Joi.string().trim(),
     year: Joi.number().integer().min(1900).required()
   })
 }).options({ stripUnknown: true });
