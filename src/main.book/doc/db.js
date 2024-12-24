@@ -73,23 +73,6 @@ exports.DocMainBookDB = class {
         return result;
     }
 
-    static async updateDoc(params) {
-        const query = `--sql
-            UPDATE documents_glavniy_kniga SET 
-                spravochnik_operatsii_id = $1,
-                type_document = $2,
-                month = $3,
-                year = $4,
-                debet_sum = $5, 
-                kredit_sum = $6,
-                created_at = $7,
-                updated_at = $8  
-            WHERE id = $9 RETURNING * 
-        `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
-
     static async deleteDoc(params, client) {
         await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE id = $1`, params);
     }

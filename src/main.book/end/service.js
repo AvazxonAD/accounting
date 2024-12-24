@@ -55,6 +55,12 @@ exports.EndService = class {
         message: "main schet not found"
       })
     }
+    const docs = await EndMainBookDB.getEndAll([region_id, main_schet.spravochnik_budjet_name_id, year, month]);
+    if(docs.length){
+      return res.status(409).json({
+        message: "This data already exsist"
+      })
+    }
     let result = [];
     try {
       await db.transaction(async (client) => {
@@ -108,32 +114,6 @@ exports.EndService = class {
     })
   }
 
-  static async getByIdEnd(req, res) {
-    const region_id = req.user.region_id
-    const { month, year, main_schet_id, type_document } = req.query;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
-    }
-    const docs = await EndMainBookDB.getByIdEnd([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
-    if (!docs.length) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
-    }
-    return res.status(201).json({
-      message: "doc successfully get",
-      data: {
-        year,
-        month,
-        type_document,
-        childs: docs
-      }
-    });
-  }
-
   static async updateEnd(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -141,8 +121,7 @@ exports.EndService = class {
     const {
       month,
       year,
-      type_document,
-      childs
+      data
     } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
@@ -150,58 +129,48 @@ exports.EndService = class {
         message: "main schet not found"
       })
     }
-    const checkType = await OperatsiiDB.getByTypeOperatsii(['main_book'], type_document, true)
-    if (!checkType.length) {
+    const docs = await EndMainBookDB.getEndAll([region_id, main_schet.spravochnik_budjet_name_id, year, month]);
+    if(!docs.length){
       return res.status(404).json({
-        message: "type document not found"
+        message: "Doc not found"
       })
     }
-    const docs = await EndMainBookDB.getByIdEnd([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
-    if (!docs.length) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
-    }
-    for (let child of childs) {
-      const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id])
-      if (!operatsii) {
-        return res.status(404).json({
-          message: "operatsii not found"
-        })
-      }
-    }
-    const result = [];
-
-    childs.forEach(item => {
-      result.push(
-        user_id,
-        main_schet_id,
-        item.spravochnik_operatsii_id,
-        type_document,
-        month,
-        year,
-        item.debet_sum,
-        item.kredit_sum,
-        tashkentTime(),
-        tashkentTime()
-      );
-    });
-    let doc;
-    await db.transaction(async client => {
-      try {
-        for (let doc of docs) {
+    let result = [];
+    try {
+      await db.transaction(async (client) => {
+        for(let doc of docs){
           await EndMainBookDB.deleteEnd([doc.id], client);
         }
-        doc = await EndMainBookDB.createEnd(result);
-      } catch (error) {
-        return res.status(500).json({
-          message: "Internat server error"
-        })
-      }
-    })
+        for (let type of data) {
+          for (let schet of type.schets) {
+            const doc = await EndMainBookDB.createEnd([
+              user_id,
+              tashkentTime(),
+              null,
+              null,
+              main_schet_id,
+              schet.id,
+              type.key,
+              month,
+              year,
+              schet.summa.debet_sum,
+              schet.summa.kredit_sum,
+              1,
+              tashkentTime(),
+              tashkentTime()
+            ], client);
+            result.push(doc);
+          }
+        }
+      })
+    } catch (error) {
+      return res.status(500).json({
+        message: "Internal server error"
+      })
+    }
     return res.status(201).json({
-      message: "Create doc successfully",
-      data: doc
+      message: "Update doc successfully",
+      data: result
     })
   }
 
@@ -214,10 +183,10 @@ exports.EndService = class {
         message: "main schet not found"
       })
     }
-    const docs = await EndMainBookDB.getByIdEnd([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
-    if (!docs.length) {
+    const docs = await EndMainBookDB.getEndAll([region_id, main_schet.spravochnik_budjet_name_id, year, month]);
+    if(!docs.length){
       return res.status(404).json({
-        message: "doc not found"
+        message: "Doc not found"
       })
     }
     await db.transaction(async client => {

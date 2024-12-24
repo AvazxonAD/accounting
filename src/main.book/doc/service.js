@@ -162,7 +162,7 @@ exports.DocService = class {
       }
     })
     return res.status(201).json({
-      message: "Create doc successfully",
+      message: "UPDATE doc successfully",
       data: doc
     })
   }
