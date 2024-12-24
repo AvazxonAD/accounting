@@ -98,7 +98,7 @@ exports.EndService = class {
     const docs = await EndMainBookDB.getEndAll([region_id, budjet_id, year, month]);
     try {
       await db.transaction(async client => {
-        for(let doc of docs){
+        for (let doc of docs) {
           await EndMainBookDB.confirAdmin([user_id, tashkentTime(), doc.id], client)
         }
       })
@@ -219,6 +219,7 @@ exports.EndService = class {
     let result = [];
     try {
       await db.transaction(async (client) => {
+        throw new Error('some error')
         for (let doc of docs) {
           await EndMainBookDB.deleteEnd([doc.id], client);
         }
