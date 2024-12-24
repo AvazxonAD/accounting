@@ -17,6 +17,7 @@ router.post('/', Controller(EndService.createEnd, createEndSchema));
 router.get('/info', Controller(EndService.getInfo, getInfoEndSchema));
 router.get('/info/admin', Controller(EndService.getInfoAdmin, getInfoEndAdminSchema));
 router.put('/', Controller(EndService.updateEnd, updateEndSchema));
+router.put('/confirm/admin', Controller(EndService.updateEnd, updateEndSchema));
 router.delete('/', Controller(EndService.deleteEnd, deleteEndSchema));
 router.get('/', Controller(EndService.getEnd, getEndSchema));
 

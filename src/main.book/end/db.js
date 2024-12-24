@@ -33,6 +33,7 @@ exports.EndMainBookDB = class {
                     d.year,
                     d.user_id,
                     u.login,
+                    u2.login AS cofirm_login,
                     (
                         SELECT 
                             d.document_yaratilgan_vaqt 
@@ -65,6 +66,7 @@ exports.EndMainBookDB = class {
                     d.status
             FROM zakonchit_glavniy_kniga AS d
             JOIN users AS u ON u.id = d.user_id
+            LEFT JOIN users AS u2 ON u2.id = d.user_id_qabul_qilgan
             JOIN regions AS r ON r.id = u.region_id
             JOIN main_schet AS m ON m.id = d.main_schet_id
             JOIN spravochnik_budjet_name AS b ON b.id = m.spravochnik_budjet_name_id
@@ -89,6 +91,7 @@ exports.EndMainBookDB = class {
                     r.name AS region_name,
                     d.user_id,
                     u.login,
+                    u2.login,
                     (
                         SELECT 
                             d.document_yaratilgan_vaqt 
@@ -116,6 +119,7 @@ exports.EndMainBookDB = class {
                     ) AS document_qabul_qilingan_vaqt
             FROM zakonchit_glavniy_kniga AS d
             JOIN users AS u ON u.id = d.user_id
+            LEFT JOIN users AS u2 ON u2.id = d.user_id_qabul_qilgan
             JOIN regions AS r ON r.id = u.region_id
             JOIN main_schet AS m ON m.id = d.main_schet_id
             JOIN spravochnik_budjet_name AS b ON b.id = m.spravochnik_budjet_name_id
