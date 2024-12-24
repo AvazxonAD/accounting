@@ -204,6 +204,15 @@ exports.getMonthStartEnd = (year, month) => {
     return [startDate, endDate];
 }
 
+exports.getDayStartEnd = (year, month) => {
+    const startOfMonth = 1;
+    const endOfMonth = new Date(year, month, 0).getDate(); 
+    return {
+        start: startOfMonth,
+        end: endOfMonth
+    };
+};
+
 exports.returnMonth = (month) => {
     switch (month) {
         case 1:
