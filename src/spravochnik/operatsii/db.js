@@ -26,4 +26,15 @@ exports.OperatsiiDB = class {
         `, values);
         return result;
     }
+
+    static async getByTypeOperatsii(params, schet = null, isdeleted = null){
+        let schet_filter = ``;
+        if(schet){
+            schet_filter = `AND schet = $${params.length + 1}`
+            params.push(schet);
+        }
+        const query = `SELECT schet FROM spravochnik_operatsii WHERE type_schet = $1 ${!isdeleted ? "AND isdeleted = false" : ""} ${schet_filter}`
+        const result = await db.query(query, params);
+        return result;
+    }
 }

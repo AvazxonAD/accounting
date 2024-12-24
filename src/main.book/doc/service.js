@@ -21,6 +21,12 @@ exports.DocService = class {
         message: "main schet not found"
       })
     }
+    const checkType = await OperatsiiDB.getByTypeOperatsii(['main_book'], type_document)
+    if(!checkType.length){
+      return res.status(404).json({
+        message: "type document not found"
+      })
+    }
     for (let child of childs) {
       const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id])
       if (!operatsii) {
@@ -110,6 +116,12 @@ exports.DocService = class {
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
+      })
+    }
+    const checkType = await OperatsiiDB.getByTypeOperatsii(['main_book'], type_document, true)
+    if(!checkType.length){
+      return res.status(404).json({
+        message: "type document not found"
       })
     }
     const docs = await DocMainBookDB.getByIdDoc([region_id, year, month, type_document, main_schet.spravochnik_budjet_name_id])
