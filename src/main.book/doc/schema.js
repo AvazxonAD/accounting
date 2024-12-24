@@ -31,9 +31,6 @@ exports.updateDocSchema = Joi.object({
       })
     )
   }),
-  params: Joi.object({
-    id: Joi.number().integer().min(1).required()
-  }),
   query: Joi.object({
     main_schet_id: Joi.number().integer().min(1).required()
   })
@@ -41,12 +38,7 @@ exports.updateDocSchema = Joi.object({
 
 exports.getDocSchema = Joi.object({
   query: Joi.object({
-    page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).default(10),
-    type: Joi.string().trim(),
-    main_schet_id: Joi.number().integer().min(1).required(),
-    month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required()
+    main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
