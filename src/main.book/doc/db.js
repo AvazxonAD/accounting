@@ -41,7 +41,7 @@ exports.DocMainBookDB = class {
             GROUP BY d.type_document, d.month, d.year
         `;
         const result = await db.query(query, params)
-        return result[0];
+        return result;
     }
 
     static async getByIdDoc(params, isdeleted) {

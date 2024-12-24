@@ -2,6 +2,7 @@ const { DocMainBookDB } = require('./db');
 const { tashkentTime, checkTovarId, getDayStartEnd } = require('../../helper/functions');
 const { MainSchetDB } = require('../../spravochnik/main.schet/db');
 const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
+const {db} = require('../../db/index')
 
 exports.DocService = class {
   static async createDoc(req, res) {
