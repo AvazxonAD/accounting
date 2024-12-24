@@ -18,7 +18,7 @@ exports.EndMainBookDB = class {
                 status,
                 created_at,
                 updated_at
-            ) 
+            )
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *
         `;
         const result = await client.query(query, params)
@@ -32,7 +32,34 @@ exports.EndMainBookDB = class {
                     d.month,
                     d.year,
                     d.user_id,
+                    u.login,
+                    (
+                        SELECT 
+                            d.document_yaratilgan_vaqt 
+                        FROM zakonchit_glavniy_kniga AS d
+                        JOIN users AS u ON u.id = d.user_id
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN main_schet AS m ON m.id = d.main_schet_id
+                        JOIN spravochnik_budjet_name AS b ON b.id = m.spravochnik_budjet_name_id
+                        WHERE r.id = $1 
+                            AND d.isdeleted = false 
+                            AND m.spravochnik_budjet_name_id = $2
+                        LIMIT 1  
+                    ) AS document_yaratilgan_vaqt, 
                     d.user_id_qabul_qilgan,
+                    (
+                        SELECT 
+                            d.document_qabul_qilingan_vaqt 
+                        FROM zakonchit_glavniy_kniga AS d
+                        JOIN users AS u ON u.id = d.user_id
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN main_schet AS m ON m.id = d.main_schet_id
+                        JOIN spravochnik_budjet_name AS b ON b.id = m.spravochnik_budjet_name_id
+                        WHERE r.id = $1 
+                            AND d.isdeleted = false 
+                            AND m.spravochnik_budjet_name_id = $2
+                        LIMIT 1  
+                    ) AS document_qabul_qilingan_vaqt,
                     b.id AS budjet_id, 
                     b.name AS budjet_name,
                     d.status
@@ -44,6 +71,55 @@ exports.EndMainBookDB = class {
             WHERE r.id = $1 
                 AND d.isdeleted = false 
                 AND m.spravochnik_budjet_name_id = $2
+        `;
+        const result = await db.query(query, params)
+        return result;
+    }
+
+    static async getEndAdmin(params) {
+        const query = `--sql
+            SELECT 
+                DISTINCT 
+                    d.month,
+                    d.year,
+                    b.id AS budjet_id, 
+                    b.name AS budjet_name,
+                    d.status,
+                    r.id AS region_id,
+                    r.name AS region_name,
+                    d.user_id,
+                    u.login,
+                    (
+                        SELECT 
+                            d.document_yaratilgan_vaqt 
+                        FROM zakonchit_glavniy_kniga AS d
+                        JOIN users AS u ON u.id = d.user_id
+                        JOIN regions AS rch ON r.id = u.region_id
+                        JOIN main_schet AS m ON m.id = d.main_schet_id
+                        WHERE d.isdeleted = false 
+                            AND m.spravochnik_budjet_name_id = b.id
+                            AND rch.id = r.id
+                        LIMIT 1  
+                    ) AS document_yaratilgan_vaqt, 
+                    d.user_id_qabul_qilgan,
+                    (
+                        SELECT 
+                            d.document_qabul_qilingan_vaqt 
+                        FROM zakonchit_glavniy_kniga AS d
+                        JOIN users AS u ON u.id = d.user_id
+                        JOIN main_schet AS m ON m.id = d.main_schet_id
+                        JOIN regions AS rch ON r.id = u.region_id
+                        WHERE d.isdeleted = false 
+                            AND m.spravochnik_budjet_name_id = b.id
+                            AND rch.id = r.id
+                        LIMIT 1  
+                    ) AS document_qabul_qilingan_vaqt
+            FROM zakonchit_glavniy_kniga AS d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN main_schet AS m ON m.id = d.main_schet_id
+            JOIN spravochnik_budjet_name AS b ON b.id = m.spravochnik_budjet_name_id
+            WHERE d.isdeleted = false 
         `;
         const result = await db.query(query, params)
         return result;
@@ -84,5 +160,16 @@ exports.EndMainBookDB = class {
 
     static async deleteEnd(params, client) {
         await client.query(`UPDATE zakonchit_glavniy_kniga SET isdeleted = true WHERE id = $1`, params);
+    }
+
+    static async confirAdmin(params, client){
+        const query = `--sql
+            UPDATE zakonchit_glavniy_kniga 
+            SET 
+                user_id_qabul_qilgan = $1,
+                document_qabul_qilingan_vaqt = $2
+            WHERE id = $3
+        `;
+        await client.query(query, params);
     }
 }
