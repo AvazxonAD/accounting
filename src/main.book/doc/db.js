@@ -61,10 +61,22 @@ exports.DocMainBookDB = class {
                 ${offset_limit}
             )
           SELECT 
-            ARRAY_AGG(row_to_json(data)) AS data
+            ARRAY_AGG(row_to_json(data)) AS data,
+              (
+                SELECT COALESCE(COUNT(d.id), 0)
+                FROM documents_glavniy_kniga AS d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN main_schet AS m ON m.id = d.main_schet_id
+                WHERE r.id = $1 
+                  AND d.isdeleted = false 
+                  AND d.year = $2  
+                  AND d.month = $3  
+                  AND m.spravochnik_budjet_name_id = $4
+                  ${type_filter}
+              )::INTEGER AS total
           FROM data
         `;
-        console.log(query)
         const result = await db.query(query, params)
         return result[0];
     }
@@ -85,8 +97,6 @@ exports.DocMainBookDB = class {
                 d.created_at,
                 d.updated_at
             FROM documents_glavniy_kniga AS d
-            JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh_kimga ON s_j_sh_kimga.id = d.kimga_id 
-            JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh_kimdan ON s_j_sh_kimdan.id = d.kimdan_id 
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN main_schet AS m ON m.id = d.main_schet_id
@@ -115,7 +125,14 @@ exports.DocMainBookDB = class {
         return result[0];
     }
 
-    static async deleteDoc(params, client) {
+    static async deleteDoc(params) {
         await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE id = $1`, params);
+    }
+
+    static async dropDoc(params, client){
+        const query = `--sql
+            UPDATE documents_glavniy_kniga SET isdeleted = true WHERE month = $1 AND year = $2 AND type_document = $3 
+        `;
+        await client.query(query, params);
     }
 }

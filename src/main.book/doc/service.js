@@ -62,15 +62,23 @@ exports.DocService = class {
       })
     }
     const offset = (page - 1) * limit;
-    const date = getDayStartEnd(year, month);
-    const { data, total } = await DocMainBookDB.getDoc([region_id, year, month, main_schet_id, date.start, date.end], offset, limit, type)
+    const { data, total } = await DocMainBookDB.getDoc([region_id, year, month, main_schet.spravochnik_budjet_name_id], offset, limit, type)
+    let debet_sum = 0;
+    let kredit_sum = 0;
+    data.forEach(item => {
+      debet_sum += item.debet_sum;
+      kredit_sum += item.kredit_sum;
+    })
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
+      backPage: page === 1 ? null : page - 1,
+      debet_sum,
+      kredit_sum,
+      result_sum: debet_sum - kredit_sum 
     }
     return res.status(200).json({
       message: "doc successfully get",
@@ -89,6 +97,7 @@ exports.DocService = class {
         message: "main schet not found"
       })
     }
+    console.log('//////////')
     const data = await DocMainBookDB.getByIdDoc([region_id, id, main_schet_id], true)
     if (!data) {
       return res.status(404).json({
