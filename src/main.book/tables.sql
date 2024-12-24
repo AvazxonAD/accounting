@@ -14,7 +14,7 @@ CREATE TABLE documents_glavniy_kniga (
 );
 
 CREATE TABLE zakonchit_glavniy_kniga (
-    id BIGINT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id), 
     document_yaratilgan_vaqt TIMESTAMP NOT NULL,
     user_id_qabul_qilgan INT REFERENCES users(id),
