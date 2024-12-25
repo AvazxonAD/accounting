@@ -185,4 +185,12 @@ exports.DocService = class {
       message: 'delete doc successfully'
     })
   }
+
+  static async getOperatsiiMainBook(req, res) {
+    const data = await DocMainBookDB.getOperatsiiMainBook([])
+    return res.status(200).json({
+      message: "main book schets successfully",
+      data
+    })
+  }
 }

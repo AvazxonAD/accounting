@@ -139,10 +139,6 @@ exports.DocMainBookDB = class {
         return result[0];
     }
 
-    static async deleteDoc(params, client) {
-        await client.query(`UPDATE documents_glavniy_kniga SET isdeleted = true WHERE id = $1`, params);
-    }
-
     static async getTypeDocSumna(params){
         const query = `--sql
             SELECT 
@@ -173,5 +169,15 @@ exports.DocMainBookDB = class {
     static async deleteDoc(params, client){
         await client.query(`UPDATE main_book_doc_parent SET isdeleted = true WHERE id = $1`, params)
         await client.query(`UPDATE main_book_doc_child SET isdeleted = true WHERE parent_id = $1`, params)
+    }
+
+    static async getOperatsiiMainBook(params) {
+        const query = `--sql
+            SELECT DISTINCT ON(so.schet) so.id, so.name, so.schet
+            FROM spravochnik_operatsii so
+            JOIN spravochnik_main_book_schet ms ON  ms.schet = so.schet
+        `;
+        const result = await db.query(query, params)
+        return result;
     }
 }

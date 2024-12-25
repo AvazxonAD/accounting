@@ -6,20 +6,18 @@ const {
     updateEndSchema,
     getInfoEndSchema,
     deleteEndSchema,
-    getInfoEndAdminSchema
+    getByIdSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.get('/admin', Controller(EndService.getEndAdmin));
-router.post('/', Controller(EndService.createEnd, createEndSchema));
-router.get('/info', Controller(EndService.getInfo, getInfoEndSchema));
-router.get('/info/admin', Controller(EndService.getInfoAdmin, getInfoEndAdminSchema));
-router.put('/', Controller(EndService.updateEnd, updateEndSchema));
-router.put('/confirm/admin', Controller(EndService.updateEnd, updateEndSchema));
-router.delete('/', Controller(EndService.deleteEnd, deleteEndSchema));
-router.get('/', Controller(EndService.getEnd, getEndSchema));
+router.post('/', Controller(EndService.createEnd, createEndSchema))
+    .get('/info', Controller(EndService.getInfo, getInfoEndSchema))
+    .get('/:id', Controller(EndService.getByIdEnd, getByIdSchema))
+    .get('/', Controller(EndService.getEnd, getEndSchema))
+    .put('/:id', Controller(EndService.updateEnd, updateEndSchema))
+    .delete('/:id', Controller(EndService.deleteEnd, deleteEndSchema));
 
 
 module.exports = router;
