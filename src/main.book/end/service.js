@@ -191,7 +191,7 @@ exports.EndService = class {
         message: "doc not found"
       })
     }
-    if (old_doc.status === 2) {
+    if (doc.status === 2) {
       return res.status(400).json({
         message: "The confirmed document cannot be deleted"
       })

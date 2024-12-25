@@ -75,7 +75,9 @@ exports.EndMainBookDB = class {
                 u.login AS user_login,
                 ua.id AS accepted_id,
                 ua.login AS accepted_login,
-                d.status
+                d.status,
+                d.created_at,
+                d.accepted_time
             FROM main_book_end_parent AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_accepted
@@ -108,8 +110,10 @@ exports.EndMainBookDB = class {
                 ch.spravochnik_operatsii_id,
                 so.name AS schet_name,
                 so.schet AS schet,
-                COALESCE(SUM(debet_sum), 0)::FLOAT AS debet_sum, 
-                COALESCE(SUM(kredit_sum), 0)::FLOAT AS kredit_sum
+                JSON_BUILD_OBJECT(
+                    'debet_sum', COALESCE(SUM(debet_sum), 0)::FLOAT, 
+                    'kredit_sum', COALESCE(SUM(kredit_sum), 0)::FLOAT
+                ) AS summa
             FROM main_book_end_child AS ch
             JOIN spravochnik_operatsii so ON so.id = ch.spravochnik_operatsii_id
             WHERE parent_id = $1 AND ch.type_document = $2
