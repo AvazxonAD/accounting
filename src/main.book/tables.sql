@@ -1,3 +1,12 @@
+CREATE TABLE main_book_doc_parent(
+    id SERIAL PRIMARY KEY,
+    budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
+    type_document VARCHAR(50) NOT NULL,
+    month INT NOT NULL,
+    year INT NOT NULL,
+)
+
+
 CREATE TABLE documents_glavniy_kniga (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id),

@@ -127,3 +127,12 @@ CREATE TABLE spravochnik_bank_mfo (
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE spravochnik_main_book_schet (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR,
+  schet VARCHAR,
+  created_at timestamp, 
+  updated_at timestamp,
+  isdeleted BOOLEAN DEFAULT FALSE
+)

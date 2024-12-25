@@ -8,8 +8,8 @@ exports.createDocSchema = Joi.object({
     childs: Joi.array().required().items(
       Joi.object({
         spravochnik_operatsii_id: Joi.number().required().min(1),
-        kredit_sum: Joi.number().min(1).required(),
-        debet_sum: Joi.number().min(1).required()
+        kredit_sum: Joi.number().default(0),
+        debet_sum: Joi.number().default(0)
       })
     )
   }),
@@ -26,8 +26,8 @@ exports.updateDocSchema = Joi.object({
     childs: Joi.array().required().items(
       Joi.object({
         spravochnik_operatsii_id: Joi.number().required().min(1),
-        kredit_sum: Joi.number().min(1).required(),
-        debet_sum: Joi.number().min(1).required()
+        kredit_sum: Joi.number().default(0),
+        debet_sum: Joi.number().default(0)
       })
     )
   }),
