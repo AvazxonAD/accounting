@@ -39,17 +39,13 @@ class Db {
     async transaction(callback) {
         const client = await this.pool.connect();
         let isTransactionSuccessfully = false;
-        let result;
-
         try {
             console.log("Starting transaction...");
             await client.query('BEGIN');
-
-            await callback(client);
-
+            const result = await callback(client);
             await client.query('COMMIT');
             isTransactionSuccessfully = true;
-
+            return result;
         } catch (error) {
             await client.query('ROLLBACK');
             console.error(`Error on transaction: ${error}`.red);

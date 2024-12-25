@@ -1,11 +1,25 @@
 CREATE TABLE main_book_doc_parent(
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
     type_document VARCHAR(50) NOT NULL,
+    user_id INT NOT NULL REFERENCES users(id),
     month INT NOT NULL,
     year INT NOT NULL,
-)
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
 
+CREATE TABLE main_book_doc_child (
+    id BIGSERIAL PRIMARY KEY,
+    spravochnik_operatsii_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
+    parent_id BIGINT NOT NULL REFERENCES main_book_doc_parent(id),
+    debet_sum DECIMAL,
+    kredit_sum DECIMAL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    isdeleted BOOLEAN DEFAULT FALSE
+);
 
 CREATE TABLE documents_glavniy_kniga (
     id SERIAL PRIMARY KEY,
