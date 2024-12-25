@@ -92,6 +92,7 @@ exports.RasxodService = class {
 
         const result_childs = childs.map(item => {
           item.summa = item.kol * item.sena;
+          item.sena = 
           item.nds_summa = item.nds_foiz ? item.nds_foiz / 100 * item.summa : 0;
           item.summa_s_nds = item.summa + item.nds_summa;
           item.user_id = user_id;

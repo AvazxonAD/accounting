@@ -129,7 +129,7 @@ exports.NaimenovanieDB = class {
                     n_t_j7.spravochnik_budjet_name_id,
                     s_b_n.name AS spravochnik_budjet_name,
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-                    d_ch.sena::FLOAT,
+                    (d_ch.summa_s_nds / d_ch.kol)::FLOAT AS sena,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
                         FROM document_prixod_jur7 AS d
