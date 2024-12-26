@@ -135,4 +135,4 @@ CREATE TABLE spravochnik_main_book_schet (
   created_at timestamp, 
   updated_at timestamp,
   isdeleted BOOLEAN DEFAULT FALSE
-)
+);

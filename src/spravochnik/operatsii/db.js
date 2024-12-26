@@ -71,7 +71,7 @@ exports.OperatsiiDB = class {
         return result[0];
     }
 
-    static async getOperatsii(params) {
+    static async getOperatsiiJoinMainBook(params) {
         const query = `--sql
             SELECT 
                 s.id, 
