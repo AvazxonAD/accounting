@@ -304,7 +304,7 @@ exports.AktService = class {
                 item.main_schet_id = main_schet_id;
                 item.user_id = user_id;
                 item.spravochnik_operatsii_own_id = spravochnik_operatsii_own_id;
-                item.kursatilgan_hizmatlar_jur152_id = doc.id;
+                item.bajarilgan_ishlar_jur3_id = doc.id;
                 return item;
             })
             const items = await AktDB.createAktChild(result_childs, client)
