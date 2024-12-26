@@ -41,7 +41,9 @@ exports.EndMainBookDB = class {
                 ua.login AS accepted_login,
                 d.status,
                 r.id AS region_id,
-                r.name AS region_name
+                r.name AS region_name,
+                d.accepted_time, 
+                d.created_at
             FROM main_book_end_parent AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_accepted
@@ -81,7 +83,8 @@ exports.EndMainBookDB = class {
                 d.accepted_time,
                 d.month,
                 d.year,
-                d.status
+                d.status,
+                d.created_at
             FROM main_book_end_parent AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id

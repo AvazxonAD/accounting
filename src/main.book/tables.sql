@@ -82,4 +82,4 @@ CREATE TABLE zakonchit_glavniy_kniga (
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
-);
+)

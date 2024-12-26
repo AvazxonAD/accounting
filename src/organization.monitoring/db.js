@@ -146,6 +146,43 @@ exports.OrganizationMonitoringDB = class {
                 AND sop.schet = $3
                 AND a.doc_date BETWEEN $4 AND $5
 
+            UNION ALL 
+
+            SELECT 
+                k_h_j152.id,
+                k_h_j152.doc_num,
+                k_h_j152.doc_date,
+                k_h_j152.opisanie,
+                0::FLOAT AS summa_rasxod, 
+                k_h_j152_ch.summa::FLOAT AS summa_prixod,
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                s_o.id AS organ_id,
+                s_o.name AS organ_name,
+                s_o.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                s_op.schet AS provodki_schet, 
+                s_op.sub_schet AS provodki_sub_schet,
+                'show_service' AS type
+            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch
+            JOIN kursatilgan_hizmatlar_jur152 AS k_h_j152 ON k_h_j152.id = k_h_j152_ch.kursatilgan_hizmatlar_jur152_id 
+            JOIN users AS u ON k_h_j152.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j152.shartnomalar_organization_id
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
+            JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j152.id_spravochnik_organization
+            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_j152.spravochnik_operatsii_own_id
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_h_j152_ch.spravochnik_operatsii_id
+            WHERE k_h_j152.isdeleted = false 
+                AND r.id = $1
+                AND k_h_j152.main_schet_id = $2
+                AND s_o_p.schet = $3
+                AND k_h_j152.doc_date BETWEEN $4 AND $5
+
             ORDER BY doc_date 
             OFFSET $6 LIMIT $7
         `;
@@ -205,6 +242,19 @@ exports.OrganizationMonitoringDB = class {
                   AND d_j.main_schet_id = $2
                   AND d_j_ch.kredit_schet = $3
                   AND d_j.doc_date BETWEEN $4 AND $5
+            ),
+            kursatilgan_hizmatlar_jur152_count AS (
+                SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                FROM kursatilgan_hizmatlar_jur152_child AS k_h_152_ch
+                JOIN kursatilgan_hizmatlar_jur152 AS k_h_152 ON k_h_152.id = k_h_152_ch.kursatilgan_hizmatlar_jur152_id 
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_152.spravochnik_operatsii_own_id
+                JOIN users AS u ON k_h_152.user_id = u.id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE k_h_152.isdeleted = false 
+                    AND r.id = $1
+                    AND k_h_152.main_schet_id = $2
+                    AND s_o_p.schet = $3
+                    AND k_h_152.doc_date BETWEEN $4 AND $5
             )
             SELECT SUM(total_count)::INTEGER AS total
             FROM (
@@ -215,6 +265,8 @@ exports.OrganizationMonitoringDB = class {
                 SELECT total_count FROM jur7_prixod_count
                 UNION ALL 
                 SELECT total_count FROM akt_count
+                UNION ALL 
+                SELECT total_count FROM kursatilgan_hizmatlar_jur152_count
             ) AS total_count  
         `;
         const result = await db.query(query, params);
@@ -274,10 +326,23 @@ exports.OrganizationMonitoringDB = class {
                   AND d_j.main_schet_id = $2
                   AND d_j_ch.kredit_schet = $3
                   AND d_j.doc_date ${operator} $4
+            ),
+            kursatilgan_hizmatlar_sum AS (
+                SELECT COALESCE(SUM(k_h_j152_ch.summa), 0)::FLOAT AS summa
+                FROM kursatilgan_hizmatlar_jur152_child AS k_h_j152_ch
+                JOIN kursatilgan_hizmatlar_jur152 AS k_h_j152 ON k_h_j152.id = k_h_j152_ch.kursatilgan_hizmatlar_jur152_id
+                JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = k_h_j152.spravochnik_operatsii_own_id
+                JOIN users AS u ON k_h_j152.user_id = u.id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE k_h_j152.isdeleted = false
+                  AND r.id = $1
+                  AND k_h_j152.main_schet_id = $2
+                  AND s_o_p.schet = $3
+                  AND k_h_j152.doc_date ${operator} $4
             )
             SELECT 
-                (bank_rasxod_sum.summa - (bank_prixod_sum.summa + jur7_prixod_sum.summa + akt_sum.summa)) AS summa
-            FROM bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum, akt_sum
+                ((bank_rasxod_sum.summa + kursatilgan_hizmatlar_sum.summa) - (bank_prixod_sum.summa + jur7_prixod_sum.summa + akt_sum.summa)) AS summa
+            FROM bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum, akt_sum, kursatilgan_hizmatlar_sum
         `;
         const result = await db.query(query, params);
         return result[0].summa;
