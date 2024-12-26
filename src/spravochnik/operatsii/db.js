@@ -70,4 +70,21 @@ exports.OperatsiiDB = class {
         const result = await db.query(query, params);
         return result[0];
     }
+
+    static async getOperatsii(params) {
+        const query = `--sql
+            SELECT 
+                s.id, 
+                ms.name, 
+                s.schet, 
+                s.sub_schet, 
+                s.type_schet, 
+                s.smeta_id
+            FROM spravochnik_operatsii AS s 
+            JOIN spravochnik_main_book_schet AS ms ON ms.schet = s.schet  
+            WHERE s.isdeleted = false
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
 }

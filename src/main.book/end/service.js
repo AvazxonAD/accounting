@@ -212,7 +212,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const { data: schets } = await OperatsiiDB.getOperatsii([])
+    const schets = await OperatsiiDB.getOperatsii([])
     for (let type of typeDocuments) {
       type.schets = schets.map(item => ({ ...item }))
       type.debet_sum = 0;
