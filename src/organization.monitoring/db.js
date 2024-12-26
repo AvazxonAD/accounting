@@ -109,6 +109,43 @@ exports.OrganizationMonitoringDB = class {
                 AND d_j_ch.kredit_schet = $3
                 AND d_j.doc_date BETWEEN $4 AND $5
 
+            UNION ALL 
+
+            SELECT 
+                a.id,
+                a.doc_num,
+                a.doc_date,
+                a.opisanie,
+                a_ch.summa::FLOAT AS summa_rasxod,
+                0::FLOAT AS summa_prixod, 
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                s_o.id AS organ_id,
+                s_o.name AS organ_name,
+                s_o.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                s_op.schet AS provodki_schet, 
+                s_op.sub_schet AS provodki_sub_schet,
+                'akt' AS type
+            FROM bajarilgan_ishlar_jur3_child AS a_ch
+            JOIN bajarilgan_ishlar_jur3 AS a ON a_ch.bajarilgan_ishlar_jur3_id = a.id
+            JOIN users AS u ON u.id = a_ch.user_id
+            JOIN regions AS r ON r.id = u.region_id 
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = a.shartnomalar_organization_id
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
+            JOIN spravochnik_organization AS s_o ON s_o.id = a.id_spravochnik_organization
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_ch.spravochnik_operatsii_id
+            JOIN spravochnik_operatsii AS sop ON sop.id = a.spravochnik_operatsii_own_id
+            WHERE a_ch.isdeleted = false
+                AND r.id = $1 
+                AND a_ch.main_schet_id = $2
+                AND sop.schet = $3
+                AND a.doc_date BETWEEN $4 AND $5
+
             ORDER BY doc_date 
             OFFSET $6 LIMIT $7
         `;
@@ -123,7 +160,6 @@ exports.OrganizationMonitoringDB = class {
                 FROM bank_prixod_child b_p_ch
                 JOIN bank_prixod AS b_p ON b_p_ch.id_bank_prixod = b_p.id
                 JOIN spravochnik_operatsii AS s_op ON s_op.id = b_p_ch.spravochnik_operatsii_id
-                JOIN spravochnik_organization AS s_o ON s_o.id = b_p.id_spravochnik_organization
                 JOIN users AS u ON u.id = b_p.user_id
                 JOIN regions AS r ON r.id = u.region_id 
                 WHERE b_p.isdeleted = false
@@ -131,6 +167,19 @@ exports.OrganizationMonitoringDB = class {
                     AND b_p.main_schet_id = $2
                     AND s_op.schet = $3
                     AND b_p.doc_date BETWEEN $4 AND $5
+            ),
+            akt_count AS (
+                SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                FROM bajarilgan_ishlar_jur3_child a_ch
+                JOIN bajarilgan_ishlar_jur3 AS a ON a_ch.bajarilgan_ishlar_jur3_id = a.id
+                JOIN spravochnik_operatsii AS sop ON sop.id = a.spravochnik_operatsii_own_id
+                JOIN users AS u ON u.id = a.user_id
+                JOIN regions AS r ON r.id = u.region_id 
+                WHERE a.isdeleted = false
+                    AND r.id = $1 
+                    AND a.main_schet_id = $2
+                    AND sop.schet = $3
+                    AND a.doc_date BETWEEN $4 AND $5
             ),
             bank_rasxod_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
@@ -164,6 +213,8 @@ exports.OrganizationMonitoringDB = class {
                 SELECT total_count FROM bank_rasxod_count
                 UNION ALL 
                 SELECT total_count FROM jur7_prixod_count
+                UNION ALL 
+                SELECT total_count FROM akt_count
             ) AS total_count  
         `;
         const result = await db.query(query, params);
@@ -199,6 +250,19 @@ exports.OrganizationMonitoringDB = class {
                   AND s_op.schet = $3
                   AND b_p.doc_date ${operator} $4
             ),
+            akt_sum AS (
+                SELECT COALESCE(SUM(a_ch.summa), 0)::FLOAT AS summa
+                FROM bajarilgan_ishlar_jur3_child AS a_ch
+                JOIN bajarilgan_ishlar_jur3 AS a ON a_ch.bajarilgan_ishlar_jur3_id = a.id
+                JOIN spravochnik_operatsii AS sop ON sop.id = a.spravochnik_operatsii_own_id
+                JOIN users AS u ON u.id = a.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE a.isdeleted = false
+                  AND r.id = $1
+                  AND a.main_schet_id = $2
+                  AND sop.schet = $3
+                  AND a.doc_date ${operator} $4
+            ),
             jur7_prixod_sum AS (
                 SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa
                 FROM document_prixod_jur7_child d_j_ch
@@ -212,8 +276,8 @@ exports.OrganizationMonitoringDB = class {
                   AND d_j.doc_date ${operator} $4
             )
             SELECT 
-                (bank_rasxod_sum.summa - (bank_prixod_sum.summa + jur7_prixod_sum.summa)) AS summa
-            FROM bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
+                (bank_rasxod_sum.summa - (bank_prixod_sum.summa + jur7_prixod_sum.summa + akt_sum.summa)) AS summa
+            FROM bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum, akt_sum
         `;
         const result = await db.query(query, params);
         return result[0].summa;
