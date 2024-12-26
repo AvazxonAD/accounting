@@ -16,103 +16,107 @@ exports.SmetaGrafikDB = class {
         return result[0];
     }
 
-    static async getSmetaGrafik(params, budjet_id) {
-        let budjet_filter = ``
+    static async getSmetaGrafik(params, budjet_id, operator) {
+        let budjet_filter = ``;
+        let operator_filter = ``;
         if (budjet_id) {
             budjet_filter = `AND s_g.spravochnik_budjet_name_id = $${params.length + 1}`
             params.push(budjet_id)
         }
-        const query = `
-        WITH data AS 
-          (SELECT 
-              s_g.id, 
-              s_g.smeta_id, 
-              smeta.smeta_name,
-              smeta.smeta_number,
-              s_g.spravochnik_budjet_name_id,
-              spravochnik_budjet_name.name AS budjet_name,
-              s_g.itogo::FLOAT,
-              s_g.oy_1::FLOAT,
-              s_g.oy_2::FLOAT,
-              s_g.oy_3::FLOAT,
-              s_g.oy_4::FLOAT,
-              s_g.oy_5::FLOAT,
-              s_g.oy_6::FLOAT,
-              s_g.oy_7::FLOAT,
-              s_g.oy_8::FLOAT,
-              s_g.oy_9::FLOAT,
-              s_g.oy_10::FLOAT,
-              s_g.oy_11::FLOAT,
-              s_g.oy_12::FLOAT,
-              s_g.year
-            FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id  
-            JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s_g.spravochnik_budjet_name_id
-            JOIN smeta ON smeta.id = s_g.smeta_id
-            WHERE s_g.isdeleted = false AND regions.id = $1  ${budjet_filter}
-            OFFSET $2 LIMIT $3 
-          )
-        SELECT
-          ARRAY_AGG(row_to_json(data)) AS data,
-          (SELECT COALESCE(COUNT(s_g.id), 0) FROM smeta_grafik AS s_g 
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::INTEGER total_count,
-          (SELECT COALESCE(SUM(s_g.itogo), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT itogo,
-          (SELECT COALESCE(SUM(s_g.oy_1), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_1,
-          (SELECT COALESCE(SUM(s_g.oy_2), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_2,
-          (SELECT COALESCE(SUM(s_g.oy_3), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_3,
-          (SELECT COALESCE(SUM(s_g.oy_4), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_4,
-          (SELECT COALESCE(SUM(s_g.oy_5), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_5,
-          (SELECT COALESCE(SUM(s_g.oy_6), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_6,
-          (SELECT COALESCE(SUM(s_g.oy_7), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_7,
-          (SELECT COALESCE(SUM(s_g.oy_8), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_8,
-          (SELECT COALESCE(SUM(s_g.oy_9), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_9,
-          (SELECT COALESCE(SUM(s_g.oy_10), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_10,
-          (SELECT COALESCE(SUM(s_g.oy_11), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_11,
-          (SELECT COALESCE(SUM(s_g.oy_12), 0) FROM smeta_grafik AS s_g
-            JOIN users ON s_g.user_id = users.id
-            JOIN regions ON regions.id = users.region_id
-            WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter})::FLOAT oy_12
+        if(operator){
+          operator_filter = ` AND s_g.itogo ${operator} 0`;
+        }
+        const query = `--sql
+          WITH data AS 
+            (SELECT 
+                s_g.id, 
+                s_g.smeta_id, 
+                smeta.smeta_name,
+                smeta.smeta_number,
+                s_g.spravochnik_budjet_name_id,
+                spravochnik_budjet_name.name AS budjet_name,
+                s_g.itogo::FLOAT,
+                s_g.oy_1::FLOAT,
+                s_g.oy_2::FLOAT,
+                s_g.oy_3::FLOAT,
+                s_g.oy_4::FLOAT,
+                s_g.oy_5::FLOAT,
+                s_g.oy_6::FLOAT,
+                s_g.oy_7::FLOAT,
+                s_g.oy_8::FLOAT,
+                s_g.oy_9::FLOAT,
+                s_g.oy_10::FLOAT,
+                s_g.oy_11::FLOAT,
+                s_g.oy_12::FLOAT,
+                s_g.year
+              FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id  
+              JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s_g.spravochnik_budjet_name_id
+              JOIN smeta ON smeta.id = s_g.smeta_id
+              WHERE s_g.isdeleted = false AND regions.id = $1  ${budjet_filter} ${operator_filter}
+              OFFSET $2 LIMIT $3 
+            )
+          SELECT
+            ARRAY_AGG(row_to_json(data)) AS data,
+            (SELECT COALESCE(COUNT(s_g.id), 0) FROM smeta_grafik AS s_g 
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::INTEGER total_count,
+            (SELECT COALESCE(SUM(s_g.itogo), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT itogo,
+            (SELECT COALESCE(SUM(s_g.oy_1), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_1,
+            (SELECT COALESCE(SUM(s_g.oy_2), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_2,
+            (SELECT COALESCE(SUM(s_g.oy_3), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_3,
+            (SELECT COALESCE(SUM(s_g.oy_4), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_4,
+            (SELECT COALESCE(SUM(s_g.oy_5), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_5,
+            (SELECT COALESCE(SUM(s_g.oy_6), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_6,
+            (SELECT COALESCE(SUM(s_g.oy_7), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_7,
+            (SELECT COALESCE(SUM(s_g.oy_8), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_8,
+            (SELECT COALESCE(SUM(s_g.oy_9), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_9,
+            (SELECT COALESCE(SUM(s_g.oy_10), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_10,
+            (SELECT COALESCE(SUM(s_g.oy_11), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_11,
+            (SELECT COALESCE(SUM(s_g.oy_12), 0) FROM smeta_grafik AS s_g
+              JOIN users ON s_g.user_id = users.id
+              JOIN regions ON regions.id = users.region_id
+              WHERE s_g.isdeleted = false AND regions.id = $1 ${budjet_filter} ${operator_filter})::FLOAT oy_12
           FROM data
-        `
+        `;
         const result = await db.query(query, params);
 
         return {

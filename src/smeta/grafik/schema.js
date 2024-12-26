@@ -50,7 +50,8 @@ exports.getSchema = Joi.object({
         search: Joi.string().trim(),
         budjet_id: Joi.number().min(1).integer(),
         type: Joi.string().trim(),
-        group_number: Joi.string().trim()
+        group_number: Joi.string().trim(),
+        operator: Joi.string().trim().valid('=', '>')
     })
 }).options({ stripUnknown: true });
 

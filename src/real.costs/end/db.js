@@ -107,12 +107,9 @@ exports.EndMainBookDB = class {
     static async getEndChilds(params) {
         const query = `--sql
             SELECT 
-                so.id, 
-                so.name, 
-                so.schet, 
-                so.sub_schet, 
-                so.type_schet, 
-                so.smeta_id,
+                ch.spravochnik_operatsii_id,
+                so.name AS schet_name,
+                so.schet AS schet,
                 JSON_BUILD_OBJECT(
                     'debet_sum', COALESCE(SUM(debet_sum), 0)::FLOAT, 
                     'kredit_sum', COALESCE(SUM(kredit_sum), 0)::FLOAT
@@ -120,13 +117,8 @@ exports.EndMainBookDB = class {
             FROM main_book_end_child AS ch
             JOIN spravochnik_operatsii so ON so.id = ch.spravochnik_operatsii_id
             WHERE parent_id = $1 AND ch.type_document = $2
-            GROUP BY so.id, 
-                so.name, 
-                so.schet, 
-                so.sub_schet, 
-                so.type_schet, 
-                so.smeta_id
-            ORDER BY so.id
+            GROUP BY ch.spravochnik_operatsii_id, so.name, so.schet
+            ORDER BY ch.spravochnik_operatsii_id
         `;
         const result = await db.query(query, params)
         return result;
