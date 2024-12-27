@@ -40,11 +40,11 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search) => {
     let search_filter = ``
     const params = [offset, limit];
     if (search) {
-      search_filter = `AND (
-        name ILIKE '%' || $${params.length + 1} || '%' OR
-        schet ILIKE '%' || $${params.length + 1} || '%' OR
-        sub_schet ILIKE '%' || $${params.length + 1} || '%'
-      )`
+      if(!isNaN(Number(search))){
+        search_filter = `AND (sub_schet = $${params.length + 1} OR schet = $${params.length + 1})`;  
+      }else {
+        search_filter = `AND name ILIKE '%' || $${params.length + 1} || '%'`;
+      }
       params.push(search)
     }
     if (type_schet) {
