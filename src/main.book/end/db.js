@@ -191,6 +191,7 @@ exports.EndMainBookDB = class {
                 AND mbdp.isdeleted = false
                 AND mbdch.spravochnik_main_book_schet_id = $5
         `;
+        
         const result = await db.query(query, params);
         return result;
     }
