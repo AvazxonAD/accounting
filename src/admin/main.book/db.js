@@ -58,19 +58,16 @@ exports.EndMainBookDB = class {
     static async getEndChilds(params) {
         const query = `--sql
             SELECT 
-                ch.spravochnik_operatsii_id,
-                so.name AS schet_name,
-                so.schet AS schet,
-                COALESCE(SUM(debet_sum), 0)::FLOAT AS debet_sum, 
-                COALESCE(SUM(kredit_sum), 0)::FLOAT AS kredit_sum
+                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
+                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum
             FROM main_book_end_child AS ch
-            JOIN spravochnik_operatsii so ON so.id = ch.spravochnik_operatsii_id
-            WHERE parent_id = $1 AND ch.type_document = $2
-            GROUP BY ch.spravochnik_operatsii_id, so.name, so.schet
-            ORDER BY ch.spravochnik_operatsii_id
+            WHERE parent_id = $1 
+                AND ch.type_document = $2 
+                AND ch.spravochnik_main_book_schet_id = $3 
+                AND ch.isdeleted = false
         `;
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
 
     static async getByIdEnd(params) {

@@ -1,8 +1,6 @@
 const { EndMainBookDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
-const { BudjetDB } = require('../../spravochnik/budjet/db');
-const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
-const { db } = require('../../db/index')
+const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { typeDocuments } = require('../../helper/data')
 
 exports.EndService = class {
@@ -25,8 +23,14 @@ exports.EndService = class {
       })
     }
     doc.data = typeDocuments.map(item => ({ ...item }));
+    const {data: schets} = await MainBookSchetDB.getMainBookSchet([0, 9999])
     for (let type of doc.data) {
-      type.schets = await EndMainBookDB.getEndChilds([doc.id, type.type])
+      type.schets = schets.map(item => ({ ...item }))
+      type.debet_sum = 0;
+      type.kredit_sum = 0;
+      for (let schet of type.schets) {
+        schet.summa = await EndMainBookDB.getEndChilds([doc.id, type.type, schet.id])
+      }
     }
     return res.status(201).json({
       message: "doc successfully get",
