@@ -178,10 +178,8 @@ exports.EndMainBookDB = class {
     static async getInfo(params){
         const query = `--sql
             SELECT      
-                JSON_BUILD_OBJECT(
-                    'debet_sum', COALESCE(SUM(mbdch.debet_sum), 0)::FLOAT,
-                    'kredit_sum', COALESCE(SUM(mbdch.kredit_sum), 0)::FLOAT
-                ) AS summa
+                COALESCE(SUM(mbdch.debet_sum), 0)::FLOAT AS debet_sum,
+                COALESCE(SUM(mbdch.kredit_sum), 0)::FLOAT AS kredit_sum
             FROM main_book_doc_child mbdch 
             LEFT JOIN main_book_doc_parent mbdp ON mbdp.id = mbdch.parent_id
             WHERE mbdp.year = $1 
@@ -192,6 +190,6 @@ exports.EndMainBookDB = class {
                 AND mbdch.spravochnik_main_book_schet_id = $5
         `;
         const result = await db.query(query, params);
-        return result;
+        return result[0];
     }
 }
