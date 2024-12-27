@@ -16,7 +16,7 @@ exports.MainBookSchetDB = class {
         return result;
     }
     static async getMainBookSchet(params, search = null) {
-        let search_filter = ``
+        let search_filter = ``;
         if(search){
             search_filter = `AND name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
@@ -30,7 +30,7 @@ exports.MainBookSchetDB = class {
                     created_at, 
                     updated_at
                 FROM spravochnik_main_book_schet
-                WHERE isdeleted = false ${search_filter} 
+                WHERE isdeleted = false ${search_filter}
                 OFFSET $1 LIMIT $2
             )
             SELECT 

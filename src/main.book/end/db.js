@@ -39,7 +39,7 @@ exports.EndMainBookDB = class {
         const _values = returnParamsValues(params, 7)
         const query = `--sql
             INSERT INTO main_book_end_child (
-                spravochnik_operatsii_id,
+                spravochnik_main_book_schet_id,
                 parent_id,
                 type_document,
                 debet_sum, 
@@ -107,29 +107,16 @@ exports.EndMainBookDB = class {
     static async getEndChilds(params) {
         const query = `--sql
             SELECT 
-                so.id, 
-                so.name, 
-                so.schet, 
-                so.sub_schet, 
-                so.type_schet, 
-                so.smeta_id,
-                JSON_BUILD_OBJECT(
-                    'debet_sum', COALESCE(SUM(debet_sum), 0)::FLOAT, 
-                    'kredit_sum', COALESCE(SUM(kredit_sum), 0)::FLOAT
-                ) AS summa
+                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
+                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum
             FROM main_book_end_child AS ch
-            JOIN spravochnik_operatsii so ON so.id = ch.spravochnik_operatsii_id
-            WHERE parent_id = $1 AND ch.type_document = $2
-            GROUP BY so.id, 
-                so.name, 
-                so.schet, 
-                so.sub_schet, 
-                so.type_schet, 
-                so.smeta_id
-            ORDER BY so.id
+            WHERE parent_id = $1 
+                AND ch.type_document = $2 
+                AND ch.spravochnik_main_book_schet_id = $3 
+                AND ch.isdeleted = false
         `;
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
 
     static async getByIdEnd(params, isdeleted) {
@@ -171,7 +158,7 @@ exports.EndMainBookDB = class {
                 AND d.type_document = $3
                 AND d.month = $4
                 AND d.year = $5
-                AND d.spravochnik_operatsii_id = $6 
+                AND d.spravochnik_main_book_schet_id = $6 
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -190,18 +177,21 @@ exports.EndMainBookDB = class {
 
     static async getInfo(params){
         const query = `--sql
-            SELECT
-                COALESCE(SUM(mbdch.debet_sum), 0)::FLOAT AS debet_sum,
-                COALESCE(SUM(mbdch.kredit_sum), 0)::FLOAT AS kredit_sum
-            FROM main_book_doc_child AS mbdch
-            LEFT JOIN  main_book_doc_parent AS mbdp ON mbdp.id = mbdch.parent_id
+            SELECT      
+                JSON_BUILD_OBJECT(
+                    'debet_sum', COALESCE(SUM(mbdch.debet_sum), 0)::FLOAT,
+                    'kredit_sum', COALESCE(SUM(mbdch.kredit_sum), 0)::FLOAT
+                ) AS summa
+            FROM main_book_doc_child mbdch 
+            LEFT JOIN main_book_doc_parent mbdp ON mbdp.id = mbdch.parent_id
             WHERE mbdp.year = $1 
-                AND mbdp.month = $2 
+                AND mbdp.month = $2
                 AND mbdp.type_document = $3 
-                AND mbdp.budjet_id = $4 
-                AND mbdch.spravochnik_operatsii_id = $5 
+                AND mbdp.budjet_id = $4
+                AND mbdp.isdeleted = false
+                AND mbdch.spravochnik_main_book_schet_id = $5
         `;
         const result = await db.query(query, params);
-        return result[0];
+        return result;
     }
 }

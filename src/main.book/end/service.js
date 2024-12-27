@@ -1,7 +1,7 @@
 const { EndMainBookDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { BudjetDB } = require('../../spravochnik/budjet/db');
-const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
+const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { db } = require('../../db/index')
 const { typeDocuments } = require('../../helper/data')
 
@@ -15,7 +15,7 @@ exports.EndService = class {
       year,
       data
     } = req.body;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getByIdBudjet([budjet_id]);
     if (!budjet) {
       return res.status(404).json({
         message: "budjet not found"
@@ -29,7 +29,7 @@ exports.EndService = class {
     }
     for (let type of data) {
       for (let schet of type.schets) {
-        const operatsii = await OperatsiiDB.getByIdOperatsii([schet.id])
+        const operatsii = await MainBookSchetDB.getByIdMainBookSchet([schet.id])
         if (!operatsii) {
           return res.status(404).json({
             message: "operatsii not found"
@@ -105,9 +105,15 @@ exports.EndService = class {
         message: "doc not found"
       })
     }
-    doc.data = typeDocuments.map(item => ({...item}));
-    for(let type of doc.data){
-      type.schets = await EndMainBookDB.getEndChilds([doc.id, type.type])
+    doc.data = typeDocuments.map(item => ({ ...item }));
+    const {data: schets} = await MainBookSchetDB.getMainBookSchet([0, 9999])
+    for (let type of doc.data) {
+      type.schets = schets.map(item => ({ ...item }))
+      type.debet_sum = 0;
+      type.kredit_sum = 0;
+      for (let schet of type.schets) {
+        schet.summa = await EndMainBookDB.getEndChilds([doc.id, type.type, schet.id])
+      }
     }
     return res.status(201).json({
       message: "doc successfully get",
@@ -147,6 +153,16 @@ exports.EndService = class {
         return res.status(409).json({
           message: "This data already exist"
         })
+      }
+    }
+    for (let type of data) {
+      for (let schet of type.schets) {
+        const operatsii = await MainBookSchetDB.getByIdMainBookSchet([schet.id])
+        if (!operatsii) {
+          return res.status(404).json({
+            message: "operatsii not found"
+          })
+        }
       }
     }
     const result = await db.transaction(async client => {
@@ -212,7 +228,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const schets = await OperatsiiDB.getOperatsiiJoinMainBook([])
+    const {data: schets} = await MainBookSchetDB.getMainBookSchet([0, 9999])
     for (let type of typeDocuments) {
       type.schets = schets.map(item => ({ ...item }))
       type.debet_sum = 0;

@@ -1,7 +1,7 @@
 const { DocMainBookDB } = require('./db');
-const { tashkentTime, checkTovarId, getDayStartEnd } = require('../../helper/functions');
+const { tashkentTime } = require('../../helper/functions');
 const { BudjetDB } = require('../../spravochnik/budjet/db');
-const { OperatsiiDB } = require('../../spravochnik/operatsii/db');
+const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { db } = require('../../db/index')
 
 exports.DocService = class {
@@ -28,7 +28,7 @@ exports.DocService = class {
       })
     }
     for (let child of childs) {
-      const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id])
+      const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
       if (!operatsii) {
         return res.status(404).json({
           message: "operatsii not found"
@@ -48,7 +48,7 @@ exports.DocService = class {
       const create_childs = []
       childs.forEach(item => {
         create_childs.push(
-          item.spravochnik_operatsii_id,
+          item.spravochnik_main_book_schet_id,
           doc.id,
           item.debet_sum,
           item.kredit_sum,
@@ -139,13 +139,21 @@ exports.DocService = class {
         })
       }
     }
+    for (let child of childs) {
+      const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
+      if (!operatsii) {
+        return res.status(404).json({
+          message: "operatsii not found"
+        })
+      }
+    }
     const result = await db.transaction(async client => {
       const doc = await DocMainBookDB.updateDoc([type_document, month, year, tashkentTime(), id], client)
       await DocMainBookDB.deleteDocChilds([doc.id], client)
       const create_childs = []
       childs.forEach(item => {
         create_childs.push(
-          item.spravochnik_operatsii_id,
+          item.spravochnik_main_book_schet_id,
           doc.id,
           item.debet_sum,
           item.kredit_sum,

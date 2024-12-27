@@ -38,7 +38,7 @@ exports.DocMainBookDB = class {
         const _values = returnParamsValues(params, 6)
         const query = `--sql
             INSERT INTO main_book_doc_child (
-                spravochnik_operatsii_id,
+                spravochnik_main_book_schet_id,
                 parent_id,
                 debet_sum, 
                 kredit_sum,
@@ -102,7 +102,7 @@ exports.DocMainBookDB = class {
         const query = `--sql
             SELECT 
                 id::INTEGER,
-                spravochnik_operatsii_id,
+                spravochnik_main_book_schet_id,
                 parent_id::INTEGER,
                 debet_sum::FLOAT, 
                 kredit_sum::FLOAT,
@@ -154,7 +154,7 @@ exports.DocMainBookDB = class {
                 AND d.type_document = $3
                 AND d.month = $4
                 AND d.year = $5
-                AND d.spravochnik_operatsii_id = $6 
+                AND d.spravochnik_main_book_schet_id = $6 
         `;
         const result = await db.query(query, params);
         return result[0];

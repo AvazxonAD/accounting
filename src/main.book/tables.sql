@@ -12,7 +12,7 @@ CREATE TABLE main_book_doc_parent(
 
 CREATE TABLE main_book_doc_child (
     id BIGSERIAL PRIMARY KEY,
-    spravochnik_operatsii_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
+    spravochnik_main_book_schet_id INT NOT NULL REFERENCES spravochnik_main_book_schet(id),
     parent_id BIGINT NOT NULL REFERENCES main_book_doc_parent(id),
     debet_sum DECIMAL,
     kredit_sum DECIMAL,
@@ -35,51 +35,14 @@ CREATE TABLE main_book_end_parent (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-
 CREATE TABLE main_book_end_child (
     id BIGSERIAL PRIMARY KEY,
     parent_id BIGINT NOT NULL REFERENCES main_book_end_parent(id),
     type_document VARCHAR(50) NOT NULL,
-    spravochnik_operatsii_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
+    spravochnik_main_book_schet_id INT NOT NULL REFERENCES spravochnik_main_book_schet(id),
     debet_sum DECIMAL NOT NULL,
     kredit_sum DECIMAL NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
 );
-
-
--- old
-CREATE TABLE documents_glavniy_kniga (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id),
-    main_schet_id INT NOT NULL REFERENCES main_schet(id),
-    spravochnik_operatsii_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
-    type_document VARCHAR(50) NOT NULL,
-    month INT NOT NULL,
-    year INT NOT NULL,
-    debet_sum DECIMAL,
-    kredit_sum DECIMAL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE zakonchit_glavniy_kniga (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id), 
-    document_yaratilgan_vaqt TIMESTAMP NOT NULL,
-    user_id_qabul_qilgan INT REFERENCES users(id),
-    document_qabul_qilingan_vaqt TIMESTAMP,
-    main_schet_id INT NOT NULL REFERENCES main_schet(id),
-    spravochnik_operatsii_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
-    type_document VARCHAR(50) NOT NULL,
-    month INT NOT NULL,
-    year INT NOT NULL,
-    debet_sum DECIMAL(18, 2),
-    kredit_sum DECIMAL(18, 2),
-    status INT NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    isdeleted BOOLEAN DEFAULT FALSE
-)
