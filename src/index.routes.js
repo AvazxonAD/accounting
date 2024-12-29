@@ -68,6 +68,7 @@ routes
     // Logs
     .use('/log', protect, require('./log/index'))
     // admin
-    .use('/admin/main/book', protect, require('./admin/main.book/index'));
+    .use('/admin/main/book', protect, require('./admin/main.book/index'))
+    .use('/admin/real/cost', protect, require('./admin/real.cost/index'));
 
 module.exports = routes;

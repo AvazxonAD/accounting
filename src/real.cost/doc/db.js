@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 const { returnParamsValues, } = require('../../helper/functions')
 
-exports.DocMainBookDB = class {
+exports.RealCostDB = class {
     static async createDoc(params, client) {
         const query = `--sql
             INSERT INTO real_cost_doc_parent (
@@ -96,6 +96,27 @@ exports.DocMainBookDB = class {
         `;
         const result = await db.query(query, params)
         return result[0]
+    }
+
+    static async getDocChildSmetaSum(params) {
+        const query = `--sql
+            SELECT 
+                ch.smeta_grafik_id,
+                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
+                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
+            FROM real_cost_doc_child ch
+            JOIN real_cost_doc_parent p ON p.id = ch.parent_id
+            JOIN users AS u ON u.id = p.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE p.isdeleted = false 
+                AND r.id = $1
+                AND p.year = $2 
+                AND p.month = $3
+                AND p.budjet_id = $4
+                AND p.type_document != $5
+        `;
+        const result = await db.query(query, params)
+        return result;
     }
 
     static async getDocChilds(params) {

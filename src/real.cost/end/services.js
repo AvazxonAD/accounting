@@ -103,4 +103,8 @@ exports.EndService = class {
     };
     return typeDocuments;
   }
+
+  static async getEndByType(data) {
+    
+  }
 }

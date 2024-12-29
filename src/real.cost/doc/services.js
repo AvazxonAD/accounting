@@ -1,11 +1,11 @@
-const { DocMainBookDB } = require('./db');
+const { RealCostDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { db } = require('../../db/index')
 
 exports.DocService = class {
     static async createDoc(data) {
         const result = await db.transaction(async client => {
-            const doc = await DocMainBookDB.createDoc([
+            const doc = await RealCostDB.createDoc([
                 data.user_id,
                 data.budjet_id,
                 data.type_document,
@@ -25,30 +25,44 @@ exports.DocService = class {
                     tashkentTime()
                 );
             });
-            doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
+            doc.childs = await RealCostDB.createDocChild(create_childs, client);
+            // const end_doc = await RealCostDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, 'end');
+            // if (!end_doc.length) {
+            //     const end = await RealCostDB.createDoc([
+            //         data.user_id,
+            //         data.budjet_id,
+            //         'end',
+            //         data.month,
+            //         data.year,
+            //         tashkentTime(),
+            //         tashkentTime()
+            //     ], client);
+            //     const chids = await RealCostDB.getDocChildSmetaSum([data.region_id, data.year, data.month, data.budjet_id]);
+            //     await DocService.createDoc({ ...body, user_id, budjet_id });
+            // }
             return doc;
         });
         return result;
     }
 
     static async getDoc(data, year, month, type) {
-        const result = await DocMainBookDB.getDoc([data.region_id, data.budjet_id], year, month, type);
+        const result = await RealCostDB.getDoc([data.region_id, data.budjet_id], year, month, type);
         for (let doc of result) {
-            doc.summa = await DocMainBookDB.getDocChildsSum([doc.id]);
+            doc.summa = await RealCostDB.getDocChildsSum([doc.id]);
         }
         return result;
     }
 
     static async getByIdDoc(region_id, budjet_id, id, isdeleted) {
-        let doc = await DocMainBookDB.getByIdDoc([region_id, budjet_id, id], isdeleted);
-        doc ? doc.childs = await DocMainBookDB.getDocChilds([doc.id]) : doc = null;
+        let doc = await RealCostDB.getByIdDoc([region_id, budjet_id, id], isdeleted);
+        doc ? doc.childs = await RealCostDB.getDocChilds([doc.id]) : doc = null;
         return doc;
     }
 
     static async updateDoc(data) {
         const result = await db.transaction(async client => {
-            const doc = await DocMainBookDB.updateDoc([data.type_document, data.month, data.year, tashkentTime(), data.id], client)
-            await DocMainBookDB.deleteDocChilds([doc.id], client)
+            const doc = await RealCostDB.updateDoc([data.type_document, data.month, data.year, tashkentTime(), data.id], client)
+            await RealCostDB.deleteDocChilds([doc.id], client)
             const create_childs = []
             data.childs.forEach(item => {
                 create_childs.push(
@@ -60,7 +74,7 @@ exports.DocService = class {
                     tashkentTime()
                 );
             });
-            doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
+            doc.childs = await RealCostDB.createDocChild(create_childs, client);
             return doc;
         })
         return result;
@@ -68,7 +82,7 @@ exports.DocService = class {
 
     static async deleteDoc(id) {
         await db.transaction(async client => {
-            await DocMainBookDB.deleteDoc([id], client)
+            await RealCostDB.deleteDoc([id], client)
         })
     }
 }

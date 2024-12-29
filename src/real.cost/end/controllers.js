@@ -1,9 +1,6 @@
 const { EndService } = require('./services');
-const { tashkentTime } = require('../../helper/functions');
 const { BudjetService } = require('../../spravochnik/budjet/services');
-const { db } = require('../../db/index')
-const { SmetaGrafikService } = require('../../smeta/grafik/services')
-const { typeDocuments } = require('../../helper/data')
+const { SmetaGrafikService } = require('../../smeta/grafik/services');
 
 exports.Controller = class {
   static async createEnd(req, res) {
@@ -31,7 +28,7 @@ exports.Controller = class {
     }
     const result = await EndService.createEnd({ ...body, user_id, budjet_id });
     return res.success("create successfully", 201, null, result);
-  }
+  };
 
   static async getEnd(req, res) {
     const region_id = req.user.region_id;
@@ -42,7 +39,7 @@ exports.Controller = class {
     }
     const data = await EndService.getEnd({ region_id, budjet_id });
     return res.success('data get successfully', 200, null, data);
-  }
+  };
 
   static async getByIdEnd(req, res) {
     const region_id = req.user.region_id
@@ -65,7 +62,7 @@ exports.Controller = class {
     });
     const result = await EndService.getEndChild(grafiks, doc);
     return res.success('get successfully', 200, null, result);
-  }
+  };
 
   static async updateEnd(req, res) {
     const id = req.params.id;
@@ -102,7 +99,7 @@ exports.Controller = class {
     };
     const result = await EndService.updateEnd({ ...body, id, user_id})
     return res.success('update successfully', 200, null, result);
-  }
+  };
 
   static async deleteEnd(req, res) {
     const region_id = req.user.region_id
@@ -121,7 +118,7 @@ exports.Controller = class {
     }
     await EndService.deleteEnd(id);
     return res.success('delete successfully', 200, null, null);
-  }
+  };
 
   static async getInfo(req, res) {
     const region_id = req.user.region_id;
@@ -139,5 +136,5 @@ exports.Controller = class {
     });
     const result = await EndService.getInfo(grafiks, { ...query });
     return res.success("Get info successfully", 200, null, result);
-  }
-}
+  };
+};
