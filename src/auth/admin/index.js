@@ -1,4 +1,4 @@
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const { AdminService } = require('./service')
 const {
     createSchema,
@@ -10,10 +10,10 @@ const {
 const { Router } = require('express');
 const router = Router();
 
-router.post('/', Controller(AdminService.createAdmin, createSchema))
-    .get('/', Controller(AdminService.getAdmin))
-    .get('/:id', Controller(AdminService.getByIdAdmin, getByIdSchema))
-    .delete('/:id', Controller(AdminService.deleteAdmin, deleteSchema))
-    .put('/:id', Controller(AdminService.updateAdmin, updateSchema))
+router.post('/', validator(AdminService.createAdmin, createSchema))
+    .get('/', validator(AdminService.getAdmin))
+    .get('/:id', validator(AdminService.getByIdAdmin, getByIdSchema))
+    .delete('/:id', validator(AdminService.deleteAdmin, deleteSchema))
+    .put('/:id', validator(AdminService.updateAdmin, updateSchema))
 
 module.exports = router;

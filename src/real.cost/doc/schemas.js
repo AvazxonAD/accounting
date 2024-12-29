@@ -7,7 +7,7 @@ exports.createDocSchema = Joi.object({
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
     childs: Joi.array().required().items(
       Joi.object({
-        spravochnik_operatsii_id: Joi.number().required().min(1),
+        smeta_grafik_id: Joi.number().required().min(1),
         kredit_sum: Joi.number().default(0),
         debet_sum: Joi.number().default(0)
       })
@@ -25,7 +25,7 @@ exports.updateDocSchema = Joi.object({
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
     childs: Joi.array().required().items(
       Joi.object({
-        spravochnik_operatsii_id: Joi.number().required().min(1),
+        smeta_grafik_id: Joi.number().required().min(1),
         kredit_sum: Joi.number().default(0),
         debet_sum: Joi.number().default(0)
       })

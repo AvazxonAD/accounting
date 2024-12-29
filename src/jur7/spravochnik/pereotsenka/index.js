@@ -1,5 +1,5 @@
 const { PereotsenkaService } = require("./service");
-const { Controller } = require('../../../helper/controller');
+const { validator } = require('../../../helper/validator');
 const {
     createPereotsenkaSchema,
     getPereotsenkaSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(PereotsenkaService.createPereotsenka, createPereotsenkaSchema));
-router.get('/:id', Controller(PereotsenkaService.getByIdPereotsenka, getByIdPereotsenkaSchema));
-router.put('/:id', Controller(PereotsenkaService.updatePereotsenka, updatePereotsenkaSchema));
-router.delete('/:id', Controller(PereotsenkaService.deletePereotsenka, deletePereotsenkaSchema));
-router.get('/', Controller(PereotsenkaService.getPereotsenka, getPereotsenkaSchema));
+router.post('/', validator(PereotsenkaService.createPereotsenka, createPereotsenkaSchema));
+router.get('/:id', validator(PereotsenkaService.getByIdPereotsenka, getByIdPereotsenkaSchema));
+router.put('/:id', validator(PereotsenkaService.updatePereotsenka, updatePereotsenkaSchema));
+router.delete('/:id', validator(PereotsenkaService.deletePereotsenka, deletePereotsenkaSchema));
+router.get('/', validator(PereotsenkaService.getPereotsenka, getPereotsenkaSchema));
 
 
 module.exports = router;

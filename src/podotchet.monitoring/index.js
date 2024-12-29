@@ -8,11 +8,11 @@ const {
     getByIdPodotchetToExcelSchema
 } = require('./schema');
 const { PodotchetMonitoringService } = require('./service');
-const { Controller } = require('../helper/controller');
+const { validator } = require('../helper/validator');
 
-router.get('/:id', Controller(PodotchetMonitoringService.getByIdPodotchetMonitoring, getByIdPodotchetSchema))
-router.get('/', Controller(PodotchetMonitoringService.getPodotchetMonitroing, getPodotchetSchema))
-router.get('/prixod/rasxod', Controller(PodotchetMonitoringService.prixodRasxodPodotchet, prixodRasxodSchema))
-router.get('/export/:id', Controller(PodotchetMonitoringService.getByIdPodotchetToExcel, getByIdPodotchetToExcelSchema))
+router.get('/:id', validator(PodotchetMonitoringService.getByIdPodotchetMonitoring, getByIdPodotchetSchema))
+router.get('/', validator(PodotchetMonitoringService.getPodotchetMonitroing, getPodotchetSchema))
+router.get('/prixod/rasxod', validator(PodotchetMonitoringService.prixodRasxodPodotchet, prixodRasxodSchema))
+router.get('/export/:id', validator(PodotchetMonitoringService.getByIdPodotchetToExcel, getByIdPodotchetToExcelSchema))
 
 module.exports = router

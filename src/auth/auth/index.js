@@ -1,4 +1,4 @@
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const { AuthService } = require('./service')
 const { protect } = require('../../middleware/auth')
 const {
@@ -10,7 +10,7 @@ const {
 const { Router } = require('express');
 const router = Router();
 
-router.post('/', Controller(AuthService.loginAuth, loginSchema))
-    .patch('/', protect, Controller(AuthService.updateAuth, updateSchema));
+router.post('/', validator(AuthService.loginAuth, loginSchema))
+    .patch('/', protect, validator(AuthService.updateAuth, updateSchema));
 
 module.exports = router;

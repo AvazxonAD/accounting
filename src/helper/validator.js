@@ -4,7 +4,7 @@ const emptyBodySchema = Joi.object({ body: {} });
 const emptyQuerySchema = Joi.object({ query: {} });
 const emptyParamsSchema = Joi.object({ params: {} });
 
-exports.Controller = function (callback, schema) {
+exports.validator = function (callback, schema) {
     return async (req, res, next) => {
         if (!schema) {
             try {

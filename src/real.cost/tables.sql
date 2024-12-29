@@ -1,4 +1,4 @@
-CREATE TABLE real_costs_doc_parent(
+CREATE TABLE real_cost_doc_parent(
     id BIGSERIAL PRIMARY KEY,
     budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
     type_document VARCHAR(50) NOT NULL,
@@ -10,10 +10,10 @@ CREATE TABLE real_costs_doc_parent(
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE real_costs_doc_child (
+CREATE TABLE real_cost_doc_child (
     id BIGSERIAL PRIMARY KEY,
-    smeta_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
-    parent_id BIGINT NOT NULL REFERENCES real_costs_doc_parent(id),
+    smeta_grafik_id INT NOT NULL REFERENCES smeta_grafik(id),
+    parent_id BIGINT NOT NULL REFERENCES real_cost_doc_parent(id),
     debet_sum DECIMAL,
     kredit_sum DECIMAL,
     created_at TIMESTAMP,
@@ -21,7 +21,7 @@ CREATE TABLE real_costs_doc_child (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE real_costs_end_parent (
+CREATE TABLE real_cost_end_parent (
     id BIGSERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id), 
     user_id_accepted INT REFERENCES users(id),
@@ -35,12 +35,11 @@ CREATE TABLE real_costs_end_parent (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-
-CREATE TABLE real_costs_end_child (
+CREATE TABLE real_cost_end_child (
     id BIGSERIAL PRIMARY KEY,
-    parent_id BIGINT NOT NULL REFERENCES real_costs_end_parent(id),
+    parent_id BIGINT NOT NULL REFERENCES real_cost_end_parent(id),
     type_document VARCHAR(50) NOT NULL,
-    smeta_id INT NOT NULL REFERENCES spravochnik_operatsii(id),
+    smeta_grafik_id INT NOT NULL REFERENCES smeta_grafik(id),
     debet_sum DECIMAL NOT NULL,
     kredit_sum DECIMAL NOT NULL,
     created_at TIMESTAMP,

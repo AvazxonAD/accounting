@@ -1,5 +1,5 @@
 const { AktService } = require('./service');
-const { Controller } = require('../helper/controller');
+const { validator } = require('../helper/validator');
 const {
     createSchema,
     getSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(AktService.createAkt, createSchema));
-router.get('/:id', Controller(AktService.getByIdAkt, getByIdSchema));
-router.put('/:id', Controller(AktService.updateAkt, updateSchema));
-router.delete('/:id', Controller(AktService.deleteAkt, deleteSchema));
-router.get('/', Controller(AktService.getAkt, getSchema));
+router.post('/', validator(AktService.createAkt, createSchema));
+router.get('/:id', validator(AktService.getByIdAkt, getByIdSchema));
+router.put('/:id', validator(AktService.updateAkt, updateSchema));
+router.delete('/:id', validator(AktService.deleteAkt, deleteSchema));
+router.get('/', validator(AktService.getAkt, getSchema));
 
 
 module.exports = router;

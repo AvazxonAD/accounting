@@ -1,5 +1,5 @@
 const { MonitoringService } = require('./service');
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const {
     getObrotkaSchema,
     getMaterialSchema
@@ -8,7 +8,7 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/obrotka/report', Controller(MonitoringService.obrotkaReport, getObrotkaSchema));
-router.get('/material/report', Controller(MonitoringService.materialReport, getMaterialSchema));
+router.get('/obrotka/report', validator(MonitoringService.obrotkaReport, getObrotkaSchema));
+router.get('/material/report', validator(MonitoringService.materialReport, getMaterialSchema));
 
 module.exports = router;

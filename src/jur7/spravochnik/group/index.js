@@ -1,5 +1,5 @@
 const { GroupService } = require("./service");
-const { Controller } = require('../../../helper/controller');
+const { validator } = require('../../../helper/validator');
 const upload = require('../../../helper/upload')
 const {
     createGroupSchema,
@@ -12,13 +12,13 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/percent', Controller(GroupService.getGroupWithPercent))
-router.post('/import', upload.single('file'), Controller(GroupService.importExcel));
-router.post('/', Controller(GroupService.createGroup, createGroupSchema));
-router.get('/:id', Controller(GroupService.getByIdGroup, getByIdGroupSchema));
-router.put('/:id', Controller(GroupService.updateGroup, updateGroupSchema));
-router.delete('/:id', Controller(GroupService.deleteGroup, deleteGroupSchema));
-router.get('/', Controller(GroupService.getGroup, getGroupSchema));
+router.get('/percent', validator(GroupService.getGroupWithPercent))
+router.post('/import', upload.single('file'), validator(GroupService.importExcel));
+router.post('/', validator(GroupService.createGroup, createGroupSchema));
+router.get('/:id', validator(GroupService.getByIdGroup, getByIdGroupSchema));
+router.put('/:id', validator(GroupService.updateGroup, updateGroupSchema));
+router.delete('/:id', validator(GroupService.deleteGroup, deleteGroupSchema));
+router.get('/', validator(GroupService.getGroup, getGroupSchema));
 
 
 module.exports = router;

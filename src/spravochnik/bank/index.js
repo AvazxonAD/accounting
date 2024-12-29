@@ -1,5 +1,5 @@
 const { BankMfoService } = require("./service");
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const {
     createBankSchema,
     getBankSchema,
@@ -12,12 +12,12 @@ const upload = require('../../utils/protect.file')
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(BankMfoService.createBankMfo, createBankSchema));
-router.get('/:id', Controller(BankMfoService.getByIdBankMfo, getByIdBankSchema));
-router.put('/:id', Controller(BankMfoService.updateBankMfo, updateBankSchema));
-router.delete('/:id', Controller(BankMfoService.deleteBankMfo, deleteBankSchema));
-router.get('/', Controller(BankMfoService.getBankMfo, getBankSchema));
-router.post('/import', upload.single('file'), Controller(BankMfoService.importExcelData));
+router.post('/', validator(BankMfoService.createBankMfo, createBankSchema));
+router.get('/:id', validator(BankMfoService.getByIdBankMfo, getByIdBankSchema));
+router.put('/:id', validator(BankMfoService.updateBankMfo, updateBankSchema));
+router.delete('/:id', validator(BankMfoService.deleteBankMfo, deleteBankSchema));
+router.get('/', validator(BankMfoService.getBankMfo, getBankSchema));
+router.post('/import', upload.single('file'), validator(BankMfoService.importExcelData));
 
 
 module.exports = router;

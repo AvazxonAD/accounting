@@ -1,5 +1,5 @@
 const { LogService } = require('./service');
-const { Controller } = require('../helper/controller');
+const { validator } = require('../helper/validator');
 const {
     getSchema,
     getUserSchema
@@ -8,7 +8,7 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/get', Controller(LogService.getLogs, getSchema));
-router.get('/user/:id', Controller(LogService.getUser, getUserSchema));
+router.get('/get', validator(LogService.getLogs, getSchema));
+router.get('/user/:id', validator(LogService.getUser, getUserSchema));
 
 module.exports = router;

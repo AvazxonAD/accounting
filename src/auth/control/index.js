@@ -5,8 +5,8 @@ const {
 
 const { Router } = require('express')
 const router = Router()
-const { Controller } = require('../../helper/controller')
+const { validator } = require('../../helper/validator')
 
-router.get('/tables/count', Controller(ControlService.getControl))
+router.get('/tables/count', validator(ControlService.getControl))
 
 module.exports = router;

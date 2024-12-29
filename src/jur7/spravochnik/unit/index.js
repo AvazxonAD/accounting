@@ -1,5 +1,5 @@
 const { UnitService } = require("./service");
-const { Controller } = require('../../../helper/controller');
+const { validator } = require('../../../helper/validator');
 const {
     createUnitSchema,
     getUnitSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(UnitService.createUnit, createUnitSchema));
-router.get('/:id', Controller(UnitService.getByIdUnit, getByIdUnitSchema));
-router.put('/:id', Controller(UnitService.updateUnit, updateUnitSchema));
-router.delete('/:id', Controller(UnitService.deleteUnit, deleteUnitSchema));
-router.get('/', Controller(UnitService.getUnit, getUnitSchema));
+router.post('/', validator(UnitService.createUnit, createUnitSchema));
+router.get('/:id', validator(UnitService.getByIdUnit, getByIdUnitSchema));
+router.put('/:id', validator(UnitService.updateUnit, updateUnitSchema));
+router.delete('/:id', validator(UnitService.deleteUnit, deleteUnitSchema));
+router.get('/', validator(UnitService.getUnit, getUnitSchema));
 
 
 module.exports = router;

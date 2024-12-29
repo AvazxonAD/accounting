@@ -7,11 +7,11 @@ routes
     .use("/bank/monitoring", protect, require("./bank/bank.monitoring.routes"))
     .use("/bank/income", protect, require("./bank/bank.prixod.routes"))
     .use("/bank/expense", protect, require("./bank/bank.rasxod.routes"))
-// Kassa monitoring
+    // Kassa monitoring
     .use("/kassa/monitoring", protect, require("./kassa/kassa.monitoring.routes"))
     .use("/kassa/income", protect, require("./kassa/kassa.prixod.routes"))
     .use("/kassa/expense", protect, require("./kassa/kassa.rasxod.routes"))
-// Auth routes
+    // Auth routes
     .use("/auth", require("./auth/auth/index"))
     .use("/auth/region", protect, require("./auth/region/index"))
     .use("/auth/role", protect, require("./auth/role/index"))
@@ -19,9 +19,9 @@ routes
     .use("/auth/user", protect, require('./auth/user/index'))
     .use("/auth/admin", protect, require('./auth/admin/index'))
     .use("/auth/control", protect, require('./auth/control/index'))
-// Organization monitoring
+    // Organization monitoring
     .use('/organization/monitoring', protect, require('./organization.monitoring/index'))
-// Spravochnik routes
+    // Spravochnik routes
     .use("/spravochnik/podotchet-litso", protect, require("./spravochnik/podotchet/podochet.litso.routes"))
     .use('/spravochnik/main/book/schet', protect, require('./spravochnik/main.book.schet/index'))
     .use("/spravochnik/podrazdelenie", protect, require("./spravochnik/podrazdelenie/podrazdelenie.routes"))
@@ -33,21 +33,21 @@ routes
     .use("/spravochnik/sostav", protect, require("./spravochnik/sostav/sostav.routes"))
     .use("/spravochnik/podpis", protect, require("./spravochnik/podpis/podpis.routes"))
     .use("/spravochnik/bank", protect, require("./spravochnik/bank/index"))
-// Smeta routes
+    // Smeta routes
     .use("/smeta/grafik", protect, require("./smeta/grafik/index"))
     .use("/smeta", protect, require("./smeta/smeta/index"))
-// Shartnoma routes
+    // Shartnoma routes
     .use("/shartnoma/grafik", protect, require("./shartnoma/shartnoma.grafik.routes"))
     .use("/shartnoma", protect, require("./shartnoma/shartnoma.routes"))
-// Akt routes
+    // Akt routes
     .use("/akt", protect, require("./akt/index"))
-// Avans routes
+    // Avans routes
     .use("/avans", protect, require("./avans/avans.routes"))
-// Show service routes
+    // Show service routes
     .use("/services/show", protect, require("./show.service/index"))
-// Podotchet monitoring
+    // Podotchet monitoring
     .use('/podotchet/monitoring', protect, require('./podotchet.monitoring/index'))
-// Jur 7 routes
+    // Jur 7 routes
     .use('/jur_7/group', protect, require('./jur7/spravochnik/group/index'))
     .use('/jur_7/pereotsenka', protect, require('./jur7/spravochnik/pereotsenka/index'))
     .use('/jur_7/podrazdelenie', protect, require('./jur7/spravochnik/podrazdelenie/index'))
@@ -59,12 +59,15 @@ routes
     .use('/jur_7/unit', protect, require('./jur7/spravochnik/unit'))
     .use('/jur_7/iznos', protect, require('./jur7/iznos/index'))
     .use('/jur_7/monitoring', protect, require('./jur7/monitoring/index'))
-// Main book routes
+    // Main book routes
     .use('/main/book/doc', protect, require('./main.book/doc/index'))
     .use('/main/book/end', protect, require('./main.book/end/index'))
-// Logs
+    // Real cost routes
+    .use('/real/cost/doc', protect, require('./real.cost/doc/index'))
+    .use('/real/cost/end', protect, require('./real.cost/end/index'))
+    // Logs
     .use('/log', protect, require('./log/index'))
-// admin
+    // admin
     .use('/admin/main/book', protect, require('./admin/main.book/index'));
 
 module.exports = routes;

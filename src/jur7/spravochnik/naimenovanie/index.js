@@ -1,5 +1,5 @@
 const { NaimenovanieService } = require("./service");
-const { Controller } = require('../../../helper/controller');
+const { validator } = require('../../../helper/validator');
 const {
     createNaimenovanieSchema,
     getNaimenovanieSchema,
@@ -12,11 +12,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/kol', Controller(NaimenovanieService.getProductKol, getProductKolSchema));
-router.post('/', Controller(NaimenovanieService.createNaimenovanie, createNaimenovanieSchema));
-router.get('/:id', Controller(NaimenovanieService.getByIdNaimenovanie, getByIdNaimenovanieSchema));
-router.put('/:id', Controller(NaimenovanieService.updateNaimenovanie, updateNaimenovanieSchema));
-router.delete('/:id', Controller(NaimenovanieService.deleteNaimenovanie, deleteNaimenovanieSchema));
-router.get('/', Controller(NaimenovanieService.getNaimenovanie, getNaimenovanieSchema));
+router.get('/kol', validator(NaimenovanieService.getProductKol, getProductKolSchema));
+router.post('/', validator(NaimenovanieService.createNaimenovanie, createNaimenovanieSchema));
+router.get('/:id', validator(NaimenovanieService.getByIdNaimenovanie, getByIdNaimenovanieSchema));
+router.put('/:id', validator(NaimenovanieService.updateNaimenovanie, updateNaimenovanieSchema));
+router.delete('/:id', validator(NaimenovanieService.deleteNaimenovanie, deleteNaimenovanieSchema));
+router.get('/', validator(NaimenovanieService.getNaimenovanie, getNaimenovanieSchema));
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const { IznosService } = require('./service');
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const {
     getByTovarIdSchema
 } = require("./schema");
@@ -7,6 +7,6 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/', Controller(IznosService.getByTovarIdIznos, getByTovarIdSchema));
+router.get('/', validator(IznosService.getByTovarIdIznos, getByTovarIdSchema));
 
 module.exports = router;

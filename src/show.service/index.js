@@ -1,5 +1,5 @@
 const { ShowServiceService } = require('./service');
-const { Controller } = require('../helper/controller');
+const { validator } = require('../helper/validator');
 const {
     createSchema,
     getSchema,
@@ -11,10 +11,10 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(ShowServiceService.createShowService, createSchema));
-router.get('/:id', Controller(ShowServiceService.getByIdShowService, getByIdSchema));
-router.put('/:id', Controller(ShowServiceService.updateShowService, updateSchema));
-router.delete('/:id', Controller(ShowServiceService.deleteShowService, deleteSchema));
-router.get('/', Controller(ShowServiceService.getShowService, getSchema));
+router.post('/', validator(ShowServiceService.createShowService, createSchema));
+router.get('/:id', validator(ShowServiceService.getByIdShowService, getByIdSchema));
+router.put('/:id', validator(ShowServiceService.updateShowService, updateSchema));
+router.delete('/:id', validator(ShowServiceService.deleteShowService, deleteSchema));
+router.get('/', validator(ShowServiceService.getShowService, getSchema));
 
 module.exports = router;

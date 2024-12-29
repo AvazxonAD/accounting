@@ -1,5 +1,5 @@
 const { ResponsibleService } = require("./service");
-const { Controller } = require('../../../helper/controller');
+const { validator } = require('../../../helper/validator');
 const {
     createResponsibleSchema,
     getResponsibleSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(ResponsibleService.createResponsible, createResponsibleSchema));
-router.get('/:id', Controller(ResponsibleService.getByIdResponsible, getByIdResponsibleSchema));
-router.put('/:id', Controller(ResponsibleService.updateResponsible, updateResponsibleSchema));
-router.delete('/:id', Controller(ResponsibleService.deleteResponsible, deleteResponsibleSchema));
-router.get('/', Controller(ResponsibleService.getResponsible, getResponsibleSchema));
+router.post('/', validator(ResponsibleService.createResponsible, createResponsibleSchema));
+router.get('/:id', validator(ResponsibleService.getByIdResponsible, getByIdResponsibleSchema));
+router.put('/:id', validator(ResponsibleService.updateResponsible, updateResponsibleSchema));
+router.delete('/:id', validator(ResponsibleService.deleteResponsible, deleteResponsibleSchema));
+router.get('/', validator(ResponsibleService.getResponsible, getResponsibleSchema));
 
 
 module.exports = router;

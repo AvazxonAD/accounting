@@ -1,5 +1,5 @@
 const { PodrazdelenieService } = require("./service");
-const { Controller } = require('../../../helper/controller');
+const { validator } = require('../../../helper/validator');
 const {
     createPodrazdelenieSchema,
     getPodrazdelenieSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(PodrazdelenieService.createPodrazdelenie, createPodrazdelenieSchema));
-router.get('/:id', Controller(PodrazdelenieService.getByIdPodrazdelenie, getByIdPodrazdelenieSchema));
-router.put('/:id', Controller(PodrazdelenieService.updatePodrazdelenie, updatePodrazdelenieSchema));
-router.delete('/:id', Controller(PodrazdelenieService.deletePodrazdelenie, deletePodrazdelenieSchema));
-router.get('/', Controller(PodrazdelenieService.getPodrazdelenie, getPodrazdelenieSchema));
+router.post('/', validator(PodrazdelenieService.createPodrazdelenie, createPodrazdelenieSchema));
+router.get('/:id', validator(PodrazdelenieService.getByIdPodrazdelenie, getByIdPodrazdelenieSchema));
+router.put('/:id', validator(PodrazdelenieService.updatePodrazdelenie, updatePodrazdelenieSchema));
+router.delete('/:id', validator(PodrazdelenieService.deletePodrazdelenie, deletePodrazdelenieSchema));
+router.get('/', validator(PodrazdelenieService.getPodrazdelenie, getPodrazdelenieSchema));
 
 
 module.exports = router;

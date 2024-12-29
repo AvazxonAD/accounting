@@ -1,5 +1,5 @@
 const { InternalService } = require('./service');
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const {
     createInternalSchema,
     getInternalSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', Controller(InternalService.createInternal, createInternalSchema));
-router.get('/:id', Controller(InternalService.getByIdInternal, getByIdInternalSchema));
-router.put('/:id', Controller(InternalService.updateInternal, updateInternalSchema));
-router.delete('/:id', Controller(InternalService.deleteInternal, deleteInternalSchema));
-router.get('/', Controller(InternalService.getInternal, getInternalSchema));
+router.post('/', validator(InternalService.createInternal, createInternalSchema));
+router.get('/:id', validator(InternalService.getByIdInternal, getByIdInternalSchema));
+router.put('/:id', validator(InternalService.updateInternal, updateInternalSchema));
+router.delete('/:id', validator(InternalService.deleteInternal, deleteInternalSchema));
+router.get('/', validator(InternalService.getInternal, getInternalSchema));
 
 
 module.exports = router;

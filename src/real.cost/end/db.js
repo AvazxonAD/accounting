@@ -1,45 +1,47 @@
 const { db } = require('../../db/index')
 const { returnParamsValues, } = require('../../helper/functions')
 
-exports.DocMainBookDB = class {
-    static async createDoc(params, client) {
+exports.EndMainBookDB = class {
+    static async createEnd(params, client) {
         const query = `--sql
-            INSERT INTO main_book_doc_parent (
+            INSERT INTO real_cost_end_parent (
                 user_id,
+                user_id_accepted,
                 budjet_id,
-                type_document,
+                accepted_time,
                 month,
                 year,
+                status,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
         `;
         const result = await client.query(query, params)
         return result.rows[0];
     }
 
-    static async updateDoc(params, client) {
+    static async updateEnd(params, client) {
         const query = `--sql
-            UPDATE main_book_doc_parent 
+            UPDATE real_cost_end_parent 
                 SET 
-                    type_document = $1,
-                    month = $2,
-                    year = $3,
-                    updated_at = $4
-            WHERE id = $5
+                    month = $1,
+                    year = $2,
+                    updated_at = $3
+            WHERE id = $4
             RETURNING *
         `;
         const result = await client.query(query, params)
         return result.rows[0];
     }
 
-    static async createDocChild(params, client) {
-        const _values = returnParamsValues(params, 6)
+    static async createEndChild(params, client) {
+        const _values = returnParamsValues(params, 7)
         const query = `--sql
-            INSERT INTO main_book_doc_child (
-                spravochnik_operatsii_id,
+            INSERT INTO real_cost_end_child (
+                smeta_grafik_id,
                 parent_id,
+                type_document,
                 debet_sum, 
                 kredit_sum,
                 created_at,
@@ -51,10 +53,9 @@ exports.DocMainBookDB = class {
         return result.rows;
     }
 
-    static async getDoc(params, year, month, type) {
+    static async getEnd(params, year, month) {
         let year_filter = ``;
         let month_filter = ``;
-        let type_filter = ``;
         if(year){
             year_filter = `AND d.year = $${params.length + 1}`;
             params.push(year)
@@ -63,70 +64,73 @@ exports.DocMainBookDB = class {
             month_filter = `AND d.month = $${params.length + 1}`;
             params.push(month)
         }
-        if(type){
-            type_filter = `AND d.type_document = $${params.length + 1}`;
-            params.push(type)
-        }
         const query = `--sql
             SELECT 
                 d.id::INTEGER,
-                d.type_document,
                 d.month,
-                d.year
-            FROM main_book_doc_parent AS d
+                d.year,
+                b.id AS budjet_id,
+                b.name,
+                u.id AS user_id,
+                u.login AS user_login,
+                ua.id AS accepted_id,
+                ua.login AS accepted_login,
+                d.status,
+                d.created_at,
+                d.accepted_time
+            FROM real_cost_end_parent AS d
             JOIN users AS u ON u.id = d.user_id
+            LEFT JOIN  users AS ua ON ua.id = d.user_id_accepted
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
             WHERE r.id = $1 
                 AND b.id = $2
                 AND d.isdeleted = false 
-                ${year_filter} ${month_filter} ${type_filter}
+                ${year_filter} ${month_filter}
         `;
         const result = await db.query(query, params)
         return result;
     }
 
-    static async getDocChildsSum(params) {
+    static async getEndChildsSum(params) {
         const query = `--sql
             SELECT 
                 COALESCE(SUM(debet_sum), 0)::FLOAT AS debet_sum, 
                 COALESCE(SUM(kredit_sum), 0)::FLOAT AS kredit_sum 
-            FROM main_book_doc_child
+            FROM real_cost_end_child
             WHERE parent_id = $1 AND isdeleted = false 
         `;
         const result = await db.query(query, params)
         return result[0]
     }
 
-    static async getDocChilds(params) {
+    static async getEndChildSum(params) {
         const query = `--sql
             SELECT 
-                id::INTEGER,
-                spravochnik_operatsii_id,
-                parent_id::INTEGER,
-                debet_sum::FLOAT, 
-                kredit_sum::FLOAT,
-                created_at,
-                updated_at
-            FROM main_book_doc_child
-            WHERE parent_id = $1
+                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
+                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum
+            FROM real_cost_end_child AS ch
+            WHERE parent_id = $1 
+                AND ch.type_document = $2 
+                AND ch.smeta_grafik_id = $3 
+                AND ch.isdeleted = false
         `;
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
 
-    static async getByIdDoc(params, isdeleted) {
+    static async getByIdEnd(params, isdeleted) {
         const query = `--sql
             SELECT 
                 d.id::INTEGER,
                 d.user_id,
+                d.user_id_accepted,
                 d.budjet_id,
-                d.type_document,
+                d.accepted_time,
                 d.month,
                 d.year,
-                d.created_at,
-                d.updated_at
-            FROM main_book_doc_parent AS d
+                d.status
+            FROM real_cost_end_parent AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -139,7 +143,7 @@ exports.DocMainBookDB = class {
         return result[0];
     }
 
-    static async getTypeDocSumna(params){
+    static async getTypeEndSumna(params){
         const query = `--sql
             SELECT 
                 COALESCE(SUM(d.debet_sum)::FLOAT, 0) AS debet_sum,
@@ -154,30 +158,38 @@ exports.DocMainBookDB = class {
                 AND d.type_document = $3
                 AND d.month = $4
                 AND d.year = $5
-                AND d.spravochnik_operatsii_id = $6 
+                AND d.smeta_grafik_id = $6 
         `;
         const result = await db.query(query, params);
         return result[0];
 
     }
 
-    static async deleteDocChilds(params, client){
-        const query = `DELETE FROM main_book_doc_child WHERE parent_id = $1`;
+    static async deleteEndChilds(params, client){
+        const query = `DELETE FROM real_cost_end_child WHERE parent_id = $1`;
         await client.query(query, params);
     }
 
-    static async deleteDoc(params, client){
-        await client.query(`UPDATE main_book_doc_parent SET isdeleted = true WHERE id = $1`, params)
-        await client.query(`UPDATE main_book_doc_child SET isdeleted = true WHERE parent_id = $1`, params)
+    static async deleteEnd(params, client){
+        await client.query(`UPDATE real_cost_end_parent SET isdeleted = true WHERE id = $1`, params)
+        await client.query(`UPDATE real_cost_end_child SET isdeleted = true WHERE parent_id = $1`, params)
     }
 
-    static async getOperatsiiMainBook(params) {
+    static async getInfo(params){
         const query = `--sql
-            SELECT DISTINCT ON(so.schet) so.id, so.name, so.schet
-            FROM spravochnik_operatsii so
-            JOIN spravochnik_main_book_schet ms ON  ms.schet = so.schet
+            SELECT      
+                COALESCE(SUM(mbdch.debet_sum), 0)::FLOAT AS debet_sum,
+                COALESCE(SUM(mbdch.kredit_sum), 0)::FLOAT AS kredit_sum
+            FROM real_cost_doc_child mbdch 
+            LEFT JOIN real_cost_doc_parent mbdp ON mbdp.id = mbdch.parent_id
+            WHERE mbdp.year = $1 
+                AND mbdp.month = $2
+                AND mbdp.type_document = $3 
+                AND mbdp.budjet_id = $4
+                AND mbdp.isdeleted = false
+                AND mbdch.smeta_grafik_id = $5
         `;
-        const result = await db.query(query, params)
-        return result;
+        const result = await db.query(query, params);
+        return result[0];
     }
 }

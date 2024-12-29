@@ -7,7 +7,7 @@ exports.createEndSchema = Joi.object({
     data: Joi.array().required().items(
       Joi.object({
         type: Joi.string().trim().required(),
-        schets: Joi.array().required().items(
+        grafiks: Joi.array().required().items(
           Joi.object({
             id: Joi.number().integer().min(1).required(),
             summa: Joi.object({
@@ -31,7 +31,7 @@ exports.updateEndSchema = Joi.object({
     data: Joi.array().required().items(
       Joi.object({
         type: Joi.string().trim().required(),
-        schets: Joi.array().required().items(
+        grafiks: Joi.array().required().items(
           Joi.object({
             id: Joi.number().integer().min(1).required(),
             summa: Joi.object({

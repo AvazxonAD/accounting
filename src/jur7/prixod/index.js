@@ -1,5 +1,5 @@
 const { PrixodService } = require('./service');
-const { Controller } = require('../../helper/controller');
+const { validator } = require('../../helper/validator');
 const {
     createPrixodSchema,
     getPrixodSchema,
@@ -12,12 +12,12 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/report', Controller(PrixodService.getPrixodReport, getPrixodReport));
-router.post('/', Controller(PrixodService.createPrixod, createPrixodSchema));
-router.get('/:id', Controller(PrixodService.getByIdPrixod, getByIdPrixodSchema));
-router.put('/:id', Controller(PrixodService.updatePrixod, updatePrixodSchema));
-router.delete('/:id', Controller(PrixodService.deletePrixod, deletePrixodSchema));
-router.get('/', Controller(PrixodService.getPrixod, getPrixodSchema));
+router.get('/report', validator(PrixodService.getPrixodReport, getPrixodReport));
+router.post('/', validator(PrixodService.createPrixod, createPrixodSchema));
+router.get('/:id', validator(PrixodService.getByIdPrixod, getByIdPrixodSchema));
+router.put('/:id', validator(PrixodService.updatePrixod, updatePrixodSchema));
+router.delete('/:id', validator(PrixodService.deletePrixod, deletePrixodSchema));
+router.get('/', validator(PrixodService.getPrixod, getPrixodSchema));
 
 
 module.exports = router;

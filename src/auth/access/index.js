@@ -1,13 +1,13 @@
 const { Router } = require('express')
 const router = Router()
-const { Controller } = require('../../helper/controller')
+const { validator } = require('../../helper/validator')
 const { AccessService } = require('./service')
 const {
     updateAccessSchema,
     getByRoleIdAccessSchema
 } = require('./schema');
 
-router.get('/', Controller(AccessService.getByRoleIdAccess, getByRoleIdAccessSchema))
-router.put('/:id', Controller(AccessService.updateAccess, updateAccessSchema))
+router.get('/', validator(AccessService.getByRoleIdAccess, getByRoleIdAccessSchema))
+router.put('/:id', validator(AccessService.updateAccess, updateAccessSchema))
 
 module.exports = router;
