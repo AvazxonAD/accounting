@@ -2,7 +2,7 @@ const { MainSchetDB } = require('../spravochnik/main.schet/db');
 const { OrganizationMonitoringDB } = require('./db');
 const { OrganizationDB } = require('../spravochnik/organization/db');
 const { RegionDB } = require('../auth/region/db')
-const { ContractDB } = require('../shartnoma/shartnoma/db')
+const { ContractDB } = require('../shartnoma/db')
 const { PodpisDB } = require('../spravochnik/podpis/db')
 const { returnStringDate, returnStringSumma, returnExcelColumn } = require('../helper/functions')
 const ExcelJS = require('exceljs')
@@ -237,13 +237,14 @@ exports.OrganizationmonitoringService = class {
 
     static async consolidated(data) {
         for (let organ of data.organizations) {
+            const contract_id = data.contract ? organ.contract_id : null; 
             organ.summa_from = await OrganizationMonitoringDB.getSummaConsolidated([
                 data.region_id,
                 data.main_schet_id,
                 data.operatsii,
                 data.from,
-                organ.id
-            ], '<');
+                organ.id 
+            ], '<', contract_id);
             organ.summa_bank_rasxod_prixod = await OrganizationMonitoringDB.getSummaPrixodConsolidated([
                 data.region_id,
                 data.main_schet_id,
@@ -251,7 +252,7 @@ exports.OrganizationmonitoringService = class {
                 data.from,
                 data.to,
                 organ.id
-            ])
+            ], contract_id)
             organ.summa_akt_rasxod = await OrganizationMonitoringDB.getSummaAktConsolidated([
                 data.region_id,
                 data.main_schet_id,
@@ -259,7 +260,7 @@ exports.OrganizationmonitoringService = class {
                 data.from,
                 data.to,
                 organ.id
-            ])
+            ], contract_id)
             organ.summa_jur7_rasxod = await OrganizationMonitoringDB.getSummaJur7Consolidated([
                 data.region_id,
                 data.main_schet_id,
@@ -267,7 +268,7 @@ exports.OrganizationmonitoringService = class {
                 data.from,
                 data.to,
                 organ.id
-            ])
+            ], contract_id)
             organ.summa_bank_prixod_rasxod = await OrganizationMonitoringDB.getSummaBankPrixodConsolidated([
                 data.region_id,
                 data.main_schet_id,
@@ -275,7 +276,7 @@ exports.OrganizationmonitoringService = class {
                 data.from,
                 data.to,
                 organ.id
-            ])
+            ], contract_id)
             let itogo_rasxod = 0;
             organ.summa_akt_rasxod.forEach(item => {
                 itogo_rasxod += item.summa;
@@ -296,14 +297,14 @@ exports.OrganizationmonitoringService = class {
                 data.operatsii,
                 data.to,
                 organ.id
-            ], '<=');
+            ], '<=', contract_id);
             data.rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([
                 data.region_id,
                 data.main_schet_id,
                 data.operatsii,
                 data.from,
                 data.to
-            ])
+            ], contract_id)
             data.rasxodSchets.push({ schet: 'itogo_rasxod' })
         }
         return { organizations: data.organizations, rasxodSchets: data.rasxodSchets };
@@ -355,7 +356,7 @@ exports.OrganizationmonitoringService = class {
             { key: 'rasxod_to' }
         ];
         for (let organ of data.organizations) {
-            if(organ.summa_from.summa === 0 && organ.summa_to.summa === 0){
+            if (organ.summa_from.summa === 0 && organ.summa_to.summa === 0) {
                 continue;
             }
             const values = data.rasxodSchets.reduce((acc, item) => {
@@ -379,6 +380,126 @@ exports.OrganizationmonitoringService = class {
             }, []);
             worksheet.addRow({
                 name: organ.name,
+                prixod_from: Math.max(organ.summa_from.summa, 0),
+                rasxod_from: Math.max(-organ.summa_from.summa, 0),
+                [`_prixod_${data.operatsii}`]: organ.summa_bank_rasxod_prixod[0]?.summa || '',
+                ...values.reduce((acc, { schet, summa }) => {
+                    acc[schet] = summa;
+                    return acc;
+                }, {}),
+                prixod_to: Math.max(organ.summa_to.summa, 0),
+                rasxod_to: Math.max(-organ.summa_to.summa, 0)
+            });
+        }
+        worksheet.eachRow((row, rowNumber) => {
+            let bold = false;
+            if (rowNumber < 6) {
+                worksheet.getRow(rowNumber).height = 30;
+                bold = true;
+            }
+            row.eachCell((cell, columnNumber) => {
+                if (columnNumber === 1) {
+                    worksheet.getColumn(columnNumber).width = 40;
+                } else {
+                    worksheet.getColumn(columnNumber).width = 18;
+                }
+                Object.assign(cell, {
+                    numFmt: "#0.00",
+                    font: { size: 13, name: 'Times New Roman', bold },
+                    alignment: { vertical: "middle", horizontal: "center", wrapText: true },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            });
+        });
+        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        await workbook.xlsx.writeFile(filePath);
+        return filePath;
+    }
+
+    static async consolidatedByContractExcel(data) {
+        const workbook = new ExcelJS.Workbook();
+        const fileName = `consolidated_${new Date().getTime()}.xlsx`;
+        const worksheet = workbook.addWorksheet('consolelidated');
+        worksheet.mergeCells(`A1`, 'C1');
+        worksheet.getCell('A1').value = 'Журнал-ордер N_3';
+        worksheet.mergeCells(`A2`, 'C2');
+        worksheet.getCell('A2').value = `"Расчеты с дебеторами и кредиторами"`;
+        worksheet.mergeCells(`A3`, 'C3');
+        worksheet.getCell('A3').value = `${returnStringDate(new Date(data.to))} холатига  ${data.operatsii}`;
+        worksheet.mergeCells(`A4`, 'A5');
+        worksheet.mergeCells(`B4`, 'C4');
+        worksheet.getCell('B4').value = `Остаток к начало`;
+        worksheet.mergeCells(`D4`, 'E4');
+        worksheet.getCell('D4').value = 'Договор ';
+        worksheet.getCell('F4').value = 'Дебет';
+        const endRasxodSchetsColumn = data.rasxodSchets.length + 6
+        worksheet.mergeCells(`G4`, `${returnExcelColumn([endRasxodSchetsColumn])}4`);
+        worksheet.getCell('G4').value = 'Кредит счета';
+        worksheet.mergeCells(`${returnExcelColumn([endRasxodSchetsColumn + 1])}4`, `${returnExcelColumn([endRasxodSchetsColumn + 2])}4`);
+        worksheet.getCell(`${returnExcelColumn([endRasxodSchetsColumn + 1])}4`).value = 'Остаток к конец';
+        worksheet.getRow(5).values = [
+            'Организатсия',
+            'Номер',
+            'Дата',
+            'Дебет',
+            'Кредит',
+            data.operatsii,
+            ...data.rasxodSchets.map(item => {
+                if (item.schet === 'itogo_rasxod') {
+                    return 'итого кредит'
+                } else {
+                    return item.schet
+                }
+            }),
+            'Дебет',
+            'Кредит'
+        ];
+        worksheet.columns = [
+            { key: 'name' },
+            { key: 'contract_number' },
+            { key: 'contract_date' },
+            { key: 'prixod_from' },
+            { key: 'rasxod_from' },
+            { key: `_prixod_${data.operatsii}` },
+            ...data.rasxodSchets.map(item => {
+                return { key: `_rasxod_${item.schet}` }
+            }),
+            { key: 'prixod_to' },
+            { key: 'rasxod_to' }
+        ];
+        for (let organ of data.organizations) {
+            if (organ.summa_from.summa === 0 && organ.summa_to.summa === 0) {
+                continue;
+            }
+            const values = data.rasxodSchets.reduce((acc, item) => {
+                const schetKey = `_rasxod_${item.schet}`;
+                const matchAkt = organ.summa_akt_rasxod.find(i => i.schet === item.schet);
+                const matchBankPrixod = organ.summa_bank_prixod_rasxod.find(i => i.schet === item.schet);
+                const matchJur7 = organ.summa_jur7_rasxod.find(i => i.schet === item.schet);
+                if (!matchAkt && !matchBankPrixod && !matchJur7 && item.schet !== 'itogo_rasxod') {
+                    acc.push({ schet: schetKey, summa: '' });
+                }
+                if (matchAkt) acc.push({ schet: schetKey, summa: matchAkt.summa });
+                if (matchBankPrixod) acc.push({ schet: schetKey, summa: matchBankPrixod.summa });
+                if (matchJur7) acc.push({ schet: schetKey, summa: matchJur7.summa });
+                if (item.schet === 'itogo_rasxod') {
+                    acc.push({
+                        schet: schetKey,
+                        summa: organ.itogo_rasxod.summa
+                    });
+                }
+                return acc;
+            }, []);
+            worksheet.addRow({
+                name: organ.name,
+                contract_number: organ.doc_num,
+                contract_date: organ.doc_date,
                 prixod_from: Math.max(organ.summa_from.summa, 0),
                 rasxod_from: Math.max(-organ.summa_from.summa, 0),
                 [`_prixod_${data.operatsii}`]: organ.summa_bank_rasxod_prixod[0]?.summa || '',

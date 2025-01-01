@@ -2,6 +2,7 @@ const { OrganizationmonitoringService } = require('./services')
 const { MainSchetService } = require('../spravochnik/main.schet/services');
 const { OrganizationService } = require('../spravochnik/organization/services')
 const { BudjetService } = require('../spravochnik/budjet/services')
+const { ContractService } = require('../shartnoma/services')
 
 exports.Controller = class {
     static async monitoring(req, res) {
@@ -100,25 +101,42 @@ exports.Controller = class {
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
-        const { data: organizations } = await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 });
-        const { organizations: result, rasxodSchets } = await OrganizationmonitoringService.consolidated({
+        let data;
+        let organizations;
+        if (query.contract !== 'true') {
+            organizations = (await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 })).data;
+        } else {
+            organizations = await ContractService.getContractByOrganizations({ region_id });
+        }
+        data = await OrganizationmonitoringService.consolidated({
             organizations,
             region_id,
             from: query.from,
             to: query.to,
             main_schet_id: query.main_schet_id,
-            operatsii: query.operatsii
+            operatsii: query.operatsii,
+            contract: query.contract === 'true' ? true : false
         });
-        if(query.excel === 'true'){
-            const filePath = await OrganizationmonitoringService.consolidatedExcel({
-                organizations: result,
-                rasxodSchets,
-                to: query.to,
-                operatsii: query.operatsii
-            })
+        if (query.excel === 'true') {
+            let filePath;
+            if(query.contract === 'true'){
+                filePath = await OrganizationmonitoringService.consolidatedByContractExcel({
+                    organizations: data.organizations,
+                    rasxodSchets: data.rasxodSchets,
+                    to: query.to,
+                    operatsii: query.operatsii
+                })
+            }else {
+                filePath = await OrganizationmonitoringService.consolidatedExcel({
+                    organizations: data.organizations,
+                    rasxodSchets: data.rasxodSchets,
+                    to: query.to,
+                    operatsii: query.operatsii
+                })
+            }
             return res.download(filePath);
         }
-        return res.success('get successfully', 200, { rasxodSchets }, { result });
+        return res.success('get successfully', 200, { rasxodSchets: data.rasxodSchets }, data.organizations);
     }
 
 
@@ -395,166 +413,6 @@ exports.Controller = class {
         worksheet.getColumn(10).width = 8;
         worksheet.getColumn(11).width = 8;
         const filePath = path.join(__dirname, '../../public/exports/' + fileName);
-        await workbook.xlsx.writeFile(filePath);
-        return res.download(filePath, (err) => {
-            if (err) throw new ErrorResponse(err, err.statusCode);
-        });
-    }
-
-    static async orderorganization(req, res) {
-        const region_id = 21 // req.user.region_id
-        const { from, to, main_schet_id, schet } = req.query;
-        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-        if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
-        }
-        const rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([main_schet_id, from, to, schet])
-        const prixodSchets = ([{ schet: schet }])
-        const organizations = await OrganizationDB.getOrganization([region_id])
-        for (let organ of organizations) {
-            organ.summaFrom = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, from, organ.id, schet], '<');
-            organ.summaTo = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, to, organ.id, schet], '<=');
-
-            organ.rasxodSchets = rasxodSchets.map((schet) => ({ ...schet }));
-            organ.prixodSchets = prixodSchets.map((schet) => ({ ...schet }));
-            organ.summaPrixod = 0;
-            organ.summa_rasxod = 0;
-            await Promise.all(
-                organ.rasxodSchets.map(async (schet) => {
-                    schet.summa = await OrganizationMonitoringDB.getOrganizationRasxodSumOrder([main_schet_id, from, to, organ.id, schet.schet]);
-                    organ.summa_rasxod += schet.summa;
-                })
-            );
-
-            await Promise.all(
-                organ.prixodSchets.map(async (schet) => {
-                    schet.summa = await OrganizationMonitoringDB.getOrganiztionPrixodSumOrder([main_schet_id, from, to, organ.id, schet.schet]);
-                    organ.summaPrixod += schet.summa;
-                })
-            );
-
-            organ.prixodSchets.push({ schet: 'Итого Дебит', summa: organ.summaPrixod })
-            organ.rasxodSchets.push({ schet: 'Итого Кредит', summa: organ.summa_rasxod })
-        }
-        rasxodSchets.push({ schet: 'Итого Кредит' });
-        prixodSchets.push({ schet: 'Итого Дебит' });
-        const result_data = await organizations.filter(item => item.summaFrom.summa !== 0 || item.summaTo.summa !== 0)
-
-        const workbook = new ExcelJS.Workbook();
-        const fileName = `order_organization_${new Date().getTime()}.xlsx`;
-        const worksheet = workbook.addWorksheet('order organization');
-        worksheet.pageSetup.margins.left = 0
-        worksheet.pageSetup.margins.header = 0
-        worksheet.pageSetup.margins.footer = 0
-
-        worksheet.mergeCells('A1', 'K1');
-        const headCell = worksheet.getCell('A1');
-        headCell.value = `Журнал-Ордер N_3`;
-
-        worksheet.mergeCells('A2', 'K2');
-        const titleCell = worksheet.getCell('A2');
-        titleCell.value = `Расчети c дебеторами и кредиторами`
-
-        worksheet.mergeCells('A3', 'K3');
-        const date_intervalCell = worksheet.getCell('A3')
-        date_intervalCell.value = `За период с ${returnStringDate(new Date(from))} по ${returnStringDate(new Date(to))}`;
-
-        worksheet.mergeCells('A4', 'A5')
-        const organTitleCell = worksheet.getCell('A4')
-        organTitleCell.value = 'Организатсия';
-
-        worksheet.mergeCells(`B4`, 'C4')
-        const summaFromTitle = worksheet.getCell('B4')
-        summaFromTitle.value = 'Остаток к началу дня'
-
-        const prixodLength = prixodSchets.length;
-        const rasxodLength = rasxodSchets.length;
-        worksheet.mergeCells('D4', `${returnExcelColumn([prixodLength + 3])}4`)
-        const prixodTitleCell = worksheet.getCell('D4')
-        prixodTitleCell.value = 'ДЕБИТ СЧЕТА'
-
-        worksheet.mergeCells(`${returnExcelColumn([prixodLength + 4])}4`, `${returnExcelColumn([prixodLength + rasxodLength + 3])}4`)
-        const rasxodTitleCell = worksheet.getCell(`${returnExcelColumn([prixodLength + 4])}4`)
-        rasxodTitleCell.value = 'КРЕДИТ СЧЕТА'
-
-        worksheet.mergeCells(`${returnExcelColumn([prixodLength + rasxodLength + 4])}4`, `${returnExcelColumn([prixodLength + rasxodLength + 5])}4`)
-        const summaToCell = worksheet.getCell(`${returnExcelColumn([prixodLength + rasxodLength + 4])}4`)
-        summaToCell.value = 'Остаток к началу дня'
-
-        const values = ['', 'ДЕБИТ', 'КРЕДИТ']
-        prixodSchets.forEach(item => { values.push(item.schet) })
-        rasxodSchets.forEach(item => { values.push(item.schet) })
-        values.push('ДЕБИТ', 'КРЕДИТ')
-        worksheet.getRow(5).values = values;
-
-        const columns = [{ key: 'organ', width: 40 }, { key: 'prixodFrom', width: 15 }, { key: 'rasxodFrom', width: 15 }]
-        prixodSchets.forEach(item => { columns.push({ key: `p/${item.schet}`, width: 12 }) })
-        rasxodSchets.forEach(item => { columns.push({ key: `r/${item.schet}`, width: 12 }) })
-        columns.push({ key: 'prixodTo', width: 15 }, { key: 'rasxodTo', width: 15 })
-        worksheet.columns = columns;
-
-        for (let organ of result_data) {
-            let rowData = {
-                organ: organ.name,
-                prixodFrom: organ.summaFrom.summa > 0 ? organ.summaFrom.summa : 0,
-                rasxodFrom: organ.summaFrom.summa < 0 ? Math.abs(organ.summaFrom.summa) : 0,
-                prixodTo: organ.summaTo.summa > 0 ? organ.summaTo.summa : 0,
-                rasxodTo: organ.summaTo.summa < 0 ? Math.abs(organ.summaTo.summa) : 0,
-            };
-
-            for (let schet of organ.prixodSchets) {
-                rowData[`p/${schet.schet}`] = schet.summa;
-            }
-
-            for (let schet of organ.rasxodSchets) {
-                rowData[`r/${schet.schet}`] = schet.summa;
-            }
-
-            worksheet.addRow(rowData);
-        }
-
-        worksheet.eachRow((row, rowNumber) => {
-            row.eachCell((cell, index) => {
-                let bold = false;
-                let horizontal = 'center'
-                let size = 10;
-                if (rowNumber < 4) {
-                    bold = true;
-                    size = 15;
-                }
-                if (typeof cell.value === "number") {
-                    horizontal = 'right'
-                }
-                Object.assign(cell, {
-                    numFmt: '#,##0',
-                    font: { size, color: { argb: 'FF000000' }, bold, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal, wrapText: true },
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                    border: {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
-                    }
-                });
-            });
-        });
-
-        const folderPath = path.join(__dirname, '../../public/exports')
-        try {
-            await fs.access(folderPath)
-        } catch (error) {
-            try {
-                await fs.mkdir(folderPath);
-            } catch (error) {
-                return res.status(500).json({
-                    message: "INternal server error"
-                })
-            }
-        }
-        const filePath = folderPath + '/' + fileName
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);
