@@ -1,36 +1,25 @@
-const { MainSchetDB } = require('../spravochnik/main.schet/db');
-const { OrganizationMonitoringDB } = require('./db');
-const { OrganizationDB } = require('../spravochnik/organization/db');
-const { RegionDB } = require('../auth/region/db')
-const { ContractDB } = require('../shartnoma/shartnoma/db')
-const { PodpisDB } = require('../spravochnik/podpis/db')
-const { returnStringDate, returnStringSumma, returnExcelColumn } = require('../helper/functions')
-const ExcelJS = require('exceljs')
-const path = require('path')
-const fs = require('fs').promises;
+const { OrganizationmonitoringService } = require('./services')
+const { MainSchetService } = require('../spravochnik/main.schet/services');
+const { OrganizationService } = require('../spravochnik/organization/services')
+const { BudjetService } = require('../spravochnik/budjet/services')
 
-exports.OrganizationMonitoringService = class {
-    static async getMonitoring(req, res) {
+exports.Controller = class {
+    static async monitoring(req, res) {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, operatsii, from, to } = req.query;
-        const offset = (page - 1) * limit;
-        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
+        const { query } = req;
+        const { page, limit, organ_id } = query;
+        const offset = (query.page - 1) * limit;
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error('main shcet not found', 404);
         }
-        const data = await OrganizationMonitoringDB.getData([region_id, main_schet_id, operatsii, from, to, offset, limit])
-        const summa_from = await OrganizationMonitoringDB.getSumma([region_id, main_schet_id, operatsii, from], '<')
-        const summa_to = await OrganizationMonitoringDB.getSumma([region_id, main_schet_id, operatsii, to], '<=')
-        const total = await OrganizationMonitoringDB.getTotal([region_id, main_schet_id, operatsii, from, to])
-
-        let summa_prixod = 0;
-        let summa_rasxod = 0;
-        for (let item of data) {
-            summa_prixod += item.summa_prixod
-            summa_rasxod += item.summa_rasxod
+        if (organ_id) {
+            const organization = await OrganizationService.getByIdOrganization(region_id, organ_id, false);
+            if (!organization) {
+                res.error('Organization not found', 404)
+            }
         }
+        const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await monitoringService.monitoring({ ...query, offset, region_id }, organ_id)
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -43,59 +32,96 @@ exports.OrganizationMonitoringService = class {
             summa_from,
             summa_to
         }
-        return res.status(200).json({
-            message: "organization monitoring get successfully!",
-            meta,
-            data
-        })
+        return res.success('get successfully', 200, meta, data);
     }
 
-    static async getByOrganizationIdMonitoring(req, res) {
+    static async prixodRasxod(req, res) {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, operatsii, from, to, organ_id } = req.query;
-        const offset = (page - 1) * limit;
-        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
+        const { query } = req;
+        const budjet = await BudjetService.getByIdBudjet({ id: query.budjet_id });
+        if (!budjet) {
+            return res.error('Budjet not found', 404);
+        }
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error('main shcet not found', 404);
         }
-        const organ = await OrganizationDB.getByIdorganization([region_id, organ_id])
-        if (!organ) {
-            return res.status(404).json({
-                message: "organ not found"
-            })
-        }
-        const data = await OrganizationMonitoringDB.getByOrganIdData([region_id, main_schet_id, operatsii, from, to, organ_id, offset, limit]);
-        const summa_from = await OrganizationMonitoringDB.getByOrganIdSumma([region_id, main_schet_id, operatsii, from, organ_id], '<');
-        const summa_to = await OrganizationMonitoringDB.getByOrganIdSumma([region_id, main_schet_id, operatsii, to, organ_id], '<=');
-        const total = await OrganizationMonitoringDB.getByOrganIdTotal([region_id, main_schet_id, operatsii, from, to, organ_id]);
+        const { data: organizations } = await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 });
+        const data = await OrganizationmonitoringService.prixodRasxod(query, organizations);
+        if (query.excel === 'true') {
+            const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
+                organ_name: main_schet.tashkilot_nomi,
+                operatsii: query.operatsii,
+                organizations: data.organizations,
+                to: query.to
+            });
 
-        let summa_prixod = 0;
-        let summa_rasxod = 0;
-        for (let item of data) {
-            summa_prixod += item.summa_prixod
-            summa_rasxod += item.summa_rasxod
+            return res.download(filePath, (err) => {
+                if (err) {
+                    res.error(err.message, err.statusCode);
+                }
+            });
         }
-
-        const pageCount = Math.ceil(total / limit);
-        const meta = {
-            pageCount: pageCount,
-            count: total,
-            currentPage: page,
-            nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1,
-            summa_prixod,
-            summa_rasxod,
-            summa_from,
-            summa_to
-        }
-        return res.status(200).json({
-            message: "organization monitoring get successfully!",
-            meta,
-            data
-        })
+        return res.success('get successfully', 200, { itogo_rasxod: data.itogo_rasxod, itogo_prixod: data.itogo_prixod }, data.organizations);
     }
+
+
+    static async cap(req, res) {
+        const region_id = req.user.region_id;
+        const { query } = req;
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        if (!main_schet) {
+            return res.error('main shcet not found', 404);
+        }
+        const { data, itogo_rasxod } = await OrganizationmonitoringService.cap({ ...query, region_id });
+        if (query.excel === 'true') {
+            const filePath = await OrganizationmonitoringService.capExcel({
+                organ_name: main_schet.tashkilot_nomi,
+                operatsii: query.operatsii,
+                organizations: data,
+                to: query.to,
+                budjet_name: main_schet.budjet_name,
+                itogo_rasxod
+            });
+
+            return res.download(filePath, (err) => {
+                if (err) {
+                    res.error(err.message, err.statusCode);
+                }
+            });
+        };
+        return res.success('get successfully', 200, { itogo_rasxod }, data);
+    }
+
+    static async consolidated(req, res) {
+        const region_id = req.user.region_id;
+        const { query } = req;
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        if (!main_schet) {
+            return res.error('main shcet not found', 404);
+        }
+        const { data: organizations } = await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 });
+        const { organizations: result, rasxodSchets } = await OrganizationmonitoringService.consolidated({
+            organizations,
+            region_id,
+            from: query.from,
+            to: query.to,
+            main_schet_id: query.main_schet_id,
+            operatsii: query.operatsii
+        });
+        if(query.excel === 'true'){
+            const filePath = await OrganizationmonitoringService.consolidatedExcel({
+                organizations: result,
+                rasxodSchets,
+                to: query.to,
+                operatsii: query.operatsii
+            })
+            return res.download(filePath);
+        }
+        return res.success('get successfully', 200, { rasxodSchets }, { result });
+    }
+
+
 
     static async aktSverka(req, res) {
         const region_id = req.user.region_id;
@@ -375,116 +401,9 @@ exports.OrganizationMonitoringService = class {
         });
     }
 
-    static async prixodRasxodOrganization(req, res) {
-        const region_id = req.user.region_id
-        const { to, main_schet_id, operatsii } = req.query
-        const workbook = new ExcelJS.Workbook();
-        const fileName = `organization_prixod_rasxod_${new Date().getTime()}.xlsx`;
-        const worksheet = workbook.addWorksheet('organization prixod rasxod');
-        worksheet.pageSetup.margins.left = 0
-        worksheet.pageSetup.margins.header = 0
-        worksheet.pageSetup.margins.footer = 0
-        worksheet.pageSetup.margins.right = 0
-        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-        if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
-        }
-        worksheet.mergeCells(`A1`, 'D1');
-        const title = worksheet.getCell(`A1`);
-        title.value = `${main_schet.tashkilot_nomi} ${returnStringDate(new Date(to))} холатига  ${operatsii} счет бўйича дебитор-кредитор  карздорлик тугрисида маълумот `
-        const organ_nameCell = worksheet.getCell(`A2`)
-        organ_nameCell.value = 'Наименование организации'
-        const prixodCell = worksheet.getCell(`B2`)
-        prixodCell.value = `Дебит`
-        const rasxodCell = worksheet.getCell(`C2`)
-        rasxodCell.value = 'Кредит'
-        const css_array = [title, organ_nameCell, prixodCell, rasxodCell]
-        let itogo_rasxod = 0;
-        let itogo_prixod = 0;
-        const data = await OrganizationDB.getOrganization([region_id])
-        for (let item of data) {
-            item.summa = await OrganizationMonitoringDB.getPrixodRasxod([operatsii, to, item.id, main_schet.spravochnik_budjet_name_id])
-        }
-        let row_number = 3
-        for (let column of data) {
-            if (column.summa === 0) {
-                continue
-            }
-            const organ_nameCell = worksheet.getCell(`A${row_number}`)
-            organ_nameCell.value = column.name
-            const prixodCell = worksheet.getCell(`B${row_number}`)
-            prixodCell.value = column.summa > 0 ? column.summa : 0
-            itogo_prixod += prixodCell.value
-            const rasxodCell = worksheet.getCell(`C${row_number}`)
-            rasxodCell.value = column.summa < 0 ? Math.abs(column.summa) : 0
-            itogo_rasxod += rasxodCell.value
-            const css_array = [organ_nameCell, prixodCell, rasxodCell]
-            css_array.forEach((item, index) => {
-                let horizontal = 'center'
-                let size = 10;
-                if (index === 0) horizontal = 'left';
-                if (index === 1 || index === 2) horizontal = 'right';
-                Object.assign(item, {
-                    numFmt: '#,##0.00',
-                    font: { size, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal, wrapText: true },
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                    border: {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
-                    }
-                });
-            })
-            row_number++
-        }
-        const itogoStr = worksheet.getCell(`A${row_number}`)
-        itogoStr.value = 'Итого'
-        const prixod_itogoCell = worksheet.getCell(`B${row_number}`)
-        prixod_itogoCell.value = itogo_prixod
-        const rasxod_itogoCell = worksheet.getCell(`C${row_number}`)
-        rasxod_itogoCell.value = itogo_rasxod
-        css_array.push(itogoStr, prixod_itogoCell, rasxod_itogoCell)
-
-        css_array.forEach((item, index) => {
-            let fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
-            let border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            }
-            let horizontal = 'center'
-            let size = 10;
-            if (index === 0) fill = null, border = null, size = 12;
-            if (index === 1) fill = null, border = { bottom: { style: 'thin' } }, size = 12;
-            if (index === 4) fill = null, border = null, horizontal = 'right';
-            if (index > 4) horizontal = 'right';
-            Object.assign(item, {
-                numFmt: '#,##0.00',
-                font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                alignment: { vertical: 'middle', horizontal, wrapText: true },
-                fill,
-                border
-            });
-        })
-        worksheet.getColumn(1).width = 40;
-        worksheet.getColumn(2).width = 20;
-        worksheet.getColumn(3).width = 20;
-        worksheet.getRow(1).height = 30;
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
-        await workbook.xlsx.writeFile(filePath);
-        return res.download(filePath, (err) => {
-            if (err) throw new ErrorResponse(err, err.statusCode);
-        });
-    }
-
     static async orderorganization(req, res) {
         const region_id = 21 // req.user.region_id
-        const { from, to, main_schet_id, schet} = req.query;
+        const { from, to, main_schet_id, schet } = req.query;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
         if (!main_schet) {
             return res.status(404).json({
@@ -492,7 +411,7 @@ exports.OrganizationMonitoringService = class {
             })
         }
         const rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets([main_schet_id, from, to, schet])
-        const prixodSchets = ([{schet: schet}])
+        const prixodSchets = ([{ schet: schet }])
         const organizations = await OrganizationDB.getOrganization([region_id])
         for (let organ of organizations) {
             organ.summaFrom = await OrganizationMonitoringDB.getOrganizationPrixodRasxodOrder([main_schet_id, from, organ.id, schet], '<');
@@ -605,7 +524,7 @@ exports.OrganizationMonitoringService = class {
                     bold = true;
                     size = 15;
                 }
-                if(typeof cell.value === "number"){
+                if (typeof cell.value === "number") {
                     horizontal = 'right'
                 }
                 Object.assign(cell, {

@@ -1,8 +1,8 @@
 const { BudjetDB } = require('./db');
 
 exports.BudjetService = class {
-    static async getByIdBudjet(id) {
-        const bdujet = await BudjetDB.getByIdBudjet([id]);
+    static async getByIdBudjet(data) {
+        const bdujet = await BudjetDB.getByIdBudjet([data.id]);
         return bdujet;
     }
 }

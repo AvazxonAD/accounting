@@ -10,7 +10,7 @@ exports.protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
     if (!token) {
-      return res.errro("Token noto'g'ri yuborildi", 403);
+      return res.error("Token noto'g'ri yuborildi", 403);
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded) {

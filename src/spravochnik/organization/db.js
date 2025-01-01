@@ -77,12 +77,12 @@ exports.OrganizationDB = class {
             FROM data
         `;
         const result = await db.query(query, params);
-        return { result: result[0]?.data || [], total: result[0]?.total_count || 0 };
+        return { data: result[0]?.data || [], total: result[0]?.total_count || 0 };
     }
 
     static async getOrganization(params) {
         const query = `--sql
-            SELECT organ.id, organ.name 
+            SELECT organ.id, organ.name
             FROM spravochnik_organization AS organ
             JOIN users AS u ON u.id = organ.user_id
             JOIN regions AS r ON r.id = u.region_id
