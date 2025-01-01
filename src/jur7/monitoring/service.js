@@ -105,7 +105,7 @@ exports.MonitoringService = class {
         })
         worksheet.getRow(1).height = 25;
         worksheet.getRow(2).height = 18;
-        const filePath = folderPath + '/' + `${new Date().getTime()}.xlsx`
+        const filePath = folderPath + '/' + `obrotka_${new Date().getTime()}.xlsx`
         await Workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);
@@ -240,7 +240,7 @@ exports.MonitoringService = class {
                             {
                                 product_name: product.name,
                                 edin: product.edin,
-                                from_kol: product.summa_from.kol ,
+                                from_kol: product.summa_from.kol,
                                 from_summa: product.summa_from.summa,
                                 prixod_kol: product.internal.prixod_kol,
                                 prixod: product.internal.prixod,
@@ -264,29 +264,51 @@ exports.MonitoringService = class {
                             rasxod: schet.rasxod,
                             to_kol: schet.kol_to,
                             to_summa: schet.summa_to,
-                            date: ''
+                            date: undefined
                         }
                     )
                 }
             }
         }
-
-
         worksheet.eachRow((row, rowNumber) => {
             let size = 12;
             let bold = false;
             let horizontal = 'center'
-            row.eachCell((cell, cellNumber) => {
-                Object.assign(cell, {
-                    font: { size, bold, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                    alignment: { vertical: 'middle', horizontal },
-                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                    border: {
+            let border = {
+                top: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+                left: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+                bottom: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+                right: { style: 'thin', color: { argb: 'FFD3D3D3' } }
+            };
+            if (rowNumber < 6) {
+                worksheet.getRow(rowNumber).height = 25;
+                bold = true;
+            }
+            if (rowNumber === 3) {
+                horizontal = 'left';
+            }
+            if (rowNumber === 4) {
+                border = {
+                    top: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+                    left: { style: 'thin', color: { argb: 'FFD3D3D3' } },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin', color: { argb: 'FFD3D3D3' } }
+                };
+            }
+            row.eachCell((cell) => {
+                if (rowNumber > 5 && cell.value !== '' && cell.value !== undefined) {
+                    border = {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
                         bottom: { style: 'thin' },
                         right: { style: 'thin' }
-                    }
+                    };
+                }
+                Object.assign(cell, {
+                    font: { size, bold, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border
                 });
             })
         })

@@ -12,7 +12,7 @@ const { returnStringDate } = require('../helper/functions');
 const path = require('path');
 const { PodotchetMonitoringDB } = require('./db')
 
-exports.PodotchetMonitoringService = class {
+exports.Controller = class {
 
     static async getByIdPodotchetMonitoring(req, res) {
         const podotchet_id = req.params.id
@@ -254,7 +254,6 @@ exports.PodotchetMonitoringService = class {
         const podotchet_id = req.params.id
         const { main_schet_id, from, to, operatsii } = req.query;
         const region_id = req.user.region_id;
-
         const podotchet = await PodotchetDB.getByIdPodotchet([region_id, podotchet_id]);
         if (!podotchet) {
             return res.status(404).json({
@@ -267,37 +266,28 @@ exports.PodotchetMonitoringService = class {
                 message: "main schet not found"
             })
         }
-
         const data = await PodotchetMonitoringDB.getByPodotchetIdMonitoring([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-
         const bank_rasxod_from_summa = await BankRasxodDB.getByPodotchetIdSummaBankRasxod([region_id, main_schet_id, from, podotchet_id, operatsii])
         const bank_prixod_from_summa = await BankPrixodDB.getByPodotchetIdSummaBankPrixod([region_id, main_schet_id, from, podotchet_id, operatsii])
         const kassa_prixod_from_summa = await KassaPrixodDB.getByPodotchetIdSummaKassaPrixod([region_id, main_schet_id, from, podotchet_id, operatsii])
         const kassa_rasxod_from_summa = await KassaRasxodDB.getByPodotchetIdSummaKassaRasxod([region_id, main_schet_id, from, podotchet_id, operatsii])
         const avans_from_summa = await AvansDB.getByPodotchetIdSummaAvans([region_id, main_schet_id, from, podotchet_id, operatsii])
         const summa_from = (bank_rasxod_from_summa + kassa_rasxod_from_summa) - (bank_prixod_from_summa + kassa_prixod_from_summa + avans_from_summa)
-
         const bank_rasxod_to_summa = await BankRasxodDB.getByPodotchetIdSummaBankRasxod([region_id, main_schet_id, to, podotchet_id, operatsii])
         const bank_prixod_to_summa = await BankPrixodDB.getByPodotchetIdSummaBankPrixod([region_id, main_schet_id, to, podotchet_id, operatsii])
         const kassa_prixod_to_summa = await KassaPrixodDB.getByPodotchetIdSummaKassaPrixod([region_id, main_schet_id, to, podotchet_id, operatsii])
         const kassa_rasxod_to_summa = await KassaRasxodDB.getByPodotchetIdSummaKassaRasxod([region_id, main_schet_id, to, podotchet_id, operatsii])
         const avans_to_summa = await AvansDB.getByPodotchetIdSummaAvans([region_id, main_schet_id, to, podotchet_id, operatsii])
         const summa_to = (bank_rasxod_to_summa + kassa_rasxod_to_summa) - (bank_prixod_to_summa + kassa_prixod_to_summa + avans_to_summa)
-
         let summa_prixod = 0;
         let summa_rasxod = 0;
         for (let item of data) {
             summa_prixod += item.prixod_sum
             summa_rasxod += item.rasxod_sum
         }
-
         const workbook = new ExcelJS.Workbook();
         const fileName = `kratochka_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('лицевой карточка');
-        worksheet.pageSetup.margins.left = 0
-        worksheet.pageSetup.margins.header = 0
-        worksheet.pageSetup.margins.footer = 0
-        worksheet.pageSetup.margins.right = 0
         worksheet.mergeCells('A1', 'I')
         const titleCell = worksheet.getCell(`A1`)
         titleCell.value = ` Подотчетное лицо :  ${podotchet.name}`
@@ -337,7 +327,6 @@ exports.PodotchetMonitoringService = class {
         worksheet.mergeCells(`G4`, 'I4')
         const summa_from_kridit = worksheet.getCell(`G4`)
         summa_from_kridit.value = summa_from < 0 ? Math.abs(summa_from) : 0
-
         let row_number = 5
         for (let column of data) {
             const doc_numCell = worksheet.getCell(`A${row_number}`)
@@ -352,7 +341,6 @@ exports.PodotchetMonitoringService = class {
             const schetCell2 = worksheet.getCell(`G${row_number}`)
             const subSchetCell2 = worksheet.getCell(`H${row_number}`)
             const summaCell2 = worksheet.getCell(`I${row_number}`)
-
             if (column.rasxod_sum) {
                 schetCell.value = ''
                 subSchetCell.value = ''
@@ -368,7 +356,6 @@ exports.PodotchetMonitoringService = class {
                 subSchetCell2.value = ''
                 summaCell2.value = column.rasxod_sum
             }
-
             const css_array = [
                 doc_numCell,
                 doc_dateCell,
@@ -400,7 +387,6 @@ exports.PodotchetMonitoringService = class {
             });
             row_number++
         }
-
         worksheet.mergeCells(`A${row_number}`, `C${row_number}`)
         const itogoCell = worksheet.getCell(`A${row_number}`)
         itogoCell.value = 'итого'
@@ -417,7 +403,6 @@ exports.PodotchetMonitoringService = class {
         const summaCell4 = worksheet.getCell(`I${row_number}`)
         summaCell4.value = summa_rasxod
         row_number++
-
         worksheet.mergeCells(`A${row_number}`, `C${row_number}`)
         const summaToCell = worksheet.getCell(`A${row_number}`)
         summaToCell.value = `Сальдо на начало :  ${returnStringDate(new Date(to))}`
@@ -427,7 +412,6 @@ exports.PodotchetMonitoringService = class {
         worksheet.mergeCells(`G${row_number}`, `I${row_number}`)
         const summa_to_kridit = worksheet.getCell(`G${row_number}`)
         summa_to_kridit.value = summa_to < 0 ? Math.abs(summa_to) : 0
-
         const css_array = [
             titleCell,
             doc_numCell,
@@ -457,24 +441,33 @@ exports.PodotchetMonitoringService = class {
         ]
         css_array.forEach((cell, index) => {
             let horizontal = 'center';
-            let fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }
-            let border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' },
+            let styles = {};
+            if (index === 0) {
+                horizontal = 'left';
             }
-            if (index === 0) horizontal = 'left', fill = {}, border = {};
-            if (index === 6 || index === 15 || index === 22) horizontal = 'left';
-            if (index === 13 || index === 14 || index === 18 || index === 21 || index > 22) horizontal = 'right';
-
-            Object.assign(cell, {
+            if (index === 6 || index === 15 || index === 22) {
+                horizontal = 'left';
+            }
+            if (index === 13 || index === 14 || index === 18 || index === 21 || index > 22) {
+                horizontal = 'right';
+            }
+            Object.assign(styles, {
                 numFmt: "#,##0.00",
                 font: { size: 10, color: { argb: 'FF000000' }, name: 'Times New Roman', wrappper: true },
                 alignment: { vertical: 'middle', horizontal, wrapText: true },
-                fill, border
-            })
+            });
+            if (index !== 0) {
+                styles.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                styles.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+            }
+            Object.assign(cell, styles);
         });
+
         worksheet.getColumn(1).width = 15
         worksheet.getColumn(2).width = 15
         worksheet.getColumn(3).width = 35

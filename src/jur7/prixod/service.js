@@ -7,7 +7,8 @@ const { db } = require('../../db/index')
 const { IznosDB } = require('../iznos/db')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
-const ExcelJS = require('exceljs')
+const ExcelJS = require('exceljs');
+const path = require('path');
 
 exports.PrixodService = class {
   static async createPrixod(req, res) {
@@ -348,37 +349,28 @@ exports.PrixodService = class {
   }
 
   static async getPrixodReport(req, res) {
-    const region_id = 21; // ozgartr
+    const region_id = req.user.region_id;
     const { from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
-
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       });
     }
-
     const data = await PrixodDB.prixodReport([region_id, from, to, main_schet_id]);
-
     await Promise.all(data.map(async (item) => {
       item.childs = await PrixodDB.prixodReportChild([item.id]);
       return item;
     }));
-
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet('jur_7_prixod');
-
-    // Birinchi qatorda sarlavhalar uchun joy ajratish
     worksheet.mergeCells('A1', 'D1');
     const titleCell = worksheet.getCell('A1');
     titleCell.value = `Приходные накладные от ${returnLocalDate(new Date(from))} до ${returnLocalDate(new Date(to))}`;
-
-    // Sarlavhalarni ikkinchi qatordan boshlash
     worksheet.getRow(2).values = [
       '№ док', 'дата', 'Наименование организации', 'Наим_тов',
       'Един', 'Кол', 'Цена', 'Сумма', '№ дов', 'Дата', 'счет', 'суб.счет'
     ];
-
     worksheet.columns = [
       { key: 'doc_num', width: 30 },
       { key: 'doc_date', width: 30 },
@@ -439,12 +431,10 @@ exports.PrixodService = class {
         sub_schet: ''
       })
     }
-
     let summa = 0;
     for (let item of data) {
       summa += item.summa
     }
-
     worksheet.addRow({
       doc_num: 'обший итог',
       doc_date: '',
@@ -459,7 +449,6 @@ exports.PrixodService = class {
       schet: '',
       sub_schet: ''
     })
-
     worksheet.eachRow((row, rowNumber) => {
       row.eachCell((cell, index) => {
         let bold = false;
@@ -515,7 +504,6 @@ exports.PrixodService = class {
         }
       });
     });
-
     worksheet.getRow(1).height = 80;
     worksheet.getColumn(1).width = 10;
     worksheet.getColumn(2).width = 15;
@@ -525,12 +513,11 @@ exports.PrixodService = class {
     worksheet.getColumn(6).width = 20;
     worksheet.getColumn(7).width = 20;
     worksheet.getColumn(8).width = 27;
-
-    const buffer = await Workbook.xlsx.writeBuffer();
-    const fileName = `inspectors_${returnLocalDate(new Date(from))}_${returnLocalDate(new Date(to))}.xlsx`;
-
+    const fileName = `jur7_prixod_${new Date().getTime()}`;
+    const filePath = path.join(__dirname, `../../../public/exports/${fileName}.xlsx`);
+    await Workbook.xlsx.writeFile(filePath);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    return res.send(buffer);
+    return res.download(filePath);
   }
 }
