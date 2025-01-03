@@ -26,44 +26,46 @@ exports.DocService = class {
                 );
             });
             doc.childs = await RealCostDB.createDocChild(create_childs, client);
-            const endDoc = await RealCostDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, 'end');
-            if (!endDoc.length) {
-                const end_doc = await RealCostDB.createDoc([
-                    data.user_id,
-                    data.budjet_id,
-                    'end',
-                    data.month,
-                    data.year,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client)
-                const create_childs = []
-                data.childs.forEach(item => {
-                    create_childs.push(
-                        item.smeta_grafik_id,
-                        end_doc.id,
-                        item.debet_sum,
-                        item.kredit_sum,
+            if (data.type_document !== 'end') {
+                const endDoc = await RealCostDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, 'end');
+                if (!endDoc.length) {
+                    const end_doc = await RealCostDB.createDoc([
+                        data.user_id,
+                        data.budjet_id,
+                        'end',
+                        data.month,
+                        data.year,
                         tashkentTime(),
                         tashkentTime()
-                    );
-                });
-                end_doc.childs = await RealCostDB.createDocChild(create_childs, client);
-            } else {
-                await RealCostDB.deleteDocChilds([endDoc[0].id], client);
-                const create_childs = []
-                const end_childs = await RealCostDB.getOperatsiiSum([data.region_id, data.year, data.month, data.budjet_id], client);
-                for (let child of end_childs) {
-                    create_childs.push(
-                        child.smeta_grafik_id,
-                        endDoc[0].id,
-                        child.debet_sum,
-                        child.kredit_sum,
-                        tashkentTime(),
-                        tashkentTime()
-                    );
+                    ], client)
+                    const create_childs = []
+                    data.childs.forEach(item => {
+                        create_childs.push(
+                            item.smeta_grafik_id,
+                            end_doc.id,
+                            item.debet_sum,
+                            item.kredit_sum,
+                            tashkentTime(),
+                            tashkentTime()
+                        );
+                    });
+                    end_doc.childs = await RealCostDB.createDocChild(create_childs, client);
+                } else {
+                    await RealCostDB.deleteDocChilds([endDoc[0].id], client);
+                    const create_childs = []
+                    const end_childs = await RealCostDB.getOperatsiiSum([data.region_id, data.year, data.month, data.budjet_id], client);
+                    for (let child of end_childs) {
+                        create_childs.push(
+                            child.smeta_grafik_id,
+                            endDoc[0].id,
+                            child.debet_sum,
+                            child.kredit_sum,
+                            tashkentTime(),
+                            tashkentTime()
+                        );
+                    }
+                    endDoc[0].childs = await RealCostDB.createDocChild(create_childs, client);
                 }
-                endDoc[0].childs = await RealCostDB.createDocChild(create_childs, client);
             }
             return doc;
         });
@@ -100,44 +102,46 @@ exports.DocService = class {
                 );
             });
             doc.childs = await RealCostDB.createDocChild(create_childs, client);
-            const endDoc = await RealCostDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, 'end');
-            if (!endDoc.length) {
-                const end_doc = await RealCostDB.createDoc([
-                    data.user_id,
-                    data.budjet_id,
-                    'end',
-                    data.month,
-                    data.year,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client)
-                const create_childs = []
-                data.childs.forEach(item => {
-                    create_childs.push(
-                        item.smeta_grafik_id,
-                        end_doc.id,
-                        item.debet_sum,
-                        item.kredit_sum,
+            if (data.type_document !== 'end') {
+                const endDoc = await RealCostDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, 'end');
+                if (!endDoc.length) {
+                    const end_doc = await RealCostDB.createDoc([
+                        data.user_id,
+                        data.budjet_id,
+                        'end',
+                        data.month,
+                        data.year,
                         tashkentTime(),
                         tashkentTime()
-                    );
-                });
-                end_doc.childs = await RealCostDB.createDocChild(create_childs, client);
-            } else {
-                await RealCostDB.deleteDocChilds([endDoc[0].id], client);
-                const create_childs = []
-                const end_childs = await RealCostDB.getOperatsiiSum([data.region_id, data.year, data.month, data.budjet_id], client);
-                for (let child of end_childs) {
-                    create_childs.push(
-                        child.smeta_grafik_id,
-                        endDoc[0].id,
-                        child.debet_sum,
-                        child.kredit_sum,
-                        tashkentTime(),
-                        tashkentTime()
-                    );
+                    ], client)
+                    const create_childs = []
+                    data.childs.forEach(item => {
+                        create_childs.push(
+                            item.smeta_grafik_id,
+                            end_doc.id,
+                            item.debet_sum,
+                            item.kredit_sum,
+                            tashkentTime(),
+                            tashkentTime()
+                        );
+                    });
+                    end_doc.childs = await RealCostDB.createDocChild(create_childs, client);
+                } else {
+                    await RealCostDB.deleteDocChilds([endDoc[0].id], client);
+                    const create_childs = []
+                    const end_childs = await RealCostDB.getOperatsiiSum([data.region_id, data.year, data.month, data.budjet_id], client);
+                    for (let child of end_childs) {
+                        create_childs.push(
+                            child.smeta_grafik_id,
+                            endDoc[0].id,
+                            child.debet_sum,
+                            child.kredit_sum,
+                            tashkentTime(),
+                            tashkentTime()
+                        );
+                    }
+                    endDoc[0].childs = await RealCostDB.createDocChild(create_childs, client);
                 }
-                endDoc[0].childs = await RealCostDB.createDocChild(create_childs, client);
             }
             return doc;
         })
