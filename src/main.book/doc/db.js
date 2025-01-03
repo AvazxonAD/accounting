@@ -1,5 +1,5 @@
 const { db } = require('../../db/index')
-const { returnParamsValues, } = require('../../helper/functions')
+const { returnParamsValues } = require('../../helper/functions')
 
 exports.DocMainBookDB = class {
     static async createDoc(params, client) {
@@ -181,10 +181,10 @@ exports.DocMainBookDB = class {
         return result;
     }
 
-    static async getOperatsiiSum(params) {
+    static async getOperatsiiSum(params, client) {
         const query = `--sql
             SELECT 
-                ch.spravochnik_operatsii_id,
+                ch.spravochnik_main_book_schet_id,
                 COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
                 COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
             FROM main_book_doc_child AS ch
@@ -192,7 +192,13 @@ exports.DocMainBookDB = class {
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
-                AND d.     
+                AND r.id = $1
+                AND d.year = $2 
+                AND d.month = $3
+                AND d.budjet_id = $4
+            GROUP BY ch.spravochnik_main_book_schet_id
         `;
+        const result = await client.query(query, params);
+        return result.rows;
     } 
 }

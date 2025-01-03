@@ -22,7 +22,7 @@ exports.Controller = class {
         return res.error('Smeta grafik not found', 404);
       }
     }
-    const result = await DocService.createDoc({ ...body, user_id, budjet_id });
+    const result = await DocService.createDoc({ ...body, user_id, budjet_id, region_id });
     return res.status(201).json({
       message: "Create doc successfully",
       data: result
@@ -32,7 +32,6 @@ exports.Controller = class {
   static async getDoc(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id } = req.query;
-    console.log(budjet_id)
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error("budjet not found", 404);
@@ -71,8 +70,8 @@ exports.Controller = class {
     }
     if (old_doc.year !== body.year || old_doc.month !== body.month || old_doc.type_document !== body.type_document) {
       const docs = await DocService.getDoc({ region_id, budjet_id }, body.year, body.month, body.type_document);
-      if (!docs.length) {
-        return res.error('Doc not found', 404);
+      if (docs.length) {
+        return res.error('This data already exists', 409);
       }
     }
     for (let child of body.childs) {
@@ -81,7 +80,7 @@ exports.Controller = class {
         return res.error('Smeta grafik not found', 404);
       }
     }
-    const result = await DocService.updateDoc({ ...body, id, region_id });
+    const result = await DocService.updateDoc({ ...body, id, region_id, budjet_id });
     return res.success('Update doc successfully', 200, null, result);
   }
 

@@ -160,28 +160,6 @@ exports.RealCostDB = class {
         return result[0];
     }
 
-    static async getTypeDocSumna(params){
-        const query = `--sql
-            SELECT 
-                COALESCE(SUM(d.debet_sum)::FLOAT, 0) AS debet_sum,
-                COALESCE(SUM(d.kredit_sum)::FLOAT, 0) AS kredit_sum
-            FROM documents_glavniy_kniga AS d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN main_schet AS m ON m.id = d.main_schet_id
-            WHERE r.id = $1 
-                AND d.isdeleted = false 
-                AND m.spravochnik_budjet_name_id = $2
-                AND d.type_document = $3
-                AND d.month = $4
-                AND d.year = $5
-                AND d.smeta_grafik_id = $6 
-        `;
-        const result = await db.query(query, params);
-        return result[0];
-
-    }
-
     static async deleteDocChilds(params, client){
         const query = `DELETE FROM real_cost_doc_child WHERE parent_id = $1`;
         await client.query(query, params);
@@ -192,13 +170,24 @@ exports.RealCostDB = class {
         await client.query(`UPDATE real_cost_doc_child SET isdeleted = true WHERE parent_id = $1`, params)
     }
 
-    static async getOperatsiiMainBook(params) {
+    static async getOperatsiiSum(params, client) {
         const query = `--sql
-            SELECT DISTINCT ON(so.schet) so.id, so.name, so.schet
-            FROM spravochnik_operatsii so
-            JOIN spravochnik_real_cost_schet ms ON  ms.schet = so.schet
+            SELECT 
+                ch.smeta_grafik_id,
+                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
+                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
+            FROM real_cost_doc_child AS ch
+            JOIN real_cost_doc_parent AS d ON ch.parent_id = d.id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+                AND r.id = $1
+                AND d.year = $2 
+                AND d.month = $3
+                AND d.budjet_id = $4
+            GROUP BY ch.smeta_grafik_id
         `;
-        const result = await db.query(query, params)
-        return result;
-    }
+        const result = await client.query(query, params);
+        return result.rows;
+    } 
 }
