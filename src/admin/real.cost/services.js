@@ -22,6 +22,15 @@ exports.EndService = class {
       type.kredit_sum = 0;
       for (let grafik of type.grafiks) {
         grafik.summa = await EndMainBookDB.getEndChilds([doc.id, type.type, grafik.id])
+        type.kredit_sum += grafik.summa.kredit_sum;
+        type.debet_sum += grafik.summa.debet_sum
+      }
+    }
+    for (let item of result) {
+      if (item.type === 'start' || item.type === 'end') {
+        const result = item.debet_sum - item.kredit_sum
+        item.debet_sum = result > 0 ? result : 0;
+        item.kredit_sum = result < 0 ? Math.abs(result) : 0;
       }
     }
     return result;

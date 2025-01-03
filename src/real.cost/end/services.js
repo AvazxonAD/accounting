@@ -1,7 +1,5 @@
 const { EndMainBookDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
-const { BudjetDB } = require('../../spravochnik/budjet/db');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { db } = require('../../db/index')
 const { typeDocuments } = require('../../helper/data')
 
@@ -52,6 +50,15 @@ exports.EndService = class {
       type.kredit_sum = 0;
       for (let grafik of type.grafiks) {
         grafik.summa = await EndMainBookDB.getEndChildSum([doc.id, type.type, grafik.id]);
+        type.kredit_sum += grafik.summa.kredit_sum;
+        type.debet_sum += grafik.summa.debet_sum
+      }
+    }
+    for (let item of doc.data) {
+      if (item.type === 'start' || item.type === 'end') {
+        const result = item.debet_sum - item.kredit_sum
+        item.debet_sum = result > 0 ? result : 0;
+        item.kredit_sum = result < 0 ? Math.abs(result) : 0;
       }
     }
     return doc;
@@ -99,12 +106,17 @@ exports.EndService = class {
       type.kredit_sum = 0;
       for (let grafik of type.grafiks) {
         grafik.summa = await EndMainBookDB.getInfo([data.year, data.month, type.type, data.budjet_id, grafik.id])
+        type.kredit_sum += grafik.summa.kredit_sum;
+        type.debet_sum += grafik.summa.debet_sum
       }
-    };
+    }
+    for (let item of doc.data) {
+      if (item.type === 'start' || item.type === 'end') {
+        const result = item.debet_sum - item.kredit_sum
+        item.debet_sum = result > 0 ? result : 0;
+        item.kredit_sum = result < 0 ? Math.abs(result) : 0;
+      }
+    }
     return typeDocuments;
-  }
-
-  static async getEndByType(data) {
-    
   }
 }

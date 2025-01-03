@@ -30,6 +30,15 @@ exports.EndService = class {
       type.kredit_sum = 0;
       for (let schet of type.schets) {
         schet.summa = await EndMainBookDB.getEndChilds([doc.id, type.type, schet.id])
+        type.kredit_sum += schet.summa.kredit_sum;
+        type.debet_sum += schet.summa.debet_sum
+      }
+    }
+    for (let item of doc.data) {
+      if (item.type === 'start' || item.type === 'end') {
+        const result = item.debet_sum - item.kredit_sum
+        item.debet_sum = result > 0 ? result : 0;
+        item.kredit_sum = result < 0 ? Math.abs(result) : 0;
       }
     }
     return res.status(201).json({
