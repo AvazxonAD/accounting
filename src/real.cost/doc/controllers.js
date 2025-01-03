@@ -59,6 +59,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const budjet_id = req.query.budjet_id;
     const id = req.params.id;
+    const user_id = req.user.id;
     const { body } = req;
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
@@ -80,7 +81,7 @@ exports.Controller = class {
         return res.error('Smeta grafik not found', 404);
       }
     }
-    const result = await DocService.updateDoc({ ...body, id, region_id, budjet_id });
+    const result = await DocService.updateDoc({ ...body, id, region_id, budjet_id, user_id });
     return res.success('Update doc successfully', 200, null, result);
   }
 
