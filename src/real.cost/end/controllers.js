@@ -8,7 +8,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const budjet_id = req.query.budjet_id;
     const { body } = req;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -33,7 +33,7 @@ exports.Controller = class {
   static async getEnd(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -45,7 +45,7 @@ exports.Controller = class {
     const region_id = req.user.region_id
     const id = req.params.id;
     const { budjet_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -70,7 +70,7 @@ exports.Controller = class {
     const budjet_id = req.query.budjet_id;
     const user_id = req.user.id;
     const { body } = req;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -105,7 +105,7 @@ exports.Controller = class {
     const region_id = req.user.region_id
     const id = req.params.id;
     const { budjet_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }

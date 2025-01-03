@@ -180,4 +180,19 @@ exports.DocMainBookDB = class {
         const result = await db.query(query, params)
         return result;
     }
+
+    static async getOperatsiiSum(params) {
+        const query = `--sql
+            SELECT 
+                ch.spravochnik_operatsii_id,
+                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
+                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
+            FROM main_book_doc_child AS ch
+            JOIN main_book_doc_parent AS d ON ch.parent_id = d.id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+                AND d.     
+        `;
+    } 
 }

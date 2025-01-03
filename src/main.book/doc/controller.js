@@ -4,7 +4,7 @@ const { BudjetDB } = require('../../spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { db } = require('../../db/index')
 
-exports.DocService = class {
+exports.Controller = class {
   static async createDoc(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -58,6 +58,7 @@ exports.DocService = class {
       });
       doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
       return doc;
+      
     })
     return res.status(201).json({
       message: "Create doc successfully",

@@ -8,7 +8,7 @@ exports.Controller = class {
     const user_id = req.user.id;
     const budjet_id = req.query.budjet_id;
     const { body } = req;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404);
     }
@@ -32,9 +32,10 @@ exports.Controller = class {
   static async getDoc(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    console.log(budjet_id)
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error(404, "budjet not found");
+      return res.error("budjet not found", 404);
     }
     const data = await DocService.getDoc({ region_id, budjet_id });
     return res.success('Doc get Successfully', 200, null, data);
@@ -44,9 +45,9 @@ exports.Controller = class {
     const region_id = req.user.region_id
     const id = req.params.id;
     const { budjet_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error(404, "budjet not found");
+      return res.error("budjet not found", 404);
     }
     const doc = await DocService.getByIdDoc(region_id, budjet_id, id, true);
     if (!doc) {
@@ -60,9 +61,9 @@ exports.Controller = class {
     const budjet_id = req.query.budjet_id;
     const id = req.params.id;
     const { body } = req;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error(404, "budjet not found");
+      return res.error("budjet not found", 404);
     }
     const old_doc = await DocService.getByIdDoc(region_id, budjet_id, id);
     if (!old_doc) {
@@ -88,9 +89,9 @@ exports.Controller = class {
     const region_id = req.user.region_id
     const id = req.params.id;
     const { budjet_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet(budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error(404, "budjet not found");
+      return res.error("budjet not found", 404);
     }
     const old_doc = await DocService.getByIdDoc(region_id, budjet_id, id, true);
     if (!old_doc) {

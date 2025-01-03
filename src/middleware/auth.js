@@ -23,6 +23,6 @@ exports.protect = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    return res.error(403, error.message);
+    return res.error(error.message, 403);
   }
 };

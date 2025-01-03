@@ -4,7 +4,7 @@ exports.createDocSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
     year: Joi.number().integer().min(1900).required(),
-    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
+    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start'),
     childs: Joi.array().required().items(
       Joi.object({
         spravochnik_main_book_schet_id: Joi.number().required().min(1),
@@ -22,7 +22,7 @@ exports.updateDocSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
     year: Joi.number().integer().min(1900).required(),
-    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
+    type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start'),
     childs: Joi.array().required().items(
       Joi.object({
         spravochnik_main_book_schet_id: Joi.number().required().min(1),

@@ -1,4 +1,4 @@
-const { DocService } = require('./service');
+const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
     createDocSchema,
@@ -11,12 +11,12 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(DocService.createDoc, createDocSchema))
-    .get('/operatsii', validator(DocService.getOperatsiiMainBook))
-    .get('/:id', validator(DocService.getByIdDoc, getByIdDocSchema))
-    .put('/:id', validator(DocService.updateDoc, updateDocSchema))
-    .delete('/:id', validator(DocService.deleteDoc, deleteDocSchema))
-    .get('/', validator(DocService.getDoc, getDocSchema));
+router.post('/', validator(Controller.createDoc, createDocSchema))
+    .get('/operatsii', validator(Controller.getOperatsiiMainBook))
+    .get('/:id', validator(Controller.getByIdDoc, getByIdDocSchema))
+    .put('/:id', validator(Controller.updateDoc, updateDocSchema))
+    .delete('/:id', validator(Controller.deleteDoc, deleteDocSchema))
+    .get('/', validator(Controller.getDoc, getDocSchema));
 
 
 module.exports = router;
