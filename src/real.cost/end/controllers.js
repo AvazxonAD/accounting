@@ -123,7 +123,7 @@ exports.Controller = class {
   static async getInfo(req, res) {
     const region_id = req.user.region_id;
     const { query } = req;
-    const budjet = await BudjetService.getByIdBudjet(query.budjet_id);
+    const budjet = await BudjetService.getByIdBudjet({id: query.budjet_id});
     if (!budjet) {
       return res.error('Budjet not found', 404)
     };
