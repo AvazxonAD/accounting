@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 const { returnParamsValues, } = require('../../helper/functions')
 
-exports.EndMainBookDB = class {
+exports.ReportMainBook = class {
     static async createEnd(params, client) {
         const query = `--sql
             INSERT INTO main_book_end_parent (
@@ -177,19 +177,17 @@ exports.EndMainBookDB = class {
 
     static async getInfo(params){
         const query = `--sql
-            SELECT      
-                COALESCE(SUM(mbdch.debet_sum), 0)::FLOAT AS debet_sum,
-                COALESCE(SUM(mbdch.kredit_sum), 0)::FLOAT AS kredit_sum
-            FROM main_book_doc_child mbdch 
-            LEFT JOIN main_book_doc_parent mbdp ON mbdp.id = mbdch.parent_id
-            WHERE mbdp.year = $1 
-                AND mbdp.month = $2
-                AND mbdp.type_document = $3 
-                AND mbdp.budjet_id = $4
-                AND mbdp.isdeleted = false
-                AND mbdch.spravochnik_main_book_schet_id = $5
+            SELECT d.id
+            FROM main_book_doc_parent AS d 
+            JOIN users u ON u.id = d.user_id
+            JOIN regions r ON r.id = u.region_id
+            WHERE r.id = $1
+                AND d.year = $2 
+                AND d.month = $3 
+                AND d.budjet_id = $4
+                AND d.isdeleted = false
         `;
         const result = await db.query(query, params);
-        return result[0];
+        return result;
     }
 }

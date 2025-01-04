@@ -1,4 +1,4 @@
-const { EndMainBookDB } = require('./db');
+const { ReportMainBook } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { BudjetDB } = require('../../spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
@@ -21,7 +21,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const docs = await EndMainBookDB.getEnd([region_id, budjet.id], year, month);
+    const docs = await ReportMainBook.getEnd([region_id, budjet.id], year, month);
     if (docs.length) {
       return res.status(409).json({
         message: "This data already exist"
@@ -38,7 +38,7 @@ exports.EndService = class {
       }
     }
     const result = await db.transaction(async client => {
-      const doc = await EndMainBookDB.createEnd([
+      const doc = await ReportMainBook.createEnd([
         user_id,
         null,
         budjet_id,
@@ -63,7 +63,7 @@ exports.EndService = class {
           );
         });
       }
-      doc.childs = await EndMainBookDB.createEndChild(create_childs, client);
+      doc.childs = await ReportMainBook.createEndChild(create_childs, client);
       return doc;
     })
     return res.status(201).json({
@@ -81,7 +81,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const data = await EndMainBookDB.getEnd([region_id, budjet.id])
+    const data = await ReportMainBook.getEnd([region_id, budjet.id])
     return res.status(200).json({
       message: "doc successfully get",
       meta: null,
@@ -99,7 +99,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const doc = await EndMainBookDB.getByIdEnd([region_id, budjet.id, id], true)
+    const doc = await ReportMainBook.getByIdEnd([region_id, budjet.id, id], true)
     if (!doc) {
       return res.status(404).json({
         message: "doc not found"
@@ -112,7 +112,7 @@ exports.EndService = class {
       type.debet_sum = 0;
       type.kredit_sum = 0;
       for (let schet of type.schets) {
-        schet.summa = await EndMainBookDB.getEndChilds([doc.id, type.type, schet.id])
+        schet.summa = await ReportMainBook.getEndChilds([doc.id, type.type, schet.id])
         type.kredit_sum += schet.summa.kredit_sum;
         type.debet_sum += schet.summa.debet_sum
       }
@@ -145,7 +145,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const old_doc = await EndMainBookDB.getByIdEnd([region_id, budjet.id, id])
+    const old_doc = await ReportMainBook.getByIdEnd([region_id, budjet.id, id])
     if (!old_doc) {
       return res.status(404).json({
         message: "doc not found"
@@ -157,7 +157,7 @@ exports.EndService = class {
       })
     }
     if (old_doc.year !== year || old_doc.month !== month) {
-      const docs = await EndMainBookDB.getEnd([region_id, budjet.id], year, month);
+      const docs = await ReportMainBook.getEnd([region_id, budjet.id], year, month);
       if (docs.length) {
         return res.status(409).json({
           message: "This data already exist"
@@ -175,8 +175,8 @@ exports.EndService = class {
       }
     }
     const result = await db.transaction(async client => {
-      const doc = await EndMainBookDB.updateEnd([month, year, tashkentTime(), id], client)
-      await EndMainBookDB.deleteEndChilds([doc.id], client)
+      const doc = await ReportMainBook.updateEnd([month, year, tashkentTime(), id], client)
+      await ReportMainBook.deleteEndChilds([doc.id], client)
       const create_childs = []
       for (let type of data) {
         type.schets.forEach(item => {
@@ -191,7 +191,7 @@ exports.EndService = class {
           );
         });
       }
-      doc.childs = await EndMainBookDB.createEndChild(create_childs, client);
+      doc.childs = await ReportMainBook.createEndChild(create_childs, client);
       return doc;
     })
     return res.status(201).json({
@@ -210,7 +210,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const doc = await EndMainBookDB.getByIdEnd([region_id, budjet.id, id])
+    const doc = await ReportMainBook.getByIdEnd([region_id, budjet.id, id])
     if (!doc) {
       return res.status(404).json({
         message: "doc not found"
@@ -222,7 +222,7 @@ exports.EndService = class {
       })
     }
     await db.transaction(async client => {
-      await EndMainBookDB.deleteEnd([id], client)
+      await ReportMainBook.deleteEnd([id], client)
     })
     return res.status(200).json({
       message: 'delete doc successfully'
@@ -237,24 +237,7 @@ exports.EndService = class {
         message: "budjet not found"
       })
     }
-    const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999])
-    for (let type of typeDocuments) {
-      type.schets = schets.map(item => ({ ...item }))
-      type.debet_sum = 0;
-      type.kredit_sum = 0;
-      for (let schet of type.schets) {
-        schet.summa = await EndMainBookDB.getEndChilds([doc.id, type.type, schet.id])
-        type.kredit_sum += schet.summa.kredit_sum;
-        type.debet_sum += schet.summa.debet_sum
-      }
-    }
-    for (let item of doc.data) {
-      if (item.type === 'start' || item.type === 'end') {
-        const result = item.debet_sum - item.kredit_sum
-        item.debet_sum = result > 0 ? result : 0;
-        item.kredit_sum = result < 0 ? Math.abs(result) : 0;
-      }
-    }
+    const docs = await ReportMainBook.getInfo()
     return res.status(200).json({
       message: "info get successfully",
       data: typeDocuments
