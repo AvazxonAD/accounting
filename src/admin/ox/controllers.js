@@ -17,7 +17,6 @@ exports.Controller = class {
   }
 
   static async confirmDoc(req, res) {
-    const region_id = req.user.region_id;
     const user_id = req.user.id
     const id = req.params.id;
     const old_doc = await DocService.getByIdDoc(id);
