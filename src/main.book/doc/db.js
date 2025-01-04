@@ -73,7 +73,7 @@ exports.DocMainBookDB = class {
                 d.type_document,
                 d.month,
                 d.year
-            FROM main_book_doc_parent AS d
+            FROM d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -139,28 +139,6 @@ exports.DocMainBookDB = class {
         return result[0];
     }
 
-    static async getTypeDocSumna(params){
-        const query = `--sql
-            SELECT 
-                COALESCE(SUM(d.debet_sum)::FLOAT, 0) AS debet_sum,
-                COALESCE(SUM(d.kredit_sum)::FLOAT, 0) AS kredit_sum
-            FROM documents_glavniy_kniga AS d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN main_schet AS m ON m.id = d.main_schet_id
-            WHERE r.id = $1 
-                AND d.isdeleted = false 
-                AND m.spravochnik_budjet_name_id = $2
-                AND d.type_document = $3
-                AND d.month = $4
-                AND d.year = $5
-                AND d.spravochnik_main_book_schet_id = $6 
-        `;
-        const result = await db.query(query, params);
-        return result[0];
-
-    }
-
     static async deleteDocChilds(params, client){
         const query = `DELETE FROM main_book_doc_child WHERE parent_id = $1`;
         await client.query(query, params);
@@ -180,25 +158,4 @@ exports.DocMainBookDB = class {
         const result = await db.query(query, params)
         return result;
     }
-
-    static async getOperatsiiSum(params, client) {
-        const query = `--sql
-            SELECT 
-                ch.spravochnik_main_book_schet_id,
-                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
-                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
-            FROM main_book_doc_child AS ch
-            JOIN main_book_doc_parent AS d ON ch.parent_id = d.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE d.isdeleted = false
-                AND r.id = $1
-                AND d.year = $2 
-                AND d.month = $3
-                AND d.budjet_id = $4
-            GROUP BY ch.spravochnik_main_book_schet_id
-        `;
-        const result = await client.query(query, params);
-        return result.rows;
-    } 
 }

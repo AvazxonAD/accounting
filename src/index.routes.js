@@ -61,7 +61,7 @@ routes
     .use('/jur_7/monitoring', protect, require('./jur7/monitoring/index'))
     // Main book routes
     .use('/main/book/doc', protect, require('./main.book/doc/index'))
-    .use('/main/book/end', protect, require('./main.book/end/index'))
+    .use('/main/book/end', protect, require('./main.book/report/index'))
     // Real cost routes
     .use('/real/cost/doc', protect, require('./real.cost/doc/index'))
     .use('/real/cost/end', protect, require('./real.cost/end/index'))

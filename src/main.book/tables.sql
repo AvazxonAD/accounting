@@ -5,6 +5,7 @@ CREATE TABLE main_book_doc_parent(
     user_id INT NOT NULL REFERENCES users(id),
     month INT NOT NULL,
     year INT NOT NULL,
+    report_id INT REFERENCES main_book_report(id),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE
@@ -21,7 +22,7 @@ CREATE TABLE main_book_doc_child (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE main_book_end_parent (
+CREATE TABLE main_book_report (
     id BIGSERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id), 
     user_id_accepted INT REFERENCES users(id),
@@ -30,18 +31,6 @@ CREATE TABLE main_book_end_parent (
     month INT NOT NULL,
     year INT NOT NULL,
     status INT NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE main_book_end_child (
-    id BIGSERIAL PRIMARY KEY,
-    parent_id BIGINT NOT NULL REFERENCES main_book_end_parent(id),
-    type_document VARCHAR(50) NOT NULL,
-    spravochnik_main_book_schet_id INT NOT NULL REFERENCES spravochnik_main_book_schet(id),
-    debet_sum DECIMAL NOT NULL,
-    kredit_sum DECIMAL NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

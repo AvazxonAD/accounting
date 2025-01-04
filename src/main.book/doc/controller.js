@@ -57,47 +57,6 @@ exports.Controller = class {
         );
       });
       doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
-      if (type_document !== 'end') {
-        const endDoc = await DocMainBookDB.getDoc([region_id, budjet.id], year, month, 'end');
-        if (!endDoc.length) {
-          const end_doc = await DocMainBookDB.createDoc([
-            user_id,
-            budjet_id,
-            'end',
-            month,
-            year,
-            tashkentTime(),
-            tashkentTime()
-          ], client)
-          const create_childs = []
-          childs.forEach(item => {
-            create_childs.push(
-              item.spravochnik_main_book_schet_id,
-              end_doc.id,
-              item.debet_sum,
-              item.kredit_sum,
-              tashkentTime(),
-              tashkentTime()
-            );
-          });
-          end_doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
-        } else {
-          await DocMainBookDB.deleteDocChilds([endDoc[0].id], client);
-          const create_childs = []
-          const end_childs = await DocMainBookDB.getOperatsiiSum([region_id, year, month, budjet_id], client);
-          for (let child of end_childs) {
-            create_childs.push(
-              child.spravochnik_main_book_schet_id,
-              endDoc[0].id,
-              child.debet_sum,
-              child.kredit_sum,
-              tashkentTime(),
-              tashkentTime()
-            );
-          }
-          endDoc[0].childs = await DocMainBookDB.createDocChild(create_childs, client);
-        }
-      }
       return doc;
     })
     return res.status(201).json({
@@ -189,9 +148,9 @@ exports.Controller = class {
       }
     }
     const result = await db.transaction(async client => {
-      const doc = await DocMainBookDB.updateDoc([type_document, month, year, tashkentTime(), id], client)
+      const doc = await DocMainBookDB.updateDoc([type_document, month, year, tashkentTime(), id], client);
       await DocMainBookDB.deleteDocChilds([doc.id], client)
-      const create_childs = []
+      const create_childs = [];
       childs.forEach(item => {
         create_childs.push(
           item.spravochnik_main_book_schet_id,
@@ -203,47 +162,6 @@ exports.Controller = class {
         );
       });
       doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
-      if (type_document !== 'end') {
-        const endDoc = await DocMainBookDB.getDoc([region_id, budjet.id], year, month, 'end');
-        if (!endDoc.length) {
-          const end_doc = await DocMainBookDB.createDoc([
-            user_id,
-            budjet_id,
-            'end',
-            month,
-            year,
-            tashkentTime(),
-            tashkentTime()
-          ], client)
-          const create_childs = []
-          childs.forEach(item => {
-            create_childs.push(
-              item.spravochnik_main_book_schet_id,
-              end_doc.id,
-              item.debet_sum,
-              item.kredit_sum,
-              tashkentTime(),
-              tashkentTime()
-            );
-          });
-          end_doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
-        } else {
-          await DocMainBookDB.deleteDocChilds([endDoc[0].id], client);
-          const create_childs = []
-          const end_childs = await DocMainBookDB.getOperatsiiSum([region_id, year, month, budjet_id], client);
-          for (let child of end_childs) {
-            create_childs.push(
-              child.spravochnik_main_book_schet_id,
-              endDoc[0].id,
-              child.debet_sum,
-              child.kredit_sum,
-              tashkentTime(),
-              tashkentTime()
-            );
-          }
-          endDoc[0].childs = await DocMainBookDB.createDocChild(create_childs, client);
-        }
-      }
       return doc;
     })
     return res.status(201).json({
