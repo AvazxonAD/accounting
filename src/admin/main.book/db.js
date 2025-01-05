@@ -145,7 +145,7 @@ exports.ReportMainBookDB = class {
         const result = await db.query(query, params);
         return result[0];
     }
-
+  
     static async updateReport(params) {
         const query = `--sql
             UPDATE zakonchit_glavniy_kniga 
