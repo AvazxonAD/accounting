@@ -20,7 +20,7 @@ exports.childsSumma = (args) => {
 };
 
 exports.checkUniqueIds = (array) => {
-    const ids = array.map(item => item.id);
+    const ids = array.map(item => item.id ? item.id : item.smeta_grafik_id);
     const uniqueIds = new Set(ids);
     return ids.length === uniqueIds.size;
 };

@@ -17,7 +17,7 @@ exports.Controller = class {
       return res.error('This data already exist', 409);
     }
     for (let child of body.childs) {
-      const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik(region_id, child.smeta_grafik_id);
+      const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik({region_id, id: child.smeta_grafik_id});
       if (!smeta_grafik) {
         return res.error('Smeta grafik not found', 404);
       }
@@ -76,7 +76,7 @@ exports.Controller = class {
       }
     }
     for (let child of body.childs) {
-      const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik(region_id, child.smeta_grafik_id);
+      const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik({region_id, id: child.smeta_grafik_id});
       if (!smeta_grafik) {
         return res.error('Smeta grafik not found', 404);
       }

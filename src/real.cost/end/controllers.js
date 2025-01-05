@@ -18,7 +18,7 @@ exports.Controller = class {
     }
     for (let type of body.data) {
       for (let grafik of type.grafiks) {
-        const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik(region_id, grafik.id);
+        const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik({region_id, id: grafik.id});
         if (!smeta_grafik) {
           return res.status(404).json({
             message: "smeta_grafik not found"
@@ -89,7 +89,7 @@ exports.Controller = class {
     }
     for (let type of body.data) {
       for (let grafik of type.grafiks) {
-        const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik(region_id, grafik.id);
+        const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik({region_id, id: grafik.id});
         if (!smeta_grafik) {
           return res.status(404).json({
             message: "smeta_grafik not found"

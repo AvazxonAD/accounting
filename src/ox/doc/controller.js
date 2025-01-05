@@ -1,8 +1,9 @@
 const { BudjetDB } = require('../../spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { MainSchetService } = require('../../spravochnik/main.schet/services')
-const { MainBookDocService } = require('./service')
+const { OxDocService } = require('./service')
 const { checkUniqueIds } = require('../../helper/functions')
+const { SmetaGrafikService } = require('../../smeta/grafik/services')
 
 
 exports.Controller = class {
@@ -14,7 +15,6 @@ exports.Controller = class {
     const {
       month,
       year,
-      type_document,
       childs
     } = req.body;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
@@ -25,58 +25,42 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error('main schet not found', 404);
     }
-    const doc = await MainBookDocService.getByIdDoc({
-      region_id,
-      budjet_id,
-      year,
-      month,
-      type_document
-    })
+    const doc = await OxDocService.getByIdDoc({ region_id, budjet_id, year, month });
     if (doc) {
       return res.error('This data already exist', 409);
     }
+    if (!checkUniqueIds(childs)) {
+      return res.error('Duplicate id found in smetas', 400);
+    }
     for (let child of childs) {
-      const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
-      if (!operatsii) {
-        return res.status(404).json({
-          message: "operatsii not found"
-        })
+      const smeta = await SmetaGrafikService.getByIdSmetaGrafik({ region_id, id: child.smeta_grafik_id });
+      if (!smeta) {
+        return res.error('Smeta not found', 404);
       }
-      if (type_document === 'start' || type_document === 'end') {
-        if (child.debet_sum > 0 && child.kredit_sum > 0) {
-          return res.error(`Only either debit or credit amount can be provided, not both`, 400)
-        }
-      }
+      child.ajratilgan_mablag = smeta[`oy_${month}`];
     }
-    if(!checkUniqueIds(childs)){
-      return res.error('Duplicate id found in schets', 400);
-    }
-    const result = await MainBookDocService.createDoc({
+    const result = await OxDocService.createDoc({
       user_id,
-      budjet_id,
       main_schet_id,
-      type_document,
+      budjet_id,
       month,
       year,
-      childs,
-      region_id
+      region_id,
+      childs
     })
-    return res.status(201).json({
-      message: "Create doc successfully",
-      data: result
-    })
+    return res.success('Create successfully', 201, null, result);
   }
 
   static async getDoc(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, year, month, type_document } = req.query;
+    const { budjet_id, year, month } = req.query;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
       return res.status(404).json({
         message: "budjet not found"
       })
     }
-    const docs = await MainBookDocService.getDocs({ region_id, budjet_id, year, month, type_document })
+    const docs = await OxDocService.getDocs({ region_id, budjet_id, year, month })
     return res.success('Get successfully', 200, null, docs);
   }
 
@@ -92,7 +76,7 @@ exports.Controller = class {
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const doc = await MainBookDocService.getByIdDoc({
+    const doc = await OxDocService.getByIdDoc({
       region_id,
       budjet_id,
       year,
@@ -120,43 +104,37 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error('main schet not found', 404);
     }
-    const old_doc = await MainBookDocService.getByIdDoc({
+    const old_doc = await OxDocService.getByIdDoc({
       region_id,
       year: query.year,
       month: query.month,
-      type_document: query.type_document,
       budjet_id
     })
     if (!old_doc) {
       return res.error('doc not found', 404)
     }
-    if (old_doc.year !== body.year || old_doc.month !== body.month || old_doc.type_document !== body.type_document) {
-      const doc = await MainBookDocService.getByIdDoc({
+    if (old_doc.year !== body.year || old_doc.month !== body.month) {
+      const doc = await OxDocService.getByIdDoc({
         region_id,
         budjet_id,
         year: body.year,
         month: body.month,
-        type_document: body.type_document
       })
       if (doc) {
         return res.error('This data already exist', 409);
       }
     }
+    if (!checkUniqueIds(body.childs)) {
+      return res.error('Duplicate id found in smetas', 400);
+    }
     for (let child of body.childs) {
-      const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
-      if (!operatsii) {
-        return res.error('Operatsii not found', 404);
+      const smeta = await SmetaGrafikService.getByIdSmetaGrafik({ region_id, id: child.smeta_grafik_id });
+      if (!smeta) {
+        return res.error('Smeta not found', 404);
       }
-      if (body.type_document === 'start' || body.type_document === 'end') {
-        if (child.debet_sum > 0 && child.kredit_sum > 0) {
-          return res.error(`Only either debit or credit amount can be provided, not both`, 400)
-        }
-      }
+      child.ajratilgan_mablag = smeta[`oy_${body.month}`];
     }
-    if(!checkUniqueIds(body.childs)){
-      return res.error('Duplicate id found in schets', 400);
-    }
-    const result = await MainBookDocService.updateDoc({
+    const result = await OxDocService.updateDoc({
       user_id,
       budjet_id,
       main_schet_id,
@@ -172,28 +150,25 @@ exports.Controller = class {
     const {
       budjet_id,
       year,
-      month,
-      type_document
+      month
     } = req.query;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const doc = await MainBookDocService.getByIdDoc({
+    const doc = await OxDocService.getByIdDoc({
       region_id,
       budjet_id,
       year,
-      month,
-      type_document
+      month
     })
     if (!doc) {
       return res.error('doc not found', 404)
     }
-    await MainBookDocService.deleteDoc({
+    await OxDocService.deleteDoc({
       region_id,
       year,
       month,
-      type_document,
       budjet_id
     })
     return res.success('Delete successfully', 200)
@@ -206,7 +181,7 @@ exports.Controller = class {
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const data = await MainBookDocService.getBySchetSumma({
+    const data = await OxDocService.getBySchetSumma({
       region_id,
       year,
       month,

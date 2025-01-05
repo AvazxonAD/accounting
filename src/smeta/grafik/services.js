@@ -71,8 +71,8 @@ exports.SmetaGrafikService = class {
         return result;
     }
 
-    static async getByIdSmetaGrafik(region_id, id, isdeleted) {
-        const result = await SmetaGrafikDB.getByIdSmetaGrafik([region_id, id], isdeleted);
+    static async getByIdSmetaGrafik(data, isdeleted) {
+        const result = await SmetaGrafikDB.getByIdSmetaGrafik([data.region_id, data.id], isdeleted);
         return result;
     }
 
