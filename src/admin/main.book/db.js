@@ -124,7 +124,7 @@ exports.ReportMainBookDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
-
+ 
     static async getSchetSummaBySchetId(params) {
         const query = `--sql
             SELECT 
