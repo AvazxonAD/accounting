@@ -1,25 +1,30 @@
 const Joi = require('joi')
 
-exports.updateEndSchema = Joi.object({
+exports.updateReportSchema = Joi.object({
   body: Joi.object({
-    status: Joi.number().valid(2, 3).required()
+    status: Joi.number().integer().valid(2, 3).required()
   }),
   query: Joi.object({
+    budjet_id: Joi.number().integer().min(1).required(),
+    month: Joi.number().integer().min(1).max(12).required(),
+    year: Joi.number().integer().min(1900).required(),
     region_id: Joi.number().integer().min(1).required()
-  }),
-  params: Joi.object({
-    id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
-exports.getEndSchema = Joi.object({
+exports.getReportSchema = Joi.object({
+  query: Joi.object({
+    region_id: Joi.number().integer().min(1),
+    month: Joi.number().integer().min(1).max(12),
+    year: Joi.number().integer().min(1900),
+  })
 }).options({ stripUnknown: true });
 
 exports.getByIdSchema = Joi.object({
   query: Joi.object({
+    budjet_id: Joi.number().integer().min(1).required(),
+    month: Joi.number().integer().min(1).max(12).required(),
+    year: Joi.number().integer().min(1900).required(),
     region_id: Joi.number().integer().min(1).required()
-  }),
-  params: Joi.object({
-    id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });

@@ -20,7 +20,7 @@ exports.DocMainBookDB = class {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
         `;
         const result = await client.query(query, params)
-        return result.rows;
+        return result.rows[0];
     }
 
     static async getByIdDoc(params) {
@@ -110,7 +110,6 @@ exports.DocMainBookDB = class {
                 SELECT 1
                 FROM users AS u
                 JOIN regions AS r ON r.id = u.region_id
-                JOIN spravochnik_budjet_name AS b ON b.id = documents_glavniy_kniga.budjet_id
                 WHERE u.id = documents_glavniy_kniga.user_id
                     AND r.id = $1
                     AND documents_glavniy_kniga.year = $2
@@ -146,7 +145,7 @@ exports.DocMainBookDB = class {
         return result.rows;
     }
 
-    static async getBySchetSummaWithType(params, client) {
+    static async getBySchetSummaWithType(params) {
         const query = `--sql 
             SELECT 
                 d.type_document,    
@@ -167,5 +166,26 @@ exports.DocMainBookDB = class {
         `;
         const result = await db.query(query, params);
         return result;
+    }
+
+    static async getSchetSummaBySchetId(params) {
+        const query = `--sql
+            SELECT 
+                d.debet_sum::FLOAT,
+                d.kredit_sum::FLOAT
+            FROM documents_glavniy_kniga d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+            WHERE r.id = $1 
+                AND d.year = $2 
+                AND d.month = $3 
+                AND d.budjet_id = $4
+                AND d.spravochnik_main_book_schet_id = $5
+                AND d.type_document = $6
+                AND d.isdeleted = false
+        `;
+        const result = await db.query(query, params);
+        return result[0];
     }
 }
