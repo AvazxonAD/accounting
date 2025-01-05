@@ -141,7 +141,7 @@ exports.SmetaGrafikDB = class {
     static async getByIdSmetaGrafik(params, isdeleted) {
         const ignore = 'AND s_g.isdeleted = false'
         const query = `--sql
-            SELECT   
+            SELECT
                 s_g.id, 
                 s_g.smeta_id, 
                 smeta.smeta_name,
