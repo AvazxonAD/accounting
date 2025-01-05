@@ -2,13 +2,17 @@ const { DocMainBookDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { BudjetDB } = require('../../spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
+const { MainSchetService } = require('../../spravochnik/main.schet/services')
 const { db } = require('../../db/index')
+const { MainBookDocService } = require('./service')
+
 
 exports.Controller = class {
   static async createDoc(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const budjet_id = req.query.budjet_id;
+    const main_schet_id = req.query.main_schet_id;
     const {
       month,
       year,
@@ -21,11 +25,19 @@ exports.Controller = class {
         message: "budjet not found"
       })
     }
-    const docs = await DocMainBookDB.getDoc([region_id, budjet.id], year, month, type_document,);
-    if (docs.length) {
-      return res.status(409).json({
-        message: "This data already exist"
-      })
+    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
+    if (!main_schet) {
+      return res.error('main schet not found', 404);
+    }
+    const doc = await MainBookDocService.getByIdDoc({
+      region_id,
+      budjet_id,
+      year,
+      month,
+      type_document
+    })
+    if (doc) {
+      return res.error('This data already exist', 409);
     }
     for (let child of childs) {
       const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
@@ -34,171 +46,171 @@ exports.Controller = class {
           message: "operatsii not found"
         })
       }
+      if (type_document === 'start' || type_document === 'end') {
+        if (child.debet_sum > 0 && child.kredit_sum > 0) {
+          return res.error(`Only either debit or credit amount can be provided, not both`, 400)
+        }
+      }
     }
-    const doc = await db.transaction(async client => {
-      const doc = await DocMainBookDB.createDoc([
-        user_id,
-        budjet_id,
-        type_document,
-        month,
-        year,
-        tashkentTime(),
-        tashkentTime()
-      ], client)
-      const create_childs = []
-      childs.forEach(item => {
-        create_childs.push(
-          item.spravochnik_main_book_schet_id,
-          doc.id,
-          item.debet_sum,
-          item.kredit_sum,
-          tashkentTime(),
-          tashkentTime()
-        );
-      });
-      doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
-      return doc;
+    const result = await MainBookDocService.createDoc({
+      user_id,
+      budjet_id,
+      main_schet_id,
+      type_document,
+      month,
+      year,
+      childs,
+      region_id
     })
     return res.status(201).json({
       message: "Create doc successfully",
-      data: doc
+      data: result
     })
   }
 
   static async getDoc(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id } = req.query;
+    const { budjet_id, year, month, type_document } = req.query;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
       return res.status(404).json({
         message: "budjet not found"
       })
     }
-    const data = await DocMainBookDB.getDoc([region_id, budjet.id])
-    for (let doc of data) {
-      doc.summa = await DocMainBookDB.getDocChildsSum([doc.id])
-    }
-    return res.status(200).json({
-      message: "doc successfully get",
-      meta: null,
-      data: data || []
-    })
+    const docs = await MainBookDocService.getDocs({ region_id, budjet_id, year, month, type_document })
+    return res.success('Get successfully', 200, null, docs);
   }
 
   static async getByIdDoc(req, res) {
     const region_id = req.user.region_id
-    const id = req.params.id;
-    const { budjet_id } = req.query;
+    const {
+      budjet_id,
+      year,
+      month,
+      type_document
+    } = req.query;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
-      return res.status(404).json({
-        message: "budjet not found"
-      })
+      return res.error('Budjet not found', 404)
     }
-    const doc = await DocMainBookDB.getByIdDoc([region_id, budjet.id, id], true)
+    const doc = await MainBookDocService.getByIdDoc({
+      region_id,
+      budjet_id,
+      year,
+      month,
+      type_document
+    })
     if (!doc) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
+      return res.error('doc not found', 404)
     }
-    doc.childs = await DocMainBookDB.getDocChilds([doc.id]);
-    return res.status(201).json({
-      message: "doc successfully get",
-      data: doc
-    });
+    return res.success('doc successfully get', 200, null, doc);
   }
 
   static async updateDoc(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const budjet_id = req.query.budjet_id;
-    const id = req.params.id;
-    const {
-      month,
-      year,
-      type_document,
-      childs
-    } = req.body;
+    const main_schet_id = req.query.main_schet_id;
+    const { query } = req;
+    const { body } = req;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
-      return res.status(404).json({
-        message: "budjet not found"
-      })
+      return res.error('Budjet not found', 404)
     }
-    const old_doc = await DocMainBookDB.getByIdDoc([region_id, budjet.id, id])
+    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
+    if (!main_schet) {
+      return res.error('main schet not found', 404);
+    }
+    const old_doc = await MainBookDocService.getByIdDoc({
+      region_id,
+      year: query.year,
+      month: query.month,
+      type_document: query.type_document,
+      budjet_id
+    })
     if (!old_doc) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
+      return res.error('doc not found', 404)
     }
-    if (old_doc.year !== year || old_doc.month !== month || old_doc.type_document !== type_document) {
-      const docs = await DocMainBookDB.getDoc([region_id, budjet.id], year, month, type_document,);
-      if (docs.length) {
-        return res.status(409).json({
-          message: "This data already exist"
-        })
+    if (old_doc.year !== body.year || old_doc.month !== body.month || old_doc.type_document !== body.type_document) {
+      const doc = await MainBookDocService.getByIdDoc({
+        region_id,
+        budjet_id,
+        year: body.year,
+        month: body.month,
+        type_document: body.type_document
+      })
+      if (doc) {
+        return res.error('This data already exist', 409);
       }
     }
-    for (let child of childs) {
+    for (let child of body.childs) {
       const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
       if (!operatsii) {
-        return res.status(404).json({
-          message: "operatsii not found"
-        })
+        return res.error('Operatsii not found', 404);
+      }
+      if (body.type_document === 'start' || body.type_document === 'end') {
+        if (child.debet_sum > 0 && child.kredit_sum > 0) {
+          return res.error(`Only either debit or credit amount can be provided, not both`, 400)
+        }
       }
     }
-    const result = await db.transaction(async client => {
-      const doc = await DocMainBookDB.updateDoc([type_document, month, year, tashkentTime(), id], client);
-      await DocMainBookDB.deleteDocChilds([doc.id], client)
-      const create_childs = [];
-      childs.forEach(item => {
-        create_childs.push(
-          item.spravochnik_main_book_schet_id,
-          doc.id,
-          item.debet_sum,
-          item.kredit_sum,
-          tashkentTime(),
-          tashkentTime()
-        );
-      });
-      doc.childs = await DocMainBookDB.createDocChild(create_childs, client);
-      return doc;
+    const result = await MainBookDocService.updateDoc({
+      user_id,
+      budjet_id,
+      main_schet_id,
+      region_id,
+      query,
+      body
     })
-    return res.status(201).json({
-      message: "UPDATE doc successfully",
-      data: result
-    })
+    return res.success('UPDATE successfully', 200, null, result)
   }
 
   static async deleteDoc(req, res) {
     const region_id = req.user.region_id
-    const id = req.params.id;
-    const { budjet_id } = req.query;
+    const {
+      budjet_id,
+      year,
+      month,
+      type_document
+    } = req.query;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
-      return res.status(404).json({
-        message: "budjet not found"
-      })
+      return res.error('Budjet not found', 404)
     }
-    const doc = await DocMainBookDB.getByIdDoc([region_id, budjet.id, id])
+    const doc = await MainBookDocService.getByIdDoc({
+      region_id,
+      budjet_id,
+      year,
+      month,
+      type_document
+    })
     if (!doc) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
+      return res.error('doc not found', 404)
     }
-    await db.transaction(async client => {
-      await DocMainBookDB.deleteDoc([id], client)
+    await MainBookDocService.deleteDoc({
+      region_id,
+      year,
+      month,
+      type_document,
+      budjet_id
     })
-    return res.status(200).json({
-      message: 'delete doc successfully'
-    })
+    return res.success('Delete successfully', 200)
   }
 
-  static async getOperatsiiMainBook(req, res) {
-    const data = await DocMainBookDB.getOperatsiiMainBook([])
-    return res.status(200).json({
-      message: "main book schets successfully",
-      data
+  static async getBySchetSumma(req, res) {
+    const region_id = req.user.region_id;
+    const { year, month, budjet_id, schet_id } = req.query;
+    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    if (!budjet) {
+      return res.error('Budjet not found', 404)
+    }
+    const data = await MainBookDocService.getBySchetSumma({
+      region_id,
+      year,
+      month,
+      budjet_id,
+      schet_id
     })
+    return res.success('Get successfully', 200, null, data);
   }
 }

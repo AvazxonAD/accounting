@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 const { returnParamsValues, } = require('../../helper/functions')
 
-exports.ReportMainBook = class {
+exports.ReportMainBookDB = class {
     static async createEnd(params, client) {
         const query = `--sql
             INSERT INTO main_book_end_parent (
@@ -175,7 +175,7 @@ exports.ReportMainBook = class {
         await client.query(`UPDATE main_book_end_child SET isdeleted = true WHERE parent_id = $1`, params)
     }
 
-    static async getInfo(params){
+    static async getDocs(params){
         const query = `--sql
             SELECT d.id
             FROM main_book_doc_parent AS d 
