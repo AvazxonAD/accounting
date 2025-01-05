@@ -1,4 +1,4 @@
-const { EndService } = require('./service');
+const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
     createEndSchema,
@@ -12,12 +12,12 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(EndService.createEnd, createEndSchema))
-    .get('/info', validator(EndService.getInfo, getInfoEndSchema))
-    .get('/:id', validator(EndService.getByIdEnd, getByIdSchema))
-    .get('/', validator(EndService.getEnd, getEndSchema))
-    .put('/:id', validator(EndService.updateEnd, updateEndSchema))
-    .delete('/:id', validator(EndService.deleteEnd, deleteEndSchema));
+router.post('/', validator(Controller.createEnd, createEndSchema))
+    .get('/info', validator(Controller.getInfo, getInfoEndSchema))
+    .get('/:id', validator(Controller.getByIdEnd, getByIdSchema))
+    .get('/', validator(Controller.getEnd, getEndSchema))
+    .put('/:id', validator(Controller.updateEnd, updateEndSchema))
+    .delete('/:id', validator(Controller.deleteEnd, deleteEndSchema));
 
 
 module.exports = router;
