@@ -1,17 +1,17 @@
-const { EndService } = require('./service');
+const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
-    getEndSchema,
-    updateEndSchema,
+    getReportSchema,
+    updateReportSchema,
     getByIdSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.get('/:id', validator(EndService.getByIdEnd, getByIdSchema))
-    .get('/', validator(EndService.getEnd, getEndSchema))
-    .put('/:id', validator(EndService.updateEnd, updateEndSchema));
+router.get('/id', validator(Controller.getByIdReport, getByIdSchema))
+    .get('/', validator(Controller.getReport, getReportSchema))
+    .put('/', validator(Controller.updateReport, updateReportSchema));
 
 
 module.exports = router;

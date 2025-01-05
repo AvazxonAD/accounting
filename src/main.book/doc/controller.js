@@ -1,10 +1,8 @@
-const { DocMainBookDB } = require('./db');
-const { tashkentTime } = require('../../helper/functions');
 const { BudjetDB } = require('../../spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { MainSchetService } = require('../../spravochnik/main.schet/services')
-const { db } = require('../../db/index')
 const { MainBookDocService } = require('./service')
+const { checkUniqueIds } = require('../../helper/functions')
 
 
 exports.Controller = class {
@@ -51,6 +49,9 @@ exports.Controller = class {
           return res.error(`Only either debit or credit amount can be provided, not both`, 400)
         }
       }
+    }
+    if(!checkUniqueIds(childs)){
+      return res.error('Duplicate id found in schets', 400);
     }
     const result = await MainBookDocService.createDoc({
       user_id,
@@ -153,6 +154,9 @@ exports.Controller = class {
           return res.error(`Only either debit or credit amount can be provided, not both`, 400)
         }
       }
+    }
+    if(!checkUniqueIds(body.childs)){
+      return res.error('Duplicate id found in schets', 400);
     }
     const result = await MainBookDocService.updateDoc({
       user_id,

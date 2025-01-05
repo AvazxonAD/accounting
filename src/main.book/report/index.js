@@ -1,23 +1,23 @@
 const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
-    createEndSchema,
-    getEndSchema,
-    updateEndSchema,
-    getInfoEndSchema,
-    deleteEndSchema,
+    createReportSchema,
+    getReportSchema,
+    updateReportSchema,
+    getInfoReportSchema,
+    deleteReportSchema,
     getByIdSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(Controller.createEnd, createEndSchema))
-    .get('/info', validator(Controller.getInfo, getInfoEndSchema))
-    .get('/:id', validator(Controller.getByIdEnd, getByIdSchema))
-    .get('/', validator(Controller.getEnd, getEndSchema))
-    .put('/:id', validator(Controller.updateEnd, updateEndSchema))
-    .delete('/:id', validator(Controller.deleteEnd, deleteEndSchema));
+router.post('/', validator(Controller.createReport, createReportSchema))
+    .get('/info', validator(Controller.getInfo, getInfoReportSchema))
+    .get('/id', validator(Controller.getByIdReport, getByIdSchema))
+    .get('/', validator(Controller.getReport, getReportSchema))
+    .put('/', validator(Controller.updateReport, updateReportSchema))
+    .delete('/', validator(Controller.deleteReport, deleteReportSchema));
 
 
 module.exports = router;

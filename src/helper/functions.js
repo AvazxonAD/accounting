@@ -19,6 +19,12 @@ exports.childsSumma = (args) => {
     return sum;
 };
 
+exports.checkUniqueIds = (array) => {
+    const ids = array.map(item => item.id);
+    const uniqueIds = new Set(ids);
+    return ids.length === uniqueIds.size;
+};
+
 exports.returnStringDate = (date) => {
     function getMonth(month) {
         switch (month) {
@@ -206,7 +212,7 @@ exports.getMonthStartEnd = (year, month) => {
 
 exports.getDayStartEnd = (year, month) => {
     const startOfMonth = 1;
-    const endOfMonth = new Date(year, month, 0).getDate(); 
+    const endOfMonth = new Date(year, month, 0).getDate();
     return {
         start: startOfMonth,
         end: endOfMonth
