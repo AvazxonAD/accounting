@@ -10,7 +10,7 @@ exports.ReportService = class {
         const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
         data.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }))
         for (let grafik of data.smeta_grafiks) {
-            grafik.summa = await DocOx.getSchetSummaBySchetId([
+            grafik.summa = await DocOx.getSummaByGrafikId([
                 data.region_id,
                 data.year,
                 data.month,
@@ -88,27 +88,20 @@ exports.ReportService = class {
             report.smeta_grafiks = data.smeta_grafiks.map(item => ({ ...item }));
             if (report) {
                 for (let grafik of report.smeta_grafiks) {
-                    grafik.summa = await ReportOx.getSchetSummaBySchetId([
+                    grafik.summa = await ReportOx.getSummaByGrafikId([
                         data.region_id,
                         data.year,
                         data.month,
                         data.budjet_id,
                         grafik.id
                     ]);
-                }
-                report.summa = {
-                    ajratilgan_mablag: 0,
-                    tulangan_mablag_smeta_buyicha: 0,
-                    kassa_rasxod: 0,
-                    haqiqatda_harajatlar: 0,
-                    qoldiq: 0
-                }
-                for (let grafik of report.smeta_grafiks) {
-                    report.summa.ajratilgan_mablag += grafik.summa.ajratilgan_mablag;
-                    report.summa.tulangan_mablag_smeta_buyicha += grafik.summa.ajratilgan_mablag;
-                    report.summa.kassa_rasxod += grafik.summa.kassa_rasxod;
-                    report.summa.haqiqatda_harajatlar += grafik.summa.haqiqatda_harajatlar;
-                    report.summa.qoldiq += grafik.summa.qoldiq;
+                    grafik.year_summa = await ReportOx.getByYearSumma([
+                        data.region_id,
+                        data.year,
+                        data.month,
+                        data.budjet_id,
+                        grafik.id
+                    ]);
                 }
             }
         }

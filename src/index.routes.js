@@ -64,7 +64,7 @@ routes
     .use('/main/book/report', protect, require('./main.book/report/index'))
     // Real cost routes
     .use('/real/cost/doc', protect, require('./real.cost/doc/index'))
-    .use('/real/cost/end', protect, require('./real.cost/end/index'))
+    .use('/real/cost/report', protect, require('./real.cost/report/index'))
     // Ox routes 
     .use('/ox/doc', protect, require('./ox/doc/index'))
     .use('/ox/report', protect, require('./ox/report/index'))
