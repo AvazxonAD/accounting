@@ -51,36 +51,34 @@ exports.ReportOx = class {
                     d.user_id_qabul_qilgan,
                     ua.login AS user_login_qabul_qilgan,
                     d.status,
-                (
-                    SELECT 
-                        d.document_yaratilgan_vaqt
-                    FROM zakonchit_1_ox_xisobot AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.isdeleted = false 
-                        ${year_filter} ${month_filter}
-                    ORDER BY d.document_yaratilgan_vaqt DESC
-                    LIMIT 1
-                ) AS document_yaratilgan_vaqt,
-                (
-                    SELECT 
-                        d.document_qabul_qilingan_vaqt
-                    FROM zakonchit_1_ox_xisobot AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.isdeleted = false 
-                        ${year_filter} ${month_filter}
-                    ORDER BY d.document_qabul_qilingan_vaqt DESC
-                    LIMIT 1
-                ) AS document_qabul_qilingan_vaqt
+                    (
+                        SELECT 
+                            d_ch.document_yaratilgan_vaqt
+                        FROM zakonchit_1_ox_xisobot AS d_ch
+                        JOIN users AS u ON u.id = d_ch.user_id
+                        JOIN regions AS r_ch ON r_ch.id = u.region_id
+                        WHERE r_ch.id = r.id 
+                            AND d_ch.budjet_id = b.id
+                            AND d_ch.isdeleted = false 
+                            AND d_ch.month = d.month
+                            AND d_ch.year = d.year
+                        ORDER BY d_ch.document_yaratilgan_vaqt DESC
+                        LIMIT 1
+                    ) AS document_yaratilgan_vaqt,
+                    (
+                        SELECT 
+                            d_ch.document_qabul_qilingan_vaqt
+                        FROM zakonchit_1_ox_xisobot AS d_ch
+                        JOIN users AS u ON u.id = d_ch.user_id
+                        JOIN regions AS r_ch ON r_ch.id = u.region_id
+                        WHERE r_ch.id = r.id 
+                            AND d_ch.budjet_id = b.id
+                            AND d_ch.isdeleted = false 
+                            AND d_ch.month = d.month
+                            AND d_ch.year = d.year
+                        ORDER BY d_ch.document_qabul_qilingan_vaqt DESC
+                        LIMIT 1
+                    ) AS document_qabul_qilingan_vaqt
             FROM zakonchit_1_ox_xisobot AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
@@ -108,38 +106,38 @@ exports.ReportOx = class {
                     d.user_id_qabul_qilgan,
                     ua.login AS user_login_qabul_qilgan,
                     d.status,
-                (
-                    SELECT 
-                        d.document_yaratilgan_vaqt
-                    FROM zakonchit_1_ox_xisobot AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.year = $3 
-                        AND d.month = $4
-                        AND d.isdeleted = false 
-                    ORDER BY d.document_yaratilgan_vaqt DESC
-                    LIMIT 1
-                ) AS document_yaratilgan_vaqt,
-                (
-                    SELECT 
-                        d.document_qabul_qilingan_vaqt
-                    FROM zakonchit_1_ox_xisobot AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.year = $3 
-                        AND d.month = $4
-                        AND d.isdeleted = false 
-                    ORDER BY d.document_qabul_qilingan_vaqt DESC
-                    LIMIT 1
-                ) AS document_qabul_qilingan_vaqt
+                    (
+                        SELECT 
+                            d.document_yaratilgan_vaqt
+                        FROM zakonchit_1_ox_xisobot AS d
+                        JOIN users AS u ON u.id = d.user_id
+                        LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+                        WHERE r.id = $1 
+                            AND b.id = $2
+                            AND d.year = $3 
+                            AND d.month = $4
+                            AND d.isdeleted = false 
+                        ORDER BY d.document_yaratilgan_vaqt DESC
+                        LIMIT 1
+                    ) AS document_yaratilgan_vaqt,
+                    (
+                        SELECT 
+                            d.document_qabul_qilingan_vaqt
+                        FROM zakonchit_1_ox_xisobot AS d
+                        JOIN users AS u ON u.id = d.user_id
+                        LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+                        WHERE r.id = $1 
+                            AND b.id = $2
+                            AND d.year = $3 
+                            AND d.month = $4
+                            AND d.isdeleted = false 
+                        ORDER BY d.document_qabul_qilingan_vaqt DESC
+                        LIMIT 1
+                    ) AS document_qabul_qilingan_vaqt
             FROM zakonchit_1_ox_xisobot AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
