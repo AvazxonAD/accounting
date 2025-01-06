@@ -1,6 +1,6 @@
 const { db } = require('../../db/index')
 
-exports.ReportMainBookDB = class {
+exports.ReportOx = class {
 
     static async getReport(params, year, month) {
         let year_filter = ``;
@@ -30,7 +30,7 @@ exports.ReportMainBookDB = class {
                 (
                     SELECT 
                         d.document_yaratilgan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
+                    FROM zakonchit_1_ox_xisobot AS d
                     JOIN users AS u ON u.id = d.user_id
                     LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
                     JOIN regions AS r ON r.id = u.region_id
@@ -43,7 +43,7 @@ exports.ReportMainBookDB = class {
                 (
                     SELECT 
                         d.document_qabul_qilingan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
+                    FROM zakonchit_1_ox_xisobot AS d
                     JOIN users AS u ON u.id = d.user_id
                     LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
                     JOIN regions AS r ON r.id = u.region_id
@@ -53,7 +53,7 @@ exports.ReportMainBookDB = class {
                     ORDER BY d.document_qabul_qilingan_vaqt DESC
                     LIMIT 1
                 ) AS document_qabul_qilingan_vaqt
-            FROM zakonchit_glavniy_kniga AS d
+            FROM zakonchit_1_ox_xisobot AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
             JOIN regions AS r ON r.id = u.region_id
@@ -81,7 +81,7 @@ exports.ReportMainBookDB = class {
                 (
                     SELECT 
                         d.document_yaratilgan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
+                    FROM zakonchit_1_ox_xisobot AS d
                     JOIN users AS u ON u.id = d.user_id
                     LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
                     JOIN regions AS r ON r.id = u.region_id
@@ -97,7 +97,7 @@ exports.ReportMainBookDB = class {
                 (
                     SELECT 
                         d.document_qabul_qilingan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
+                    FROM zakonchit_1_ox_xisobot AS d
                     JOIN users AS u ON u.id = d.user_id
                     LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
                     JOIN regions AS r ON r.id = u.region_id
@@ -110,7 +110,7 @@ exports.ReportMainBookDB = class {
                     ORDER BY d.document_qabul_qilingan_vaqt DESC
                     LIMIT 1
                 ) AS document_qabul_qilingan_vaqt
-            FROM zakonchit_glavniy_kniga AS d
+            FROM zakonchit_1_ox_xisobot AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
             JOIN regions AS r ON r.id = u.region_id
@@ -124,13 +124,16 @@ exports.ReportMainBookDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
- 
+
     static async getSchetSummaBySchetId(params) {
         const query = `--sql
             SELECT 
-                d.debet_sum::FLOAT,
-                d.kredit_sum::FLOAT
-            FROM zakonchit_glavniy_kniga d
+                ajratilgan_mablag::FLOAT,
+                tulangan_mablag_smeta_buyicha::FLOAT,
+                kassa_rasxod::FLOAT,
+                haqiqatda_harajatlar::FLOAT,
+                qoldiq::FLOAT
+            FROM zakonchit_1_ox_xisobot d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -138,8 +141,7 @@ exports.ReportMainBookDB = class {
                 AND d.year = $2 
                 AND d.month = $3 
                 AND d.budjet_id = $4
-                AND d.spravochnik_main_book_schet_id = $5
-                AND d.type_document = $6
+                AND d.smeta_grafik_id = $5
                 AND d.isdeleted = false
         `;
         const result = await db.query(query, params);
@@ -148,7 +150,7 @@ exports.ReportMainBookDB = class {
   
     static async updateReport(params) {
         const query = `--sql
-            UPDATE zakonchit_glavniy_kniga 
+            UPDATE zakonchit_1_ox_xisobot 
             SET  
                 user_id_qabul_qilgan = $5,
                 document_qabul_qilingan_vaqt = $6,
@@ -157,12 +159,12 @@ exports.ReportMainBookDB = class {
                 SELECT 1
                 FROM users AS u
                 JOIN regions AS r ON r.id = u.region_id
-                WHERE u.id = zakonchit_glavniy_kniga.user_id
+                WHERE u.id = zakonchit_1_ox_xisobot.user_id
                     AND r.id = $1
-                    AND zakonchit_glavniy_kniga.year = $2
-                    AND zakonchit_glavniy_kniga.month = $3
-                    AND zakonchit_glavniy_kniga.budjet_id = $4
-                    AND zakonchit_glavniy_kniga.isdeleted = false
+                    AND zakonchit_1_ox_xisobot.year = $2
+                    AND zakonchit_1_ox_xisobot.month = $3
+                    AND zakonchit_1_ox_xisobot.budjet_id = $4
+                    AND zakonchit_1_ox_xisobot.isdeleted = false
             )
             RETURNING *
         `;
