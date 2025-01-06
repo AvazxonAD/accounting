@@ -96,7 +96,7 @@ exports.ReportService = class {
                         grafik.id
                     ]);
                 }
-                const summa = {
+                report.summa = {
                     ajratilgan_mablag: 0,
                     tulangan_mablag_smeta_buyicha: 0,
                     kassa_rasxod: 0,
@@ -104,11 +104,11 @@ exports.ReportService = class {
                     qoldiq: 0
                 }
                 for (let grafik of report.smeta_grafiks) {
-                    summa.ajratilgan_mablag += grafik.summa.ajratilgan_mablag;
-                    summa.tulangan_mablag_smeta_buyicha += grafik.summa.ajratilgan_mablag;
-                    summa.kassa_rasxod += grafik.summa.kassa_rasxod;
-                    summa.haqiqatda_harajatlar += grafik.summa.haqiqatda_harajatlar;
-                    summa.qoldiq += grafik.summa.qoldiq;
+                    report.summa.ajratilgan_mablag += grafik.summa.ajratilgan_mablag;
+                    report.summa.tulangan_mablag_smeta_buyicha += grafik.summa.ajratilgan_mablag;
+                    report.summa.kassa_rasxod += grafik.summa.kassa_rasxod;
+                    report.summa.haqiqatda_harajatlar += grafik.summa.haqiqatda_harajatlar;
+                    report.summa.qoldiq += grafik.summa.qoldiq;
                 }
             }
         }
