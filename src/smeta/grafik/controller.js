@@ -1,9 +1,10 @@
 const { SmetaGrafikDB } = require('./db')
 const { SmetaDB } = require('../smeta/db')
 const { BudjetDB } = require('../../spravochnik/budjet/db')
-const { sum } = require('../../helper/functions')
+const { sum } = require('../../helper/functions');
+const { BudjetService } = require('../../spravochnik/budjet/services')
 
-exports.SmetaGrafikService = class {
+exports.Controller = class {
     static async createSmetaGrafik(req, res) {
         const region_id = req.user.region_id;
         const user_id = req.user.id;
@@ -68,13 +69,11 @@ exports.SmetaGrafikService = class {
     }
     static async getSmetaGrafik(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, budjet_id, operator } = req.query;
+        const { page, limit, budjet_id, operator, year } = req.query;
         if (budjet_id) {
-            const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+            const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
             if (!budjet) {
-                return res.status(404).json({
-                    message: "budjet bot found"
-                })
+                return res.error('Budjet not found', 404);
             }
         }
         const offset = (page - 1) * limit;
@@ -94,7 +93,7 @@ exports.SmetaGrafikService = class {
             oy_10,
             oy_11,
             oy_12
-        } = await SmetaGrafikDB.getSmetaGrafik([region_id, offset, limit], budjet_id, operator);
+        } = await SmetaGrafikDB.getSmetaGrafik([region_id, offset, limit], budjet_id, operator, year);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,

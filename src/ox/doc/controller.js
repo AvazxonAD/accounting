@@ -1,5 +1,4 @@
-const { BudjetDB } = require('../../spravochnik/budjet/db');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
+const { BudjetService } = require('../../spravochnik/budjet/services');
 const { MainSchetService } = require('../../spravochnik/main.schet/services')
 const { OxDocService } = require('./service')
 const { checkUniqueIds } = require('../../helper/functions')
@@ -17,7 +16,7 @@ exports.Controller = class {
       year,
       childs
     } = req.body;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
       return res.error('Budjet not found', 404);
     }
@@ -54,7 +53,7 @@ exports.Controller = class {
   static async getDoc(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id, year, month } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
       return res.status(404).json({
         message: "budjet not found"
@@ -72,7 +71,7 @@ exports.Controller = class {
       month,
       type_document
     } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -96,7 +95,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { query } = req;
     const { body } = req;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -152,7 +151,7 @@ exports.Controller = class {
       year,
       month
     } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -177,7 +176,7 @@ exports.Controller = class {
   static async getBySchetSumma(req, res) {
     const region_id = req.user.region_id;
     const { year, month, budjet_id, schet_id } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }

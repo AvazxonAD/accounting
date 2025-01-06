@@ -1,6 +1,6 @@
 const { db } = require('../../db/index')
 const { tashkentTime } = require('../../helper/functions')
-const { DocMainBookDB } = require('./db')
+const { DocOx } = require('./db')
 
 exports.OxDocService = class {
     static async createDoc(data) {
@@ -8,7 +8,7 @@ exports.OxDocService = class {
             const result = [];
             for (let item of data.childs) {
                 result.push(
-                    await DocMainBookDB.createDoc([
+                    await DocOx.createDoc([
                         data.user_id,
                         data.main_schet_id,
                         data.budjet_id,
@@ -31,31 +31,23 @@ exports.OxDocService = class {
     }
 
     static async getDocs(data) {
-        const docs = await DocMainBookDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, data.type_document);
+        const docs = await DocOx.getDoc([data.region_id, data.budjet_id], data.year, data.month, data.type_document);
         return docs;
     }
 
     static async getByIdDoc(data) {
-        const result = await DocMainBookDB.getByIdDoc([
+        const result = await DocOx.getByIdDoc([
             data.region_id,
             data.year,
             data.month,
             data.budjet_id
         ]);
-        if (result) {
-            result.debet_sum = 0;
-            result.kredit_sum = 0;
-            for (let child of result.childs) {
-                result.debet_sum += child.debet_sum;
-                result.kredit_sum += child.kredit_sum;
-            }
-        }
         return result;
     }
 
     static async updateDoc(data) {
         const doc = await db.transaction(async client => {
-            await DocMainBookDB.deleteDoc([
+            await DocOx.deleteDoc([
                 data.region_id,
                 data.query.year,
                 data.query.month,
@@ -64,7 +56,7 @@ exports.OxDocService = class {
             const result = [];
             for (let child of data.body.childs) {
                 result.push(
-                    await DocMainBookDB.createDoc([
+                    await DocOx.createDoc([
                         data.user_id,
                         data.main_schet_id,
                         data.budjet_id,
@@ -87,7 +79,7 @@ exports.OxDocService = class {
     }
 
     static async deleteDoc(data) {
-        await DocMainBookDB.deleteDoc([
+        await DocOx.deleteDoc([
             data.region_id,
             data.year,
             data.month,
@@ -96,7 +88,7 @@ exports.OxDocService = class {
     }
 
     static async getBySchetSumma(data) {
-        const result = await DocMainBookDB.getBySchetSummaWithType([
+        const result = await DocOx.getBySchetSummaWithType([
             data.region_id,
             data.year,
             data.month,
