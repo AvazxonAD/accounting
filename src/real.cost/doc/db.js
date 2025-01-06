@@ -1,14 +1,14 @@
 const { db } = require('../../db/index')
 const { returnParamsValues } = require('../../helper/functions')
 
-exports.DocMainBookDB = class {
+exports.DocRealCost = class {
     static async createDoc(params, client) {
         const query = `--sql
-            INSERT INTO documents_glavniy_kniga (
+            INSERT INTO documents_haqiqiy_harajat (
                 user_id,
                 budjet_id,
                 main_schet_id,
-                spravochnik_main_book_schet_id,
+                smeta_grafik_id,
                 type_document,
                 month,
                 year,
@@ -33,10 +33,10 @@ exports.DocMainBookDB = class {
                     SELECT ARRAY_AGG(row_to_json(child))
                     FROM (
                         SELECT 
-                        spravochnik_main_book_schet_id,
+                        smeta_grafik_id,
                         debet_sum,
                         kredit_sum 
-                        FROM documents_glavniy_kniga d
+                        FROM documents_haqiqiy_harajat d
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id
                         JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -48,7 +48,7 @@ exports.DocMainBookDB = class {
                             AND d.isdeleted = false
                     ) AS child
                 ) AS childs
-            FROM documents_glavniy_kniga d
+            FROM documents_haqiqiy_harajat d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -86,7 +86,7 @@ exports.DocMainBookDB = class {
                 d.year,
                 COALESCE(SUM(d.debet_sum), 0)::FLOAT AS debet_sum,
                 COALESCE(SUM(d.kredit_sum), 0)::FLOAT AS kredit_sum
-            FROM documents_glavniy_kniga d
+            FROM documents_haqiqiy_harajat d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -104,32 +104,32 @@ exports.DocMainBookDB = class {
 
     static async deleteDoc(params, client) {
         const query = `--sql
-            UPDATE documents_glavniy_kniga
+            UPDATE documents_haqiqiy_harajat
             SET isdeleted = true
             WHERE EXISTS (
                 SELECT 1
                 FROM users AS u
                 JOIN regions AS r ON r.id = u.region_id
-                WHERE u.id = documents_glavniy_kniga.user_id
+                WHERE u.id = documents_haqiqiy_harajat.user_id
                     AND r.id = $1
-                    AND documents_glavniy_kniga.year = $2
-                    AND documents_glavniy_kniga.month = $3
-                    AND documents_glavniy_kniga.type_document = $4
-                    AND documents_glavniy_kniga.budjet_id = $5
-                    AND documents_glavniy_kniga.isdeleted = false
+                    AND documents_haqiqiy_harajat.year = $2
+                    AND documents_haqiqiy_harajat.month = $3
+                    AND documents_haqiqiy_harajat.type_document = $4
+                    AND documents_haqiqiy_harajat.budjet_id = $5
+                    AND documents_haqiqiy_harajat.isdeleted = false
             )
         `;
         const executor = client || db;
         await executor.query(query, params);
     }
 
-    static async getSummaBySchets(params, client) {
+    static async getSummaByGrafiks(params, client) {
         const query = `--sql 
             SELECT 
-                d.spravochnik_main_book_schet_id,
+                d.smeta_grafik_id,
                 COALESCE(SUM(d.debet_sum), 0) AS debet_sum,
                 COALESCE(SUM(d.kredit_sum), 0) AS kredit_sum
-            FROM documents_glavniy_kniga d
+            FROM documents_haqiqiy_harajat d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -139,20 +139,20 @@ exports.DocMainBookDB = class {
                 AND d.type_document != 'end'
                 AND d.budjet_id = $4
                 AND d.isdeleted = false
-            GROUP BY d.spravochnik_main_book_schet_id
+            GROUP BY d.smeta_grafik_id
         `;
         const result = await client.query(query, params);
         return result.rows;
     }
 
-    static async getBySchetSummaWithType(params) {
+    static async getBySummaGrafikWithType(params) {
         const query = `--sql 
             SELECT 
                 d.type_document,    
-                d.spravochnik_main_book_schet_id,
+                d.smeta_grafik_id,
                 COALESCE(SUM(d.debet_sum), 0)::FLOAT AS debet_sum,
                 COALESCE(SUM(d.kredit_sum), 0)::FLOAT AS kredit_sum
-            FROM documents_glavniy_kniga d
+            FROM documents_haqiqiy_harajat d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -161,19 +161,19 @@ exports.DocMainBookDB = class {
                 AND d.month = $3 
                 AND d.budjet_id = $4
                 AND d.isdeleted = false
-                AND d.spravochnik_main_book_schet_id = $5
-            GROUP BY d.spravochnik_main_book_schet_id, d.type_document
+                AND d.smeta_grafik_id = $5
+            GROUP BY d.smeta_grafik_id, d.type_document
         `;
         const result = await db.query(query, params);
         return result;
     }
 
-    static async getSchetSummaBySchetId(params) {
+    static async getSummaByGrafikId(params) {
         const query = `--sql
             SELECT 
                 d.debet_sum::FLOAT,
                 d.kredit_sum::FLOAT
-            FROM documents_glavniy_kniga d
+            FROM documents_haqiqiy_harajat d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
@@ -181,7 +181,7 @@ exports.DocMainBookDB = class {
                 AND d.year = $2 
                 AND d.month = $3 
                 AND d.budjet_id = $4
-                AND d.spravochnik_main_book_schet_id = $5
+                AND d.smeta_grafik_id = $5
                 AND d.type_document = $6
                 AND d.isdeleted = false
         `;

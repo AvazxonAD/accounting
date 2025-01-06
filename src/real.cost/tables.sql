@@ -1,19 +1,12 @@
-CREATE TABLE real_cost_doc_parent(
+CREATE TABLE documents_haqiqiy_harajat (
     id BIGSERIAL PRIMARY KEY,
-    budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
-    type_document VARCHAR(50) NOT NULL,
     user_id INT NOT NULL REFERENCES users(id),
-    month INT NOT NULL,
-    year INT NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE real_cost_doc_child (
-    id BIGSERIAL PRIMARY KEY,
+    main_schet_id INT NOT NULL REFERENCES main_schet(id),
+    budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
     smeta_grafik_id INT NOT NULL REFERENCES smeta_grafik(id),
-    parent_id BIGINT NOT NULL REFERENCES real_cost_doc_parent(id),
+    type_document VARCHAR,
+    month INT,
+    year INT CHECK (year BETWEEN 1900 AND 2100),
     debet_sum DECIMAL,
     kredit_sum DECIMAL,
     created_at TIMESTAMP,
@@ -21,27 +14,21 @@ CREATE TABLE real_cost_doc_child (
     isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE real_cost_end_parent (
+CREATE TABLE zakonchit_haqiqiy_harajat (
     id BIGSERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id), 
-    user_id_accepted INT REFERENCES users(id),
-    accepted_time TIMESTAMP,
+    user_id INT NOT NULL REFERENCES users(id),
+    document_yaratilgan_vaqt TIMESTAMP,
+    user_id_qabul_qilgan INT REFERENCES users(id),
+    document_qabul_qilingan_vaqt TIMESTAMP,
+    main_schet_id INT NOT NULL REFERENCES main_schet(id),
     budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
-    month INT NOT NULL,
-    year INT NOT NULL,
-    status INT NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    isdeleted BOOLEAN DEFAULT FALSE
-);
-
-CREATE TABLE real_cost_end_child (
-    id BIGSERIAL PRIMARY KEY,
-    parent_id BIGINT NOT NULL REFERENCES real_cost_end_parent(id),
-    type_document VARCHAR(50) NOT NULL,
     smeta_grafik_id INT NOT NULL REFERENCES smeta_grafik(id),
-    debet_sum DECIMAL NOT NULL,
-    kredit_sum DECIMAL NOT NULL,
+    type_document VARCHAR,
+    month INT,
+    year INT CHECK (year > 1900),
+    debet_sum DECIMAL,
+    kredit_sum DECIMAL,
+    status INT CHECK (month BETWEEN 1 AND 3),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     isdeleted BOOLEAN DEFAULT FALSE

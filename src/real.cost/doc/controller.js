@@ -1,8 +1,8 @@
 const { BudjetDB } = require('../../spravochnik/budjet/db');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
-const { MainSchetService } = require('../../spravochnik/main.schet/services')
-const { MainBookDocService } = require('./service')
-const { checkUniqueIds } = require('../../helper/functions')
+const { MainSchetService } = require('../../spravochnik/main.schet/services');
+const { SmetaGrafikService } = require('../../smeta/grafik/services')
+const { DocRealCostService } = require('./service');
+const { checkUniqueIds } = require('../../helper/functions');
 
 
 exports.Controller = class {
@@ -25,7 +25,7 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error('main schet not found', 404);
     }
-    const doc = await MainBookDocService.getByIdDoc({
+    const doc = await DocRealCostService.getByIdDoc({
       region_id,
       budjet_id,
       year,
@@ -36,11 +36,9 @@ exports.Controller = class {
       return res.error('This data already exist', 409);
     }
     for (let child of childs) {
-      const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
-      if (!operatsii) {
-        return res.status(404).json({
-          message: "operatsii not found"
-        })
+      const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik({ region_id, id: child.smeta_grafik_id })
+      if (!smeta_grafik) {
+        return res.error('Smeta grafik not found', 404)
       }
       if (type_document === 'start' || type_document === 'end') {
         if (child.debet_sum > 0 && child.kredit_sum > 0) {
@@ -49,10 +47,10 @@ exports.Controller = class {
       }
     }
     console.log(checkUniqueIds(childs))
-    if(!checkUniqueIds(childs)){
+    if (!checkUniqueIds(childs)) {
       return res.error('Duplicate id found in schets', 400);
     }
-    const result = await MainBookDocService.createDoc({
+    const result = await DocRealCostService.createDoc({
       user_id,
       budjet_id,
       main_schet_id,
@@ -77,7 +75,7 @@ exports.Controller = class {
         message: "budjet not found"
       })
     }
-    const docs = await MainBookDocService.getDocs({ region_id, budjet_id, year, month, type_document })
+    const docs = await DocRealCostService.getDocs({ region_id, budjet_id, year, month, type_document })
     return res.success('Get successfully', 200, null, docs);
   }
 
@@ -93,7 +91,7 @@ exports.Controller = class {
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const doc = await MainBookDocService.getByIdDoc({
+    const doc = await DocRealCostService.getByIdDoc({
       region_id,
       budjet_id,
       year,
@@ -121,7 +119,7 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error('main schet not found', 404);
     }
-    const old_doc = await MainBookDocService.getByIdDoc({
+    const old_doc = await DocRealCostService.getByIdDoc({
       region_id,
       year: query.year,
       month: query.month,
@@ -132,7 +130,7 @@ exports.Controller = class {
       return res.error('doc not found', 404)
     }
     if (old_doc.year !== body.year || old_doc.month !== body.month || old_doc.type_document !== body.type_document) {
-      const doc = await MainBookDocService.getByIdDoc({
+      const doc = await DocRealCostService.getByIdDoc({
         region_id,
         budjet_id,
         year: body.year,
@@ -144,9 +142,9 @@ exports.Controller = class {
       }
     }
     for (let child of body.childs) {
-      const operatsii = await MainBookSchetDB.getByIdMainBookSchet([child.spravochnik_main_book_schet_id])
-      if (!operatsii) {
-        return res.error('Operatsii not found', 404);
+      const smeta_grafik = await SmetaGrafikService.getByIdSmetaGrafik({ region_id, id: child.smeta_grafik_id })
+      if (!smeta_grafik) {
+        return res.error('Smeta grafik not found', 404)
       }
       if (body.type_document === 'start' || body.type_document === 'end') {
         if (child.debet_sum > 0 && child.kredit_sum > 0) {
@@ -154,10 +152,10 @@ exports.Controller = class {
         }
       }
     }
-    if(!checkUniqueIds(body.childs)){
+    if (!checkUniqueIds(body.childs)) {
       return res.error('Duplicate id found in schets', 400);
     }
-    const result = await MainBookDocService.updateDoc({
+    const result = await DocRealCostService.updateDoc({
       user_id,
       budjet_id,
       main_schet_id,
@@ -180,7 +178,7 @@ exports.Controller = class {
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const doc = await MainBookDocService.getByIdDoc({
+    const doc = await DocRealCostService.getByIdDoc({
       region_id,
       budjet_id,
       year,
@@ -190,7 +188,7 @@ exports.Controller = class {
     if (!doc) {
       return res.error('doc not found', 404)
     }
-    await MainBookDocService.deleteDoc({
+    await DocRealCostService.deleteDoc({
       region_id,
       year,
       month,
@@ -200,14 +198,14 @@ exports.Controller = class {
     return res.success('Delete successfully', 200)
   }
 
-  static async getBySchetSumma(req, res) {
+  static async getByGrafikSumma(req, res) {
     const region_id = req.user.region_id;
     const { year, month, budjet_id, schet_id } = req.query;
     const budjet = await BudjetDB.getByIdBudjet([budjet_id])
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const data = await MainBookDocService.getBySchetSumma({
+    const data = await DocRealCostService.getByGrafikSumma({
       region_id,
       year,
       month,
