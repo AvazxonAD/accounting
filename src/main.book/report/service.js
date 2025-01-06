@@ -20,6 +20,9 @@ exports.ReportService = class {
                     schet.id,
                     type.type
                 ]);
+                if (!schet.summa) {
+                    schet.summa = { debet_sum: 0, kredit_sum: 0 };
+                }
             }
         }
         return { year: data.year, month: data.month, type_documents: types };
