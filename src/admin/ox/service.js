@@ -1,30 +1,42 @@
-const { ReportMainBookDB } = require('./db');
-const { typeDocuments } = require('../../helper/data');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
+const { ReportOx } = require('./db');
+const { SmetaGrafikDB } = require('../../smeta/grafik/db');
 const { tashkentTime } = require('../../helper/functions')
 
 exports.ReportService = class {
     static async getReport(data) {
-        const result = await ReportMainBookDB.getReport([], data.year, data.month);
+        const result = await ReportOx.getReport([], data.year, data.month);
         return result;
     }
 
     static async getByIdReport(data) {
-        const report = await ReportMainBookDB.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
+        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
+        data.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }))
+        const report = await ReportOx.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
         if (report) {
-            report.types = typeDocuments.map(item => ({ ...item }));
-            const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999]);
-            for (let type of report.types) {
-                type.schets = schets.map(item => ({ ...item }));
-                for (let schet of type.schets) {
-                    schet.summa = await ReportMainBookDB.getSchetSummaBySchetId([
+            report.smeta_grafiks = data.smeta_grafiks.map(item => ({ ...item }));
+            if (report) {
+                for (let grafik of report.smeta_grafiks) {
+                    grafik.summa = await ReportOx.getSchetSummaBySchetId([
                         data.region_id,
                         data.year,
                         data.month,
                         data.budjet_id,
-                        schet.id,
-                        type.type
+                        grafik.id
                     ]);
+                }
+                const summa = {
+                    ajratilgan_mablag: 0,
+                    tulangan_mablag_smeta_buyicha: 0,
+                    kassa_rasxod: 0,
+                    haqiqatda_harajatlar: 0,
+                    qoldiq: 0
+                }
+                for (let grafik of report.smeta_grafiks) {
+                    summa.ajratilgan_mablag += grafik.summa.ajratilgan_mablag;
+                    summa.tulangan_mablag_smeta_buyicha += grafik.summa.ajratilgan_mablag;
+                    summa.kassa_rasxod += grafik.summa.kassa_rasxod;
+                    summa.haqiqatda_harajatlar += grafik.summa.haqiqatda_harajatlar;
+                    summa.qoldiq += grafik.summa.qoldiq;
                 }
             }
         }
@@ -32,7 +44,7 @@ exports.ReportService = class {
     }
 
     static async updateReport(data) {
-        const result = await ReportMainBookDB.updateReport([
+        const result = await ReportOx.updateReport([
             data.region_id,
             data.year,
             data.month,
