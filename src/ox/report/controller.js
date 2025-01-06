@@ -18,15 +18,15 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error('main schet not found', 404);
     }
-    const doc = await ReportService.getByIdReport({ region_id, year, month, budjet_id });
+    const doc = await ReportService.getByIdReport({ region_id, year, month, budjet_id })
     if (doc) {
-      return res.error('This data already exist', 409)
+      return res.error('This data already exists', 409);
     }
     const data = await ReportService.getInfo({
       region_id,
       year,
       month,
-      budjet_id,
+      budjet_id
     })
     const result = await ReportService.createReport({ ...data, user_id, budjet_id, main_schet_id })
     return res.success('Create successfully', 201, null, result);
@@ -71,17 +71,17 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error('main schet not found', 404);
     }
-    const old_doc = await ReportService.getByIdReport({ region_id, year: query.year, month: query.month, budjet_id: query.budjet_id });
+    const old_doc = await ReportService.getByIdReport({ region_id, year: query.year, month: query.month, budjet_id: query.budjet_id })
     if (!old_doc) {
-      return res.error('Doc not found', 404)
+      return res.error('Doc not found', 404);
     }
     if (old_doc.status === 2) {
       return res.error("The confirmed document cannot be deleted", 400)
     }
     if (old_doc.year !== body.year || old_doc.month !== body.month) {
-      const doc = await ReportService.getByIdReport({ region_id, year: body.year, month: body.month, budjet_id: query.budjet_id });
+      const doc = await ReportService.getByIdReport({ region_id, year: body.year, month: body.month, budjet_id: query.budjet_id })
       if (doc) {
-        return res.error('This data already exist', 409)
+        return res.error('This data already exists', 409);
       }
     }
     const data = await ReportService.getInfo({
@@ -119,13 +119,11 @@ exports.Controller = class {
     if (!budjet) {
       return res.error('Budjet not found', 404);
     }
-    const {data: smeta_grafiks} = await SmetaGrafikService.getSmetaGrafik({ region_id, offset: 0, limit: 9999, budjet_id, year });
     const result = await ReportService.getInfo({
       region_id,
       year,
       month,
-      budjet_id,
-      smeta_grafiks
+      budjet_id
     })
     return res.success('Get successfully', 200, null, result);
   }

@@ -1,20 +1,17 @@
-const { Controller } = require('./controllers');
+const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
-    createSchema,
-    getSchema,
-    updateSchema,
-    getByIdSchema,
-    deleteSchema,
-    sendSchema
-} = require("./schemas");
+    getReportSchema,
+    updateReportSchema,
+    getByIdSchema
+} = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.get('/:id', validator(Controller.getByIdDoc, getByIdSchema))
-    .put('/confirm/:id', validator(Controller.confirmDoc, sendSchema))
-    .get('/', Controller.getDoc);
+router.get('/id', validator(Controller.getByIdReport, getByIdSchema))
+    .get('/', validator(Controller.getReport, getReportSchema))
+    .put('/', validator(Controller.updateReport, updateReportSchema));
 
 
 module.exports = router;

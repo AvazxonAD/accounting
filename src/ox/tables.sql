@@ -13,7 +13,7 @@ CREATE TABLE documents_1_ox_xisobot (
     qoldiq DECIMAL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    isdeleted BOOLEAN
+    isdeleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE zakonchit_1_ox_xisobot (
@@ -35,5 +35,5 @@ CREATE TABLE zakonchit_1_ox_xisobot (
     status INT,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
-    isdeleted BOOLEAN
+    isdeleted BOOLEAN DEFAULT FALSE
 );
