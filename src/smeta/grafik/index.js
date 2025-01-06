@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const router = Router();
 const { validator } = require('../../helper/validator')
-const { SmetaGrafikService } = require('./service')
+const { Controller } = require('./controller')
 const {
     createSchema,
     getSchema,
@@ -11,10 +11,10 @@ const {
 } = require('./schema')
 
 
-router.get("/:id", validator(SmetaGrafikService.getByIdSmetaGrafik, getByIdSchema));
-router.get("/", validator(SmetaGrafikService.getSmetaGrafik, getSchema));
-router.post("/", validator(SmetaGrafikService.createSmetaGrafik, createSchema));
-router.put("/:id", validator(SmetaGrafikService.updateSmetaGrafik, updateSchema));
-router.delete("/:id", validator(SmetaGrafikService.deleteSmetGrafik, deleteSchema));
+router.get("/:id", validator(Controller.getByIdSmetaGrafik, getByIdSchema));
+router.get("/", validator(Controller.getSmetaGrafik, getSchema));
+router.post("/", validator(Controller.createSmetaGrafik, createSchema));
+router.put("/:id", validator(Controller.updateSmetaGrafik, updateSchema));
+router.delete("/:id", validator(Controller.deleteSmetGrafik, deleteSchema));
 
 module.exports = router;

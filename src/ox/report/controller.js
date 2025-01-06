@@ -1,7 +1,7 @@
-const { ReportService } = require('./service')
+const { ReportService } = require('./service');
 const { BudjetService } = require('../../spravochnik/budjet/services');
-const { MainSchetService } = require('../../spravochnik/main.schet/services')
-
+const { MainSchetService } = require('../../spravochnik/main.schet/services');
+const { SmetaGrafikService } = require('../../smeta/grafik/services')
 
 exports.Controller = class {
   static async createReport(req, res) {
@@ -119,11 +119,13 @@ exports.Controller = class {
     if (!budjet) {
       return res.error('Budjet not found', 404);
     }
+    const {data: smeta_grafiks} = await SmetaGrafikService.getSmetaGrafik({ region_id, offset: 0, limit: 9999, budjet_id, year });
     const result = await ReportService.getInfo({
       region_id,
       year,
       month,
       budjet_id,
+      smeta_grafiks
     })
     return res.success('Get successfully', 200, null, result);
   }

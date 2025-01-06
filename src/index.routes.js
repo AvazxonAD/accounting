@@ -67,7 +67,7 @@ routes
     .use('/real/cost/end', protect, require('./real.cost/end/index'))
     // Ox routes 
     .use('/ox/doc', protect, require('./ox/doc/index'))
-    //.use('/ox/end', protect, require('./real.cost/end/index'))
+    .use('/ox/report', protect, require('./ox/report/index'))
     // Logs
     .use('/log', protect, require('./log/index'))
     // admin

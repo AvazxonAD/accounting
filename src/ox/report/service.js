@@ -1,28 +1,22 @@
 const { ReportMainBookDB } = require('./db');
-const { DocMainBookDB } = require('../doc/db');
+const { DocOx } = require('../doc/db');
 const { typeDocuments } = require('../../helper/data');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { tashkentTime } = require('../../helper/functions')
-const { db } = require('../../db/index')
+const { db } = require('../../db/index');
+
 
 exports.ReportService = class {
     static async getInfo(data) {
-        const types = typeDocuments.map(item => ({ ...item }));
-        const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999]);
-        for (let type of types) {
-            type.schets = schets.map(item => ({ ...item }));
-            for (let schet of type.schets) {
-                schet.summa = await DocMainBookDB.getSchetSummaBySchetId([
-                    data.region_id,
-                    data.year,
-                    data.month,
-                    data.budjet_id,
-                    schet.id,
-                    type.type
-                ]);
-            }
+        for (let grafik of data.smeta_grafiks) {
+            grafik.summa = await DocOx.getSchetSummaBySchetId([
+                data.region_id,
+                data.year,
+                data.month,
+                data.budjet_id,
+                grafik.id
+            ]);
         }
-        return { year: data.year, month: data.month, type_documents: types };
+        return { year: data.year, month: data.month, smeta_grafiks: data.smeta_grafiks };
     }
 
     static async createReport(data) {

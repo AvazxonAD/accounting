@@ -67,7 +67,7 @@ exports.SmetaGrafikService = class {
         })
     }
     static async getSmetaGrafik(data) {
-        const result = await SmetaGrafikDB.getSmetaGrafik([data.region_id, data.offset, data.limit], data.budjet_id, data.operator);
+        const result = await SmetaGrafikDB.getSmetaGrafik([data.region_id, data.offset, data.limit], data.budjet_id, data.operator, data.year);
         return result;
     }
 

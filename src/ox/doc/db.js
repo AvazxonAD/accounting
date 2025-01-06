@@ -1,7 +1,6 @@
-const { db } = require('../../db/index')
-const { returnParamsValues } = require('../../helper/functions')
+const { db } = require('../../db/index');
 
-exports.DocMainBookDB = class {
+exports.DocOx = class {
     static async createDoc(params, client) {
         const query = `--sql
             INSERT INTO documents_1_ox_xisobot (
@@ -169,8 +168,11 @@ exports.DocMainBookDB = class {
     static async getSchetSummaBySchetId(params) {
         const query = `--sql
             SELECT 
-                d.debet_sum::FLOAT,
-                d.kredit_sum::FLOAT
+                COALESCE(ajratilgan_mablag, 0)::FLOAT,
+                COALESCE(tulangan_mablag_smeta_buyicha, 0)::FLOAT,
+                COALESCE(kassa_rasxod, 0)::FLOAT,
+                COALESCE(haqiqatda_harajatlar, 0)::FLOAT,
+                COALESCE(qoldiq, 0)::FLOAT
             FROM documents_1_ox_xisobot d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -180,9 +182,9 @@ exports.DocMainBookDB = class {
                 AND d.month = $3 
                 AND d.budjet_id = $4
                 AND d.smeta_grafik_id = $5
-                AND d.type_document = $6
                 AND d.isdeleted = false
         `;
+        console.log(params);
         const result = await db.query(query, params);
         return result[0];
     }

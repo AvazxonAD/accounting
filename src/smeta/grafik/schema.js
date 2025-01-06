@@ -51,7 +51,8 @@ exports.getSchema = Joi.object({
         budjet_id: Joi.number().min(1).integer(),
         type: Joi.string().trim(),
         group_number: Joi.string().trim(),
-        operator: Joi.string().trim().valid('=', '>')
+        operator: Joi.string().trim().valid('=', '>'),
+        year: Joi.number().integer().min(1900)
     })
 }).options({ stripUnknown: true });
 
