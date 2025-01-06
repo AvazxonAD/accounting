@@ -1,27 +1,27 @@
 const { ReportMainBookDB } = require('./db');
-const { DocMainBookDB } = require('../doc/db');
+const { DocRealCost } = require('../doc/db');
 const { typeDocuments } = require('../../helper/data');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
+const { SmetaGrafikDB } = require('../../smeta/grafik/db');
 const { tashkentTime } = require('../../helper/functions')
 const { db } = require('../../db/index')
 
 exports.ReportService = class {
     static async getInfo(data) {
         const types = typeDocuments.map(item => ({ ...item }));
-        const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999]);
+        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
         for (let type of types) {
-            type.schets = schets.map(item => ({ ...item }));
-            for (let schet of type.schets) {
-                schet.summa = await DocMainBookDB.getSchetSummaBySchetId([
+            type.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }));
+            for (let grafik of type.smeta_grafiks) {
+                grafik.summa = await DocRealCost.getSummaByGrafikId([
                     data.region_id,
                     data.year,
                     data.month,
                     data.budjet_id,
-                    schet.id,
+                    grafik.id,
                     type.type
                 ]);
-                if (!schet.summa) {
-                    schet.summa = { debet_sum: 0, kredit_sum: 0 };
+                if (!grafik.summa) {
+                    grafik.summa = { debet_sum: 0, kredit_sum: 0 };
                 }
             }
         }
@@ -32,7 +32,7 @@ exports.ReportService = class {
         const report = await db.transaction(async client => {
             const result = [];
             for (let type of data.type_documents) {
-                for (let schet of type.schets) {
+                for (let grafik of type.smeta_grafiks) {
                     result.push(
                         await ReportMainBookDB.createReport([
                             data.user_id,
@@ -41,12 +41,12 @@ exports.ReportService = class {
                             null,
                             data.main_schet_id,
                             data.budjet_id,
-                            schet.id,
+                            grafik.id,
                             type.type,
                             data.month,
                             data.year,
-                            schet.summa.debet_sum,
-                            schet.summa.kredit_sum,
+                            grafik.summa.debet_sum,
+                            grafik.summa.kredit_sum,
                             1,
                             tashkentTime(),
                             tashkentTime()
@@ -68,16 +68,16 @@ exports.ReportService = class {
         const report = await ReportMainBookDB.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
         if (report) {
             report.types = typeDocuments.map(item => ({ ...item }));
-            const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999]);
+            const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
             for (let type of report.types) {
-                type.schets = schets.map(item => ({ ...item }));
-                for (let schet of type.schets) {
-                    schet.summa = await ReportMainBookDB.getSchetSummaBySchetId([
+                type.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }));
+                for (let grafik of type.smeta_grafiks) {
+                    grafik.summa = await ReportMainBookDB.getSchetSummaBySchetId([
                         data.region_id,
                         data.year,
                         data.month,
                         data.budjet_id,
-                        schet.id,
+                        grafik.id,
                         type.type
                     ]);
                 }
@@ -96,7 +96,7 @@ exports.ReportService = class {
             ], client)
             const result = [];
             for (let type of data.type_documents) {
-                for (let schet of type.schets) {
+                for (let grafik of type.smeta_grafiks) {
                     result.push(
                         await ReportMainBookDB.createReport([
                             data.user_id,
@@ -105,12 +105,12 @@ exports.ReportService = class {
                             null,
                             data.query.main_schet_id,
                             data.query.budjet_id,
-                            schet.id,
+                            grafik.id,
                             type.type,
                             data.body.month,
                             data.body.year,
-                            schet.summa.debet_sum,
-                            schet.summa.kredit_sum,
+                            grafik.summa.debet_sum,
+                            grafik.summa.kredit_sum,
                             1,
                             tashkentTime(),
                             tashkentTime()

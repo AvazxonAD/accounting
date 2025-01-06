@@ -1,18 +1,18 @@
 const { db } = require('../../db/index')
 const { tashkentTime } = require('../../helper/functions')
-const { DocMainBookDB } = require('./db')
+const { DocRealCost } = require('./db')
 
-exports.MainBookDocService = class {
+exports.DocRealCostService = class {
     static async createDoc(data) {
         const doc = await db.transaction(async client => {
             const result = [];
             for (let item of data.childs) {
                 result.push(
-                    await DocMainBookDB.createDoc([
+                    await DocRealCost.createDoc([
                         data.user_id,
                         data.budjet_id,
                         data.main_schet_id,
-                        item.spravochnik_main_book_schet_id,
+                        item.smeta_grafik_id,
                         data.type_document,
                         data.month,
                         data.year,
@@ -24,14 +24,14 @@ exports.MainBookDocService = class {
                 )
             }
             if (data.type_document !== 'end') {
-                await DocMainBookDB.deleteDoc([
+                await DocRealCost.deleteDoc([
                     data.region_id,
                     data.year,
                     data.month,
                     'end',
                     data.budjet_id
                 ], client)
-                const end_childs = await DocMainBookDB.getSummaBySchets([
+                const end_childs = await DocRealCost.getSummaByGrafiks([
                     data.region_id,
                     data.year,
                     data.month,
@@ -39,11 +39,11 @@ exports.MainBookDocService = class {
                 ], client)
                 for (let end_item of end_childs) {
                     const summa = end_item.debet_sum - end_item.kredit_sum;
-                    await DocMainBookDB.createDoc([
+                    await DocRealCost.createDoc([
                         data.user_id,
                         data.budjet_id,
                         data.main_schet_id,
-                        end_item.spravochnik_main_book_schet_id,
+                        end_item.smeta_grafik_id,
                         'end',
                         data.month,
                         data.year,
@@ -60,12 +60,12 @@ exports.MainBookDocService = class {
     }
 
     static async getDocs(data) {
-        const docs = await DocMainBookDB.getDoc([data.region_id, data.budjet_id], data.year, data.month, data.type_document);
+        const docs = await DocRealCost.getDoc([data.region_id, data.budjet_id], data.year, data.month, data.type_document);
         return docs;
     }
 
     static async getByIdDoc(data) {
-        const result = await DocMainBookDB.getByIdDoc([
+        const result = await DocRealCost.getByIdDoc([
             data.region_id,
             data.year,
             data.month,
@@ -85,7 +85,7 @@ exports.MainBookDocService = class {
 
     static async updateDoc(data) {
         const doc = await db.transaction(async client => {
-            await DocMainBookDB.deleteDoc([
+            await DocRealCost.deleteDoc([
                 data.region_id,
                 data.query.year,
                 data.query.month,
@@ -95,11 +95,11 @@ exports.MainBookDocService = class {
             const result = [];
             for (let item of data.body.childs) {
                 result.push(
-                    await DocMainBookDB.createDoc([
+                    await DocRealCost.createDoc([
                         data.user_id,
                         data.budjet_id,
                         data.main_schet_id,
-                        item.spravochnik_main_book_schet_id,
+                        item.smeta_grafik_id,
                         data.body.type_document,
                         data.body.month,
                         data.body.year,
@@ -111,14 +111,14 @@ exports.MainBookDocService = class {
                 )
             }
             if (data.body.type_document !== 'end') {
-                await DocMainBookDB.deleteDoc([
+                await DocRealCost.deleteDoc([
                     data.region_id,
                     data.body.year,
                     data.body.month,
                     'end',
                     data.budjet_id
                 ], client)
-                const end_childs = await DocMainBookDB.getSummaBySchets([
+                const end_childs = await DocRealCost.getSummaByGrafiks([
                     data.region_id,
                     data.body.year,
                     data.body.month,
@@ -126,11 +126,11 @@ exports.MainBookDocService = class {
                 ], client)
                 for (let end_item of end_childs) {
                     const summa = end_item.debet_sum - end_item.kredit_sum;
-                    await DocMainBookDB.createDoc([
+                    await DocRealCost.createDoc([
                         data.user_id,
                         data.budjet_id,
                         data.main_schet_id,
-                        end_item.spravochnik_main_book_schet_id,
+                        end_item.smeta_grafik_id,
                         'end',
                         data.body.month,
                         data.body.year,
@@ -147,7 +147,7 @@ exports.MainBookDocService = class {
     }
 
     static async deleteDoc(data) {
-        await DocMainBookDB.deleteDoc([
+        await DocRealCost.deleteDoc([
             data.region_id,
             data.year,
             data.month,
@@ -156,8 +156,8 @@ exports.MainBookDocService = class {
         ])
     }
 
-    static async getBySchetSumma(data) {
-        const result = await DocMainBookDB.getBySchetSummaWithType([
+    static async getByGrafikSumma(data) {
+        const result = await DocRealCost.getBySummaGrafikWithType([
             data.region_id,
             data.year,
             data.month,
