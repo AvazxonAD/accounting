@@ -1,17 +1,17 @@
-const { Controller } = require('./constrollers');
+const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
-    getEndSchema,
-    updateEndSchema,
+    getReportSchema,
+    updateReportSchema,
     getByIdSchema
-} = require("./schemas");
+} = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.get('/:id', validator(Controller.getByIdEnd, getByIdSchema))
-    .get('/', validator(Controller.getEnd, getEndSchema))
-    .put('/:id', validator(Controller.updateEnd, updateEndSchema));
+router.get('/id', validator(Controller.getByIdReport, getByIdSchema))
+    .get('/', validator(Controller.getReport, getReportSchema))
+    .put('/', validator(Controller.updateReport, updateReportSchema));
 
 
 module.exports = router;
