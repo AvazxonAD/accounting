@@ -1,6 +1,6 @@
 const { db } = require('../../db/index')
 
-exports.ReportMainBookDB = class {
+exports.ReportOx = class {
     static async createReport(params, client) {
         const query = `--sql
             INSERT INTO zakonchit_1_ox_xisobot (
@@ -158,8 +158,11 @@ exports.ReportMainBookDB = class {
     static async getSchetSummaBySchetId(params) {
         const query = `--sql
             SELECT 
-                d.debet_sum::FLOAT,
-                d.kredit_sum::FLOAT
+                ajratilgan_mablag::FLOAT,
+                tulangan_mablag_smeta_buyicha::FLOAT,
+                kassa_rasxod::FLOAT,
+                haqiqatda_harajatlar::FLOAT,
+                qoldiq::FLOAT
             FROM zakonchit_1_ox_xisobot d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -169,7 +172,6 @@ exports.ReportMainBookDB = class {
                 AND d.month = $3 
                 AND d.budjet_id = $4
                 AND d.smeta_grafik_id = $5
-                AND d.type_document = $6
                 AND d.isdeleted = false
         `;
         const result = await db.query(query, params);

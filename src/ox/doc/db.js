@@ -168,11 +168,11 @@ exports.DocOx = class {
     static async getSchetSummaBySchetId(params) {
         const query = `--sql
             SELECT 
-                COALESCE(ajratilgan_mablag, 0)::FLOAT,
-                COALESCE(tulangan_mablag_smeta_buyicha, 0)::FLOAT,
-                COALESCE(kassa_rasxod, 0)::FLOAT,
-                COALESCE(haqiqatda_harajatlar, 0)::FLOAT,
-                COALESCE(qoldiq, 0)::FLOAT
+                ajratilgan_mablag::FLOAT,
+                tulangan_mablag_smeta_buyicha::FLOAT,
+                kassa_rasxod::FLOAT,
+                haqiqatda_harajatlar::FLOAT,
+                qoldiq::FLOAT
             FROM documents_1_ox_xisobot d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -184,7 +184,6 @@ exports.DocOx = class {
                 AND d.smeta_grafik_id = $5
                 AND d.isdeleted = false
         `;
-        console.log(params);
         const result = await db.query(query, params);
         return result[0];
     }

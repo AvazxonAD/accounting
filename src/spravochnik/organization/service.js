@@ -33,7 +33,7 @@ exports.OrganizationService = class {
         const region_id = req.user.region_id;
         const { page, limit, search } = req.query;
         const offset = (page - 1) * limit;
-        const { result, total } = await OrganizationDB.getOrganizationDataAndTotal([region_id, offset, limit], search);
+        const { data, total } = await OrganizationDB.getOrganizationDataAndTotal([region_id, offset, limit], search);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -44,7 +44,8 @@ exports.OrganizationService = class {
         }
         return res.status(200).json({
             message: "get organization successfully!",
-            meta, data: result
+            meta, 
+            data
         })
     }
 
