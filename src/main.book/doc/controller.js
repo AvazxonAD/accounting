@@ -48,6 +48,7 @@ exports.Controller = class {
         }
       }
     }
+    console.log(checkUniqueIds(childs))
     if(!checkUniqueIds(childs)){
       return res.error('Duplicate id found in schets', 400);
     }
