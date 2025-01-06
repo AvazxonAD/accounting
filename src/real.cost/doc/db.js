@@ -1,193 +1,191 @@
 const { db } = require('../../db/index')
-const { returnParamsValues, } = require('../../helper/functions')
+const { returnParamsValues } = require('../../helper/functions')
 
-exports.RealCostDB = class {
+exports.DocMainBookDB = class {
     static async createDoc(params, client) {
         const query = `--sql
-            INSERT INTO real_cost_doc_parent (
+            INSERT INTO documents_glavniy_kniga (
                 user_id,
                 budjet_id,
+                main_schet_id,
+                spravochnik_main_book_schet_id,
                 type_document,
                 month,
                 year,
-                created_at,
-                updated_at
-            ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *
-        `;
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
-
-    static async updateDoc(params, client) {
-        const query = `--sql
-            UPDATE real_cost_doc_parent 
-                SET 
-                    type_document = $1,
-                    month = $2,
-                    year = $3,
-                    updated_at = $4
-            WHERE id = $5
-            RETURNING *
-        `;
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
-
-    static async createDocChild(params, client) {
-        const _values = returnParamsValues(params, 6)
-        const query = `--sql
-            INSERT INTO real_cost_doc_child (
-                smeta_grafik_id,
-                parent_id,
-                debet_sum, 
+                debet_sum,
                 kredit_sum,
                 created_at,
                 updated_at
             ) 
-            VALUES ${_values} RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
         `;
         const result = await client.query(query, params)
-        return result.rows;
+        return result.rows[0];
     }
 
-    static async getDoc(params, year, month, type) {
+    static async getByIdDoc(params) {
+        const query = `--sql
+            SELECT 
+                d.type_document,
+                d.month,
+                d.year,
+                (
+                    SELECT ARRAY_AGG(row_to_json(child))
+                    FROM (
+                        SELECT 
+                        spravochnik_main_book_schet_id,
+                        debet_sum,
+                        kredit_sum 
+                        FROM documents_glavniy_kniga d
+                        JOIN users AS u ON u.id = d.user_id
+                        JOIN regions AS r ON r.id = u.region_id
+                        JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+                        WHERE r.id = $1 
+                            AND d.year = $2 
+                            AND d.month = $3 
+                            AND d.type_document = $4
+                            AND d.budjet_id = $5
+                            AND d.isdeleted = false
+                    ) AS child
+                ) AS childs
+            FROM documents_glavniy_kniga d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+            WHERE r.id = $1 
+                AND d.year = $2 
+                AND d.month = $3 
+                AND d.type_document = $4
+                AND d.budjet_id = $5
+                AND d.isdeleted = false
+        `;
+        const result = await db.query(query, params);
+        return result[0];
+    }
+
+    static async getDoc(params, year, month, type_document) {
         let year_filter = ``;
         let month_filter = ``;
-        let type_filter = ``;
-        if(year){
+        let type_document_filter = ``;
+        if (year) {
             year_filter = `AND d.year = $${params.length + 1}`;
             params.push(year)
         }
-        if(month){
+        if (month) {
             month_filter = `AND d.month = $${params.length + 1}`;
             params.push(month)
         }
-        if(type){
-            type_filter = `AND d.type_document = $${params.length + 1}`;
-            params.push(type)
+        if (type_document) {
+            type_document_filter = `AND d.type_document = $${params.length + 1}`;
+            params.push(type_document)
         }
         const query = `--sql
             SELECT 
-                d.id::INTEGER,
                 d.type_document,
                 d.month,
-                d.year
-            FROM real_cost_doc_parent AS d
+                d.year,
+                COALESCE(SUM(d.debet_sum), 0)::FLOAT AS debet_sum,
+                COALESCE(SUM(d.kredit_sum), 0)::FLOAT AS kredit_sum
+            FROM documents_glavniy_kniga d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
             WHERE r.id = $1 
                 AND b.id = $2
                 AND d.isdeleted = false 
-                ${year_filter} ${month_filter} ${type_filter}
+                ${year_filter}
+                ${month_filter}
+                ${type_document_filter}
+            GROUP BY d.type_document, d.month, d.year
         `;
         const result = await db.query(query, params)
         return result;
     }
 
-    static async getDocChildsSum(params) {
+    static async deleteDoc(params, client) {
         const query = `--sql
-            SELECT 
-                COALESCE(SUM(debet_sum), 0)::FLOAT AS debet_sum, 
-                COALESCE(SUM(kredit_sum), 0)::FLOAT AS kredit_sum 
-            FROM real_cost_doc_child
-            WHERE parent_id = $1 AND isdeleted = false 
+            UPDATE documents_glavniy_kniga
+            SET isdeleted = true
+            WHERE EXISTS (
+                SELECT 1
+                FROM users AS u
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE u.id = documents_glavniy_kniga.user_id
+                    AND r.id = $1
+                    AND documents_glavniy_kniga.year = $2
+                    AND documents_glavniy_kniga.month = $3
+                    AND documents_glavniy_kniga.type_document = $4
+                    AND documents_glavniy_kniga.budjet_id = $5
+                    AND documents_glavniy_kniga.isdeleted = false
+            )
         `;
-        const result = await db.query(query, params)
-        return result[0]
+        const executor = client || db;
+        await executor.query(query, params);
     }
 
-    static async getDocChildSmetaSum(params) {
-        const query = `--sql
+    static async getSummaBySchets(params, client) {
+        const query = `--sql 
             SELECT 
-                ch.smeta_grafik_id,
-                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
-                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
-            FROM real_cost_doc_child ch
-            JOIN real_cost_doc_parent p ON p.id = ch.parent_id
-            JOIN users AS u ON u.id = p.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE p.isdeleted = false 
-                AND r.id = $1
-                AND p.year = $2 
-                AND p.month = $3
-                AND p.budjet_id = $4
-                AND p.type_document != $5
-        `;
-        const result = await db.query(query, params)
-        return result;
-    }
-
-    static async getDocChilds(params) {
-        const query = `--sql
-            SELECT 
-                id::INTEGER,
-                smeta_grafik_id,
-                parent_id::INTEGER,
-                debet_sum::FLOAT, 
-                kredit_sum::FLOAT,
-                created_at,
-                updated_at
-            FROM real_cost_doc_child
-            WHERE parent_id = $1
-        `;
-        const result = await db.query(query, params)
-        return result;
-    }
-
-    static async getByIdDoc(params, isdeleted) {
-        const query = `--sql
-            SELECT 
-                d.id::INTEGER,
-                d.user_id,
-                d.budjet_id,
-                d.type_document,
-                d.month,
-                d.year,
-                d.created_at,
-                d.updated_at
-            FROM real_cost_doc_parent AS d
+                d.spravochnik_main_book_schet_id,
+                COALESCE(SUM(d.debet_sum), 0) AS debet_sum,
+                COALESCE(SUM(d.kredit_sum), 0) AS kredit_sum
+            FROM documents_glavniy_kniga d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
             WHERE r.id = $1 
-                AND b.id = $2
-                AND d.id = $3
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
+                AND d.year = $2 
+                AND d.month = $3 
+                AND d.type_document != 'end'
+                AND d.budjet_id = $4
+                AND d.isdeleted = false
+            GROUP BY d.spravochnik_main_book_schet_id
+        `;
+        const result = await client.query(query, params);
+        return result.rows;
+    }
+
+    static async getBySchetSummaWithType(params) {
+        const query = `--sql 
+            SELECT 
+                d.type_document,    
+                d.spravochnik_main_book_schet_id,
+                COALESCE(SUM(d.debet_sum), 0)::FLOAT AS debet_sum,
+                COALESCE(SUM(d.kredit_sum), 0)::FLOAT AS kredit_sum
+            FROM documents_glavniy_kniga d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+            WHERE r.id = $1 
+                AND d.year = $2 
+                AND d.month = $3 
+                AND d.budjet_id = $4
+                AND d.isdeleted = false
+                AND d.spravochnik_main_book_schet_id = $5
+            GROUP BY d.spravochnik_main_book_schet_id, d.type_document
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
+
+    static async getSchetSummaBySchetId(params) {
+        const query = `--sql
+            SELECT 
+                d.debet_sum::FLOAT,
+                d.kredit_sum::FLOAT
+            FROM documents_glavniy_kniga d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+            WHERE r.id = $1 
+                AND d.year = $2 
+                AND d.month = $3 
+                AND d.budjet_id = $4
+                AND d.spravochnik_main_book_schet_id = $5
+                AND d.type_document = $6
+                AND d.isdeleted = false
         `;
         const result = await db.query(query, params);
         return result[0];
     }
-
-    static async deleteDocChilds(params, client){
-        const query = `DELETE FROM real_cost_doc_child WHERE parent_id = $1`;
-        await client.query(query, params);
-    }
-
-    static async deleteDoc(params, client){
-        await client.query(`UPDATE real_cost_doc_parent SET isdeleted = true WHERE id = $1`, params)
-        await client.query(`UPDATE real_cost_doc_child SET isdeleted = true WHERE parent_id = $1`, params)
-    }
-
-    static async getOperatsiiSum(params, client) {
-        const query = `--sql
-            SELECT 
-                ch.smeta_grafik_id,
-                COALESCE(SUM(ch.debet_sum), 0)::FLOAT AS debet_sum, 
-                COALESCE(SUM(ch.kredit_sum), 0)::FLOAT AS kredit_sum 
-            FROM real_cost_doc_child AS ch
-            JOIN real_cost_doc_parent AS d ON ch.parent_id = d.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE d.isdeleted = false
-                AND r.id = $1
-                AND d.year = $2 
-                AND d.month = $3
-                AND d.budjet_id = $4
-            GROUP BY ch.smeta_grafik_id
-        `;
-        const result = await client.query(query, params);
-        return result.rows;
-    } 
 }
