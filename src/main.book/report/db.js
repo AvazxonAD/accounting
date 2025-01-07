@@ -49,36 +49,7 @@ exports.ReportMainBookDB = class {
                     d.user_id_qabul_qilgan,
                     ua.login AS user_login_qabul_qilgan,
                     d.status,
-                (
-                    SELECT 
-                        d.document_yaratilgan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.isdeleted = false 
-                        ${year_filter} ${month_filter}
-                    ORDER BY d.document_yaratilgan_vaqt DESC
-                    LIMIT 1
-                ) AS document_yaratilgan_vaqt,
-                (
-                    SELECT 
-                        d.document_qabul_qilingan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.isdeleted = false 
-                        ${year_filter} ${month_filter}
-                    ORDER BY d.document_qabul_qilingan_vaqt DESC
-                    LIMIT 1
-                ) AS document_qabul_qilingan_vaqt
+                    r.id AS region_id
             FROM zakonchit_glavniy_kniga AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
@@ -91,6 +62,26 @@ exports.ReportMainBookDB = class {
         `;
         const result = await db.query(query, params)
         return result;
+    }
+
+    static async getReportTime(params) {
+        const query = `--sql
+            SELECT 
+                d.document_yaratilgan_vaqt,
+                d.document_qabul_qilingan_vaqt
+            FROM zakonchit_glavniy_kniga AS d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 
+                AND d.budjet_id = $2 
+                AND d.year = $3
+                AND d.month = $4
+                AND d.isdeleted = false
+            ORDER BY d.id DESC 
+            LIMIT 1
+        `;
+        const result = await db.query(query, params)
+        return result[0];
     }
 
     static async getByIdReport(params) {

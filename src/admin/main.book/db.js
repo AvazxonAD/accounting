@@ -26,35 +26,7 @@ exports.ReportMainBookDB = class {
                     ua.login AS user_login_qabul_qilgan,
                     d.status,
                     r.id AS region_id,
-                    r.name AS region_name,
-                    (
-                        SELECT 
-                            d_ch.document_yaratilgan_vaqt
-                        FROM zakonchit_glavniy_kniga AS d_ch
-                        JOIN users AS u ON u.id = d_ch.user_id
-                        JOIN regions AS r_ch ON r_ch.id = u.region_id
-                        WHERE r_ch.id = r.id 
-                            AND d_ch.budjet_id = b.id
-                            AND d_ch.isdeleted = false 
-                            AND d_ch.month = d.month
-                            AND d_ch.year = d.year
-                        ORDER BY d_ch.document_yaratilgan_vaqt DESC
-                        LIMIT 1
-                    ) AS document_yaratilgan_vaqt,
-                    (
-                        SELECT 
-                            d_ch.document_qabul_qilingan_vaqt
-                        FROM zakonchit_glavniy_kniga AS d_ch
-                        JOIN users AS u ON u.id = d_ch.user_id
-                        JOIN regions AS r_ch ON r_ch.id = u.region_id
-                        WHERE r_ch.id = r.id 
-                            AND d_ch.budjet_id = b.id
-                            AND d_ch.isdeleted = false 
-                            AND d_ch.month = d.month
-                            AND d_ch.year = d.year
-                        ORDER BY d_ch.document_qabul_qilingan_vaqt DESC
-                        LIMIT 1
-                    ) AS document_qabul_qilingan_vaqt
+                    r.name AS region_name
             FROM zakonchit_glavniy_kniga AS d
             JOIN users AS u ON u.id = d.user_id
             LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
@@ -66,6 +38,28 @@ exports.ReportMainBookDB = class {
         const result = await db.query(query, params)
         return result;
     }
+
+
+    static async getReportTime(params) {
+        const query = `--sql
+            SELECT 
+                d.document_yaratilgan_vaqt,
+                d.document_qabul_qilingan_vaqt
+            FROM zakonchit_glavniy_kniga AS d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 
+                AND d.budjet_id = $2 
+                AND d.year = $3
+                AND d.month = $4
+                AND d.isdeleted = false
+            ORDER BY d.id DESC 
+            LIMIT 1
+        `;
+        const result = await db.query(query, params)
+        return result[0];
+    }
+
 
     static async getByIdReport(params) {
         const query = `--sql
@@ -126,7 +120,7 @@ exports.ReportMainBookDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
- 
+
     static async getSchetSummaBySchetId(params) {
         const query = `--sql
             SELECT 
@@ -147,7 +141,7 @@ exports.ReportMainBookDB = class {
         const result = await db.query(query, params);
         return result[0];
     }
-  
+
     static async updateReport(params) {
         const query = `--sql
             UPDATE zakonchit_glavniy_kniga 

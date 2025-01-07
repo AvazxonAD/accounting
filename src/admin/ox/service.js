@@ -5,6 +5,11 @@ const { tashkentTime } = require('../../helper/functions')
 exports.ReportService = class {
     static async getReport(data) {
         const result = await ReportOx.getReport([], data.year, data.month);
+        for (let doc of result) {
+            const times = await ReportOx.getReportTime([doc.region_id, doc.budjet_id, doc.year, doc.month]);
+            doc.document_yaratilgan_vaqt = times.document_yaratilgan_vaqt;
+            doc.document_qabul_qilingan_vaqt = times.document_qabul_qilingan_vaqt;
+        }
         return result;
     }
 
