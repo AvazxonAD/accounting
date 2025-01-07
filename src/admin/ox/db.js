@@ -165,4 +165,27 @@ exports.ReportOx = class {
         const result = await db.query(query, params);
         return result;
     }
+
+    static async getByYearSumma(params) {
+        const query = `--sql
+            SELECT 
+                COALESCE(SUM(ajratilgan_mablag), 0)::FLOAT AS ajratilgan_mablag,
+                COALESCE(SUM(tulangan_mablag_smeta_buyicha), 0)::FLOAT AS tulangan_mablag_smeta_buyicha,
+                COALESCE(SUM(kassa_rasxod), 0)::FLOAT AS kassa_rasxod,
+                COALESCE(SUM(haqiqatda_harajatlar), 0)::FLOAT AS haqiqatda_harajatlar,
+                COALESCE(SUM(qoldiq), 0)::FLOAT AS qoldiq
+            FROM documents_1_ox_xisobot d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
+            WHERE r.id = $1 
+                AND d.year = $2 
+                AND d.month <= $3
+                AND d.budjet_id = $4
+                AND d.smeta_grafik_id = $5
+                AND d.isdeleted = false
+        `;
+        const result = await db.query(query, params);
+        return result[0];
+    }
 }
