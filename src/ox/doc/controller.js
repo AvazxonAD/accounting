@@ -173,14 +173,14 @@ exports.Controller = class {
     return res.success('Delete successfully', 200)
   }
 
-  static async getBySchetSumma(req, res) {
+  static async getByGrafikSumma(req, res) {
     const region_id = req.user.region_id;
     const { year, month, budjet_id, schet_id } = req.query;
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
-    const data = await OxDocService.getBySchetSumma({
+    const data = await OxDocService.getByGrafikSumma({
       region_id,
       year,
       month,

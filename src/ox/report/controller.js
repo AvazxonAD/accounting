@@ -1,7 +1,6 @@
 const { ReportService } = require('./service');
 const { BudjetService } = require('../../spravochnik/budjet/services');
 const { MainSchetService } = require('../../spravochnik/main.schet/services');
-const { SmetaGrafikService } = require('../../smeta/grafik/services')
 
 exports.Controller = class {
   static async createReport(req, res) {

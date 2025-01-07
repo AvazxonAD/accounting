@@ -10,38 +10,22 @@ exports.ReportService = class {
         const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
         data.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }))
         for (let grafik of data.smeta_grafiks) {
-            grafik.summa = await DocOx.getSummaByGrafikId([
+            grafik.summa = await DocOx.getGrafikSummaByGrafikId([
                 data.region_id,
                 data.year,
                 data.month,
                 data.budjet_id,
                 grafik.id
             ]);
-            if (!grafik.summa) {
-                grafik.summa = {
-                    ajratilgan_mablag: 0,
-                    tulangan_mablag_smeta_buyicha: 0,
-                    kassa_rasxod: 0,
-                    haqiqatda_harajatlar: 0,
-                    qoldiq: 0
-                }
-            }
+            grafik.year_summa = await DocOx.getByYearSumma([
+                data.region_id,
+                data.year,
+                data.month,
+                data.budjet_id,
+                grafik.id
+            ]);
         }
-        const summa = {
-            ajratilgan_mablag: 0,
-            tulangan_mablag_smeta_buyicha: 0,
-            kassa_rasxod: 0,
-            haqiqatda_harajatlar: 0,
-            qoldiq: 0
-        }
-        for (let grafik of data.smeta_grafiks) {
-            summa.ajratilgan_mablag += grafik.summa.ajratilgan_mablag;
-            summa.tulangan_mablag_smeta_buyicha += grafik.summa.ajratilgan_mablag;
-            summa.kassa_rasxod += grafik.summa.kassa_rasxod;
-            summa.haqiqatda_harajatlar += grafik.summa.haqiqatda_harajatlar;
-            summa.qoldiq += grafik.summa.qoldiq;
-        }
-        return { year: data.year, month: data.month, summa, smeta_grafiks: data.smeta_grafiks };
+        return { year: data.year, month: data.month, smeta_grafiks: data.smeta_grafiks };
     }
 
     static async createReport(data) {
