@@ -20,7 +20,7 @@ exports.Controller = class {
                 res.error('Organization not found', 404)
             }
         }
-        const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await monitoringService.monitoring({ ...query, offset, region_id }, organ_id)
+        const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await OrganizationmonitoringService.monitoring({ ...query, offset, region_id }, organ_id)
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -48,9 +48,9 @@ exports.Controller = class {
             return res.error('main shcet not found', 404);
         }
         const { data: organizations } = await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 });
-        const data = await OrganizationmonitoringService.prixodRasxod(query, organizations);
+        const data = await OrganizationOrganizationmonitoringService.prixodRasxod(query, organizations);
         if (query.excel === 'true') {
-            const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
+            const filePath = await OrganizationOrganizationmonitoringService.prixodRasxodExcel({
                 organ_name: main_schet.tashkilot_nomi,
                 operatsii: query.operatsii,
                 organizations: data.organizations,
@@ -74,9 +74,9 @@ exports.Controller = class {
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
-        const { data, itogo_rasxod } = await OrganizationmonitoringService.cap({ ...query, region_id });
+        const { data, itogo_rasxod } = await OrganizationOrganizationmonitoringService.cap({ ...query, region_id });
         if (query.excel === 'true') {
-            const filePath = await OrganizationmonitoringService.capExcel({
+            const filePath = await OrganizationOrganizationmonitoringService.capExcel({
                 organ_name: main_schet.tashkilot_nomi,
                 operatsii: query.operatsii,
                 organizations: data,
@@ -108,7 +108,7 @@ exports.Controller = class {
         } else {
             organizations = await ContractService.getContractByOrganizations({ region_id });
         }
-        data = await OrganizationmonitoringService.consolidated({
+        data = await OrganizationOrganizationmonitoringService.consolidated({
             organizations,
             region_id,
             from: query.from,
@@ -120,14 +120,14 @@ exports.Controller = class {
         if (query.excel === 'true') {
             let filePath;
             if(query.contract === 'true'){
-                filePath = await OrganizationmonitoringService.consolidatedByContractExcel({
+                filePath = await OrganizationOrganizationmonitoringService.consolidatedByContractExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
                     operatsii: query.operatsii
                 })
             }else {
-                filePath = await OrganizationmonitoringService.consolidatedExcel({
+                filePath = await OrganizationOrganizationmonitoringService.consolidatedExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
