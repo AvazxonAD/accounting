@@ -17,6 +17,15 @@ exports.ReportService = class {
                 data.budjet_id,
                 grafik.id
             ]);
+            if (!grafik.summa) {
+                grafik.summa = {
+                    ajratilgan_mablag: 0,
+                    tulangan_mablag_smeta_buyicha: 0,
+                    kassa_rasxod: 0,
+                    haqiqatda_harajatlar: 0,
+                    qoldiq: 0
+                };
+            }
             grafik.year_summa = await DocOx.getByYearSumma([
                 data.region_id,
                 data.year,
