@@ -87,8 +87,8 @@ exports.OxDocService = class {
         ])
     }
 
-    static async getBySchetSumma(data) {
-        const result = await DocOx.getBySchetSummaWithType([
+    static async getByGrafikSumma(data) {
+        const result = await DocOx.getByGrafikSummaWithType([
             data.region_id,
             data.year,
             data.month,

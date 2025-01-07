@@ -6,7 +6,6 @@ const {
     updateDocSchema,
     getByIdDocSchema,
     deleteDocSchema,
-    getBySchetSchema
 } = require("./schema");
 
 const { Router } = require('express')
