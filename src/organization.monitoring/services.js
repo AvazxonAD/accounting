@@ -419,7 +419,7 @@ exports.OrganizationmonitoringService = class {
         });
         const filePath = path.join(__dirname, '../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
-        return filePath;
+        return {filePath, fileName};
     }
 
     static async consolidatedByContractExcel(data) {
