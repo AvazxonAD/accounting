@@ -1,4 +1,4 @@
-const { NaimenovanieService } = require("./service");
+const { Controller } = require("./controller");
 const { validator } = require('../../../helper/validator');
 const {
     createNaimenovanieSchema,
@@ -12,11 +12,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/kol', validator(NaimenovanieService.getProductKol, getProductKolSchema));
-router.post('/', validator(NaimenovanieService.createNaimenovanie, createNaimenovanieSchema));
-router.get('/:id', validator(NaimenovanieService.getByIdNaimenovanie, getByIdNaimenovanieSchema));
-router.put('/:id', validator(NaimenovanieService.updateNaimenovanie, updateNaimenovanieSchema));
-router.delete('/:id', validator(NaimenovanieService.deleteNaimenovanie, deleteNaimenovanieSchema));
-router.get('/', validator(NaimenovanieService.getNaimenovanie, getNaimenovanieSchema));
+router.get('/kol', validator(Controller.getProductKol, getProductKolSchema));
+router.post('/', validator(Controller.createNaimenovanie, createNaimenovanieSchema));
+router.get('/:id', validator(Controller.getByIdNaimenovanie, getByIdNaimenovanieSchema));
+router.put('/:id', validator(Controller.updateNaimenovanie, updateNaimenovanieSchema));
+router.delete('/:id', validator(Controller.deleteNaimenovanie, deleteNaimenovanieSchema));
+router.get('/', validator(Controller.getNaimenovanie, getNaimenovanieSchema));
 
 module.exports = router;

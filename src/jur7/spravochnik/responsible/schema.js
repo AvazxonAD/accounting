@@ -21,7 +21,8 @@ exports.getResponsibleSchema = Joi.object({
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).default(10),
-    search: Joi.string().trim()
+    search: Joi.string().trim(),
+    podraz_id: Joi.number().integer().min(1)
   })
 }).options({ stripUnknown: true });
 
