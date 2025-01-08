@@ -47,7 +47,7 @@ exports.ShowServiceService = class {
                 false, main_schet.spravochnik_budjet_name_id,
                 id_spravochnik_organization
             );
-            if (!shartnoma || !shartnoma.pudratchi_bool) {
+            if (!shartnoma || shartnoma.pudratchi_bool) {
                 return res.status(404).json({
                     message: "conrtact not found"
                 })
