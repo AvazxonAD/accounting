@@ -59,6 +59,7 @@ routes
     .use('/jur_7/unit', protect, require('./jur7/spravochnik/unit'))
     .use('/jur_7/iznos', protect, require('./jur7/iznos/index'))
     .use('/jur_7/monitoring', protect, require('./jur7/monitoring/index'))
+    .use('/jur_7/saldo', protect, require('./jur7/saldo/index'))
     // Main book routes
     .use('/main/book/doc', protect, require('./main.book/doc/index'))
     .use('/main/book/report', protect, require('./main.book/report/index'))

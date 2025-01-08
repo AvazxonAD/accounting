@@ -14,17 +14,17 @@ const { PodotchetMonitoringDB } = require('./db')
 
 exports.Controller = class {
 
-    static async getByIdPodotchetMonitoring(req, res) {
-        const podotchet_id = req.params.id
-        const { limit, page, main_schet_id, from, to, operatsii } = req.query
+    static async getMonitoring(req, res) {
+        const { limit, page, main_schet_id, from, to, operatsii, podotchet_id } = req.query
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
-        const podotchet = await PodotchetDB.getByIdPodotchet([region_id, podotchet_id])
-
-        if (!podotchet) {
-            return res.status(404).json({
-                message: "podotchet not found"
-            })
+        if (podotchet_id) {
+            const podotchet = await PodotchetDB.getByIdPodotchet([region_id, podotchet_id])
+            if (!podotchet) {
+                return res.status(404).json({
+                    message: "podotchet not found"
+                })
+            }
         }
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
@@ -32,37 +32,16 @@ exports.Controller = class {
                 message: "main schet not found"
             })
         }
-
-        const data = await PodotchetMonitoringDB.getByPodotchetIdMonitoring([region_id, main_schet_id, from, to, podotchet_id, operatsii], offset, limit);
-
-        const bank_rasxod_from_summa = await BankRasxodDB.getByPodotchetIdSummaBankRasxod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const bank_prixod_from_summa = await BankPrixodDB.getByPodotchetIdSummaBankPrixod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const kassa_prixod_from_summa = await KassaPrixodDB.getByPodotchetIdSummaKassaPrixod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const kassa_rasxod_from_summa = await KassaRasxodDB.getByPodotchetIdSummaKassaRasxod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const avans_from_summa = await AvansDB.getByPodotchetIdSummaAvans([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const summa_from = (bank_rasxod_from_summa + kassa_rasxod_from_summa) - (bank_prixod_from_summa + kassa_prixod_from_summa + avans_from_summa)
-
-        const bank_rasxod_to_summa = await BankRasxodDB.getByPodotchetIdSummaBankRasxod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const bank_prixod_to_summa = await BankPrixodDB.getByPodotchetIdSummaBankPrixod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const kassa_prixod_to_summa = await KassaPrixodDB.getByPodotchetIdSummaKassaPrixod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const kassa_rasxod_to_summa = await KassaRasxodDB.getByPodotchetIdSummaKassaRasxod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const avans_to_summa = await AvansDB.getByPodotchetIdSummaAvans([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const summa_to = (bank_rasxod_to_summa + kassa_rasxod_to_summa) - (bank_prixod_to_summa + kassa_prixod_to_summa + avans_to_summa)
-
-        const bank_rasxod_total = await BankRasxodDB.getByPodotchetIdTotalBankRasxod([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-        const bank_prixod_total = await BankPrixodDB.getByPodotchetIdTotalBankPrixod([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-        const kassa_prixod_total = await KassaPrixodDB.getByPodotchetIdTotalKassaPrixod([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-        const kassa_rasxod_total = await KassaRasxodDB.getByPodotchetIdTotalKassaRasxod([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-        const avans_total = await AvansDB.getByPodotchetIdTotalAvans([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-        const total = bank_prixod_total + bank_rasxod_total + kassa_prixod_total + kassa_rasxod_total + avans_total
-
+        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, offset, limit], podotchet_id);
+        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id, from], podotchet_id, '<', main_schet_id, null, operatsii);
+        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet_id, '<=', main_schet_id, null, operatsii);
+        const total = await PodotchetMonitoringDB.getTotalMonitoring([region_id, main_schet_id, from, to, operatsii], podotchet_id);
         let summa_rasxod = 0
         let summa_prixod = 0
         data.forEach(item => {
             summa_rasxod += item.rasxod_sum
             summa_prixod += item.prixod_sum
         })
-
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -75,71 +54,7 @@ exports.Controller = class {
             summa_prixod,
             summa_rasxod
         }
-
-        return res.status(200).json({
-            message: "podotcbet monitoring successfully get",
-            meta,
-            data
-        })
-    }
-
-    static async getPodotchetMonitroing(req, res) {
-        const { limit, page, main_schet_id, from, to, operatsii } = req.query
-        const region_id = req.user.region_id;
-        const offset = (page - 1) * limit;
-
-        const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
-        if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
-        }
-
-        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, offset, limit])
-
-        const bank_rasxod_from_summa = await BankRasxodDB.getBySchetSummaBankRasxod([region_id, main_schet_id, from, operatsii])
-        const bank_prixod_from_summa = await BankPrixodDB.getBySchetSummaBankPrixod([region_id, main_schet_id, from, operatsii])
-        const kassa_prixod_from_summa = await KassaPrixodDB.getBySchetSummaKassaPrixod([region_id, main_schet_id, from, operatsii])
-        const kassa_rasxod_from_summa = await KassaRasxodDB.getBySchetSummaKassaRasxod([region_id, main_schet_id, from, operatsii])
-        const summa_from = (bank_rasxod_from_summa + kassa_rasxod_from_summa) - (bank_prixod_from_summa + kassa_prixod_from_summa)
-
-        const bank_rasxod_to_summa = await BankRasxodDB.getBySchetSummaBankRasxod([region_id, main_schet_id, to, operatsii])
-        const bank_prixod_to_summa = await BankPrixodDB.getBySchetSummaBankPrixod([region_id, main_schet_id, to, operatsii])
-        const kassa_prixod_to_summa = await KassaPrixodDB.getBySchetSummaKassaPrixod([region_id, main_schet_id, to, operatsii])
-        const kassa_rasxod_to_summa = await KassaRasxodDB.getBySchetSummaKassaRasxod([region_id, main_schet_id, to, operatsii])
-        const summa_to = (bank_rasxod_to_summa + kassa_rasxod_to_summa) - (bank_prixod_to_summa + kassa_prixod_to_summa)
-
-        const bank_rasxod_total = await BankRasxodDB.getBySchetTotalBankRasxod([region_id, main_schet_id, from, to, operatsii])
-        const bank_prixod_total = await BankPrixodDB.getBySchetTotalBankPrixod([region_id, main_schet_id, from, to, operatsii])
-        const kassa_prixod_total = await KassaPrixodDB.getBySchetTotalKassaPrixod([region_id, main_schet_id, from, to, operatsii])
-        const kassa_rasxod_total = await KassaRasxodDB.getBySchetTotalKassaRasxod([region_id, main_schet_id, from, to, operatsii])
-        const total = bank_prixod_total + bank_rasxod_total + kassa_prixod_total + kassa_rasxod_total
-
-        let summa_rasxod = 0
-        let summa_prixod = 0
-        data.forEach(item => {
-            summa_rasxod += item.rasxod_sum
-            summa_prixod += item.prixod_sum
-        })
-
-        const pageCount = Math.ceil(total / limit);
-        const meta = {
-            pageCount: pageCount,
-            count: total,
-            currentPage: page,
-            nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1,
-            summa_from,
-            summa_to,
-            summa_prixod,
-            summa_rasxod
-        }
-
-        return res.status(200).json({
-            message: "podotcbet monitoring successfully get",
-            meta,
-            data
-        })
+        return res.success('Get successfully', 200, meta, data);
     }
 
     static async prixodRasxodPodotchet(req, res) {
@@ -151,20 +66,10 @@ exports.Controller = class {
                 message: "budjet not found"
             })
         }
-        let data;
-        await db.transaction(async (client) => {
-            data = await PodotchetDB.getPodotchet([region_id], client);
-            for (let podotchet of data) {
-                const bank_rasxod_from_summa = await BankRasxodDB.getByPodotchetIdAndBudjetSummaBankRasxod([region_id, budjet_id, to, podotchet.id], client)
-                const bank_prixod_from_summa = await BankPrixodDB.getByPodotchetIdAndBudjetSummaBankPrixod([region_id, budjet_id, to, podotchet.id], client)
-                const kassa_prixod_from_summa = await KassaPrixodDB.getByPodotchetIdAndBudjetSummaKassaPrixod([region_id, budjet_id, to, podotchet.id], client)
-                const kassa_rasxod_from_summa = await KassaRasxodDB.getByPodotchetIdAndBudjetSummaKassaRasxod([region_id, budjet_id, to, podotchet.id], client)
-                const avans_from_summa = await AvansDB.getByPodotchetIdAndBudjetSummaAvans([region_id, budjet_id, to, podotchet.id], client)
-                const summa = (bank_rasxod_from_summa + kassa_rasxod_from_summa) - (bank_prixod_from_summa + kassa_prixod_from_summa + avans_from_summa)
-                podotchet.summa = summa
-            }
-
-        })
+        const data = await PodotchetDB.getPodotchet([region_id]);
+        for (let podotchet of data) {
+            podotchet.summma = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet.id, '<=', null, budjet_id);
+        }
         const workbook = new ExcelJS.Workbook();
         const fileName = `prixod_rasxod_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('prixod rasxod');
@@ -266,19 +171,9 @@ exports.Controller = class {
                 message: "main schet not found"
             })
         }
-        const data = await PodotchetMonitoringDB.getByPodotchetIdMonitoring([region_id, main_schet_id, from, to, podotchet_id, operatsii])
-        const bank_rasxod_from_summa = await BankRasxodDB.getByPodotchetIdSummaBankRasxod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const bank_prixod_from_summa = await BankPrixodDB.getByPodotchetIdSummaBankPrixod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const kassa_prixod_from_summa = await KassaPrixodDB.getByPodotchetIdSummaKassaPrixod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const kassa_rasxod_from_summa = await KassaRasxodDB.getByPodotchetIdSummaKassaRasxod([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const avans_from_summa = await AvansDB.getByPodotchetIdSummaAvans([region_id, main_schet_id, from, podotchet_id, operatsii])
-        const summa_from = (bank_rasxod_from_summa + kassa_rasxod_from_summa) - (bank_prixod_from_summa + kassa_prixod_from_summa + avans_from_summa)
-        const bank_rasxod_to_summa = await BankRasxodDB.getByPodotchetIdSummaBankRasxod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const bank_prixod_to_summa = await BankPrixodDB.getByPodotchetIdSummaBankPrixod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const kassa_prixod_to_summa = await KassaPrixodDB.getByPodotchetIdSummaKassaPrixod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const kassa_rasxod_to_summa = await KassaRasxodDB.getByPodotchetIdSummaKassaRasxod([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const avans_to_summa = await AvansDB.getByPodotchetIdSummaAvans([region_id, main_schet_id, to, podotchet_id, operatsii])
-        const summa_to = (bank_rasxod_to_summa + kassa_rasxod_to_summa) - (bank_prixod_to_summa + kassa_prixod_to_summa + avans_to_summa)
+        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, 0, 9999], podotchet_id)
+        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id, from], podotchet_id, '<', main_schet_id, null, operatsii);
+        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet_id, '<=', main_schet_id, null, operatsii);
         let summa_prixod = 0;
         let summa_rasxod = 0;
         for (let item of data) {

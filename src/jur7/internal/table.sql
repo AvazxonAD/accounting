@@ -1,0 +1,42 @@
+
+
+CREATE TABLE document_vnutr_peremesh_jur7 (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
+  doc_num VARCHAR(255),
+  doc_date DATE,
+  j_o_num VARCHAR(255),
+  opisanie TEXT,
+  doverennost VARCHAR(255),
+  summa DECIMAL,
+  kimdan_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
+  kimdan_name VARCHAR(255),
+  kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
+  kimga_name VARCHAR(255),
+  main_schet_id INT REFERENCES main_schet(id),
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE document_vnutr_peremesh_jur7_child (
+  id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
+  document_vnutr_peremesh_jur7_id INT NOT NULL REFERENCES document_vnutr_peremesh_jur7(id),
+  naimenovanie_tovarov_jur7_id INT NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
+  kol DECIMAL,
+  sena DECIMAL,
+  nds_foiz DECIMAL,
+  nds_summa DECIMAL,
+  summa_s_nds DECIMAL,
+  summa DECIMAL,
+  debet_schet VARCHAR(255),
+  debet_sub_schet VARCHAR(255),
+  kredit_schet VARCHAR(255),
+  kredit_sub_schet VARCHAR(255),
+  data_pereotsenka DATE,
+  main_schet_id INT REFERENCES main_schet(id),
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  isdeleted BOOLEAN DEFAULT FALSE
+);
