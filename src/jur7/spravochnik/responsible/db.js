@@ -16,11 +16,16 @@ exports.ResponsibleDB = class {
         const result = await db.query(query, params)
         return result;
     }
-    static async getResponsible(params, search = null) {
-        let search_filter = ``
+    static async getResponsible(params, search = null, podraz_id = null) {
+        let search_filter = ``;
+        let podraz_filter = ``;
         if(search){
             search_filter = `AND s_j_s_j7.fio ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
+        }
+        if(podraz_id){
+            params.push(podraz_id);
+            podraz_filter = `AND s_p_j7.id = $${params.length}`;
         }
         const query = `--sql
             WITH data AS (
@@ -33,7 +38,10 @@ exports.ResponsibleDB = class {
                 JOIN users AS u ON u.id = s_j_s_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
-                WHERE s_j_s_j7.isdeleted = false AND r.id = $1 ${search_filter} 
+                WHERE s_j_s_j7.isdeleted = false 
+                    AND r.id = $1 
+                    ${search_filter} 
+                    ${podraz_filter}
                 OFFSET $2 LIMIT $3
             )
             SELECT 

@@ -28,9 +28,15 @@ exports.Controller = class {
 
     static async getResponsible(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, search } = req.query;
+        const { page, limit, search, podraz_id } = req.query;
         const offset = (page - 1) * limit;
-        const { data, total } = await ResponsibleDB.getResponsible([region_id, offset, limit], search)
+        const { data, total } = await ResponsibleDB.getResponsible([region_id, offset, limit], search, podraz_id)
+        const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, podraz_id])
+        if (!podrazdelenie) {
+            return res.status(404).json({
+                message: "podrazdelenie not found"
+            })
+        }
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,

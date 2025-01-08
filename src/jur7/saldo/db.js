@@ -22,30 +22,22 @@ exports.SaldoDB = class {
         return result.rows[0];
     }
 
-    static async getSaldo(params, kimning_buynida, year, month) {
-        let year_filter = ``;
-        let month_filter = ``;
-        let filter = ``;
-        if (year) {
-            params.push(year)
-            year_filter = `AND d.year = $${params.length}`;
-        }
-        if (month) {
-            params.push(month)
-            month_filter = `AND d.month = $${params.length}`;
-        }
-        if (kimning_buynida) {
-            params.push(kimning_buynida);
-            filter = `AND d.kimning_buynida = $${params.length}`;
+    static async getSaldo(params, product_id) {
+        let product_filter = ``;
+        if (product_id) {
+            params.push(product_id);
+            product_filter = `AND n.id = $${params.length}`;
         }
         const query = `--sql
             SELECT
                 d.id::INTEGER, 
                 d.user_id,
                 d.naimenovanie_tovarov_jur7_id::INTEGER,
-                d.kol::FLOAT,
                 d.sena::FLOAT,
-                d.summa::FLOAT,
+                JSON_BUILD_OBJECT(
+                    'kol', d.kol::FLOAT,
+                    'summa', d.summa::FLOAT
+                ) AS from,
                 d.month,
                 d.year,
                 d.date_saldo,
@@ -60,67 +52,13 @@ exports.SaldoDB = class {
             JOIN group_jur7 AS g ON g.id = n.group_jur7_id
             WHERE r.id = $1 
                 AND d.isdeleted = false 
-                ${filter}
-                ${year_filter} 
-                ${month_filter}
+                AND d.kimning_buynida = $2
+                AND d.year = $3
+                AND d.month = $4
+                ${product_filter}
         `;
         const result = await db.query(query, params)
         return result;
-    }
-
-    static async getByIdSaldo(params) {
-        const query = `--sql
-            SELECT 
-                s.naimenovanie_tovarov_jur7_id::INTEGER,
-                n.name, 
-                n.edin,
-                n.group_jur7_id,
-                n.inventar_num,
-                n.serial_num,
-                g.name AS group_jur7_name,
-                n.spravochnik_budjet_name_id,
-                b.name AS spravochnik_budjet_name,
-                TO_CHAR(s.date_saldo, 'YYYY-MM-DD') AS date_saldo,
-                s.year,
-                s.month,
-                s.kol::FLOAT AS kol,
-                s.sena::FLOAT AS sena,
-                s.summa::FLOAT AS summa
-            FROM saldo_naimenovanie_jur7 AS s
-            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = s.naimenovanie_tovarov_jur7_id
-            JOIN users AS u ON u.id = n.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN group_jur7 AS g ON g.id = n.group_jur7_id
-            JOIN spravochnik_budjet_name AS b ON b.id = n.spravochnik_budjet_name_id
-            WHERE s.isdeleted = false 
-                AND r.id = $1
-                AND s.kimning_buynida = $2
-                AND s.year = $3
-                AND s.month = $4
-        `;
-        const result = await db.query(query, params);
-        return result;
-    }
-
-    static async getSchetSummaBySchetId(params) {
-        const query = `--sql
-            SELECT 
-                d.debet_sum::FLOAT,
-                d.kredit_sum::FLOAT
-            FROM saldo_naimenovanie_jur7 d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-            WHERE r.id = $1 
-                AND d.year = $2 
-                AND d.month = $3 
-                AND d.budjet_id = $4
-                AND d.smeta_grafik_id = $5
-                AND d.type_document = $6
-                AND d.isdeleted = false
-        `;
-        const result = await db.query(query, params);
-        return result[0];
     }
 
     static async deleteSaldo(params, client) {
@@ -133,9 +71,8 @@ exports.SaldoDB = class {
                 JOIN regions AS r ON r.id = u.region_id
                 WHERE u.id = saldo_naimenovanie_jur7.user_id
                     AND r.id = $1
-                    AND saldo_naimenovanie_jur7.year = $2
-                    AND saldo_naimenovanie_jur7.month = $3
-                    AND saldo_naimenovanie_jur7.budjet_id = $4
+                    AND saldo_naimenovanie_jur7.month = $2
+                    AND saldo_naimenovanie_jur7.year = $3
                     AND saldo_naimenovanie_jur7.isdeleted = false
             )
         `;
@@ -143,7 +80,12 @@ exports.SaldoDB = class {
         await executor.query(query, params);
     }
 
-    static async getInfo(params) {
+    static async getInfo(params, operator, product_id = null) {
+        let product_filter = ``;
+        if (product_id) {
+            params.push(product_id)
+            product_filter = `AND n.id = $${params.length}`;
+        }
         const query = `--sql
             SELECT 
                 n.id::INTEGER AS naimenovanie_tovarov_jur7_id,
@@ -165,8 +107,7 @@ exports.SaldoDB = class {
                     WHERE d_ch.naimenovanie_tovarov_jur7_id = n.id 
                         AND d.kimga_id = $2 
                         AND d.isdeleted = false
-                        AND EXTRACT(YEAR FROM d.doc_date) = $3
-                        AND EXTRACT(MONTH FROM d.doc_date) < $4
+                        AND d.doc_date ${operator} $3
                 )::FLOAT AS prixod,
                 (
                     SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -175,8 +116,7 @@ exports.SaldoDB = class {
                     WHERE d_ch.naimenovanie_tovarov_jur7_id = n.id 
                         AND d.kimga_id = $2 
                         AND d.isdeleted = false
-                        AND EXTRACT(YEAR FROM d.doc_date) = $3
-                        AND EXTRACT(MONTH FROM d.doc_date) < $4
+                        AND d.doc_date ${operator} $3
                 )::FLOAT AS prixod_internal,
                 (
                     SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -185,8 +125,7 @@ exports.SaldoDB = class {
                     WHERE d_ch.naimenovanie_tovarov_jur7_id = n.id 
                         AND d.kimdan_id = $2 
                         AND d.isdeleted = false
-                        AND EXTRACT(YEAR FROM d.doc_date) = $3
-                        AND EXTRACT(MONTH FROM d.doc_date) < $4
+                        AND d.doc_date ${operator} $3
                 )::FLOAT AS rasxod,
                 (
                     SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -195,8 +134,7 @@ exports.SaldoDB = class {
                     WHERE d_ch.naimenovanie_tovarov_jur7_id = n.id 
                         AND d.kimdan_id = $2
                         AND d.isdeleted = false
-                        AND EXTRACT(YEAR FROM d.doc_date) = $3
-                        AND EXTRACT(MONTH FROM d.doc_date) < $4
+                        AND d.doc_date ${operator} $3
                 )::FLOAT AS rasxod_internal
             FROM naimenovanie_tovarov_jur7 AS n
             JOIN document_prixod_jur7_child AS d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n.id
@@ -207,8 +145,64 @@ exports.SaldoDB = class {
             JOIN spravochnik_budjet_name AS b ON b.id = n.spravochnik_budjet_name_id
             WHERE n.isdeleted = false 
                 AND r.id = $1
+                ${product_filter}
         `;
         const result = await db.query(query, params);
         return result;
+    }
+
+    static async getSumma(params, product_id) {
+        const query = `--sql
+            WITH prixod AS (
+                SELECT 
+                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                FROM document_prixod_jur7 AS d
+                JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+                    AND d.kimga_id = $2 
+                    AND d.isdeleted = false
+                    AND d.doc_date BETWEEN $3 AND $4
+            ),
+            prixod_internal AS (
+                SELECT  
+                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                FROM document_vnutr_peremesh_jur7 AS d
+                JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+                    AND d.kimga_id = $2 
+                    AND d.isdeleted = false
+                    AND d.doc_date BETWEEN $3 AND $4
+            ),
+            rasxod AS (
+                SELECT  
+                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                FROM document_rasxod_jur7 AS d
+                JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+                    AND d.kimdan_id = $2 
+                    AND d.isdeleted = false
+                    AND d.doc_date BETWEEN $3 AND $4
+            ),
+            rasxod_internal AS (
+                SELECT  
+                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                FROM document_vnutr_peremesh_jur7 AS d
+                JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+                    AND d.kimdan_id = $2
+                    AND d.isdeleted = false
+                    AND d.doc_date BETWEEN $3 AND $4
+            )
+            SELECT
+                JSON_BUILD_OBJECT(
+                    'kol', (prixod.kol + prixod_internal.kol)
+                ) AS prixod,
+                JSON_BUILD_OBJECT(
+                    'kol', (rasxod.kol + rasxod_internal.kol)
+                ) AS rasxod
+            FROM prixod, prixod_internal, rasxod, rasxod_internal 
+        `;
+        const result = await db.query(query, params);
+        return result[0];
     }
 }

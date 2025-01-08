@@ -1,11 +1,11 @@
 const { RasxodDB } = require('./db');
 const { tashkentTime, checkTovarId } = require('../../helper/functions');
-const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/db')
 const { db } = require('../../db/index')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
+const { SaldoService } = require('../saldo/service')
 
 exports.RasxodService = class {
   static async createRasxod(req, res) {
@@ -52,11 +52,12 @@ exports.RasxodService = class {
           message: "product not found"
         })
       }
-      const tovar = await NaimenovanieDB.getProductKol([region_id, kimdan_id], null, child.naimenovanie_tovarov_jur7_id)
-      if (tovar[0].result < child.kol) {
-        return res.status(400).json({
-          message: "The responsible person does not have sufficient information regarding this product."
-        })
+      const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id});
+      if(!tovar[0]){
+        return res.error('Saldo is not defined', 400)
+      }
+      if (tovar[0].to.kol < child.kol) {
+        return res.error('The responsible person does not have sufficient information regarding this product', 400);
       }
     }
     const testTovarId = checkTovarId(childs)
@@ -92,8 +93,8 @@ exports.RasxodService = class {
 
         const result_childs = childs.map(item => {
           item.summa = item.kol * item.sena;
-          item.sena = 
-          item.nds_summa = item.nds_foiz ? item.nds_foiz / 100 * item.summa : 0;
+          item.sena =
+            item.nds_summa = item.nds_foiz ? item.nds_foiz / 100 * item.summa : 0;
           item.summa_s_nds = item.summa + item.nds_summa;
           item.user_id = user_id;
           item.document_rasxod_jur7_id = doc.id;
@@ -189,13 +190,14 @@ exports.RasxodService = class {
           message: "product not found"
         })
       }
-      const tovar = await NaimenovanieDB.getProductKol([region_id, kimdan_id], null, child.naimenovanie_tovarov_jur7_id)
+      const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id});
+      if(!tovar[0]){
+        return res.error('Saldo is not defined', 400)
+      }
       const old_tovar = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)
       const add = old_tovar ? old_tovar.kol : 0;
-      if ((tovar[0].result + add) < child.kol) {
-        return res.status(400).json({
-          message: "The responsible person does not have sufficient information regarding this product."
-        })
+      if ((tovar[0].to.kol + add) < child.kol) {
+        return res.error('The responsible person does not have sufficient information regarding this product', 400)
       }
     }
     let summa = 0;
