@@ -118,7 +118,7 @@ exports.Controller = class {
             from: query.from,
             to: query.to,
             main_schet_id: query.main_schet_id,
-            operatsii: query.operatsii,
+            operatsii: query.schet,
             contract: query.contract === 'true' ? true : false
         });
         if (query.excel === 'true') {
@@ -128,14 +128,14 @@ exports.Controller = class {
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
-                    operatsii: query.operatsii
+                    operatsii: query.schet
                 })
             } else {
                 filePath = await OrganizationmonitoringService.consolidatedExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
-                    operatsii: query.operatsii
+                    operatsii: query.schet
                 })
             }
             return res.download(filePath);
