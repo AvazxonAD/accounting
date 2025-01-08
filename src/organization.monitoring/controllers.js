@@ -138,6 +138,8 @@ exports.Controller = class {
                     operatsii: query.schet
                 })
             }
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
             return res.download(filePath);
         }
         return res.success('get successfully', 200, { rasxodSchets: data.rasxodSchets }, data.organizations);
