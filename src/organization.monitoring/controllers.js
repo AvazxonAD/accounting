@@ -122,16 +122,16 @@ exports.Controller = class {
             contract: query.contract === 'true' ? true : false
         });
         if (query.excel === 'true') {
-            let filePath;
+            let file;
             if (query.contract === 'true') {
-                filePath = await OrganizationmonitoringService.consolidatedByContractExcel({
+                file = await OrganizationmonitoringService.consolidatedByContractExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
                     operatsii: query.schet
                 })
             } else {
-                filePath = await OrganizationmonitoringService.consolidatedExcel({
+                file = await OrganizationmonitoringService.consolidatedExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
@@ -139,8 +139,8 @@ exports.Controller = class {
                 })
             }
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-            return res.download(filePath);
+            res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
+            return res.download(file.filePath);
         }
         return res.success('get successfully', 200, { rasxodSchets: data.rasxodSchets }, data.organizations);
     }
