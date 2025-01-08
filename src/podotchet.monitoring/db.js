@@ -36,6 +36,7 @@ exports.PodotchetMonitoringDB = class {
                 AND b_r.doc_date BETWEEN $3 AND $4
                 AND s_op.schet = $5
                 ${podotchet_filter}
+                AND p.id IS NOT NULL
             UNION ALL
             SELECT 
                 b_p.id, 
@@ -65,6 +66,7 @@ exports.PodotchetMonitoringDB = class {
                 AND b_p.doc_date BETWEEN $3 AND $4
                 AND s_op.schet = $5
                 ${podotchet_filter}
+                AND p.id IS NOT NULL
             UNION ALL 
             SELECT 
                 k_p.id, 
@@ -93,6 +95,7 @@ exports.PodotchetMonitoringDB = class {
                 AND k_p.doc_date BETWEEN $3 AND $4
                 AND s_op.schet = $5
                 ${podotchet_filter}
+                AND p.id IS NOT NULL
             UNION ALL
             SELECT 
                 k_r.id, 
@@ -122,6 +125,7 @@ exports.PodotchetMonitoringDB = class {
                 AND k_r.doc_date BETWEEN $3 AND $4
                 AND s_op.schet = $5
                 ${podotchet_filter}
+                AND p.id IS NOT NULL
             UNION ALL 
             SELECT  
                 a_tj4.id, 
@@ -152,6 +156,7 @@ exports.PodotchetMonitoringDB = class {
                 AND a_tj4.doc_date BETWEEN $3 AND $4
                 AND s_op.schet = $5
                 ${podotchet_filter}
+                AND p.id IS NOT NULL
             ORDER BY doc_date OFFSET $6 LIMIT $7
         `;
         const result = await db.query(query, params);
@@ -195,6 +200,7 @@ exports.PodotchetMonitoringDB = class {
                         AND b_r.isdeleted = false 
                         AND b_r.doc_date ${operator} $2
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                         ${main_schet_filter}
                         ${budjet_filter}
                         ${operatsii_filter}
@@ -213,6 +219,7 @@ exports.PodotchetMonitoringDB = class {
                         AND b_p.isdeleted = false 
                         AND b_p.doc_date ${operator} $2
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                         ${main_schet_filter}
                         ${budjet_filter}
                         ${operatsii_filter}
@@ -231,6 +238,7 @@ exports.PodotchetMonitoringDB = class {
                         AND k_p.isdeleted = false 
                         AND k_p.doc_date ${operator} $2
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                         ${main_schet_filter}
                         ${budjet_filter}
                         ${operatsii_filter}
@@ -249,6 +257,7 @@ exports.PodotchetMonitoringDB = class {
                         AND k_r.isdeleted = false
                         AND k_r.doc_date ${operator} $2
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                         ${main_schet_filter}
                         ${budjet_filter}
                         ${operatsii_filter}
@@ -267,6 +276,7 @@ exports.PodotchetMonitoringDB = class {
                         AND a_tj4.isdeleted = false 
                         AND a_tj4.doc_date ${operator} $2
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                         ${main_schet_filter}
                         ${budjet_filter}
                         ${operatsii_filter}
@@ -307,6 +317,7 @@ exports.PodotchetMonitoringDB = class {
                         AND b_r.doc_date BETWEEN $3 AND $4
                         AND s_op.schet = $5
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                 ),
                 bank_prixod AS (
                     SELECT 
@@ -323,6 +334,7 @@ exports.PodotchetMonitoringDB = class {
                         AND b_p.doc_date BETWEEN $3 AND $4
                         AND s_op.schet = $5
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                 ),
                 kassa_prixod AS (
                     SELECT 
@@ -339,6 +351,7 @@ exports.PodotchetMonitoringDB = class {
                         AND k_p.doc_date BETWEEN $3 AND $4
                         AND s_op.schet = $5
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                 ),
                 kassa_rasxod AS (
                     SELECT 
@@ -355,6 +368,7 @@ exports.PodotchetMonitoringDB = class {
                         AND k_r.doc_date BETWEEN $3 AND $4
                         AND s_op.schet = $5
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                 ),
                 avans_otchet AS (
                     SELECT 
@@ -372,6 +386,7 @@ exports.PodotchetMonitoringDB = class {
                         AND a_tj4.doc_date BETWEEN $3 AND $4
                         AND s_op.schet = $5
                         ${podotchet_filter}
+                        AND p.id IS NOT NULL
                 )
             SELECT 
                 (bank_rasxod.doc_count + kassa_rasxod.doc_count + 
