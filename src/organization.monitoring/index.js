@@ -18,7 +18,7 @@ router.get('/', validator(Controller.monitoring, monitoringSchema))
     .get('/prixod/rasxod', validator(Controller.prixodRasxod, prixodRasxodSchema))
     .get('/cap', validator(Controller.cap, capSchema))
     .get('/consolidated', validator(Controller.consolidated, consolidatedSchema))
-    .get('/akt/sverka', validator(Controller.aktSverka, aktSverkaSchema))
+    //.get('/akt/sverka', validator(Controller.aktSverka, aktSverkaSchema))
     .get('/order', validator(Controller.orderorganization, orderOrganizationSchema));
 
 module.exports = router;

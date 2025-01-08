@@ -3,6 +3,10 @@ const { MainSchetService } = require('../spravochnik/main.schet/services');
 const { OrganizationService } = require('../spravochnik/organization/services')
 const { BudjetService } = require('../spravochnik/budjet/services')
 const { ContractService } = require('../shartnoma/services')
+const { RegionDB } = require('../auth/region/db')
+const { MainSchetDB } = require('../spravochnik/main.schet/db')
+const { OrganizationDB } = require('../spravochnik/organization/db')
+const { OrganizationMonitoringDB } = require('../organization.monitoring/db')
 
 exports.Controller = class {
     static async monitoring(req, res) {
@@ -48,9 +52,9 @@ exports.Controller = class {
             return res.error('main shcet not found', 404);
         }
         const { data: organizations } = await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 });
-        const data = await OrganizationOrganizationmonitoringService.prixodRasxod(query, organizations);
+        const data = await OrganizationmonitoringService.prixodRasxod(query, organizations);
         if (query.excel === 'true') {
-            const filePath = await OrganizationOrganizationmonitoringService.prixodRasxodExcel({
+            const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
                 organ_name: main_schet.tashkilot_nomi,
                 operatsii: query.operatsii,
                 organizations: data.organizations,
@@ -74,9 +78,9 @@ exports.Controller = class {
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
-        const { data, itogo_rasxod } = await OrganizationOrganizationmonitoringService.cap({ ...query, region_id });
+        const { data, itogo_rasxod } = await OrganizationmonitoringService.cap({ ...query, region_id });
         if (query.excel === 'true') {
-            const filePath = await OrganizationOrganizationmonitoringService.capExcel({
+            const filePath = await OrganizationmonitoringService.capExcel({
                 organ_name: main_schet.tashkilot_nomi,
                 operatsii: query.operatsii,
                 organizations: data,
@@ -108,7 +112,7 @@ exports.Controller = class {
         } else {
             organizations = await ContractService.getContractByOrganizations({ region_id });
         }
-        data = await OrganizationOrganizationmonitoringService.consolidated({
+        data = await OrganizationmonitoringService.consolidated({
             organizations,
             region_id,
             from: query.from,
@@ -119,15 +123,15 @@ exports.Controller = class {
         });
         if (query.excel === 'true') {
             let filePath;
-            if(query.contract === 'true'){
-                filePath = await OrganizationOrganizationmonitoringService.consolidatedByContractExcel({
+            if (query.contract === 'true') {
+                filePath = await OrganizationmonitoringService.consolidatedByContractExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
                     operatsii: query.operatsii
                 })
-            }else {
-                filePath = await OrganizationOrganizationmonitoringService.consolidatedExcel({
+            } else {
+                filePath = await OrganizationmonitoringService.consolidatedExcel({
                     organizations: data.organizations,
                     rasxodSchets: data.rasxodSchets,
                     to: query.to,
@@ -170,7 +174,7 @@ exports.Controller = class {
                 })
             }
         }
-        const data = await OrganizationMonitoringDB.getByContractIdData([from, to, organ_id], contract_id);
+        const data = await OrganizationMonitoringDB.ge([from, to, organ_id], contract_id);
         const summa_from = await OrganizationMonitoringDB.getByContractIdSumma([from, organ_id], '<', contract_id)
         const summa_to = await OrganizationMonitoringDB.getByContractIdSumma([to, organ_id], '<=', contract_id)
         const podpis = await PodpisDB.getPodpis([region_id], 'akkt_sverka');
