@@ -17,7 +17,7 @@ exports.PodotchetDB = class {
         return result[0];
     }
 
-    static async getPodotchet(params, client) {
+    static async getPodotchet(params) {
         const query = `--sql
             SELECT s_p_l.id, s_p_l.name, s_p_l.rayon
             FROM spravochnik_podotchet_litso AS s_p_l
@@ -26,7 +26,7 @@ exports.PodotchetDB = class {
             WHERE r.id = $1 AND s_p_l.isdeleted = false 
             ORDER BY s_p_l.name, s_p_l.rayon
         `;
-        const result = await client.query(query, params)
-        return result.rows;
+        const result = await db.query(query, params)
+        return result;
     }
 }

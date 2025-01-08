@@ -8,12 +8,10 @@ exports.validator = function (callback, schema) {
     return async (req, res, next) => {
         if (!schema) {
             try {
-                return await callback(req, res);
+                return await callback(req, res, next);
             } catch (err) {
-                next(err);
+                return next(err);
             }
-
-            return
         }
 
         const { error, value } = schema
@@ -25,6 +23,7 @@ exports.validator = function (callback, schema) {
                 query: req.query,
                 params: req.params
             });
+
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
@@ -36,8 +35,7 @@ exports.validator = function (callback, schema) {
         try {
             return await callback(req, res);
         } catch (err) {
-            next(err);
+            return next(err);
         }
-
     };
-}
+};
