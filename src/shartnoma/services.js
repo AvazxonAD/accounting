@@ -12,7 +12,7 @@ exports.ContractService = class {
     }
 
     static async getContractByOrganizations(data) {
-        const result = await ContractDB.getContractByOrganizations([data.region_id]);
+        const result = await ContractDB.getContractByOrganizations([data.region_id], data.organ_id);
         return result;
     }
 }

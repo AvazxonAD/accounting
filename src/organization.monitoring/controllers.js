@@ -19,7 +19,7 @@ exports.Controller = class {
             return res.error('main shcet not found', 404);
         }
         if (organ_id) {
-            const organization = await OrganizationService.getByIdOrganization(region_id, organ_id, false);
+            const organization = await OrganizationService.getByIdOrganization({region_id, id: organ_id, isdeleted: false});
             if (!organization) {
                 res.error('Organization not found', 404)
             }
@@ -105,12 +105,18 @@ exports.Controller = class {
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
+        if (query.organ_id) {
+            const organization = await OrganizationService.getByIdOrganization({ region_id, id: query.organ_id });
+            if(!organization){
+                return res.error('Organization not found', 404);
+            }
+        }
         let data;
         let organizations;
         if (query.contract !== 'true') {
-            organizations = (await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 })).data;
+            organizations = (await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999, organ_id: query.organ_id })).data;
         } else {
-            organizations = await ContractService.getContractByOrganizations({ region_id });
+            organizations = await ContractService.getContractByOrganizations({ region_id, organ_id: query.organ_id });
         }
         data = await OrganizationmonitoringService.consolidated({
             organizations,

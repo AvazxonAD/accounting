@@ -30,7 +30,7 @@ exports.OrganizationService = class {
     }
 
     static async getOrganization(data) {
-        const result = await OrganizationDB.getOrganizationDataAndTotal([data.region_id, data.offset, data.limit], data.search);
+        const result = await OrganizationDB.getOrganizationDataAndTotal([data.region_id, data.offset, data.limit], data.search, data.organ_id);
         return result;
     }
 
@@ -81,8 +81,8 @@ exports.OrganizationService = class {
         })
     }
 
-    static async getByIdOrganization(region_id, id, isdeleted) {
-        const result = await OrganizationDB.getByIdorganization([region_id, id], isdeleted);
+    static async getByIdOrganization(data) {
+        const result = await OrganizationDB.getByIdorganization([data.region_id, data.id], data.isdeleted);
         return result;
     }
 

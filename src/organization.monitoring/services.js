@@ -197,7 +197,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.getCell('C5').value = 'Сумма';
         worksheet.mergeCells(`B6`, `B${5 + data.organizations.length}`)
         worksheet.getCell('B6').value = data.operatsii;
-        let row_number = !data.organizations.length ? 7: 6;
+        let row_number = !data.organizations.length ? 7 : 6;
         for (let organ of data.organizations) {
             worksheet.getCell(`A${row_number}`).value = `${organ.schet}   ${organ.smeta_number}`;
             worksheet.getCell(`C${row_number}`).value = organ.summa;
@@ -237,13 +237,13 @@ exports.OrganizationmonitoringService = class {
 
     static async consolidated(data) {
         for (let organ of data.organizations) {
-            const contract_id = data.contract ? organ.contract_id : null; 
+            const contract_id = data.contract ? organ.contract_id : null;
             organ.summa_from = await OrganizationMonitoringDB.getSummaConsolidated([
                 data.region_id,
                 data.main_schet_id,
                 data.operatsii,
                 data.from,
-                organ.id 
+                organ.id
             ], '<', contract_id);
             organ.summa_bank_rasxod_prixod = await OrganizationMonitoringDB.getSummaPrixodConsolidated([
                 data.region_id,
@@ -419,7 +419,7 @@ exports.OrganizationmonitoringService = class {
         });
         const filePath = path.join(__dirname, '../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
-        return {filePath, fileName};
+        return { filePath, fileName };
     }
 
     static async consolidatedByContractExcel(data) {
@@ -539,7 +539,7 @@ exports.OrganizationmonitoringService = class {
         });
         const filePath = path.join(__dirname, '../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
-        return filePath;
+        return { filePath, fileName };
     }
 
 

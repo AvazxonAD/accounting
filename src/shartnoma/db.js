@@ -97,7 +97,12 @@ exports.ContractDB = class {
         return { data: data[0]?.data || [], total: data[0]?.total_count }
     }
 
-    static async getContractByOrganizations(params) {
+    static async getContractByOrganizations(params, organ_id) {
+        let organ_filter = ``;
+        if(organ_id){
+            params.push(organ_id);
+            organ_filter = `AND so.id = $${params.length}`;
+        }
         const query = `--sql
             SELECT 
                 sh_o.id AS contract_id,
@@ -109,7 +114,9 @@ exports.ContractDB = class {
             JOIN users u ON sh_o.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_organization so ON so.id = sh_o.spravochnik_organization_id 
-            WHERE sh_o.isdeleted = false AND r.id = $1
+            WHERE sh_o.isdeleted = false 
+                AND r.id = $1
+                ${organ_filter}
         `;
         const result = await db.query(query, params);
         return result;
