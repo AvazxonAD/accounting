@@ -197,7 +197,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.getCell('C5').value = 'Сумма';
         worksheet.mergeCells(`B6`, `B${5 + data.organizations.length}`)
         worksheet.getCell('B6').value = data.operatsii;
-        let row_number = 6;
+        let row_number = !data.organizations.length ? 7: 6;
         for (let organ of data.organizations) {
             worksheet.getCell(`A${row_number}`).value = `${organ.schet}   ${organ.smeta_number}`;
             worksheet.getCell(`C${row_number}`).value = organ.summa;
