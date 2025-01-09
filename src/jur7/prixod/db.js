@@ -30,50 +30,6 @@ exports.PrixodDB = class {
     }
 
     static async createPrixodChild(params, client) {
-        const values = params.map((_, index) => {
-            return `
-                ($${18 * index + 1}, 
-                $${18 * index + 2}, 
-                $${18 * index + 3}, 
-                $${18 * index + 4}, 
-                $${18 * index + 5}, 
-                $${18 * index + 6}, 
-                $${18 * index + 7}, 
-                $${18 * index + 8}, 
-                $${18 * index + 9}, 
-                $${18 * index + 10}, 
-                $${18 * index + 11}, 
-                $${18 * index + 12}, 
-                $${18 * index + 13},
-                $${18 * index + 14},
-                $${18 * index + 15},
-                $${18 * index + 16},
-                $${18 * index + 17},
-                $${18 * index + 18})
-            `;
-        })
-        const design_params = [
-            "naimenovanie_tovarov_jur7_id",
-            "kol",
-            "sena",
-            "summa",
-            "nds_foiz",
-            "nds_summa",
-            "summa_s_nds", 
-            "debet_schet",
-            "debet_sub_schet",
-            "kredit_schet",
-            "kredit_sub_schet",
-            "data_pereotsenka",
-            "user_id",
-            "document_prixod_jur7_id",
-            "main_schet_id",
-            "iznos",
-            "created_at",
-            "updated_at"
-        ]
-        const _values = values.join(", ")
-        const allValues = designParams(params, design_params)
         const query = `--sql
             INSERT INTO document_prixod_jur7_child (
                 naimenovanie_tovarov_jur7_id,
@@ -95,7 +51,7 @@ exports.PrixodDB = class {
                 created_at,
                 updated_at
             ) 
-            VALUES ${_values} RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $1, $1, $1, $1, ) RETURNING *
         `;
         const result = await client.query(query, allValues)
         return result.rows;
