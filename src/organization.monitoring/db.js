@@ -12,7 +12,7 @@ exports.OrganizationMonitoringDB = class {
             SELECT
                 b_r.id,
                 b_r.doc_num,
-                b_r.doc_date,
+                TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date,
                 b_r.opisanie,
                 0::FLOAT AS summa_rasxod, 
                 b_r_ch.summa::FLOAT AS summa_prixod,
@@ -47,7 +47,7 @@ exports.OrganizationMonitoringDB = class {
             SELECT 
                 b_i_j3.id,
                 b_i_j3.doc_num,
-                b_i_j3.doc_date,
+                TO_CHAR(b_i_j3.doc_date, 'YYYY-MM-DD') AS doc_date,
                 b_i_j3.opisanie,
                 b_i_j3_ch.summa::FLOAT AS summa_rasxod, 
                 0::FLOAT AS summa_prixod,
@@ -83,7 +83,7 @@ exports.OrganizationMonitoringDB = class {
             SELECT 
                 k_h_j152.id,
                 k_h_j152.doc_num,
-                k_h_j152.doc_date,
+                TO_CHAR(k_h_j152.doc_date, 'YYYY-MM-DD') AS doc_date,
                 k_h_j152.opisanie,
                 0::FLOAT AS summa_rasxod, 
                 k_h_j152_ch.summa::FLOAT AS summa_prixod,
@@ -119,7 +119,7 @@ exports.OrganizationMonitoringDB = class {
             SELECT 
                 b_p.id,
                 b_p.doc_num,
-                b_p.doc_date,
+                TO_CHAR(b_p.doc_date, 'YYYY-MM-DD') AS doc_date,
                 b_p.opisanie,
                 b_p_ch.summa::FLOAT AS summa_rasxod,
                 0::FLOAT AS summa_prixod, 
@@ -154,7 +154,7 @@ exports.OrganizationMonitoringDB = class {
             SELECT 
                 d_j.id,
                 d_j.doc_num,
-                d_j.doc_date,
+                TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date,
                 d_j.opisanie,
                 d_j_ch.summa::FLOAT AS summa_rasxod,
                 0::FLOAT AS summa_prixod, 
@@ -475,7 +475,7 @@ exports.OrganizationMonitoringDB = class {
                 AND b_i_j3.doc_date BETWEEN $4 AND $5
             GROUP BY s_op.schet, s_op.sub_schet
         UNION ALL
-        SELECT 
+            SELECT 
                 m.jur2_schet AS schet, 
                 s_op.sub_schet,
                 COALESCE(SUM(b.summa), 0)::FLOAT AS summa,
@@ -483,10 +483,10 @@ exports.OrganizationMonitoringDB = class {
             FROM bank_prixod_child AS b
             JOIN bank_prixod AS b_d ON b_d.id = b.id_bank_prixod
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b.spravochnik_operatsii_id
-            JOIN users AS u ON b.user_id = u.id
+            JOIN users AS u ON b_d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN main_schet AS m ON m.id = b.main_schet_id
-            WHERE b.isdeleted = false
+            JOIN main_schet AS m ON m.id = b_d.main_schet_id
+            WHERE b_d.isdeleted = false
                 AND r.id = $1
                 AND m.id = $2
                 AND s_op.schet = $3
