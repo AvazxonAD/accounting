@@ -10,11 +10,12 @@ const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 const ExcelJS = require('exceljs');
 const path = require('path');
 
-exports.PrixodService = class {
+exports.Controller = class {
   static async createPrixod(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
+
     const {
       doc_num,
       doc_date,
@@ -28,60 +29,61 @@ exports.PrixodService = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
+      return res.status(404).json({ message: "Main schet not found" });
     }
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id])
+
+    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
     if (!organization) {
-      return res.status(404).json({
-        message: "organization not found"
-      })
+      return res.status(404).json({ message: "Organization not found" });
     }
-    const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
+
+    const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id]);
     if (!responsible) {
-      return res.status(404).json({
-        message: "responsible not found"
-      })
+      return res.status(404).json({ message: "Responsible not found" });
     }
+
     if (id_shartnomalar_organization) {
-      const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id)
+      const contract = await ContractDB.getByIdContract(
+        [region_id, id_shartnomalar_organization],
+        false,
+        null,
+        kimdan_id
+      );
       if (!contract) {
-        return res.status(404).json({
-          message: "contract not found"
-        })
+        return res.status(404).json({ message: "Contract not found" });
       }
     }
-    for (let child of childs) {
-      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
+
+    // Check for products and duplicates
+    for (const child of childs) {
+      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id]);
       if (!product) {
-        return res.status(404).json({
-          message: "product not found"
-        })
+        return res.status(404).json({ message: "Product not found" });
       }
-      const checkProduct = await PrixodDB.getByProductIdPrixod([region_id, main_schet_id, child.naimenovanie_tovarov_jur7_id])
-      if(checkProduct){
-        return res.status(409).json({
-          message: "This item has already been received"
-        })
+
+      const checkProduct = await PrixodDB.getByProductIdPrixod([region_id, main_schet_id, child.naimenovanie_tovarov_jur7_id]);
+      if (checkProduct) {
+        return res.status(409).json({ message: "This item has already been received" });
       }
     }
-    const testTovarId = checkTovarId(childs)
-    if (testTovarId) {
-      return res.status(409).json({
-        message: "The product ID was sent incorrectly"
-      })
+
+    // Validate product IDs
+    const invalidProduct = checkTovarId(childs);
+    if (invalidProduct) {
+      return res.status(409).json({ message: "The product ID was sent incorrectly" });
     }
-    let summa = 0;
-    for (let child of childs) {
-      summa += child.kol * child.sena;
-    }
+
+    // Calculate summa
+    let summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
+
     let doc;
-    try {
-      await db.transaction(async client => {
-        doc = await PrixodDB.createPrixod([
+    await db.transaction(async (client) => {
+      // Create the main document
+      doc = await PrixodDB.createPrixod(
+        [
           user_id,
           doc_num,
           doc_date,
@@ -97,53 +99,71 @@ exports.PrixodService = class {
           main_schet_id,
           tashkentTime(),
           tashkentTime()
-        ], client);
-        const result_childs = childs.map(item => {
-          item.summa = item.kol * item.sena
-          if (item.nds_foiz) {
-            item.nds_summa = item.nds_foiz / 100 * item.summa;
-          } else {
-            item.nds_summa = 0;
-          }
-          item.summa_s_nds = item.summa + item.nds_summa;
-          item.user_id = user_id;
-          item.document_prixod_jur7_id = doc.id;
-          item.main_schet_id = main_schet_id;
-          item.created_at = tashkentTime();
-          item.updated_at = tashkentTime();
-          return item;
-        })
-        for (let child of result_childs) {
-          if (child.iznos) {
-            let iznos_array = []
-            for (let i = 1; i <= child.kol; i++) {
-              const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-              iznos_array.push({
-                user_id: user_id,
-                inventar_num: naimenovanie.inventar_num,
-                serial_num: naimenovanie.serial_num,
-                naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
-                kol: 1,
-                sena: child.sena,
-                iznos_start_date: tashkentTime(),
-                created_at: tashkentTime(),
-                updated_at: tashkentTime()
-              })
-            }
-            await IznosDB.createIznos(iznos_array, client);
+        ],
+        client
+      );
+
+      // Handle iznos data
+      const iznos_array = [];
+      const result_childs = [];
+      for (const child of result_childs) {
+        if (!child.iznos) {
+          const summa = child.kol * child.sena;
+          const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
+          result_childs.push({
+            ...child,
+            summa,
+            nds_summa,
+            summa_s_nds: summa + nds_summa,
+            user_id,
+            document_prixod_jur7_id: doc.id,
+            main_schet_id,
+            created_at: tashkentTime(),
+            updated_at: tashkentTime()
+          })
+        }
+        if (child.iznos) {
+          for (let i = 1; i <= child.kol; i++) {
+            const summa = child.kol * child.sena;
+            const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
+            result_childs.push({
+              ...child,
+              summa,
+              nds_summa,
+              summa_s_nds: summa + nds_summa,
+              user_id,
+              document_prixod_jur7_id: doc.id,
+              main_schet_id,
+              created_at: tashkentTime(),
+              updated_at: tashkentTime()
+            })
+            const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([
+              region_id,
+              child.naimenovanie_tovarov_jur7_id
+            ]);
+            iznos_array.push({
+              user_id,
+              inventar_num: naimenovanie.inventar_num,
+              serial_num: naimenovanie.serial_num,
+              naimenovanie_tovarov_jur7_id: child.naimenovanie_tovarov_jur7_id,
+              kol: 1,
+              sena: child.sena,
+              iznos_start_date: tashkentTime(),
+              created_at: tashkentTime(),
+              updated_at: tashkentTime()
+            });
           }
         }
-        doc.childs = await PrixodDB.createPrixodChild(result_childs, client)
-      })
-    } catch (error) {
-      return res.status(500).json({
-        message: `Interval server error : ${error.message}`
-      })
-    }
-    return res.status(201).json({
-      message: "Create doc prixod successfully",
-      data: doc
-    })
+      }
+
+      // Insert iznos and child data
+      if (iznos_array.length > 0) {
+        await IznosDB.createIznos(iznos_array, client);
+      }
+      doc.childs = await PrixodDB.createPrixodChild(result_childs, client);
+    });
+
+    return res.success('Create successfully', 200);
   }
 
   static async getPrixod(req, res) {

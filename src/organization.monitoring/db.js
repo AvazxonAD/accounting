@@ -455,7 +455,7 @@ exports.OrganizationMonitoringDB = class {
         return data[0];
     }
 
-    static async cap(params, operator, organ_id) {
+    static async cap(params, organ_id) {
         let index_organ_id = 0;
         if (organ_id) {
             index_organ_id = params.length + 1;
@@ -478,7 +478,7 @@ exports.OrganizationMonitoringDB = class {
                 AND r.id = $1
                 AND b_i_j3.main_schet_id = $2
                 AND s_o_p.schet = $3
-                AND b_i_j3.doc_date ${operator} $4
+                AND b_i_j3.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('b_i_j3.id_spravochnik_organization', index_organ_id) : ''}
             GROUP BY s_op.schet, s.smeta_number
         UNION ALL
@@ -495,10 +495,11 @@ exports.OrganizationMonitoringDB = class {
                 AND r.id = $1
                 AND d_j.main_schet_id = $2
                 AND d_j_ch.kredit_schet = $3
-                AND d_j.doc_date ${operator} $4
+                AND d_j.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('d_j.kimdan_id', index_organ_id) : ''}
             GROUP BY d_j_ch.debet_schet, d_j_ch.debet_sub_schet
         `;
+        console.log(query, params)
         const result = await db.query(query, params);
         return result;
     }

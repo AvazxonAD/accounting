@@ -85,6 +85,7 @@ exports.Controller = class {
                 operatsii: query.operatsii,
                 organizations: data,
                 to: query.to,
+                from: query.from,
                 budjet_name: main_schet.budjet_name,
                 itogo_rasxod
             });
