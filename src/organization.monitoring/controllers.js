@@ -76,7 +76,7 @@ exports.Controller = class {
         const { query } = req;
         const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
         if (!main_schet) {
-            return res.error('main shcet not found', 404);
+            return res.error('Main shcet not found', 404);
         }
         const { data, itogo_rasxod } = await OrganizationmonitoringService.cap({ ...query, region_id });
         if (query.excel === 'true') {
