@@ -3,36 +3,6 @@ const { returnParamsValues, designParams } = require('../../helper/functions')
 
 exports.IznosDB = class {
     static async createIznos(params, client) {
-        /*  const design_params = [
-                "user_id",
-                "inventar_num",
-                "serial_num",
-                "naimenovanie_tovarov_jur7_id",
-                "kol",
-                "sena",
-                "iznos_start_date",
-                "created_at",
-                "updated_at"
-            ];
-            const all_values = designParams(params, design_params)
-            const _values = returnParamsValues(all_values, 9);
-            const query = `--sql
-                INSERT INTO iznos_tovar_jur7(
-                    user_id,
-                    inventar_num,
-                    serial_num,
-                    naimenovanie_tovarov_jur7_id,
-                    kol,
-                    sena,
-                    iznos_start_date,
-                    created_at,
-                    updated_at
-                )
-                VALUES ${_values}
-            `;
-            const result = await client.query(query, all_values);
-            return result.rows; 
-        */
         const query = `--sql
             INSERT INTO iznos_tovar_jur7(
                 user_id,
