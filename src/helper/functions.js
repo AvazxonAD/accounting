@@ -249,3 +249,18 @@ exports.returnMonth = (month) => {
             return "server xatolik";
     }
 }
+
+
+exports.formatSubSchet = (str) => {
+    const result = ['', '', ''];
+    for (let i = 0; i < str.length; i++) {
+        if (i < 2) {
+            result[0] += str[i];
+        } else if (i < 4) {
+            result[1] += str[i];
+        } else {
+            result[2] += str[i];
+        }
+    }
+    return result;
+};
