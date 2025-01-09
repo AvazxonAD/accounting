@@ -193,6 +193,13 @@ exports.OrganizationmonitoringService = class {
         worksheet.getCell('A3').value = `${returnStringDate(new Date(data.from))} дан   ${returnStringDate(new Date(data.to))} гача   ${data.operatsii}`;
         worksheet.mergeCells(`A4`, 'C4');
         worksheet.getCell('A4').value = `Подлежит записи в главную книгу`;
+        worksheet.mergeCells(`D4`, 'H4');
+        worksheet.getCell('D4').value = `Расшифровка дебета ${'231'}`;
+        worksheet.getCell('D5').value = `Тип расхода`;
+        worksheet.getCell('E5').value = `Объект`;
+        worksheet.getCell('F5').value = `Подобъект`;
+        worksheet.getCell('G5').value = `Кредит`;
+        worksheet.getCell('H5').value = `Сумма`;
         worksheet.getCell('A5').value = 'Дебет';
         worksheet.getCell('B5').value = 'Кредит';
         worksheet.getCell('C5').value = 'Сумма';
@@ -200,7 +207,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.getCell('B6').value = data.operatsii;
         let row_number = !data.organizations.length ? 7 : 6;
         for (let organ of data.organizations) {
-            worksheet.getCell(`A${row_number}`).value = `${organ.schet}   ${organ.smeta_number}`;
+            worksheet.getCell(`A${row_number}`).value = `${organ.schet}   ${organ.sub_schet}`;
             worksheet.getCell(`C${row_number}`).value = organ.summa;
             row_number++
         }
@@ -212,7 +219,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.getColumn(3).width = 20;
         worksheet.getRow(1).height = 30;
         worksheet.eachRow((row, rowNumber) => {
-            worksheet.getRow(rowNumber).height = 20;
+            worksheet.getRow(rowNumber).height = 30;
             row.eachCell((cell) => {
                 let bold = false;
                 if (rowNumber < 6) {
