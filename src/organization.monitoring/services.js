@@ -71,7 +71,7 @@ exports.OrganizationmonitoringService = class {
         return { organizations, itogo_rasxod, itogo_prixod };
     }
 
-    static async cap(data, organ_id) {
+    static async cap(data) {
         let itogo_rasxod = 0;
         let itogo_prixod = 0;
         const result = await OrganizationMonitoringDB.cap([
@@ -80,7 +80,19 @@ exports.OrganizationmonitoringService = class {
             data.operatsii,
             data.from,
             data.to
-        ], organ_id);
+        ]);
+        const uniqueSchets = Array.from(
+            new Set(result.map(item => item.schet))
+        ).map(schet => ({ schet }));
+        for (let schet of uniqueSchets) {
+            schet.summa = 0;
+            for (let doc of result) {
+                if (schet.schet === doc.schet) {
+                    schet.summa += doc.summa
+                }
+            }
+        }
+        
         for (let item of result) {
             itogo_rasxod += item.summa;
         }
@@ -100,11 +112,11 @@ exports.OrganizationmonitoringService = class {
 
         title.value = `${data.organ_name} ${returnStringDate(new Date(data.to))} холатига  ${data.operatsii} счет бўйича дебитор-кредитор  карздорлик тугрисида маълумот `
         const organ_nameCell = worksheet.getCell(`A2`)
-        organ_nameCell.value = 'Наименование организации'
+        organ_nameCell.value = 'Наименование организации';
         const prixodCell = worksheet.getCell(`B2`)
-        prixodCell.value = `Дебит`
+        prixodCell.value = `Дебит`;
         const rasxodCell = worksheet.getCell(`C2`)
-        rasxodCell.value = 'Кредит'
+        rasxodCell.value = 'Кредит';
         const css_array = [title, organ_nameCell, prixodCell, rasxodCell];
         let itogo_rasxod = 0;
         let itogo_prixod = 0;
@@ -194,12 +206,6 @@ exports.OrganizationmonitoringService = class {
         worksheet.mergeCells(`A4`, 'C4');
         worksheet.getCell('A4').value = `Подлежит записи в главную книгу`;
         worksheet.mergeCells(`D4`, 'H4');
-        worksheet.getCell('D4').value = `Расшифровка дебета ${'231'}`;
-        worksheet.getCell('D5').value = `Тип расхода`;
-        worksheet.getCell('E5').value = `Объект`;
-        worksheet.getCell('F5').value = `Подобъект`;
-        worksheet.getCell('G5').value = `Кредит`;
-        worksheet.getCell('H5').value = `Сумма`;
         worksheet.getCell('A5').value = 'Дебет';
         worksheet.getCell('B5').value = 'Кредит';
         worksheet.getCell('C5').value = 'Сумма';

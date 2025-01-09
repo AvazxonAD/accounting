@@ -455,12 +455,7 @@ exports.OrganizationMonitoringDB = class {
         return data[0];
     }
 
-    static async cap(params, organ_id) {
-        let index_organ_id = 0;
-        if (organ_id) {
-            index_organ_id = params.length + 1;
-            params.push(organ_id);
-        };
+    static async cap(params) {
         const query = `--sql           
             SELECT 
                 s_op.schet, 
@@ -471,7 +466,6 @@ exports.OrganizationMonitoringDB = class {
             JOIN bajarilgan_ishlar_jur3 AS b_i_j3 ON b_i_j3.id = b_i_j3_ch.bajarilgan_ishlar_jur3_id 
             JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = b_i_j3.spravochnik_operatsii_own_id
             JOIN spravochnik_operatsii AS s_op ON s_op.id = b_i_j3_ch.spravochnik_operatsii_id
-            JOIN smeta AS s ON s.id = s_op.smeta_id 
             JOIN users AS u ON b_i_j3.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE b_i_j3.isdeleted = false
@@ -479,8 +473,25 @@ exports.OrganizationMonitoringDB = class {
                 AND b_i_j3.main_schet_id = $2
                 AND s_o_p.schet = $3
                 AND b_i_j3.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('b_i_j3.id_spravochnik_organization', index_organ_id) : ''}
             GROUP BY s_op.schet, s_op.sub_schet
+        UNION ALL
+        SELECT 
+                m.jur2_schet AS schet, 
+                s_op.sub_schet,
+                COALESCE(SUM(b.summa), 0)::FLOAT AS summa,
+                'bank_prixod' AS type
+            FROM bank_prixod_child AS b
+            JOIN bank_prixod AS b_d ON b_d.id = b.id_bank_prixod
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = b.spravochnik_operatsii_id
+            JOIN users AS u ON b.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN main_schet AS m ON m.id = b.main_schet_id
+            WHERE b.isdeleted = false
+                AND r.id = $1
+                AND m.id = $2
+                AND s_op.schet = $3
+                AND b_d.doc_date BETWEEN $4 AND $5
+            GROUP BY m.jur2_schet, s_op.sub_schet
         UNION ALL
             SELECT 
                 d_j_ch.debet_schet AS schet,
@@ -496,7 +507,6 @@ exports.OrganizationMonitoringDB = class {
                 AND d_j.main_schet_id = $2
                 AND d_j_ch.kredit_schet = $3
                 AND d_j.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('d_j.kimdan_id', index_organ_id) : ''}
             GROUP BY d_j_ch.debet_schet, d_j_ch.debet_sub_schet
         `;
         const result = await db.query(query, params);
