@@ -464,7 +464,7 @@ exports.OrganizationMonitoringDB = class {
         const query = `--sql           
             SELECT 
                 s_op.schet, 
-                s.smeta_number,
+                s_op.sub_schet,
                 COALESCE(SUM(b_i_j3_ch.summa), 0)::FLOAT AS summa,
                 'akt' AS type
             FROM bajarilgan_ishlar_jur3_child AS b_i_j3_ch
@@ -480,11 +480,11 @@ exports.OrganizationMonitoringDB = class {
                 AND s_o_p.schet = $3
                 AND b_i_j3.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('b_i_j3.id_spravochnik_organization', index_organ_id) : ''}
-            GROUP BY s_op.schet, s.smeta_number
+            GROUP BY s_op.schet, s_op.sub_schet
         UNION ALL
             SELECT 
                 d_j_ch.debet_schet AS schet,
-                d_j_ch.debet_sub_schet AS smeta_number,
+                d_j_ch.debet_sub_schet AS sub_schet,
                 COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa,
                 'jur7_prixod' AS type
             FROM document_prixod_jur7_child d_j_ch
@@ -499,7 +499,6 @@ exports.OrganizationMonitoringDB = class {
                 ${organ_id ? sqlFilter('d_j.kimdan_id', index_organ_id) : ''}
             GROUP BY d_j_ch.debet_schet, d_j_ch.debet_sub_schet
         `;
-        console.log(query, params)
         const result = await db.query(query, params);
         return result;
     }
