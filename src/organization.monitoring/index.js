@@ -5,7 +5,6 @@ const {
     monitoringSchema,
     aktSverkaSchema,
     prixodRasxodSchema,
-    orderOrganizationSchema,
     capSchema,
     consolidatedSchema
 } = require('./schemas')
