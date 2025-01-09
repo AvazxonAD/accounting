@@ -43,11 +43,16 @@ exports.OrganizationDB = class {
         return result[0];
     }
 
-    static async getOrganizationDataAndTotal(params, search) {
+    static async getOrganizationDataAndTotal(params, search, organ_id ) {
+        let organ_filter = ``;
         let search_filter = ``
         if (search) {
             search_filter = `AND ( s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR s_o.name ILIKE '%' || $${params.length + 1} || '%' )`;
             params.push(search);
+        }
+        if(organ_id){
+            params.push(organ_id);
+            organ_filter = `AND s_o.id = $${params.length}`;
         }
         const query = `--sql
             WITH data AS (SELECT 
@@ -63,7 +68,10 @@ exports.OrganizationDB = class {
                 FROM spravochnik_organization AS s_o  
                 JOIN users AS u ON s_o.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id 
-                WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter}
+                WHERE s_o.isdeleted = false 
+                    AND r.id = $1 
+                    ${search_filter}
+                    ${organ_filter}
                 OFFSET $2
                 LIMIT $3
             )
@@ -73,7 +81,11 @@ exports.OrganizationDB = class {
                 FROM spravochnik_organization AS s_o  
                 JOIN users AS u ON s_o.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id 
-                WHERE s_o.isdeleted = false AND r.id = $1 ${search_filter})::INTEGER AS total_count
+                WHERE s_o.isdeleted = false 
+                    AND r.id = $1 
+                    ${search_filter}
+                    ${organ_filter}
+                )::INTEGER AS total_count
             FROM data
         `;
         const result = await db.query(query, params);

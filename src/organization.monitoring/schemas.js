@@ -49,5 +49,6 @@ exports.consolidatedSchema = Joi.object({
     excel: Joi.string().trim().pattern(/^(true|false)$/).allow('', null),
     main_schet_id: Joi.number().integer().min(1).required(),
     contract: Joi.string().trim().pattern(/^(true|false)$/).allow('', null),
+    organ_id: Joi.number().integer().min(1)
   })
 }).options({ stripUnknown: true });
