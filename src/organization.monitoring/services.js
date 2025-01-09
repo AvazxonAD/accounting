@@ -78,8 +78,9 @@ exports.OrganizationmonitoringService = class {
             data.region_id,
             data.main_schet_id,
             data.operatsii,
+            data.from,
             data.to
-        ], '<=', organ_id);
+        ], organ_id);
         for (let item of result) {
             itogo_rasxod += item.summa;
         }
@@ -189,7 +190,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.mergeCells(`A2`, 'C2');
         worksheet.getCell('A2').value = `(${data.budjet_name} буджети)`;
         worksheet.mergeCells(`A3`, 'C3');
-        worksheet.getCell('A3').value = `${returnStringDate(new Date(data.to))} холатига  ${data.operatsii}`;
+        worksheet.getCell('A3').value = `${returnStringDate(new Date(data.from))} дан   ${returnStringDate(new Date(data.to))} гача   ${data.operatsii}`;
         worksheet.mergeCells(`A4`, 'C4');
         worksheet.getCell('A4').value = `Подлежит записи в главную книгу`;
         worksheet.getCell('A5').value = 'Дебет';
