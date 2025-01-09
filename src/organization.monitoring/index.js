@@ -15,8 +15,8 @@ const { Router } = require('express')
 const router = Router()
 
 router.get('/', validator(Controller.monitoring, monitoringSchema))
-    .get('/prixod/rasxod', validator(Controller.prixodRasxod, prixodRasxodSchema))
     .get('/cap', validator(Controller.cap, capSchema))
+    .get('/prixod/rasxod', validator(Controller.prixodRasxod, prixodRasxodSchema))
     .get('/order', validator(Controller.consolidated, consolidatedSchema));
     //.get('/akt/sverka', validator(Controller.aktSverka, aktSverkaSchema))
 
