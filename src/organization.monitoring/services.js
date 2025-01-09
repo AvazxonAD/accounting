@@ -333,7 +333,7 @@ exports.OrganizationmonitoringService = class {
             'Организатсия',
             'Дебет',
             'Кредит',
-            data.operatsii,
+            '',
             ...data.rasxodSchets.map(item => {
                 if (item.schet === 'itogo_rasxod') {
                     return 'итого кредит'
