@@ -124,16 +124,25 @@ exports.Controller = class {
         }
         if (child.iznos) {
           for (let i = 1; i <= child.kol; i++) {
-            const summa = child.kol * child.sena;
+            const summa = child.sena;
             const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
             result_childs.push({
-              ...child,
+              naimenovanie_tovarov_jur7_id,
+              kol,
+              sena,
               summa,
+              nds_foiz,
               nds_summa,
-              summa_s_nds: summa + nds_summa,
+              summa_s_nds, 
+              debet_schet,
+              debet_sub_schet,
+              kredit_schet,
+              kredit_sub_schet,
+              data_pereotsenka,
               user_id,
-              document_prixod_jur7_id: doc.id,
+              document_prixod_jur7_id,
               main_schet_id,
+              iznos,
               created_at: tashkentTime(),
               updated_at: tashkentTime()
             })

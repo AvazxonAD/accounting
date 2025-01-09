@@ -6,7 +6,7 @@ exports.Controller = class {
     static async createResponsible(req, res) {
         const { id: user_id, region_id } = req.user
         const { spravochnik_podrazdelenie_jur7_id, fio } = req.body;
-        
+
         const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, spravochnik_podrazdelenie_jur7_id])
         if (!podrazdelenie) {
             return res.status(404).json({
@@ -31,11 +31,13 @@ exports.Controller = class {
         const { page, limit, search, podraz_id } = req.query;
         const offset = (page - 1) * limit;
         const { data, total } = await ResponsibleDB.getResponsible([region_id, offset, limit], search, podraz_id)
-        const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, podraz_id])
-        if (!podrazdelenie) {
-            return res.status(404).json({
-                message: "podrazdelenie not found"
-            })
+        if (podraz_id) {
+            const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, podraz_id])
+            if (!podrazdelenie) {
+                return res.status(404).json({
+                    message: "podrazdelenie not found"
+                })
+            }
         }
         const pageCount = Math.ceil(total / limit);
         const meta = {
@@ -84,8 +86,8 @@ exports.Controller = class {
             })
         }
         const result = await ResponsibleDB.updateResponsible([
-            fio, 
-            tashkentTime(), 
+            fio,
+            tashkentTime(),
             spravochnik_podrazdelenie_jur7_id,
             id
         ])
