@@ -5,10 +5,7 @@ CREATE TABLE documents_glavniy_kniga (
     main_schet_id INT NOT NULL REFERENCES main_schet(id),
     spravochnik_main_book_schet_id INT NOT NULL REFERENCES spravochnik_main_book_schet(id),
     type_document VARCHAR(50) NOT NULL,
-    month INT CHECK (
-        month BETWEEN 1
-        AND 12
-    ),
+    month INT NOT NULL,
     year INT CHECK (year > 1900),
     debet_sum DECIMAL,
     kredit_sum DECIMAL,
@@ -27,10 +24,7 @@ CREATE TABLE zakonchit_glavniy_kniga (
     budjet_id INT NOT NULL REFERENCES spravochnik_budjet_name(id),
     spravochnik_main_book_schet_id INT NOT NULL REFERENCES spravochnik_main_book_schet(id),
     type_document VARCHAR(50) NOT NULL,
-    month INT CHECK (
-        month BETWEEN 1
-        AND 12
-    ),
+    month INT NOT NULL,
     year INT CHECK (year > 1900),
     debet_sum DECIMAL,
     kredit_sum DECIMAL,
