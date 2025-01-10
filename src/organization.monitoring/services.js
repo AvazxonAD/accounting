@@ -73,7 +73,6 @@ exports.OrganizationmonitoringService = class {
 
     static async cap(data) {
         let itogo_rasxod = 0;
-        let itogo_prixod = 0;
         const result = await OrganizationMonitoringDB.cap([
             data.region_id,
             data.main_schet_id,
@@ -99,7 +98,7 @@ exports.OrganizationmonitoringService = class {
         for (let item of result) {
             itogo_rasxod += item.summa;
         }
-        return { data: uniqueSchets, itogo_rasxod, itogo_prixod };
+        return { data: uniqueSchets, itogo_rasxod };
     }
 
     static async prixodRasxodExcel(data) {
@@ -234,22 +233,30 @@ exports.OrganizationmonitoringService = class {
         worksheet.mergeCells(`A${row_number}`, `E${row_number}`);
         worksheet.getCell(`A${row_number}`).value = 'Всего кредита';
         worksheet.getCell(`F${row_number}`).value = data.itogo_rasxod;
-        worksheet.getColumn(1).width = 19;
+        worksheet.getColumn(1).width = 15;
         worksheet.getColumn(2).width = 15;
-        worksheet.getColumn(3).width = 20;
-        worksheet.getColumn(4).width = 20;
-        worksheet.getColumn(5).width = 20;
-        worksheet.getColumn(6).width = 30;
+        worksheet.getColumn(3).width = 15;
+        worksheet.getColumn(4).width = 15;
+        worksheet.getColumn(5).width = 15;
+        worksheet.getColumn(6).width = 20;
         worksheet.getRow(1).height = 30;
         worksheet.eachRow((row, rowNumber) => {
-            worksheet.getRow(rowNumber).height = 30;
-            row.eachCell((cell) => {
+            worksheet.getRow(rowNumber).height = 20;
+            row.eachCell((cell, columnNumber) => {
                 let bold = false;
-                let horizontal = "center";
+                let horizontal = "left";
                 if (rowNumber < 6) {
                     bold = true;
+                    horizontal = 'center'
+                }
+                if(rowNumber > 5 && columnNumber === 6){
+                    horizontal = 'right'
+                }
+                if(rowNumber > 5 && columnNumber !== 1 && columnNumber !== 6){
+                    horizontal = 'center'
                 }
                 Object.assign(cell, {
+                    numFmt: '#,##0.00',
                     font: { size: 13, name: 'Times New Roman', bold },
                     alignment: { vertical: "middle", horizontal, wrapText: true },
                     fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
