@@ -16,7 +16,7 @@ const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.
 const { resFunc } = require('../utils/resFunc')
 const { checkSchetsEquality } = require('../utils/need.functios');
 const ErrorResponse = require("../utils/errorResponse");
-const { MainSchetService } = require('../spravochnik/main.schet/services.js')
+const { MainSchetService } = require('../spravochnik/main.schet/services.js');
 
 // bank rasxod
 const bank_rasxod = async (req, res) => {
@@ -194,7 +194,10 @@ const paymentBankRasxod = async (req, res) => {
     }
     const { main_schet_id } = value.query;
     const main_schet = await MainSchetService.getByIdMainScet({ id: main_schet_id, region_id })
-
+    if(!main_schet){
+      return res.error('Main schet not found', 404);
+    }
+    
   } catch (error) {
     return res.error()
   }

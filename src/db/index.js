@@ -110,7 +110,7 @@ class Db {
     }
 }
 
-module.exports = (async () => {
+(async () => {
     try {
         const { db, dbPool } = await Db.connectDB();
         console.log('Connect DB'.blue);
@@ -120,3 +120,5 @@ module.exports = (async () => {
         throw new Error(error);
     }
 })();
+
+module.exports = { Db, db: Db.getInstance(), dbPool: Db.getInstance().getPool() };
