@@ -51,10 +51,10 @@ exports.PrixodDB = class {
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $1, $1, $1, $1, ) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *
         `;
-        const result = await client.query(query, allValues)
-        return result.rows;
+        const result = await client.query(query, params)
+        return result.rows[0];
     }
 
     static async getPrixod(params, search) {
@@ -144,21 +144,28 @@ exports.PrixodDB = class {
                 SELECT ARRAY_AGG(row_to_json(d_j_ch))
                 FROM (
                     SELECT  
-                        d_j_ch.id,
                         d_j_ch.naimenovanie_tovarov_jur7_id,
-                        d_j_ch.kol,
                         d_j_ch.sena,
-                        d_j_ch.summa,
                         d_j_ch.debet_schet,
                         d_j_ch.debet_sub_schet,
                         d_j_ch.kredit_schet,
                         d_j_ch.kredit_sub_schet,
-                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
                         d_j_ch.nds_foiz,
-                        d_j_ch.nds_summa,
-                        d_j_ch.summa_s_nds
+                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
+                        COALESCE(SUM(d_j_ch.kol), 0) AS kol,
+                        COALESCE(SUM(d_j_ch.summa), 0) AS summa,
+                        COALESCE(SUM(d_j_ch.nds_summa), 0) AS nds_summa,
+                        COALESCE(SUM(d_j_ch.summa_s_nds), 0) AS summa_s_nds 
                     FROM document_prixod_jur7_child AS d_j_ch
                     WHERE d_j_ch.document_prixod_jur7_id = d_j.id
+                    GROUP BY d_j_ch.naimenovanie_tovarov_jur7_id,
+                        d_j_ch.sena,
+                        d_j_ch.debet_schet,
+                        d_j_ch.debet_sub_schet,
+                        d_j_ch.kredit_schet,
+                        d_j_ch.kredit_sub_schet,
+                        d_j_ch.nds_foiz,
+                        d_j_ch.data_pereotsenka
                 ) AS d_j_ch
                 ) AS childs
             FROM document_prixod_jur7 AS d_j
@@ -260,7 +267,10 @@ exports.PrixodDB = class {
             JOIN document_prixod_jur7_child AS d_j_ch ON d_j.id = d_j_ch.document_prixod_jur7_id 
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d_j.main_schet_id = $2 AND d_j.isdeleted = false AND d_j_ch.naimenovanie_tovarov_jur7_id = $3
+            WHERE r.id = $1 
+                AND d_j.main_schet_id = $2 
+                AND d_j.isdeleted = false 
+                AND d_j_ch.naimenovanie_tovarov_jur7_id = $3
         `;
         const result = await db.query(query, params);
         return result[0];

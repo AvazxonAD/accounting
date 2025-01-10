@@ -401,5 +401,64 @@ exports.PodotchetMonitoringDB = class {
         const result = await db.query(query, params);
         return result[0].total_docs;
     }
-    
+
+    static async cap(params) {
+        const query = `--sql           
+            SELECT 
+                m.jur1_schet AS schet, 
+                s_op.sub_schet,
+                COALESCE(SUM(kpch.summa), 0)::FLOAT AS summa,
+                'kassa_prixod' AS type
+            FROM kassa_prixod_child AS kpch
+            JOIN kassa_prixod AS kp ON kp.id = kpch.kassa_prixod_id 
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = kpch.spravochnik_operatsii_id
+            JOIN users AS u ON kp.user_id = u.id
+            JOIN main_schet AS m ON m.id = kp.main_schet_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE kp.isdeleted = false
+                AND r.id = $1
+                AND kp.main_schet_id = $2
+                AND s_op.schet = $3
+                AND kp.doc_date BETWEEN $4 AND $5
+            GROUP BY m.jur1_schet, s_op.sub_schet
+            UNION ALL
+            SELECT 
+                m.jur2_schet AS schet, 
+                s_op.sub_schet,
+                COALESCE(SUM(b.summa), 0)::FLOAT AS summa,
+                'bank_prixod' AS type
+            FROM bank_prixod_child AS b
+            JOIN bank_prixod AS b_d ON b_d.id = b.id_bank_prixod
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = b.spravochnik_operatsii_id
+            JOIN users AS u ON b_d.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN main_schet AS m ON m.id = b_d.main_schet_id
+            WHERE b_d.isdeleted = false
+                AND r.id = $1
+                AND m.id = $2
+                AND s_op.schet = $3
+                AND b_d.doc_date BETWEEN $4 AND $5
+            GROUP BY m.jur2_schet, s_op.sub_schet
+            UNION ALL
+            SELECT 
+                s_op.schet, 
+                s_op.sub_schet,
+                COALESCE(SUM(ach.summa), 0)::FLOAT AS summa,
+                'avans' AS type
+            FROM avans_otchetlar_jur4_child AS ach
+            JOIN avans_otchetlar_jur4 AS a ON a.id = ach.avans_otchetlar_jur4_id 
+            JOIN spravochnik_operatsii AS s_o_p ON s_o_p.id = a.spravochnik_operatsii_own_id
+            JOIN spravochnik_operatsii AS s_op ON s_op.id = ach.spravochnik_operatsii_id
+            JOIN users AS u ON a.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE a.isdeleted = false
+                AND r.id = $1
+                AND a.main_schet_id = $2
+                AND s_o_p.schet = $3
+                AND a.doc_date BETWEEN $4 AND $5
+            GROUP BY s_op.schet, s_op.sub_schet
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
 }

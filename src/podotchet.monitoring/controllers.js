@@ -1,16 +1,12 @@
 const { PodotchetDB } = require('../spravochnik/podotchet/db');
 const { MainSchetDB } = require('../spravochnik/main.schet/db');
-const { BankRasxodDB } = require('../bank/rasxod/db');
-const { BankPrixodDB } = require('../bank/prixod/db');
-const { KassaPrixodDB } = require('../kassa/prixod/db');
-const { KassaRasxodDB } = require('../kassa/rasxod/db');
-const { AvansDB } = require('../avans/db');
 const { BudjetDB } = require('../spravochnik/budjet/db');
 const ExcelJS = require('exceljs');
-const { db } = require('../db/index');
 const { returnStringDate } = require('../helper/functions');
 const path = require('path');
 const { PodotchetMonitoringDB } = require('./db')
+const { MainSchetService } = require('../spravochnik/main.schet/services')
+const { PodotchetMonitoringService } = require('./service')
 
 exports.Controller = class {
 
@@ -383,4 +379,34 @@ exports.Controller = class {
             if (err) throw new ErrorResponse(err, err.statusCode);
         });
     }
+
+    static async cap(req, res) {
+        const region_id = req.user.region_id;
+        const { query } = req;
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        if (!main_schet) {
+            return res.error('Main shcet not found', 404);
+        }
+        const { data, itogo_rasxod } = await PodotchetMonitoringService.cap({ ...query, region_id });
+        if (query.excel === 'true') {
+            const { filePath, fileName } = await PodotchetMonitoringService.capExcel({
+                organ_name: main_schet.tashkilot_nomi,
+                operatsii: query.operatsii,
+                organizations: data,
+                to: query.to,
+                from: query.from,
+                budjet_name: main_schet.budjet_name,
+                itogo_rasxod
+            });
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            return res.download(filePath, (err) => {
+                if (err) {
+                    res.error(err.message, err.statusCode);
+                }
+            });
+        };
+        return res.success('get successfully', 200, { itogo_rasxod }, data);
+    }
+
 }

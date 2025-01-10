@@ -17,19 +17,7 @@ exports.IznosDB = class {
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         `;
-        for(let object of params){
-            await client.query(query, [
-                object.user_id,
-                object.inventar_num,
-                object.serial_num,
-                object.naimenovanie_tovarov_jur7_id,
-                object.kol,
-                object.sena,
-                object.iznos_start_date,
-                object.created_at,
-                object.updated_at
-            ]);
-        }
+        await client.query(query, params);
     }
 
     static async getByTovarIdIznos(params) {

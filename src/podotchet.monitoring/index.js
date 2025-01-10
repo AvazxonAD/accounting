@@ -4,13 +4,15 @@ const router = Router()
 const {
     monitoringSchema,
     prixodRasxodSchema,
-    getByIdPodotchetToExcelSchema
+    getByIdPodotchetToExcelSchema,
+    capSchema
 } = require('./schemas');
 const { Controller } = require('./controllers');
 const { validator } = require('../helper/validator');
 
 router.get('/', validator(Controller.getMonitoring, monitoringSchema))
-router.get('/prixod/rasxod', validator(Controller.prixodRasxodPodotchet, prixodRasxodSchema))
-router.get('/export/:id', validator(Controller.getByIdPodotchetToExcel, getByIdPodotchetToExcelSchema))
+    .get('/prixod/rasxod', validator(Controller.prixodRasxodPodotchet, prixodRasxodSchema))
+    .get('/cap', validator(Controller.cap, capSchema))
+    .get('/export/:id', validator(Controller.getByIdPodotchetToExcel, getByIdPodotchetToExcelSchema));
 
 module.exports = router
