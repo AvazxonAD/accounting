@@ -85,7 +85,7 @@ const updateRasxodService = async (data) => {
       UPDATE bank_rasxod SET 
         doc_num = $1, 
         doc_date = $2, 
-        summa = $3, 
+        tulanmagan_summa = $3, 
         opisanie = $4, 
         id_spravochnik_organization = $5, 
         id_shartnomalar_organization = $6,
@@ -131,6 +131,7 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
               b_r.id_shartnomalar_organization,
               b_r.rukovoditel,
               b_r.glav_buxgalter,
+              b_r.tulanmagan_summa::FLOAT,
               (
                   SELECT ARRAY_AGG(row_to_json(b_r_ch))
                   FROM (
@@ -184,6 +185,7 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
         b_r.id_spravochnik_organization, 
         b_r.id_shartnomalar_organization,
         b_r.rukovoditel,
+        b_r.tulanmagan_summa::FLOAT,
         b_r.glav_buxgalter,
         (
           SELECT ARRAY_AGG(row_to_json(b_r_ch))
@@ -192,7 +194,7 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
                 b_r_ch.id,
                 b_r_ch.spravochnik_operatsii_id,
                 s_o.name AS spravochnik_operatsii_name,
-                b_r_ch.summa,
+                b_r_ch.summa::FLOAT,
                 b_r_ch.id_spravochnik_podrazdelenie,
                 s_p.name AS spravochnik_podrazdelenie_name,
                 b_r_ch.id_spravochnik_sostav,
@@ -201,7 +203,8 @@ const getByIdRasxodService = async (region_id, main_schet_id, id, ignoreDeleted 
                 s_t_o.name AS spravochnik_type_operatsii_name,
                 b_r_ch.main_zarplata_id,
                 b_r_ch.id_spravochnik_podotchet_litso,
-                s_p_l.name AS spravochnik_podotchet_litso_name
+                s_p_l.name AS spravochnik_podotchet_litso_name,
+                b_r_ch.tulanmagan_summa::FLOAT
             FROM bank_rasxod_child AS b_r_ch
             JOIN spravochnik_operatsii AS s_o ON s_o.id = b_r_ch.spravochnik_operatsii_id
             LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = b_r_ch.id_spravochnik_podrazdelenie

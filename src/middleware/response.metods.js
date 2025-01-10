@@ -13,8 +13,8 @@ module.exports = (req, res, next) => {
         return res.status(statusCode).json({
             code: statusCode || 500,
             message: message || "Interval server error",
-            meta, 
-            data,
+            meta: meta ? meta : null, 
+            data: data ? data : null,
             success: true,
             time: new Date().toISOString()
         })
