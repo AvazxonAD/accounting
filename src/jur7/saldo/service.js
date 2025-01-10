@@ -30,7 +30,7 @@ exports.SaldoService = class {
                             item.sena * item.kol,
                             data.month,
                             data.year,
-                            tashkentTime(),
+                            item.doc_date,
                             responsible.id,
                             tashkentTime(),
                             tashkentTime()

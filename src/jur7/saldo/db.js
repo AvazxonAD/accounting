@@ -44,11 +44,12 @@ exports.SaldoDB = class {
                 d.kimning_buynida,
                 n.name AS naimenovanie_tovarov,
                 n.edin,
-                g.name AS group_name 
+                g.id AS group_jur7_id, 
+                g.name AS group_name
             FROM saldo_naimenovanie_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id 
+            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
             JOIN group_jur7 AS g ON g.id = n.group_jur7_id
             WHERE r.id = $1 
                 AND d.isdeleted = false 
