@@ -1,5 +1,8 @@
 const { Router } = require("express");
 const router = Router();
+const { validator } = require('../helper/validator')
+const { Controller } = require('./rasxod/controller')
+const { paymentBankRasxod } = require('./rasxod/schema')
 
 const {
   bank_rasxod,
@@ -11,11 +14,11 @@ const {
 } = require("./bank.rasxod.controller");
 
 router.get('/fio', getFioBankRasxod)
-router.get('/payment', getFioBankRasxod)
-router.post("/", bank_rasxod);
-router.put("/:id", bank_rasxod_update);
-router.get("/", getAllBankRasxod);
-router.delete("/:id", delete_bank_rasxod);
-router.get("/:id", getElementByIdBankRasxod);
+  .post("/", bank_rasxod)
+  .put('/payment/:id', validator(Controller.paymentBankRasxod, paymentBankRasxod))
+  .put("/:id", bank_rasxod_update)
+  .get("/", getAllBankRasxod)
+  .delete("/:id", delete_bank_rasxod)
+  .get("/:id", getElementByIdBankRasxod);
 
 module.exports = router;
