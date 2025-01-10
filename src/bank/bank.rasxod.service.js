@@ -132,6 +132,7 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
               b_r.rukovoditel,
               b_r.glav_buxgalter,
               b_r.tulanmagan_summa::FLOAT,
+              b_r.tulangan_tulanmagan,
               (
                   SELECT ARRAY_AGG(row_to_json(b_r_ch))
                   FROM (
