@@ -37,13 +37,15 @@ exports.NaimenovanieDB = class {
                     n_t_j7.spravochnik_budjet_name_id,
                     n_t_j7.inventar_num,
                     n_t_j7.serial_num,
-                    g_j7.name AS group_jur7_name,
+                    g.id AS group_jur7_id,
+                    g.name AS group_jur7_name,
+                    g.iznos_foiz,
                     s_b_n.name AS spravochnik_budjet_name
                 FROM naimenovanie_tovarov_jur7 AS n_t_j7
                 JOIN users AS u ON u.id = n_t_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
-                LEFT JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
-                LEFT JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
+                JOIN group_jur7 AS g ON g.id = n_t_j7.group_jur7_id
+                JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
                 WHERE n_t_j7.isdeleted = false AND r.id = $1 ${search_filter}
                 OFFSET $2 LIMIT $3
             )
@@ -70,7 +72,9 @@ exports.NaimenovanieDB = class {
                 n_t_j7.id, 
                 n_t_j7.name, 
                 n_t_j7.edin,
-                g_j7.name AS group_jur7_name,
+                g.id AS group_jur7_id,
+                g.name AS group_jur7_name,
+                g.iznos_foiz,
                 n_t_j7.group_jur7_id,
                 n_t_j7.spravochnik_budjet_name_id,
                 n_t_j7.inventar_num,
@@ -79,7 +83,7 @@ exports.NaimenovanieDB = class {
             FROM naimenovanie_tovarov_jur7 AS n_t_j7
             JOIN users AS u ON u.id = n_t_j7.user_id
             JOIN regions AS r ON r.id = u.region_id
-            LEFT JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
+            LEFT JOIN group_jur7 AS g ON g.id = n_t_j7.group_jur7_id
             LEFT JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
             WHERE r.id = $1 AND n_t_j7.id = $2  ${isdeleted ? `` : ignore}
         `

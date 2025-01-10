@@ -6,7 +6,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
     const data = await pool.query(`--sql
           WITH data AS (
             SELECT 
-                bp.id,
+                bp.id AS id,
                 bp.doc_num,
                 TO_CHAR(bp.doc_date, 'YYYY-MM-DD') AS doc_date,
                 bp.summa AS prixod_sum,
@@ -39,13 +39,15 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_organization so ON bp.id_spravochnik_organization = so.id
             LEFT JOIN shartnomalar_organization so2 ON bp.id_shartnomalar_organization = so2.id
-            WHERE r.id = $1 AND bp.main_schet_id = $2 AND bp.isdeleted = false 
-            AND bp.doc_date BETWEEN $3 AND $4
+            WHERE r.id = $1 
+              AND bp.main_schet_id = $2 
+              AND bp.isdeleted = false 
+              AND bp.doc_date BETWEEN $3 AND $4
             
             UNION ALL
             
             SELECT 
-                br.id, 
+                br.id AS id, 
                 br.doc_num,
                 TO_CHAR(br.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0 AS prixod_sum,
@@ -80,7 +82,7 @@ const getAllMonitoring = async (region_id, main_schet_id, offset, limit, from, t
             LEFT JOIN shartnomalar_organization so2 ON br.id_shartnomalar_organization = so2.id
             WHERE r.id = $1 AND br.main_schet_id = $2 AND br.isdeleted = false
             AND br.doc_date BETWEEN $3 AND $4
-            ORDER BY combined_date
+            ORDER BY combined_date, id
             OFFSET $5 LIMIT $6
         )
         SELECT 
