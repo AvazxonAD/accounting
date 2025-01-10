@@ -444,6 +444,20 @@ const podpisValidation = Joi.object({
   type_document: Joi.string().required().max(255).trim()
 }).options({ stripUnknown: true });
 
+const bankRasxodPayment = Joi.object({
+  query: Joi.object({
+    main_schet_id: Joi.number().integer().required().min(1)
+  }),
+  params: Joi.object({
+    id: Joi.number().integer().required().min(1)
+  }),
+  body: Joi.object({
+    status: Joi.boolean().required()
+  })
+}).options({ stripUnknown: true });
+
+
+
 module.exports = {
   kassaValidation,
   queryValidation,
@@ -489,6 +503,7 @@ module.exports = {
   podpisValidation,
   prixodRasxodPodotchetValidation,
   schetOperatsiiValidation,
-  schetOperatsiiQueryValidation
+  schetOperatsiiQueryValidation,
+  bankRasxodPayment
 };
 

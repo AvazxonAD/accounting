@@ -4,12 +4,11 @@ const { tashkentTime } = require('../utils/date.function')
 
 const createBankRasxodDb = async (data) => {
   try {
-    const result = await pool.query(
-      `
+    const result = await pool.query(`
         INSERT INTO bank_rasxod(
             doc_num, 
             doc_date, 
-            summa, 
+            tulanmagan_summa, 
             opisanie, 
             id_spravochnik_organization, 
             id_shartnomalar_organization, 
@@ -48,7 +47,7 @@ const createBankRasxodChild = async (data) => {
       `
         INSERT INTO bank_rasxod_child(
             spravochnik_operatsii_id,
-            summa,
+            tulanmagan_summa,
             id_spravochnik_podrazdelenie,
             id_spravochnik_sostav,
             id_spravochnik_type_operatsii,
@@ -60,18 +59,19 @@ const createBankRasxodChild = async (data) => {
             main_zarplata_id,
             id_spravochnik_podotchet_litso
         ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`
-      , [data.spravochnik_operatsii_id,
-      data.summa,
-      data.id_spravochnik_podrazdelenie,
-      data.id_spravochnik_sostav,
-      data.id_spravochnik_type_operatsii,
-      data.main_schet_id,
-      data.bank_rasxod_id,
-      data.user_id,
-      tashkentTime(),
-      tashkentTime(),
-      data.main_zarplata_id,
-      data.id_spravochnik_podotchet_litso
+      , [
+        data.spravochnik_operatsii_id,
+        data.summa,
+        data.id_spravochnik_podrazdelenie,
+        data.id_spravochnik_sostav,
+        data.id_spravochnik_type_operatsii,
+        data.main_schet_id,
+        data.bank_rasxod_id,
+        data.user_id,
+        tashkentTime(),
+        tashkentTime(),
+        data.main_zarplata_id,
+        data.id_spravochnik_podotchet_litso
       ]);
     return result.rows[0];
   } catch (error) {
