@@ -11,6 +11,7 @@ const {
 } = require("./bank.rasxod.controller");
 
 router.get('/fio', getFioBankRasxod)
+router.get('/payment', getFioBankRasxod)
 router.post("/", bank_rasxod);
 router.put("/:id", bank_rasxod_update);
 router.get("/", getAllBankRasxod);

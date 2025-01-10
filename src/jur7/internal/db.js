@@ -28,6 +28,25 @@ exports.InternalDB = class {
     }
 
     static async createInternalChild(params, client) {
+        const design_params = [
+            "naimenovanie_tovarov_jur7_id",
+            "kol",
+            "sena",
+            "summa",
+            "nds_foiz",
+            "nds_summa",
+            "summa_s_nds", 
+            "debet_schet",
+            "debet_sub_schet",
+            "kredit_schet",
+            "kredit_sub_schet",
+            "data_pereotsenka",
+            "user_id",
+            "document_vnutr_peremesh_jur7_id",
+            "main_schet_id",
+            "created_at",
+            "updated_at"
+        ]
         const values = params.map((_, index) => {
             return `
                 ($${17 * index + 1}, 
@@ -49,25 +68,6 @@ exports.InternalDB = class {
                 $${17 * index + 17})
             `;
         })
-        const design_params = [
-            "naimenovanie_tovarov_jur7_id",
-            "kol",
-            "sena",
-            "summa",
-            "nds_foiz",
-            "nds_summa",
-            "summa_s_nds", 
-            "debet_schet",
-            "debet_sub_schet",
-            "kredit_schet",
-            "kredit_sub_schet",
-            "data_pereotsenka",
-            "user_id",
-            "document_vnutr_peremesh_jur7_id",
-            "main_schet_id",
-            "created_at",
-            "updated_at"
-        ]
         const _values = values.join(", ")
         const allValues = designParams(params, design_params)
         const query = `--sql

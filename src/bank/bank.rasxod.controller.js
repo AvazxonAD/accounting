@@ -7,6 +7,7 @@ const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podr
 const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
 const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
 const { bankRasxodValidation } = require("../utils/validation");;
+const { bankRasxodPayment } = require("../utils/validation");;
 const { returnAllChildSumma } = require("../utils/returnSumma");
 const { bankQueryValidation } = require("../utils/validation");;
 const { errorCatch } = require('../utils/errorCatch')
@@ -15,6 +16,7 @@ const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.
 const { resFunc } = require('../utils/resFunc')
 const { checkSchetsEquality } = require('../utils/need.functios');
 const ErrorResponse = require("../utils/errorResponse");
+const { MainSchetService } = require('../spravochnik/main.schet/services.js')
 
 // bank rasxod
 const bank_rasxod = async (req, res) => {
@@ -25,7 +27,7 @@ const bank_rasxod = async (req, res) => {
     const data = validationResponse(bankRasxodValidation, req.body)
     const main_schet = await getByIdMainSchetService(region_id, main_schet_id);
     const organization = await OrganizationDB.getByIdorganization([region_id, data.id_spravochnik_organization]);
-    if(!organization){
+    if (!organization) {
       return res.status(404).json({
         message: "organization not found"
       })
@@ -178,6 +180,21 @@ const getFioBankRasxod = async (req, res) => {
     await getByIdMainSchetService(region_id, main_schet_id)
     const result = await getFioBankRasxodService(region_id, main_schet_id)
     resFunc(res, 200, result)
+  } catch (error) {
+    errorCatch(error, res)
+  }
+}
+
+const paymentBankRasxod = async (req, res) => {
+  try {
+    const region_id = req.user.region_id;
+    const { error, value } = bankRasxodPayment.validate(req);
+    if (error) {
+      return res.error(error.details[0].message, 400);
+    }
+    const { main_schet_id } = value.query;
+    const main_schet = await MainSchetService.getByIdMainScet({ id: main_schet_id, region_id })
+
   } catch (error) {
     errorCatch(error, res)
   }

@@ -4,8 +4,9 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const router = require("./index.routes");
+const { Db } = require('./db/index');
 
-app.use(express.json({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 require("colors");
 
