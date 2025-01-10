@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 
 exports.BankRasxodDB = class {
-    static async createBankRasxod(params, client){
+    static async createBankRasxod(params, client) {
         const query = `
             INSERT INTO bank_rasxod(
                 doc_num, 
@@ -22,10 +22,10 @@ exports.BankRasxodDB = class {
         `;
         const result = await client.query(query, params);
         return result;
-    } 
+    }
 
     static async createBankRasxodChild(params, client) {
-        
+
         const query = `
             INSERT INTO bank_rasxod_child(
                 spravochnik_operatsii_id,
@@ -42,5 +42,9 @@ exports.BankRasxodDB = class {
                 id_spravochnik_podotchet_litso
             ) VALUES () RETURNING *
         `
+    }
+
+    static async getByIdBankRaasxod(params) {
+        
     }
 }
