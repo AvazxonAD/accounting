@@ -398,7 +398,7 @@ exports.Controller = class {
               child.naimenovanie_tovarov_jur7_id,
               1,
               child.sena,
-              tashkentTime(),
+              doc_date,
               tashkentTime(),
               tashkentTime()
             ], client)
