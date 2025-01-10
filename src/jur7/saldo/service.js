@@ -3,51 +3,50 @@ const { tashkentTime } = require('../../helper/functions');
 const { db } = require('../../db/index');
 const { getMonthStartEnd } = require('../../helper/functions')
 
+
 exports.SaldoService = class {
     static async getInfo(data) {
         const date = getMonthStartEnd(data.year, data.month);
-        const docs = await SaldoDB.getInfo([data.region_id, data.kimning_buynida, date[0]], '<');
-        for (let doc of docs) {
-            doc.kol = (doc.prixod + doc.prixod_internal) - (doc.rasxod + doc.rasxod_internal);
-            doc.summa = doc.kol * doc.sena;
+        for (let responsible of data.responsibles) {
+            responsible.products = data.products.map(item => ({ ...item }));
+            for (let product of responsible.products) {
+                product.kol = await SaldoDB.getKol([product.id, responsible.id, date[0]]);
+            }
+            responsible.products = responsible.products.filter(item => item.kol !== 0);
         }
-        const result = docs.filter(item => item.kol != 0);
-        return result;
+        data.responsibles = data.responsibles.filter(item => item.products.length > 0);
+        return data.responsibles;
     }
 
     static async createSaldo(data) {
-        const result = await db.transaction(async client => {
+        await db.transaction(async client => {
             await SaldoDB.deleteSaldo([data.region_id, data.month, data.year])
-            const docs = [];
-            for (let responsible of data.responsibles) {
-                for (let item of responsible.docs) {
-                    docs.push(
-                        await SaldoDB.createSaldo([
-                            data.user_id,
-                            item.naimenovanie_tovarov_jur7_id,
-                            item.kol,
-                            item.sena,
-                            item.sena * item.kol,
-                            data.month,
-                            data.year,
-                            item.doc_date,
-                            responsible.id,
-                            tashkentTime(),
-                            tashkentTime()
-                        ], client)
-                    )
+            for (let responsible of data.info) {
+                for (let product of responsible.products) {
+                    product.sena = await SaldoDB.getSena([product.id]);
+                    await SaldoDB.createSaldo([
+                        data.user_id,
+                        product.id,
+                        product.kol,
+                        product.sena,
+                        product.sena * product.kol,
+                        data.month,
+                        data.year,
+                        tashkentTime(),
+                        responsible.id,
+                        tashkentTime(),
+                        tashkentTime()
+                    ], client)
                 }
             }
-            return docs;
         })
-        return result;
     }
 
     static async getSaldo(data) {
         const date = getMonthStartEnd(data.year, data.month);
         const result = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, data.year, data.month]);
         for (let doc of result) {
-            doc.internal = await SaldoDB.getSumma([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, date[0], date[1]]);
+            doc.internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, date[0], date[1]]);
             doc.internal.prixod.summa = doc.internal.prixod.kol * doc.sena;
             doc.internal.rasxod.summa = doc.internal.rasxod.kol * doc.sena;
             doc.to = { kol: doc.from.kol + (doc.internal.prixod.kol - doc.internal.rasxod.kol) };
@@ -63,7 +62,7 @@ exports.SaldoService = class {
         const start = `${year}-${month}-01`;
         const result = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, year, month], data.product_id);
         for (let doc of result) {
-            const internal = await SaldoDB.getSumma([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, start, data.to]);
+            const internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, start, data.to]);
             doc.to = { kol: doc.from.kol + (internal.prixod.kol - internal.rasxod.kol) };
             doc.to.summa = doc.to.kol * doc.sena;
         }
