@@ -81,29 +81,27 @@ class Db {
         const folderPath = path.join(__dirname, './migrations');
         const files = fs.readdirSync(folderPath);
         const sqlFiles = files.filter(file => file.endsWith('.sql'));
-
+        const versions = await db.query(`SELECT * FROM migrations ORDER BY id`);
         if (sqlFiles.length === 0) {
             throw new Error('No .sql files found in the directory');
         }
-
-        const latestFile = sqlFiles[sqlFiles.length - 1];
-
-        const version = await db.query(`SELECT * FROM migrations ORDER BY id DESC LIMIT 1`);
-
-        if (!version[0] || version[0].file_name !== latestFile) {
-            const client = await dbPool.connect();
-            try {
-                await client.query('BEGIN');
-                await client.query(`INSERT INTO migrations(file_name) VALUES($1)`, [latestFile]);
-                const filePath = `${folderPath}/${latestFile}`;
-                const sqlQuery = await fs.promises.readFile(filePath, 'utf-8');
-                await client.query(sqlQuery);
-                await client.query('COMMIT');
-            } catch (error) {
-                await client.query('ROLLBACK');
-                throw new Error(error);
-            } finally {
-                client.release();
+        for (let file of sqlFiles) {
+            const version =  versions.find(item => item.file_name === file);
+            if (!version) {
+                const client = await dbPool.connect();
+                try {
+                    await client.query('BEGIN');
+                    await client.query(`INSERT INTO migrations(file_name) VALUES($1)`, [file]);
+                    const filePath = `${folderPath}/${file}`;
+                    const sqlQuery = await fs.promises.readFile(filePath, 'utf-8');
+                    await client.query(sqlQuery);
+                    await client.query('COMMIT');
+                } catch (error) {
+                    await client.query('ROLLBACK');
+                    throw new Error(error);
+                } finally {
+                    client.release();
+                }
             }
         }
         return { db, dbPool };
