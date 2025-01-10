@@ -196,7 +196,7 @@ const paymentBankRasxod = async (req, res) => {
     const main_schet = await MainSchetService.getByIdMainScet({ id: main_schet_id, region_id })
 
   } catch (error) {
-    errorCatch(error, res)
+    return res.error()
   }
 }
 
