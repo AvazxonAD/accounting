@@ -18,48 +18,51 @@ exports.SaldoDB = class {
     static async getKol(params) {
         const query = `--sql
             WITH prixod AS (
-                SELECT 
+                SELECT
                     COALESCE(SUM(d_ch.kol), 0) AS kol
                 FROM document_prixod_jur7 AS d
                 JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
-                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
-                    AND d.kimga_id = $2 
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimga_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date < $3
             ),
             prixod_internal AS (
-                SELECT  
+                SELECT
                     COALESCE(SUM(d_ch.kol), 0) AS kol
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
-                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
-                    AND d.kimga_id = $2 
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimga_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date < $3
             ),
             rasxod AS (
-                SELECT  
+                SELECT
                     COALESCE(SUM(d_ch.kol), 0) AS kol
                 FROM document_rasxod_jur7 AS d
                 JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
-                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
-                    AND d.kimdan_id = $2 
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimdan_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date < $3
             ),
             rasxod_internal AS (
-                SELECT  
+                SELECT
                     COALESCE(SUM(d_ch.kol), 0) AS kol
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
-                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.kimdan_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date < $3
             )
             SELECT
                 ( (prixod.kol + prixod_internal.kol) - (rasxod.kol + rasxod_internal.kol) )::FLOAT AS kol
-            FROM prixod, prixod_internal, rasxod, rasxod_internal 
+            FROM prixod
+            JOIN prixod_internal ON true 
+            JOIN rasxod ON true
+            JOIN rasxod_internal ON true
         `;
         const result = await db.query(query, params);
         return result[0]?.kol;

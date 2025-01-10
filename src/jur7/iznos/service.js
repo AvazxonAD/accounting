@@ -7,9 +7,7 @@ exports.IznosService = class {
         const tovar_id = req.query.tovar_id;
         const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, tovar_id]);
         if(!product){
-            return res.status(404).json({
-                message: "product nnot found"
-            })
+            return res.error('Product not found', 404);
         }
         const result = await IznosDB.getByTovarIdIznos([region_id, tovar_id]);
         return res.status(200).json({

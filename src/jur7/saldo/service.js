@@ -1,7 +1,8 @@
 const { SaldoDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions');
 const { db } = require('../../db/index');
-const { getMonthStartEnd } = require('../../helper/functions')
+const { getMonthStartEnd } = require('../../helper/functions');
+const { IznosDB } = require('../iznos/db');
 
 
 exports.SaldoService = class {
@@ -11,6 +12,7 @@ exports.SaldoService = class {
             responsible.products = data.products.map(item => ({ ...item }));
             for (let product of responsible.products) {
                 product.kol = await SaldoDB.getKol([product.id, responsible.id, date[0]]);
+                product.prixod_doc_date = data.prixod_doc_date;
             }
             responsible.products = responsible.products.filter(item => item.kol !== 0);
         }
@@ -24,6 +26,38 @@ exports.SaldoService = class {
             for (let responsible of data.info) {
                 for (let product of responsible.products) {
                     product.sena = await SaldoDB.getSena([product.id]);
+                    const iznos = (await IznosDB.getByTovarIdIznos([data.region_id, product.id]))[0];
+                    if (iznos) {
+                        const date1 = new Date(`${data.year}-${data.month}-01`);
+                        const date2 = new Date(iznos.iznos_start_date);
+                        const year1 = date1.getFullYear();
+                        const month1 = date1.getMonth();
+                        const year2 = date2.getFullYear();
+                        const month2 = date2.getMonth();
+                        const month = (year1 - year2) * 12 + (month1 - (month2 + 1));
+                        if (month <= 0) {
+                            continue;
+                        }
+                        const iznos_summa = Math.round((((iznos.sena * product.iznos_foiz) / 12) * month) * 100) / 100 + iznos.eski_iznos_summa;
+                        for (let k = 1; k <= product.kol; k++) {
+                            await IznosDB.createIznos([
+                                data.user_id,
+                                product.inventar_num,
+                                product.serial_num,
+                                product.id,
+                                1,
+                                product.sena,
+                                tashkentTime(),
+                                responsible.id,
+                                iznos_summa,
+                                data.year, 
+                                data.month,
+                                tashkentTime(),
+                                tashkentTime()
+                            ], client)
+                        }
+                    }
+
                     await SaldoDB.createSaldo([
                         data.user_id,
                         product.id,

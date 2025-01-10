@@ -79,7 +79,7 @@ exports.Controller = class {
     // Calculate summa
     let summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
-    const result = await db.transaction(async (client) => {
+    await db.transaction(async (client) => {
       // Create the main document
       const doc = await PrixodDB.createPrixod(
         [
@@ -109,10 +109,35 @@ exports.Controller = class {
           const summa = child.kol * child.sena;
           const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
           const summa_s_nds = summa + nds_summa;
-          result_childs.push(
+          await PrixodDB.createPrixodChild([
+            child.naimenovanie_tovarov_jur7_id,
+            child.kol,
+            child.sena,
+            summa,
+            child.nds_foiz,
+            nds_summa,
+            summa_s_nds,
+            child.debet_schet,
+            child.debet_sub_schet,
+            child.kredit_schet,
+            child.kredit_sub_schet,
+            child.data_pereotsenka,
+            user_id,
+            doc.id,
+            main_schet_id,
+            child.iznos,
+            tashkentTime(),
+            tashkentTime()
+          ], client)
+        }
+        if (child.iznos) {
+          for (let i = 1; i <= child.kol; i++) {
+            const summa = child.sena;
+            const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
+            const summa_s_nds = summa + nds_summa;
             await PrixodDB.createPrixodChild([
               child.naimenovanie_tovarov_jur7_id,
-              child.kol,
+              1,
               child.sena,
               summa,
               child.nds_foiz,
@@ -130,35 +155,6 @@ exports.Controller = class {
               tashkentTime(),
               tashkentTime()
             ], client)
-          )
-        }
-        if (child.iznos) {
-          for (let i = 1; i <= child.kol; i++) {
-            const summa = child.sena;
-            const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
-            const summa_s_nds = summa + nds_summa;
-            result_childs.push(
-              await PrixodDB.createPrixodChild([
-                child.naimenovanie_tovarov_jur7_id,
-                1,
-                child.sena,
-                summa,
-                child.nds_foiz,
-                nds_summa,
-                summa_s_nds,
-                child.debet_schet,
-                child.debet_sub_schet,
-                child.kredit_schet,
-                child.kredit_sub_schet,
-                child.data_pereotsenka,
-                user_id,
-                doc.id,
-                main_schet_id,
-                child.iznos,
-                tashkentTime(),
-                tashkentTime()
-              ], client)
-            );
 
             const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([
               region_id,
@@ -172,18 +168,20 @@ exports.Controller = class {
               child.naimenovanie_tovarov_jur7_id,
               1,
               child.sena,
-              tashkentTime(),
+              doc_date,
+              kimga_id,
+              (child.sena * (naimenovanie.iznos_foiz / 100) / 12),
+              new Date(doc_date).getFullYear(),
+              new Date(doc_date).getMonth() + 1,
               tashkentTime(),
               tashkentTime()
             ], client)
           }
         }
       }
-      doc.childs = result_childs;
-      return doc;
     });
 
-    return res.success('Create successfully', 200, null, result);
+    return res.success('Create successfully', 200);
   }
 
   static async getPrixod(req, res) {
