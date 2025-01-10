@@ -7,12 +7,14 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { year, month } = req.body;
-    const { data: responsibles } = await ResponsibleService.getResponsible({ region_id })
-    for (let responsible of responsibles) {
-      responsible.docs = await SaldoService.getInfo({ region_id, kimning_buynida: responsible.id, year, month });
-    }
-    const result = await SaldoService.createSaldo({ user_id, year, month, responsibles, region_id })
-    return res.success('Create successfully', 201, null, result);
+    const { data: responsibles } = await ResponsibleService.getResponsible({ region_id });
+    const { data: products } = await NaimenovanieService.getNaimenovanie({ region_id, offset: 0, limit: 9999 });
+
+    const info = await SaldoService.getInfo({ region_id, responsibles, products, year, month });
+
+    await SaldoService.createSaldo({ user_id, year, month, info, region_id });
+
+    return res.success('Create successfully', 201);
   }
 
   static async getSaldo(req, res) {
