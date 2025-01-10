@@ -113,8 +113,8 @@ const updateRasxodService = async (data) => {
 
 const getBankRasxodService = async (region_id, main_schet_id, offset, limit, from, to) => {
   try {
-    const result = await pool.query(
-      ` WITH data AS (SELECT 
+    const result = await pool.query(`--sql 
+      WITH data AS (SELECT 
               b_r.id,
               b_r.doc_num, 
               TO_CHAR(b_r.doc_date, 'YYYY-MM-DD') AS doc_date, 
@@ -148,7 +148,13 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
           JOIN users AS u ON b_r.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
           JOIN spravochnik_organization AS s_o ON s_o.id = b_r.id_spravochnik_organization 
-          WHERE b_r.main_schet_id = $1 AND r.id = $2 AND b_r.isdeleted = false AND doc_date BETWEEN $3 AND $4 ORDER BY b_r.doc_date OFFSET $5 LIMIT $6)
+          WHERE b_r.main_schet_id = $1 
+            AND r.id = $2 
+            AND b_r.isdeleted = false 
+            AND doc_date BETWEEN $3 AND $4 
+            ORDER BY b_r.doc_date 
+            OFFSET $5 LIMIT $6
+        )
         SELECT 
           ARRAY_AGG(row_to_json(data)) AS data,
           (SELECT SUM(bank_rasxod.summa)
