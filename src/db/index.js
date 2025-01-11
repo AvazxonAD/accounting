@@ -103,7 +103,7 @@ class Db {
                     await client.query('COMMIT');
                 } catch (error) {
                     await client.query('ROLLBACK');
-                    throw new Error(error);
+                    throw new Error(`${file} ${error}`);
                 } finally {
                     client.release();
                 }
