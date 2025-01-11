@@ -1,7 +1,7 @@
 const { Monitoringjur7DB } = require('./db');
 const ExcelJS = require('exceljs');
 const path = require('path');
-const fs = require('fs');
+const { returnStringDate } = require('../../helper/functions')
 
 exports.Jur7MonitoringService = class {
     static async cap(data) {

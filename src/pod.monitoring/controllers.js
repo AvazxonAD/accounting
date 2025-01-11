@@ -55,100 +55,103 @@ exports.Controller = class {
 
     static async prixodRasxodPodotchet(req, res) {
         const region_id = req.user.region_id;
-        const { to, budjet_id } = req.query;
+        const { to, budjet_id, excel } = req.query;
         const bujet = await BudjetDB.getByIdBudjet([budjet_id]);
         if (!bujet) {
-            return res.status(404).json({
-                message: "budjet not found"
-            })
+            return res.error('Budjet not found', 404);
         }
         const data = await PodotchetDB.getPodotchet([region_id]);
         for (let podotchet of data) {
-            podotchet.summma = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet.id, '<=', null, budjet_id);
+            podotchet.summa = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet.id, '<=', null, budjet_id);
         }
-        const workbook = new ExcelJS.Workbook();
-        const fileName = `prixod_rasxod_${new Date().getTime()}.xlsx`;
-        const worksheet = workbook.addWorksheet('prixod rasxod');
-        worksheet.pageSetup.margins.left = 0
-        worksheet.pageSetup.margins.header = 0
-        worksheet.pageSetup.margins.footer = 0
-        worksheet.pageSetup.margins.right = 0
-        worksheet.mergeCells('A1:E1');
-        worksheet.getCell('A1').value = `Список Дебеторов / Кредиторов на ${returnStringDate(new Date(to))}`;
-        worksheet.getCell('A2').value = 'Подотчетное лицо';
-        worksheet.getCell('B2').value = 'Управление';
-        worksheet.getCell('C2').value = 'Дата';
-        worksheet.getCell('D2').value = 'Дебет';
-        worksheet.getCell('E2').value = 'Кредит';
-        let row_number = 3
-        let itogo_prixod = 0
-        let itogo_rasxod = 0
-        for (let column of data) {
-            if (column.summa === 0) continue;
-            worksheet.getCell(`A${row_number}`).value = column.name;
-            worksheet.getCell(`B${row_number}`).value = column.rayon;
-            worksheet.getCell(`C${row_number}`).value = returnStringDate(new Date(to));
-            worksheet.getCell(`D${row_number}`).value = column.summa > 0 ? column.summa : 0;
-            worksheet.getCell(`E${row_number}`).value = column.summa < 0 ? Math.abs(column.summa) : 0;
-            itogo_prixod += column.summa > 0 ? column.summa : 0;
-            itogo_rasxod += column.summa < 0 ? Math.abs(column.summa) : 0;
-            const css_array = [`A${row_number}`, `B${row_number}`, `C${row_number}`, `D${row_number}`, `E${row_number}`];
+        if (excel === 'true') {
+            const workbook = new ExcelJS.Workbook();
+            const fileName = `prixod_rasxod_${new Date().getTime()}.xlsx`;
+            const worksheet = workbook.addWorksheet('prixod rasxod');
+            worksheet.pageSetup.margins.left = 0
+            worksheet.pageSetup.margins.header = 0
+            worksheet.pageSetup.margins.footer = 0
+            worksheet.pageSetup.margins.right = 0
+            worksheet.mergeCells('A1:E1');
+            worksheet.getCell('A1').value = `Список Дебеторов / Кредиторов на ${returnStringDate(new Date(to))}`;
+            worksheet.getCell('A2').value = 'Подотчетное лицо';
+            worksheet.getCell('B2').value = 'Управление';
+            worksheet.getCell('C2').value = 'Дата';
+            worksheet.getCell('D2').value = 'Дебет';
+            worksheet.getCell('E2').value = 'Кредит';
+            let row_number = 3
+            let itogo_prixod = 0
+            let itogo_rasxod = 0
+            for (let column of data) {
+                if (column.summa === 0) continue;
+                worksheet.getCell(`A${row_number}`).value = column.name;
+                worksheet.getCell(`B${row_number}`).value = column.rayon;
+                worksheet.getCell(`C${row_number}`).value = returnStringDate(new Date(to));
+                worksheet.getCell(`D${row_number}`).value = column.summa > 0 ? column.summa : 0;
+                worksheet.getCell(`E${row_number}`).value = column.summa < 0 ? Math.abs(column.summa) : 0;
+                itogo_prixod += column.summa > 0 ? column.summa : 0;
+                itogo_rasxod += column.summa < 0 ? Math.abs(column.summa) : 0;
+                const css_array = [`A${row_number}`, `B${row_number}`, `C${row_number}`, `D${row_number}`, `E${row_number}`];
+                css_array.forEach((cell, index) => {
+                    let horizontal = 'center';
+                    if (index === 0) horizontal = 'left';
+                    if (index > 2) horizontal = 'right';
+                    const column = worksheet.getCell(cell);
+                    column.numFmt = '#,##0.00';
+                    column.font = { size: 10, color: { argb: 'FF000000' }, name: 'Times New Roman' };
+                    column.alignment = { vertical: 'middle', horizontal };
+                    column.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                    column.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' },
+                    };
+                });
+                row_number++;
+            }
+            worksheet.mergeCells(`A${row_number}`, `C${row_number}`)
+            worksheet.getCell(`A${row_number}`).value = 'Итого'
+            worksheet.getCell(`D${row_number}`).value = itogo_prixod
+            worksheet.getCell(`E${row_number}`).value = itogo_rasxod
+            const css_array = ['A1', 'A2', 'B2', 'C2', 'D2', 'E2', `A${row_number}`, `D${row_number}`, `E${row_number}`];
             css_array.forEach((cell, index) => {
+                const column = worksheet.getCell(cell)
+                let size = 10
                 let horizontal = 'center';
-                if (index === 0) horizontal = 'left';
-                if (index > 2) horizontal = 'right';
-                const column = worksheet.getCell(cell);
-                column.numFmt = '#,##0.00';
-                column.font = { size: 10, color: { argb: 'FF000000' }, name: 'Times New Roman' };
-                column.alignment = { vertical: 'middle', horizontal };
-                column.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
-                column.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' },
-                };
+                if (index === 0) size = 13;
+                if (index > 5) column.numFmt = '#,##0.00', horizontal = 'right';
+                Object.assign(column, {
+                    font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                    alignment: { vertical: 'middle', horizontal },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
             });
-            row_number++;
+
+            worksheet.getColumn(1).width = 30;
+            worksheet.getColumn(2).width = 20;
+            worksheet.getColumn(3).width = 15;
+            worksheet.getColumn(4).width = 18;
+            worksheet.getColumn(5).width = 18;
+            worksheet.getRow(1).height = 35
+            worksheet.getRow(2).height = 20
+
+            const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+            await workbook.xlsx.writeFile(filePath);
+            
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            
+            return res.download(filePath);
         }
-        worksheet.mergeCells(`A${row_number}`, `C${row_number}`)
-        worksheet.getCell(`A${row_number}`).value = 'Итого'
-        worksheet.getCell(`D${row_number}`).value = itogo_prixod
-        worksheet.getCell(`E${row_number}`).value = itogo_rasxod
-        const css_array = ['A1', 'A2', 'B2', 'C2', 'D2', 'E2', `A${row_number}`, `D${row_number}`, `E${row_number}`];
-        css_array.forEach((cell, index) => {
-            const column = worksheet.getCell(cell)
-            let size = 10
-            let horizontal = 'center';
-            if (index === 0) size = 13;
-            if (index > 5) column.numFmt = '#,##0.00', horizontal = 'right';
-            Object.assign(column, {
-                font: { size, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
-                alignment: { vertical: 'middle', horizontal },
-                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
-                border: {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                }
-            });
-        });
 
-        worksheet.getColumn(1).width = 30;
-        worksheet.getColumn(2).width = 20;
-        worksheet.getColumn(3).width = 15;
-        worksheet.getColumn(4).width = 18;
-        worksheet.getColumn(5).width = 18;
-        worksheet.getRow(1).height = 35
-        worksheet.getRow(2).height = 20
-
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
-        await workbook.xlsx.writeFile(filePath);
-
-        return res.download(filePath, (err) => {
-            if (err) throw new ErrorResponse(err, err.statusCode);
-        });
+        return res.success('Get successfully', 200, null, data)
     }
 
     static async getByIdPodotchetToExcel(req, res) {

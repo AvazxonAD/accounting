@@ -28,7 +28,8 @@ exports.capSchema = Joi.object({
 exports.prixodRasxodSchema = Joi.object({
     query: Joi.object({
         budjet_id: Joi.number().integer().required().min(1),
-        to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
+        to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+        excel: Joi.string().trim().default('false').valid('true', 'false')
     })
 }).options({ stripUnknown: true });
 
