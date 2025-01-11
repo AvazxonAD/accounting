@@ -66,7 +66,6 @@ exports.Monitoringjur7DB = class {
             params.push(product_id);
         }
 
-
         const query = `--sql
             WITH 
             jur7_prixodSum AS (
@@ -132,5 +131,64 @@ exports.Monitoringjur7DB = class {
         `;
         const result = await db.query(query, params)
         return result;
+    }
+
+    static async getSchetsForCap(params) {
+        const query = `--sql
+            SELECT DISTINCT debet_schet, kredit_schet 
+            FROM (
+                SELECT ch.debet_schet, ch.kredit_schet
+            FROM document_rasxod_jur7 d
+            JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
+            JOIN users AS u ON u.id = d.user_id 
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.main_schet_id = $1
+                AND  r.id = $2
+                AND d.doc_date BETWEEN $3 AND $4
+
+            UNION ALL
+
+            SELECT ch.debet_schet, ch.kredit_schet
+            FROM document_vnutr_peremesh_jur7 d
+            JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
+            JOIN users AS u ON u.id = d.user_id 
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.main_schet_id = $1
+                AND  r.id = $2
+                AND d.doc_date BETWEEN $3 AND $4
+            ); 
+        `;
+        const result = await db.query(query, params);
+        return result;
+    }
+
+    static async getSchetSumma(params) {
+        const query = `--sql
+            SELECT COALESCE(SUM(summa_s_nds), 0)::FLOAt AS summa 
+            FROM (
+                SELECT summa_s_nds, debet_schet, kredit_schet
+            FROM document_rasxod_jur7 d
+            JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
+            JOIN users AS u ON u.id = d.user_id 
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.main_schet_id = $1
+                AND  r.id = $2
+                AND d.doc_date BETWEEN $3 AND $4
+
+            UNION ALL
+
+            SELECT summa_s_nds, debet_schet, kredit_schet
+            FROM document_vnutr_peremesh_jur7 d
+            JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
+            JOIN users AS u ON u.id = d.user_id 
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.main_schet_id = $1
+                AND  r.id = $2
+                AND d.doc_date BETWEEN $3 AND $4
+            )
+            WHERE debet_schet = $5 AND kredit_schet = $6;
+        `;
+        const result = await db.query(query, params);
+        return result[0].summa;
     }
 }
