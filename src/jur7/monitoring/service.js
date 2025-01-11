@@ -27,7 +27,7 @@ exports.Jur7MonitoringService = class {
         worksheet.getCell('A4').value = 'Дебет';
         worksheet.getCell('B4').value = 'Кредит';
         worksheet.getCell('C4').value = 'Сумма';
-        let row_number = !data.organizations.length ? 5 : 4;
+        let row_number = !data.schets.length ? 5 : 4;
         for (let doc of data.schets) {
             worksheet.getCell(`A${row_number}`).value = doc.debet_schet;
             worksheet.getCell(`B${row_number}`).value = doc.kredit_schet;
@@ -37,25 +37,18 @@ exports.Jur7MonitoringService = class {
         worksheet.getCell(`C${row_number}`).value = data.summa;
         worksheet.getColumn(1).width = 15;
         worksheet.getColumn(2).width = 15;
-        worksheet.getColumn(3).width = 15;
-        worksheet.getColumn(4).width = 15;
-        worksheet.getColumn(5).width = 15;
-        worksheet.getColumn(6).width = 20;
+        worksheet.getColumn(3).width = 25;
         worksheet.getRow(1).height = 30;
         worksheet.eachRow((row, rowNumber) => {
-            worksheet.getRow(rowNumber).height = 20;
+            worksheet.getRow(rowNumber).height = 18;
             row.eachCell((cell, columnNumber) => {
                 let bold = false;
-                let horizontal = "left";
-                if (rowNumber < 6) {
+                let horizontal = "center";
+                if (rowNumber < 4) {
                     bold = true;
-                    horizontal = 'center'
                 }
-                if (rowNumber > 5 && columnNumber === 6) {
+                if (rowNumber > 3 && columnNumber === 3) {
                     horizontal = 'right'
-                }
-                if (rowNumber > 5 && columnNumber !== 1 && columnNumber !== 6) {
-                    horizontal = 'center'
                 }
                 Object.assign(cell, {
                     numFmt: '#,##0.00',
@@ -71,7 +64,7 @@ exports.Jur7MonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
     }
