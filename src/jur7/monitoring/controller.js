@@ -329,16 +329,21 @@ exports.Controller = class {
 
     static async cap(req, res) {
         const region_id = req.user.region_id;
-        const { main_schet_id, from, to } = req.query;
+        const { main_schet_id, from, to, excel } = req.query;
         const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
-        
+
         if (!main_schet) {
             return res.error('Main schet not found', 404);
         }
 
         const data = await Jur7MonitoringService.cap({ region_id, main_schet_id, from, to });
 
-
+        if (excel === 'true') {
+            const { fileName, filePath } = await Jur7MonitoringService.capExcel(data);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            return res.download(filePath);
+        }
         return res.success('Get successfully', 200, null, data);
     }
 }

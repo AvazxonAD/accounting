@@ -3,9 +3,9 @@ const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { ResponsibleService } = require('../spravochnik/responsible/service')
 
 exports.Controller = class {
-    static async getByTovarIdIznos(req, res) {
+    static async getIznos(req, res) {
         const region_id = req.user.region_id;
-        const { product_id, responsible_id } = req.query;
+        const { product_id, responsible_id, search, year, month } = req.query;
         if (product_id) {
             const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, product_id]);
             if (!product) {
@@ -18,7 +18,7 @@ exports.Controller = class {
                 return res.error('Responsible not found', 404);
             }
         }
-        const result = await IznosDB.getByTovarIdIznos([region_id], responsible_id, product_id);
+        const result = await IznosDB.getIznos([region_id], responsible_id, product_id, year, month, search);
         return res.success('Iznos get successfully', 200, null, result);
     }
 }
