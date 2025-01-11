@@ -339,7 +339,7 @@ exports.Controller = class {
         const data = await Jur7MonitoringService.cap({ region_id, main_schet_id, from, to });
 
         if (excel === 'true') {
-            const { fileName, filePath } = await Jur7MonitoringService.capExcel(data);
+            const { fileName, filePath } = await Jur7MonitoringService.capExcel({ ...data, from, to });
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
             return res.download(filePath);
