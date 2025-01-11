@@ -20,7 +20,7 @@ routes
     .use("/auth/admin", protect, require('./auth/admin/index'))
     .use("/auth/control", protect, require('./auth/control/index'))
     // Organization monitoring
-    .use('/organization/monitoring', protect, require('./organization.monitoring/index'))
+    .use('/organization/monitoring', protect, require('./organ.monitoring/index'))
     // Spravochnik routes
     .use("/spravochnik/podotchet-litso", protect, require("./spravochnik/podotchet/podochet.litso.routes"))
     .use('/spravochnik/main/book/schet', protect, require('./spravochnik/main.book.schet/index'))
@@ -46,7 +46,7 @@ routes
     // Show service routes
     .use("/services/show", protect, require("./show.service/index"))
     // Podotchet monitoring
-    .use('/podotchet/monitoring', protect, require('./podotchet.monitoring/index'))
+    .use('/podotchet/monitoring', protect, require('./pod.monitoring/index'))
     // Jur 7 routes
     .use('/jur_7/group', protect, require('./jur7/spravochnik/group/index'))
     .use('/jur_7/pereotsenka', protect, require('./jur7/spravochnik/pereotsenka/index'))

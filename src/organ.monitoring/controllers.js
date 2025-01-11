@@ -6,7 +6,7 @@ const { ContractService } = require('../shartnoma/services')
 const { RegionDB } = require('../auth/region/db')
 const { MainSchetDB } = require('../spravochnik/main.schet/db')
 const { OrganizationDB } = require('../spravochnik/organization/db')
-const { OrganizationMonitoringDB } = require('../organization.monitoring/db')
+const { OrganizationMonitoringDB } = require('../organ.monitoring/db')
 
 exports.Controller = class {
     static async monitoring(req, res) {
