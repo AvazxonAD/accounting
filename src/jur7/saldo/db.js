@@ -80,6 +80,7 @@ exports.SaldoDB = class {
                 year,
                 date_saldo,
                 kimning_buynida,
+                iznos_summa_bir_oylik,
                 created_at,
                 updated_at
             )
