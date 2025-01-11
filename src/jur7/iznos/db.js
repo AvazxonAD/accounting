@@ -23,7 +23,17 @@ exports.IznosDB = class {
         await client.query(query, params);
     }
 
-    static async getByTovarIdIznos(params) {
+    static async getByTovarIdIznos(params, responsible_id, product_id) {
+        let responsible_filter = ``;
+        let product_filter = ``;
+        if (responsible_id) {
+            params.push(responsible_id);
+            responsible_filter = `AND i.kimning_buynida = $${params.length}`;
+        }
+        if (product_id) {
+            params.push(product_id);
+            product_filter = `AND i.naimenovanie_tovarov_jur7_id = $${params.length}`;
+        }
         const query = `--sql
             SELECT 
                 i.naimenovanie_tovarov_jur7_id,
@@ -41,9 +51,10 @@ exports.IznosDB = class {
             JOIN naimenovanie_tovarov_jur7 n ON n.id = i.naimenovanie_tovarov_jur7_id
             JOIN users u ON u.id = i.user_id
             JOIN regions r ON r.id = u.region_id
-            WHERE r.id = $1 
-                AND i.isdeleted = false 
-                AND i.naimenovanie_tovarov_jur7_id = $2
+            WHERE r.id = $1
+                AND i.isdeleted = false
+                ${responsible_filter}
+                ${product_filter} 
             ORDER BY i.id DESC
         `;
         const result = await db.query(query, params)
