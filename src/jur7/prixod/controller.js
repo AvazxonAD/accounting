@@ -103,7 +103,6 @@ exports.Controller = class {
       );
 
       // Handle iznos data and create child
-      const result_childs = [];
       for (const child of childs) {
         if (!child.iznos) {
           const summa = child.kol * child.sena;
@@ -397,6 +396,10 @@ exports.Controller = class {
               1,
               child.sena,
               doc_date,
+              kimga_id,
+              (child.sena * (naimenovanie.iznos_foiz / 100) / 12),
+              new Date(doc_date).getFullYear(),
+              new Date(doc_date).getMonth() + 1,
               tashkentTime(),
               tashkentTime()
             ], client)
