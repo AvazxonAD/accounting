@@ -23,9 +23,11 @@ exports.IznosDB = class {
         await client.query(query, params);
     }
 
-    static async getByTovarIdIznos(params, responsible_id, product_id) {
+    static async getByTovarIdIznos(params, responsible_id, product_id, year, month) {
         let responsible_filter = ``;
         let product_filter = ``;
+        let year_filter = ``;
+        let month_filter = ``;
         if (responsible_id) {
             params.push(responsible_id);
             responsible_filter = `AND i.kimning_buynida = $${params.length}`;
@@ -33,6 +35,14 @@ exports.IznosDB = class {
         if (product_id) {
             params.push(product_id);
             product_filter = `AND i.naimenovanie_tovarov_jur7_id = $${params.length}`;
+        }
+        if (year) {
+            params.push(year);
+            year_filter = `AND i.year = $${params.length}`;
+        }
+        if (month) {
+            params.push(month);
+            month_filter = `AND i.month = $${params.length}`;
         }
         const query = `--sql
             SELECT 
@@ -46,7 +56,9 @@ exports.IznosDB = class {
                 n.serial_num,
                 i.eski_iznos_summa::FLOAT,
                 i.iznos_summa::FLOAT,
-                i.kimning_buynida
+                i.kimning_buynida,
+                i.month, 
+                i.year
             FROM iznos_tovar_jur7 i 
             JOIN naimenovanie_tovarov_jur7 n ON n.id = i.naimenovanie_tovarov_jur7_id
             JOIN users u ON u.id = i.user_id
@@ -55,9 +67,21 @@ exports.IznosDB = class {
                 AND i.isdeleted = false
                 ${responsible_filter}
                 ${product_filter} 
+                ${year_filter}
+                ${month_filter}
             ORDER BY i.id DESC
         `;
         const result = await db.query(query, params)
+        return result;
+    }
+
+    static async deleteIznos(params, client) {
+        const query = `--sql
+            UPDATE iznos_tovar_jur7 
+            SET isdeleted = true 
+            WHERE kimning_buynida = $1 AND naimenovanie_tovarov_jur7_id = $2 AND year = $3 AND month = $4
+        `;
+        const result = await client.query(query, params);
         return result;
     }
 }
