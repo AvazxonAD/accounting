@@ -26,6 +26,7 @@ exports.SaldoService = class {
             for (let responsible of data.info) {
                 for (let product of responsible.products) {
                     product.sena = await SaldoDB.getSena([product.id]);
+                    product.iznos_summa_month = iznos.sena * product.iznos_foiz / 12;
                     const iznos = (await IznosDB.getIznos([data.region_id], responsible.id, product.id))[0];
                     if (iznos) {
                         await IznosDB.deleteIznos([responsible.id, product.id, data.year, data.month], client);
@@ -39,7 +40,7 @@ exports.SaldoService = class {
                         if (month <= 0) {
                             continue;
                         }
-                        const iznos_summa = Math.round((((iznos.sena * product.iznos_foiz) / 12) * month) * 100) / 100 + iznos.eski_iznos_summa;
+                        const iznos_summa = Math.round((product.iznos_summa_month * month) * 100) / 100 + iznos.eski_iznos_summa;
                         for (let k = 1; k <= product.kol; k++) {
                             await IznosDB.createIznos([
                                 data.user_id,
@@ -69,6 +70,7 @@ exports.SaldoService = class {
                         data.year,
                         tashkentTime(),
                         responsible.id,
+                        product.iznos_summa_month,
                         tashkentTime(),
                         tashkentTime()
                     ], client)
