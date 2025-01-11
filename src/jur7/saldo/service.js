@@ -26,7 +26,7 @@ exports.SaldoService = class {
             for (let responsible of data.info) {
                 for (let product of responsible.products) {
                     product.sena = await SaldoDB.getSena([product.id]);
-                    const iznos = (await IznosDB.getByTovarIdIznos([data.region_id], responsible.id, product.id))[0];
+                    const iznos = (await IznosDB.getIznos([data.region_id], responsible.id, product.id))[0];
                     if (iznos) {
                         await IznosDB.deleteIznos([responsible.id, product.id, data.year, data.month], client);
                         const date1 = new Date(`${data.year}-${data.month}-01`);
