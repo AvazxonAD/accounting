@@ -23,11 +23,12 @@ exports.IznosDB = class {
         await client.query(query, params);
     }
 
-    static async getByTovarIdIznos(params, responsible_id, product_id, year, month) {
+    static async getIznos(params, responsible_id, product_id, year, month, search) {
         let responsible_filter = ``;
         let product_filter = ``;
         let year_filter = ``;
         let month_filter = ``;
+        let search_filter = ``;
         if (responsible_id) {
             params.push(responsible_id);
             responsible_filter = `AND i.kimning_buynida = $${params.length}`;
@@ -44,6 +45,13 @@ exports.IznosDB = class {
             params.push(month);
             month_filter = `AND i.month = $${params.length}`;
         }
+        if(search){
+            params.push(search);
+            search_filter = `AND (
+                n.name ILIKE '%' || $${params.length} || '%'
+                OR s.fio ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
         const query = `--sql
             SELECT 
                 i.naimenovanie_tovarov_jur7_id,
@@ -58,9 +66,11 @@ exports.IznosDB = class {
                 i.iznos_summa::FLOAT,
                 i.kimning_buynida,
                 i.month, 
-                i.year
+                i.year,
+                s.fio
             FROM iznos_tovar_jur7 i 
             JOIN naimenovanie_tovarov_jur7 n ON n.id = i.naimenovanie_tovarov_jur7_id
+            JOIN spravochnik_javobgar_shaxs_jur7 s ON s.id = i.kimning_buynida   
             JOIN users u ON u.id = i.user_id
             JOIN regions r ON r.id = u.region_id
             WHERE r.id = $1
@@ -69,6 +79,7 @@ exports.IznosDB = class {
                 ${product_filter} 
                 ${year_filter}
                 ${month_filter}
+                ${search_filter}
             ORDER BY i.id DESC
         `;
         const result = await db.query(query, params)

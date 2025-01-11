@@ -7,6 +7,6 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/', validator(Controller.getByTovarIdIznos, getByTovarIdSchema));
+router.get('/', validator(Controller.getIznos, getByTovarIdSchema));
 
 module.exports = router;
