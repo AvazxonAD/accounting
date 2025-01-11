@@ -85,8 +85,13 @@ class Db {
         if (sqlFiles.length === 0) {
             throw new Error('No .sql files found in the directory');
         }
-        for (let file of sqlFiles) {
-            const version =  versions.find(item => item.file_name === file);
+        const sortedFiles = sqlFiles.sort((a, b) => {
+            const numA = parseInt(a.split('.')[0], 10);
+            const numB = parseInt(b.split('.')[0], 10);
+            return numA - numB;
+        });
+        for (let file of sortedFiles) {
+            const version = versions.find(item => item.file_name === file);
             if (!version) {
                 const client = await dbPool.connect();
                 try {
