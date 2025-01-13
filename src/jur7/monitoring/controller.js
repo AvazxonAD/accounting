@@ -346,4 +346,24 @@ exports.Controller = class {
         }
         return res.success('Get successfully', 200, null, data);
     }
+
+    static async backCap(req, res) {
+        const region_id = req.user.region_id;
+        const { budjet_id, from, to, excel } = req.query;
+
+        const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+        if (!budjet) {
+            return res.error('Budjet not found', 404);
+        }
+
+        const data = await Jur7MonitoringService.backCap({ region_id, budjet_id, from, to });
+
+        if (excel === 'true') {
+            const { fileName, filePath } = await Jur7MonitoringService.backCapExcel({ ...data, from, to });
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            return res.download(filePath);
+        }
+        return res.success('Get successfully', 200, null, data);
+    }
 }

@@ -14,7 +14,7 @@ exports.Jur7MonitoringService = class {
 
         result.schets = await Monitoringjur7DB.getSchetsForCap([data.budjet_id, data.region_id, data.from, data.to]);
         for (let schet of result.schets) {
-            schet.summa = await Monitoringjur7DB.getSchetSumma([data.budjet_id, data.region_id, data.from, data.to, schet.debet_schet, schet.kredit_schet]);
+            schet.summa = await Monitoringjur7DB.getCapSchetSumma([data.budjet_id, data.region_id, data.from, data.to, schet.debet_schet, schet.kredit_schet]);
             result.schets_summa += schet.summa;
         }
 
@@ -34,7 +34,7 @@ exports.Jur7MonitoringService = class {
         for (let schet of result.iznos_schets) {
             result.iznos_summa += schet.summa;
         }
-        
+
         return result;
     }
 
@@ -160,4 +160,95 @@ exports.Jur7MonitoringService = class {
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
     }
-}
+
+    static async backCap(data) {
+        const result = await Monitoringjur7DB.getSchetsForBackCap([data.budjet_id, data.region_id, data.from, data.to]);
+        result.debet_sum = 0;
+        result.kredit_sum = 0;
+        for (let item of result.kredit_schets) {
+            item.summa = await Monitoringjur7DB.getBackCapSchetSumma([data.budjet_id, data.region_id, data.from, data.to, item.schet], 'kredit_schet');
+            result.kredit_sum += item.summa;
+        }
+
+        for (let item of result.debet_schets) {
+            item.summa = await Monitoringjur7DB.getBackCapSchetSumma([data.budjet_id, data.region_id, data.from, data.to, item.schet], 'debet_schet');
+            result.debet_sum += item.summa;
+        }
+        return result;
+    }
+
+    static async backCapExcel(data) {
+        const workbook = new ExcelJS.Workbook();
+        const fileName = `cap_${new Date().getTime()}.xlsx`;
+        const worksheet = workbook.addWorksheet('jur_7 cap');
+        worksheet.mergeCells(`A1`, 'D1');
+        worksheet.getCell('A1').value = 'Журнал-ордер N_7';
+
+        worksheet.mergeCells(`A2`, 'D2');
+        worksheet.getCell('A2').value = `${returnStringDate(new Date(data.from))} дан   ${returnStringDate(new Date(data.to))} гача`;
+
+        worksheet.mergeCells(`A3`, 'B3');
+        worksheet.getCell('A3').value = `Шапка для Журнал- Ордера №7 (дебет)`;
+
+        worksheet.mergeCells(`C3`, 'D3');
+        worksheet.getCell('C3').value = 'Шапка для Журнал- Ордера №7 (кредит)';
+
+        worksheet.getCell(`A4`).value = `Дебет счет`;
+        worksheet.getCell('B4').value = 'Сумма';
+        worksheet.getCell('C4').value = `Кредит счет`;
+        worksheet.getCell('D4').value = `Сумма`;
+
+        let row_number = 5;
+        for (let item of data.debet_schets) {
+            worksheet.getCell(`A${row_number}`).value = item.schet;
+            worksheet.getCell(`B${row_number}`).value = item.summa;
+            row_number++
+        }
+        worksheet.getCell(`B${row_number}`).value = data.debet_sum;
+
+        row_number = 5;
+        for (let item of data.kredit_schets) {
+            worksheet.getCell(`C${row_number}`).value = item.schet;
+            worksheet.getCell(`D${row_number}`).value = item.summa;
+            row_number++
+        }
+        worksheet.getCell(`D${row_number}`).value = data.kredit_sum;
+
+        worksheet.getColumn(1).width = 15;
+        worksheet.getColumn(2).width = 30;
+        worksheet.getColumn(3).width = 15;
+        worksheet.getColumn(4).width = 30;
+        worksheet.getRow(1).height = 30;
+        worksheet.getRow(3).height = 60;
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber > 3) {
+                worksheet.getRow(rowNumber).height = 18;
+            }
+            row.eachCell((cell, columnNumber) => {
+                let bold = false;
+                let horizontal = "center";
+                if (rowNumber < 5) {
+                    bold = true;
+                }
+                if (rowNumber > 4 && (columnNumber === 2 || columnNumber === 4) ) {
+                    horizontal = 'right'
+                }
+                Object.assign(cell, {
+                    numFmt: '#,##0.00',
+                    font: { size: 13, name: 'Times New Roman', bold },
+                    alignment: { vertical: "middle", horizontal, wrapText: true },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            });
+        });
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
+        await workbook.xlsx.writeFile(filePath);
+        return { filePath, fileName };
+    }
+}   
