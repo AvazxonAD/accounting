@@ -25,13 +25,13 @@ exports.Controller = class {
         const pageCount = Math.ceil(count / limit);
         const meta = {
             pageCount: pageCount,
-            count: total,
+            count: count,
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1
         }
 
-        return res.success('Iznos get successfully', 200, meta, data);
+        return res.success('Iznos get successfully', 200, meta, data || []);
     }
 
     static async updateIznos(req, res) {
@@ -46,5 +46,16 @@ exports.Controller = class {
         const result = await IznosService.updateIznos({ iznos_start_date, eski_iznos_summa, id });
 
         return res.success('Update successfully', 200, null, result);
+    }
+
+    static async getByIdIznos(req, res) {
+        const id = req.params.id;
+
+        const iznos = await IznosService.getByIdIznos({ id });
+        if (!iznos) {
+            return res.error('Iznos not found', 404);
+        }
+
+        return res.success('Update successfully', 200, null, iznos);
     }
 }
