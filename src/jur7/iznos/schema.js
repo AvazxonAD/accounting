@@ -21,3 +21,9 @@ exports.updateIznosSchema = Joi.object({
     eski_iznos_summa: Joi.number().integer().min(0).required()
   })
 }).options({ stripUnknown: true });
+
+exports.getByIdIznos = Joi.object({
+  params: Joi.object({
+    id: Joi.number().integer().min(1).required()
+  })
+}).options({ stripUnknown: true });
