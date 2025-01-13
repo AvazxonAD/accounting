@@ -15,10 +15,12 @@ exports.IznosDB = class {
                 iznos_summa,
                 year, 
                 month,
+                full_date,
+                budjet_id,
                 created_at,
                 updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         `;
         await client.query(query, params);
     }
@@ -57,7 +59,7 @@ exports.IznosDB = class {
                     i.id, i.naimenovanie_tovarov_jur7_id, i.kol, i.sena,
                     i.iznos_start_date, n.name, n.edin, n.inventar_num,
                     n.serial_num, i.eski_iznos_summa::FLOAT, i.iznos_summa::FLOAT,
-                    i.kimning_buynida, i.month, i.year, s.fio
+                    i.kimning_buynida, i.month, i.year, s.fio, i.full_date
                 FROM iznos_tovar_jur7 i
                 JOIN naimenovanie_tovarov_jur7 n ON n.id = i.naimenovanie_tovarov_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 s ON s.id = i.kimning_buynida

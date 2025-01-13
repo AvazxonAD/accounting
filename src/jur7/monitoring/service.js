@@ -6,9 +6,9 @@ const { returnStringDate } = require('../../helper/functions')
 exports.Jur7MonitoringService = class {
     static async cap(data) {
         const result = { summa: 0 }
-        result.schets = await Monitoringjur7DB.getSchetsForCap([data.main_schet_id, data.region_id, data.from, data.to]);
+        result.schets = await Monitoringjur7DB.getSchetsForCap([data.budjet_id, data.region_id, data.from, data.to]);
         for (let schet of result.schets) {
-            schet.summa = await Monitoringjur7DB.getSchetSumma([data.main_schet_id, data.region_id, data.from, data.to, schet.debet_schet, schet.kredit_schet]);
+            schet.summa = await Monitoringjur7DB.getSchetSumma([data.budjet_id, data.region_id, data.from, data.to, schet.debet_schet, schet.kredit_schet]);
             result.summa += schet.summa;
         }
         return result;

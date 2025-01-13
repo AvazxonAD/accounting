@@ -3,7 +3,8 @@ const Joi = require('joi')
 exports.createSaldoSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required()
+    year: Joi.number().integer().min(1900).required(),
+    budjet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 

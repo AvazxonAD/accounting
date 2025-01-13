@@ -6,7 +6,14 @@ exports.Controller = class {
   static async createSaldo(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
+    const budjet_id = req.query.budjet_id;
     const { year, month } = req.body;
+
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    if (!budjet) {
+      return res.error('Budjet not found', 404);
+    }
+
     const { data: responsibles } = await ResponsibleService.getResponsible({ region_id });
     const { data: products } = await NaimenovanieService.getNaimenovanie({ region_id, offset: 0, limit: 9999 });
 

@@ -54,6 +54,8 @@ exports.SaldoService = class {
                                 iznos_summa,
                                 data.year,
                                 data.month,
+                                `${data.year}-${data.month}-01`,
+                                data.budjet_id,
                                 tashkentTime(),
                                 tashkentTime()
                             ], client)

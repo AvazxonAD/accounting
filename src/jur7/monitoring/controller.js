@@ -6,7 +6,7 @@ const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 const { RegionDB } = require('../../auth/region/db')
 const path = require('path')
 const fs = require('fs').promises
-const { MainSchetService } = require('../../spravochnik/main.schet/services');
+const { BudjetService } = require('../../spravochnik/budjet/services');
 const { Jur7MonitoringService } = require('./service');
 
 exports.Controller = class {
@@ -329,14 +329,14 @@ exports.Controller = class {
 
     static async cap(req, res) {
         const region_id = req.user.region_id;
-        const { main_schet_id, from, to, excel } = req.query;
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+        const { budjet_id, from, to, excel } = req.query;
 
-        if (!main_schet) {
-            return res.error('Main schet not found', 404);
+        const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+        if (!budjet) {
+            return res.error('Budjet not found', 404);
         }
 
-        const data = await Jur7MonitoringService.cap({ region_id, main_schet_id, from, to });
+        const data = await Jur7MonitoringService.cap({ region_id, budjet_id, from, to });
 
         if (excel === 'true') {
             const { fileName, filePath } = await Jur7MonitoringService.capExcel({ ...data, from, to });
