@@ -24,3 +24,12 @@ exports.capSchema = Joi.object({
     excel: Joi.string().trim().valid('true', 'false')
   })
 }).options({ stripUnknown: true });
+
+exports.backCapSchema = Joi.object({
+  query: Joi.object({
+    budjet_id: Joi.number().integer().min(1).required(),
+    from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
+    to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
+    excel: Joi.string().trim().valid('true', 'false')
+  })
+}).options({ stripUnknown: true });
