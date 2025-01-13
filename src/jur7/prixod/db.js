@@ -50,7 +50,7 @@ exports.PrixodDB = class {
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `;
         const result = await client.query(query, params)
         return result.rows[0];
@@ -191,7 +191,7 @@ exports.PrixodDB = class {
               kimga_name = $10, 
               id_shartnomalar_organization = $11, 
               updated_at = $12
-            WHERE id = $13 RETURNING * 
+            WHERE id = $13
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -203,8 +203,36 @@ exports.PrixodDB = class {
     }
 
     static async deletePrixodChild(params, client) {
-        const query = `DELETE FROM document_prixod_jur7_child WHERE document_prixod_jur7_id = $1 AND isdeleted = false`
+        const query = `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1 AND isdeleted = false`;
+        const query2 = `
+            UPDATE iznos_tovar_jur7 
+            SET  
+                isdeleted = true
+            WHERE EXISTS (
+                SELECT 1
+                FROM iznos_tovar_jur7 sub
+                JOIN naimenovanie_tovarov_jur7 n ON n.id = sub.naimenovanie_tovarov_jur7_id
+                JOIN document_prixod_jur7_child d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n.id
+                JOIN document_prixod_jur7 d ON d.id = d_ch.document_prixod_jur7_id 
+                WHERE d.id = $1
+            )
+        `;
+        const query3 = `
+            UPDATE saldo_naimenovanie_jur7 
+            SET  
+                isdeleted = true
+            WHERE EXISTS (
+                SELECT 1
+                FROM saldo_naimenovanie_jur7 sub
+                JOIN naimenovanie_tovarov_jur7 n ON n.id = sub.naimenovanie_tovarov_jur7_id
+                JOIN document_prixod_jur7_child d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n.id
+                JOIN document_prixod_jur7 d ON d.id = d_ch.document_prixod_jur7_id 
+                WHERE d.id = $1
+            )
+        `;
         await client.query(query, params);
+        await client.query(query2, params);
+        await client.query(query3, params);
     }
 
     static async prixodReport(params) {
@@ -229,7 +257,7 @@ exports.PrixodDB = class {
               AND d_j.doc_date BETWEEN $2 AND $3
               AND d_j.main_schet_id = $4
             ORDER BY d_j.doc_date
-        `; 
+        `;
         const result = await db.query(query, params)
         return result;
     }

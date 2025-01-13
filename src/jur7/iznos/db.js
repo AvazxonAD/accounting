@@ -25,7 +25,7 @@ exports.IznosDB = class {
         await client.query(query, params);
     }
 
-    static async getIznos(params, responsible_id, product_id, year, month, search) {
+    static async getIznos(params, responsible_id, product_id, year, month, search, client) {
         const filters = [];
         if (responsible_id) {
             params.push(responsible_id);
@@ -84,8 +84,9 @@ exports.IznosDB = class {
                 )
             FROM data
         `;
-        const result = await db.query(query, params);
-        return result[0];
+        const _db = client || db;
+        const result = await _db.query(query, params);
+        return result[0] || result.rows[0];
     }
 
 

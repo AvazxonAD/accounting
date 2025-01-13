@@ -22,12 +22,12 @@ exports.SaldoService = class {
 
     static async createSaldo(data) {
         await db.transaction(async client => {
-            await SaldoDB.deleteSaldo([data.region_id, data.month, data.year])
+            await SaldoDB.deleteSaldo([data.region_id, data.month, data.year], client);
             for (let responsible of data.info) {
                 for (let product of responsible.products) {
                     product.sena = await SaldoDB.getSena([product.id]);
-                    product.iznos_summa_month = iznos.sena * product.iznos_foiz / 12;
                     const iznos = (await IznosDB.getIznos([data.region_id], responsible.id, product.id))[0];
+                    product.iznos_summa_month = iznos?.sena || 0 * product.iznos_foiz / 12;
                     if (iznos) {
                         await IznosDB.deleteIznos([responsible.id, product.id, data.year, data.month], client);
                         const date1 = new Date(`${data.year}-${data.month}-01`);
