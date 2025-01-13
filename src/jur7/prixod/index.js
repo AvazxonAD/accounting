@@ -12,12 +12,12 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/report', validator(Controller.getPrixodReport, getPrixodReport));
-router.post('/', validator(Controller.createPrixod, createPrixodSchema));
-router.get('/:id', validator(Controller.getByIdPrixod, getByIdPrixodSchema));
-router.put('/:id', validator(Controller.updatePrixod, updatePrixodSchema));
-router.delete('/:id', validator(Controller.deletePrixod, deletePrixodSchema));
-router.get('/', validator(Controller.getPrixod, getPrixodSchema));
+router.get('/report', validator(Controller.getPrixodReport, getPrixodReport))
+    .post('/', validator(Controller.createPrixod, createPrixodSchema))
+    .get('/:id', validator(Controller.getByIdPrixod, getByIdPrixodSchema))
+    .put('/:id', validator(Controller.updatePrixod, updatePrixodSchema))
+    .delete('/:id', validator(Controller.deletePrixod, deletePrixodSchema))
+    .get('/', validator(Controller.getPrixod, getPrixodSchema));
 
 
 module.exports = router;

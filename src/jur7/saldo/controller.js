@@ -1,6 +1,7 @@
 const { SaldoService } = require('./service')
 const { ResponsibleService } = require('../spravochnik/responsible/service');
-const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
+const { NaimenovanieService } = require('../spravochnik/naimenovanie/service');
+const { BudjetService } = require('../../spravochnik/budjet/services')
 
 exports.Controller = class {
   static async createSaldo(req, res) {

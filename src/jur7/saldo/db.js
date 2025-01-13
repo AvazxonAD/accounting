@@ -1,18 +1,17 @@
 const { db } = require('../../db/index')
 
 exports.SaldoDB = class {
-    static async getSena(params) {
+    static async getSena(params, client) {
         const query = `--sql
             SELECT 
                 (d_ch.summa_s_nds / d_ch.kol)::FLOAT AS sena
             FROM document_prixod_jur7_child d_ch
             JOIN document_prixod_jur7 d ON d_ch.document_prixod_jur7_id = d.id
-            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
-            ORDER BY d_ch.id DESC 
-            LIMIT 1
+            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
         `;
-        const result = await db.query(query, params);
-        return result[0]?.sena;
+        const _db = client || db;
+        const result = await _db.query(query, params);
+        return result[0]?.sena || result.rows[0]?.sena;
     }
 
     static async getKol(params) {
@@ -84,7 +83,7 @@ exports.SaldoDB = class {
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
         `;
         const result = await client.query(query, params)
         return result.rows[0];
@@ -139,8 +138,7 @@ exports.SaldoDB = class {
                     AND saldo_naimenovanie_jur7.isdeleted = false
             )
         `;
-        const executor = client || db;
-        await executor.query(query, params);
+        await client.query(query, params);
     }
 
     static async getKolInternal(params) {
