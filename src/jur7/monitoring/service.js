@@ -136,7 +136,7 @@ exports.Jur7MonitoringService = class {
             row.eachCell((cell, columnNumber) => {
                 let bold = false;
                 let horizontal = "center";
-                if (rowNumber < 4) {
+                if (rowNumber < 3) {
                     bold = true;
                 }
                 if (rowNumber > 3 && columnNumber === 3) {
