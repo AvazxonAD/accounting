@@ -9,13 +9,13 @@ const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 const ExcelJS = require('exceljs');
 const path = require('path');
+const { BudjetService } = require('../../spravochnik/budjet/services')
 
 exports.Controller = class {
   static async createPrixod(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
-
+    const { main_schet_id, budjet_id } = req.query;
     const {
       doc_num,
       doc_date,
@@ -29,6 +29,11 @@ exports.Controller = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
+
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    if (!budjet) {
+      return res.error('Budjet not found', 404);
+    }
 
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
@@ -159,7 +164,8 @@ exports.Controller = class {
               region_id,
               child.naimenovanie_tovarov_jur7_id
             ]);
-
+            const month = new Date(doc_date).getMonth() + 1;
+            const year = new Date(doc_date).getFullYear();
             await IznosDB.createIznos([
               user_id,
               naimenovanie.inventar_num,
@@ -170,8 +176,10 @@ exports.Controller = class {
               doc_date,
               kimga_id,
               (child.sena * (naimenovanie.iznos_foiz / 100) / 12),
-              new Date(doc_date).getFullYear(),
-              new Date(doc_date).getMonth() + 1,
+              year,
+              month,
+              `${year}-${month}-01`,
+              data.budjet_id,
               tashkentTime(),
               tashkentTime()
             ], client)
@@ -235,7 +243,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const {
       doc_num,
       doc_date,
@@ -249,7 +257,12 @@ exports.Controller = class {
       id_shartnomalar_organization,
       childs
     } = req.body;
-
+    
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    if (!budjet) {
+      return res.error('Budjet not found', 404);
+    }
+    
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
       return res.error('Main schet not found', 404);
@@ -387,7 +400,8 @@ exports.Controller = class {
               region_id,
               child.naimenovanie_tovarov_jur7_id
             ]);
-
+            const month = new Date(doc_date).getMonth() + 1;
+            const year = new Date(doc_date).getFullYear();
             await IznosDB.createIznos([
               user_id,
               naimenovanie.inventar_num,
@@ -398,8 +412,10 @@ exports.Controller = class {
               doc_date,
               kimga_id,
               (child.sena * (naimenovanie.iznos_foiz / 100) / 12),
-              new Date(doc_date).getFullYear(),
-              new Date(doc_date).getMonth() + 1,
+              year,
+              month,
+              `${year}-${month}-01`,
+              data.budjet_id,
               tashkentTime(),
               tashkentTime()
             ], client)

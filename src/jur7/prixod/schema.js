@@ -28,7 +28,8 @@ exports.createPrixodSchema = Joi.object({
     )
   }),
   query: Joi.object({
-    main_schet_id: Joi.number().integer().min(1).required()
+    main_schet_id: Joi.number().integer().min(1).required(),
+    budjet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
@@ -63,7 +64,8 @@ exports.updatePrixodSchema = Joi.object({
     id: Joi.number().integer().min(1).required()
   }),
   query: Joi.object({
-    main_schet_id: Joi.number().integer().min(1).required()
+    main_schet_id: Joi.number().integer().min(1).required(),
+    budjet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
