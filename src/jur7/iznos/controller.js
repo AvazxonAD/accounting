@@ -3,6 +3,7 @@ const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { ResponsibleService } = require('../spravochnik/responsible/service')
 const { IznosService } = require('./service');
 
+
 exports.Controller = class {
     static async getIznos(req, res) {
         const region_id = req.user.region_id;
