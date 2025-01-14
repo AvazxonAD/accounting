@@ -85,6 +85,7 @@ exports.SaldoService = class {
         const date = getMonthStartEnd(data.year, data.month);
         const result = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, data.year, data.month]);
         for (let doc of result) {
+            doc.prixod_data = await SaldoDB.getProductPrixod([doc.naimenovanie_tovarov_jur7_id]);
             doc.internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, date[0], date[1]]);
             doc.internal.prixod.summa = doc.internal.prixod.kol * doc.sena;
             doc.internal.rasxod.summa = doc.internal.rasxod.kol * doc.sena;

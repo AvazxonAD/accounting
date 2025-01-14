@@ -14,6 +14,19 @@ exports.SaldoDB = class {
         return result[0]?.sena || result.rows[0]?.sena;
     }
 
+    static async getProductPrixod(params) {
+        const query = `--sql
+            SELECT 
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                d.doc_num
+            FROM document_prixod_jur7_child d_ch
+            JOIN document_prixod_jur7 d ON d_ch.document_prixod_jur7_id = d.id
+            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+        `;
+        const result = await db.query(query, params);
+        return result[0];
+    }
+
     static async getKol(params) {
         const query = `--sql
             WITH prixod AS (
