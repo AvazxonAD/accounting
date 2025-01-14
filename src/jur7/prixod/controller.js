@@ -10,6 +10,7 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const { BudjetService } = require('../../spravochnik/budjet/services');
 const { PrixodJur7Service } = require('./service');
+const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
 
 exports.Controller = class {
   static async createPrixod(req, res) {
@@ -43,6 +44,18 @@ exports.Controller = class {
       if (!contract) {
         return res.error('Contract not found', 404);
       }
+    }
+
+    for (let child of childs) {
+      await NaimenovanieService.createNaimenovanie({
+        user_id,
+        budjet_id,
+        name: child.name,
+        edin: child.edin,
+        group_jur7_id: child.group_jur7_id,
+        inventar_num: child.inventar_num,
+        inventar_num: serial_num
+      })
     }
 
     // Check for products and duplicates
