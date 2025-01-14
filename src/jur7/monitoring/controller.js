@@ -123,6 +123,7 @@ exports.Controller = class {
                 message: "main schet not found"
             })
         }
+        const region = await RegionDB.getByIdRegion([region_id])
         const dates = getMonthStartEnd(year, month);
 
         const Workbook = new ExcelJS.Workbook();
