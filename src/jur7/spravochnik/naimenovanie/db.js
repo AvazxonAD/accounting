@@ -18,7 +18,7 @@ exports.NaimenovanieDB = class {
             RETURNING *
         `
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
 
     static async getNaimenovanie(params, search = null) {
