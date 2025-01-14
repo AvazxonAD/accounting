@@ -53,15 +53,17 @@ exports.IznosDB = class {
 
         const whereClause = filters.length ? `AND ${filters.join(' AND ')}` : '';
 
-        const query = `--sql
+        const query = `
             WITH data AS (
                 SELECT
                     i.id, i.naimenovanie_tovarov_jur7_id, i.kol, i.sena,
                     i.iznos_start_date, n.name, n.edin, n.inventar_num,
-                    n.serial_num, i.eski_iznos_summa::FLOAT, i.iznos_summa::FLOAT,
-                    i.kimning_buynida, i.month, i.year, s.fio, i.full_date
+                    n.serial_num, i.eski_iznos_summa::FLOAT, ROUND(i.iznos_summa, 2)::FLOAT AS iznos_summa,
+                    i.kimning_buynida, i.month, i.year, s.fio, i.full_date,
+                    ROUND((i.sena * g.iznos_foiz / 100) / 12, 2) AS month_iznos_summa
                 FROM iznos_tovar_jur7 i
                 JOIN naimenovanie_tovarov_jur7 n ON n.id = i.naimenovanie_tovarov_jur7_id
+                JOIN group_jur7 AS g ON g.id = n.group_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 s ON s.id = i.kimning_buynida
                 JOIN users u ON u.id = i.user_id
                 JOIN regions r ON r.id = u.region_id
