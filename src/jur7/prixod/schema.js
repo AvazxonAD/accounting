@@ -14,7 +14,7 @@ exports.createPrixodSchema = Joi.object({
     id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({
-        naimenovanie_tovarov_jur7_id: Joi.number().required(),
+        group_jur7_id: Joi.number().required(),
         kol: Joi.number().min(1).required(),
         sena: Joi.number().min(1).required(),
         nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
@@ -23,7 +23,11 @@ exports.createPrixodSchema = Joi.object({
         kredit_schet: Joi.string().trim(),
         kredit_sub_schet: Joi.string().trim(),
         data_pereotsenka: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-        iznos: Joi.boolean().required()
+        iznos: Joi.boolean().required(),
+        name: Joi.string().trim().required(),
+        edin: Joi.string().trim().required(),
+        inventar_num: Joi.string().trim(),
+        serial_num: Joi.string().trim()
       })
     )
   }),
@@ -47,7 +51,7 @@ exports.updatePrixodSchema = Joi.object({
     id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({
-        naimenovanie_tovarov_jur7_id: Joi.number().required(),
+        group_jur7_id: Joi.number().required(),
         kol: Joi.number().min(1).required(),
         sena: Joi.number().min(1).required(),
         nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),

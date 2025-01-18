@@ -31,7 +31,7 @@ exports.SaldoDB = class {
         const query = `--sql
             WITH prixod AS (
                 SELECT
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_prixod_jur7 AS d
                 JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
@@ -41,7 +41,7 @@ exports.SaldoDB = class {
             ),
             prixod_internal AS (
                 SELECT
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
@@ -51,7 +51,7 @@ exports.SaldoDB = class {
             ),
             rasxod AS (
                 SELECT
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_rasxod_jur7 AS d
                 JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
@@ -61,7 +61,7 @@ exports.SaldoDB = class {
             ),
             rasxod_internal AS (
                 SELECT
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
@@ -158,7 +158,7 @@ exports.SaldoDB = class {
         const query = `--sql
             WITH prixod AS (
                 SELECT 
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT::FLOAT AS kol
                 FROM document_prixod_jur7 AS d
                 JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
@@ -168,7 +168,7 @@ exports.SaldoDB = class {
             ),
             prixod_internal AS (
                 SELECT  
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
@@ -178,7 +178,7 @@ exports.SaldoDB = class {
             ),
             rasxod AS (
                 SELECT  
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_rasxod_jur7 AS d
                 JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
@@ -188,20 +188,13 @@ exports.SaldoDB = class {
             ),
             rasxod_internal AS (
                 SELECT  
-                    COALESCE(SUM(d_ch.kol), 0) AS kol
+                    COALESCE(SUM(d_ch.kol), 0)::FLOAT AS kol
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
                     AND d.kimdan_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date BETWEEN $3 AND $4
-            ),
-            date_prixod AS (
-                SELECT 
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS prixod_doc_date
-                FROM document_prixod_jur7 AS d
-                JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
-                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
             )
             SELECT
                 JSON_BUILD_OBJECT(
@@ -209,11 +202,11 @@ exports.SaldoDB = class {
                 ) AS prixod,
                 JSON_BUILD_OBJECT(
                     'kol', (rasxod.kol + rasxod_internal.kol)
-                ) AS rasxod,
-                date_prixod.prixod_doc_date
-            FROM prixod, prixod_internal, rasxod, rasxod_internal, date_prixod
+                ) AS rasxod
+            FROM prixod, prixod_internal, rasxod, rasxod_internal
         `;
         const result = await db.query(query, params);
+        console.log(result)
         return result[0];
     }
 }

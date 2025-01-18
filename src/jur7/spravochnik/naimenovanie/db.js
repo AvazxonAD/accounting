@@ -1,7 +1,7 @@
 const { db } = require('../../../db/index')
 
 exports.NaimenovanieDB = class {
-    static async createNaimenovanie(params) {
+    static async createNaimenovanie(params, client) {
         const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
@@ -17,8 +17,9 @@ exports.NaimenovanieDB = class {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *
         `
-        const result = await db.query(query, params)
-        return result[0];
+        const result = await client.query(query, params);
+        
+        return result.rows[0];
     }
 
     static async getNaimenovanie(params, search = null) {
@@ -104,9 +105,9 @@ exports.NaimenovanieDB = class {
         return result[0]
     }
 
-    static async deleteNaimenovanie(params) {
+    static async deleteNaimenovanie(params, client) {
         const query = `UPDATE naimenovanie_tovarov_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`
-        await db.query(query, params)
+        await client.query(query, params)
     }
 
     static async getProductKol(params, search, tovar_id, client) {

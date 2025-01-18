@@ -1,16 +1,16 @@
 const { PrixodDB } = require('./db');
-const { checkTovarId, returnLocalDate, returnSleshDate } = require('../../helper/functions');
+const { returnLocalDate, returnSleshDate } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/db')
 const { db } = require('../../db/index')
-const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 const ExcelJS = require('exceljs');
 const path = require('path');
 const { BudjetService } = require('../../spravochnik/budjet/services');
 const { PrixodJur7Service } = require('./service');
-const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
+const { GroupService } = require('../spravochnik/group/service')
+
 
 exports.Controller = class {
   static async createPrixod(req, res) {
@@ -47,40 +47,14 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      await NaimenovanieService.createNaimenovanie({
-        user_id,
-        budjet_id,
-        name: child.name,
-        edin: child.edin,
-        group_jur7_id: child.group_jur7_id,
-        inventar_num: child.inventar_num,
-        inventar_num: serial_num
-      })
-    }
-
-    // Check for products and duplicates
-    for (const child of childs) {
-      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id]);
-      child.inventar_num = product.inventar_num;
-      child.serial_num = product.serial_num;
-      child.iznos_foiz = product.iznos_foiz;
-      if (!product) {
-        return res.error('Product not found', 404);
+      const group = await GroupService.getByIdGroup({ id: child.group_jur7_id });
+      if (!group) {
+        return res.error('Group not found', 404);
       }
-
-      const checkProduct = await PrixodDB.getByProductIdPrixod([region_id, main_schet_id, child.naimenovanie_tovarov_jur7_id]);
-      if (checkProduct) {
-        return res.error('This item has already been received', 409);
-      }
+      child.iznos_foiz = group.iznos_foiz;
     }
 
-    // Validate product ID
-    const invalidProduct = checkTovarId(childs);
-    if (invalidProduct) {
-      return res.error('The product ID was sent incorrectly', 409);
-    }
-
-    await PrixodJur7Service.createPrixod({ ...req.body, user_id, main_schet_id, budjet_id });
+    await PrixodJur7Service.createPrixod({ ...req.body, user_id, main_schet_id, budjet_id, childs });
 
     return res.success('Create successfully', 200);
   }
@@ -123,9 +97,7 @@ exports.Controller = class {
     }
     const data = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id], true)
     if (!data) {
-      return res.status(404).json({
-        message: "prixod not found"
-      })
+      return res.error('Doc not found', 404);
     }
     return res.status(201).json({
       message: "prixod successfully get",
@@ -173,29 +145,15 @@ exports.Controller = class {
       }
     }
 
-    const invalidProduct = checkTovarId(childs);
-    if (invalidProduct) {
-      return res.error('The product ID was sent incorrectly', 409);
+    for (let child of childs) {
+      const group = await GroupService.getByIdGroup({ id: child.group_jur7_id });
+      if (!group) {
+        return res.error('Group not found', 404);
+      }
+      child.iznos_foiz = group.iznos_foiz;
     }
 
-    for (const child of childs) {
-      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id]);
-      child.inventar_num = product.inventar_num;
-      child.serial_num = product.serial_num;
-      child.iznos_foiz = product.iznos_foiz;
-      if (!product) {
-        return res.error('Product not found', 404);
-      }
-      const test = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id);
-      if (!test) {
-        const checkProduct = await PrixodDB.getByProductIdPrixod([region_id, main_schet_id, child.naimenovanie_tovarov_jur7_id]);
-        if (checkProduct) {
-          return res.error('This item has already been received', 409);
-        }
-      }
-    }
-
-    await PrixodJur7Service.updatePrixod({ ...req.body, budjet_id, main_schet_id, user_id, id });
+    await PrixodJur7Service.updatePrixod({ ...req.body, budjet_id, main_schet_id, user_id, id, childs });
 
     return res.success('Update successfully', 200);
   }
