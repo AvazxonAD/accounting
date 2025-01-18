@@ -27,7 +27,8 @@ exports.createPrixodSchema = Joi.object({
         name: Joi.string().trim().required(),
         edin: Joi.string().trim().required(),
         inventar_num: Joi.string().trim(),
-        serial_num: Joi.string().trim()
+        serial_num: Joi.string().trim(),
+        eski_iznos_summa: Joi.number().min(0).default(0)
       })
     )
   }),
@@ -60,7 +61,12 @@ exports.updatePrixodSchema = Joi.object({
         kredit_schet: Joi.string().trim(),
         kredit_sub_schet: Joi.string().trim(),
         data_pereotsenka: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-        iznos: Joi.boolean().required()
+        iznos: Joi.boolean().required(),
+        name: Joi.string().trim().required(),
+        edin: Joi.string().trim().required(),
+        inventar_num: Joi.string().trim(),
+        serial_num: Joi.string().trim(),
+        eski_iznos_summa: Joi.number().min(0).default(0)
       })
     )
   }),

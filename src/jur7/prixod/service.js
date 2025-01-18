@@ -100,12 +100,13 @@ exports.PrixodJur7Service = class {
                 data.docId,
                 data.main_schet_id,
                 child.iznos,
+                child.eski_iznos_summa,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);
 
             const product_sena = await SaldoDB.getSena([child.id], data.client);
-            const iznos_summa = product_sena * (child.iznos_foiz / 100) / 12;
+            const iznos_summa = (product_sena * (child.iznos_foiz / 100) / 12) + child.eski_iznos_summa;
             const month = new Date(data.doc_date).getMonth() + 1;
             const year = new Date(data.doc_date).getFullYear();
 
@@ -124,6 +125,7 @@ exports.PrixodJur7Service = class {
                     month,
                     `${year}-${month}-01`,
                     data.budjet_id,
+                    child.eski_iznos_summa,
                     tashkentTime(),
                     tashkentTime()
                 ], data.client)
