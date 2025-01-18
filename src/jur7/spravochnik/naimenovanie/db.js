@@ -16,7 +16,7 @@ exports.NaimenovanieDB = class {
             ) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *
-        `
+        `;
         const result = await client.query(query, params);
         
         return result.rows[0];
@@ -24,10 +24,12 @@ exports.NaimenovanieDB = class {
 
     static async getNaimenovanie(params, search = null) {
         let search_filter = ``
+        
         if (search) {
             search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
-        }
+        };
+
         const query = `--sql
             WITH data AS (
                 SELECT 

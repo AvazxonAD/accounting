@@ -27,13 +27,28 @@ exports.Controller = class {
 
   static async getSaldo(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, year, month } = req.query;
+    const { kimning_buynida, year, month, page, limit } = req.query;
+
+    const offset = (page - 1) * limit;
+
     const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimning_buynida });
     if (!responsible) {
       return res.error('Responsible not found', 404);
     }
-    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, year, month });
-    return res.success('Get successfully', 200, null, data);
+
+    const { data, total } = await SaldoService.getSaldo({ region_id, kimning_buynida, year, month, offset, limit });
+
+    const pageCount = Math.ceil(total / limit); 
+    
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    }
+
+    return res.success('Get successfully', 200, meta, data);
   }
 
   static async getSaldoForRasxod(req, res) {
