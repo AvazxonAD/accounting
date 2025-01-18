@@ -101,14 +101,16 @@ exports.SaldoService = class {
         const year = parts[0];
         const month = parts[1];
         const start = `${year}-${month}-01`;
-        const result = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, year, month], data.product_id);
+
+        const { data: result, total } = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, year, month, data.page, data.limit], data.product_id);
+
         for (let doc of result) {
             const internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, start, data.to]);
             doc.to = { kol: doc.from.kol + (internal.prixod.kol - internal.rasxod.kol) };
             doc.to.summa = doc.to.kol * doc.sena;
             doc.prixod_doc_date = internal.prixod_doc_date;
         }
-        return result;
+        return { data: result, total };
     }
 
     static async deleteSaldo(data) {

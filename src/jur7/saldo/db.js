@@ -155,7 +155,7 @@ exports.SaldoDB = class {
             FROM data
         `;
         const result = await db.query(query, params)
-        return result[0];
+        return { data: result[0].data || [], total: result[0].total };
     }
 
     static async deleteSaldo(params, client) {
