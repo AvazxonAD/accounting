@@ -131,6 +131,7 @@ exports.SaldoDB = class {
                 AND d.kimning_buynida = $2
                 AND d.year = $3
                 AND d.month = $4
+                AND n.isdeleted = false
         `;
         const result = await db.query(query, params)
         return result;
@@ -206,7 +207,6 @@ exports.SaldoDB = class {
             FROM prixod, prixod_internal, rasxod, rasxod_internal
         `;
         const result = await db.query(query, params);
-        console.log(result)
         return result[0];
     }
 }
