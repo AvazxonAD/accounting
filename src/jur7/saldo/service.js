@@ -88,7 +88,6 @@ exports.SaldoService = class {
             doc.prixod_data = await SaldoDB.getProductPrixod([doc.naimenovanie_tovarov_jur7_id]);
             doc.internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, date[0], date[1]]);
             doc.internal.data = await SaldoDB.getProductPrixod([doc.naimenovanie_tovarov_jur7_id])
-            // console.log(doc.internal.data)
             doc.internal.prixod.summa = doc.internal.prixod.kol * doc.sena;
             doc.internal.rasxod.summa = doc.internal.rasxod.kol * doc.sena;
             doc.to = { kol: doc.from.kol + (doc.internal.prixod.kol - doc.internal.rasxod.kol) };
