@@ -23,6 +23,8 @@ exports.getSaldoSchema = Joi.object({
 exports.getSaldoRasxodSchema = Joi.object({
   query: Joi.object({
     to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
-    kimning_buynida: Joi.number().integer().min(1).required()
+    kimning_buynida: Joi.number().integer().min(1).required(),
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).default(10)
   })
 }).options({ stripUnknown: true });
