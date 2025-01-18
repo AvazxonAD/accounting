@@ -45,10 +45,11 @@ exports.PrixodDB = class {
                 document_prixod_jur7_id,
                 main_schet_id,
                 iznos,
+                eski_iznos_summa,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         `;
         const result = await client.query(query, params)
         return result.rows[0];
@@ -153,6 +154,7 @@ exports.PrixodDB = class {
                             n.group_jur7_id,
                             n.inventar_num,
                             n.serial_num,
+                            COALESCE(SUM(ch.eski_iznos_summa), 0) AS eski_iznos_summa,
                             COALESCE(SUM(ch.kol), 0) AS kol,
                             COALESCE(SUM(ch.summa), 0) AS summa,
                             COALESCE(SUM(ch.nds_summa), 0) AS nds_summa,
@@ -311,7 +313,8 @@ exports.PrixodDB = class {
                 TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
                 d_j_ch.nds_foiz,
                 d_j_ch.nds_summa,
-                d_j_ch.summa_s_nds
+                d_j_ch.summa_s_nds,
+                d_j_ch.eski_iznos_summa
             FROM document_prixod_jur7 AS d_j
             JOIN document_prixod_jur7_child AS d_j_ch ON d_j.id = d_j_ch.document_prixod_jur7_id 
             JOIN users AS u ON u.id = d_j.user_id
@@ -335,7 +338,8 @@ exports.PrixodDB = class {
                 d_j_ch.sena::FLOAT,
                 d_j_ch.summa::FLOAT,
                 d_j_ch.debet_schet AS schet, 
-                d_j_ch.debet_sub_schet AS sub_schet
+                d_j_ch.debet_sub_schet AS sub_schet,
+                d_j_ch.eski_iznos_summa
             FROM document_prixod_jur7_child AS d_j_ch
             JOIN naimenovanie_tovarov_jur7 AS n_t ON n_t.id = d_j_ch.naimenovanie_tovarov_jur7_id
             WHERE d_j_ch.document_prixod_jur7_id = $1 AND d_j_ch.isdeleted = false

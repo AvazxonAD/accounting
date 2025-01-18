@@ -51,6 +51,10 @@ exports.Controller = class {
       if (!group) {
         return res.error('Group not found', 404);
       }
+      
+      if(!child.iznos && child.eski_iznos_summa > 0){
+        return res.error('The amount for non-refundable goods cannot be less than or equal to 0', 400);
+      }
       child.iznos_foiz = group.iznos_foiz;
     }
 
@@ -90,19 +94,19 @@ exports.Controller = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
+   
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
       })
     }
+
     const data = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id], true)
     if (!data) {
       return res.error('Doc not found', 404);
     }
-    return res.status(201).json({
-      message: "prixod successfully get",
-      data
-    });
+
+    return res.success('Get successfully', 200, null, data);
   }
 
   static async updatePrixod(req, res) {
@@ -149,6 +153,10 @@ exports.Controller = class {
       const group = await GroupService.getByIdGroup({ id: child.group_jur7_id });
       if (!group) {
         return res.error('Group not found', 404);
+      }
+      
+      if(!child.iznos && child.eski_iznos_summa > 0){
+        return res.error('The amount for non-refundable goods cannot be less than or equal to 0', 400);
       }
       child.iznos_foiz = group.iznos_foiz;
     }
