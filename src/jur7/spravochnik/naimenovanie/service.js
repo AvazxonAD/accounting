@@ -13,17 +13,44 @@ exports.NaimenovanieService = class {
     }
 
     static async createNaimenovanie(data) {
-        const result = await NaimenovanieDB.createNaimenovanie([
-            data.user_id,
-            data.spravochnik_budjet_name_id,
-            data.name,
-            data.edin,
-            data.group_jur7_id,
-            data.inventar_num,
-            data.serial_num,
-            tashkentTime(),
-            tashkentTime()
-        ]);
+        const result = [];
+        for (let doc of data.childs) {
+            if (doc.iznos) {
+                for (let i = 1; i <= doc.kol; i++) {
+                    const product = await NaimenovanieDB.createNaimenovanie([
+                        data.user_id,
+                        data.budjet_id,
+                        doc.name,
+                        doc.edin,
+                        doc.group_jur7_id,
+                        doc.inventar_num,
+                        doc.serial_num,
+                        tashkentTime(),
+                        tashkentTime()
+                    ])
+                    result.push({ ...product, ...doc, kol: 1 });
+                }
+            } else {
+                const product = await NaimenovanieDB.createNaimenovanie([
+                    data.user_id,
+                    data.budjet_id,
+                    doc.name,
+                    doc.edin,
+                    doc.group_jur7_id,
+                    doc.inventar_num,
+                    doc.serial_num,
+                    tashkentTime(),
+                    tashkentTime()
+                ])
+                result.push({ ...product, ...doc });
+            }
+        }
         return result;
+    }
+
+    static async deleteNaimenovanie(data) {
+        for (let child of data.childs) {
+            await NaimenovanieDB.deleteNaimenovanie(child.naimenovanie_tovarov_jur7_id);
+        }
     }
 }

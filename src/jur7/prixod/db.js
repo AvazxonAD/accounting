@@ -1,6 +1,4 @@
 const { db } = require('../../db/index')
-const { designParams } = require('../../helper/functions')
-
 
 exports.PrixodDB = class {
     static async createPrixod(params, client) {
@@ -140,32 +138,41 @@ exports.PrixodDB = class {
                 d_j.j_o_num,
                 d_j.id_shartnomalar_organization,
                 (
-                SELECT ARRAY_AGG(row_to_json(d_j_ch))
-                FROM (
-                    SELECT  
-                        d_j_ch.naimenovanie_tovarov_jur7_id,
-                        d_j_ch.sena,
-                        d_j_ch.debet_schet,
-                        d_j_ch.debet_sub_schet,
-                        d_j_ch.kredit_schet,
-                        d_j_ch.kredit_sub_schet,
-                        d_j_ch.nds_foiz,
-                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
-                        COALESCE(SUM(d_j_ch.kol), 0) AS kol,
-                        COALESCE(SUM(d_j_ch.summa), 0) AS summa,
-                        COALESCE(SUM(d_j_ch.nds_summa), 0) AS nds_summa,
-                        COALESCE(SUM(d_j_ch.summa_s_nds), 0) AS summa_s_nds 
-                    FROM document_prixod_jur7_child AS d_j_ch
-                    WHERE d_j_ch.document_prixod_jur7_id = d_j.id
-                    GROUP BY d_j_ch.naimenovanie_tovarov_jur7_id,
-                        d_j_ch.sena,
-                        d_j_ch.debet_schet,
-                        d_j_ch.debet_sub_schet,
-                        d_j_ch.kredit_schet,
-                        d_j_ch.kredit_sub_schet,
-                        d_j_ch.nds_foiz,
-                        d_j_ch.data_pereotsenka
-                ) AS d_j_ch
+                    SELECT ARRAY_AGG(row_to_json(child))
+                    FROM (
+                        SELECT  
+                            ch.sena,
+                            ch.debet_schet,
+                            ch.debet_sub_schet,
+                            ch.kredit_schet,
+                            ch.kredit_sub_schet,
+                            ch.nds_foiz,
+                            TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
+                            n.name,
+                            n.edin,
+                            n.group_jur7_id,
+                            n.inventar_num,
+                            n.serial_num,
+                            COALESCE(SUM(ch.kol), 0) AS kol,
+                            COALESCE(SUM(ch.summa), 0) AS summa,
+                            COALESCE(SUM(ch.nds_summa), 0) AS nds_summa,
+                            COALESCE(SUM(ch.summa_s_nds), 0) AS summa_s_nds 
+                        FROM document_prixod_jur7_child AS ch
+                        JOIN naimenovanie_tovarov_jur7 AS n ON n.id = ch.naimenovanie_tovarov_jur7_id
+                        WHERE ch.document_prixod_jur7_id = d_j.id
+                        GROUP BY ch.sena,
+                            ch.debet_schet,
+                            ch.debet_sub_schet,
+                            ch.kredit_schet,
+                            ch.kredit_sub_schet,
+                            ch.nds_foiz,
+                            ch.data_pereotsenka,
+                            n.name,
+                            n.edin,
+                            n.group_jur7_id,
+                            n.inventar_num,
+                            n.serial_num
+                    ) AS child
                 ) AS childs
             FROM document_prixod_jur7 AS d_j
             JOIN users AS u ON u.id = d_j.user_id
@@ -230,9 +237,24 @@ exports.PrixodDB = class {
                 WHERE d.id = $1
             )
         `;
+
+        const query4 = `
+            UPDATE naimenovanie_tovarov_jur7
+            SET  
+                isdeleted = true
+            WHERE EXISTS (
+                SELECT 1
+                FROM naimenovanie_tovarov_jur7 sub
+                JOIN document_prixod_jur7_child d_ch ON d_ch.naimenovanie_tovarov_jur7_id = sub.id
+                JOIN document_prixod_jur7 d ON d.id = d_ch.document_prixod_jur7_id 
+                WHERE d.id = $1
+            )
+        `;
+
         await client.query(query, params);
         await client.query(query2, params);
         await client.query(query3, params);
+        await client.query(query4, params);
     }
 
     static async prixodReport(params) {
