@@ -104,37 +104,58 @@ exports.SaldoDB = class {
 
     static async getSaldo(params) {
         const query = `--sql
-            SELECT
-                d.id::INTEGER, 
-                d.user_id,
-                d.naimenovanie_tovarov_jur7_id::INTEGER,
-                d.sena::FLOAT,
-                JSON_BUILD_OBJECT(
-                    'kol', d.kol::FLOAT,
-                    'summa', d.summa::FLOAT
-                ) AS from,
-                d.month,
-                d.year,
-                d.date_saldo,
-                d.kimning_buynida,
-                n.name AS naimenovanie_tovarov,
-                n.edin,
-                g.id AS group_jur7_id, 
-                g.name AS group_jur7_name
-            FROM saldo_naimenovanie_jur7 AS d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
-            JOIN group_jur7 AS g ON n.group_jur7_id = g.id
-            WHERE r.id = $1 
-                AND d.isdeleted = false 
-                AND d.kimning_buynida = $2
-                AND d.year = $3
-                AND d.month = $4
-                AND n.isdeleted = false
+            WITH data AS (
+                SELECT
+                    d.id::INTEGER, 
+                    d.user_id,
+                    d.naimenovanie_tovarov_jur7_id::INTEGER,
+                    d.sena::FLOAT,
+                    JSON_BUILD_OBJECT(
+                        'kol', d.kol::FLOAT,
+                        'summa', d.summa::FLOAT
+                    ) AS from,
+                    d.month,
+                    d.year,
+                    d.date_saldo,
+                    d.kimning_buynida,
+                    n.name AS naimenovanie_tovarov,
+                    n.edin,
+                    g.id AS group_jur7_id, 
+                    g.name AS group_jur7_name
+                FROM saldo_naimenovanie_jur7 AS d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
+                JOIN group_jur7 AS g ON n.group_jur7_id = g.id
+                WHERE r.id = $1 
+                    AND d.isdeleted = false 
+                    AND d.kimning_buynida = $2
+                    AND d.year = $3
+                    AND d.month = $4
+                    AND n.isdeleted = false
+                OFFSET $5 LIMIT $6
+            )
+            SELECT 
+                ARRAY_AGG(row_to_json(data)) AS data,
+                (
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0)
+                    FROM saldo_naimenovanie_jur7 AS d
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
+                    JOIN group_jur7 AS g ON n.group_jur7_id = g.id
+                    WHERE r.id = $1 
+                        AND d.isdeleted = false 
+                        AND d.kimning_buynida = $2
+                        AND d.year = $3
+                        AND d.month = $4
+                        AND n.isdeleted = false
+                )::INTEGER AS total
+            FROM data
         `;
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
 
     static async deleteSaldo(params, client) {
