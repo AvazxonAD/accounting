@@ -12,7 +12,7 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.get('/percent', validator(Controller.getGroupWithPercent))
+router.get('/percent', Controller.getGroupWithPercent)
 router.post('/import', upload.single('file'), validator(Controller.importExcel));
 router.post('/', validator(Controller.createGroup, createGroupSchema));
 router.get('/:id', validator(Controller.getByIdGroup, getByIdGroupSchema));
