@@ -27,7 +27,6 @@ exports.getSchema = Joi.object({
         limit: Joi.number().min(1).integer().default(10),
         search: Joi.string().trim(),
         budjet_id: Joi.number().min(1).integer(),
-        type: Joi.string().trim(),
         group_number: Joi.string().trim()
     })
 }).options({ stripUnknown: true });
