@@ -12,6 +12,7 @@ const {
   jur3Cap
 } = require("./akt.controller");
 
+
 router.post("/", jur_3_create);
 router.get('/export/cap', jur3Cap)
 router.get("/", jur_3_get_all);
