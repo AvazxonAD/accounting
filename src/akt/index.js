@@ -1,21 +1,23 @@
-const { AktService } = require('./service');
+const { Controller } = require('./controller');
 const { validator } = require('../helper/validator');
 const {
     createSchema,
     getSchema,
     updateSchema,
     getByIdSchema,
-    deleteSchema
+    deleteSchema,
+    capSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(AktService.createAkt, createSchema));
-router.get('/:id', validator(AktService.getByIdAkt, getByIdSchema));
-router.put('/:id', validator(AktService.updateAkt, updateSchema));
-router.delete('/:id', validator(AktService.deleteAkt, deleteSchema));
-router.get('/', validator(AktService.getAkt, getSchema));
+router.post('/', validator(Controller.createAkt, createSchema));
+router.get('/export/cap', validator(Controller.cap, capSchema));
+router.get('/:id', validator(Controller.getByIdAkt, getByIdSchema));
+router.put('/:id', validator(Controller.updateAkt, updateSchema));
+router.delete('/:id', validator(Controller.deleteAkt, deleteSchema));
+router.get('/', validator(Controller.getAkt, getSchema));
 
 
 module.exports = router;

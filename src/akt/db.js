@@ -44,7 +44,7 @@ exports.AktDB = class {
         const result = await db.query(query, params);
         return result;
     }
-    
+
     static async getTotalAkt(params) {
         const query = `--sql
             SELECT COALESCE(COUNT(b_i_j3.id), 0)::INTEGER AS total
@@ -59,7 +59,7 @@ exports.AktDB = class {
         const data = await db.query(query, params)
         return data[0].total;
     }
-ss
+    ss
     static async createAkt(params, client) {
         const query = `--sql 
             INSERT INTO bajarilgan_ishlar_jur3(
@@ -102,7 +102,7 @@ ss
             "updated_at"
         ];
         const _params = designParams(params, design_params)
-        const _values =  returnParamsValues(_params, 16)
+        const _values = returnParamsValues(_params, 16)
         const query = `--sql
             INSERT INTO bajarilgan_ishlar_jur3_child(
                 spravochnik_operatsii_id,
@@ -213,7 +213,7 @@ ss
         await client.query(`UPDATE bajarilgan_ishlar_jur3 SET  isdeleted = true WHERE id = $1`, params);
         await client.query(`UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true WHERE bajarilgan_ishlar_jur3_id = $1`, params);
     }
-    
+
     static async aktCap(params) {
         const query = `--sql
             SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa
@@ -243,4 +243,35 @@ ss
         const data = await db.query(query, params)
         return data;
     }
+
+    static async cap(params) {
+        const query = `
+            SELECT s_o.schet, s.smeta_number, COALESCE(SUM(b_i_j3_ch.summa::FLOAT), 0) AS summa
+            FROM bajarilgan_ishlar_jur3 AS b_i_j3 
+            JOIN bajarilgan_ishlar_jur3_child AS b_i_j3_ch ON b_i_j3_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id
+            JOIN spravochnik_operatsii AS s_own ON s_own.id = b_i_j3.spravochnik_operatsii_own_id
+            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j3_ch.spravochnik_operatsii_id
+            JOIN users AS u ON u.id = b_i_j3.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN smeta AS s ON s.id = s_o.smeta_id
+            WHERE b_i_j3.doc_date BETWEEN $1 AND $2 AND r.id = $3 AND s_own.schet = $4 AND b_i_j3.main_schet_id = $5
+            GROUP BY s_o.schet, s.smeta_number
+        `;
+        const data = await db.query(query, params);
+        return data;
+    }
+
+    static async getSchets(params) {
+        const query = `
+            SELECT DISTINCT s_o.schet 
+            FROM bajarilgan_ishlar_jur3 AS b_i_j3
+            JOIN spravochnik_operatsii AS s_o  ON b_i_j3.spravochnik_operatsii_own_id = s_o.id
+            JOIN users AS u ON u.id = b_i_j3.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE  r.id = $1 AND b_i_j3.isdeleted = false AND b_i_j3.main_schet_id = $2 AND b_i_j3.doc_date BETWEEN $3 AND $4
+        `;
+        const schets = await db.query(query, params)
+        return schets;
+    }
+
 }
