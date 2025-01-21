@@ -43,9 +43,10 @@ exports.OperatsiiDB = class {
         let search_filter = ``;
         let offset_limit = ``;
         if (search) {
+            console.log('/////')
             search_filter = `AND (
                 name ILIKE '%' || $${params.length + 1} || '%' OR
-                schet ILIKE '%' || $${params.length + 1} || '%' OR
+                schet = $${params.length + 1}
                 sub_schet ILIKE '%' || $${params.length + 1} || '%')
             `
             params.push(search)
