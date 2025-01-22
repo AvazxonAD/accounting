@@ -27,35 +27,21 @@ exports.Controller = class {
 
   static async getSaldo(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, year, month, page, limit } = req.query;
-
-    const offset = (page - 1) * limit;
+    const { kimning_buynida, year, month } = req.query;
 
     const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimning_buynida });
     if (!responsible) {
       return res.error('Responsible not found', 404);
     }
 
-    const { data, total } = await SaldoService.getSaldo({ region_id, kimning_buynida, year, month, offset, limit });
+    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, year, month });
 
-    const pageCount = Math.ceil(total / limit);
-
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
-    }
-
-    return res.success('Get successfully', 200, meta, data);
+    return res.success('Get successfully', 200, null, data);
   }
 
   static async getSaldoForRasxod(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, product_id, page, limit } = req.query;
-
-    const offset = (page - 1) * limit;
+    const { kimning_buynida, to, product_id } = req.query;
 
     if (product_id) {
       const product = await NaimenovanieService.getByIdNaimenovanie({ region_id, id: product_id })
@@ -69,18 +55,8 @@ exports.Controller = class {
       return res.error('Responsible not found', 404);
     }
 
-    const { data, total } = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida, to, product_id, offset, limit });
+    const data = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida, to, product_id });
 
-    const pageCount = Math.ceil(total / limit);
-
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
-    }
-
-    return res.success('Get successfully', 200, meta, data);
+    return res.success('Get successfully', 200, null, data);
   }
 }
