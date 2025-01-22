@@ -213,52 +213,33 @@ exports.PrixodDB = class {
         await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
     }
 
-    static async deletePrixodChild(params, client) {
-        const query = `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1 AND isdeleted = false`;
+    static async deletePrixodChild(documentPrixodId, productIds, client) {
+        const query1 = `
+                UPDATE document_prixod_jur7_child 
+                SET isdeleted = true 
+                WHERE document_prixod_jur7_id = $1 AND isdeleted = false
+            `;
+        await client.query(query1, [documentPrixodId]);
+
         const query2 = `
-            UPDATE iznos_tovar_jur7 
-            SET  
-                isdeleted = true
-            WHERE EXISTS (
-                SELECT 1
-                FROM iznos_tovar_jur7 sub
-                JOIN naimenovanie_tovarov_jur7 n ON n.id = sub.naimenovanie_tovarov_jur7_id
-                JOIN document_prixod_jur7_child d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n.id
-                JOIN document_prixod_jur7 d ON d.id = d_ch.document_prixod_jur7_id 
-                WHERE d.id = $1
-            )
-        `;
+                UPDATE iznos_tovar_jur7 
+                SET isdeleted = true 
+                WHERE naimenovanie_tovarov_jur7_id = ANY($1)
+            `;
         const query3 = `
-            UPDATE saldo_naimenovanie_jur7 
-            SET  
-                isdeleted = true
-            WHERE EXISTS (
-                SELECT 1
-                FROM saldo_naimenovanie_jur7 sub
-                JOIN naimenovanie_tovarov_jur7 n ON n.id = sub.naimenovanie_tovarov_jur7_id
-                JOIN document_prixod_jur7_child d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n.id
-                JOIN document_prixod_jur7 d ON d.id = d_ch.document_prixod_jur7_id 
-                WHERE d.id = $1
-            )
-        `;
-
+                UPDATE saldo_naimenovanie_jur7 
+                SET isdeleted = true 
+                WHERE naimenovanie_tovarov_jur7_id = ANY($1)
+            `;
         const query4 = `
-            UPDATE naimenovanie_tovarov_jur7
-            SET  
-                isdeleted = true
-            WHERE EXISTS (
-                SELECT 1
-                FROM naimenovanie_tovarov_jur7 sub
-                JOIN document_prixod_jur7_child d_ch ON d_ch.naimenovanie_tovarov_jur7_id = sub.id
-                JOIN document_prixod_jur7 d ON d.id = d_ch.document_prixod_jur7_id 
-                WHERE d.id = $1
-            )
-        `;
+                UPDATE naimenovanie_tovarov_jur7 
+                SET isdeleted = true 
+                WHERE id = ANY($1)
+            `;
 
-        await client.query(query, params);
-        await client.query(query2, params);
-        await client.query(query3, params);
-        await client.query(query4, params);
+        await client.query(query2, [productIds]);
+        await client.query(query3, [productIds]);
+        await client.query(query4, [productIds]);
     }
 
     static async prixodReport(params) {
@@ -349,4 +330,16 @@ exports.PrixodDB = class {
         const result = await db.query(query, params);
         return result;
     }
+
+    static async getProductsByDocId(params, client) {
+        const query = `
+            SELECT  
+                ch.naimenovanie_tovarov_jur7_id AS product_id
+            FROM document_prixod_jur7_child AS ch
+            WHERE ch.document_prixod_jur7_id = $1
+        `;
+        const result = await client.query(query, params);
+        return result.rows.map(row => row.product_id);
+    }
+    
 }
