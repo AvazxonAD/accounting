@@ -37,7 +37,7 @@ exports.SaldoDB = class {
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.kimga_id = $2
                     AND d.isdeleted = false
-                    AND d.doc_date < $3
+                    AND d.doc_date <= $3
             ),
             prixod_internal AS (
                 SELECT
@@ -47,7 +47,7 @@ exports.SaldoDB = class {
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.kimga_id = $2
                     AND d.isdeleted = false
-                    AND d.doc_date < $3
+                    AND d.doc_date <= $3
             ),
             rasxod AS (
                 SELECT
@@ -57,7 +57,7 @@ exports.SaldoDB = class {
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.kimdan_id = $2
                     AND d.isdeleted = false
-                    AND d.doc_date < $3
+                    AND d.doc_date <= $3
             ),
             rasxod_internal AS (
                 SELECT
@@ -67,7 +67,7 @@ exports.SaldoDB = class {
                 WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.kimdan_id = $2
                     AND d.isdeleted = false
-                    AND d.doc_date < $3
+                    AND d.doc_date <= $3
             )
             SELECT
                 ( (prixod.kol + prixod_internal.kol) - (rasxod.kol + rasxod_internal.kol) )::FLOAT AS kol
@@ -154,7 +154,6 @@ exports.SaldoDB = class {
                 )::INTEGER AS total
             FROM data
         `;
-        console.log(params)
         const result = await db.query(query, params)
         return { data: result[0].data || [], total: result[0].total };
     }
