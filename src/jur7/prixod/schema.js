@@ -86,7 +86,9 @@ exports.getPrixodSchema = Joi.object({
     search: Joi.string().trim(),
     from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
     to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-    main_schet_id: Joi.number().integer().min(1).required()
+    main_schet_id: Joi.number().integer().min(1).required(),
+    orderBy: Joi.string().trim().default('DESC').valid('ASC', 'DESC'),
+    orderType: Joi.string().trim().default('doc_num').valid('doc_num', 'doc_date')
   })
 }).options({ stripUnknown: true });
 
