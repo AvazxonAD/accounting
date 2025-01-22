@@ -32,3 +32,10 @@ exports.getByIdSchema = Joi.object({
         id: Joi.number().min(1).integer().required()
     })
 }).options({ stripUnknown: true });
+
+
+exports.getSchema = Joi.object({
+    query: Joi.object({
+        search: Joi.string().trim()
+    })
+}).options({ stripUnknown: true });
