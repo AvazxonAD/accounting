@@ -14,7 +14,6 @@ exports.SaldoService = class {
                 product.kol = await SaldoDB.getKol([product.id, responsible.id, date[0]]);
                 product.prixod_doc_date = data.prixod_doc_date;
             }
-            responsible.products = responsible.products.filter(item => item.kol !== 0);
         }
         data.responsibles = data.responsibles.filter(item => item.products.length > 0);
         return data.responsibles;
@@ -93,7 +92,10 @@ exports.SaldoService = class {
             doc.to = { kol: doc.from.kol + (doc.internal.prixod.kol - doc.internal.rasxod.kol) };
             doc.to.summa = doc.to.kol * doc.sena;
         }
-        return { data: result, total };
+        
+        const result_data = result.filter(item => item.to.kol !== 0);
+        
+        return { data: result_data, total };
     }
 
     static async getSaldoForRasxod(data) {
@@ -110,7 +112,10 @@ exports.SaldoService = class {
             doc.to.summa = doc.to.kol * doc.sena;
             doc.prixod_doc_date = internal.prixod_doc_date;
         }
-        return { data: result, total };
+
+        const result_data = result.filter(item => item.to.kol !== 0);
+
+        return { data: result_data, total };
     }
 
     static async deleteSaldo(data) {

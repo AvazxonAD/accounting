@@ -168,7 +168,9 @@ exports.PrixodJur7Service = class {
                 data.id
             ], client);
 
-            await PrixodDB.deletePrixodChild([data.id], client);
+            const productIds = await PrixodDB.getProductsByDocId([data.id], client);
+
+            await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
             const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
