@@ -26,7 +26,15 @@ exports.GroupDB = class {
     static async getGroup(params, search = null) {
         let search_filter = ``;
         if (search) {
-            search_filter = `AND g_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
+            search_filter = `AND (
+                    g_j7.name ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g_j7.provodka_subschet ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g_j7.schet ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g_j7.provodka_debet ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g_j7.group_number ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g_j7.provodka_kredit ILIKE '%' || $${params.length + 1} || '%'
+                )
+            `;
             params.push(search);
         }
         const query = `--sql
