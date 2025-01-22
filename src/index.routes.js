@@ -71,7 +71,9 @@ routes
     .use('/ox/report', protect, require('./ox/report/index'))
     // Logs
     .use('/log', protect, require('./log/index'))
-    // admin
+    // Features
+    .use('/features', protect, require('./features/index'))
+    // Admin
     .use('/admin/main/book', protect, require('./admin/main.book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))
     .use('/admin/real/cost', protect, require('./admin/real.cost/index'));
