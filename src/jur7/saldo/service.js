@@ -82,7 +82,7 @@ exports.SaldoService = class {
 
     static async getSaldo(data) {
         const date = getMonthStartEnd(data.year, data.month);
-        const { data: result, total } = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, data.year, data.month, data.page, data.limit]);
+        const result = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, data.year, data.month]);
         for (let doc of result) {
             doc.prixod_data = await SaldoDB.getProductPrixod([doc.naimenovanie_tovarov_jur7_id]);
             doc.internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, date[0], date[1]]);
@@ -92,10 +92,10 @@ exports.SaldoService = class {
             doc.to = { kol: doc.from.kol + (doc.internal.prixod.kol - doc.internal.rasxod.kol) };
             doc.to.summa = doc.to.kol * doc.sena;
         }
-        
+
         const result_data = result.filter(item => item.to.kol !== 0);
-        
-        return { data: result_data, total };
+
+        return result_data;
     }
 
     static async getSaldoForRasxod(data) {
@@ -104,7 +104,7 @@ exports.SaldoService = class {
         const month = parts[1];
         const start = `${year}-${month}-01`;
 
-        const { data: result, total } = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, year, month, data.offset, data.limit], data.product_id);
+        const result = await SaldoDB.getSaldo([data.region_id, data.kimning_buynida, year, month], data.product_id);
 
         for (let doc of result) {
             const internal = await SaldoDB.getKolInternal([doc.naimenovanie_tovarov_jur7_id, doc.kimning_buynida, start, data.to]);
@@ -115,7 +115,7 @@ exports.SaldoService = class {
 
         const result_data = result.filter(item => item.to.kol !== 0);
 
-        return { data: result_data, total };
+        return result_data;
     }
 
     static async deleteSaldo(data) {
