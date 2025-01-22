@@ -154,6 +154,7 @@ exports.SaldoDB = class {
                 )::INTEGER AS total
             FROM data
         `;
+        console.log(params)
         const result = await db.query(query, params)
         return { data: result[0].data || [], total: result[0].total };
     }
