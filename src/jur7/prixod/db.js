@@ -162,7 +162,7 @@ exports.PrixodDB = class {
                             COALESCE(SUM(ch.summa_s_nds), 0) AS summa_s_nds 
                         FROM document_prixod_jur7_child AS ch
                         JOIN naimenovanie_tovarov_jur7 AS n ON n.id = ch.naimenovanie_tovarov_jur7_id
-                        WHERE ch.document_prixod_jur7_id = d_j.id
+                        WHERE ch.document_prixod_jur7_id = d_j.id  AND ch.isdeleted = false
                         GROUP BY ch.sena,
                             ch.debet_schet,
                             ch.debet_sub_schet,
