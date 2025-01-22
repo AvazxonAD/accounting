@@ -8,6 +8,10 @@ exports.Controller = class {
         
         const tableName = FeaturesService.getTableName({ page });
 
+        if(!tableName){
+            return res.error('Page not found', 400);
+        }
+
         const doc_num = await FeaturesService.getDocNum({tableName, region_id, main_schet_id});
 
         return res.success('Get successfully', 200, null, doc_num);

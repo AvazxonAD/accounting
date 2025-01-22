@@ -18,7 +18,7 @@ exports.PodrazdelenieDB = class {
     static async getPodrazdelenie(params, search = null) {
         let search_filter = ``
         if(search){
-            search_filter = `AND g_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
+            search_filter = `AND s_p_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
         }
         const query = `--sql
@@ -42,7 +42,7 @@ exports.PodrazdelenieDB = class {
                     WHERE s_p_j7.isdeleted = false AND r.id = $1 ${search_filter}
                 ) AS total
             FROM data
-        `
+        `;
         const result = await db.query(query, params)
         return result[0];
     }
