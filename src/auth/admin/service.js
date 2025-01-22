@@ -29,7 +29,8 @@ exports.AdminService = class {
     }
 
     static async getAdmin(req, res) {
-        const admins = await AdminDB.getAdmin()
+        const { search } = req.query
+        const admins = await AdminDB.getAdmin([], search)
         return res.status(200).json({
             message: "Admins get successfully",
             data: admins

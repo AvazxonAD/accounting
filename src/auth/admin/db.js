@@ -1,7 +1,16 @@
 const { db } = require('../../db/index');
 
 exports.AdminDB = class {
-    static async getAdmin() {
+    static async getAdmin(params, search) {
+        let search_filter = ``;
+        if(search){
+            params.push(search);
+            search_filter =  `AND (
+                r_g.name ILIKE '%' || $${params.length} || '%' OR
+                u.fio ILIKE '%' || $${params.length} || '%' OR
+                u.login ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
         const query = `--sql
             SELECT 
                 u.id, 
@@ -14,9 +23,12 @@ exports.AdminDB = class {
             FROM users AS u
             JOIN role AS r ON r.id = u.role_id
             JOIN regions AS r_g ON r_g.id = u.region_id
-            WHERE u.isdeleted = false AND r.name = 'region-admin'
+            WHERE u.isdeleted = false 
+                AND r.name = 'region-admin'
+                ${search_filter}
         `;
-        const result = await db.query(query);
+
+        const result = await db.query(query, params);
         return result;
     }
 

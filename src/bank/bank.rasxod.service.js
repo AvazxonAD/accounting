@@ -152,7 +152,7 @@ const getBankRasxodService = async (region_id, main_schet_id, offset, limit, fro
             AND r.id = $2 
             AND b_r.isdeleted = false 
             AND doc_date BETWEEN $3 AND $4 
-            ORDER BY b_r.doc_date 
+            ORDER BY b_r.doc_date, b_r.doc_num 
             OFFSET $5 LIMIT $6
         )
         SELECT 
