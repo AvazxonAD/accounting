@@ -48,7 +48,6 @@ exports.PrixodJur7Service = class {
         return result;
     }
 
-
     static async createPrixod(data) {
         await db.transaction(async (client) => {
             const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
