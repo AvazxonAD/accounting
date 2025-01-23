@@ -1,291 +1,80 @@
 const { InternalDB } = require('./db');
-const { tashkentTime, checkTovarId } = require('../../helper/functions');
-const { ResponsibleDB } = require('../spravochnik/responsible/db')
+const { tashkentTime, returnParamsValues } = require('../../helper/functions');
 const { db } = require('../../db/index')
-const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
-const { MainSchetDB } = require('../../spravochnik/main.schet/db')
-const { SaldoService } = require('../saldo/service')
 
-exports.InternalService = class {
-  static async createInternal(req, res) {
-    const region_id = req.user.region_id;
-    const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
-    const {
-      doc_num,
-      doc_date,
-      j_o_num,
-      opisanie,
-      doverennost,
-      kimdan_id,
-      kimdan_name,
-      kimga_id,
-      kimga_name,
-      childs
-    } = req.body;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
-    }
-    const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
-    if (!responsible) {
-      return res.status(404).json({
-        message: "responsible not found"
-      })
-    }
-    const responsible2 = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
-    if (!responsible2) {
-      return res.status(404).json({
-        message: "responsible not found"
-      })
-    }
-    for (let child of childs) {
-      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-      if (!product) {
-        return res.status(404).json({
-          message: "product not found"
+exports.Jur7InternalService = class {
+    static async createInternal(data) {
+        await db.transaction(async client => {
+            const summa = data.childs.reduce((acc, child) => acc += child.summa, 0);
+            const doc = await InternalDB.createInternal([
+                data.user_id,
+                data.doc_num,
+                data.doc_date,
+                data.j_o_num,
+                data.opisanie,
+                data.doverennost,
+                summa,
+                data.kimdan_id,
+                data.kimdan_name,
+                data.kimga_id,
+                data.kimga_name,
+                data.main_schet_id,
+                tashkentTime(),
+                tashkentTime()
+            ], client);
+
+            await this.createInternalChild({ ...data, docId: doc.id, client });
         })
-      }
-      const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id });
-      if (!tovar[0]) {
-        return res.error('Saldo is not defined', 400)
-      }
-      if (tovar[0].to.kol < child.kol) {
-        return res.error('The responsible person does not have sufficient information regarding this product', 400);
-      }
     }
-    const testTovarId = checkTovarId(childs)
-    if (testTovarId) {
-      return res.status(409).json({
-        message: "The product ID was sent incorrectly"
-      })
-    }
-    let summa = 0;
-    for (let child of childs) {
-      summa += child.kol * child.sena;
-    }
-    let doc;
-    await db.transaction(async client => {
-      doc = await InternalDB.createInternal([
-        user_id,
-        doc_num,
-        doc_date,
-        j_o_num,
-        opisanie,
-        doverennost,
-        summa,
-        kimdan_id,
-        kimdan_name,
-        kimga_id,
-        kimga_name,
-        main_schet_id,
-        tashkentTime(),
-        tashkentTime()
-      ], client);
-      const result_childs = childs.map(item => {
-        item.summa = item.kol * item.sena
-        if (item.nds_foiz) {
-          item.nds_summa = item.nds_foiz / 100 * item.summa;
-        } else {
-          item.nds_summa = 0;
+
+    static async createInternalChild(data) {
+        const create_childs = [];
+        for (let child of data.childs) {
+            create_childs.push(
+                child.naimenovanie_tovarov_jur7_id,
+                child.kol,
+                child.sena,
+                child.summa,
+                child.debet_schet,
+                child.debet_sub_schet,
+                child.kredit_schet,
+                child.kredit_sub_schet,
+                child.data_pereotsenka,
+                data.user_id,
+                data.docId,
+                data.main_schet_id,
+                tashkentTime(),
+                tashkentTime()
+            );
         }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.user_id = user_id;
-        item.document_vnutr_peremesh_jur7_id = doc.id;
-        item.main_schet_id = main_schet_id;
-        item.created_at = tashkentTime();
-        item.updated_at = tashkentTime();
-        return item;
-      })
-      doc.childs = await InternalDB.createInternalChild(result_childs, client)
-    })
 
-    return res.status(201).json({
-      message: "Create doc internal successfully",
-      data: doc
-    })
-  }
+        const _values = returnParamsValues(create_childs, 14);
 
-  static async getInternal(req, res) {
-    const region_id = req.user.region_id;
-    const { page, limit, search, from, to, main_schet_id } = req.query;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
+        await InternalDB.createInternalChild(create_childs, _values, data.client);
     }
-    const offset = (page - 1) * limit;
-    const { data, total } = await InternalDB.getInternal([region_id, from, to, main_schet_id, offset, limit], search)
-    const pageCount = Math.ceil(total / limit);
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1
-    }
-    return res.status(200).json({
-      message: "doc successfully get",
-      meta,
-      data: data || []
-    })
-  }
 
-  static async getByIdInternal(req, res) {
-    const region_id = req.user.region_id
-    const id = req.params.id
-    const main_schet_id = req.query.main_schet_id
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
-    }
-    const data = await InternalDB.getByIdInternal([region_id, id, main_schet_id], true)
-    if (!data) {
-      return res.status(404).json({
-        message: "doc not found"
-      })
-    }
-    return res.status(201).json({
-      message: "doc successfully get",
-      data
-    });
-  }
 
-  static async updateInternal(req, res) {
-    const region_id = req.user.region_id;
-    const id = req.params.id;
-    const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
-    const {
-      doc_num,
-      doc_date,
-      j_o_num,
-      opisanie,
-      doverennost,
-      kimdan_id,
-      kimdan_name,
-      kimga_id,
-      kimga_name,
-      childs
-    } = req.body;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
-    }
-    const oldData = await InternalDB.getByIdInternal([region_id, id, main_schet_id])
-    if (!oldData) {
-      return res.status(404).json({
-        message: "internal doc not found"
-      })
-    }
-    const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
-    if (!responsible) {
-      return res.status(404).json({
-        message: "responsible not found"
-      })
-    }
-    const responsible2 = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
-    if (!responsible2) {
-      return res.status(404).json({
-        message: "responsible not found"
-      })
-    }
-    for (let child of childs) {
-      const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
-      if (!product) {
-        return res.status(404).json({
-          message: "product not found"
+    static async updateInternal(data) {
+        await db.transaction(async client => {
+            const summa = data.childs.reduce((acc, child) => acc += child.summa, 0);
+            await InternalDB.updateInternal([
+                data.doc_num,
+                data.doc_date,
+                data.j_o_num,
+                data.opisanie,
+                data.doverennost,
+                summa,
+                data.kimdan_id,
+                data.kimdan_name,
+                data.kimga_id,
+                data.kimga_name,
+                tashkentTime(),
+                data.id
+            ], client);
+            
+            await InternalDB.deleteInternalChild([data.id], client)
+            
+            await this.createInternalChild({ ...data, docId: data.id, client });
         })
-      }
-      const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id});
-      if(!tovar[0]){
-        return res.error('Saldo is not defined', 400)
-      }
-      const old_tovar = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)
-      const add = old_tovar ? old_tovar.kol : 0;
-      if ((tovar[0].to.kol + add) < child.kol) {
-        return res.error('The responsible person does not have sufficient information regarding this product', 400)
-      }
     }
-    const testTovarId = checkTovarId(childs)
-    if (testTovarId) {
-      return res.status(409).json({
-        message: "The product ID was sent incorrectly"
-      })
-    }
-    let summa = 0;
-    for (let child of childs) {
-      summa += child.kol * child.sena;
-    }
-    let doc;
-    await db.transaction(async client => {
-      doc = await InternalDB.updateInternal([
-        doc_num,
-        doc_date,
-        j_o_num,
-        opisanie,
-        doverennost,
-        summa,
-        kimdan_id,
-        kimdan_name,
-        kimga_id,
-        kimga_name,
-        tashkentTime(),
-        id
-      ], client);
-      const result_childs = childs.map(item => {
-        item.summa = item.kol * item.sena
-        if (item.nds_foiz) {
-          item.nds_summa = item.nds_foiz / 100 * item.summa;
-        } else {
-          item.nds_summa = 0;
-        }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.user_id = user_id;
-        item.document_vnutr_peremesh_jur7_id = doc.id;
-        item.main_schet_id = main_schet_id;
-        item.created_at = tashkentTime();
-        item.updated_at = tashkentTime();
-        return item;
-      })
-      await InternalDB.deleteInternalChild([id], client)
-      doc.childs = await InternalDB.createInternalChild(result_childs, client)
-    })
-
-    return res.status(201).json({
-      message: 'Update doc internal successfully',
-      data: doc
-    })
-  }
-
-  static async deleteInternal(req, res) {
-    const region_id = req.user.region_id;
-    const id = req.params.id;
-    const main_schet_id = req.query.main_schet_id;
-    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-    if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
-    }
-    const internal_doc = await InternalDB.getByIdInternal([region_id, id, main_schet_id])
-    if (!internal_doc) {
-      return res.status(404).json({
-        message: "internal doc not found"
-      })
-    }
-    await db.transaction(async (client) => {
-      await InternalDB.deleteInternal([id], client)
-    })
-    return res.status(200).json({
-      message: 'delete internal doc successfully'
-    })
-  }
 }
