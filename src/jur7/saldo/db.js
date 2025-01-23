@@ -119,8 +119,20 @@ exports.SaldoDB = class {
                 d.kimning_buynida,
                 n.name AS naimenovanie_tovarov,
                 n.edin,
-                g.id AS group_jur7_id, 
-                g.name AS group_jur7_name
+                g.id AS group_jur7_id,
+                g.name group_name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
+                n.group_jur7_id,
+                n.spravochnik_budjet_name_id,
+                n.inventar_num,
+                n.serial_num
             FROM saldo_naimenovanie_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -198,12 +210,8 @@ exports.SaldoDB = class {
                     AND d.doc_date BETWEEN $3 AND $4
             )
             SELECT
-                JSON_BUILD_OBJECT(
-                    'kol', (prixod.kol + prixod_internal.kol)
-                ) AS prixod,
-                JSON_BUILD_OBJECT(
-                    'kol', (rasxod.kol + rasxod_internal.kol)
-                ) AS rasxod
+                JSON_BUILD_OBJECT('kol', (prixod.kol + prixod_internal.kol)) AS prixod,
+                JSON_BUILD_OBJECT('kol', (rasxod.kol + rasxod_internal.kol)) AS rasxod
             FROM prixod, prixod_internal, rasxod, rasxod_internal
         `;
         const result = await db.query(query, params);

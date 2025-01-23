@@ -1,4 +1,4 @@
-const { RasxodService } = require('./service');
+const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
 const {
     createRasxodSchema,
@@ -11,10 +11,10 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(RasxodService.createRasxod, createRasxodSchema));
-router.get('/:id', validator(RasxodService.getByIdRasxod, getByIdRasxodSchema));
-router.put('/:id', validator(RasxodService.updateRasxod, updateRasxodSchema));
-router.delete('/:id', validator(RasxodService.deleteRasxod, deleteRasxodSchema));
-router.get('/', validator(RasxodService.getRasxod, getRasxodSchema));
+router.post('/', validator(Controller.createRasxod, createRasxodSchema));
+router.get('/:id', validator(Controller.getByIdRasxod, getByIdRasxodSchema));
+router.put('/:id', validator(Controller.updateRasxod, updateRasxodSchema));
+router.delete('/:id', validator(Controller.deleteRasxod, deleteRasxodSchema));
+router.get('/', validator(Controller.getRasxod, getRasxodSchema));
 
 module.exports = router;

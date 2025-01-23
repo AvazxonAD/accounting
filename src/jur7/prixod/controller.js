@@ -51,8 +51,8 @@ exports.Controller = class {
       if (!group) {
         return res.error('Group not found', 404);
       }
-      
-      if(!child.iznos && child.eski_iznos_summa > 0){
+
+      if (!child.iznos && child.eski_iznos_summa > 0) {
         return res.error('The amount for non-refundable goods cannot be less than or equal to 0', 400);
       }
       child.iznos_foiz = group.iznos_foiz;
@@ -94,7 +94,7 @@ exports.Controller = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
-   
+
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found"
@@ -132,6 +132,15 @@ exports.Controller = class {
         message: "prixod doc not found"
       })
     }
+
+    for (let child of oldData.childs) {
+      const check = await PrixodJur7Service.checkPrixodDoc({ product_id: child.naimenovanie_tovarov_jur7_id });
+      if (check.length) {
+        console.log(check)
+        return res.error('Expense documents related to this record are available', 400, null, check);
+      }
+    }
+
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
     if (!organization) {
       return res.error('Orgnaization not found', 404);
@@ -154,8 +163,8 @@ exports.Controller = class {
       if (!group) {
         return res.error('Group not found', 404);
       }
-      
-      if(!child.iznos && child.eski_iznos_summa > 0){
+
+      if (!child.iznos && child.eski_iznos_summa > 0) {
         return res.error('The amount for non-refundable goods cannot be less than or equal to 0', 400);
       }
       child.iznos_foiz = group.iznos_foiz;
@@ -182,9 +191,9 @@ exports.Controller = class {
         message: "prixod doc not found"
       })
     }
-    await db.transaction(async (client) => {
-      await PrixodDB.deletePrixod([id], client)
-    })
+
+    await PrixodJur7Service.deleteDoc({ id });
+
     return res.status(200).json({
       message: 'delete prixod doc successfully'
     })

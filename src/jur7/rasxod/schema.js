@@ -9,15 +9,10 @@ exports.createRasxodSchema = Joi.object({
     doverennost: Joi.string().trim(),
     kimdan_id: Joi.number().integer().min(1).required(),
     kimdan_name: Joi.string().trim(),
-    kimga_id: Joi.number().integer().min(1).allow(null),
-    kimga_name: Joi.string().trim(),
-    id_shartnomalar_organization: Joi.number().min(1).allow(null),
     childs: Joi.array().required().items(
       Joi.object({
         naimenovanie_tovarov_jur7_id: Joi.number().required(),
         kol: Joi.number().min(1).required(),
-        sena: Joi.number().min(1).required(),
-        nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
         debet_schet: Joi.string().trim(),
         debet_sub_schet: Joi.string().trim(),
         kredit_schet: Joi.string().trim(),

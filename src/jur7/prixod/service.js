@@ -134,9 +134,9 @@ exports.PrixodJur7Service = class {
             await SaldoDB.createSaldo([
                 data.user_id,
                 child.id,
-                child.kol,
+                0,
                 product_sena,
-                product_sena * child.kol,
+                0,
                 month,
                 year,
                 `${year}-${month}-01`,
@@ -176,5 +176,20 @@ exports.PrixodJur7Service = class {
 
             await this.createPrixodChild({ ...data, docId: data.id, childs, client });
         });
+    }
+
+    static async checkPrixodDoc(data) {
+        const result = await PrixodDB.checkPrixodDoc([data.productId]);
+        return result;
+    }
+
+    static async deleteDoc(data) {
+        await db.transaction(async (client) => {
+            const productIds = await PrixodDB.getProductsByDocId([data.id], client);
+
+            await PrixodDB.deletePrixodChild(data.id, productIds, client);
+            
+            await PrixodDB.deletePrixod([data.id], client)
+        })
     }
 }
