@@ -65,12 +65,10 @@ exports.Controller = class {
 
   static async getPrixod(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to, main_schet_id } = req.query;
+    const { page, limit, search, from, to, main_schet_id, orderType, orderBy } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
+      return res.error('Main schet not found', 404);
     }
     const offset = (page - 1) * limit;
     const { data, total } = await PrixodDB.getPrixod([region_id, from, to, main_schet_id, offset, limit], search)
@@ -96,9 +94,7 @@ exports.Controller = class {
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
 
     if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
+      return res.error('Main schet not found', 404);
     }
 
     const data = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id], true)
@@ -128,18 +124,15 @@ exports.Controller = class {
 
     const oldData = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!oldData) {
-      return res.status(404).json({
-        message: "prixod doc not found"
-      })
+      return res.error('Prixod doc not found', 404);
     }
 
-    for (let child of oldData.childs) {
-      const check = await PrixodJur7Service.checkPrixodDoc({ product_id: child.naimenovanie_tovarov_jur7_id });
-      if (check.length) {
-        console.log(check)
-        return res.error('Expense documents related to this record are available', 400, null, check);
-      }
-    }
+    // for (let child of oldData.childs) {
+    //   const check = await PrixodJur7Service.checkPrixodDoc({ product_id: child.naimenovanie_tovarov_jur7_id });
+    //   if (check.length) {
+    //     return res.error('Expense documents related to this record are available', 400, null, check);
+    //   }
+    // }
 
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
     if (!organization) {
@@ -181,22 +174,16 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      })
+      return res.error('Main schet not found', 404);
     }
     const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!prixod_doc) {
-      return res.status(404).json({
-        message: "prixod doc not found"
-      })
+      return res.error('Prixod doc not found', 404);
     }
 
     await PrixodJur7Service.deleteDoc({ id });
 
-    return res.status(200).json({
-      message: 'delete prixod doc successfully'
-    })
+    return res.success('Create doc successfully', 200)
   }
 
   static async getPrixodReport(req, res) {
@@ -204,9 +191,7 @@ exports.Controller = class {
     const { from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found"
-      });
+      return res.error('Main schet not found', 404);;
     }
     const data = await PrixodDB.prixodReport([region_id, from, to, main_schet_id]);
     await Promise.all(data.map(async (item) => {

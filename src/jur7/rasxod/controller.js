@@ -5,29 +5,21 @@ const { ContractDB } = require('../../shartnoma/db')
 const { db } = require('../../db/index')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetService } = require('../../spravochnik/main.schet/services')
-const { SaldoService } = require('../saldo/service')
+const { SaldoService } = require('../saldo/service');
+const { Jur7RsxodService } = require('./service')
 
 exports.Controller = class {
   static async createRasxod(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
-    const {
-      doc_num,
-      doc_date,
-      j_o_num,
-      opisanie,
-      doverennost,
-      kimdan_id,
-      kimdan_name,
-      childs
-    } = req.body;
+    const { doc_date, kimdan_id, childs } = req.body;
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error('Main schet not found', 404);
     }
-    
-    const responsible = await ResponsibleService.getByIdResponsible({region_id, id: kimdan_id});
+
+    const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimdan_id });
     if (!responsible) {
       return res.error('Responisible not found', 404);
     }
@@ -37,12 +29,13 @@ exports.Controller = class {
       if (!product) {
         return res.error('Product not found', 404);
       }
-      const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id });
       
+      const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id });
+
       if (!tovar[0]) {
         return res.error('Saldo is not defined', 400)
       }
-      
+
       if (tovar[0].to.kol < child.kol) {
         return res.error('The responsible person does not have sufficient information regarding this product', 400);
       }
@@ -52,15 +45,14 @@ exports.Controller = class {
     }
 
     const testTovarId = checkTovarId(childs)
-    
+
     if (testTovarId) {
       return res.error("The product ID was sent incorrectly", 400);
     }
 
-    return res.status(201).json({
-      message: "Create doc rasxod successfully",
-      data: doc
-    });
+    await Jur7RsxodService.createRasxod({ ...req.body, main_schet_id, user_id });
+
+    return res.success('Create doc successfully', 200);
   }
 
   static async getByIdRasxod(req, res) {
@@ -86,19 +78,7 @@ exports.Controller = class {
     const id = req.params.id;
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
-    const {
-      doc_num,
-      doc_date,
-      j_o_num,
-      opisanie,
-      doverennost,
-      kimdan_id,
-      kimdan_name,
-      kimga_id,
-      kimga_name,
-      id_shartnomalar_organization,
-      childs
-    } = req.body;
+    const { doc_date, kimdan_id, childs } = req.body;
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error('Main schet not found', 404);
@@ -107,79 +87,40 @@ exports.Controller = class {
     if (!oldData) {
       return res.error('Doc not found', 404);
     }
-    const responsible = await ResponsibleService.getByIdResponsible({region_id, id: kimdan_id});
+    const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimdan_id });
     if (!responsible) {
       return res.error('Responisible not found', 404);
-    }
-    if (id_shartnomalar_organization) {
-      const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimga_id)
-      if (!contract) {
-        return res.error('Contract not found', 404);
-      }
     }
     for (let child of childs) {
       const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, child.naimenovanie_tovarov_jur7_id])
       if (!product) {
         return res.error('Product not found', 404);
       }
+
       const tovar = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida: kimdan_id, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id });
       if (!tovar[0]) {
         return res.error('Saldo is not defined', 400)
       }
+
       const old_tovar = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)
       const add = old_tovar ? old_tovar.kol : 0;
       if ((tovar[0].to.kol + add) < child.kol) {
         return res.error('The responsible person does not have sufficient information regarding this product', 400)
       }
+
+      child.sena = tovar[0].sena;
+      child.summa = tovar[0].sena * child.kol;
     }
-    let summa = 0;
-    for (let child of childs) {
-      summa += child.kol * child.sena;
-    }
+
     const testTovarId = checkTovarId(childs)
+
     if (testTovarId) {
       return res.error("The product ID was sent incorrectly", 400);
     }
-    let doc;
-    await db.transaction(async client => {
-      doc = await RasxodDB.updateRasxod([
-        doc_num,
-        doc_date,
-        j_o_num,
-        opisanie,
-        doverennost,
-        summa,
-        kimdan_id,
-        kimdan_name,
-        kimga_id,
-        kimga_name,
-        id_shartnomalar_organization,
-        tashkentTime(),
-        id
-      ], client);
-      const result_childs = childs.map(item => {
-        item.summa = item.kol * item.sena
-        if (item.nds_foiz) {
-          item.nds_summa = item.nds_foiz / 100 * item.summa;
-        } else {
-          item.nds_summa = 0;
-        }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.user_id = user_id
-        item.document_rasxod_jur7_id = doc.id
-        item.main_schet_id = main_schet_id;
-        item.created_at = tashkentTime()
-        item.updated_at = tashkentTime()
-        return item
-      })
-      await RasxodDB.deleteRasxodChild([id], client)
-      doc.childs = await RasxodDB.createRasxodChild(result_childs, client)
-    })
+    
+    await Jur7RsxodService.updateRasxod({...req.body, user_id, main_schet_id, id});
 
-    return res.status(201).json({
-      message: "Update doc rasxod successfully",
-      data: doc
-    })
+    return res.success('Update doc successfully', 200)
   }
 
   static async deleteRasxod(req, res) {
