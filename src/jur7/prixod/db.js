@@ -214,6 +214,7 @@ exports.PrixodDB = class {
     }
 
     static async deletePrixodChild(documentPrixodId, productIds, client) {
+        
         const query1 = `
                 UPDATE document_prixod_jur7_child 
                 SET isdeleted = true 
@@ -341,5 +342,53 @@ exports.PrixodDB = class {
         const result = await client.query(query, params);
         return result.rows.map(row => row.product_id);
     }
-    
+
+    static async checkPrixodDoc(params) {
+        const query = `
+            SELECT 
+              d.id, 
+              d.doc_num,
+              TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+              d.opisanie, 
+              d.summa, 
+              s.name AS kimga_name,
+              s.okonx AS spravochnik_organization_okonx,
+              s.bank_klient AS spravochnik_organization_bank_klient,
+              s.raschet_schet AS spravochnik_organization_raschet_schet,
+              s.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+              s.mfo AS spravochnik_organization_mfo,
+              s.inn AS spravochnik_organization_inn,
+              c.fio AS kimdan_name
+            FROM document_rasxod_jur7 d
+            JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
+            LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
+            JOIN spravochnik_javobgar_shaxs_jur7 c ON c.id = d.kimdan_id 
+            WHERE  ch.naimenovanie_tovarov_jur7_id = $1
+            
+            UNION ALL 
+
+            SELECT 
+              d.id, 
+              d.doc_num,
+              TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+              d.opisanie, 
+              d.summa, 
+              s.name AS kimga_name,
+              s.okonx AS spravochnik_organization_okonx,
+              s.bank_klient AS spravochnik_organization_bank_klient,
+              s.raschet_schet AS spravochnik_organization_raschet_schet,
+              s.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+              s.mfo AS spravochnik_organization_mfo,
+              s.inn AS spravochnik_organization_inn,
+              c.fio AS kimdan_name
+            FROM document_vnutr_peremesh_jur7 d
+            JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
+            LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
+            JOIN spravochnik_javobgar_shaxs_jur7 c ON c.id = d.kimdan_id 
+            WHERE  ch.naimenovanie_tovarov_jur7_id = $1
+        `;
+
+        const result = await db.query(query, params);
+        return result;
+    }
 }

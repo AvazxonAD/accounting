@@ -18,13 +18,13 @@ exports.NaimenovanieDB = class {
             RETURNING *
         `;
         const result = await client.query(query, params);
-        
+
         return result.rows[0];
     }
 
     static async getNaimenovanie(params, search = null) {
         let search_filter = ``
-        
+
         if (search) {
             search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
@@ -76,8 +76,15 @@ exports.NaimenovanieDB = class {
                 n_t_j7.name, 
                 n_t_j7.edin,
                 g.id AS group_jur7_id,
-                g.name AS group_jur7_name,
-                g.iznos_foiz,
+                g.name group_name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
                 n_t_j7.group_jur7_id,
                 n_t_j7.spravochnik_budjet_name_id,
                 n_t_j7.inventar_num,
@@ -117,9 +124,9 @@ exports.NaimenovanieDB = class {
         let search_filter = ''
         if (search) {
             search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search); 
+            params.push(search);
         }
-        if(tovar_id){
+        if (tovar_id) {
             tovar_filter = `AND n_t_j7.id = $${params.length + 1}`;
             params.push(tovar_id);
         }
@@ -185,7 +192,7 @@ exports.NaimenovanieDB = class {
             ) AS subquery
         `;
         let data;
-        if(client){
+        if (client) {
             data = await client.query(query, params);
             data = data.rows;
         } else {
