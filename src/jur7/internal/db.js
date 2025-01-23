@@ -27,58 +27,13 @@ exports.InternalDB = class {
         return result.rows[0];
     }
 
-    static async createInternalChild(params, client) {
-        const design_params = [
-            "naimenovanie_tovarov_jur7_id",
-            "kol",
-            "sena",
-            "summa",
-            "nds_foiz",
-            "nds_summa",
-            "summa_s_nds", 
-            "debet_schet",
-            "debet_sub_schet",
-            "kredit_schet",
-            "kredit_sub_schet",
-            "data_pereotsenka",
-            "user_id",
-            "document_vnutr_peremesh_jur7_id",
-            "main_schet_id",
-            "created_at",
-            "updated_at"
-        ]
-        const values = params.map((_, index) => {
-            return `
-                ($${17 * index + 1}, 
-                $${17 * index + 2}, 
-                $${17 * index + 3}, 
-                $${17 * index + 4}, 
-                $${17 * index + 5}, 
-                $${17 * index + 6}, 
-                $${17 * index + 7}, 
-                $${17 * index + 8}, 
-                $${17 * index + 9}, 
-                $${17 * index + 10}, 
-                $${17 * index + 11}, 
-                $${17 * index + 12}, 
-                $${17 * index + 13},
-                $${17 * index + 14},
-                $${17 * index + 15},
-                $${17 * index + 16},
-                $${17 * index + 17})
-            `;
-        })
-        const _values = values.join(", ")
-        const allValues = designParams(params, design_params)
+    static async createInternalChild(params, _values, client) {
         const query = `--sql
             INSERT INTO document_vnutr_peremesh_jur7_child (
                 naimenovanie_tovarov_jur7_id,
                 kol,
                 sena,
                 summa,
-                nds_foiz,
-                nds_summa,
-                summa_s_nds, 
                 debet_schet,
                 debet_sub_schet,
                 kredit_schet,
@@ -92,7 +47,7 @@ exports.InternalDB = class {
             ) 
             VALUES ${_values} RETURNING *
         `;
-        const result = await client.query(query, allValues)
+        const result = await client.query(query, params);
         return result.rows;
     }
 
@@ -187,10 +142,7 @@ exports.InternalDB = class {
                         d_j_ch.debet_sub_schet,
                         d_j_ch.kredit_schet,
                         d_j_ch.kredit_sub_schet,
-                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
-                        d_j_ch.nds_foiz,
-                        d_j_ch.nds_summa,
-                        d_j_ch.summa_s_nds
+                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
                     FROM document_vnutr_peremesh_jur7_child AS d_j_ch
                     WHERE d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
                 ) AS d_j_ch
@@ -218,10 +170,9 @@ exports.InternalDB = class {
               kimga_id = $9, 
               kimga_name = $10, 
               updated_at = $11
-            WHERE id = $12 RETURNING * 
+            WHERE id = $12
         `;
-        const result = await db.query(query, params);
-        return result[0];
+        await db.query(query, params);
     }
 
     static async deleteInternal(params, client) {

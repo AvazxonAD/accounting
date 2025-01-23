@@ -25,11 +25,11 @@ exports.Jur7RsxodService = class {
                 tashkentTime()
             ], client);
 
-            await this.createRasxdoChild({ ...data, docId: doc.id, client });
+            await this.createRasxodChild({ ...data, docId: doc.id, client });
         });
     }
 
-    static async createRasxdoChild(data) {
+    static async createRasxodChild(data) {
         const create_childs = [];
         for (let child of data.childs) {
             create_childs.push(
@@ -74,7 +74,7 @@ exports.Jur7RsxodService = class {
 
             await RasxodDB.deleteRasxodChild([data.id], client)
 
-            await this.createRasxdoChild({ ...data, docId: data.id, client })
+            await this.createRasxodChild({ ...data, docId: data.id, client })
         })
     }
 }
