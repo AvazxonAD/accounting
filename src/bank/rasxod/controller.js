@@ -8,7 +8,7 @@ exports.Controller = class {
         const { main_schet_id } = req.query;
         const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
         if (!main_schet) {
-            return res.error('Main schet not found', 404);
+            return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
         }
         const bank_rasxod = await BankRasxodService.getByIdBankRasxod({ id, main_schet_id, region_id });
         if (!bank_rasxod) {

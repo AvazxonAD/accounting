@@ -12,7 +12,7 @@ exports.Controller = class {
         if (product_id) {
             const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, product_id]);
             if (!product) {
-                return res.error('Product not found', 404);
+                return res.error(`${req.i18n.t('notFound', { replace: { data: 'Product' } })}`, 404);
             }
         }
         if (responsible_id) {

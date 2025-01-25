@@ -77,4 +77,9 @@ exports.Jur7RsxodService = class {
             await this.createRasxodChild({ ...data, docId: data.id, client })
         })
     }
+
+    static async getByIdRasxod(data) {
+        const result = await RasxodDB.getByIdRasxod([data.region_id, data.id, data.main_schet_id], data.isdeleted)
+        return result;
+    }
 }

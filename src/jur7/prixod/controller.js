@@ -26,7 +26,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
 
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
@@ -68,7 +68,7 @@ exports.Controller = class {
     const { page, limit, search, from, to, main_schet_id, orderType, orderBy } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const offset = (page - 1) * limit;
     const { data, total } = await PrixodDB.getPrixod([region_id, from, to, main_schet_id, offset, limit], search)
@@ -94,7 +94,7 @@ exports.Controller = class {
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
 
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
 
     const data = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id], true)
@@ -119,7 +119,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
 
     const oldData = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
@@ -174,7 +174,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!prixod_doc) {
@@ -191,7 +191,7 @@ exports.Controller = class {
     const { from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.error('Main schet not found', 404);;
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);;
     }
     const data = await PrixodDB.prixodReport([region_id, from, to, main_schet_id]);
     await Promise.all(data.map(async (item) => {

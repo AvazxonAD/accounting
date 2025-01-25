@@ -349,7 +349,7 @@ exports.Controller = class {
 
         const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
         if (!main_schet) {
-            return res.error('Main schet not found', 404);
+            return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
         }
 
         const schets = await AktDB.getSchets([region_id, main_schet_id, from, to]);

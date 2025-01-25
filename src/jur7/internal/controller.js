@@ -16,7 +16,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
 
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id])
@@ -63,7 +63,7 @@ exports.Controller = class {
     const { page, limit, search, from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const offset = (page - 1) * limit;
     const { data, total } = await InternalDB.getInternal([region_id, from, to, main_schet_id, offset, limit], search)
@@ -88,7 +88,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const data = await InternalDB.getByIdInternal([region_id, id, main_schet_id], true)
     if (!data) {
@@ -110,7 +110,7 @@ exports.Controller = class {
     const { doc_date, kimdan_id, kimga_id, childs } = req.body;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const oldData = await InternalDB.getByIdInternal([region_id, id, main_schet_id])
     if (!oldData) {
@@ -158,7 +158,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error('Main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const internal_doc = await InternalDB.getByIdInternal([region_id, id, main_schet_id])
     if (!internal_doc) {

@@ -1,0 +1,6 @@
+{
+    "notFound": "{{data}} topilmadi",
+    "success": "{{data}} muvaffaqiyatli",
+    "kolError": "Tovar soni notog'ri kiritildi",
+    "productIdError": "Tovar id lari notog'ri"
+}
