@@ -230,7 +230,7 @@ exports.Jur7MonitoringService = class {
                 if (rowNumber < 5) {
                     bold = true;
                 }
-                if (rowNumber > 4 && (columnNumber === 2 || columnNumber === 4) ) {
+                if (rowNumber > 4 && (columnNumber === 2 || columnNumber === 4)) {
                     horizontal = 'right'
                 }
                 Object.assign(cell, {
@@ -250,5 +250,18 @@ exports.Jur7MonitoringService = class {
         const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
+    }
+
+    static async getSaldo(data) {
+        let products = await Monitoringjur7DB.getProducts([data.responsible_id]);
+        for (let product of products) {
+            product.kol = await Monitoringjur7DB.getKol([product.id, data.responsible_id, data.to]);
+            if (product.kol === 0) {
+                products = products.filter(item => item.id !== product.id)
+                continue
+            }
+            product.prixod_data = await Monitoringjur7DB.getPrixodInfo([product.id]);
+            
+        }
     }
 }   
