@@ -22,7 +22,7 @@ exports.Controller = class {
     }
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
     if (!main_schet) {
-      return res.error('main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const doc = await OxDocService.getByIdDoc({ region_id, budjet_id, year, month });
     if (doc) {
@@ -101,7 +101,7 @@ exports.Controller = class {
     }
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
     if (!main_schet) {
-      return res.error('main schet not found', 404);
+      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
     }
     const old_doc = await OxDocService.getByIdDoc({
       region_id,

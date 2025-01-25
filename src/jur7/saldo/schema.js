@@ -16,7 +16,8 @@ exports.getSaldoSchema = Joi.object({
     year: Joi.number().integer().min(1900).required(),
     kimning_buynida: Joi.number().integer().min(1).required(),
     page: Joi.number().integer().min(1).default(1),
-    limit: Joi.number().integer().min(1).default(10)
+    limit: Joi.number().integer().min(1).default(10),
+    product_id: Joi.number().integer().min(1)
   })
 }).options({ stripUnknown: true });
 

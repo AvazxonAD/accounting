@@ -1,5 +1,6 @@
 const { Monitoringjur7DB } = require('./db')
-const { ResponsibleDB } = require('../spravochnik/responsible/db')
+const { ResponsibleDB } = require('../spravochnik/responsible/db');
+const { ResponsibleService } = require('../spravochnik/responsible/service');
 const ExcelJS = require('exceljs')
 const { getMonthStartEnd, returnMonth } = require('../../helper/functions')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
@@ -8,8 +9,44 @@ const path = require('path')
 const fs = require('fs').promises
 const { BudjetService } = require('../../spravochnik/budjet/services');
 const { Jur7MonitoringService } = require('./service');
+const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
+
 
 exports.Controller = class {
+
+    static async getSaldo(req, res) {
+        const region_id = req.user.region_id;
+        const { responsible_id, page, limit, product_id } = req.query;
+
+        console.log({id: responsible_id, region_id})
+        const responsible = await ResponsibleService.getByIdResponsible({ id: responsible_id, region_id });
+        if (!responsible) {
+            return res.error('Responsible not found', 404);
+        }
+
+        if (product_id) {
+            const product = await NaimenovanieService.getByIdNaimenovanie({ region_id, id: product_id });
+            if (!product) {
+                return res.error(`${req.i18n.t('notFound', { replace: { data: 'Product' } })}`, 404);
+            }
+        }
+
+        const offset = (page - 1) * limit;
+
+        const { products, total } = await Jur7MonitoringService.getSaldo({ ...req.query, offset, limit });
+
+        const pageCount = Math.ceil(total / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1
+        }
+
+        return res.success('Get successfully', 200, meta, products)
+    }
+
     static async obrotkaReport(req, res) {
         const { month, year, main_schet_id } = req.query;
         const region_id = req.user.region_id;
