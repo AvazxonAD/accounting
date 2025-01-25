@@ -40,8 +40,7 @@ exports.Controller = class {
         return res.error('The responsible person does not have sufficient information regarding this product', 400);
       }
 
-      child.sena = tovar[0].sena;
-      child.summa = tovar[0].sena * child.kol;
+      child.summa = child.sena * child.kol;
     }
 
     const testTovarId = checkTovarId(childs)
