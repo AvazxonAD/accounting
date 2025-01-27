@@ -72,9 +72,11 @@ exports.Controller = class {
     }
 
     const offset = (page - 1) * limit;
-    const pageCount = Math.ceil(total / limit);
 
     const { data, total } = await PrixodJur7Service.getPrixod({ search, region_id, from, to, main_schet_id, offset, limit })
+
+    const pageCount = Math.ceil(total / limit);
+
 
     const meta = {
       pageCount: pageCount,
@@ -84,7 +86,7 @@ exports.Controller = class {
       backPage: page === 1 ? null : page - 1
     };
 
-    return res.success(req.i18n.t('getSuccess'), meta, data || [])
+    return res.success(req.i18n.t('getSuccess'), 200, meta, data || [])
   }
 
   static async getByIdPrixod(req, res) {
@@ -173,12 +175,12 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
-    
+
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
-    
+
     const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!prixod_doc) {
       return res.error(req.i18n.t('docNotFound'), 404);
@@ -186,7 +188,7 @@ exports.Controller = class {
 
     await PrixodJur7Service.deleteDoc({ id });
 
-    return res.success(req.i18n.t('createSuccess'), 200)
+    return res.success(req.i18n.t('deleteSuccess'), 200)
   }
 
   static async getPrixodReport(req, res) {
@@ -198,173 +200,10 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);;
     }
 
-    const data = await PrixodDB.prixodReport([region_id, from, to, main_schet_id]);
-    await Promise.all(data.map(async (item) => {
-      item.childs = await PrixodDB.prixodReportChild([item.id]);
-      return item;
-    }));
-
-    const Workbook = new ExcelJS.Workbook();
-    const worksheet = Workbook.addWorksheet('jur_7_prixod');
-    worksheet.mergeCells('A1', 'D1');
-    const titleCell = worksheet.getCell('A1');
-    titleCell.value = `Приходные накладные от ${returnLocalDate(new Date(from))} до ${returnLocalDate(new Date(to))}`;
-    worksheet.getRow(2).values = [
-      '№ док', 'дата', 'Наименование организации', 'Наим_тов',
-      'Един', 'Кол', 'Цена', 'Сумма', '№ дов', 'Дата', 'счет', 'суб.счет'
-    ];
-    worksheet.columns = [
-      { key: 'doc_num', width: 30 },
-      { key: 'doc_date', width: 30 },
-      { key: 'organization', width: 30 },
-      { key: 'product', width: 30 },
-      { key: 'edim', width: 15 },
-      { key: 'count', width: 15 },
-      { key: 'cost', width: 15 },
-      { key: 'amount', width: 15 },
-      { key: 'c_doc_num', width: 15 },
-      { key: 'c_doc_date', width: 15 },
-      { key: 'schet', width: 15 },
-      { key: 'sub_schet', width: 15 }
-    ];
-    for (let item of data) {
-      worksheet.addRow({
-        doc_num: '№',
-        doc_date: item.doc_num,
-        organization: '',
-        product: 'от',
-        edim: returnSleshDate(new Date(item.doc_date)),
-        count: '',
-        cost: '',
-        amount: '',
-        c_doc_num: '',
-        c_doc_date: '',
-        schet: '',
-        sub_schet: ''
-      })
-      for (let i of item.childs) {
-        worksheet.addRow({
-          doc_num: item.doc_num,
-          doc_date: returnSleshDate(new Date(item.doc_date)),
-          organization: item.organization,
-          product: i.product_name,
-          edim: i.edin,
-          count: i.kol,
-          cost: i.sena,
-          amount: i.summa,
-          c_doc_num: item.c_doc_num || '',
-          c_doc_date: item.c_doc_date ? returnSleshDate(new Date(item.c_doc_date)) : '',
-          schet: i.schet,
-          sub_schet: i.sub_schet
-        })
-      }
-      worksheet.addRow({
-        doc_num: '',
-        doc_date: '',
-        organization: '',
-        product: '',
-        edim: '',
-        count: '',
-        cost: '',
-        amount: item.summa,
-        c_doc_num: '',
-        c_doc_date: '',
-        schet: '',
-        sub_schet: ''
-      })
-    }
-
-    let summa = 0;
-    for (let item of data) {
-      summa += item.summa
-    }
-
-    worksheet.addRow({
-      doc_num: 'обший итог',
-      doc_date: '',
-      organization: '',
-      product: '',
-      edim: '',
-      count: '',
-      cost: '',
-      amount: summa,
-      c_doc_num: '',
-      c_doc_date: '',
-      schet: '',
-      sub_schet: ''
-    });
-
-    worksheet.eachRow((row, rowNumber) => {
-      row.eachCell((cell, index) => {
-        let bold = false;
-        let size = 12;
-        let argb = 'FF000000';
-        let horizontal = 'center';
-        let fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: "FFFFFFFF" } }
-        let border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
-        }
-        if (rowNumber < 3) {
-          bold = true;
-          size = 14;
-          argb = "FF0000FF";
-        }
-        if (rowNumber > 2 && (cell.value === '№' || cell.value === 'от')) {
-          argb = 'FF0000FF'
-        }
-        if (rowNumber > 2 && index === 2 && !/\/.*/.test(cell.value)) {
-          horizontal = 'left';
-          bold = true;
-        }
-        if (rowNumber > 2 && index === 5 && /\/.*/.test(cell.value)) {
-          horizontal = 'right';
-          bold = true;
-        }
-        if (rowNumber > 2 && (index === 1 || index === 3 || index === 5 || index === 9)) {
-          horizontal = 'left';
-        }
-        if (rowNumber > 2 && (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)) {
-          horizontal = 'right';
-        }
-        if (rowNumber > 2 && index === 8 && cell.value !== '' && '' === worksheet.getRow(rowNumber).getCell(index - 1).value) {
-          bold = true;
-        }
-        if (fill && border) {
-          Object.assign(cell, {
-            numFmt: "#,##0",
-            font: { size, name: 'Times New Roman', bold, color: { argb } },
-            alignment: { vertical: "middle", horizontal, wrapText: true },
-            fill,
-            border
-          });
-        } else {
-          Object.assign(cell, {
-            numFmt: "#,##0",
-            font: { size, name: 'Times New Roman', bold, color: { argb } },
-            alignment: { vertical: "middle", horizontal, wrapText: true }
-          });
-        }
-      });
-    });
-    worksheet.getRow(1).height = 80;
-    worksheet.getColumn(1).width = 10;
-    worksheet.getColumn(2).width = 15;
-    worksheet.getColumn(3).width = 25;
-    worksheet.getColumn(4).width = 20;
-    worksheet.getColumn(5).width = 15;
-    worksheet.getColumn(6).width = 20;
-    worksheet.getColumn(7).width = 20;
-    worksheet.getColumn(8).width = 27;
-    const fileName = `jur7_prixod_${new Date().getTime()}`;
-    const filePath = path.join(__dirname, `../../../public/exports/${fileName}.xlsx`);
-    await Workbook.xlsx.writeFile(filePath);
+    const { fileName, filePath } = await PrixodJur7Service.prixodReport({ main_schet_id, region_id, from, to });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-
-    return res.download(filePath);
+    return res.sendFile(filePath);
   }
 }

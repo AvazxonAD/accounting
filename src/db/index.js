@@ -113,15 +113,4 @@ class Db {
     }
 }
 
-(async () => {
-    try {
-        const { db, dbPool } = await Db.connectDB();
-        console.log('Connect DB'.blue);
-        return { db, dbPool };
-    } catch (error) {
-        console.error(`Error db connect: error.message`.red);
-        throw new Error(error);
-    }
-})();
-
 module.exports = { Db, db: Db.getInstance(), dbPool: Db.getInstance().getPool() };

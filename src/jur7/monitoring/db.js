@@ -536,7 +536,7 @@ exports.Monitoringjur7DB = class {
             WITH data AS (
                 SELECT 
                     n.id AS naimenovanie_tovarov_jur7_id, 
-                    n.name, 
+                    n.name AS naimenovanie_tovarov, 
                     n.edin,
                     g.id AS group_jur7_id,
                     g.name group_name, 

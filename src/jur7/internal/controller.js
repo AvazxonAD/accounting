@@ -40,7 +40,7 @@ exports.Controller = class {
       }
 
       if (tovar[0].to.kol < child.kol) {
-        return res.error('The responsible person does not have sufficient information regarding this product', 400);
+        return res.error(req.i18n.t('kolError'), 404);
       }
 
       child.sena = tovar[0].sena;
