@@ -4,7 +4,6 @@ const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { db } = require('../../db/index')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
-const { SaldoService } = require('../saldo/service')
 const { Jur7InternalService } = require('./service')
 
 exports.Controller = class {

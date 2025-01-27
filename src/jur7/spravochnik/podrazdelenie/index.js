@@ -1,4 +1,4 @@
-const { PodrazdelenieService } = require("./service");
+const { Controller } = require("./controller");
 const { validator } = require('../../../helper/validator');
 const {
     createPodrazdelenieSchema,
@@ -11,11 +11,11 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(PodrazdelenieService.createPodrazdelenie, createPodrazdelenieSchema));
-router.get('/:id', validator(PodrazdelenieService.getByIdPodrazdelenie, getByIdPodrazdelenieSchema));
-router.put('/:id', validator(PodrazdelenieService.updatePodrazdelenie, updatePodrazdelenieSchema));
-router.delete('/:id', validator(PodrazdelenieService.deletePodrazdelenie, deletePodrazdelenieSchema));
-router.get('/', validator(PodrazdelenieService.getPodrazdelenie, getPodrazdelenieSchema));
+router.post('/', validator(Controller.createPodrazdelenie, createPodrazdelenieSchema));
+router.get('/:id', validator(Controller.getByIdPodrazdelenie, getByIdPodrazdelenieSchema));
+router.put('/:id', validator(Controller.updatePodrazdelenie, updatePodrazdelenieSchema));
+router.delete('/:id', validator(Controller.deletePodrazdelenie, deletePodrazdelenieSchema));
+router.get('/', validator(Controller.getPodrazdelenie, getPodrazdelenieSchema));
 
 
 module.exports = router;

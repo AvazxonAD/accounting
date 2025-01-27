@@ -2,6 +2,11 @@ const { OrganizationDB } = require('./db')
 const { tashkentTime } = require('../../helper/functions')
 
 exports.OrganizationService = class {
+    static async getByInnAndAccountNumber(data) {
+        const result = await OrganizationDB.getByInnAndAccountNumber([data.region_id, data.inn, data.account_number]);
+        return result;
+    }
+
     static async createOrganization(req, res) {
         const user_id = req.user.id;
         const {
@@ -10,9 +15,9 @@ exports.OrganizationService = class {
             raschet_schet_gazna,
             mfo, inn, okonx, parent_id
         } = req.body;
-        if(parent_id){
+        if (parent_id) {
             const organization = await OrganizationDB.getByIdorganization([region_id, parent_id])
-            if(!organization){
+            if (!organization) {
                 return res.status(404).json({
                     message: "organization not found"
                 })
@@ -47,10 +52,10 @@ exports.OrganizationService = class {
             name, bank_klient, raschet_schet,
             raschet_schet_gazna, mfo, inn, okonx, parent_id
         } = req.body;
-        
-        if(parent_id){
+
+        if (parent_id) {
             const organization = await OrganizationDB.getByIdorganization([region_id, parent_id])
-            if(!organization){
+            if (!organization) {
                 return res.status(404).json({
                     message: "organization not found"
                 })

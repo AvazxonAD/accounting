@@ -2,19 +2,36 @@ const { PrixodDB } = require('./db');
 const { db } = require('../../db/index');
 const { IznosDB } = require('../iznos/db')
 const { tashkentTime, returnLocalDate, returnSleshDate } = require('../../helper/functions');
-const { SaldoDB } = require('../saldo/db');
 const { access, constants, mkdir } = require('fs').promises;
 const ExcelJS = require('exceljs');
 const path = require('path');
+const xlsx = require('xlsx');
+const { PodrazdelenieDB } = require('../spravochnik/podrazdelenie/db')
+const { ResponsibleDB } = require('../spravochnik/responsible/db');
 
 exports.PrixodJur7Service = class {
+    static async importData(data) {
+        await db.transaction(async client => {
+            for (let item of data.data) {
+                const podraz = await PodrazdelenieDB.createPodrazdelenie([data.user_id, item.podraz_name, tashkentTime(), tashkentTime()]);
+                const responsible = await ResponsibleDB.createResponsible([podraz.id, item.kimga_name, data.user_id, tashkentTime(), tashkentTime()]);
+                item.kimga_id = responsible.id;
+            }
+
+            for (let doc of data.data) {
+                await this.createPrixod({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
+            }
+        })
+
+    }
+
     static async prixodReport(data) {
         const result = await PrixodDB.prixodReport([data.region_id, data.from, data.to, data.main_schet_id]);
         await Promise.all(result.map(async (item) => {
             item.childs = await PrixodDB.prixodReportChild([item.id]);
             return item;
         }));
-        
+
         const Workbook = new ExcelJS.Workbook();
         const worksheet = Workbook.addWorksheet('jur_7_prixod');
         worksheet.mergeCells('A1', 'D1');
@@ -228,7 +245,7 @@ exports.PrixodJur7Service = class {
     }
 
     static async createPrixod(data) {
-        await db.transaction(async (client) => {
+        const process = async (data, client) => {
             const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             const summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
@@ -253,14 +270,23 @@ exports.PrixodJur7Service = class {
                 ], client);
 
             await this.createPrixodChild({ ...data, docId: doc.id, client, childs });
+        }
+
+        if (data.client) {
+            await process(data, data.client);
+            return;
+        }
+
+        await db.transaction(async (client) => {
+            await process(data, client);
         });
     }
 
     static async createPrixodChild(data) {
         for (const child of data.childs) {
-            const summa = child.kol * child.sena;
-            const nds_summa = child.nds_foiz / 100 * summa;
-            const summa_s_nds = summa + nds_summa;
+            const summa = !child.summa ? child.kol * child.sena : child.summa;
+            const nds_summa = !child.summa ? child.nds_foiz / 100 * summa : child.summa;
+            const summa_s_nds = !child.summa ? summa + nds_summa : child.summa;
             await PrixodDB.createPrixodChild([
                 child.id,
                 child.kol,
@@ -283,7 +309,7 @@ exports.PrixodJur7Service = class {
                 tashkentTime()
             ], data.client);
 
-            const product_sena = await SaldoDB.getSena([child.id], data.client);
+            const product_sena = summa_s_nds / child.kol;
             const iznos_summa = (product_sena * (child.iznos_foiz / 100) / 12) + child.eski_iznos_summa;
             const month = new Date(data.doc_date).getMonth() + 1;
             const year = new Date(data.doc_date).getFullYear();
@@ -381,5 +407,60 @@ exports.PrixodJur7Service = class {
         const result = await PrixodDB.getByIdPrixod([data.region_id, data.id, data.main_schet_id], data.isdeleted);
 
         return result;
+    }
+
+    static async readFile(data) {
+        const workbook = xlsx.readFile(data.filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        const result = xlsx.utils.sheet_to_json(sheet).map(row => {
+            const newRow = {};
+
+            for (const key in row) {
+                if (Object.prototype.hasOwnProperty.call(row, key)) {
+                    newRow[key] = row[key];
+                }
+            }
+
+            return newRow;
+        });
+
+        return result;
+    }
+
+    static groupData(data) {
+        const grouped = {};
+
+        data.forEach(item => {
+            if (!grouped[item.doc_num]) {
+                grouped[item.doc_num] = {
+                    doc_num: item.doc_num,
+                    doc_date: item.doc_date,
+                    kimga_name: item.kimga_name,
+                    inn: item.inn,
+                    account_number: item.account_number,
+                    childs: []
+                };
+            }
+
+            grouped[item.doc_num].childs.push({
+                name: item.name,
+                edin: item.edin,
+                kol: item.kol,
+                sena: item.summa / item.kol,
+                summa: item.summa,
+                debet_schet: item.debet_schet,
+                kredit_schet: item.kredit_schet,
+                debet_sub_schet: item.debet_sub_schet,
+                kredit_sub_schet: item.kredit_sub_schet,
+                iznos: item.iznos,
+                eski_iznos_summa: item.eski_iznos_summa,
+                podraz_name: item.podraz_name,
+                group_name: item.group_name
+            });
+        });
+
+        return Object.values(grouped);
     }
 }
