@@ -82,4 +82,9 @@ exports.Jur7RsxodService = class {
         const result = await RasxodDB.getByIdRasxod([data.region_id, data.id, data.main_schet_id], data.isdeleted)
         return result;
     }
+
+    static async getRasxod(data) {
+        const result = await RasxodDB.getRasxod([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
+        return result;
+    }
 }

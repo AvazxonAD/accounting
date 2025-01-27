@@ -13,5 +13,7 @@
     "createSuccess": "Muvaffaqiyatli kiritildi",
     "getSuccess": "Muvaffaqiyatli malumot olindi",
     "docNotFound": "Hujjat topilmadi !",
-    "updateSuccess": "Muvaffaqiyatli yangilanish"
+    "updateSuccess": "Muvaffaqiyatli yangilanish",
+    "deleteSuccess": "Muvaffaqiyatli yangilanish",
+    "productNotFound": "Tovar topilmadi !"
 }
