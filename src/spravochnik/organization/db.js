@@ -2,6 +2,31 @@ const { db } = require('../../db/index');
 const { returnParamsValues, designParams } = require('../../helper/functions');
 
 exports.OrganizationDB = class {
+    static async getByInnAndAccountNumber(params) {
+        const query =  `
+            SELECT 
+                s_o.id, 
+                s_o.name, 
+                s_o.bank_klient, 
+                s_o.raschet_schet, 
+                s_o.raschet_schet_gazna, 
+                s_o.mfo, 
+                s_o.inn, 
+                s_o.okonx,
+                s_o.parent_id
+            FROM spravochnik_organization AS s_o 
+            JOIN users ON s_o.user_id = users.id
+            JOIN regions ON users.region_id = regions.id
+            WHERE regions.id = $1 
+                AND s_o.inn = $2 
+                AND s_o.raschet_schet = $3
+                AND s_o.isdeleted = false
+            LIMIT 1
+        `;
+        const result = await db.query(query, params);
+        return result[0]
+    }
+
     static async getByIdorganization(params, isdeleted) {
         const ignore = `AND s_o.isdeleted = false`
         let query = `--sql
@@ -43,14 +68,14 @@ exports.OrganizationDB = class {
         return result[0];
     }
 
-    static async getOrganizationDataAndTotal(params, search, organ_id ) {
+    static async getOrganizationDataAndTotal(params, search, organ_id) {
         let organ_filter = ``;
         let search_filter = ``
         if (search) {
             search_filter = `AND ( s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR s_o.name ILIKE '%' || $${params.length + 1} || '%' )`;
             params.push(search);
         }
-        if(organ_id){
+        if (organ_id) {
             params.push(organ_id);
             organ_filter = `AND s_o.id = $${params.length}`;
         }

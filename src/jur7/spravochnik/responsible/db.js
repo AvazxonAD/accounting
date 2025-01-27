@@ -11,10 +11,10 @@ exports.ResponsibleDB = class {
                 updated_at
             ) 
             VALUES ($1, $2, $3, $4, $5) 
-            RETURNING *
+            RETURNING id
         `;
         const result = await db.query(query, params)
-        return result;
+        return result[0];
     }
     static async getResponsible(params, search = null, podraz_id = null) {
         let search_filter = ``;

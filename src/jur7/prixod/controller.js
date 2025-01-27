@@ -1,17 +1,68 @@
 const { PrixodDB } = require('./db');
-const { returnLocalDate, returnSleshDate } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/db')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
-const ExcelJS = require('exceljs');
-const path = require('path');
 const { BudjetService } = require('../../spravochnik/budjet/services');
 const { PrixodJur7Service } = require('./service');
-const { GroupService } = require('../spravochnik/group/service')
-
+const { GroupService } = require('../spravochnik/group/service');
+const { PrixodSchema } = require('./schema');
+const { OrganizationService } = require('../../spravochnik/organization/services');
 
 exports.Controller = class {
+  static async importData(req, res) {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const filePath = req.file.path;
+    const { budjet_id, main_schet_id } = req.query;
+
+    if (!filePath) {
+      return res.error(req.i18n.t('fileError'), 400);
+    }
+
+    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t('budjetNotFound'), 404);
+    }
+
+    const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
+    if (!main_schet) {
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
+    }
+
+    const data = await PrixodJur7Service.readFile({ filePath });
+
+    const { error, value } = PrixodSchema.importSchema().validate(data);
+    if (error) {
+      return res.error(req.i18n.t('validationError'), 400, { message: error.details[0].message });
+    }
+
+    const result_data = PrixodJur7Service.groupData(value);
+
+    for (let doc of result_data) {
+
+      const organization = await OrganizationService.getByInnAndAccountNumber({ region_id, inn: doc.inn, account_number: doc.account_number });
+      if (!organization) {
+        return res.error(req.i18n.t('organizationNotFound'), 404);
+      };
+      doc.kimdan_id = organization.id;
+
+      for (let child of doc.childs) {
+        const group = await GroupService.getByNameGroup({ name: child.group_name });
+        if (!group) {
+          return res.error(req.i18n.t('groupNotFound'), 404);
+        }
+
+        child.group_jur7_id = group.id;
+        child.iznos = child.iznos === 'ha' ? true : false;
+      }
+    }
+
+    await PrixodJur7Service.importData({ data: result_data, user_id, budjet_id, main_schet_id });
+
+    return res.success(req.i18n.t('createSuccess'), 201);
+  }
+
   static async createPrixod(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;

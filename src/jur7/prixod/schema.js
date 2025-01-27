@@ -117,3 +117,39 @@ exports.getPrixodReportSchema = Joi.object({
     main_schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
+
+
+exports.PrixodSchema = class {
+  static importSchema() {
+    return Joi.array().items(
+      Joi.object({
+        group_name: Joi.string().trim(),
+        doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
+        doc_num: Joi.number().required(),
+        kimga_name: Joi.string().trim().required(),
+        podraz_name: Joi.string().trim().required(),
+        name: Joi.string().trim().required(),
+        kol: Joi.number().min(1).required(),
+        summa: Joi.number().min(1).required(),
+        debet_schet: Joi.string().trim(),
+        debet_sub_schet: Joi.string().trim(),
+        kredit_schet: Joi.string().trim(),
+        kredit_sub_schet: Joi.string().trim(),
+        iznos: Joi.string().valid('ha', 'yoq'),
+        inn: Joi.number().min(1).required(),
+        account_number: Joi.string().trim().required(),
+        edin: Joi.string().trim().required(),
+        eski_iznos_summa: Joi.number().min(1)
+      })
+    );
+  }
+
+  static importSchema2() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+        budjet_id: Joi.number().integer().min(1).required()
+      })
+    })
+  }
+};
