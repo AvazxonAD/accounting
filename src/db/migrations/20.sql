@@ -1,4 +1,6 @@
-CREATE TABLE document_rasxod_jur7 (
+
+
+CREATE TABLE IF NOT EXISTS document_vnutr_peremesh_jur7 (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
   doc_num VARCHAR(255),
@@ -9,19 +11,18 @@ CREATE TABLE document_rasxod_jur7 (
   summa DECIMAL,
   kimdan_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
   kimdan_name VARCHAR(255),
-  kimga_id INT NOT NULL REFERENCES spravochnik_organization(id),
+  kimga_id INT NOT NULL REFERENCES spravochnik_javobgar_shaxs_jur7(id),
   kimga_name VARCHAR(255),
-  id_shartnomalar_organization INT REFERENCES shartnomalar_organization(id),
   main_schet_id INT REFERENCES main_schet(id),
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   isdeleted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE document_rasxod_jur7_child (
+CREATE TABLE IF NOT EXISTS document_vnutr_peremesh_jur7_child (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id),
-  document_rasxod_jur7_id INT NOT NULL REFERENCES document_rasxod_jur7(id),
+  document_vnutr_peremesh_jur7_id INT NOT NULL REFERENCES document_vnutr_peremesh_jur7(id),
   naimenovanie_tovarov_jur7_id INT NOT NULL REFERENCES naimenovanie_tovarov_jur7(id),
   kol DECIMAL,
   sena DECIMAL,

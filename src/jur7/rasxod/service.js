@@ -3,10 +3,16 @@ const { RasxodDB } = require('./db');
 const { tashkentTime, returnParamsValues } = require('../../helper/functions');
 
 exports.Jur7RsxodService = class {
+    static async deleteRasxod(data) {
+        await db.transaction(async (client) => {
+            await RasxodDB.deleteRasxod([data.id], client)
+        })
+    }
+
     static async createRasxod(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
-        await db.transaction(async client => {
+        const result = await db.transaction(async client => {
             const doc = await RasxodDB.createRasxod([
                 data.user_id,
                 data.doc_num,
@@ -26,7 +32,11 @@ exports.Jur7RsxodService = class {
             ], client);
 
             await this.createRasxodChild({ ...data, docId: doc.id, client });
+
+            return doc;
         });
+
+        return result;
     }
 
     static async createRasxodChild(data) {
@@ -58,7 +68,7 @@ exports.Jur7RsxodService = class {
     static async updateRasxod(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
-        await db.transaction(async client => {
+        const result = await db.transaction(async client => {
             await RasxodDB.updateRasxod([
                 data.doc_num,
                 data.doc_date,
@@ -75,7 +85,11 @@ exports.Jur7RsxodService = class {
             await RasxodDB.deleteRasxodChild([data.id], client)
 
             await this.createRasxodChild({ ...data, docId: data.id, client })
-        })
+
+            return { id: data.id };
+        });
+
+        return result;
     }
 
     static async getByIdRasxod(data) {

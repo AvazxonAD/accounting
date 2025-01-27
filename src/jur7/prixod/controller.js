@@ -109,9 +109,9 @@ exports.Controller = class {
       child.iznos_foiz = group.iznos_foiz;
     }
 
-    await PrixodJur7Service.createPrixod({ ...req.body, user_id, main_schet_id, budjet_id, childs });
+    const result = await PrixodJur7Service.createPrixod({ ...req.body, user_id, main_schet_id, budjet_id, childs });
 
-    return res.success(req.i18n.t('createSuccess'), 200);
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   }
 
   static async getPrixod(req, res) {
@@ -217,9 +217,9 @@ exports.Controller = class {
       child.iznos_foiz = group.iznos_foiz;
     }
 
-    await PrixodJur7Service.updatePrixod({ ...req.body, budjet_id, main_schet_id, user_id, id, childs });
+    const result = await PrixodJur7Service.updatePrixod({ ...req.body, budjet_id, main_schet_id, user_id, id, childs });
 
-    return res.success(req.i18n.t('updateSuccess'), 200);
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   }
 
   static async deletePrixod(req, res) {
