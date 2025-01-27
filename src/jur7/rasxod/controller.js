@@ -1,7 +1,6 @@
 const { RasxodDB } = require('./db');
 const { checkTovarId } = require('../../helper/functions');
 const { ResponsibleService } = require('../spravochnik/responsible/service')
-const { db } = require('../../db/index')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
 const { MainSchetService } = require('../../spravochnik/main.schet/services')
@@ -52,9 +51,9 @@ exports.Controller = class {
       return res.error(req.i18n.t('productIdError'), 400);
     }
 
-    await Jur7RsxodService.createRasxod({ ...req.body, main_schet_id, user_id });
+    const result = await Jur7RsxodService.createRasxod({ ...req.body, main_schet_id, user_id });
 
-    return res.success(req.i18n.t('createSuccess'), 200);
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   }
 
   static async getByIdRasxod(req, res) {
@@ -87,7 +86,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await Jur7RsxodService.getByIdRasxod9({ region_id, id, main_schet_id, isdeleted: true });
+    const oldData = await Jur7RsxodService.getByIdRasxod({ region_id, id, main_schet_id, isdeleted: true });
     if (!oldData) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
@@ -123,9 +122,9 @@ exports.Controller = class {
       return res.error(req.i18n.t('productIdError'), 400);
     }
 
-    await Jur7RsxodService.updateRasxod({ ...req.body, user_id, main_schet_id, id });
+    const result = await Jur7RsxodService.updateRasxod({ ...req.body, user_id, main_schet_id, id });
 
-    return res.success(req.i18n.t('updateSuccess'), 200)
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   }
 
   static async deleteRasxod(req, res) {
@@ -143,13 +142,9 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    await db.transaction(async (client) => {
-      await RasxodDB.deleteRasxod([id], client)
-    })
+    await Jur7RsxodService.deleteRasxod({ id });
 
-    return res.status(200).json({
-      message: 'delete rasxod doc successfully'
-    })
+    return res.error(req.i18n.t('deleteSuccess'), 200, null, { id })
   }
 
   static async getRasxod(req, res) {

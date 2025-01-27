@@ -270,16 +270,22 @@ exports.PrixodJur7Service = class {
                 ], client);
 
             await this.createPrixodChild({ ...data, docId: doc.id, client, childs });
+
+            return doc;
         }
+        let result;
 
         if (data.client) {
-            await process(data, data.client);
-            return;
+            result = await process(data, data.client);
+            return result;
         }
 
-        await db.transaction(async (client) => {
-            await process(data, client);
+        result = await db.transaction(async (client) => {
+            const docId = await process(data, client);
+            return docId;
         });
+
+        return result;
     }
 
     static async createPrixodChild(data) {
@@ -334,28 +340,13 @@ exports.PrixodJur7Service = class {
                     tashkentTime()
                 ], data.client)
             }
-
-            // await SaldoDB.createSaldo([
-            //     data.user_id,
-            //     child.id,
-            //     0,
-            //     product_sena,
-            //     0,
-            //     month,
-            //     year,
-            //     `${year}-${month}-01`,
-            //     data.kimga_id,
-            //     iznos_summa,
-            //     tashkentTime(),
-            //     tashkentTime()
-            // ], data.client)
         }
     }
 
     static async updatePrixod(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
-        await db.transaction(async (client) => {
+        const result = await db.transaction(async (client) => {
             await PrixodDB.updatePrixod([
                 data.doc_num,
                 data.doc_date,
@@ -379,7 +370,11 @@ exports.PrixodJur7Service = class {
             const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             await this.createPrixodChild({ ...data, docId: data.id, childs, client });
+
+            return { id: data.id }
         });
+
+        return result;
     }
 
     static async checkPrixodDoc(data) {

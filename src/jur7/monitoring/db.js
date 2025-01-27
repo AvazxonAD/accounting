@@ -517,9 +517,11 @@ exports.Monitoringjur7DB = class {
     static async getPrixodInfo(params) {
         const query = `
             SELECT 
-                d.data_pereotsenka
-            FROM document_prixod_jur7_child d
-            WHERE d.naimenovanie_tovarov_jur7_id = $1 
+                dch.data_pereotsenka,
+                d.doc_num
+            FROM document_prixod_jur7_child dch
+            JOIN document_prixod_jur7 d ON d.id = dch.document_prixod_jur7_id 
+            WHERE dch.naimenovanie_tovarov_jur7_id = $1 
         `;
         const result = await db.query(query, params);
         return result[0];
