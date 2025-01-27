@@ -18,11 +18,11 @@ exports.Controller = class {
     } = req.body;
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
     if (!budjet) {
-      return res.error('Budjet not found', 404);
+      return res.error(req.i18n.t('budjetNotFound'), 404);
     }
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
     const doc = await OxDocService.getByIdDoc({ region_id, budjet_id, year, month });
     if (doc) {
@@ -60,7 +60,7 @@ exports.Controller = class {
       })
     }
     const docs = await OxDocService.getDocs({ region_id, budjet_id, year, month })
-    return res.success('Get successfully', 200, null, docs);
+    return res.success(req.i18n.t('getSuccess'), 200, null, docs);
   }
 
   static async getByIdDoc(req, res) {
@@ -83,7 +83,7 @@ exports.Controller = class {
       type_document
     })
     if (!doc) {
-      return res.error('doc not found', 404)
+      return res.error(req.i18n.t('docNotFound'), 404)
     }
     return res.success('doc successfully get', 200, null, doc);
   }
@@ -101,7 +101,7 @@ exports.Controller = class {
     }
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
     const old_doc = await OxDocService.getByIdDoc({
       region_id,
@@ -110,7 +110,7 @@ exports.Controller = class {
       budjet_id
     })
     if (!old_doc) {
-      return res.error('doc not found', 404)
+      return res.error(req.i18n.t('docNotFound'), 404)
     }
     if (old_doc.year !== body.year || old_doc.month !== body.month) {
       const doc = await OxDocService.getByIdDoc({
@@ -141,7 +141,7 @@ exports.Controller = class {
       query,
       body
     })
-    return res.success('UPDATE successfully', 200, null, result)
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result)
   }
 
   static async deleteDoc(req, res) {
@@ -162,7 +162,7 @@ exports.Controller = class {
       month
     })
     if (!doc) {
-      return res.error('doc not found', 404)
+      return res.error(req.i18n.t('docNotFound'), 404)
     }
     await OxDocService.deleteDoc({
       region_id,
@@ -187,6 +187,6 @@ exports.Controller = class {
       budjet_id,
       schet_id
     })
-    return res.success('Get successfully', 200, null, data);
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
 }

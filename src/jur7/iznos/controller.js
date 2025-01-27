@@ -18,7 +18,7 @@ exports.Controller = class {
         if (responsible_id) {
             const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: responsible_id });
             if (!responsible) {
-                return res.error('Responsible not found', 404);
+                return res.error(req.i18n.t('responsibleNotFound'), 404);
             }
         }
         const { data, count } = await IznosDB.getIznos([region_id, offset, limit], responsible_id, product_id, year, month, search);
@@ -46,7 +46,7 @@ exports.Controller = class {
 
         const result = await IznosService.updateIznos({ iznos_start_date, eski_iznos_summa, id });
 
-        return res.success('Update successfully', 200, null, result);
+        return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }
 
     static async getByIdIznos(req, res) {
@@ -57,6 +57,6 @@ exports.Controller = class {
             return res.error('Iznos not found', 404);
         }
 
-        return res.success('Update successfully', 200, null, iznos);
+        return res.success(req.i18n.t('updateSuccess'), 200, null, iznos);
     }
 }

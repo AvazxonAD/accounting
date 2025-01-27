@@ -18,10 +18,9 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const { responsible_id, page, limit, product_id } = req.query;
 
-        console.log({id: responsible_id, region_id})
         const responsible = await ResponsibleService.getByIdResponsible({ id: responsible_id, region_id });
         if (!responsible) {
-            return res.error('Responsible not found', 404);
+            return res.error(req.i18n.t('responsibleNotFound'), 404);
         }
 
         if (product_id) {
@@ -44,7 +43,7 @@ exports.Controller = class {
             backPage: page === 1 ? null : page - 1
         }
 
-        return res.success('Get successfully', 200, meta, products)
+        return res.success(req.i18n.t('getSuccess'), 200, meta, products)
     }
 
     static async obrotkaReport(req, res) {
@@ -371,7 +370,7 @@ exports.Controller = class {
 
         const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
         if (!budjet) {
-            return res.error('Budjet not found', 404);
+            return res.error(req.i18n.t('budjetNotFound'), 404);
         }
 
         const data = await Jur7MonitoringService.cap({ region_id, budjet_id, from, to });
@@ -382,7 +381,7 @@ exports.Controller = class {
             res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
             return res.download(filePath);
         }
-        return res.success('Get successfully', 200, null, data);
+        return res.success(req.i18n.t('getSuccess'), 200, null, data);
     }
 
     static async backCap(req, res) {
@@ -391,7 +390,7 @@ exports.Controller = class {
 
         const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
         if (!budjet) {
-            return res.error('Budjet not found', 404);
+            return res.error(req.i18n.t('budjetNotFound'), 404);
         }
 
         const data = await Jur7MonitoringService.backCap({ region_id, budjet_id, from, to });
@@ -402,6 +401,6 @@ exports.Controller = class {
             res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
             return res.download(filePath);
         }
-        return res.success('Get successfully', 200, null, data);
+        return res.success(req.i18n.t('getSuccess'), 200, null, data);
     }
 }
