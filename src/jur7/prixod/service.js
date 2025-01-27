@@ -3,10 +3,6 @@ const { db } = require('../../db/index');
 const { IznosDB } = require('../iznos/db')
 const { tashkentTime } = require('../../helper/functions');
 const { SaldoDB } = require('../saldo/db');
-const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db');
-const { GroupDB } = require('../spravochnik/group/db');
-
-
 
 exports.PrixodJur7Service = class {
 
@@ -15,7 +11,7 @@ exports.PrixodJur7Service = class {
         for (let doc of data.childs) {
             if (doc.iznos) {
                 for (let i = 1; i <= doc.kol; i++) {
-                    const product = await NaimenovanieDB.createNaimenovanie([
+                    const product = await PrixodDB.createNaimenovanie([
                         data.user_id,
                         data.budjet_id,
                         doc.name,
@@ -30,7 +26,7 @@ exports.PrixodJur7Service = class {
                     result.push({ ...product, ...doc, kol: 1 });
                 }
             } else {
-                const product = await NaimenovanieDB.createNaimenovanie([
+                const product = await PrixodDB.createNaimenovanie([
                     data.user_id,
                     data.budjet_id,
                     doc.name,
@@ -187,8 +183,22 @@ exports.PrixodJur7Service = class {
             const productIds = await PrixodDB.getProductsByDocId([data.id], client);
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
-            
+
             await PrixodDB.deletePrixod([data.id], client)
         })
     }
+
+    static async getPrixod(data) {
+        const result = await PrixodDB.getPrixod([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
+
+        return result;
+    }
+
+    static async getByIdPrixod(data) {
+        const result = await PrixodDB.getByIdPrixod([data.region_id, data.id, data.main_schet_id], data.isdeleted);
+
+        return result;
+    }
+
+    static async 
 }

@@ -3,7 +3,6 @@ const { returnLocalDate, returnSleshDate } = require('../../helper/functions');
 const { OrganizationDB } = require('../../spravochnik/organization/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db')
 const { ContractDB } = require('../../shartnoma/db')
-const { db } = require('../../db/index')
 const { MainSchetDB } = require('../../spravochnik/main.schet/db')
 const ExcelJS = require('exceljs');
 const path = require('path');
@@ -21,46 +20,47 @@ exports.Controller = class {
 
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error('Budjet not found', 404);
+      return res.error(req.i18n.t('budjetNotFound'), 404);
     }
 
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
     if (!organization) {
-      return res.error('Orgnaization not found', 404);
+      return res.error(req.i18n.t('organizationNotFound'), 404);
     }
 
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id]);
     if (!responsible) {
-      return res.error('Responsible not found', 404);
+      return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
     if (id_shartnomalar_organization) {
       const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id);
       if (!contract) {
-        return res.error('Contract not found', 404);
+        return res.error(req.i18n.t('contractNotFound'), 404);
       }
     }
 
     for (let child of childs) {
       const group = await GroupService.getByIdGroup({ id: child.group_jur7_id });
       if (!group) {
-        return res.error('Group not found', 404);
+        return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
       if (!child.iznos && child.eski_iznos_summa > 0) {
-        return res.error('The amount for non-refundable goods cannot be less than or equal to 0', 400);
+        return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
       }
+
       child.iznos_foiz = group.iznos_foiz;
     }
 
     await PrixodJur7Service.createPrixod({ ...req.body, user_id, main_schet_id, budjet_id, childs });
 
-    return res.success('Create successfully', 200);
+    return res.success(req.i18n.t('createSuccess'), 200);
   }
 
   static async getPrixod(req, res) {
@@ -68,23 +68,23 @@ exports.Controller = class {
     const { page, limit, search, from, to, main_schet_id, orderType, orderBy } = req.query;
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
+
     const offset = (page - 1) * limit;
-    const { data, total } = await PrixodDB.getPrixod([region_id, from, to, main_schet_id, offset, limit], search)
     const pageCount = Math.ceil(total / limit);
+
+    const { data, total } = await PrixodJur7Service.getPrixod({ search, region_id, from, to, main_schet_id, offset, limit })
+
     const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1
-    }
-    return res.status(200).json({
-      message: "prixod successfully get",
-      meta,
-      data: data || []
-    })
+    };
+
+    return res.success(req.i18n.t('getSuccess'), meta, data || [])
   }
 
   static async getByIdPrixod(req, res) {
@@ -94,15 +94,15 @@ exports.Controller = class {
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
 
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const data = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id], true)
+    const data = await PrixodJur7Service.getByIdPrixod({ region_id, id, main_schet_id, isdeleted: true });
     if (!data) {
-      return res.error('Doc not found', 404);
+      return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    return res.success('Get successfully', 200, null, data);
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
 
   static async updatePrixod(req, res) {
@@ -114,17 +114,17 @@ exports.Controller = class {
 
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error('Budjet not found', 404);
+      return res.error(req.i18n.t('budjetNotFound'), 404);
     }
 
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
     const oldData = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!oldData) {
-      return res.error('Prixod doc not found', 404);
+      return res.error(req.i18n.t('docNotFound'), 404);
     }
 
     // for (let child of oldData.childs) {
@@ -136,68 +136,74 @@ exports.Controller = class {
 
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
     if (!organization) {
-      return res.error('Orgnaization not found', 404);
+      return res.error(req.i18n.t('organizationNotFound'), 404);
     }
 
     const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimga_id]);
     if (!responsible) {
-      return res.error('Responsible not found', 404);
+      return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
     if (id_shartnomalar_organization) {
       const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id);
       if (!contract) {
-        return res.error('Contract not found', 404);
+        return res.error(req.i18n.t('contractNotFound'), 404);
       }
     }
 
     for (let child of childs) {
       const group = await GroupService.getByIdGroup({ id: child.group_jur7_id });
       if (!group) {
-        return res.error('Group not found', 404);
+        return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
       if (!child.iznos && child.eski_iznos_summa > 0) {
-        return res.error('The amount for non-refundable goods cannot be less than or equal to 0', 400);
+        return res.error(req.i18n.t('iznosSummmaError'), 400);
       }
+
       child.iznos_foiz = group.iznos_foiz;
     }
 
     await PrixodJur7Service.updatePrixod({ ...req.body, budjet_id, main_schet_id, user_id, id, childs });
 
-    return res.success('Update successfully', 200);
+    return res.success(req.i18n.t('updateSuccess'), 200);
   }
 
   static async deletePrixod(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
+    
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id])
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
+    
     const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!prixod_doc) {
-      return res.error('Prixod doc not found', 404);
+      return res.error(req.i18n.t('docNotFound'), 404);
     }
 
     await PrixodJur7Service.deleteDoc({ id });
 
-    return res.success('Create doc successfully', 200)
+    return res.success(req.i18n.t('createSuccess'), 200)
   }
 
   static async getPrixodReport(req, res) {
     const region_id = req.user.region_id;
     const { from, to, main_schet_id } = req.query;
+
     const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);;
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);;
     }
+
     const data = await PrixodDB.prixodReport([region_id, from, to, main_schet_id]);
     await Promise.all(data.map(async (item) => {
       item.childs = await PrixodDB.prixodReportChild([item.id]);
       return item;
     }));
+
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet('jur_7_prixod');
     worksheet.mergeCells('A1', 'D1');
@@ -267,10 +273,12 @@ exports.Controller = class {
         sub_schet: ''
       })
     }
+
     let summa = 0;
     for (let item of data) {
       summa += item.summa
     }
+
     worksheet.addRow({
       doc_num: 'обший итог',
       doc_date: '',
@@ -284,7 +292,8 @@ exports.Controller = class {
       c_doc_date: '',
       schet: '',
       sub_schet: ''
-    })
+    });
+
     worksheet.eachRow((row, rowNumber) => {
       row.eachCell((cell, index) => {
         let bold = false;
@@ -352,8 +361,10 @@ exports.Controller = class {
     const fileName = `jur7_prixod_${new Date().getTime()}`;
     const filePath = path.join(__dirname, `../../../public/exports/${fileName}.xlsx`);
     await Workbook.xlsx.writeFile(filePath);
+
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
     return res.download(filePath);
   }
 }

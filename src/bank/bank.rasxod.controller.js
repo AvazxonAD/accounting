@@ -195,7 +195,7 @@ const paymentBankRasxod = async (req, res) => {
     const { main_schet_id } = value.query;
     const main_schet = await MainSchetService.getByIdMainScet({ id: main_schet_id, region_id })
     if(!main_schet){
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
     
   } catch (error) {

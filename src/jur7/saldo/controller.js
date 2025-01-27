@@ -12,7 +12,7 @@ exports.Controller = class {
 
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
-      return res.error('Budjet not found', 404);
+      return res.error(req.i18n.t('budjetNotFound'), 404);
     }
 
     const { data: responsibles } = await ResponsibleService.getResponsible({ region_id });
@@ -31,12 +31,12 @@ exports.Controller = class {
 
     const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimning_buynida });
     if (!responsible) {
-      return res.error('Responsible not found', 404);
+      return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
     const data = await SaldoService.getSaldo({ region_id, kimning_buynida, year, month });
 
-    return res.success('Get successfully', 200, null, data);
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
 
   static async getSaldoForRasxod(req, res) {
@@ -52,11 +52,11 @@ exports.Controller = class {
 
     const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimning_buynida });
     if (!responsible) {
-      return res.error('Responsible not found', 404);
+      return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
     const data = await SaldoService.getSaldoForRasxod({ region_id, kimning_buynida, to, product_id });
 
-    return res.success('Get successfully', 200, null, data);
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
 }

@@ -37,7 +37,7 @@ exports.Controller = class {
             summa_from,
             summa_to
         }
-        return res.success('get successfully', 200, meta, data);
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async prixodRasxod(req, res) {
@@ -45,7 +45,7 @@ exports.Controller = class {
         const { query } = req;
         const budjet = await BudjetService.getByIdBudjet({ id: query.budjet_id });
         if (!budjet) {
-            return res.error('Budjet not found', 404);
+            return res.error(req.i18n.t('budjetNotFound'), 404);
         }
         const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
         if (!main_schet) {
@@ -67,7 +67,7 @@ exports.Controller = class {
                 }
             });
         }
-        return res.success('get successfully', 200, { itogo_rasxod: data.itogo_rasxod, itogo_prixod: data.itogo_prixod }, data.organizations);
+        return res.success(req.i18n.t('getSuccess'), 200, { itogo_rasxod: data.itogo_rasxod, itogo_prixod: data.itogo_prixod }, data.organizations);
     }
 
 
@@ -96,7 +96,7 @@ exports.Controller = class {
                 }
             });
         };
-        return res.success('get successfully', 200, { itogo_rasxod }, data);
+        return res.success(req.i18n.t('getSuccess'), 200, { itogo_rasxod }, data);
     }
 
     static async consolidated(req, res) {
@@ -149,7 +149,7 @@ exports.Controller = class {
             res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
             return res.download(file.filePath);
         }
-        return res.success('get successfully', 200, { rasxodSchets: data.rasxodSchets }, data.organizations);
+        return res.success(req.i18n.t('getSuccess'), 200, { rasxodSchets: data.rasxodSchets }, data.organizations);
     }
 
 

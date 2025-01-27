@@ -17,7 +17,7 @@ exports.Controller = class {
     const { doc_date, kimdan_id, childs } = req.body;
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
     const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimdan_id });
@@ -54,7 +54,7 @@ exports.Controller = class {
 
     await Jur7RsxodService.createRasxod({ ...req.body, main_schet_id, user_id });
 
-    return res.success('Create doc successfully', 200);
+    return res.success(req.i18n.t('createSuccess'), 200);
   }
 
   static async getByIdRasxod(req, res) {
@@ -64,12 +64,12 @@ exports.Controller = class {
 
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
     const data = await Jur7RsxodService.getByIdRasxod9({ region_id, id, main_schet_id, isdeleted: true });
     if (!data) {
-      return res.error('Doc not found', 404);
+      return res.error(req.i18n.t('docNotFound'), 404);
     };
 
     return res.success('Doc successfully get', 200, null, data);
@@ -84,12 +84,12 @@ exports.Controller = class {
 
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
     const oldData = await Jur7RsxodService.getByIdRasxod9({ region_id, id, main_schet_id, isdeleted: true });
     if (!oldData) {
-      return res.error('Doc not found', 404);
+      return res.error(req.i18n.t('docNotFound'), 404);
     };
 
     const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: kimdan_id });
@@ -134,11 +134,11 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
     const rasxod_doc = await RasxodDB.getByIdRasxod([region_id, id, main_schet_id])
     if (!rasxod_doc) {
-      return res.error('Doc not found', 404);
+      return res.error(req.i18n.t('docNotFound'), 404);
     }
     await db.transaction(async (client) => {
       await RasxodDB.deleteRasxod([id], client)
@@ -153,7 +153,7 @@ exports.Controller = class {
     const { page, limit, search, from, to, main_schet_id } = req.query;
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
-      return res.error(`${req.i18n.t('notFound', { replace: { data: 'Main schet' } })}`, 404);
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
     const offset = (page - 1) * limit;
     const { data, total } = await RasxodDB.getRasxod([region_id, from, to, main_schet_id, offset, limit], search)

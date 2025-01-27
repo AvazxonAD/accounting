@@ -1,6 +1,17 @@
 {
-    "notFound": "{{data}} topilmadi",
+    "notFound": "{{data}} topilmadi !",
     "success": "{{data}} muvaffaqiyatli",
-    "kolError": "Tovar soni notog'ri kiritildi",
-    "productIdError": "Tovar id lari notog'ri"
+    "kolError": "Tovar soni notog'ri kiritildi !",
+    "productIdError": "Tovar id lari notog'ri !",
+    "IznosSummaError": "Iznos summasi notogri kiritildi !",
+    "budjetNotFound": "Budjet topilmadi !",
+    "mainSchetNotFound": "Xisob raqami topilmadi !",
+    "organizationNotFound": "Hamkor tashkilot topilmadi !",
+    "responsibleNotFound": "Javobgar shaxs topilmadi !",
+    "contractNotFound": "Shartnoma topilmadi !",
+    "groupNotFound": "Guruh topilmadi !",
+    "createSuccess": "Muvaffaqiyatli kiritildi",
+    "getSuccess": "Muvaffaqiyatli malumot olindi",
+    "docNotFound": "Hujjat topilmadi !",
+    "updateSuccess": "Muvaffaqiyatli yangilanish"
 }

@@ -73,7 +73,7 @@ exports.Controller = class {
         if (budjet_id) {
             const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
             if (!budjet) {
-                return res.error('Budjet not found', 404);
+                return res.error(req.i18n.t('budjetNotFound'), 404);
             }
         }
         const offset = (page - 1) * limit;

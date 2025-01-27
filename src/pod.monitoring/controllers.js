@@ -50,7 +50,7 @@ exports.Controller = class {
             summa_prixod,
             summa_rasxod
         }
-        return res.success('Get successfully', 200, meta, data);
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async prixodRasxodPodotchet(req, res) {
@@ -58,7 +58,7 @@ exports.Controller = class {
         const { to, budjet_id, excel } = req.query;
         const bujet = await BudjetDB.getByIdBudjet([budjet_id]);
         if (!bujet) {
-            return res.error('Budjet not found', 404);
+            return res.error(req.i18n.t('budjetNotFound'), 404);
         }
         const data = await PodotchetDB.getPodotchet([region_id]);
         for (let podotchet of data) {
@@ -151,7 +151,7 @@ exports.Controller = class {
             return res.download(filePath);
         }
 
-        return res.success('Get successfully', 200, null, data)
+        return res.success(req.i18n.t('getSuccess'), 200, null, data)
     }
 
     static async getByIdPodotchetToExcel(req, res) {
@@ -409,7 +409,7 @@ exports.Controller = class {
                 }
             });
         };
-        return res.success('get successfully', 200, { itogo_rasxod }, data);
+        return res.success(req.i18n.t('getSuccess'), 200, { itogo_rasxod }, data);
     }
 
 }

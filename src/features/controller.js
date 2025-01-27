@@ -14,6 +14,6 @@ exports.Controller = class {
 
         const doc_num = await FeaturesService.getDocNum({tableName, region_id, main_schet_id});
 
-        return res.success('Get successfully', 200, null, doc_num);
+        return res.success(req.i18n.t('getSuccess'), 200, null, doc_num);
     }
 }
