@@ -21,7 +21,7 @@ exports.PrixodDB = class {
 
         return result.rows[0];
     }
-    
+
     static async createPrixod(params, client) {
         const query = `--sql
             INSERT INTO document_prixod_jur7 (
@@ -236,7 +236,7 @@ exports.PrixodDB = class {
     }
 
     static async deletePrixodChild(documentPrixodId, productIds, client) {
-        
+
         const query1 = `
                 UPDATE document_prixod_jur7_child 
                 SET isdeleted = true 
@@ -357,12 +357,18 @@ exports.PrixodDB = class {
     static async getProductsByDocId(params, client) {
         const query = `
             SELECT  
-                ch.naimenovanie_tovarov_jur7_id AS product_id
-            FROM document_prixod_jur7_child AS ch
-            WHERE ch.document_prixod_jur7_id = $1
+                ch.naimenovanie_tovarov_jur7_id  product_id
+            FROM document_prixod_jur7_child ch
+            WHERE ch.document_prixod_jur7_id = $1 AND ch.isdeleted = false 
         `;
-        const result = await client.query(query, params);
-        return result.rows.map(row => row.product_id);
+
+        const _db = client || db;
+        
+        const result = await _db.query(query, params);
+        
+        const data = client ? result.rows : result;
+
+        return data.map(row => row.product_id);
     }
 
     static async checkPrixodDoc(params) {
@@ -380,7 +386,8 @@ exports.PrixodDB = class {
               s.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
               s.mfo AS spravochnik_organization_mfo,
               s.inn AS spravochnik_organization_inn,
-              c.fio AS kimdan_name
+              c.fio AS kimdan_name,
+              'rasxod' AS type 
             FROM document_rasxod_jur7 d
             JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
             LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
@@ -402,7 +409,8 @@ exports.PrixodDB = class {
               s.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
               s.mfo AS spravochnik_organization_mfo,
               s.inn AS spravochnik_organization_inn,
-              c.fio AS kimdan_name
+              c.fio AS kimdan_name,
+              'internal' AS type
             FROM document_vnutr_peremesh_jur7 d
             JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
             LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id

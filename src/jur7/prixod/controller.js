@@ -15,7 +15,7 @@ exports.Controller = class {
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    
+
     return res.send(fileRes);
   }
 
@@ -189,10 +189,12 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    for (let child of oldData.childs) {
-      const check = await PrixodJur7Service.checkPrixodDoc({ product_id: child.naimenovanie_tovarov_jur7_id });
+    const productIds = await PrixodJur7Service.getProductIds({ id });
+
+    for (let id of productIds) {
+      const check = await PrixodJur7Service.checkPrixodDoc({ product_id: id });
       if (check.length) {
-        return res.error(req.i18n.t('rasxodProductError'), 400, check);
+        return res.error(req.i18n.t('rasxodProductError'), 409, check);
       }
     }
 
@@ -244,6 +246,15 @@ exports.Controller = class {
     const prixod_doc = await PrixodDB.getByIdPrixod([region_id, id, main_schet_id])
     if (!prixod_doc) {
       return res.error(req.i18n.t('docNotFound'), 404);
+    }
+
+    const productIds = await PrixodJur7Service.getProductIds({ id });
+
+    for (let id of productIds) {
+      const check = await PrixodJur7Service.checkPrixodDoc({ product_id: id });
+      if (check.length) {
+        return res.error(req.i18n.t('rasxodProductError'), 409, check);
+      }
     }
 
     await PrixodJur7Service.deleteDoc({ id });

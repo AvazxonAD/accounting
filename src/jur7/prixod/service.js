@@ -13,7 +13,7 @@ exports.PrixodJur7Service = class {
     static async templateFile() {
         const fileName = `prixod.template.xlsx`;
         const folderPath = path.join(__dirname, `../../../public/template`);
-        
+
         const filePath = path.join(folderPath, fileName);
 
         const fileRes = await fs.readFile(filePath);
@@ -354,6 +354,12 @@ exports.PrixodJur7Service = class {
         }
     }
 
+    static async getProductIds(data) {
+        const productIds = await PrixodDB.getProductsByDocId([data.id]);
+
+        return productIds;
+    }
+
     static async updatePrixod(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
@@ -389,7 +395,9 @@ exports.PrixodJur7Service = class {
     }
 
     static async checkPrixodDoc(data) {
-        const result = await PrixodDB.checkPrixodDoc([data.productId]);
+        
+        const result = await PrixodDB.checkPrixodDoc([data.product_id]);
+        
         return result;
     }
 
