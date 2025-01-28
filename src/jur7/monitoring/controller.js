@@ -26,7 +26,7 @@ exports.Controller = class {
         if (product_id) {
             const product = await NaimenovanieService.getByIdNaimenovanie({ region_id, id: product_id });
             if (!product) {
-                return res.error(req.i18n.t('productNotFound'));
+                return res.error(req.i18n.t('productNotFound'), 404);
             }
         }
 
