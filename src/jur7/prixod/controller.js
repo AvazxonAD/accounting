@@ -20,14 +20,15 @@ exports.Controller = class {
   }
 
   static async importData(req, res) {
+    if (!req.file) {
+      return res.error(req.i18n.t('fileError'), 400);
+    }
+    
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const filePath = req.file.path;
     const { budjet_id, main_schet_id } = req.query;
 
-    if (!filePath) {
-      return res.error(req.i18n.t('fileError'), 400);
-    }
 
     const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
     if (!budjet) {
