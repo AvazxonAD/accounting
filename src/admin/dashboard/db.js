@@ -5,10 +5,13 @@ exports.DashboardDB = class {
         const query = `
             SELECT
                 b.*,
-                JSON_AGG(m) AS account_numbers    
+                (   
+                    SELECT JSON_AGG(m)
+                    FROM main_schet m 
+                    WHERE m.isdeleted = false AND m.spravochnik_budjet_name_id = b.id
+                ) AS account_numbers    
             FROM spravochnik_budjet_name b
-            JOIN main_schet m ON m.spravochnik_budjet_name_id = b.id
-            WHERE isdeleted = b.false
+            WHERE b.isdeleted = false;
         `;
 
         const result = await db.query(query, params);
