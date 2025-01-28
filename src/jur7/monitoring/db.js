@@ -572,7 +572,9 @@ exports.Monitoringjur7DB = class {
                     JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
                     JOIN naimenovanie_tovarov_jur7 n ON n.id = ch.naimenovanie_tovarov_jur7_id
                     JOIN group_jur7 g ON g.id = n.group_jur7_id
-                    WHERE d.kimga_id = $1 ${product_filter}
+                    WHERE d.kimga_id = $1 
+                        ${product_filter}
+                        AND ch.isdeleted = false
                 ) AS total
             FROM data
         `;
