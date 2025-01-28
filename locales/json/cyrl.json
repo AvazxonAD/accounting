@@ -1,5 +1,22 @@
 {
-    "notFound": "{{data}} топилмади",
+    "notFound": "{{data}} топилмади!",
     "success": "{{data}} муваффақиятли",
-    "cyrlUzbek": "Товар сони нотўғри киритилди"
+    "kolError": "Товар сони нотўғри киритилди!",
+    "productIdError": "Товар ID лари нотўғри!",
+    "IznosSummaError": "Износ суммаси нотўғри киритилди!",
+    "budjetNotFound": "Бюджет топилмади!",
+    "mainSchetNotFound": "Ҳисоб рақами топилмади!",
+    "organizationNotFound": "Ҳамкор ташкилот топилмади!",
+    "responsibleNotFound": "Жавобгар шахс топилмади!",
+    "contractNotFound": "Шартнома топилмади!",
+    "groupNotFound": "Гуруҳ топилмади!",
+    "createSuccess": "Муваффақиятли киритилди",
+    "getSuccess": "Муваффақиятли маълумот олинди",
+    "docNotFound": "Ҳужжат топилмади!",
+    "updateSuccess": "Муваффақиятли янгиланди",
+    "deleteSuccess": "Муваффақиятли ўчирилди!",
+    "productNotFound": "Товар топилмади!",
+    "fileErrror": "Файл юклашда хатолик!",
+    "validationError": "Маълумот нотўғри киритилди!",
+    "rasxodProductError": "Ушбу товар билан боғлиқ харажат ҳужжатлари мавжуд!"
 }

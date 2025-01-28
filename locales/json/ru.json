@@ -1,5 +1,22 @@
 {
-    "notFound": "{{data}} не найдено",
+    "notFound": "{{data}} не найдено!",
     "success": "{{data}} успешно",
-    "ru": "Неверно введено количество товара"
+    "kolError": "Количество товара введено неверно!",
+    "productIdError": "ID товара неверно введены!",
+    "IznosSummaError": "Сумма износа введена неверно!",
+    "budjetNotFound": "Бюджет не найден!",
+    "mainSchetNotFound": "Основной счет не найден!",
+    "organizationNotFound": "Партнерская организация не найдена!",
+    "responsibleNotFound": "Ответственное лицо не найдено!",
+    "contractNotFound": "Договор не найден!",
+    "groupNotFound": "Группа не найдена!",
+    "createSuccess": "Успешно добавлено",
+    "getSuccess": "Успешно получена информация",
+    "docNotFound": "Документ не найден!",
+    "updateSuccess": "Успешно обновлено",
+    "deleteSuccess": "Успешно удалено!",
+    "productNotFound": "Товар не найден!",
+    "fileErrror": "Ошибка при загрузке файла!",
+    "validationError": "Информация введена неверно!",
+    "rasxodProductError": "Существуют расходные документы, связанные с этим товаром!"
 }
