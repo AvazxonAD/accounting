@@ -17,5 +17,6 @@
     "deleteSuccess": "Muvaffaqiyatli ochirildi !",
     "productNotFound": "Tovar topilmadi !",
     "fileErrror": "File yuklashda xatolik !",
-    "validationError": "Malumot notog'ri kiritildi !"
+    "validationError": "Malumot notog'ri kiritildi !",
+    "rasxodProductError": "Ushbu tovar bilan bogliq rasxod hujjatlar mavjud !"
 }

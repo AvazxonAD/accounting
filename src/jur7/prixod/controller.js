@@ -10,6 +10,15 @@ const { PrixodSchema } = require('./schema');
 const { OrganizationService } = require('../../spravochnik/organization/services');
 
 exports.Controller = class {
+  static async templateFile(req, res) {
+    const { fileName, fileRes } = await PrixodJur7Service.templateFile();
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    
+    return res.send(fileRes);
+  }
+
   static async importData(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -180,12 +189,12 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    // for (let child of oldData.childs) {
-    //   const check = await PrixodJur7Service.checkPrixodDoc({ product_id: child.naimenovanie_tovarov_jur7_id });
-    //   if (check.length) {
-    //     return res.error('Expense documents related to this record are available', 400, null, check);
-    //   }
-    // }
+    for (let child of oldData.childs) {
+      const check = await PrixodJur7Service.checkPrixodDoc({ product_id: child.naimenovanie_tovarov_jur7_id });
+      if (check.length) {
+        return res.error(req.i18n.t('rasxodProductError'), 400, check);
+      }
+    }
 
     const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
     if (!organization) {
