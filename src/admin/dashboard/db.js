@@ -8,7 +8,8 @@ exports.DashboardDB = class {
                 (   
                     SELECT JSON_AGG(m)
                     FROM main_schet m 
-                    WHERE m.isdeleted = false AND m.spravochnik_budjet_name_id = b.id
+                    WHERE m.isdeleted = false 
+                        AND m.spravochnik_budjet_name_id = b.id
                 ) AS account_numbers    
             FROM spravochnik_budjet_name b
             WHERE b.isdeleted = false;
@@ -17,5 +18,9 @@ exports.DashboardDB = class {
         const result = await db.query(query, params);
 
         return result;
+    }
+
+    static async getKassSumma(data) {
+        
     }
 }

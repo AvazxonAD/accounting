@@ -254,13 +254,18 @@ exports.Jur7MonitoringService = class {
 
     static async getSaldo(data) {
         let { products, total } = await Monitoringjur7DB.getProducts([data.responsible_id, data.offset, data.limit], data.product_id);
-        
+
         for (let product of products) {
-            product.to = await Monitoringjur7DB.getKolSumma([product.naimenovanie_tovarov_jur7_id, data.responsible_id, data.to]);
+
+            product.from = await Monitoringjur7DB.getKolSumma([product.naimenovanie_tovarov_jur7_id, data.responsible_id], data.from);
+            product.internal = await Monitoringjur7DB.getKolSumma([product.naimenovanie_tovarov_jur7_id, data.responsible_id], null, [data.from, data.to]);
+            product.to = await Monitoringjur7DB.getKolSumma([product.naimenovanie_tovarov_jur7_id, data.responsible_id], data.to);
+
             if (product.to.kol === 0 && product.to.summa === 0) {
                 products = products.filter(item => item.naimenovanie_tovarov_jur7_id !== product.naimenovanie_tovarov_jur7_id)
                 continue
             }
+
             product.prixod_data = await Monitoringjur7DB.getPrixodInfo([product.naimenovanie_tovarov_jur7_id]);
             product.sena = product.to.summa / product.to.kol;
             product.senaRound = Math.round(product.sena * 100) / 100;

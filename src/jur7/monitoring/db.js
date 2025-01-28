@@ -455,60 +455,79 @@ exports.Monitoringjur7DB = class {
         return result[0].summa;
     }
 
-    static async getKolSumma(params) {
+    static async getKolSumma(params, date=null, dates=null) {
+        let date_filter = ``;
+        let dates_filter = ``;
+        if(date) {
+            params.push(date);
+            date_filter = `AND d.doc_date <= $${params.length}`
+        }
+        if(dates && dates.length > 0){
+            params.push(dates[0], dates[1]);
+            dates_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`
+        }
+
         const query = `--sql
-        WITH prixod AS (
+            WITH prixod AS (
+                SELECT
+                    COALESCE(SUM(d_ch.kol), 0) AS kol,
+                    COALESCE(SUM(d_ch.summa_s_nds), 0) AS summa
+                FROM document_prixod_jur7 AS d
+                JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimga_id = $2
+                    AND d.isdeleted = false
+                    ${date_filter}
+                    ${dates_filter}    
+            ),
+            prixod_internal AS (
+                SELECT
+                    COALESCE(SUM(d_ch.kol), 0) AS kol,
+                    COALESCE(SUM(d_ch.summa), 0) AS summa
+                FROM document_vnutr_peremesh_jur7 AS d
+                JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimga_id = $2
+                    AND d.isdeleted = false
+                    ${date_filter}
+                    ${dates_filter}    
+            ),
+            rasxod AS (
+                SELECT
+                    COALESCE(SUM(d_ch.kol), 0) AS kol,
+                    COALESCE(SUM(d_ch.summa), 0) AS summa
+                FROM document_rasxod_jur7 AS d
+                JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimdan_id = $2
+                    AND d.isdeleted = false
+                    ${date_filter}
+                    ${dates_filter}    
+            ),
+            rasxod_internal AS (
+                SELECT
+                    COALESCE(SUM(d_ch.kol), 0) AS kol,
+                    COALESCE(SUM(d_ch.summa), 0) AS summa
+                FROM document_vnutr_peremesh_jur7 AS d
+                JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
+                WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimdan_id = $2
+                    AND d.isdeleted = false
+                    ${date_filter}
+                    ${dates_filter}    
+            )
             SELECT
-                COALESCE(SUM(d_ch.kol), 0) AS kol,
-                COALESCE(SUM(d_ch.summa_s_nds), 0) AS summa
-            FROM document_prixod_jur7 AS d
-            JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
-            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
-              AND d.kimga_id = $2
-              AND d.isdeleted = false
-              AND d.doc_date <= $3
-        ),
-        prixod_internal AS (
-            SELECT
-                COALESCE(SUM(d_ch.kol), 0) AS kol,
-                COALESCE(SUM(d_ch.summa), 0) AS summa
-            FROM document_vnutr_peremesh_jur7 AS d
-            JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
-            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
-              AND d.kimga_id = $2
-              AND d.isdeleted = false
-              AND d.doc_date <= $3
-        ),
-        rasxod AS (
-            SELECT
-                COALESCE(SUM(d_ch.kol), 0) AS kol,
-                COALESCE(SUM(d_ch.summa), 0) AS summa
-            FROM document_rasxod_jur7 AS d
-            JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
-            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
-              AND d.kimdan_id = $2
-              AND d.isdeleted = false
-              AND d.doc_date <= $3
-        ),
-        rasxod_internal AS (
-            SELECT
-                COALESCE(SUM(d_ch.kol), 0) AS kol,
-                COALESCE(SUM(d_ch.summa), 0) AS summa
-            FROM document_vnutr_peremesh_jur7 AS d
-            JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
-            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1
-              AND d.kimdan_id = $2
-              AND d.isdeleted = false
-              AND d.doc_date <= $3
-        )
-        SELECT
-            (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0) - COALESCE(r.kol, 0) - COALESCE(ri.kol, 0))::FLOAT AS kol,
-            (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0) - COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa
-        FROM
-            prixod p,
-            prixod_internal pi,
-            rasxod r,
-            rasxod_internal ri        
+                (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0) - COALESCE(r.kol, 0) - COALESCE(ri.kol, 0))::FLOAT AS kol,
+                (COALESCE(r.kol, 0) - COALESCE(ri.kol, 0))::FLOAT AS kol_rasxod,
+                (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0))::FLOAT AS kol_prixod,
+                (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0) - COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa,
+                (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0))::FLOAT AS summa_prixod,
+                (COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa_rasxod
+            FROM
+                prixod p,
+                prixod_internal pi,
+                rasxod r,
+                rasxod_internal ri        
         `;
         const result = await db.query(query, params);
         return result[0];
