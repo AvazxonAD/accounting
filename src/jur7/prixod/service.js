@@ -2,7 +2,7 @@ const { PrixodDB } = require('./db');
 const { db } = require('../../db/index');
 const { IznosDB } = require('../iznos/db')
 const { tashkentTime, returnLocalDate, returnSleshDate } = require('../../helper/functions');
-const { access, constants, mkdir } = require('fs').promises;
+const fs = require('fs').promises;
 const ExcelJS = require('exceljs');
 const path = require('path');
 const xlsx = require('xlsx');
@@ -10,6 +10,17 @@ const { PodrazdelenieDB } = require('../spravochnik/podrazdelenie/db')
 const { ResponsibleDB } = require('../spravochnik/responsible/db');
 
 exports.PrixodJur7Service = class {
+    static async templateFile() {
+        const fileName = `prixod.template.xlsx`;
+        const folderPath = path.join(__dirname, `../../../public/template`);
+        
+        const filePath = path.join(folderPath, fileName);
+
+        const fileRes = await fs.readFile(filePath);
+
+        return { fileName: `${fileName}.${new Date().getTime()}.xlsx`, fileRes };
+    }
+
     static async importData(data) {
         await db.transaction(async client => {
             for (let item of data.data) {
@@ -193,9 +204,9 @@ exports.PrixodJur7Service = class {
 
         const folderPath = path.join(__dirname, `../../../public/exports`);
         try {
-            await access(folderPath, constants.W_OK);
+            await fs.access(folderPath, fs.constants.W_OK);
         } catch (error) {
-            await mkdir(folderPath);
+            await fs.mkdir(folderPath);
         }
 
         const fileName = `jur7_prixod_${new Date().getTime()}.xlsx`;
