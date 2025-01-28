@@ -75,6 +75,7 @@ routes
     // Admin
     .use('/admin/main/book', protect, require('./admin/main.book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))
+    .use('/admin/dashboard', protect, require('./admin/dashboard/index'))
     .use('/admin/real/cost', protect, require('./admin/real.cost/index'));
 
 module.exports = routes;

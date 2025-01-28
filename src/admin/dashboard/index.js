@@ -5,6 +5,6 @@ const { } = require("./schema");
 const { Router } = require('express')
 const router = Router()
 
-router.get('/', validator(Controller.getBudjet));
+router.get('/budjet', validator(Controller.getBudjet));
 
 module.exports = router;
