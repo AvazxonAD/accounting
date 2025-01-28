@@ -471,7 +471,7 @@ exports.PrixodJur7Service = class {
                 iznos: item.iznos,
                 eski_iznos_summa: item.eski_iznos_summa,
                 podraz_name: item.podraz_name,
-                group_name: item.group_name
+                group_number: item.group_number
             });
         });
 

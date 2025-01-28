@@ -2,7 +2,7 @@ const { db } = require('../../db/index');
 const { returnParamsValues, designParams } = require('../../helper/functions');
 
 exports.OrganizationDB = class {
-    static async getByInnAndAccountNumber(params) {
+    static async getByInn(params) {
         const query =  `
             SELECT 
                 s_o.id, 
@@ -19,7 +19,6 @@ exports.OrganizationDB = class {
             JOIN regions ON users.region_id = regions.id
             WHERE regions.id = $1 
                 AND s_o.inn = $2 
-                AND s_o.raschet_schet = $3
                 AND s_o.isdeleted = false
             LIMIT 1
         `;

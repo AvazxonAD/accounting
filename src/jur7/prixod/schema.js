@@ -123,23 +123,31 @@ exports.PrixodSchema = class {
   static importSchema() {
     return Joi.array().items(
       Joi.object({
-        group_name: Joi.string().trim(),
-        doc_date: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-        doc_num: Joi.number().required(),
+        group_number: Joi.number().required(),
+        doc_date: Joi.string()
+          .trim()
+          .pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/)
+          .custom((value, helpers) => {
+            const [day, month, year] = value.split('.');
+        
+            const formattedDate = `${year}-${month}-${day}`;
+            
+            return formattedDate;
+        }),
+        doc_num: Joi.string().required(),
         kimga_name: Joi.string().trim().required(),
         podraz_name: Joi.string().trim().required(),
         name: Joi.string().trim().required(),
         kol: Joi.number().min(1).required(),
         summa: Joi.number().min(1).required(),
-        debet_schet: Joi.string().trim(),
-        debet_sub_schet: Joi.string().trim(),
-        kredit_schet: Joi.string().trim(),
-        kredit_sub_schet: Joi.string().trim(),
-        iznos: Joi.string().valid('ha', 'yoq'),
+        debet_schet: Joi.any().required(),
+        debet_sub_schet: Joi.any().required(),
+        kredit_schet: Joi.any().required(),
+        kredit_sub_schet: Joi.any().required(),
+        iznos: Joi.string().valid('ha'),
         inn: Joi.number().min(1).required(),
-        account_number: Joi.string().trim().required(),
         edin: Joi.string().trim().required(),
-        eski_iznos_summa: Joi.number().min(1)
+        eski_iznos_summa: Joi.number().min(0)
       })
     );
   }

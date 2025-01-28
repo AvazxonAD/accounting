@@ -51,14 +51,15 @@ exports.Controller = class {
 
     for (let doc of result_data) {
 
-      const organization = await OrganizationService.getByInnAndAccountNumber({ region_id, inn: doc.inn, account_number: doc.account_number });
+      const organization = await OrganizationService.getByInn({ region_id, inn: doc.inn, account_number: doc.account_number });
       if (!organization) {
         return res.error(req.i18n.t('organizationNotFound'), 404);
       };
+
       doc.kimdan_id = organization.id;
 
       for (let child of doc.childs) {
-        const group = await GroupService.getByNameGroup({ name: child.group_name });
+        const group = await GroupService.getByNumberGroup({ number: child.group_number });
         if (!group) {
           return res.error(req.i18n.t('groupNotFound'), 404);
         }
