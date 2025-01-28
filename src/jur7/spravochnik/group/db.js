@@ -97,8 +97,7 @@ exports.GroupDB = class {
         return result[0];
     }
 
-    static async getByNameGroup(params, isdeleted) {
-        const ignore = 'AND g_j7.isdeleted = false';
+    static async getByNameGroup(params) {
         const query = `--sql
             SELECT 
                 g_j7.id, 
@@ -116,7 +115,31 @@ exports.GroupDB = class {
                 s.smeta_number
             FROM group_jur7 AS g_j7
             LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
-            WHERE g_j7.name ILIKE '%' || $1 || '%' ${isdeleted ? `` : ignore}
+            WHERE g_j7.name ILIKE '%' || $1 || '%' AND g_j7.isdeleted = false
+        `;
+        const result = await db.query(query, params);
+        return result[0];
+    }
+
+    static async getByNumberGroup(params) {
+        const query = `--sql
+            SELECT 
+                g_j7.id, 
+                g_j7.smeta_id,
+                g_j7.name, 
+                g_j7.schet, 
+                g_j7.iznos_foiz, 
+                g_j7.provodka_debet, 
+                g_j7.group_number, 
+                g_j7.provodka_kredit,
+                g_j7.provodka_subschet,
+                g_j7.roman_numeral,
+                g_j7.pod_group,
+                s.smeta_name,
+                s.smeta_number
+            FROM group_jur7 AS g_j7
+            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
+            WHERE g_j7.group_number = $1 AND g_j7.isdeleted = false
         `;
         const result = await db.query(query, params);
         return result[0];

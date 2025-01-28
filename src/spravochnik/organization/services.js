@@ -2,8 +2,8 @@ const { OrganizationDB } = require('./db')
 const { tashkentTime } = require('../../helper/functions')
 
 exports.OrganizationService = class {
-    static async getByInnAndAccountNumber(data) {
-        const result = await OrganizationDB.getByInnAndAccountNumber([data.region_id, data.inn, data.account_number]);
+    static async getByInn(data) {
+        const result = await OrganizationDB.getByInn([data.region_id, data.inn]);
         return result;
     }
 
