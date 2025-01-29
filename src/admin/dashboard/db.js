@@ -21,6 +21,38 @@ exports.DashboardDB = class {
     }
 
     static async getKassSumma(data) {
-        
+        const query = `
+            WITH kassa (
+                (
+                    SELECT 
+                        COALESCE(SUM(summa), 0)::FLOAT 
+                    FROM kassa_prixod
+                    WHERE main_schet_id = $1
+                ) - 
+                (
+                    SELECT 
+                        COALESCE(SUM(summa), 0)::FLOAT
+                    FROM kassa_rasxod
+                    WHERE main_schet_id = $1
+                )
+            ),
+            bank AS (
+                (
+                    SELECT 
+                        COALESCE(SUM(summa), 0)::FLOAT 
+                    FROM bank_prixod
+                    WHERE main_schet_id = $1
+                ) - 
+                (
+                    SELECT 
+                        COALESCE(SUM(summa), 0)::FLOAT
+                    FROM bank_rasxod
+                    WHERE main_schet_id = $1
+                )
+            )
+            FROM 
+        `;
+        const result = await db.query(query, params);
+        return result[0];
     }
 }

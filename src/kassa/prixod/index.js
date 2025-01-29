@@ -1,15 +1,13 @@
 const { Router } = require("express");
 const router = Router();
 
-const { protect } = require("../middleware/auth");
-
 const {
   kassaPrixodCreate,
   getAllKassaPrixod,
   updateKassaPrixodBank,
   deleteKassaPrixodRasxod,
   getElementByIdKassaPrixod,
-} = require("./kassa.prixod.controller");
+} = require("./controller");
 
 router.post("/", kassaPrixodCreate);
 router.get("/", getAllKassaPrixod);

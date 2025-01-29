@@ -18,5 +18,10 @@
     "productNotFound": "Tovar topilmadi!",
     "fileErrror": "Fayl yuklashda xatolik!",
     "validationError": "Ma'lumot noto'g'ri kiritildi!",
-    "rasxodProductError": "Ushbu tovar bilan bog'liq xarajat hujjatlari mavjud!"
+    "rasxodProductError": "Ushbu tovar bilan bog'liq xarajat hujjatlari mavjud!",
+    "podotchetNotFound": "Pododchet topilmadi!",
+    "operatsiiNotFound": "Operatsii topilmadi!",
+    "podrazNotFound": "Podrazdelenie topilmadi!",
+    "sostavNotFound": "Sostav topilmadi!",
+    "typeOperatsiiNotFound": "Type operatsii topilmadi!"
 }

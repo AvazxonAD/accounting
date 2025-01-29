@@ -1,5 +1,28 @@
 const jwt = require('jsonwebtoken')
 
+exports.HelperFunctions = class {
+    static summaDoc(data) {
+        const summa = data.reduce((acc, item) => acc += item.summa, 0);
+        
+        return summa; 
+    }
+
+    static paramsValues(data) {
+        const index_max = data.length;
+        let values = '('
+        for (let i = 1; i <= index_max; i++) {
+            if (index_max === i) {
+                values += ` $${i})`
+            } else if (i % column_count === 0) {
+                values += ` $${i}), (`
+            } else {
+                values += `$${i}, `
+            }
+        }
+        return values;
+    }
+}
+
 exports.tashkentTime = () => {
     const currentUtcDate = new Date();
     const tashkentOffset = 10 * 60 * 60 * 1000;
@@ -264,3 +287,8 @@ exports.formatSubSchet = (str) => {
     }
     return result;
 };
+
+exports.checkSchetsEquality = (childs) => {
+    const firstSchet = childs[0].schet;
+    return childs.every(child => child.schet === firstSchet);
+}

@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const router = Router();
 const { validator } = require('../../helper/validator')
-const { SmetaService } = require('./service')
+const { Controller } = require('./controller')
 const upload = require('../../helper/upload.js')
 const {
     createSchema,
@@ -12,11 +12,11 @@ const {
 } = require('./schema')
 
 
-router.get("/:id", validator(SmetaService.getByIdSmeta, getByIdSchema));
-router.get("/", validator(SmetaService.getSmeta, getSchema));
-router.post("/import", upload.single('file'), validator(SmetaService.importSmetaData));
-router.post("/", validator(SmetaService.createSmeta, createSchema));
-router.put("/:id", validator(SmetaService.updateSmeta, updateSchema));
-router.delete("/:id", validator(SmetaService.deleteSmeta, deleteSchema));
+router.get("/:id", validator(Controller.getByIdSmeta, getByIdSchema));
+router.get("/", validator(Controller.getSmeta, getSchema));
+router.post("/import", upload.single('file'), validator(Controller.importSmetaData));
+router.post("/", validator(Controller.createSmeta, createSchema));
+router.put("/:id", validator(Controller.updateSmeta, updateSchema));
+router.delete("/:id", validator(Controller.deleteSmeta, deleteSchema));
 
 module.exports = router;
