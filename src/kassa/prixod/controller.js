@@ -1,3 +1,75 @@
+const { checkSchetsEquality } = require('../../helper/functions');
+const { MainSchetService } = require('../../spravochnik/main.schet/services');
+const { PodotchetService } = require('../../spravochnik/podotchet/service');
+const { OperatsiiService } = require('../../spravochnik/operatsii/service')
+const { PodrazdelenieService } = require('../../spravochnik/podrazdelenie/service')
+const { SostavService } = require('../../spravochnik/sostav/service')
+const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');
+
+const Controller = class {
+  static async createPrixod(req, res) {
+    const main_schet_id = req.query.main_schet_id;
+    const user_id = req.user.id;
+    const region_id = req.user.region_id;
+    const { id_podotchet_litso, childs } = req.body;
+
+    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    if (!main_schet) {
+      return res.error(req.i18n.t('mainSchetNotFound'), 400)
+    }
+
+    if (id_podotchet_litso) {
+      const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
+      if (!podotchet) {
+        return res.error(req.i18n.t('podotchetNotFound'), 404);
+      }
+    }
+
+    const operatsiis = [];
+    for (let child of childs) {
+      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "kassa_prixod", id: child.spravochnik_operatsii_id });
+      if (!operatsii) {
+        return res.error(req.i18n.t('operatsiiNotFound'), 404)
+      }
+      operatsiis.push(operatsii);
+
+      if (child.id_spravochnik_podrazdelenie) {
+        const podraz = await PodrazdelenieService.getByIdPodraz({ region_id, id: child.id_spravochnik_podrazdelenie, })
+        if (!podraz) {
+          return res.error(req.i18n.t('podrazNotFound'), 404);
+        }
+      }
+
+      if (child.id_spravochnik_sostav) {
+        const sostav = await SostavService.getByIdSostav({ region_id, id: child.id_spravochnik_sostav });
+        if (!sostav) {
+          return res.error(req.i18n.t('sostavNotFound'), 404);
+        }
+      }
+
+      if (child.id_spravochnik_type_operatsii) {
+        const operatsii = await TypeOperatsiiService.getByIdTypeOperatsii({ id: child.id_spravochnik_type_operatsii, region_id });
+        if (!operatsii) {
+          return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
+        }
+      }
+
+    }
+
+    if (!checkSchetsEquality(operatsiis)) {
+      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+    }
+
+    for (let child of data.childs) {
+      const result = await kassaPrixodChild({ ...child, user_id, main_schet_id, kassa_prixod_id: kassa_prixod.id });
+    }
+
+    return res.success(req.i18n.t('createSucccess'), 201, null, kassa_prixod);
+  }
+}
+
+
+
 const {
   kassaPrixodCreateDB,
   kassaPrixodChild,
@@ -6,21 +78,20 @@ const {
   updateKassaPrixodDB,
   deleteKassaPrixodChild,
   deleteKassaPrixodDB
-} = require("./kassa.prixod.service");
-const { checkSchetsEquality } = require('../utils/need.functios');
-const { kassaValidation } = require("../utils/validation");;
-const { bankQueryValidation } = require("../utils/validation");;
-const { getByIdMainSchetService } = require("../spravochnik/main.schet/main.schet.service");
-const { getByIdPodotchetService } = require("../spravochnik/podotchet/podotchet.litso.service");
-const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../spravochnik/operatsii/operatsii.service");
-const { getByIdPodrazlanieService } = require("../spravochnik/podrazdelenie/podrazdelenie.service");
-const { getByIdSostavService } = require("../spravochnik/sostav/sostav.service");
-const { getByIdTypeOperatsiiService } = require("../spravochnik/type.operatsii/type_operatsii.service");
-const { returnAllChildSumma } = require("../utils/returnSumma");
-const { validationResponse } = require("../utils/response-for-validation");
-const { resFunc } = require("../utils/resFunc");
-const { errorCatch } = require("../utils/errorCatch");
-const ErrorResponse = require('../utils/errorResponse')
+} = require("../kassa.prixod.service");
+const { kassaValidation } = require("../../utils/validation");;
+const { bankQueryValidation } = require("../../utils/validation");;
+const { getByIdMainSchetService } = require("../../spravochnik/main.schet/main.schet.service");
+const { getByIdPodotchetService } = require("../../spravochnik/podotchet/podotchet.litso.service");
+const { getByIdOperatsiiService, getOperatsiiByChildArray } = require("../../spravochnik/operatsii/operatsii.service");
+const { getByIdPodrazlanieService } = require("../../spravochnik/podrazdelenie/podrazdelenie.service");
+const { getByIdSostavService } = require("../../spravochnik/sostav/sostav.service");
+const { getByIdTypeOperatsiiService } = require("../../spravochnik/type.operatsii/type_operatsii.service");
+const { returnAllChildSumma } = require("../../utils/returnSumma");
+const { validationResponse } = require("../../utils/response-for-validation");
+const { resFunc } = require("../../utils/resFunc");
+const { errorCatch } = require("../../utils/errorCatch");
+const ErrorResponse = require('../../utils/errorResponse')
 
 // kassa prixod rasxod
 const kassaPrixodCreate = async (req, res) => {
@@ -70,7 +141,7 @@ const getAllKassaPrixod = async (req, res) => {
     const { page, limit, from, to, main_schet_id } = validationResponse(bankQueryValidation, req.query)
     await getByIdMainSchetService(region_id, main_schet_id);
     const offset = (page - 1) * limit;
-    const {data, total, summa} = await getAllKassaPrixodDb(region_id, main_schet_id, from, to, offset, limit);
+    const { data, total, summa } = await getAllKassaPrixodDb(region_id, main_schet_id, from, to, offset, limit);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -97,7 +168,7 @@ const updateKassaPrixodBank = async (req, res) => {
     const data = validationResponse(kassaValidation, req.body)
     await getByIdMainSchetService(region_id, main_schet_id);
     if (data.id_podotchet_litso) {
-      await getByIdPodotchetService( region_id, data.id_podotchet_litso);
+      await getByIdPodotchetService(region_id, data.id_podotchet_litso);
     }
     for (let child of data.childs) {
       await getByIdOperatsiiService(child.spravochnik_operatsii_id, "kassa_prixod");

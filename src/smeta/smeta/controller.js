@@ -2,7 +2,7 @@ const xlsx = require('xlsx');
 const { SmetaDB } = require('./db');
 const { tashkentTime } = require('../../helper/functions')
 
-exports.SmetaService = class {
+exports.Controller = class {
     static async createSmeta(req, res) {
         const { smeta_name, smeta_number, father_smeta_name, group_number } = req.body
         const exist_smeta = await SmetaDB.getByNameSmeta([smeta_name, smeta_number, father_smeta_name, group_number]);

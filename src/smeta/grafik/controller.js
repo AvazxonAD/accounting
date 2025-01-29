@@ -69,7 +69,7 @@ exports.Controller = class {
     }
     static async getSmetaGrafik(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, budjet_id, operator, year } = req.query;
+        const { page, limit, budjet_id, operator, year, search } = req.query;
         if (budjet_id) {
             const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
             if (!budjet) {
@@ -93,7 +93,7 @@ exports.Controller = class {
             oy_10,
             oy_11,
             oy_12
-        } = await SmetaGrafikDB.getSmetaGrafik([region_id, offset, limit], budjet_id, operator, year);
+        } = await SmetaGrafikDB.getSmetaGrafik([region_id, offset, limit], budjet_id, operator, year, search);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
