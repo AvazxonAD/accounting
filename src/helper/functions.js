@@ -21,6 +21,12 @@ exports.HelperFunctions = class {
         }
         return values;
     }
+
+    static excelSerialToDate(serial) {
+        const excelEpoch = new Date(1899, 11, 30);
+        const date = new Date(excelEpoch.getTime() + serial * 86400000);
+        return date.toISOString().split('T')[0];
+    }
 }
 
 exports.tashkentTime = () => {

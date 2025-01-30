@@ -38,7 +38,7 @@ exports.OperatsiiDB = class {
         return result;
     }
 
-    static async getOperatsii(params, offset, limit, search, type_schet) {
+    static async get(params, offset, limit, search, type_schet) {
         let type_schet_filter = '';
         let search_filter = ``;
         let offset_limit = ``;

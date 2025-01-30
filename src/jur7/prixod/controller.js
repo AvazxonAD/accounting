@@ -51,25 +51,26 @@ exports.Controller = class {
 
     for (let doc of result_data) {
 
-      const organization = await OrganizationService.getByInn({ region_id, inn: doc.inn, account_number: doc.account_number });
-      if (!organization) {
-        return res.error(req.i18n.t('organizationNotFound'), 404);
-      };
+      // const organization = await OrganizationService.getByInn({ region_id, inn: doc.inn, account_number: doc.account_number });
+      // if (!organization) {
+      //   return res.error(req.i18n.t('organizationNotFound'), 404);
+      // };
 
-      doc.kimdan_id = organization.id;
+      // doc.kimdan_id = organization.id;
+
+      doc.kimdan_id = null;
 
       for (let child of doc.childs) {
-        const group = await GroupService.getByNumberGroup({ number: child.group_number });
+        const group = await GroupService.getByNumberNameGroup({ number: child.group_number, name: child.group_name });
         if (!group) {
           return res.error(req.i18n.t('groupNotFound'), 404);
         }
 
         child.group_jur7_id = group.id;
-        child.iznos = child.iznos === 'ha' ? true : false;
       }
     }
 
-    await PrixodJur7Service.importData({ data: result_data, user_id, budjet_id, main_schet_id });
+    await PrixodJur7Service.importData({ data: result_data, user_id, budjet_id, main_schet_id, region_id });
 
     return res.success(req.i18n.t('createSuccess'), 201);
   }

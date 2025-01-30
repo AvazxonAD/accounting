@@ -107,7 +107,7 @@ exports.PrixodDB = class {
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_organization AS s_o ON s_o.id = d.kimdan_id
+            LEFT JOIN spravochnik_organization AS s_o ON s_o.id = d.kimdan_id
             JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh ON s_j_sh.id = d.kimga_id 
             WHERE r.id = $1 
               AND d.isdeleted = false 
@@ -280,7 +280,7 @@ exports.PrixodDB = class {
             FROM document_prixod_jur7 AS d_j
             JOIN users AS u ON u.id = d_j.user_id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimdan_id
+            LEFT JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimdan_id
             LEFT JOIN shartnomalar_organization AS sh_o ON d_j.id_shartnomalar_organization = sh_o.id
             WHERE r.id = $1 
               AND d_j.isdeleted = false 

@@ -12,8 +12,8 @@ exports.GroupService = class {
         return result;
     }
     
-    static async getByNumberGroup(data) {
-        const result = await GroupDB.getByNumberGroup([data.number]);
+    static async getByNumberNameGroup(data) {
+        const result = await GroupDB.getByNumberNameGroup([data.number, data.name]);
         
         return result;
     }

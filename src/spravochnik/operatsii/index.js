@@ -8,7 +8,7 @@ const {
   deleteOperatsii,
   getByIdOperatsii,
   getSchet,
-} = require("./operatsii.controller");
+} = require("./controller");
 
 router.get('/schet', getSchet)
 router.get("/:id", getByIdOperatsii);

@@ -5,4 +5,8 @@ exports.OperatsiiService = class {
         const result = await OperatsiiDB.getByIdOperatsii([data.regionId, data.id], data.type, data.isdeleted);
         return result;
     }
+
+    static async get(data) {
+        const result = await OperatsiiDB.get([]);
+    }
 }

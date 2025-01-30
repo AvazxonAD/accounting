@@ -1,7 +1,7 @@
 const { PrixodDB } = require('./db');
 const { db } = require('../../db/index');
 const { IznosDB } = require('../iznos/db')
-const { tashkentTime, returnLocalDate, returnSleshDate } = require('../../helper/functions');
+const { tashkentTime, returnLocalDate, returnSleshDate, HelperFunctions } = require('../../helper/functions');
 const fs = require('fs').promises;
 const ExcelJS = require('exceljs');
 const path = require('path');
@@ -24,7 +24,11 @@ exports.PrixodJur7Service = class {
     static async importData(data) {
         await db.transaction(async client => {
             for (let item of data.data) {
-                const podraz = await PodrazdelenieDB.createPodrazdelenie([data.user_id, item.podraz_name, tashkentTime(), tashkentTime()]);
+                let podraz = await PodrazdelenieDB.getByNamePodrazdelenie([data.region_id, item.podraz_name]);
+                if(!podraz){
+                    podraz = await PodrazdelenieDB.createPodrazdelenie([data.user_id, item.podraz_name, tashkentTime(), tashkentTime()]);
+                };
+
                 const responsible = await ResponsibleDB.createResponsible([podraz.id, item.kimga_name, data.user_id, tashkentTime(), tashkentTime()]);
                 item.kimga_id = responsible.id;
             }
@@ -395,9 +399,9 @@ exports.PrixodJur7Service = class {
     }
 
     static async checkPrixodDoc(data) {
-        
+
         const result = await PrixodDB.checkPrixodDoc([data.product_id]);
-        
+
         return result;
     }
 
@@ -440,6 +444,28 @@ exports.PrixodJur7Service = class {
             return newRow;
         });
 
+
+        for (let item of result) {
+            item.group_number = String(item['Группа']);
+            item.doc_date =  HelperFunctions.excelSerialToDate(item['Дата эксплуатация']);
+            item.doc_num = 'saldo';
+            item.kimga_name = item['ФИО'];
+            item.podraz_name = item['Наим_под'];
+            item.name = item['Наим_тов'];
+            item.kol = item['Кол'];
+            item.summa = item['Сумма'];
+            item.debet_schet = item['Счет'];
+            item.debet_sub_schet = item['Статя'];
+            item.kredit_schet = item[''];
+            item.kredit_sub_schet = item[''];
+            item.group_name = item['Наименование'];
+            item.iznos = item['Износ %'] ? true : false;
+            item.edin = item['Един'];
+            item.eski_iznos_summa = item['салдо износ'];
+            item.inventar_num = item['№ инвентарный'];
+            item.serial_num = item['Серийный номер'];
+        }   
+
         return result;
     }
 
@@ -471,7 +497,10 @@ exports.PrixodJur7Service = class {
                 iznos: item.iznos,
                 eski_iznos_summa: item.eski_iznos_summa,
                 podraz_name: item.podraz_name,
-                group_number: item.group_number
+                group_number: item.group_number,
+                group_name: item.group_name, 
+                inventar_num: item.inventar_num,
+                serial_num: item.serial_num
             });
         });
 
