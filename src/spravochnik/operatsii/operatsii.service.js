@@ -34,33 +34,44 @@ const getByNameAndSchetOperatsiiService = async (name, type_schet, smeta_id) => 
   }
 }
 
-const getAllOperatsiiService = async (offset, limit, type_schet, search) => {
+const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_search) => {
   try {
     let type_schet_filter = ''
     let search_filter = ``
+    let meta_search_filter = ``;
     const params = [offset, limit];
     if (search) {
-      if(!isNaN(Number(search))){
-        search_filter = `AND (sub_schet = $${params.length + 1} OR schet = $${params.length + 1})`;  
-      }else {
+      if (!isNaN(Number(search))) {
+        search_filter = `AND (sub_schet = $${params.length + 1} OR schet = $${params.length + 1})`;
+      } else {
         search_filter = `AND (
           name ILIKE '%' || $${params.length + 1} || '%' OR
-          schet = $${params.length + 1} OR 
-          sub_schet ILIKE '%' || $${params.length + 1} || '%'
+          schet = $${params.length + 1}
         )
       `;
       }
-      
+
       params.push(search)
     }
     if (type_schet) {
       type_schet_filter = `AND type_schet = $${params.length + 1}`
       params.push(type_schet)
     }
+
+    if (meta_search) {
+      params.push(meta_search);
+      meta_search_filter = `AND sub_schet ILIKE '%' || $${params.length} || '%'`;
+    }
+
     const result = await pool.query(`
       WITH data AS (
         SELECT id, name, schet, sub_schet, type_schet, smeta_id
-        FROM spravochnik_operatsii  WHERE isdeleted = false ${search_filter} ${type_schet_filter} OFFSET $1 LIMIT $2)
+        FROM spravochnik_operatsii  
+        WHERE isdeleted = false 
+          ${search_filter} 
+          ${type_schet_filter}
+          ${meta_search_filter} 
+        OFFSET $1 LIMIT $2)
       SELECT 
         ARRAY_AGG(row_to_json(data)) AS data,
         (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter} ${type_schet_filter})::INTEGER AS total_count
