@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-exports.KassaPrixodSchema = class {
+exports.KassaRasxodSchema = class {
     static create() {
         return Joi.object({
             body: Joi.object({
