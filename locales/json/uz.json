@@ -23,5 +23,6 @@
     "operatsiiNotFound": "Operatsii topilmadi!",
     "podrazNotFound": "Podrazdelenie topilmadi!",
     "sostavNotFound": "Sostav topilmadi!",
-    "typeOperatsiiNotFound": "Type operatsii topilmadi!"
+    "typeOperatsiiNotFound": "Type operatsii topilmadi!",
+    "schetDifferentError": "Pravodki schetlari turlicha"
 }

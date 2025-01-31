@@ -1,177 +1,182 @@
 const { db } = require('../../db/index')
 
 exports.KassaRasxodDB = class {
-    static async getByPodotchetIdKassaRasxod(params, offset, limit) {
-        let offset_limit = ``
-        if(offset && limit) {
-            offset_limit = `OFFSET $7 LIMIT $8`
-        }
-        const query = `--sql
-            SELECT 
-                k_r.id, 
-                k_r.doc_num,
-                TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_r_ch.summa::FLOAT AS prixod_sum,
-                0::FLOAT AS rasxod_sum,
-                k_r.opisanie,
-                k_r.id_podotchet_litso AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet,
-                'kassa_rasxod' AS type
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND k_r.main_schet_id = $2 
-                AND k_r.isdeleted = false
-                AND k_r.doc_date BETWEEN $3 AND $4
-                AND k_r.id_podotchet_litso = $5
-                AND s_op.schet = $6
-            ORDER BY doc_date DESC ${offset_limit}
+    static async createPrixod(params, client) {
+        const query = `
+            INSERT INTO kassa_rasxod(
+                doc_num, 
+                doc_date, 
+                opisanie, 
+                summa, 
+                id_podotchet_litso,
+                main_schet_id, 
+                user_id,
+                created_at,
+                updated_at,
+                main_zarplata_id
+            ) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            RETURNING id
         `;
-        const result = await db.query(query, params)
+
+        const result = await client.query(query, params);
+
+        return result.rows[0]
+    }
+
+    static async createPrixodChild(params, _values, client) {
+        const query = `
+            INSERT INTO kassa_rasxod_child (
+              spravochnik_operatsii_id,
+              summa,
+              id_spravochnik_podrazdelenie, 
+              id_spravochnik_sostav, 
+              id_spravochnik_type_operatsii,
+              kassa_rasxod_id,
+              user_id, 
+              main_schet_id, 
+              created_at, 
+              updated_at
+          )
+          VALUES ${_values}
+        `;
+
+        const result = await client.query(query, params);
+
         return result;
     }
 
-    static async getByPodotchetIdTotalKassaRasxod(params){
-        const query = `--sql
-            SELECT COALESCE(COUNT(k_r_ch.id), 0)::INTEGER AS total
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND k_r.main_schet_id = $2
-                AND k_r.isdeleted = false
-                AND k_r.doc_date BETWEEN $3 AND $4
-                AND k_r.id_podotchet_litso = $5
-                AND s_op.schet = $6
-        `;
-        const result = await db.query(query, params)
-        return result[0].total
+    static async get(params) {
+        const query = `
+                WITH data AS (
+                    SELECT 
+                        k_p.id, 
+                        k_p.doc_num,
+                        TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                        k_p.opisanie, 
+                        k_p.summa, 
+                        k_p.id_podotchet_litso,
+                        s_p_l.name AS spravochnik_podotchet_litso_name,
+                        s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                        k_p.main_zarplata_id,
+                        (
+                            SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                            FROM (
+                                SELECT 
+                                    s_o.schet AS provodki_schet,
+                                    s_o.sub_schet AS provodki_sub_schet
+                                FROM kassa_rasxod_child AS k_p_ch
+                                JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                                WHERE  k_p_ch.kassa_rasxod_id = k_p.id 
+                            ) AS k_p_ch
+                        ) AS provodki_array
+                    FROM kassa_rasxod AS k_p
+                    JOIN users AS u ON u.id = k_p.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
+                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.doc_date BETWEEN $3 AND $4 ORDER BY k_p.doc_date
+                    OFFSET $5 LIMIT $6
+                )
+                SELECT 
+                    ARRAY_AGG(row_to_json(data)) AS data,
+                    (
+                        SELECT COALESCE(SUM(k_p.summa), 0)
+                        FROM kassa_rasxod AS k_p
+                        JOIN users AS u ON u.id = k_p.user_id
+                        JOIN regions AS r ON r.id = u.region_id  
+                        WHERE k_p.main_schet_id = $2 
+                            AND r.id = $1
+                            AND k_p.doc_date BETWEEN $3 AND $4 
+                            AND k_p.isdeleted = false
+                    )::FLOAT AS summa,
+                    (
+                        SELECT COALESCE(COUNT(k_p.id), 0)
+                        FROM kassa_rasxod AS k_p
+                        JOIN users AS u ON u.id = k_p.user_id
+                        JOIN regions AS r ON r.id = u.region_id  
+                        WHERE r.id = $1 
+                            AND k_p.main_schet_id = $2 
+                            AND k_p.doc_date BETWEEN $3 AND $4 
+                            AND k_p.isdeleted = false
+                    )::INTEGER AS total_count
+                FROM data
+            `;
+
+        const result = await db.query(query, params);
+
+        return result[0];
     }
 
-    static async getByPodotchetIdSummaKassaRasxod(params) {
-        const query = `--sql
-            SELECT COALESCE(SUM(k_r_ch.summa), 0)::FLOAT AS summa
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND k_r.main_schet_id = $2 
-                AND k_r.isdeleted = false
-                AND k_r.doc_date <= $3
-                AND k_r.id_podotchet_litso = $4
-                AND s_op.schet = $5
-        `;
-        const result = await db.query(query, params)
-        return result[0].summa
-    }
-
-    static async getBySchetKassaRasxod(params) {
-        const query = `--sql
+    static async getById(params, isdeleted) {
+        const query = `
             SELECT 
-                k_r.id, 
-                k_r.doc_num,
-                TO_CHAR(k_r.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_r_ch.summa::FLOAT AS prixod_sum,
-                0::FLOAT AS rasxod_sum,
-                k_r.opisanie,
-                k_r.id_podotchet_litso AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_op.schet AS provodki_schet,
-                s_op.sub_schet AS provodki_sub_schet,
-                'kassa_rasxod' AS type
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
+                k_p.id, 
+                k_p.doc_num,
+                TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                k_p.opisanie, 
+                k_p.summa::FLOAT, 
+                k_p.id_podotchet_litso,
+                s_p_l.name AS spravochnik_podotchet_litso_name,
+                s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                k_p.main_zarplata_id,
+                (
+                    SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                    FROM (
+                        SELECT  
+                            k_p_ch.id,
+                            k_p_ch.spravochnik_operatsii_id,
+                            k_p_ch.summa,
+                            k_p_ch.id_spravochnik_podrazdelenie,
+                            k_p_ch.id_spravochnik_sostav,
+                            k_p_ch.id_spravochnik_type_operatsii
+                        FROM kassa_rasxod_child AS k_p_ch 
+                        JOIN users AS u ON u.id = k_p.user_id
+                        JOIN regions AS r ON r.id = u.region_id   
+                        WHERE r.id = $1 
+                        AND k_p_ch.main_schet_id = $2 
+                        AND k_p_ch.kassa_rasxod_id = k_p.id
+                    ) AS k_p_ch
+                ) AS childs
+            FROM kassa_rasxod AS k_p
+            JOIN users AS u ON u.id = k_p.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
             WHERE r.id = $1 
-                AND k_r.main_schet_id = $2 
-                AND k_r.isdeleted = false
-                AND k_r.doc_date BETWEEN $3 AND $4
-                AND s_op.schet = $5
-            OFFSET $6 LIMIT $7
+                AND k_p.main_schet_id = $2 
+                AND k_p.id = $3
+                ${!isdeleted ? 'AND k_p.isdeleted = false' : ''}
         `;
-        const result = await db.query(query, params)
-        return result;
+
+        const result = await db.query(query, params);
+
+        return result[0];
     }
 
-    static async getBySchetTotalKassaRasxod(params){
-        const query = `--sql
-            SELECT COALESCE(COUNT(k_r_ch.id), 0)::INTEGER AS total
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND k_r.main_schet_id = $2
-                AND k_r.isdeleted = false
-                AND k_r.doc_date BETWEEN $3 AND $4
-                AND s_op.schet = $5
-        `;
-        const result = await db.query(query, params)
-        return result[0].total
+    static async update(params, client) {
+        const result = await client.query(`
+            UPDATE kassa_rasxod SET 
+                doc_num = $1, 
+                doc_date = $2, 
+                opisanie = $3, 
+                summa = $4, 
+                id_podotchet_litso = $5, 
+                updated_at = $6,
+                main_zarplata_id = $8
+            WHERE id = $7 RETURNING id 
+        `, params);
+
+        return result.rows[0];
     }
 
-    static async getBySchetSummaKassaRasxod(params) {
-        const query = `--sql
-            SELECT COALESCE(SUM(k_r_ch.summa), 0)::FLOAT AS summa
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 
-                AND k_r.main_schet_id = $2 
-                AND k_r.isdeleted = false
-                AND k_r.doc_date <= $3
-                AND s_op.schet = $4
-        `;
-        const result = await db.query(query, params)
-        return result[0].summa
+    static async deleteChild(params, client) {
+        await client.query(`DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`, params);
     }
 
-    static async getByPodotchetIdAndBudjetSummaKassaRasxod(params, client) {
-        const query = `--sql
-            SELECT COALESCE(SUM(k_r_ch.summa), 0)::FLOAT AS summa
-            FROM kassa_rasxod_child k_r_ch
-            JOIN kassa_rasxod AS k_r ON k_r_ch.kassa_rasxod_id = k_r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_r.id_podotchet_litso 
-            JOIN users u ON k_r.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = k_r_ch.spravochnik_operatsii_id
-            JOIN main_schet AS m_sch ON m_sch.id = k_r.main_schet_id  
-            JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = m_sch.spravochnik_budjet_name_id 
-            WHERE r.id = $1 
-                AND s_b_n.id = $2 
-                AND k_r.isdeleted = false
-                AND k_r.doc_date <= $3
-                AND k_r.id_podotchet_litso = $4
-        `;
-        const result = await client.query(query, params)
-        return result.rows[0].summa
+    static async delete(params, client) {
+        await client.query(`UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`, params);
+        
+        const result = await client.query(`UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+        
+        return result.rows[0];
     }
 }

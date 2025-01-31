@@ -5,7 +5,7 @@ const { OperatsiiService } = require('../../spravochnik/operatsii/service')
 const { PodrazdelenieService } = require('../../spravochnik/podrazdelenie/service')
 const { SostavService } = require('../../spravochnik/sostav/service')
 const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');
-const { KassaPrixodService } = require('./service');
+const { KassaRasxodService } = require('./service');
 
 exports.Controller = class {
   static async create(req, res) {
@@ -28,7 +28,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "kassa_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "kassa_rasxod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
@@ -62,7 +62,7 @@ exports.Controller = class {
       res.error(req.i18n.t('schetDifferentError'), 400)
     }
 
-    const result = await KassaPrixodService.create({ ...req.body, main_schet_id, user_id })
+    const result = await KassaRasxodService.create({ ...req.body, main_schet_id, user_id })
 
     return res.success(req.i18n.t('createSucccess'), 201, null, result);
   }
@@ -78,7 +78,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa } = await KassaPrixodService.get({ region_id, main_schet_id, from, to, offset, limit });
+    const { data, total_count, summa } = await KassaRasxodService.get({ region_id, main_schet_id, from, to, offset, limit });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -104,7 +104,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
-    const result = await KassaPrixodService.getById({ region_id, main_schet_id, id });
+    const result = await KassaRasxodService.getById({ region_id, main_schet_id, id });
     if (!result) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
@@ -124,7 +124,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
-    const doc = await KassaPrixodService.getById({ region_id, main_schet_id, id });
+    const doc = await KassaRasxodService.getById({ region_id, main_schet_id, id });
     if (!doc) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
@@ -138,7 +138,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "kassa_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "kassa_rasxod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
@@ -172,7 +172,7 @@ exports.Controller = class {
       res.error(req.i18n.t('schetDifferentError'), 400)
     }
 
-    const result = await KassaPrixodService.update({ ...req.body, main_schet_id, user_id, id });
+    const result = await KassaRasxodService.update({ ...req.body, main_schet_id, user_id, id });
 
     return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   }
@@ -187,12 +187,12 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
-    const doc = await KassaPrixodService.getById({ region_id, main_schet_id, id });
+    const doc = await KassaRasxodService.getById({ region_id, main_schet_id, id });
     if (!doc) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    const result = await KassaPrixodService.delete({ id });
+    const result = await KassaRasxodService.delete({ id });
 
     return res.success(req.i18n.t('getSuccess'), 200, null, result);
   }

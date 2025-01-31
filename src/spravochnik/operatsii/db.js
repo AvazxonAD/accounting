@@ -7,10 +7,13 @@ exports.OperatsiiDB = class {
             type_filter = `AND type_schet = $${params.length + 1}`;
             params.push(type)
         }
+        
         const query = `--sql
             SELECT id, name, schet, sub_schet, type_schet, smeta_id 
             FROM spravochnik_operatsii 
-            WHERE id = $1 ${type_filter} ${!isdeleted ? 'AND isdeleted = false' : ''}
+            WHERE id = $1 
+                ${type_filter} 
+                ${!isdeleted ? 'AND isdeleted = false' : ''}
         `;
         const result = await db.query(query, params);
         return result[0];

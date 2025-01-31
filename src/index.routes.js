@@ -8,9 +8,9 @@ routes
     .use("/bank/income", protect, require("./bank/bank.prixod.routes"))
     .use("/bank/expense", protect, require("./bank/bank.rasxod.routes"))
     // Kassa monitoring
-    .use("/kassa/monitoring", protect, require("./kassa/kassa.monitoring.routes"))
+    .use("/kassa/monitoring", protect, require("./kassa/monitoring/index"))
     .use("/kassa/income", protect, require("./kassa/prixod/index"))
-    .use("/kassa/expense", protect, require("./kassa/kassa.rasxod.routes"))
+    .use("/kassa/expense", protect, require('./kassa/rasxod/index'))
     // Auth routes
     .use("/auth", require("./auth/auth/index"))
     .use("/auth/region", protect, require("./auth/region/index"))
