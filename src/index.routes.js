@@ -18,7 +18,6 @@ routes
     .use("/auth/access", protect, require('./auth/access/index'))
     .use("/auth/user", protect, require('./auth/user/index'))
     .use("/auth/admin", protect, require('./auth/admin/index'))
-    .use("/auth/control", protect, require('./auth/control/index'))
     // Organization monitoring
     .use('/organization/monitoring', protect, require('./organ.monitoring/index'))
     // Spravochnik routes
@@ -76,6 +75,7 @@ routes
     .use('/admin/main/book', protect, require('./admin/main.book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))
     .use('/admin/dashboard', protect, require('./admin/dashboard/index'))
+    .use("/admin/control", protect, require('./admin/control/index'))
     .use('/admin/real/cost', protect, require('./admin/real.cost/index'));
 
 module.exports = routes;
