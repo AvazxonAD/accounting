@@ -1,5 +1,5 @@
 const { ControlDB } = require('./db')
-const { RegionDB } = require('../region/db')
+const { RegionDB } = require('../../auth/region/db')
 
 exports.ControlService = class {
     static async getControl(req, res) {
