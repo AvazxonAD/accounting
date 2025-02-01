@@ -1,4 +1,4 @@
-const {db} = require('../../db/index');
+const { db } = require('../../db/index');
 
 exports.KassaMonitoringDB = class {
     static async get(params) {
@@ -104,7 +104,7 @@ exports.KassaMonitoringDB = class {
 
         const result = await db.query(query, params);
 
-        return result[0];
+        return { data: result[0].data || [], total_count: result[0].total_count };
     };
 
     static async getSumma(params, operator) {
@@ -141,5 +141,74 @@ exports.KassaMonitoringDB = class {
         const result = await db.query(query, params);
 
         return result[0];
+    }
+
+    static async cap(params) {
+        const qeury = `
+            WITH data AS (
+                SELECT s_o.schet, COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
+                FROM kassa_prixod k_p
+                JOIN users AS u ON u.id = k_p.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN kassa_prixod_child AS k_p_ch ON k_p.id = k_p_ch.kassa_prixod_id 
+                JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.doc_date BETWEEN $3 AND $4 AND k_p.isdeleted = false
+                GROUP BY s_o.schet
+                UNION ALL 
+                SELECT s_o.schet, 0 AS prixod_sum, SUM(k_r_ch.summa)::FLOAT AS rasxod_sum 
+                FROM kassa_rasxod k_r
+                JOIN users AS u ON u.id = k_r.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN kassa_rasxod_child AS k_r_ch ON k_r.id = k_r_ch.kassa_rasxod_id 
+                JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
+                WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.doc_date BETWEEN $3 AND $4 AND k_r.isdeleted = false
+                GROUP BY s_o.schet
+            )
+            SELECT 
+                ARRAY_AGG(row_to_json(data)) AS data,
+                (
+                    COALESCE((SELECT SUM(k_p_ch.summa)
+                    FROM kassa_prixod k_p
+                    JOIN users AS u ON u.id = k_p.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN kassa_prixod_child AS k_p_ch ON k_p.id = k_p_ch.kassa_prixod_id 
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.doc_date < $3 AND k_p.isdeleted = false), 0) -
+                    COALESCE((SELECT SUM(k_r_ch.summa) 
+                    FROM kassa_rasxod k_r
+                    JOIN users AS u ON u.id = k_r.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN kassa_rasxod_child AS k_r_ch ON k_r.id = k_r_ch.kassa_rasxod_id 
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
+                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.doc_date < $3 AND k_r.isdeleted = false), 0) 
+                )::FLOAT AS balance_from,
+                (
+                    COALESCE((SELECT SUM(k_p_ch.summa) 
+                    FROM kassa_prixod k_p
+                    JOIN users AS u ON u.id = k_p.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN kassa_prixod_child AS k_p_ch ON k_p.id = k_p_ch.kassa_prixod_id 
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.doc_date <= $4 AND k_p.isdeleted = false), 0) -
+                    COALESCE((SELECT SUM(k_r_ch.summa)
+                    FROM kassa_rasxod k_r
+                    JOIN users AS u ON u.id = k_r.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN kassa_rasxod_child AS k_r_ch ON k_r.id = k_r_ch.kassa_rasxod_id 
+                    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
+                    WHERE r.id = $1 AND k_r.main_schet_id = $2 AND k_r.doc_date <= $4 AND k_r.isdeleted = false), 0) 
+                )::FLOAT AS balance_to
+            FROM data
+        `;
+
+        const result = await db.query(qeury, params);
+
+        let prixod_sum = 0
+        let rasxod_sum = 0
+        result[0].data?.forEach(item => {
+            prixod_sum += item.prixod_sum
+            rasxod_sum += item.rasxod_sum
+        })
+        return { prixod_sum, rasxod_sum, data: result[0]?.data || [], balance_from: result[0].balance_from, balance_to: result[0]?.balance_to }
     }
 }
