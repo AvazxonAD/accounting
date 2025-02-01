@@ -33,4 +33,17 @@ exports.Controller = class {
 
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
+
+    static async cap(req, res) {
+        const { from, to, main_schet_id } = req.query;
+        const region_id = req.user.region_id;
+
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+        if (!main_schet) {
+            return res.error(req.i18n.t('mainSchetNotFound'), 400)
+        }
+
+        const data = await KassaMonitoringService.cap({ region_id, main_schet_id, from, to });
+
+    }
 }

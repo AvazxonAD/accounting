@@ -6,7 +6,8 @@ const { KassaRasxodSchema } = require('./schema')
 const { Controller } = require("./controller");
 
 
-router.get('/', validator(Controller.get, KassaRasxodSchema.get()));
+router.get('/', validator(Controller.get, KassaRasxodSchema.get()))
+    .get('/cap', validator(Controller.c));
 
 
 module.exports = router;
