@@ -57,7 +57,7 @@ const bank_rasxod = async (req, res) => {
     }
     const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_rasxod')
     if (!checkSchetsEquality(operatsiis)) {
-      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+      return res.eror(req.i18n.t('schetDifferentError'), 400);
     }
     const summa = returnAllChildSumma(data.childs);
     const rasxod = await createBankRasxodDb({ ...data, main_schet_id, user_id, summa, });
@@ -104,7 +104,7 @@ const bank_rasxod_update = async (req, res) => {
     }
     const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_rasxod')
     if (!checkSchetsEquality(operatsiis)) {
-      throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+      return res.eror(req.i18n.t('schetDifferentError'), 400);
     }
     const summa = returnAllChildSumma(data.childs);
     const prixod = await updateRasxodService({ ...data, id, provodki_boolean: true, summa });

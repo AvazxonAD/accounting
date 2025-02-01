@@ -26,24 +26,22 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const user_id = req.user.id;
         const main_schet_id = req.query.main_schet_id;
+       
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.eror(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const operatsii = await OperatsiiDB.getByIdOperatsii([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
-            return res.status(404).json({
-                message: "operatsii not found"
-            })
+            return res.error(req.i18n.t('operatsiiNotFound'), 404);
         }
+
         const organization = await OrganizationDB.getByIdorganization([region_id, id_spravochnik_organization]);
         if (!organization) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
+            return res.error(req.i18n.t('organizationNotFound'), 404);
         }
+
         if (shartnomalar_organization_id) {
             const shartnoma = await ContractDB.getByIdContract(
                 [region_id, shartnomalar_organization_id],
@@ -51,46 +49,37 @@ exports.Controller = class {
                 id_spravochnik_organization
             );
             if (!shartnoma || !shartnoma.pudratchi_bool) {
-                return res.status(404).json({
-                    message: "conrtact not found"
-                })
+                return res.error(req.i18n.t('contractNotFound'), 404);
             }
         }
+
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "akt");
             if (!operatsii) {
-                return res.status(404).json({
-                    message: 'operatsii not found'
-                })
+                return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
             if (child.id_spravochnik_podrazdelenie) {
                 const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, child.id_spravochnik_podrazdelenie]);
                 if (!podrazdelenie) {
-                    return res.status(404).json({
-                        message: "podrazdelenie not found"
-                    })
+                    return res.error(req.i18n.t('podrazNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_sostav) {
                 const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
-                    return res.status(404).json({
-                        message: "sostav not found"
-                    })
+                    return res.eror(req.i18n.t('sostavNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_type_operatsii) {
                 const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
-                    return res.status(404).json({
-                        message: "type_operatsii not found"
-                    })
+                    return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
                 }
             }
         }
         const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'akt')
         if (!checkSchetsEquality(operatsiis)) {
-            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+            return res.eror(req.i18n.t('schetDifferentError'), 400);
         }
         let summa = 0;
         for (let child of childs) {
@@ -130,28 +119,28 @@ exports.Controller = class {
             const items = await AktDB.createAktChild(result_childs, client)
             doc.childs = items;
         })
-        return res.status(201).json({
-            message: "akt created successfully",
-            data: doc
-        })
+
+        return res.success(req.i18n.t('createSuccess'), 201, null, doc);
     }
 
     static async getAkt(req, res) {
         const region_id = req.user.region_id;
         const { page, limit, from, to, main_schet_id } = req.query;
+        
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.eror(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const offset = (page - 1) * limit;
         const data = await AktDB.getAkt([region_id, main_schet_id, from, to, offset, limit]);
         const total = await AktDB.getTotalAkt([region_id, main_schet_id, from, to])
-        let summa;
+        
+        let summa = 0;
         data.forEach(item => {
             summa += item.summa;
         })
+
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -161,33 +150,24 @@ exports.Controller = class {
             backPage: page === 1 ? null : page - 1,
             summa,
         }
-        return res.status(200).json({
-            message: "akt get successfully",
-            meta,
-            data
-        })
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async getByIdAkt(req, res) {
         const main_schet_id = req.query.main_schet_id;
         const region_id = req.user.region_id;
         const id = req.params.id;
+        
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.eror(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const result = await AktDB.getByIdAkt([region_id, main_schet_id, id], true);
         if (!result) {
-            return res.status(404).json({
-                message: "akt doc not found"
-            })
+            return res.error(req.i18n.t('docNotFound'), 404);
         }
-        return res.status(200).json({
-            message: "akt doc get successfully",
-            data: result
-        })
+        return res.success(req.i18n.t('getSuccess'), 200, null, result);
     }
 
     static async updateAkt(req, res) {
@@ -206,28 +186,24 @@ exports.Controller = class {
         const id = req.params.id;
         const old_data = await AktDB.getByIdAkt([region_id, main_schet_id, id])
         if (!old_data) {
-            return res.status(404).json({
-                message: "akt doc not found"
-            })
+            return res.eror(req.i18n.t('docNotFound'), 404);
         }
+        
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.eror(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const operatsii = await OperatsiiDB.getByIdOperatsii([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
-            return res.status(404).json({
-                message: "operatsii not found"
-            })
+            return res.error(req.i18n.t('operatsiiNotFound'), 404);
         }
+
         const organization = await OrganizationDB.getByIdorganization([region_id, id_spravochnik_organization]);
         if (!organization) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
+            return res.error(req.i18n.t('organizationNotFound'), 404);
         }
+
         if (shartnomalar_organization_id) {
             const shartnoma = await ContractDB.getByIdContract(
                 [region_id, shartnomalar_organization_id],
@@ -235,51 +211,45 @@ exports.Controller = class {
                 id_spravochnik_organization
             );
             if (!shartnoma || !shartnoma.pudratchi_bool) {
-                return res.status(404).json({
-                    message: "conrtact not found"
-                })
+                return res.error(req.i18n.t('contractNotFound'), 404);
             }
         }
+
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "akt");
             if (!operatsii) {
-                return res.status(404).json({
-                    message: 'operatsii not found'
-                })
+                return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
+           
             if (child.id_spravochnik_podrazdelenie) {
                 const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, child.id_spravochnik_podrazdelenie]);
                 if (!podrazdelenie) {
-                    return res.status(404).json({
-                        message: "podrazdelenie not found"
-                    })
+                    return res.error(req.i18n.t('podrazNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_sostav) {
                 const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
-                    return res.status(404).json({
-                        message: "sostav not found"
-                    })
+                    return res.eror(req.i18n.t('sostavNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_type_operatsii) {
                 const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
-                    return res.status(404).json({
-                        message: "type_operatsii not found"
-                    })
+                    return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
                 }
             }
         }
         const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'akt')
         if (!checkSchetsEquality(operatsiis)) {
-            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+            return res.eror(req.i18n.t('schetDifferentError'), 400);
         }
+
         let summa = 0;
         for (let child of childs) {
             summa += child.kol * child.sena;
         }
+
         let doc;
         await db.transaction(async (client) => {
             doc = await AktDB.updateAkt([
@@ -313,10 +283,7 @@ exports.Controller = class {
             const items = await AktDB.createAktChild(result_childs, client)
             doc.childs = items;
         })
-        return res.status(201).json({
-            message: "akt created successfully",
-            data: doc
-        })
+        return res.success(req.i18n.t('updateSuccess'), 200, null, doc);
     }
 
     static async deleteAkt(req, res) {
@@ -325,22 +292,16 @@ exports.Controller = class {
         const id = req.params.id;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.eror(req.i18n.t('mainSchetNotFound'), 404);
         }
         const result = await AktDB.getByIdAkt([region_id, main_schet_id, id], true);
         if (!result) {
-            return res.status(404).json({
-                message: "akt doc not found"
-            })
+            return res.error(req.i18n.t('docNotFound'), 404)
         }
         await db.transaction(async (client) => {
             await AktDB.deleteAkt([id], client)
         })
-        return res.status(200).json({
-            message: 'delete akt successfully'
-        })
+        return res.success(req.i18n.t('deleteSuccess'), 200);
     }
 
     static async cap(req, res) {
