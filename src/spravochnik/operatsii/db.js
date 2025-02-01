@@ -47,10 +47,11 @@ exports.OperatsiiDB = class {
         let offset_limit = ``;
         if (search) {
             search_filter = `AND (
+                schet = $${params.length + 1} OR 
                 name ILIKE '%' || $${params.length + 1} || '%' OR
-                schet = $${params.length + 1}
-                sub_schet ILIKE '%' || $${params.length + 1} || '%')
-            `
+                sub_schet ILIKE '%' || $${params.length + 1} || '%'
+                )
+            `;
             params.push(search)
         }
         if (type_schet) {
