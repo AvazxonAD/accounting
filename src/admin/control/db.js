@@ -7,71 +7,71 @@ exports.ControlDB = class {
                 SELECT COALESCE(COUNT(k.id), 0)::INTEGER AS count
                 FROM kassa_rasxod AS k
                 JOIN users AS u ON u.id = k.user_id
-                JOIN regions AS r1 ON r1.id = u.region_id
-                WHERE EXTRACT(YEAR FROM k.doc_date) = $1 AND EXTRACT(MONTH FROM k.doc_date) = $2 AND r1.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM k.doc_date) = $1 AND EXTRACT(MONTH FROM k.doc_date) = $2 AND r.id = $3 
             ),
             kassa_prixodCount AS (
                 SELECT COALESCE(COUNT(k.id), 0)::INTEGER AS count
                 FROM kassa_prixod AS k
                 JOIN users AS u ON u.id = k.user_id
-                JOIN regions AS r2 ON r2.id = u.region_id
-                WHERE EXTRACT(YEAR FROM k.doc_date) = $1 AND EXTRACT(MONTH FROM k.doc_date) = $2 AND r2.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM k.doc_date) = $1 AND EXTRACT(MONTH FROM k.doc_date) = $2 AND r.id = $3 
             ),
             bank_rasxodCount AS (
                 SELECT COALESCE(COUNT(b.id), 0)::INTEGER AS count
                 FROM bank_rasxod AS b
                 JOIN users AS u ON u.id = b.user_id
-                JOIN regions AS r3 ON r3.id = u.region_id
-                WHERE EXTRACT(YEAR FROM b.doc_date) = $1 AND EXTRACT(MONTH FROM b.doc_date) = $2 AND r3.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM b.doc_date) = $1 AND EXTRACT(MONTH FROM b.doc_date) = $2 AND r.id = $3 
             ),
             bank_prixodCount AS (
                 SELECT COALESCE(COUNT(b.id), 0)::INTEGER AS count
                 FROM bank_prixod AS b
                 JOIN users AS u ON u.id = b.user_id
-                JOIN regions AS r4 ON r4.id = u.region_id
-                WHERE EXTRACT(YEAR FROM b.doc_date) = $1 AND EXTRACT(MONTH FROM b.doc_date) = $2 AND r4.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM b.doc_date) = $1 AND EXTRACT(MONTH FROM b.doc_date) = $2 AND r.id = $3 
             ),
             avans_otchetlar_jur4Count AS (
                 SELECT COALESCE(COUNT(a.id), 0)::INTEGER AS count
                 FROM avans_otchetlar_jur4 AS a
                 JOIN users AS u ON u.id = a.user_id
-                JOIN regions AS r5 ON r5.id = u.region_id
-                WHERE EXTRACT(YEAR FROM a.doc_date) = $1 AND EXTRACT(MONTH FROM a.doc_date) = $2 AND r5.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM a.doc_date) = $1 AND EXTRACT(MONTH FROM a.doc_date) = $2 AND r.id = $3 
             ),
             kursatilgan_hizmatlar_jur152Count AS (
                 SELECT COALESCE(COUNT(k_h.id), 0)::INTEGER AS count
                 FROM kursatilgan_hizmatlar_jur152 AS k_h
                 JOIN users AS u ON u.id = k_h.user_id
-                JOIN regions AS r6 ON r6.id = u.region_id
-                WHERE EXTRACT(YEAR FROM k_h.doc_date) = $1 AND EXTRACT(MONTH FROM k_h.doc_date) = $2 AND r6.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM k_h.doc_date) = $1 AND EXTRACT(MONTH FROM k_h.doc_date) = $2 AND r.id = $3 
             ),
             bajarilgan_ishlar_jur3Count AS (
                 SELECT COALESCE(COUNT(b_j.id), 0)::INTEGER AS count
                 FROM bajarilgan_ishlar_jur3 AS b_j
                 JOIN users AS u ON u.id = b_j.user_id
-                JOIN regions AS r7 ON r7.id = u.region_id
-                WHERE EXTRACT(YEAR FROM b_j.doc_date) = $1 AND EXTRACT(MONTH FROM b_j.doc_date) = $2 AND r7.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM b_j.doc_date) = $1 AND EXTRACT(MONTH FROM b_j.doc_date) = $2 AND r.id = $3 
             ),
             document_vnutr_peremesh_jur7Count AS (
                 SELECT COALESCE(COUNT(i.id), 0)::INTEGER AS count
                 FROM document_vnutr_peremesh_jur7 AS i
                 JOIN users AS u ON u.id = i.user_id
-                JOIN regions AS r8 ON r8.id = u.region_id
-                WHERE EXTRACT(YEAR FROM i.doc_date) = $1 AND EXTRACT(MONTH FROM i.doc_date) = $2 AND r8.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM i.doc_date) = $1 AND EXTRACT(MONTH FROM i.doc_date) = $2 AND r.id = $3 
             ),
             document_prixod_jur7Count AS (
                 SELECT COALESCE(COUNT(p.id), 0)::INTEGER AS count
                 FROM document_prixod_jur7 AS p
                 JOIN users AS u ON u.id = p.user_id
-                JOIN regions AS r9 ON r9.id = u.region_id
-                WHERE EXTRACT(YEAR FROM p.doc_date) = $1 AND EXTRACT(MONTH FROM p.doc_date) = $2 AND r9.id = $3 
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM p.doc_date) = $1 AND EXTRACT(MONTH FROM p.doc_date) = $2 AND r.id = $3 
             ),
             document_rasxod_jur7Count AS (
                 SELECT COALESCE(COUNT(r.id), 0)::INTEGER AS count
-                FROM document_rasxod_jur7 AS r
-                JOIN users AS u ON u.id = r.user_id
-                JOIN regions AS r10 ON r10.id = u.region_id
-                WHERE EXTRACT(YEAR FROM r.doc_date) = $1 AND EXTRACT(MONTH FROM r.doc_date) = $2 AND r10.id = $3 
+                FROM document_rasxod_jur7 AS d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE EXTRACT(YEAR FROM d.doc_date) = $1 AND EXTRACT(MONTH FROM d.doc_date) = $2 AND r.id = $3 
             ),
             contractCount AS (
                 SELECT COALESCE(COUNT(sh.id), 0)::INTEGER AS count
@@ -174,3 +174,4 @@ exports.ControlDB = class {
         return result[0]
     }
 }
+
