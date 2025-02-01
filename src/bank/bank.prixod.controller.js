@@ -53,7 +53,7 @@ const create = asyncHandler(async (req, res) => {
   }
   const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_prixod')
   if(!checkSchetsEquality(operatsiis)){
-    throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+    return res.eror(req.i18n.t('schetDifferentError'), 400);
   }
   const summa = returnAllChildSumma(data.childs);
   const result = await createBankPrixodService({ ...data, main_schet_id, user_id, provodki_boolean: true, summa, });
@@ -91,7 +91,7 @@ const bank_prixod_update = asyncHandler(async (req, res) => {
   }
   const operatsiis = await getOperatsiiByChildArray(data.childs, 'bank_prixod')
   if(!checkSchetsEquality(operatsiis)){
-    throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+    return res.eror(req.i18n.t('schetDifferentError'), 400);
   }
   const summa = returnAllChildSumma(data.childs);
   const prixod = await bankPrixodUpdateService({ ...data, id, provodki_boolean: true, summa, user_id });

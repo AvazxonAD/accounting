@@ -56,38 +56,30 @@ exports.ShowServiceService = class {
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "show_service");
             if (!operatsii) {
-                return res.status(404).json({
-                    message: 'operatsii not found'
-                })
+                return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
             if (child.id_spravochnik_podrazdelenie) {
                 const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, child.id_spravochnik_podrazdelenie]);
                 if (!podrazdelenie) {
-                    return res.status(404).json({
-                        message: "podrazdelenie not found"
-                    })
+                    return res.error(req.i18n.t('podrazNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_sostav) {
                 const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
-                    return res.status(404).json({
-                        message: "sostav not found"
-                    })
+                    return res.eror(req.i18n.t('sostavNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_type_operatsii) {
                 const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
-                    return res.status(404).json({
-                        message: "type_operatsii not found"
-                    })
+                    return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
                 }
             }
         }
         const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'show_service')
         if (!checkSchetsEquality(operatsiis)) {
-            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+            return res.eror(req.i18n.t('schetDifferentError'), 400);
         }
         let summa = 0;
         for (let child of childs) {
@@ -235,38 +227,30 @@ exports.ShowServiceService = class {
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "show_service");
             if (!operatsii) {
-                return res.status(404).json({
-                    message: 'operatsii not found'
-                })
+                return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
             if (child.id_spravochnik_podrazdelenie) {
                 const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, child.id_spravochnik_podrazdelenie]);
                 if (!podrazdelenie) {
-                    return res.status(404).json({
-                        message: "podrazdelenie not found"
-                    })
+                    return res.error(req.i18n.t('podrazNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_sostav) {
                 const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
-                    return res.status(404).json({
-                        message: "sostav not found"
-                    })
+                    return res.eror(req.i18n.t('sostavNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_type_operatsii) {
                 const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
-                    return res.status(404).json({
-                        message: "type_operatsii not found"
-                    })
+                    return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
                 }
             }
         }
         const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'show_service')
         if (!checkSchetsEquality(operatsiis)) {
-            throw new ErrorResponse('Multiple different schet values were selected. Please ensure only one type of schet is returned', 400)
+            return res.eror(req.i18n.t('schetDifferentError'), 400);
         }
         let summa = 0;
         for (let child of childs) {
