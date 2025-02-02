@@ -1,4 +1,8 @@
 const { KassaMonitoringDB } = require('./db');
+const { returnStringSumma, returnStringDate } = require('../../helper/functions');
+const ExcelJS = require('exceljs');
+const path = require('path');
+const { readFile, mkdir, constants, access } = require('fs').promises;
 
 exports.KassaMonitoringService = class {
     static async get(data) {
@@ -195,9 +199,19 @@ exports.KassaMonitoringService = class {
         worksheet.getRow(row_number + 2).height = 30;
         worksheet.getRow(row_number + 3).height = 30;
         worksheet.getRow(row_number + 4).height = 30;
-        const filePath = path.join(__dirname, '../../public/uploads/' + fileName);
+
+        const folderPath = path.join(__dirname, '../../../public/exports');
+
+        try {
+            await access(folderPath, constants.W_OK);
+        } catch (error) {
+            await mkdir(folderPath);
+        }
+
+        const filePath = `${folderPath}/${fileName}`;
+
         await workbook.xlsx.writeFile(filePath);
 
-        return { fileName, filePath }
+        return { fileName, filePath };
     }
 }

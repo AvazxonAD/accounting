@@ -13,7 +13,7 @@ exports.KassaRasxodSchema = class {
         }).options({ stripUnknown: true });
     }
 
-    static async cap() {
+    static cap() {
         return Joi.object({
             query: Joi.object({
                 main_schet_id: Joi.number().integer().required().min(1),

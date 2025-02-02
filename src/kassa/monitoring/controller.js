@@ -45,5 +45,15 @@ exports.Controller = class {
 
         const data = await KassaMonitoringService.cap({ region_id, main_schet_id, from, to });
 
+        const { fileName, filePath } = await KassaMonitoringService.capExcel({ ...data, main_schet, from, to });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        return res.sendFile(filePath);
+    }
+
+    static async daily(req, res) {
+        
     }
 }
