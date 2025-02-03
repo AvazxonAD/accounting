@@ -27,6 +27,12 @@ exports.HelperFunctions = class {
         const date = new Date(excelEpoch.getTime() + serial * 86400000);
         return date.toISOString().split('T')[0];
     }
+
+    static probelNumber(num) {
+        const strNum = String(num);
+        return strNum.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      }
+      
 }
 
 exports.tashkentTime = () => {
