@@ -4,9 +4,9 @@ const { protect } = require('./middleware/auth');
 
 // Bank monitoring
 routes
-    .use("/bank/monitoring", protect, require("./bank/bank.monitoring.routes"))
-    .use("/bank/income", protect, require("./bank/bank.prixod.routes"))
-    .use("/bank/expense", protect, require("./bank/bank.rasxod.routes"))
+    .use("/bank/monitoring", protect, require("./bank/monitoring/index"))
+    .use("/bank/income", protect, require("./bank/prixod/index"))
+    .use("/bank/expense", protect, require("./bank/rasxod/index"))
     // Kassa monitoring
     .use("/kassa/monitoring", protect, require("./kassa/monitoring/index"))
     .use("/kassa/income", protect, require("./kassa/prixod/index"))
