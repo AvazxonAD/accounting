@@ -54,22 +54,17 @@ exports.DashboardDB = class {
     static async getPodotchets(params) {
         const query = `
             SELECT 
-                a.id, 
-                a.doc_num, 
-                TO_CHAR(a.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                a.opisanie, 
-                a.summa::FLOAT, 
-                a.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,  
+                COALESCE(SUM(a.summa), 0)::FLOAT AS rasxod,   
+                0 AS prixod,   
+                s.id AS podotchet_id,  
                 s.name AS spravochnik_podotchet_litso_name,
-                s.rayon AS spravochnik_podotchet_litso_rayon,
-                a.spravochnik_operatsii_own_id
+                s.rayon AS spravochnik_podotchet_litso_rayon
             FROM avans_otchetlar_jur4 AS a
-            JOIN users AS u ON u.id =  a.user_id
+            JOIN users AS u ON u.id = a.user_id
             JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_podotchet_litso AS s ON s.id = a.spravochnik_podotchet_litso_id 
             WHERE a.main_schet_id = $1 AND a.doc_date <= $2
-            GROUP BY s.id
-            ORDER BY a.doc_date
+            GROUP BY s.id;
         `;
 
         const result = await db.query(query, params);
