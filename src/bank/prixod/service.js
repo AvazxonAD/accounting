@@ -1,23 +1,22 @@
 const { db } = require('../../db/index');
-const { KassaPrixodDB } = require('./db');
+const { BankPrixodDB } = require('./db');
 const { tashkentTime, HelperFunctions } = require('../../helper/functions');
 
-exports.KassaPrixodService = class {
+exports.BankPrixodService = class {
     static async create(data) {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await KassaPrixodDB.createPrixod([
-                data.doc_num,
-                data.doc_date,
-                data.opisanie,
-                summa,
-                data.id_podotchet_litso,
-                data.main_schet_id,
-                data.user_id,
-                tashkentTime(),
-                tashkentTime(),
-                data.main_zarplata_id
+            const doc = await BankPrixodDB.createPrixod([
+                data.doc_num, 
+                data.doc_date, 
+                summa, 
+                data.provodki_boolean, 
+                data.opisanie, 
+                data.id_spravochnik_organization, 
+                data.id_shartnomalar_organization, 
+                data.main_schet_id, 
+                data.user_id
             ], client)
 
             await this.createChild({ childs: data.childs, client, docId: doc.id, user_id: data.user_id, main_schet_id: data.main_schet_id });
@@ -34,30 +33,30 @@ exports.KassaPrixodService = class {
             create_childs.push(
                 child.spravochnik_operatsii_id,
                 child.summa,
-                child.id_spravochnik_podrazdelenie,
+                child.id_spravochnipodrazdelenie,
                 child.id_spravochnik_sostav,
                 child.id_spravochnik_type_operatsii,
+                child.id_spravochnipodotchet_litso,
+                data.main_schet_id,
                 data.docId,
                 data.user_id,
-                data.main_schet_id,
-                tashkentTime(),
-                tashkentTime(),
+                child.main_zarplata_id
             )
         }
 
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 10 });
 
-        await KassaPrixodDB.createPrixodChild(create_childs, _values, data.client);
+        await BankPrixodDB.createPrixodChild(create_childs, _values, data.client);
     }
 
     static async get(data) {
-        const result = await KassaPrixodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+        const result = await BankPrixodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
 
         return { data: result.data || [], summa: result.summa, total_count: result.total_count };
     }
 
     static async getById(data) {
-        const result = await KassaPrixodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
+        const result = await BankPrixodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
 
         return result;
     }
@@ -66,7 +65,7 @@ exports.KassaPrixodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await KassaPrixodDB.update([
+            const doc = await BankPrixodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.opisanie,
@@ -77,7 +76,7 @@ exports.KassaPrixodService = class {
                 data.main_zarplata_id
             ], client);
 
-            await KassaPrixodDB.deleteChild([doc.id], client);
+            await BankPrixodDB.deleteChild([doc.id], client);
 
             await this.createChild({ childs: data.childs, client, docId: doc.id, user_id: data.user_id, main_schet_id: data.main_schet_id });
 
@@ -89,7 +88,7 @@ exports.KassaPrixodService = class {
 
     static async delete(data) {
         const result = await db.transaction(async client => {
-            const doc = await KassaPrixodDB.delete([data.id], client);
+            const doc = await BankPrixodDB.delete([data.id], client);
             
             return doc;
         });

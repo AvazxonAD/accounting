@@ -15,4 +15,10 @@ exports.ContractService = class {
         const result = await ContractDB.getContractByOrganizations([data.region_id], data.organ_id);
         return result;
     }
+
+    static async getById(data) {
+        const result = await ContractDB.getByIdContract([data.region_id, data.id]);
+        
+        return result;
+    }
 }
