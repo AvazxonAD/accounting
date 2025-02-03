@@ -8,6 +8,25 @@ const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/servi
 const { KassaRasxodService } = require('./service');
 
 exports.Controller = class {
+  static async paymentBankRasxod(req, res) {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const { main_schet_id } = req.query;
+   
+    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    if (!main_schet) {
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
+    }
+
+    const bank_rasxod = await BankRasxodService.getByIdBankRasxod({ id, main_schet_id, region_id });
+    if (!bank_rasxod) {
+      return res.error(req.i18n.t('docNotFound'), 404);
+    }
+    
+    await BankRasxodService.paymentBankRasxod({ id, status: req.body.status });
+    return res.success('Payment successfully', 200);
+  }
+
   static async create(req, res) {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;

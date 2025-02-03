@@ -1,13 +1,13 @@
 const { db } = require('../../db/index');
-const { KassaRasxodDB } = require('./db');
+const { BankRasxodDB } = require('./db');
 const { tashkentTime, HelperFunctions } = require('../../helper/functions');
 
-exports.KassaRasxodService = class {
+exports.BankRasxodService = class {
     static async create(data) {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await KassaRasxodDB.createPrixod([
+            const doc = await bankRasxodDB.createPrixod([
                 data.doc_num,
                 data.doc_date,
                 data.opisanie,
@@ -47,17 +47,17 @@ exports.KassaRasxodService = class {
 
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 10 });
 
-        await KassaRasxodDB.createPrixodChild(create_childs, _values, data.client);
+        await bankRasxodDB.createPrixodChild(create_childs, _values, data.client);
     }
 
     static async get(data) {
-        const result = await KassaRasxodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+        const result = await bankRasxodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
 
         return { data: result.data || [], summa: result.summa, total_count: result.total_count };
     }
 
     static async getById(data) {
-        const result = await KassaRasxodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
+        const result = await bankRasxodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
 
         return result;
     }
@@ -66,7 +66,7 @@ exports.KassaRasxodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await KassaRasxodDB.update([
+            const doc = await bankRasxodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.opisanie,
@@ -77,7 +77,7 @@ exports.KassaRasxodService = class {
                 data.main_zarplata_id
             ], client);
 
-            await KassaRasxodDB.deleteChild([doc.id], client);
+            await bankRasxodDB.deleteChild([doc.id], client);
 
             await this.createChild({ childs: data.childs, client, docId: doc.id, user_id: data.user_id, main_schet_id: data.main_schet_id });
 
@@ -89,7 +89,7 @@ exports.KassaRasxodService = class {
 
     static async delete(data) {
         const result = await db.transaction(async client => {
-            const doc = await KassaRasxodDB.delete([data.id], client);
+            const doc = await bankRasxodDB.delete([data.id], client);
             
             return doc;
         });
