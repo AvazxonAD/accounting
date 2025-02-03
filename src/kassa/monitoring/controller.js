@@ -1,7 +1,6 @@
 const { KassaMonitoringService } = require('./service');
 const { MainSchetService } = require('../../spravochnik/main.schet/services');
 
-
 exports.Controller = class {
     static async get(req, res) {
         const region_id = req.user.region_id
@@ -54,6 +53,21 @@ exports.Controller = class {
     }
 
     static async daily(req, res) {
-        
+        const { from, to, main_schet_id } = req.query;
+        const region_id = req.user.region_id;
+
+        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+        if (!main_schet) {
+            return res.error(req.i18n.t('mainSchetNotFound'), 400)
+        }
+
+        const data = await KassaMonitoringService.daily({ region_id, main_schet_id, from, to });
+
+        const { fileName, filePath } = await KassaMonitoringService.dailyExcel({ ...data, from, to, main_schet, region_id });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        return res.sendFile(filePath);
     }
 }
