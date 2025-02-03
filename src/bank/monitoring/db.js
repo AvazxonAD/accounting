@@ -146,7 +146,10 @@ exports.KassaMonitoringDB = class {
     static async cap(params) {
         const qeury = `
             WITH data AS (
-                SELECT s_o.schet, COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS prixod_sum, 0 AS rasxod_sum 
+                SELECT 
+                    s_o.schet, 
+                    COALESCE(SUM(k_p_ch.summa), 0)::FLOAT AS prixod_sum, 
+                    0 AS rasxod_sum 
                 FROM kassa_prixod k_p
                 JOIN users AS u ON u.id = k_p.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -154,8 +157,13 @@ exports.KassaMonitoringDB = class {
                 JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
                 WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.doc_date BETWEEN $3 AND $4 AND k_p.isdeleted = false
                 GROUP BY s_o.schet
+                
                 UNION ALL 
-                SELECT s_o.schet, 0 AS prixod_sum, SUM(k_r_ch.summa)::FLOAT AS rasxod_sum 
+                
+                SELECT 
+                    s_o.schet, 
+                    0 AS prixod_sum, 
+                    SUM(k_r_ch.summa)::FLOAT AS rasxod_sum 
                 FROM kassa_rasxod k_r
                 JOIN users AS u ON u.id = k_r.user_id
                 JOIN regions AS r ON r.id = u.region_id
