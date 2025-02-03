@@ -6,4 +6,12 @@ exports.DashboardService = class {
 
         return result;
     }
+
+    static async get(data) {
+        const kassa_bank = await DashboardDB.getKassSumma([data.main_schet_id, data.to]);
+
+        const podotchets = await DashboardDB.getPodotchets([data.main_schet_id, data.to]);
+
+        return { kassa_bank, };
+    }
 }
