@@ -12,6 +12,6 @@ exports.DashboardService = class {
 
         const podotchets = await DashboardDB.getPodotchets([data.main_schet_id, data.to]);
 
-        return { kassa_bank, };
-    }
+        return { kassa_bank, podotchets };
+    }2
 }
