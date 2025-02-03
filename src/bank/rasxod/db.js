@@ -1,9 +1,9 @@
 const { db } = require('../../db/index')
 
-exports.KassaRasxodDB = class {
+exports.BankRasxodDB = class {
     static async createPrixod(params, client) {
         const query = `
-            INSERT INTO kassa_rasxod(
+            INSERT INTO bank_rasxod(
                 doc_num, 
                 doc_date, 
                 opisanie, 
@@ -26,13 +26,13 @@ exports.KassaRasxodDB = class {
 
     static async createPrixodChild(params, _values, client) {
         const query = `
-            INSERT INTO kassa_rasxod_child (
+            INSERT INTO bank_rasxod_child (
               spravochnik_operatsii_id,
               summa,
               id_spravochnik_podrazdelenie, 
               id_spravochnik_sostav, 
               id_spravochnik_type_operatsii,
-              kassa_rasxod_id,
+              bank_rasxod_id,
               user_id, 
               main_schet_id, 
               created_at, 
@@ -50,54 +50,54 @@ exports.KassaRasxodDB = class {
         const query = `
                 WITH data AS (
                     SELECT 
-                        k_p.id, 
-                        k_p.doc_num,
-                        TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                        k_p.opisanie, 
-                        k_p.summa, 
-                        k_p.id_podotchet_litso,
+                        r.id, 
+                        r.doc_num,
+                        TO_CHAR(r.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                        r.opisanie, 
+                        r.summa, 
+                        r.id_podotchet_litso,
                         s_p_l.name AS spravochnik_podotchet_litso_name,
                         s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
-                        k_p.main_zarplata_id,
+                        r.main_zarplata_id,
                         (
                             SELECT ARRAY_AGG(row_to_json(k_p_ch))
                             FROM (
                                 SELECT 
                                     s_o.schet AS provodki_schet,
                                     s_o.sub_schet AS provodki_sub_schet
-                                FROM kassa_rasxod_child AS k_p_ch
+                                FROM bank_rasxod_child AS k_p_ch
                                 JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
-                                WHERE  k_p_ch.kassa_rasxod_id = k_p.id 
+                                WHERE  k_p_ch.bank_rasxod_id = r.id 
                             ) AS k_p_ch
                         ) AS provodki_array
-                    FROM kassa_rasxod AS k_p
-                    JOIN users AS u ON u.id = k_p.user_id
+                    FROM bank_rasxod AS r
+                    JOIN users AS u ON u.id = r.user_id
                     JOIN regions AS r ON r.id = u.region_id
-                    LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
-                    WHERE r.id = $1 AND k_p.main_schet_id = $2 AND k_p.isdeleted = false AND k_p.doc_date BETWEEN $3 AND $4 ORDER BY k_p.doc_date
+                    LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = r.id_podotchet_litso
+                    WHERE r.id = $1 AND r.main_schet_id = $2 AND r.isdeleted = false AND r.doc_date BETWEEN $3 AND $4 ORDER BY r.doc_date
                     OFFSET $5 LIMIT $6
                 )
                 SELECT 
                     ARRAY_AGG(row_to_json(data)) AS data,
                     (
-                        SELECT COALESCE(SUM(k_p.summa), 0)
-                        FROM kassa_rasxod AS k_p
-                        JOIN users AS u ON u.id = k_p.user_id
+                        SELECT COALESCE(SUM(r.summa), 0)
+                        FROM bank_rasxod AS r
+                        JOIN users AS u ON u.id = r.user_id
                         JOIN regions AS r ON r.id = u.region_id  
-                        WHERE k_p.main_schet_id = $2 
+                        WHERE r.main_schet_id = $2 
                             AND r.id = $1
-                            AND k_p.doc_date BETWEEN $3 AND $4 
-                            AND k_p.isdeleted = false
+                            AND r.doc_date BETWEEN $3 AND $4 
+                            AND r.isdeleted = false
                     )::FLOAT AS summa,
                     (
-                        SELECT COALESCE(COUNT(k_p.id), 0)
-                        FROM kassa_rasxod AS k_p
-                        JOIN users AS u ON u.id = k_p.user_id
+                        SELECT COALESCE(COUNT(r.id), 0)
+                        FROM bank_rasxod AS r
+                        JOIN users AS u ON u.id = r.user_id
                         JOIN regions AS r ON r.id = u.region_id  
                         WHERE r.id = $1 
-                            AND k_p.main_schet_id = $2 
-                            AND k_p.doc_date BETWEEN $3 AND $4 
-                            AND k_p.isdeleted = false
+                            AND r.main_schet_id = $2 
+                            AND r.doc_date BETWEEN $3 AND $4 
+                            AND r.isdeleted = false
                     )::INTEGER AS total_count
                 FROM data
             `;
@@ -110,15 +110,15 @@ exports.KassaRasxodDB = class {
     static async getById(params, isdeleted) {
         const query = `
             SELECT 
-                k_p.id, 
-                k_p.doc_num,
-                TO_CHAR(k_p.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                k_p.opisanie, 
-                k_p.summa::FLOAT, 
-                k_p.id_podotchet_litso,
+                r.id, 
+                r.doc_num,
+                TO_CHAR(r.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                r.opisanie, 
+                r.summa::FLOAT, 
+                r.id_podotchet_litso,
                 s_p_l.name AS spravochnik_podotchet_litso_name,
                 s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
-                k_p.main_zarplata_id,
+                r.main_zarplata_id,
                 (
                     SELECT ARRAY_AGG(row_to_json(k_p_ch))
                     FROM (
@@ -129,22 +129,22 @@ exports.KassaRasxodDB = class {
                             k_p_ch.id_spravochnik_podrazdelenie,
                             k_p_ch.id_spravochnik_sostav,
                             k_p_ch.id_spravochnik_type_operatsii
-                        FROM kassa_rasxod_child AS k_p_ch 
-                        JOIN users AS u ON u.id = k_p.user_id
+                        FROM bank_rasxod_child AS k_p_ch 
+                        JOIN users AS u ON u.id = r.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1 
                         AND k_p_ch.main_schet_id = $2 
-                        AND k_p_ch.kassa_rasxod_id = k_p.id
+                        AND k_p_ch.bank_rasxod_id = r.id
                     ) AS k_p_ch
                 ) AS childs
-            FROM kassa_rasxod AS k_p
-            JOIN users AS u ON u.id = k_p.user_id
+            FROM bank_rasxod AS r
+            JOIN users AS u ON u.id = r.user_id
             JOIN regions AS r ON r.id = u.region_id
-            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = k_p.id_podotchet_litso
+            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = r.id_podotchet_litso
             WHERE r.id = $1 
-                AND k_p.main_schet_id = $2 
-                AND k_p.id = $3
-                ${!isdeleted ? 'AND k_p.isdeleted = false' : ''}
+                AND r.main_schet_id = $2 
+                AND r.id = $3
+                ${!isdeleted ? 'AND r.isdeleted = false' : ''}
         `;
 
         const result = await db.query(query, params);
@@ -154,7 +154,7 @@ exports.KassaRasxodDB = class {
 
     static async update(params, client) {
         const result = await client.query(`
-            UPDATE kassa_rasxod SET 
+            UPDATE bank_rasxod SET 
                 doc_num = $1, 
                 doc_date = $2, 
                 opisanie = $3, 
@@ -169,13 +169,13 @@ exports.KassaRasxodDB = class {
     }
 
     static async deleteChild(params, client) {
-        await client.query(`DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`, params);
+        await client.query(`DELETE FROM bank_rasxod_child  WHERE bank_rasxod_id = $1`, params);
     }
 
     static async delete(params, client) {
-        await client.query(`UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`, params);
+        await client.query(`UPDATE bank_rasxod_child SET isdeleted = true WHERE bank_rasxod_id = $1`, params);
         
-        const result = await client.query(`UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+        const result = await client.query(`UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
         
         return result.rows[0];
     }
