@@ -62,7 +62,7 @@ exports.Controller = class {
           return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
         }
       }
-   
+
       if (child.id_podotchet_litso) {
         const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
         if (!podotchet) {
@@ -117,7 +117,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
-    const result = await BankPrixodService.getById({ region_id, main_schet_id, id });
+    const result = await BankPrixodService.getById({ region_id, main_schet_id, id, isdeleted: true});
     if (!result) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
@@ -130,7 +130,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { id_podotchet_litso, childs } = req.body;
+    const { id_podotchet_litso, childs, id_spravochnik_organization, id_shartnomalar_organization } = req.body;
 
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
@@ -142,10 +142,15 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    if (id_podotchet_litso) {
-      const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
-      if (!podotchet) {
-        return res.error(req.i18n.t('podotchetNotFound'), 404);
+    const organization = await OrganizationService.getByIdOrganization({ region_id, id: id_spravochnik_organization });
+    if (!organization) {
+      return res.error(req.i18n.t('organizationNotFound'), 404);
+    }
+
+    if (id_shartnomalar_organization) {
+      const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
+      if (!contract) {
+        return res.error(req.i18n.t('contractNotFound'), 404);
       }
     }
 
@@ -179,6 +184,12 @@ exports.Controller = class {
         }
       }
 
+      if (child.id_podotchet_litso) {
+        const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
+        if (!podotchet) {
+          return res.error(req.i18n.t('podotchetNotFound'), 404);
+        }
+      }
     }
 
     if (!checkSchetsEquality(operatsiis)) {
