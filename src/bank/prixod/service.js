@@ -56,7 +56,7 @@ exports.BankPrixodService = class {
     }
 
     static async getById(data) {
-        const result = await BankPrixodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
+        const result = await BankPrixodDB.getById([data.region_id, data.main_schet_id, data.id], data.isdeleted);
 
         return result;
     }
@@ -66,14 +66,14 @@ exports.BankPrixodService = class {
 
         const result = await db.transaction(async client => {
             const doc = await BankPrixodDB.update([
-                data.doc_num,
-                data.doc_date,
-                data.opisanie,
+                data.doc_num, 
+                data.doc_date, 
                 summa,
-                data.id_podotchet_litso,
-                tashkentTime(),
-                data.id,
-                data.main_zarplata_id
+                data.provodki_boolean, 
+                data.opisanie, 
+                data.id_spravochnik_organization, 
+                data.id_shartnomalar_organization,
+                data.id
             ], client);
 
             await BankPrixodDB.deleteChild([doc.id], client);
