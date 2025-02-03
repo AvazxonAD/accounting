@@ -57,10 +57,10 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
         SELECT 
           sh_g.id,
           sh_g.id_shartnomalar_organization,
-          sh_o.doc_num, 
-          TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date, 
-          sh_o.summa::FLOAT,
-          sh_o.opisanie,
+          sh.doc_num, 
+          TO_CHAR(sh.doc_date, 'YYYY-MM-DD') AS doc_date, 
+          sh.summa::FLOAT,
+          sh.opisanie,
           sh_g.oy_1::FLOAT,
           sh_g.oy_2::FLOAT,
           sh_g.oy_3::FLOAT,
@@ -73,11 +73,14 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
           sh_g.oy_10::FLOAT,
           sh_g.oy_11::FLOAT,
           sh_g.oy_12::FLOAT,
-          sh_g.year
+          sh_g.year,
+          s.id smeta_id,
+          s.smeta_number sub_schet
         FROM shartnoma_grafik AS sh_g
         JOIN users  ON sh_g.user_id = users.id
         JOIN regions ON users.region_id = regions.id
-        JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
+        JOIN shartnomalar_organization AS sh ON sh.id = sh_g.id_shartnomalar_organization
+        JOIN smeta s ON s.id = sh.smeta_id 
         WHERE regions.id = $1 AND sh_g.budjet_id = $2 AND sh_g.id = $3 ${ignore}
       `, [region_id, budjet_id, id])
     if (!result.rows[0]) {
@@ -111,7 +114,8 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset)
           sh_g.id_shartnomalar_organization,
           sh_o.doc_num AS shartnomalar_organization_doc_num,
           TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
-          s_1.smeta_number AS smeta_number,
+          s.id AS smeta_id,
+          s.smeta_number AS smeta_number,
           s_2.smeta_number AS smeta2_number,
           sh_o.opisanie AS shartnomalar_organization_opisanie,
           sh_o.summa::FLOAT AS shartnomalar_organization_summa,
@@ -135,7 +139,7 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset)
         JOIN regions AS r ON u.region_id = r.id
         JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
         JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
-        JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
+        JOIN smeta AS s ON s.id = sh_o.smeta_id
         LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
         WHERE sh_g.isdeleted = false AND r.id = $1 AND sh_g.budjet_id = $2 ${organization_filter}
         ORDER BY sh_o.doc_date 
@@ -151,7 +155,7 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset)
           JOIN regions AS r ON u.region_id = r.id
           JOIN shartnomalar_organization AS sh_o ON sh_o.id = sh_g.id_shartnomalar_organization
           JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
-          JOIN smeta AS s_1 ON s_1.id = sh_o.smeta_id
+          JOIN smeta AS s ON s.id = sh_o.smeta_id
           LEFT JOIN smeta AS s_2 ON s_2.id = sh_o.smeta2_id
           WHERE sh_g.isdeleted = false 
             AND r.id = $1 
