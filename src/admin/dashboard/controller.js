@@ -7,7 +7,11 @@ exports.Controller = class {
         return res.success(req.i18n.t('getSuccess'), 200, null, result);
     }
 
-    static async getInfo(req, res) {
-        
+    static async get(req, res) {
+        const { main_schet_id, to } = req.query;
+
+        const result = await DashboardService.get({ main_schet_id, to });
+
+        return res.success('get successfully', 200, null, result);
     }
 }

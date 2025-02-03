@@ -57,7 +57,8 @@ exports.AvansDB = class {
                 AND s_p_l.id = $5
                 AND s_op.schet = $6
         `;
-        const result = await db.query(query, params)
+        const result = await db.query(query, params);
+        
         return result[0].total
     }
 
