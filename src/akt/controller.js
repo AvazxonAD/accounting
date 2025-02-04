@@ -90,7 +90,9 @@ exports.Controller = class {
             return res.eror(req.i18n.t('schetDifferentError'), 400);
         }
 
-        return res.success(req.i18n.t('createSuccess'), 201, null, doc);
+        const result = await AktService.create({ ...req.body, user_id, main_schet_id });
+
+        return res.success(req.i18n.t('createSuccess'), 201, null, result);
     }
 
     static async get(req, res) {

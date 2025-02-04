@@ -155,9 +155,11 @@ exports.AktService = class {
                 tashkentTime()
             ], client);
 
-            const items = await AktDB.createAktChild(result_childs, client)
+            const items = await this.createChild(data, client)
             doc.childs = items;
         })
+
+        return result;
     }
 
     static async createChild(data) {
@@ -178,6 +180,6 @@ exports.AktService = class {
             return item;
         });
 
-        
+
     }
 }

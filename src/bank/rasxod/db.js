@@ -216,9 +216,9 @@ exports.BankRasxodDB = class {
                 id_shartnomalar_organization = $6,
                 rukovoditel = $7,
                 glav_buxgalter = $8,
-                summa = $9,
-                updated_at = $10
-            WHERE id = $11 RETURNING id 
+                summa = 0,
+                updated_at = $9
+            WHERE id = $10 RETURNING id 
         `, params);
 
         console.log(params)
