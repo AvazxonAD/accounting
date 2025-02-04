@@ -347,9 +347,9 @@ exports.BankMonitoringDB = class {
                 JOIN regions AS r ON r.id = u.region_id 
                 WHERE r.id = $1 
                     AND bp.main_schet_id = $2 
-                    AND bp.doc_date ${operator} $3 
+                    AND bp.doc_date ${operator} $3
                     AND bp.isdeleted = false
-            ), 
+            ),
             rasxod AS (
                 SELECT 
                     COALESCE(SUM(k_r_ch.summa), 0) AS summa
