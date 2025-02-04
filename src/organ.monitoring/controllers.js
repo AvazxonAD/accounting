@@ -24,7 +24,9 @@ exports.Controller = class {
                 res.error('Organization not found', 404)
             }
         }
+        
         const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await OrganizationmonitoringService.monitoring({ ...query, offset, region_id }, organ_id)
+        
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -37,6 +39,7 @@ exports.Controller = class {
             summa_from,
             summa_to
         }
+
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
