@@ -202,9 +202,29 @@ exports.BankRasxodDB = class {
 
     static async delete(params, client) {
         await client.query(`UPDATE bank_rasxod_child SET isdeleted = true WHERE bank_rasxod_id = $1`, params);
-        
+
         const result = await client.query(`UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
-        
+
         return result.rows[0];
+    }
+
+    static async fio(params) {
+        const query = `
+            SELECT 
+              b.rukovoditel,
+              b.glav_buxgalter
+            FROM bank_rasxod b 
+            JOIN users AS u ON u.id = b.user_id 
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1 
+              AND b.main_schet_id = $2 
+              AND b.glav_buxgalter IS NOT NULL 
+              AND b.created_at IS NOT NULL
+            ORDER BY b.created_at DESC
+        `;
+
+        const result = await db.query(query, params);
+
+        return result;
     }
 }
