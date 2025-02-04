@@ -1,17 +1,34 @@
 const { DashboardService } = require('./service');
 
-exports.Controller = class {
-    static async getBudjet(req, res) {
-        const result = await DashboardService.getBudjet({});
 
-        return res.success(req.i18n.t('getSuccess'), 200, null, result);
+exports.Controller = class {
+    static async kassa(req, res) {
+        const { main_schet_id, budjet_id, to } = req.query;
+
+        const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id });
+
+        const result = await DashboardService.kassa({ budjets, to });
+
+        return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
     }
 
-    static async get(req, res) {
-        const { main_schet_id, to } = req.query;
+    static async bank(req, res) {
+        const { main_schet_id, budjet_id, to } = req.query;
 
-        const result = await DashboardService.get({ main_schet_id, to });
+        const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id });
 
-        return res.success('get successfully', 200, null, result);
+        const result = await DashboardService.bank({ budjets, to });
+
+        return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
+    }
+
+    static async podotchet(req, res) {
+        const { main_schet_id, budjet_id, to } = req.query;
+
+        const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id });
+
+        const result = await DashboardService.podotchet({ budjets, to });
+
+        return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
     }
 }
