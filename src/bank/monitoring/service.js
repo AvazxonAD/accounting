@@ -1,12 +1,12 @@
-const { KassaMonitoringDB } = require('./db');
+const { BankMonitoringDB } = require('./db');
 const { returnStringSumma, returnStringDate, HelperFunctions, returnSleshDate } = require('../../helper/functions');
 const ExcelJS = require('exceljs');
 const path = require('path');
-const { readFile, mkdir, constants, access } = require('fs').promises;
+const { mkdir, constants, access } = require('fs').promises;
 
-exports.KassaMonitoringService = class {
+exports.BankMonitoringService = class {
     static async get(data) {
-        const result = await KassaMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+        const result = await BankMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
         let prixod_sum = 0;
         let rasxod_sum = 0;
         for (let item of result.data) {
@@ -14,9 +14,9 @@ exports.KassaMonitoringService = class {
             rasxod_sum += item.rasxod_sum;
         }
 
-        const summa_from = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from], '<');
+        const summa_from = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from], '<');
 
-        const summa_to = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.to], '<=');
+        const summa_to = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.to], '<=');
 
         return {
             summa_from,
@@ -29,7 +29,7 @@ exports.KassaMonitoringService = class {
     }
 
     static async cap(data) {
-        const result = await KassaMonitoringDB.cap([data.region_id, data.main_schet_id, data.from, data.to]);
+        const result = await BankMonitoringDB.cap([data.region_id, data.main_schet_id, data.from, data.to]);
 
         return result;
     }
@@ -38,7 +38,7 @@ exports.KassaMonitoringService = class {
         const title = `Дневной отчет по Журнал-Ордеру №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${returnStringSumma(data.main_schet.account_number)}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
-        const fileName = `kassa_shapka_${new Date().getTime()}.xlsx`;
+        const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('Hisobot');
         worksheet.mergeCells('A1', 'G1');
         const titleCell = worksheet.getCell('A1');
@@ -216,11 +216,11 @@ exports.KassaMonitoringService = class {
     }
 
     static async daily(data) {
-        const result = await KassaMonitoringDB.daily([data.main_schet_id, data.from, data.to, data.region_id]);
+        const result = await BankMonitoringDB.daily([data.main_schet_id, data.from, data.to, data.region_id]);
 
-        const balance_from = await KassaMonitoringDB.dailySumma([data.region_id, data.main_schet_id, data.from], '<');
+        const balance_from = await BankMonitoringDB.dailySumma([data.region_id, data.main_schet_id, data.from], '<');
 
-        const balance_to = await KassaMonitoringDB.dailySumma([data.region_id, data.main_schet_id, data.to], '<=');
+        const balance_to = await BankMonitoringDB.dailySumma([data.region_id, data.main_schet_id, data.to], '<=');
 
         let prixod_summa = 0;
         let rasxod_summa = 0;
@@ -237,7 +237,7 @@ exports.KassaMonitoringService = class {
         const title = `Дневной отчет по Мемориал ордер №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${HelperFunctions.probelNumber(data.main_schet.account_number)}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
-        const fileName = `kundalik_hisobot_kassa_${new Date().getTime()}.xlsx`;
+        const fileName = `kundalik_hisobot_bank_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('Hisobot');
         
         worksheet.mergeCells('A1', 'G1');

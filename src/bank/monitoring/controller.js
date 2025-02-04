@@ -1,4 +1,4 @@
-const { KassaMonitoringService } = require('./service');
+const { BankMonitoringService } = require('./service');
 const { MainSchetService } = require('../../spravochnik/main.schet/services');
 
 exports.Controller = class {
@@ -12,7 +12,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await KassaMonitoringService.get({ region_id, main_schet_id, offset, limit, from, to });
+        const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await BankMonitoringService.get({ region_id, main_schet_id, offset, limit, from, to });
 
         const pageCount = Math.ceil(total_count / limit);
 
@@ -42,9 +42,9 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const data = await KassaMonitoringService.cap({ region_id, main_schet_id, from, to });
+        const data = await BankMonitoringService.cap({ region_id, main_schet_id, from, to });
 
-        const { fileName, filePath } = await KassaMonitoringService.capExcel({ ...data, main_schet, from, to });
+        const { fileName, filePath } = await BankMonitoringService.capExcel({ ...data, main_schet, from, to });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -61,9 +61,9 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const data = await KassaMonitoringService.daily({ region_id, main_schet_id, from, to });
+        const data = await BankMonitoringService.daily({ region_id, main_schet_id, from, to });
 
-        const { fileName, filePath } = await KassaMonitoringService.dailyExcel({ ...data, from, to, main_schet, region_id });
+        const { fileName, filePath } = await BankMonitoringService.dailyExcel({ ...data, from, to, main_schet, region_id });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
