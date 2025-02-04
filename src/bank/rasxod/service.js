@@ -3,6 +3,15 @@ const { BankRasxodDB } = require('./db');
 const { tashkentTime, HelperFunctions } = require('../../helper/functions');
 
 exports.BankRasxodService = class {
+    static async payment(data) {
+        const result = await db.transaction(async client => {
+            const doc = await BankRasxodDB.payment([data.status, data.id], client);
+            return doc;
+        });
+
+        return result;
+    }
+
     static async fio(data){
         const result = await BankRasxodDB.fio([data.region_id, data.main_schet_id]);
 
@@ -21,7 +30,7 @@ exports.BankRasxodService = class {
             const doc = await BankRasxodDB.createPrixod([
                 data.doc_num,
                 data.doc_date,
-                data.summa,
+                summa,
                 data.opisanie,
                 data.id_spravochnik_organization,
                 data.id_shartnomalar_organization,
@@ -81,15 +90,19 @@ exports.BankRasxodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
+            console.log(data)
             const doc = await BankRasxodDB.update([
-                data.doc_num,
-                data.doc_date,
-                data.opisanie,
-                summa,
-                data.id_podotchet_litso,
+                data.doc_num, 
+                data.doc_date, 
+                summa, 
+                data.opisanie, 
+                data.id_spravochnik_organization, 
+                data.id_shartnomalar_organization,
+                data.rukovoditel,
+                data.glav_buxgalter,
+                0,
                 tashkentTime(),
-                data.id,
-                data.main_zarplata_id
+                data.id
             ], client);
 
             await BankRasxodDB.deleteChild([doc.id], client);

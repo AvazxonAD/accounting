@@ -1,6 +1,33 @@
 const { db } = require('../../db/index')
 
 exports.BankRasxodDB = class {
+    static async payment(params, client) {
+        let extraQuery = '';
+        if (params[0]) {
+            extraQuery = `summa = tulanmagan_summa`;
+        } else {
+            extraQuery = `summa = 0`;
+        }
+
+        console.log(params)
+        const queryParent = `--sql
+            UPDATE bank_rasxod 
+            SET tulangan_tulanmagan = $1, ${extraQuery}
+            WHERE id = $2 
+                AND isdeleted = false RETURNING id`
+
+        const queryChild = `--sql
+            UPDATE bank_rasxod_child 
+            SET tulangan_tulanmagan = $1, ${extraQuery}
+            WHERE id_bank_rasxod = $2 AND isdeleted = false;
+        `;
+
+        await client.query(queryChild, params);
+        const result = await client.query(queryParent, params);
+
+        return result.rows[0];
+    }
+
     static async createPrixod(params, client) {
         const query = `
              INSERT INTO bank_rasxod(
@@ -187,21 +214,24 @@ exports.BankRasxodDB = class {
                 opisanie = $4, 
                 id_spravochnik_organization = $5, 
                 id_shartnomalar_organization = $6,
-                rukovoditel = $8,
-                glav_buxgalter = $9,
+                rukovoditel = $7,
+                glav_buxgalter = $8,
+                summa = $9,
                 updated_at = $10
             WHERE id = $11 RETURNING id 
         `, params);
+
+        console.log(params)
 
         return result.rows[0];
     }
 
     static async deleteChild(params, client) {
-        await client.query(`DELETE FROM bank_rasxod_child  WHERE bank_rasxod_id = $1`, params);
+        await client.query(`DELETE FROM bank_rasxod_child  WHERE id_bank_rasxod = $1`, params);
     }
 
     static async delete(params, client) {
-        await client.query(`UPDATE bank_rasxod_child SET isdeleted = true WHERE bank_rasxod_id = $1`, params);
+        await client.query(`UPDATE bank_rasxod_child SET isdeleted = true WHERE id_bank_rasxod = $1`, params);
 
         const result = await client.query(`UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
