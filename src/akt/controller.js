@@ -26,7 +26,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const user_id = req.user.id;
         const main_schet_id = req.query.main_schet_id;
-       
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.eror(req.i18n.t('mainSchetNotFound'), 404);
@@ -126,20 +126,14 @@ exports.Controller = class {
     static async get(req, res) {
         const region_id = req.user.region_id;
         const { page, limit, from, to, main_schet_id } = req.query;
-        
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.eror(req.i18n.t('mainSchetNotFound'), 404);
         }
 
         const offset = (page - 1) * limit;
-        const data = await AktDB.get([region_id, main_schet_id, from, to, offset, limit]);
-        const total = await AktDB.getTotalAkt([region_id, main_schet_id, from, to])
-        
-        let summa = 0;
-        data.forEach(item => {
-            summa += item.summa;
-        })
+        const { summa, total, data, page_summa } = await AktService.get({ region_id, main_schet_id, from, to, offset, limit })
 
         const pageCount = Math.ceil(total / limit);
         const meta = {
@@ -149,6 +143,7 @@ exports.Controller = class {
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
             summa,
+            page_summa
         }
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
@@ -157,7 +152,7 @@ exports.Controller = class {
         const main_schet_id = req.query.main_schet_id;
         const region_id = req.user.region_id;
         const id = req.params.id;
-        
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.eror(req.i18n.t('mainSchetNotFound'), 404);
@@ -188,7 +183,7 @@ exports.Controller = class {
         if (!old_data) {
             return res.eror(req.i18n.t('docNotFound'), 404);
         }
-        
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.eror(req.i18n.t('mainSchetNotFound'), 404);
@@ -220,7 +215,7 @@ exports.Controller = class {
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
-           
+
             if (child.id_spravochnik_podrazdelenie) {
                 const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, child.id_spravochnik_podrazdelenie]);
                 if (!podrazdelenie) {
@@ -314,7 +309,7 @@ exports.Controller = class {
         }
 
         const schets = await AktDB.getSchets([region_id, main_schet_id, from, to]);
-        
+
 
         const { fileName, filePath } = await AktService.capExcel({ ...req.query, region_id, schets });
 

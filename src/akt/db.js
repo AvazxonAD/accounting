@@ -4,70 +4,73 @@ const { designParams, returnParamsValues } = require('../helper/functions')
 exports.AktDB = class {
     static async get(params) {
         const query = `--sql
-        WITH data AS (
+            WITH data AS (
+                SELECT 
+                    b_i_j3.id, 
+                    b_i_j3.doc_num,
+                    TO_CHAR(b_i_j3.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                    b_i_j3.opisanie, 
+                    b_i_j3.summa::FLOAT, 
+                    b_i_j3.id_spravochnik_organization,
+                    s_o.name AS spravochnik_organization_name,
+                    s_o.raschet_schet AS spravochnik_organization_raschet_schet,
+                    s_o.inn AS spravochnik_organization_inn, 
+                    b_i_j3.shartnomalar_organization_id,
+                    sh_o.doc_num AS shartnomalar_organization_doc_num,
+                    TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                    b_i_j3.spravochnik_operatsii_own_id,
+                    (
+                        SELECT ARRAY_AGG(row_to_json(b_i_j_ch))
+                        FROM (
+                            SELECT 
+                                s_o.schet AS provodki_schet,
+                                s_o.sub_schet AS provodki_sub_schet
+                            FROM bajarilgan_ishlar_jur3_child AS b_i_j_ch
+                            JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j_ch.spravochnik_operatsii_id
+                            WHERE  b_i_j_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id 
+                        ) AS b_i_j_ch
+                    ) AS provodki_array
+                FROM  bajarilgan_ishlar_jur3 AS b_i_j3 
+                JOIN users AS u ON b_i_j3.user_id = u.id
+                JOIN regions AS r ON u.region_id = r.id
+                JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
+                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
+                WHERE r.id = $1 
+                    AND b_i_j3.main_schet_id = $2 
+                    AND b_i_j3.isdeleted = false 
+                    AND b_i_j3.doc_date BETWEEN $3 AND $4
+                ORDER BY b_i_j3.doc_date 
+                OFFSET $5 LIMIT $6
+            )
             SELECT 
-                b_i_j3.id, 
-                b_i_j3.doc_num,
-                TO_CHAR(b_i_j3.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                b_i_j3.opisanie, 
-                b_i_j3.summa::FLOAT, 
-                b_i_j3.id_spravochnik_organization,
-                s_o.name AS spravochnik_organization_name,
-                s_o.raschet_schet AS spravochnik_organization_raschet_schet,
-                s_o.inn AS spravochnik_organization_inn, 
-                b_i_j3.shartnomalar_organization_id,
-                sh_o.doc_num AS shartnomalar_organization_doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
-                b_i_j3.spravochnik_operatsii_own_id,
+                ARRAY_AGG(ROW_TO_JSON(data)) AS data,
                 (
-                    SELECT ARRAY_AGG(row_to_json(b_i_j_ch))
-                    FROM (
-                        SELECT 
-                            s_o.schet AS provodki_schet,
-                            s_o.sub_schet AS provodki_sub_schet
-                        FROM bajarilgan_ishlar_jur3_child AS b_i_j_ch
-                        JOIN spravochnik_operatsii AS s_o ON s_o.id = b_i_j_ch.spravochnik_operatsii_id
-                        WHERE  b_i_j_ch.bajarilgan_ishlar_jur3_id = b_i_j3.id 
-                    ) AS b_i_j_ch
-                ) AS provodki_array
-            FROM  bajarilgan_ishlar_jur3 AS b_i_j3 
-            JOIN users AS u ON b_i_j3.user_id = u.id
-            JOIN regions AS r ON u.region_id = r.id
-            JOIN spravochnik_organization AS s_o ON s_o.id = b_i_j3.id_spravochnik_organization
-            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = b_i_j3.shartnomalar_organization_id
-            WHERE r.id = $1 
-                AND b_i_j3.main_schet_id = $2 
-                AND b_i_j3.isdeleted = false 
-                AND b_i_j3.doc_date BETWEEN $3 AND $4
-            ORDER BY b_i_j3.doc_date 
-            OFFSET $5 LIMIT $6
-        )
-         SELECT 
-            ARRAY_AGG(ROW_TO_JSON(data)) AS data,
-            (
-                SELECT 
-                    COALESCE(COUNT(d.id), 0)::INTEGER
-                FROM bajarilgan_ishlar_jur3 AS d 
-                JOIN users AS u  ON d.user_id = u.id
-                JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.isdeleted = false 
-                    AND d.doc_date BETWEEN $3 AND $4
-            ) AS total, 
-            (
-                SELECT 
-                    COALESCE(COUNT(d.summa), 0)::INTEGER AS total
-                FROM bajarilgan_ishlar_jur3 AS d 
-                JOIN users AS u  ON d.user_id = u.id
-                JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.isdeleted = false
-                    AND d.doc_date BETWEEN $3 AND $4
-            ) AS summa
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0)::INTEGER
+                    FROM bajarilgan_ishlar_jur3 AS d 
+                    JOIN users AS u  ON d.user_id = u.id
+                    JOIN regions AS r ON u.region_id = r.id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false 
+                        AND d.doc_date BETWEEN $3 AND $4
+                ) AS total, 
+                (
+                    SELECT 
+                        COALESCE(SUM(d.summa), 0)::FLOAT
+                    FROM bajarilgan_ishlar_jur3 AS d 
+                    JOIN users AS u  ON d.user_id = u.id
+                    JOIN regions AS r ON u.region_id = r.id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false
+                        AND d.doc_date BETWEEN $3 AND $4
+                ) AS summa
+            FROM data
         `;
+        
         const result = await db.query(query, params);
+        
         return result[0];
     }
 

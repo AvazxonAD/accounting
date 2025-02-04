@@ -7,15 +7,15 @@ const { access, constants, mkdir } = require('fs').promises;
 exports.AktService = class {
     static async capExcel(data) {
         const workbook = new ExcelJS.Workbook();
-    
+
         const fileName = `jur3_cap${new Date().getTime()}.xlsx`;
-    
+
         let worksheet = null;
-    
+
         if (data.schets.length === 0) {
             worksheet = workbook.addWorksheet(`data not found`);
         }
-    
+
         for (let schet of data.schets) {
             const capData = await AktDB.cap([data.from, data.to, data.region_id, schet.schet, data.main_schet_id]);
             let row_number = 4;
@@ -38,10 +38,10 @@ exports.AktService = class {
             worksheet.mergeCells('E3', 'H3');
             const title3_3 = worksheet.getCell('E3');
             title3_3.value = 'Сумма';
-    
+
             let css_array = [title, title2, title3_1, title3_2, title3_3];
             let itogo = 0;
-    
+
             for (let column of capData) {
                 worksheet.mergeCells(`A${row_number}`, `C${row_number}`);
                 const title3_1 = worksheet.getCell(`A${row_number}`);
@@ -51,7 +51,7 @@ exports.AktService = class {
                 title3_3.value = column.summa;
                 row_number++;
                 itogo += column.summa;
-    
+
                 css_array.forEach((coll, index) => {
                     let horizontal = 'center';
                     if (index === 2) horizontal = 'right';
@@ -70,7 +70,7 @@ exports.AktService = class {
                     });
                 });
             }
-    
+
             worksheet.mergeCells(`D4`, `D${row_number - 1}`);
             const kriditSchetCell = worksheet.getCell(`D4`);
             kriditSchetCell.value = `${schet.schet}`;
@@ -80,7 +80,7 @@ exports.AktService = class {
             worksheet.mergeCells(`E${row_number}`, `H${row_number}`);
             const itogoSumma = worksheet.getCell(`E${row_number}`);
             itogoSumma.value = itogo;
-    
+
             css_array.push(kriditSchetCell, itogoStr, itogoSumma);
             css_array.forEach((coll, index) => {
                 let vertical = 'middle';
@@ -102,7 +102,7 @@ exports.AktService = class {
                     }
                 });
             });
-    
+
             worksheet.getRow(1).height = 35;
             worksheet.getRow(2).height = 25;
             worksheet.getColumn(1).width = 5;
@@ -111,23 +111,28 @@ exports.AktService = class {
             worksheet.getColumn(5).width = 5;
             worksheet.getColumn(6).width = 5;
         }
-    
+
         const folderPath = path.join(__dirname, '../../public/exports/');
         try {
             await access(folderPath, constants.W_OK);
         } catch (error) {
             await mkdir(folderPath);
         }
-    
+
         const filePath = `${folderPath}/${fileName}`;
         await workbook.xlsx.writeFile(filePath);
-    
+
         return { fileName, filePath };
-    }    
+    }
 
     static async get(data) {
         const result = await AktDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
 
-        return result;
+        let page_summa = 0;
+        result.data.forEach(item => {
+            page_summa += item.summa;
+        });
+        
+        return { ...result, page_summa };
     }
 }
