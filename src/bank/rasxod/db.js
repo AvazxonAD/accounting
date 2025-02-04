@@ -64,8 +64,8 @@ exports.BankRasxodDB = class {
                 main_schet_id,
                 id_bank_rasxod,
                 user_id,
-                id_spravochnik_podotchet_litso,
                 main_zarplata_id,
+                id_spravochnik_podotchet_litso,
                 created_at,
                 updated_at
           )

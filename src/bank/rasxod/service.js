@@ -53,6 +53,7 @@ exports.BankRasxodService = class {
     static async createChild(data) {
         const create_childs = [];
         for (let child of data.childs) {
+            console.log(child)
             create_childs.push(
                 child.spravochnik_operatsii_id,
                 child.summa,
@@ -90,7 +91,6 @@ exports.BankRasxodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            console.log(data)
             const doc = await BankRasxodDB.update([
                 data.doc_num, 
                 data.doc_date, 
