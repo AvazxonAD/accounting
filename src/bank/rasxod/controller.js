@@ -9,6 +9,26 @@ const { BankRasxodService } = require('./service');
 const { OrganizationService } = require('../../spravochnik/organization/services');
 
 exports.Controller = class {
+  static async payment(req, res) {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const { main_schet_id } = req.query;
+    
+    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    if (!main_schet) {
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
+    }
+
+    const bank_rasxod = await BankRasxodService.getById({ id, main_schet_id, region_id });
+    if (!bank_rasxod) {
+      return res.error(req.i18n.t('docNotFound'), 404);
+    }
+
+    const result = await BankRasxodService.payment({ id, status: req.body.status });
+    
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
+  }
+
   static async fio(req, res) {
     const region_id = req.user.region_id
     const { main_schet_id } = req.query;
@@ -18,7 +38,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const result = await BankRasxodService.fio({main_schet_id, region_id});
+    const result = await BankRasxodService.fio({ main_schet_id, region_id });
 
     return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
   }
@@ -51,13 +71,6 @@ exports.Controller = class {
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
-    }
-
-    if (id_podotchet_litso) {
-      const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
-      if (!podotchet) {
-        return res.error(req.i18n.t('podotchetNotFound'), 404);
-      }
     }
 
     const organization = await OrganizationService.getByIdOrganization({ region_id, id: id_spravochnik_organization });
@@ -99,6 +112,13 @@ exports.Controller = class {
         const operatsii = await TypeOperatsiiService.getByIdTypeOperatsii({ id: child.id_spravochnik_type_operatsii, region_id });
         if (!operatsii) {
           return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
+        }
+      }
+
+      if (id_podotchet_litso) {
+        const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
+        if (!podotchet) {
+          return res.error(req.i18n.t('podotchetNotFound'), 404);
         }
       }
 
@@ -175,13 +195,6 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    if (id_podotchet_litso) {
-      const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
-      if (!podotchet) {
-        return res.error(req.i18n.t('podotchetNotFound'), 404);
-      }
-    }
-
     const organization = await OrganizationService.getByIdOrganization({ region_id, id: id_spravochnik_organization });
     if (!organization) {
       return res.error(req.i18n.t('organizationNotFound'), 404);
@@ -221,6 +234,13 @@ exports.Controller = class {
         const operatsii = await TypeOperatsiiService.getByIdTypeOperatsii({ id: child.id_spravochnik_type_operatsii, region_id });
         if (!operatsii) {
           return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
+        }
+      }
+
+      if (id_podotchet_litso) {
+        const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
+        if (!podotchet) {
+          return res.error(req.i18n.t('podotchetNotFound'), 404);
         }
       }
 
