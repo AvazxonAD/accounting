@@ -13,7 +13,7 @@ exports.createSchema = Joi.object({
     })
 }).options({ stripUnknown: true });
 
-exports.updateOrganizationSchema = Joi.object({
+exports.updateSchema = Joi.object({
     body: Joi.object({
         name: Joi.string().trim().required(),
         bank_klient: Joi.string().trim().required(),
