@@ -70,6 +70,7 @@ exports.OrganizationDB = class {
                 AND s_o.id = $2 
                 ${isdeleted ? '' : ignore}
         `;
+        
         const result = await db.query(query, params)
         if (result[0]) {
             const child_query = `--sql

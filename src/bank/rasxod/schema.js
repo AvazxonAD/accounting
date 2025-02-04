@@ -43,7 +43,7 @@ exports.BankRasxodSchema = class {
                             id_spravochnik_sostav: Joi.number().integer().min(1).allow(null),
                             id_spravochnik_type_operatsii: Joi.number().integer().min(1).allow(null),
                             main_zarplata_id: Joi.number().integer().min(1).allow(null),
-                            id_spravochnipodotchet_litso: Joi.number().integer().min(1).allow(null)
+                            id_spravochnik_podotchet_litso: Joi.number().integer().min(1).allow(null)
                         }),
                     ).min(1)
             }),
@@ -107,7 +107,7 @@ exports.BankRasxodSchema = class {
                             id_spravochnik_sostav: Joi.number().integer().min(1).allow(null),
                             id_spravochnik_type_operatsii: Joi.number().integer().min(1).allow(null),
                             main_zarplata_id: Joi.number().integer().min(1).allow(null),
-                            id_spravochnipodotchet_litso: Joi.number().integer().min(1).allow(null)
+                            id_spravochnik_podotchet_litso: Joi.number().integer().min(1).allow(null)
                         }),
                     ).min(1)
             }),
