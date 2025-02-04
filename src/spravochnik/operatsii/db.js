@@ -1,7 +1,7 @@
 const { db } = require('../../db/index');
 
 exports.OperatsiiDB = class {
-    static async getByIdOperatsii(params, type, isdeleted) {
+    static async getById(params, type, isdeleted) {
         let type_filter = ``;
         if (type) {
             type_filter = `AND type_schet = $${params.length + 1}`;

@@ -1,6 +1,6 @@
 const { ReportService } = require('./service')
 const { BudjetService } = require('../../spravochnik/budjet/services');
-const { MainSchetService } = require('../../spravochnik/main.schet/services')
+const { MainSchetService } = require('../../spravochnik/main.schet/service')
 
 
 exports.Controller = class {
@@ -14,7 +14,7 @@ exports.Controller = class {
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id })
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id })
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
@@ -67,7 +67,7 @@ exports.Controller = class {
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id })
+    const main_schet = await MainSchetService.getById({ region_id, id: query.main_schet_id })
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }

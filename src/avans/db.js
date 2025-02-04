@@ -1,105 +1,195 @@
-const { db } = require('../db/index')
+const { db } = require('../db/index');
 
 exports.AvansDB = class {
-    static async getByPodotchetIdAvans(params, offset, limit) {
-        let offset_limit = ``
-        if(offset && limit) {
-            offset_limit = `OFFSET $7 LIMIT $8`
+    static async get(params, search = null) {
+        let search_filter = ``;
+        if (search) {
+            params.push(search);
+            search_filter = ` AND d.doc_num = $${params.length}`;
         }
-        const query = `--sql
-            SELECT  
-                a_tj4.id, 
-                a_tj4.doc_num,
-                TO_CHAR(a_tj4.doc_date, 'YYYY-MM-DD') AS doc_date,
-                0::FLOAT AS prixod_sum,
-                a_tj4_ch.summa::FLOAT AS rasxod_sum,
-                a_tj4.opisanie,
-                s_p_l.id AS podotchet_litso_id,
-                s_p_l.name AS podotchet_name,
-                s_p_l.rayon AS podotchet_rayon,
-                u.login,
-                u.fio,
-                u.id AS user_id,
-                s_p.schet AS provodki_schet,
-                s_p.sub_schet AS provodki_sub_schet,
-                'avans' AS type
-            FROM avans_otchetlar_jur4_child a_tj4_ch
-            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-            JOIN users u ON a_tj4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-            JOIN spravochnik_operatsii AS s_p ON s_p.id = a_tj4_ch.spravochnik_operatsii_id
-            WHERE r.id = $1 AND a_tj4.main_schet_id = $2 
-                AND a_tj4.isdeleted = false  
-                AND a_tj4.doc_date BETWEEN $3 AND $4
-                AND s_p_l.id = $5
-                AND s_op.schet = $6
-            ORDER BY doc_date DESC ${offset_limit}
-        `;
-        const result = await db.query(query, params)
-        return result;
-    }
 
-    static async getByPodotchetIdTotalAvans(params) {
         const query = `--sql
-            SELECT COALESCE(COUNT(a_tj4_ch.id), 0)::INTEGER AS total
-            FROM avans_otchetlar_jur4_child a_tj4_ch
-            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id
-            JOIN users u ON a_tj4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-            WHERE r.id = $1 
-                AND a_tj4.main_schet_id = $2
-                AND a_tj4.isdeleted = false
-                AND a_tj4.doc_date BETWEEN $3 AND $4
-                AND s_p_l.id = $5
-                AND s_op.schet = $6
+            WITH data AS (
+                SELECT 
+                    d.id, 
+                    d.doc_num, 
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                    d.opisanie, 
+                    d.summa::FLOAT, 
+                    d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,  
+                    s_p_l.name AS spravochnik_podotchet_litso_name,
+                    s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                    d.spravochnik_operatsii_own_id,
+                    (
+                        SELECT ARRAY_AGG(row_to_json(a_j_ch))
+                        FROM (
+                            SELECT 
+                                s_o.schet AS provodki_schet,
+                                s_o.sub_schet AS provodki_sub_schet
+                            FROM avans_otchetlar_jur4_child AS a_j_ch
+                            JOIN spravochnik_operatsii AS s_o ON s_o.id = a_j_ch.spravochnik_operatsii_id
+                            WHERE  a_j_ch.avans_otchetlar_jur4_id = d.id 
+                        ) AS a_j_ch
+                    ) AS provodki_array
+                FROM avans_otchetlar_jur4 AS d
+                JOIN users AS u ON u.id =  d.user_id
+                JOIN regions AS r ON u.region_id = r.id
+                JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = d.spravochnik_podotchet_litso_id 
+                WHERE r.id = $1 
+                    AND d.main_schet_id = $2 
+                    AND d.isdeleted = false 
+                    AND d.doc_date BETWEEN $3 AND $4  
+                    ${search_filter}
+                ORDER BY d.doc_date 
+                OFFSET $5 LIMIT $6 
+            ) 
+            SELECT 
+                ARRAY_AGG(row_to_json(data)) AS data,
+                (
+                    SELECT COALESCE(COUNT(d.id), 0)
+                    FROM avans_otchetlar_jur4 AS d
+                    JOIN users AS u ON u.id =  d.user_id
+                    JOIN regions AS r ON u.region_id = r.id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false 
+                        AND d.doc_date BETWEEN $3 AND $4
+                        ${search_filter}
+                )::INTEGER AS total_count,
+                (
+                    SELECT COALESCE(SUM(d.summa), 0)
+                    FROM avans_otchetlar_jur4 AS d
+                    JOIN users AS u ON u.id =  d.user_id
+                    JOIN regions AS r ON u.region_id = r.id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false 
+                        AND d.doc_date BETWEEN $3 AND $4
+                        ${search_filter}
+                )::FLOAT AS summa
+            FROM data
         `;
+
         const result = await db.query(query, params);
-        
-        return result[0].total
+
+        return { data: result[0].data || [], summa: result[0].summa, total_count: result[0].total_count };
     }
 
-    static async getByPodotchetIdSummaAvans(params) {
-        const query = `--sql
-            SELECT COALESCE(SUM(a_tj4_ch.summa), 0)::FLOAT AS summa
-            FROM avans_otchetlar_jur4_child a_tj4_ch
-            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-            JOIN users u ON a_tj4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-            WHERE r.id = $1 
-                AND a_tj4.main_schet_id = $2 
-                AND a_tj4.isdeleted = false  
-                AND a_tj4.doc_date <= $3
-                AND s_p_l.id = $4
-                AND s_op.schet = $5
-        `;
-        const result = await db.query(query, params)
-        return result[0].summa
-    }
-
-    static async getByPodotchetIdAndBudjetSummaAvans(params, client) {
-        const query = `--sql
-            SELECT COALESCE(SUM(a_tj4_ch.summa), 0)::FLOAT AS summa
-            FROM avans_otchetlar_jur4_child a_tj4_ch
-            JOIN avans_otchetlar_jur4 AS a_tj4 ON a_tj4_ch.avans_otchetlar_jur4_id = a_tj4.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = a_tj4.spravochnik_podotchet_litso_id 
-            JOIN users u ON a_tj4.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_op ON s_op.id = a_tj4.spravochnik_operatsii_own_id
-            JOIN main_schet AS m_sch ON m_sch.id = a_tj4.main_schet_id  
-            JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = m_sch.spravochnik_budjet_name_id 
-            WHERE r.id = $1 
-                AND s_b_n.id = $2 
-                AND a_tj4.isdeleted = false  
-                AND a_tj4.doc_date <= $3
-                AND s_p_l.id = $4
+    static async create(params, client) {
+        const query = `--sql 
+            INSERT INTO avans_otchetlar_jur4(
+                doc_num, 
+                doc_date,
+                opisanie, 
+                summa,
+                spravochnik_podotchet_litso_id, 
+                main_schet_id, 
+                user_id,
+                spravochnik_operatsii_own_id,
+                created_at, 
+                updated_at
+            ) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            RETURNING id
         `;
         const result = await client.query(query, params)
-        return result.rows[0].summa
+        return result.rows[0];
+    }
+
+    static async createChild(params, _values, client) {
+        const query = `--sql
+            INSERT INTO avans_otchetlar_jur4_child(
+                spravochnik_operatsii_id,
+                summa,
+                id_spravochnik_podrazdelenie,
+                id_spravochnik_sostav,
+                id_spravochnik_type_operatsii,
+                main_schet_id,
+                avans_otchetlar_jur4_id,
+                user_id,
+                spravochnik_operatsii_own_id,
+                created_at,
+                updated_at
+            )
+            VALUES ${_values}
+        `;
+
+        await client.query(query, params);
+    }
+
+    static async getById(params, isdeleted) {
+        const query = `--sql
+            SELECT 
+                d.id, 
+                d.doc_num, 
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d.opisanie, 
+                d.summa::FLOAT, 
+                d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,
+                s_p_l.name AS spravochnik_podotchet_litso_name,
+                s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                d.spravochnik_operatsii_own_id,
+                (
+                    SELECT ARRAY_AGG(row_to_json(a_o_j_4_child))
+                    FROM (
+                        SELECT   
+                            ch.id,
+                            ch.spravochnik_operatsii_id,
+                            s_o.name AS spravochnik_operatsii_name,
+                            ch.summa::FLOAT,
+                            ch.id_spravochnik_podrazdelenie,
+                            s_p.name AS spravochnik_podrazdelenie_name,
+                            ch.id_spravochnik_sostav,
+                            s_s.name AS spravochnik_sostav_name,
+                            ch.id_spravochnik_type_operatsii,
+                            s_t_o.name AS spravochnik_type_operatsii_name
+                        FROM  avans_otchetlar_jur4_child AS ch 
+                        JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                        LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
+                        LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
+                        LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii
+                        WHERE ch.avans_otchetlar_jur4_id = $3 
+                    ) AS a_o_j_4_child
+                ) AS childs
+            FROM avans_otchetlar_jur4 AS d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON u.region_id = r.id
+            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = d.spravochnik_podotchet_litso_id 
+            WHERE r.id = $1 
+                AND d.main_schet_id = $2 
+                AND d.id = $3
+                ${!isdeleted ? 'AND d.isdeleted = false' : ''}   
+        `;
+        const data = await db.query(query, params);
+        return data[0];
+    }
+
+    static async update(params, client) {
+        const query = `--sql
+            UPDATE avans_otchetlar_jur4 SET 
+                doc_num = $1, 
+                doc_date = $2, 
+                opisanie = $3,
+                summa = $4,
+                spravochnik_podotchet_litso_id = $5, 
+                spravochnik_operatsii_own_id = $6,
+                updated_at = $7
+            WHERE id = $8 RETURNING id
+        `;
+        const result = await client.query(query, params);
+
+        return result.rows[0];
+    }
+
+    static async deleteChild(params, client) {
+        const query = `DELETE FROM avans_otchetlar_jur4_child WHERE avans_otchetlar_jur4_id = $1`
+        await client.query(query, params)
+    }
+
+    static async delete(params, client) {
+        await client.query(`UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, params);
+        const result = await client.query(`UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+
+        return result.rows[0];
     }
 }

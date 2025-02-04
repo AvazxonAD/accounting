@@ -83,7 +83,7 @@ const deleteTypeOperatsii = async (req, res) => {
 }
 
 // get element by id
-const getByIdTypeOperatsii = async (req, res) => {
+const getById = async (req, res) => {
   try {
     const result = await getByIdTypeOperatsiiService(req.user.region_id, req.params.id, true);
     resFunc(res, 200, result)
@@ -147,7 +147,7 @@ const importToExcel = async (req, res) => {
 }
 
 module.exports = {
-  getByIdTypeOperatsii,
+  getById,
   createTypeOperatsii,
   getTypeOperatsii,
   deleteTypeOperatsii,

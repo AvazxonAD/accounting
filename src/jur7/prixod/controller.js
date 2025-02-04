@@ -102,7 +102,7 @@ exports.Controller = class {
     }
 
     if (id_shartnomalar_organization) {
-      const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id);
+      const contract = await ContractDB.getById([region_id, id_shartnomalar_organization], false, null, kimdan_id);
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
       }
@@ -212,7 +212,7 @@ exports.Controller = class {
     }
 
     if (id_shartnomalar_organization) {
-      const contract = await ContractDB.getByIdContract([region_id, id_shartnomalar_organization], false, null, kimdan_id);
+      const contract = await ContractDB.getById([region_id, id_shartnomalar_organization], false, null, kimdan_id);
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
       }

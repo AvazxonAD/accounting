@@ -6,7 +6,6 @@ const { Router } = require('express')
 const router = Router()
 
 router.post('/', validator(Controller.create, AktSchema.create()));
-router.get('/export/cap', validator(Controller.cap, AktSchema.cap()));
 router.get('/:id', validator(Controller.getById, AktSchema.getById()));
 router.put('/:id', validator(Controller.update, AktSchema.update()));
 router.delete('/:id', validator(Controller.delete, AktSchema.delete()));

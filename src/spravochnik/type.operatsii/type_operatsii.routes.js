@@ -7,7 +7,7 @@ const {
   getTypeOperatsii,
   updateTypeOperatsii,
   deleteTypeOperatsii,
-  getByIdTypeOperatsii,
+  getById,
 } = require("./type_operatsii.controller");
 
 const upload = require("../../utils/protect.file");
@@ -16,6 +16,6 @@ router.post("/", createTypeOperatsii);
 router.get("/", getTypeOperatsii);
 router.put("/:id", updateTypeOperatsii);
 router.delete("/:id", deleteTypeOperatsii);
-router.get("/:id", getByIdTypeOperatsii);
+router.get("/:id", getById);
 
 module.exports = router;

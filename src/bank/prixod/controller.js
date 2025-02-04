@@ -1,5 +1,5 @@
 const { checkSchetsEquality } = require('../../helper/functions');
-const { MainSchetService } = require('../../spravochnik/main.schet/services');
+const { MainSchetService } = require('../../spravochnik/main.schet/service');
 const { PodotchetService } = require('../../spravochnik/podotchet/service');
 const { OperatsiiService } = require('../../spravochnik/operatsii/service')
 const { PodrazdelenieService } = require('../../spravochnik/podrazdelenie/service')
@@ -16,7 +16,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { id_spravochnik_organization, id_shartnomalar_organization, childs } = req.body;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
@@ -35,7 +35,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "bank_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getById({ type: "bank_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
@@ -43,28 +43,28 @@ exports.Controller = class {
       operatsiis.push(operatsii);
 
       if (child.id_spravochnik_podrazdelenie) {
-        const podraz = await PodrazdelenieService.getByIdPodraz({ region_id, id: child.id_spravochnik_podrazdelenie })
+        const podraz = await PodrazdelenieService.getById({ region_id, id: child.id_spravochnik_podrazdelenie })
         if (!podraz) {
           return res.error(req.i18n.t('podrazNotFound'), 404);
         }
       }
 
       if (child.id_spravochnik_sostav) {
-        const sostav = await SostavService.getByIdSostav({ region_id, id: child.id_spravochnik_sostav });
+        const sostav = await SostavService.getById({ region_id, id: child.id_spravochnik_sostav });
         if (!sostav) {
           return res.error(req.i18n.t('sostavNotFound'), 404);
         }
       }
 
       if (child.id_spravochnik_type_operatsii) {
-        const operatsii = await TypeOperatsiiService.getByIdTypeOperatsii({ id: child.id_spravochnik_type_operatsii, region_id });
+        const operatsii = await TypeOperatsiiService.getById({ id: child.id_spravochnik_type_operatsii, region_id });
         if (!operatsii) {
           return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
         }
       }
 
-      if (child.id_podotchet_litso) {
-        const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
+      if (child.id_spravochnik_podotchet_litso) {
+        const podotchet = await PodotchetService.getById({ id: child.id_spravochnik_podotchet_litso, region_id });
         if (!podotchet) {
           return res.error(req.i18n.t('podotchetNotFound'), 404);
         }
@@ -82,16 +82,16 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id
-    const { page, limit, from, to, main_schet_id } = req.query;
+    const { page, limit, from, to, main_schet_id, search } = req.query;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa } = await BankPrixodService.get({ region_id, main_schet_id, from, to, offset, limit });
+    const { data, total_count, summa } = await BankPrixodService.get({ search, region_id, main_schet_id, from, to, offset, limit });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -112,7 +112,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
@@ -132,7 +132,7 @@ exports.Controller = class {
     const user_id = req.user.id;
     const { id_podotchet_litso, childs, id_spravochnik_organization, id_shartnomalar_organization } = req.body;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
@@ -156,7 +156,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getByIdOperatsii({ type: "bank_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getById({ type: "bank_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
@@ -164,28 +164,28 @@ exports.Controller = class {
       operatsiis.push(operatsii);
 
       if (child.id_spravochnik_podrazdelenie) {
-        const podraz = await PodrazdelenieService.getByIdPodraz({ region_id, id: child.id_spravochnik_podrazdelenie })
+        const podraz = await PodrazdelenieService.getById({ region_id, id: child.id_spravochnik_podrazdelenie })
         if (!podraz) {
           return res.error(req.i18n.t('podrazNotFound'), 404);
         }
       }
 
       if (child.id_spravochnik_sostav) {
-        const sostav = await SostavService.getByIdSostav({ region_id, id: child.id_spravochnik_sostav });
+        const sostav = await SostavService.getById({ region_id, id: child.id_spravochnik_sostav });
         if (!sostav) {
           return res.error(req.i18n.t('sostavNotFound'), 404);
         }
       }
 
       if (child.id_spravochnik_type_operatsii) {
-        const operatsii = await TypeOperatsiiService.getByIdTypeOperatsii({ id: child.id_spravochnik_type_operatsii, region_id });
+        const operatsii = await TypeOperatsiiService.getById({ id: child.id_spravochnik_type_operatsii, region_id });
         if (!operatsii) {
           return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
         }
       }
 
-      if (child.id_podotchet_litso) {
-        const podotchet = await PodotchetService.getByIdPodotchet({ id: id_podotchet_litso, region_id });
+      if (child.id_spravochnik_podotchet_litso) {
+        const podotchet = await PodotchetService.getById({ id: child.id_spravochnik_podotchet_litso, region_id });
         if (!podotchet) {
           return res.error(req.i18n.t('podotchetNotFound'), 404);
         }
@@ -206,7 +206,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }

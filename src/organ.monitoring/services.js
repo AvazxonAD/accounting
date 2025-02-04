@@ -611,7 +611,7 @@ exports.OrganizationmonitoringService = class {
             })
         }
         if (contract_id) {
-            const contract = await ContractDB.getByIdContract([region_id, contract_id], true, main_schet.spravochnik_budjet_name_id, organ_id);
+            const contract = await ContractDB.getById([region_id, contract_id], true, main_schet.spravochnik_budjet_name_id, organ_id);
             if (!contract) {
                 return res.status(404).json({
                     message: "contract not found"

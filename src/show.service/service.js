@@ -29,7 +29,7 @@ exports.ShowServiceService = class {
                 message: "main schet not found"
             })
         }
-        const operatsii = await OperatsiiDB.getByIdOperatsii([spravochnik_operatsii_own_id], "general");
+        const operatsii = await OperatsiiDB.getById([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
             return res.status(404).json({
                 message: "operatsii not found"
@@ -42,7 +42,7 @@ exports.ShowServiceService = class {
             })
         }
         if (shartnomalar_organization_id) {
-            const shartnoma = await ContractDB.getByIdContract(
+            const shartnoma = await ContractDB.getById(
                 [region_id, shartnomalar_organization_id],
                 false, main_schet.spravochnik_budjet_name_id,
                 id_spravochnik_organization
@@ -54,7 +54,7 @@ exports.ShowServiceService = class {
             }
         }
         for (let child of childs) {
-            const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "show_service");
+            const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service");
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
@@ -65,13 +65,13 @@ exports.ShowServiceService = class {
                 }
             }
             if (child.id_spravochnik_sostav) {
-                const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
+                const sostav = await SostavDB.getById([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
-                    return res.eror(req.i18n.t('sostavNotFound'), 404);
+                    return res.error(req.i18n.t('sostavNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_type_operatsii) {
-                const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
+                const type_operatsii = await TypeOperatsiiDB.getById([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
                     return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
                 }
@@ -79,7 +79,7 @@ exports.ShowServiceService = class {
         }
         const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'show_service')
         if (!checkSchetsEquality(operatsiis)) {
-            return res.eror(req.i18n.t('schetDifferentError'), 400);
+            return res.error(req.i18n.t('schetDifferentError'), 400);
         }
         let summa = 0;
         for (let child of childs) {
@@ -200,7 +200,7 @@ exports.ShowServiceService = class {
                 message: "main schet not found"
             })
         }
-        const operatsii = await OperatsiiDB.getByIdOperatsii([spravochnik_operatsii_own_id], "general");
+        const operatsii = await OperatsiiDB.getById([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
             return res.status(404).json({
                 message: "operatsii not found"
@@ -213,7 +213,7 @@ exports.ShowServiceService = class {
             })
         }
         if (shartnomalar_organization_id) {
-            const shartnoma = await ContractDB.getByIdContract(
+            const shartnoma = await ContractDB.getById(
                 [region_id, shartnomalar_organization_id],
                 false, main_schet.spravochnik_budjet_name_id,
                 id_spravochnik_organization
@@ -225,7 +225,7 @@ exports.ShowServiceService = class {
             }
         }
         for (let child of childs) {
-            const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "show_service");
+            const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service");
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
@@ -236,13 +236,13 @@ exports.ShowServiceService = class {
                 }
             }
             if (child.id_spravochnik_sostav) {
-                const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
+                const sostav = await SostavDB.getById([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
-                    return res.eror(req.i18n.t('sostavNotFound'), 404);
+                    return res.error(req.i18n.t('sostavNotFound'), 404);
                 }
             }
             if (child.id_spravochnik_type_operatsii) {
-                const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
+                const type_operatsii = await TypeOperatsiiDB.getById([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
                     return res.error(req.i18n.t('typeOperatsiiNotFound'), 404);
                 }
@@ -250,7 +250,7 @@ exports.ShowServiceService = class {
         }
         const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'show_service')
         if (!checkSchetsEquality(operatsiis)) {
-            return res.eror(req.i18n.t('schetDifferentError'), 400);
+            return res.error(req.i18n.t('schetDifferentError'), 400);
         }
         let summa = 0;
         for (let child of childs) {

@@ -5,7 +5,7 @@ const ExcelJS = require('exceljs');
 const { returnStringDate } = require('../helper/functions');
 const path = require('path');
 const { PodotchetMonitoringDB } = require('./db')
-const { MainSchetService } = require('../spravochnik/main.schet/services')
+const { MainSchetService } = require('../spravochnik/main.schet/service')
 const { PodotchetMonitoringService } = require('./service')
 
 exports.Controller = class {
@@ -15,7 +15,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         if (podotchet_id) {
-            const podotchet = await PodotchetDB.getByIdPodotchet([region_id, podotchet_id])
+            const podotchet = await PodotchetDB.getById([region_id, podotchet_id])
             if (!podotchet) {
                 return res.status(404).json({
                     message: "podotchet not found"
@@ -158,7 +158,7 @@ exports.Controller = class {
         const podotchet_id = req.params.id
         const { main_schet_id, from, to, operatsii } = req.query;
         const region_id = req.user.region_id;
-        const podotchet = await PodotchetDB.getByIdPodotchet([region_id, podotchet_id]);
+        const podotchet = await PodotchetDB.getById([region_id, podotchet_id]);
         if (!podotchet) {
             return res.status(404).json({
                 message: "podotchet not found"
@@ -386,7 +386,7 @@ exports.Controller = class {
     static async cap(req, res) {
         const region_id = req.user.region_id;
         const { query } = req;
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: query.main_schet_id });
         if (!main_schet) {
             return res.error('Main shcet not found', 404);
         }

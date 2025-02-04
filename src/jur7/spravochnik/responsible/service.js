@@ -13,7 +13,6 @@ exports.ResponsibleService = class {
     }
 
     static async createResponsible(data) {
-        console.log(data.poraz_id)
         const result = await ResponsibleDB.createResponsible([
             data.poraz_id,
             data.fio,

@@ -75,7 +75,7 @@ exports.BankRasxodService = class {
     }
 
     static async get(data) {
-        const result = await BankRasxodDB.get([data.main_schet_id, data.region_id, data.from, data.to, data.offset, data.limit]);
+        const result = await BankRasxodDB.get([data.main_schet_id, data.region_id, data.from, data.to, data.offset, data.limit], data.search);
 
         return { data: result.data || [], summa: result.summa, total_count: result.total_count };
     }
