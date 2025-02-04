@@ -19,19 +19,22 @@ exports.OrganizationmonitoringService = class {
             data.to,
             data.offset,
             data.limit
-        ], organ_id)
+        ], organ_id);
+
         const summa_from = await OrganizationMonitoringDB.getSumma([
             data.region_id,
             data.main_schet_id,
             data.operatsii,
             data.from
-        ], '<', organ_id)
+        ], '<', organ_id);
+
         const summa_to = await OrganizationMonitoringDB.getSumma([
             data.region_id,
             data.main_schet_id,
             data.operatsii,
             data.to
-        ], '<=', organ_id)
+        ], '<=', organ_id);
+
         const total = await OrganizationMonitoringDB.getTotal([
             data.region_id,
             data.main_schet_id,
@@ -39,12 +42,14 @@ exports.OrganizationmonitoringService = class {
             data.from,
             data.to
         ], organ_id)
+
         let summa_prixod = 0;
         let summa_rasxod = 0;
         for (let item of docs) {
             summa_prixod += item.summa_prixod
             summa_rasxod += item.summa_rasxod
         }
+        
         return {
             data: docs,
             summa_from,

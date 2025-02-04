@@ -365,11 +365,14 @@ exports.OrganizationMonitoringDB = class {
                 (
                     (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) 
                     - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
-                ) AS summa
+                ) AS summa,
+                (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) AS prixod,
+                (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod
             FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
         `;
         const result = await db.query(query, params);
-        return result[0].summa;
+        
+        return result[0];
     }
 
     static async getPrixodRasxod(params) {
