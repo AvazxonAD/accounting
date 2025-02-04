@@ -2,111 +2,55 @@ const { OrganizationDB } = require('./db')
 const { tashkentTime } = require('../../helper/functions')
 
 exports.OrganizationService = class {
-    static async createOrganization(req, res) {
-        const user_id = req.user.id;
-        const {
-            name, bank_klient,
-            raschet_schet,
-            raschet_schet_gazna,
-            mfo, inn, okonx, parent_id
-        } = req.body;
-        if(parent_id){
-            const organization = await OrganizationDB.getByIdorganization([region_id, parent_id])
-            if(!organization){
-                return res.status(404).json({
-                    message: "organization not found"
-                })
-            }
-        }
-        const result = await OrganizationDB.createOrganization([
-            name, bank_klient, raschet_schet,
-            raschet_schet_gazna, mfo, inn, user_id,
-            okonx, parent_id, tashkentTime(), tashkentTime()
+    static async getByInn(data) {
+        const result = await OrganizationDB.getByInn([data.region_id, data.inn]);
+   
+        return result;
+    }
+
+    static async getByName(data) {
+        const result = await OrganizationDB.getByName([data.region_id, data.name]);
+   
+        return result;
+    }
+
+    static async create(data) {
+        const result = await OrganizationDB.create([
+            data.name, data.bank_klient, data.raschet_schet,
+            data.raschet_schet_gazna, data.mfo, data.inn, data.user_id,
+            data.okonx, data.parent_id, tashkentTime(), tashkentTime()
         ]);
-        return res.status(201).json({
-            message: "Organization created successfully!",
-            data: result
-        })
+
+        return result;
     }
 
-    static async getOrganization(req, res) {
-        const region_id = req.user.region_id;
-        const { page, limit, search } = req.query;
-        const offset = (page - 1) * limit;
-        const { data, total } = await OrganizationDB.getOrganizationDataAndTotal([region_id, offset, limit], search);
-        const pageCount = Math.ceil(total / limit);
-        const meta = {
-            pageCount: pageCount,
-            count: total,
-            currentPage: page,
-            nextPage: page >= pageCount ? null : page + 1,
-            backPage: Number(page) === 1 ? null : page - 1,
-        }
-        return res.status(200).json({
-            message: "get organization successfully!",
-            meta, 
-            data
-        })
+    static async get(data) {
+        const result = await OrganizationDB.get(
+            [data.region_id, data.offset, data.limit], data.search, data.organ_id
+        );
+
+        return result;
     }
 
-    static async updateOrganization(req, res) {
-        const id = req.params.id;
-        const region_id = req.user.region_id;
-        const old_data = await OrganizationDB.getByIdorganization([region_id, id]);
-        if (!old_data) {
-            return res.status(404).json({
-                message: "organziation not found"
-            })
-        }
-        const {
-            name, bank_klient, raschet_schet,
-            raschet_schet_gazna, mfo, inn, okonx, parent_id
-        } = req.body;
+    static async update(data) {
+        const result = await OrganizationDB.update([
+            data.name, data.bank_klient, data.raschet_schet,
+            data.raschet_schet_gazna, data.mfo, data.inn, data.okonx, 
+            data.parent_id, data.id
+        ]);
+
+        return result;
+    }
+
+    static async delete(data) {
+        const result = await OrganizationDB.delete([data.id]);
         
-        if(parent_id){
-            const organization = await OrganizationDB.getByIdorganization([region_id, parent_id])
-            if(!organization){
-                return res.status(404).json({
-                    message: "organization not found"
-                })
-            }
-        }
-        const result = await OrganizationDB.updateOrganization([
-            name, bank_klient, raschet_schet,
-            raschet_schet_gazna, mfo, inn, okonx, parent_id, id
-        ]);
-        return res.status(200).json({
-            message: 'update organization successfully!',
-            data: result
-        })
+        return result;
     }
 
-    static async deleteOrganization(req, res) {
-        const id = req.params.id;
-        const region_id = req.user.region_id;
-        const old_data = await OrganizationDB.getByIdorganization([region_id, id]);
-        if (!old_data) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
-        }
-        await OrganizationDB.deleteOrganization([id]);
-        return res.status(200).json({
-            message: 'delete organization successfully'
-        })
+    static async getById(data) {
+        const result = await OrganizationDB.getById([data.region_id, data.id], data.isdeleted);
+        
+        return result;
     }
-
-    static async getByIdOrganization(req, res) {
-        const result = await OrganizationDB.getByIdorganization([req.user.region_id, req.params.id], true);
-        if (!result) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
-        }
-        return res.status(200).json({
-            message: "organization get successfully",
-            data: result
-        })
-    }
-
 }

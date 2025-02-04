@@ -6,7 +6,7 @@ const { PodrazdelenieService } = require('../../spravochnik/podrazdelenie/servic
 const { SostavService } = require('../../spravochnik/sostav/service')
 const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');
 const { BankPrixodService } = require('./service');
-const { OrganizationService } = require('../../spravochnik/organization/services');
+const { OrganizationService } = require('../../spravochnik/organization/service');
 const { ContractService } = require('../../shartnoma/services');
 
 exports.Controller = class {
@@ -21,7 +21,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
-    const organization = await OrganizationService.getByIdOrganization({ region_id, id: id_spravochnik_organization });
+    const organization = await OrganizationService.getById({ region_id, id: id_spravochnik_organization });
     if (!organization) {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
@@ -142,7 +142,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
-    const organization = await OrganizationService.getByIdOrganization({ region_id, id: id_spravochnik_organization });
+    const organization = await OrganizationService.getById({ region_id, id: id_spravochnik_organization });
     if (!organization) {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
