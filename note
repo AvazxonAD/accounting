@@ -1,16 +1,27 @@
-
-
-SELECT  
-    CASE 
-        WHEN m.jur1_schet = '100' THEN COALESCE(SUM(k_r_ch.summa), 0)::FLOAT
+SELECT
+    CASE
+        WHEN m.jur1_schet = '100' THEN COALESCE(SUM(k_r_ch.summa), 0) :: FLOAT
         ELSE 0
     END AS rasxod_sum,
-    CASE 
-        WHEN s_o.schet = '100' THEN COALESCE(SUM(k_r_ch.summa), 0)::FLOAT
+    CASE
+        WHEN s_o.schet = '100' THEN COALESCE(SUM(k_r_ch.summa), 0) :: FLOAT
         ELSE 0
     END AS prixod_sum
-FROM kassa_rasxod k_r
-JOIN kassa_rasxod_child AS k_r_ch ON k_r.id = k_r_ch.kassa_rasxod_id 
-JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
-JOIN main_schet m ON m.id = k_r.main_schet_id
-GROUP BY m.jur1_schet, s_o.schet;
+FROM
+    kassa_rasxod k_r
+    JOIN kassa_rasxod_child AS k_r_ch ON k_r.id = k_r_ch.kassa_rasxod_id
+    JOIN spravochnik_operatsii AS s_o ON s_o.id = k_r_ch.spravochnik_operatsii_id
+    JOIN main_schet m ON m.id = k_r.main_schet_id
+GROUP BY
+    m.jur1_schet,
+    s_o.schet;
+
+SELECT
+    COALESCE(SUM(p.summa), 0) :: FLOAT - COALESCE(SUM(r.summa), 0) :: FLOAT summa
+FROM
+    bank_prixod p FULL
+    JOIN bank_rasxod r ON p.main_schet_id = r.main_schet_id
+    AND p.doc_date = r.doc_date
+WHERE
+    p.main_schet_id = $ 1
+    AND p.doc_date <= $ 2

@@ -2,16 +2,35 @@ const { DashboardDB } = require('./db');
 
 exports.DashboardService = class {
     static async getBudjet(data) {
-        const result = await DashboardDB.getBudjet([]);
+        const result = await DashboardDB.getBudjet([], data.budjet_id, data.main_schet_id);
 
         return result;
     }
 
-    static async get(data) {
-        const kassa_bank = await DashboardDB.getKassSumma([data.main_schet_id, data.to]);
+    static async kassa(data) {
+        for (let budjet of data.budjets) {
+            for (let schet of budjet.main_schets) {
+                schet.kassa = await DashboardDB.kassa([schet.id, data.to]);
+            }
+        }
+        return data.budjets;
+    }
 
-        const podotchets = await DashboardDB.getPodotchets([data.main_schet_id, data.to]);
+    static async bank(data) {
+        for (let budjet of data.budjets) {
+            for (let schet of budjet.main_schets) {
+                schet.bank = await DashboardDB.bank([schet.id, data.to]);
+            }
+        }
+        return data.budjets;
+    }
 
-        return { kassa_bank, podotchets };
-    }2
+    static async podotchet(data) {
+        for (let budjet of data.budjets) {
+            for (let schet of budjet.main_schets) {
+                schet.podotchets = await DashboardDB.podotchets([schet.id, data.to]);
+            }
+        }
+        return data.budjets;
+    }
 }
