@@ -71,6 +71,9 @@ routes
     .use('/log', protect, require('./log/index'))
     // Features
     .use('/features', protect, require('./features/index'))
+    // Dashboard
+    .use('/dashboard', protect, require('./dashboard/index'))
+
     // Admin
     .use('/admin/main/book', protect, require('./admin/main.book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))

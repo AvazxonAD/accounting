@@ -1,5 +1,5 @@
 const { Controller } = require('./controller');
-const { validator } = require('../../helper/validator');
+const { validator } = require('../helper/validator');
 const { DashboardSchema } = require("./schema");
 
 const { Router } = require('express')

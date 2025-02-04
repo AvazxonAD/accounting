@@ -2,15 +2,16 @@ const { Router } = require("express");
 const router = Router();
 
 const { validator } = require('../../helper/validator');
-const { KassaRasxodSchema } = require('./schema')
+const { BankRasxodSchema } = require('./schema')
 const { Controller } = require("./controller");
 
 
-router.post("/", validator(Controller.create, KassaRasxodSchema.create()))
-    .get('/', validator(Controller.get, KassaRasxodSchema.get()))
-    .put('/:id', validator(Controller.update, KassaRasxodSchema.update()))
-    .delete('/:id', validator(Controller.delete, KassaRasxodSchema.delete()))
-    .get('/:id', validator(Controller.getById, KassaRasxodSchema.getById()));
+router.post("/", validator(Controller.create, BankRasxodSchema.create()))
+    .get('/', validator(Controller.get, BankRasxodSchema.get()))
+    .get('/fio', validator(Controller.fio, BankRasxodSchema.fio()))
+    .put('/:id', validator(Controller.update, BankRasxodSchema.update()))
+    .delete('/:id', validator(Controller.delete, BankRasxodSchema.delete()))
+    .get('/:id', validator(Controller.getById, BankRasxodSchema.getById()));
 
 
 module.exports = router;
