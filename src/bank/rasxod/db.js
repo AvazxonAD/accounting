@@ -217,7 +217,8 @@ exports.BankRasxodDB = class {
                 rukovoditel = $7,
                 glav_buxgalter = $8,
                 summa = 0,
-                updated_at = $9
+                updated_at = $9,
+                tulangan_tulanmagan = false
             WHERE id = $10 RETURNING id 
         `, params);
 

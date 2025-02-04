@@ -53,7 +53,6 @@ exports.BankRasxodService = class {
     static async createChild(data) {
         const create_childs = [];
         for (let child of data.childs) {
-            console.log(child)
             create_childs.push(
                 child.spravochnik_operatsii_id,
                 child.summa,
