@@ -3,6 +3,7 @@ const { AktDB } = require('./db');
 const ExcelJS = require('exceljs');
 const path = require('path');
 const { access, constants, mkdir } = require('fs').promises;
+const { childsSumma } = require('../helper/functions');
 
 exports.AktService = class {
     static async capExcel(data) {
@@ -132,7 +133,51 @@ exports.AktService = class {
         result.data.forEach(item => {
             page_summa += item.summa;
         });
-        
+
         return { ...result, page_summa };
+    }
+
+    static async create(data) {
+        const summa = childsSumma(data.childs);
+
+        const result = await db.transaction(async (client) => {
+            const doc = await AktDB.createAkt([
+                doc_num,
+                doc_date,
+                opisanie,
+                summa,
+                id_spravochnik_organization,
+                shartnomalar_organization_id,
+                main_schet_id,
+                user_id,
+                spravochnik_operatsii_own_id,
+                tashkentTime(),
+                tashkentTime()
+            ], client);
+
+            const items = await AktDB.createAktChild(result_childs, client)
+            doc.childs = items;
+        })
+    }
+
+    static async createChild(data) {
+        const result_childs = data.childs.map(item => {
+            item.summa = item.kol * item.sena
+            if (item.nds_foiz) {
+                item.nds_summa = item.nds_foiz / 100 * item.summa;
+            } else {
+                item.nds_summa = 0;
+            }
+            item.summa_s_nds = item.summa + item.nds_summa;
+            item.created_at = tashkentTime();
+            item.updated_at = tashkentTime();
+            item.main_schet_id = main_schet_id;
+            item.user_id = user_id;
+            item.spravochnik_operatsii_own_id = spravochnik_operatsii_own_id;
+            item.bajarilgan_ishlar_jur3_id = doc.id;
+            return item;
+        });
+
+        
     }
 }

@@ -7,13 +7,14 @@ const { SostavService } = require('../../spravochnik/sostav/service')
 const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');
 const { BankRasxodService } = require('./service');
 const { OrganizationService } = require('../../spravochnik/organization/service');
+const { ContractService } = require('../../shartnoma/service');
 
 exports.Controller = class {
   static async payment(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const { main_schet_id } = req.query;
-    
+
     const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
@@ -25,7 +26,7 @@ exports.Controller = class {
     }
 
     const result = await BankRasxodService.payment({ id, status: req.body.status });
-    
+
     return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   }
 

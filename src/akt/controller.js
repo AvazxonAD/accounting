@@ -23,6 +23,7 @@ exports.Controller = class {
             spravochnik_operatsii_own_id,
             childs
         } = req.body;
+
         const region_id = req.user.region_id;
         const user_id = req.user.id;
         const main_schet_id = req.query.main_schet_id;
@@ -48,28 +49,35 @@ exports.Controller = class {
                 false, main_schet.spravochnik_budjet_name_id,
                 id_spravochnik_organization
             );
+
             if (!shartnoma || !shartnoma.pudratchi_bool) {
                 return res.error(req.i18n.t('contractNotFound'), 404);
             }
         }
+
+        const operatsiis = [];
 
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getByIdOperatsii([child.spravochnik_operatsii_id], "akt");
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
+            operatsiis.push(operatsii);
+
             if (child.id_spravochnik_podrazdelenie) {
                 const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, child.id_spravochnik_podrazdelenie]);
                 if (!podrazdelenie) {
                     return res.error(req.i18n.t('podrazNotFound'), 404);
                 }
             }
+
             if (child.id_spravochnik_sostav) {
                 const sostav = await SostavDB.getByIdSostav([region_id, child.id_spravochnik_sostav]);
                 if (!sostav) {
                     return res.eror(req.i18n.t('sostavNotFound'), 404);
                 }
             }
+
             if (child.id_spravochnik_type_operatsii) {
                 const type_operatsii = await TypeOperatsiiDB.getByIdTypeOperatsii([region_id, child.id_spravochnik_type_operatsii]);
                 if (!type_operatsii) {
@@ -77,48 +85,10 @@ exports.Controller = class {
                 }
             }
         }
-        const operatsiis = await OperatsiiDB.getOperatsiiByChildArray(childs, 'akt')
+
         if (!checkSchetsEquality(operatsiis)) {
             return res.eror(req.i18n.t('schetDifferentError'), 400);
         }
-        let summa = 0;
-        for (let child of childs) {
-            summa += child.kol * child.sena;
-        }
-        let doc;
-        await db.transaction(async (client) => {
-            doc = await AktDB.createAkt([
-                doc_num,
-                doc_date,
-                opisanie,
-                summa,
-                id_spravochnik_organization,
-                shartnomalar_organization_id,
-                main_schet_id,
-                user_id,
-                spravochnik_operatsii_own_id,
-                tashkentTime(),
-                tashkentTime()
-            ], client);
-            const result_childs = childs.map(item => {
-                item.summa = item.kol * item.sena
-                if (item.nds_foiz) {
-                    item.nds_summa = item.nds_foiz / 100 * item.summa;
-                } else {
-                    item.nds_summa = 0;
-                }
-                item.summa_s_nds = item.summa + item.nds_summa;
-                item.created_at = tashkentTime();
-                item.updated_at = tashkentTime();
-                item.main_schet_id = main_schet_id;
-                item.user_id = user_id;
-                item.spravochnik_operatsii_own_id = spravochnik_operatsii_own_id;
-                item.bajarilgan_ishlar_jur3_id = doc.id;
-                return item;
-            })
-            const items = await AktDB.createAktChild(result_childs, client)
-            doc.childs = items;
-        })
 
         return res.success(req.i18n.t('createSuccess'), 201, null, doc);
     }
