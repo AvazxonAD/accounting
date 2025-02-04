@@ -84,12 +84,14 @@ exports.Controller = class {
     }
 
     static async getById(req, res) {
-        const result = await OrganizationService.getById([req.user.region_id, req.params.id], true);
+        const region_id = req.user.region_id;
+        const id = req.params.id;
+
+        const result = await OrganizationService.getById({ region_id, id }, true);
         if (!result) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
+            return res.error(req.i18n.t('organizationNotFound'), 404);
         }
+
         return res.status(200).json({
             message: "organization get successfully",
             data: result

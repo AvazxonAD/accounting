@@ -50,6 +50,7 @@ exports.OrganizationDB = class {
     }
 
     static async getById(params, isdeleted) {
+        console.log(params)
         const ignore = `AND s_o.isdeleted = false`
         let query = `--sql
             SELECT 
