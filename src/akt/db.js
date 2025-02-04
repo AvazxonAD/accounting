@@ -97,7 +97,7 @@ exports.AktDB = class {
                 updated_at
             ) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
-            RETURNING *
+            RETURNING id
         `;
         const result = await client.query(query, params)
         return result.rows[0];

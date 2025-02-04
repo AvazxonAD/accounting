@@ -100,7 +100,6 @@ exports.BankRasxodService = class {
                 data.id_shartnomalar_organization,
                 data.rukovoditel,
                 data.glav_buxgalter,
-                0,
                 tashkentTime(),
                 data.id
             ], client);
