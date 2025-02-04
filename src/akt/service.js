@@ -126,6 +126,8 @@ exports.AktService = class {
     }    
 
     static async get(data) {
-        const result = await AktDB.get([]);
+        const result = await AktDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+
+        return result;
     }
 }
