@@ -37,7 +37,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('operatsiiNotFound'), 404);
         }
 
-        const organization = await OrganizationDB.getByIdorganization([region_id, id_spravochnik_organization]);
+        const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
@@ -123,7 +123,7 @@ exports.Controller = class {
         return res.success(req.i18n.t('createSuccess'), 201, null, doc);
     }
 
-    static async getAkt(req, res) {
+    static async get(req, res) {
         const region_id = req.user.region_id;
         const { page, limit, from, to, main_schet_id } = req.query;
         
@@ -133,7 +133,7 @@ exports.Controller = class {
         }
 
         const offset = (page - 1) * limit;
-        const data = await AktDB.getAkt([region_id, main_schet_id, from, to, offset, limit]);
+        const data = await AktDB.get([region_id, main_schet_id, from, to, offset, limit]);
         const total = await AktDB.getTotalAkt([region_id, main_schet_id, from, to])
         
         let summa = 0;
@@ -199,7 +199,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('operatsiiNotFound'), 404);
         }
 
-        const organization = await OrganizationDB.getByIdorganization([region_id, id_spravochnik_organization]);
+        const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }

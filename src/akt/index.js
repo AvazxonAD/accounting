@@ -17,7 +17,7 @@ router.get('/export/cap', validator(Controller.cap, capSchema));
 router.get('/:id', validator(Controller.getByIdAkt, getByIdSchema));
 router.put('/:id', validator(Controller.updateAkt, updateSchema));
 router.delete('/:id', validator(Controller.deleteAkt, deleteSchema));
-router.get('/', validator(Controller.getAkt, getSchema));
+router.get('/', validator(Controller.get, getSchema));
 
 
 module.exports = router;

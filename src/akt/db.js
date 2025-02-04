@@ -2,8 +2,9 @@ const { db } = require('../db/index');
 const { designParams, returnParamsValues } = require('../helper/functions')
 
 exports.AktDB = class {
-    static async getAkt(params) {
+    static async get(params) {
         const query = `--sql
+        WITH data AS (
             SELECT 
                 b_i_j3.id, 
                 b_i_j3.doc_num,
@@ -40,21 +41,38 @@ exports.AktDB = class {
                 AND b_i_j3.doc_date BETWEEN $3 AND $4
             ORDER BY b_i_j3.doc_date 
             OFFSET $5 LIMIT $6
+        )
+         SELECT 
+            ARRAY_AGG(ROW_TO_JSON(data)) AS data,
+            (
+                SELECT 
+                    COALESCE(COUNT(d.id), 0)::INTEGER
+                FROM bajarilgan_ishlar_jur3 AS d 
+                JOIN users AS u  ON d.user_id = u.id
+                JOIN regions AS r ON u.region_id = r.id
+                WHERE r.id = $1 
+                    AND d.main_schet_id = $2 
+                    AND d.isdeleted = false 
+                    AND d.doc_date BETWEEN $3 AND $4
+            ) AS total, 
+            (
+                SELECT 
+                    COALESCE(COUNT(d.summa), 0)::INTEGER AS total
+                FROM bajarilgan_ishlar_jur3 AS d 
+                JOIN users AS u  ON d.user_id = u.id
+                JOIN regions AS r ON u.region_id = r.id
+                WHERE r.id = $1 
+                    AND d.main_schet_id = $2 
+                    AND d.isdeleted = false
+                    AND d.doc_date BETWEEN $3 AND $4
+            ) AS summa
         `;
         const result = await db.query(query, params);
-        return result;
+        return result[0];
     }
 
     static async getTotalAkt(params) {
         const query = `--sql
-            SELECT COALESCE(COUNT(b_i_j3.id), 0)::INTEGER AS total
-              FROM bajarilgan_ishlar_jur3 AS b_i_j3 
-              JOIN users AS u  ON b_i_j3.user_id = u.id
-              JOIN regions AS r ON u.region_id = r.id
-            WHERE r.id = $1 
-                AND b_i_j3.main_schet_id = $2 
-                AND b_i_j3.isdeleted = false 
-                AND b_i_j3.doc_date BETWEEN $3 AND $4
         `;
         const data = await db.query(query, params)
         return data[0].total;

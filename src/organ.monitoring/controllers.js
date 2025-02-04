@@ -1,6 +1,6 @@
 const { OrganizationmonitoringService } = require('./services')
 const { MainSchetService } = require('../spravochnik/main.schet/services');
-const { OrganizationService } = require('../spravochnik/organization/services')
+const { OrganizationService } = require('../spravochnik/organization/service')
 const { BudjetService } = require('../spravochnik/budjet/services')
 const { ContractService } = require('../shartnoma/services')
 const { RegionDB } = require('../auth/region/db')
@@ -19,7 +19,7 @@ exports.Controller = class {
             return res.error('main shcet not found', 404);
         }
         if (organ_id) {
-            const organization = await OrganizationService.getByIdOrganization({region_id, id: organ_id, isdeleted: false});
+            const organization = await OrganizationService.getById({ region_id, id: organ_id, isdeleted: false });
             if (!organization) {
                 res.error('Organization not found', 404)
             }
@@ -51,7 +51,7 @@ exports.Controller = class {
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
-        const { data: organizations } = await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999 });
+        const { data: organizations } = await OrganizationService.get({ region_id, offset: 0, limit: 9999 });
         const data = await OrganizationmonitoringService.prixodRasxod(query, organizations);
         if (query.excel === 'true') {
             const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
@@ -107,15 +107,15 @@ exports.Controller = class {
             return res.error('main shcet not found', 404);
         }
         if (query.organ_id) {
-            const organization = await OrganizationService.getByIdOrganization({ region_id, id: query.organ_id });
-            if(!organization){
+            const organization = await OrganizationService.getById({ region_id, id: query.organ_id });
+            if (!organization) {
                 return res.error('Organization not found', 404);
             }
         }
         let data;
         let organizations;
         if (query.contract !== 'true') {
-            organizations = (await OrganizationService.getOrganization({ region_id, offset: 0, limit: 9999, organ_id: query.organ_id })).data;
+            organizations = (await OrganizationService.get({ region_id, offset: 0, limit: 9999, organ_id: query.organ_id })).data;
         } else {
             organizations = await ContractService.getContractByOrganizations({ region_id, organ_id: query.organ_id });
         }
@@ -169,7 +169,7 @@ exports.Controller = class {
                 message: "main schet not found"
             })
         }
-        const organization = await OrganizationDB.getByIdorganization([region_id, organ_id])
+        const organization = await OrganizationDB.getById([region_id, organ_id])
         if (!organization) {
             return res.status(404).json({
                 message: "organization not found"

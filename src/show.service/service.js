@@ -35,7 +35,7 @@ exports.ShowServiceService = class {
                 message: "operatsii not found"
             })
         }
-        const organization = await OrganizationDB.getByIdorganization([region_id, id_spravochnik_organization]);
+        const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
             return res.status(404).json({
                 message: "organization not found"
@@ -206,7 +206,7 @@ exports.ShowServiceService = class {
                 message: "operatsii not found"
             })
         }
-        const organization = await OrganizationDB.getByIdorganization([region_id, id_spravochnik_organization]);
+        const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
             return res.status(404).json({
                 message: "organization not found"

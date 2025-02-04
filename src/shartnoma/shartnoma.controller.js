@@ -31,7 +31,7 @@ const create = async (req, res) => {
     if (data.smeta2_id) {
       await getByIdSmeta(data.smeta2_id)
     }
-    const organization = await OrganizationDB.getByIdorganization([region_id, data.spravochnik_organization_id]);
+    const organization = await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     if(!organization) {
       return res.status(404).json({
         message: "organization not found"
@@ -84,7 +84,7 @@ const getAll = async (req, res) => {
     await getByIdBudjetService(budjet_id);
     const offset = (page - 1) * limit;
     if(organization){
-      await OrganizationDB.getByIdorganization([region_id, organization])
+      await OrganizationDB.getById([region_id, organization])
     }
     const { data, total } = await getAllShartnoma(region_id, budjet_id, offset, limit, organization, pudratchi_bool, search);
     const pageCount = Math.ceil(total / limit);
@@ -130,7 +130,7 @@ const update_shartnoma = async (req, res) => {
         message: "smeta not found"
       })
     };
-    await OrganizationDB.getByIdorganization([region_id, data.spravochnik_organization_id]);
+    await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     const result = await updateShartnomaDB({ ...data, id });
     const grafik_data = { shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik }
     if (result.yillik_oylik) {

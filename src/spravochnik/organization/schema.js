@@ -1,6 +1,6 @@
 const Joi = require('joi')
 
-exports.createOrganizationSchema = Joi.object({
+exports.createSchema = Joi.object({
     body: Joi.object({
         name: Joi.string().trim().required(),
         bank_klient: Joi.string().trim().required(),
@@ -41,7 +41,7 @@ exports.getByIdSchema = Joi.object({
     })
 })
 
-exports.getOrganizationSchema = Joi.object({
+exports.getSchema = Joi.object({
     query: Joi.object({
         page: Joi.number().min(1).default(1),
         limit: Joi.number().min(1).default(10),

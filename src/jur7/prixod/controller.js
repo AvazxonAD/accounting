@@ -7,7 +7,7 @@ const { BudjetService } = require('../../spravochnik/budjet/services');
 const { PrixodJur7Service } = require('./service');
 const { GroupService } = require('../spravochnik/group/service');
 const { PrixodSchema } = require('./schema');
-const { OrganizationService } = require('../../spravochnik/organization/services');
+const { OrganizationService } = require('../../spravochnik/organization/service');
 
 exports.Controller = class {
   static async templateFile(req, res) {
@@ -51,7 +51,7 @@ exports.Controller = class {
 
     for (let doc of result_data) {
 
-      // const organization = await OrganizationService.getByInn({ region_id, inn: doc.inn, account_number: doc.account_number });
+      // const organization = await Controller.getByInn({ region_id, inn: doc.inn, account_number: doc.account_number });
       // if (!organization) {
       //   return res.error(req.i18n.t('organizationNotFound'), 404);
       // };
@@ -91,7 +91,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
+    const organization = await OrganizationDB.getById([region_id, kimdan_id]);
     if (!organization) {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
@@ -201,7 +201,7 @@ exports.Controller = class {
       }
     }
 
-    const organization = await OrganizationDB.getByIdorganization([region_id, kimdan_id]);
+    const organization = await OrganizationDB.getById([region_id, kimdan_id]);
     if (!organization) {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }

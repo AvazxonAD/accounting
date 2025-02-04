@@ -124,4 +124,8 @@ exports.AktService = class {
     
         return { fileName, filePath };
     }    
+
+    static async get(data) {
+        const result = await AktDB.get([]);
+    }
 }
