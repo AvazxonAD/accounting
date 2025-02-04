@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 
 exports.PodotchetDB = class {
-    static async getByIdPodotchet(params, isdeleted) {
+    static async getById(params, isdeleted) {
         const ignore = `AND s_p_l.isdeleted = false`
         const query = `--sql
             SELECT 

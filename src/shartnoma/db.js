@@ -1,7 +1,7 @@
 const { db } = require('../db/index')
 
 exports.ContractDB = class {
-    static async getByIdContract(params, isdeleted, budjet_id, organ_id) {
+    static async getById(params, isdeleted, budjet_id, organ_id) {
         const ignore = `AND sh_o.isdeleted = false`
         let budjet_filter = ``
         let organ_filter = ``

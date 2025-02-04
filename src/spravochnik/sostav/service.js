@@ -1,8 +1,8 @@
 const { SostavDB } = require('./db');
 
 exports.SostavService = class {
-    static async getByIdSostav(data) {
-        const result = await SostavDB.getByIdSostav([data.region_id, data.id], data.isdeleted);
+    static async getById(data) {
+        const result = await SostavDB.getById([data.region_id, data.id], data.isdeleted);
         
         return result;
     }

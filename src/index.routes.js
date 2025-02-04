@@ -41,7 +41,7 @@ routes
     // Akt routes
     .use("/akt", protect, require("./akt/index"))
     // Avans routes
-    .use("/avans", protect, require("./avans/avans.routes"))
+    .use("/avans", protect, require("./avans/index"))
     // Show service routes
     .use("/services/show", protect, require("./show.service/index"))
     // Podotchet monitoring

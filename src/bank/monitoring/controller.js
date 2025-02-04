@@ -1,18 +1,18 @@
 const { BankMonitoringService } = require('./service');
-const { MainSchetService } = require('../../spravochnik/main.schet/services');
+const { MainSchetService } = require('../../spravochnik/main.schet/service');
 
 exports.Controller = class {
     static async get(req, res) {
         const region_id = req.user.region_id
-        const { page, limit, main_schet_id, from, to } = req.query;
+        const { page, limit, main_schet_id, from, to, search} = req.query;
         const offset = (page - 1) * limit;
 
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
         if (!main_schet) {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await BankMonitoringService.get({ region_id, main_schet_id, offset, limit, from, to });
+        const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await BankMonitoringService.get({ region_id, main_schet_id, offset, limit, from, to, search });
 
         const pageCount = Math.ceil(total_count / limit);
 
@@ -37,7 +37,7 @@ exports.Controller = class {
         const { from, to, main_schet_id } = req.query;
         const region_id = req.user.region_id;
 
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
         if (!main_schet) {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
@@ -56,7 +56,7 @@ exports.Controller = class {
         const { from, to, main_schet_id } = req.query;
         const region_id = req.user.region_id;
 
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
         if (!main_schet) {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }

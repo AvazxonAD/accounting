@@ -36,7 +36,7 @@ exports.BankPrixodService = class {
                 child.id_spravochnipodrazdelenie,
                 child.id_spravochnik_sostav,
                 child.id_spravochnik_type_operatsii,
-                child.id_spravochnipodotchet_litso,
+                child.id_spravochnik_podotchet_litso,
                 data.main_schet_id,
                 data.docId,
                 data.user_id,
@@ -50,7 +50,7 @@ exports.BankPrixodService = class {
     }
 
     static async get(data) {
-        const result = await BankPrixodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+        const result = await BankPrixodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
 
         return { data: result.data || [], summa: result.summa, total_count: result.total_count };
     }

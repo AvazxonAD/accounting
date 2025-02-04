@@ -82,7 +82,7 @@ const deleteSostav = async (req, res) => {
 }
 
 // get element by id
-const getByIdSostav = async (req, res) => {
+const getById = async (req, res) => {
   try {
     const data = await getByIdSostavService(req.user.region_id, req.params.id, true);
     resFunc(res, 200, data)
@@ -144,7 +144,7 @@ const importToExcel = async (req, res) => {
 }
 
 module.exports = {
-  getByIdSostav,
+  getById,
   createSostav,
   getSostav,
   deleteSostav,

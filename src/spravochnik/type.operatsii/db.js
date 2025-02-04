@@ -1,7 +1,7 @@
 const { db } = require('../../db/index');
 
 exports.TypeOperatsiiDB = class {
-    static async getByIdTypeOperatsii(params, isdeleted) {
+    static async getById(params, isdeleted) {
         const query = `--sql
             SELECT 
                 s.id, 

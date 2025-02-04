@@ -1,5 +1,5 @@
 const { DashboardService } = require('./service');
-const { MainSchetService } = require('../spravochnik/main.schet/services');
+const { MainSchetService } = require('../spravochnik/main.schet/service');
 
 exports.Controller = class {
     static async budjet(req, res) {
@@ -15,7 +15,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
 
         if (main_schet_id) {
-            const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+            const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
             if(!main_schet){
                 return res.error(req.i18n.t('mainSchetNotFound'), 404);
             }
@@ -33,7 +33,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
 
         if (main_schet_id) {
-            const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+            const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
             if(!main_schet){
                 return res.error(req.i18n.t('mainSchetNotFound'), 404);
             }
@@ -51,7 +51,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
 
         if (main_schet_id) {
-            const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+            const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
             if(!main_schet){
                 return res.error(req.i18n.t('mainSchetNotFound'), 404);
             }

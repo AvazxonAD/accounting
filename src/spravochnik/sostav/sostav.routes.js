@@ -7,7 +7,7 @@ const {
   getSostav,
   updateSostav,
   deleteSostav,
-  getByIdSostav,
+  getById,
 } = require("./sostav.controller");
 
 const upload = require("../../utils/protect.file");
@@ -16,6 +16,6 @@ router.post("/", createSostav);
 router.get("/", getSostav);
 router.put("/:id", updateSostav);
 router.delete("/:id", deleteSostav);
-router.get("/:id", getByIdSostav);
+router.get("/:id", getById);
 
 module.exports = router;

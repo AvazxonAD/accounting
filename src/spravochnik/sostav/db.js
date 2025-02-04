@@ -1,7 +1,7 @@
 const { db } = require('../../db/index');
 
 exports.SostavDB = class {
-    static async getByIdSostav(params, isdeleted) {
+    static async getById(params, isdeleted) {
         const query = `--sql
             SELECT 
                 s.id, 

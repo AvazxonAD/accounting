@@ -1,5 +1,5 @@
 const { OrganizationmonitoringService } = require('./services')
-const { MainSchetService } = require('../spravochnik/main.schet/services');
+const { MainSchetService } = require('../spravochnik/main.schet/service');
 const { OrganizationService } = require('../spravochnik/organization/service')
 const { BudjetService } = require('../spravochnik/budjet/services')
 const { ContractService } = require('../shartnoma/service')
@@ -14,7 +14,7 @@ exports.Controller = class {
         const { query } = req;
         const { page, limit, organ_id } = query;
         const offset = (query.page - 1) * limit;
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: query.main_schet_id });
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
@@ -50,7 +50,7 @@ exports.Controller = class {
         if (!budjet) {
             return res.error(req.i18n.t('budjetNotFound'), 404);
         }
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: query.main_schet_id });
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
@@ -77,7 +77,7 @@ exports.Controller = class {
     static async cap(req, res) {
         const region_id = req.user.region_id;
         const { query } = req;
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: query.main_schet_id });
         if (!main_schet) {
             return res.error('Main shcet not found', 404);
         }
@@ -105,7 +105,7 @@ exports.Controller = class {
     static async consolidated(req, res) {
         const region_id = req.user.region_id;
         const { query } = req;
-        const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: query.main_schet_id });
+        const main_schet = await MainSchetService.getById({ region_id, id: query.main_schet_id });
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
@@ -179,7 +179,7 @@ exports.Controller = class {
             })
         }
         if (contract_id) {
-            const contract = await ContractDB.getByIdContract([region_id, contract_id], true, main_schet.spravochnik_budjet_name_id, organ_id);
+            const contract = await ContractDB.getById([region_id, contract_id], true, main_schet.spravochnik_budjet_name_id, organ_id);
             if (!contract) {
                 return res.status(404).json({
                     message: "contract not found"

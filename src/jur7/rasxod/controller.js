@@ -3,7 +3,7 @@ const { checkTovarId } = require('../../helper/functions');
 const { ResponsibleService } = require('../spravochnik/responsible/service')
 const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
 const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
-const { MainSchetService } = require('../../spravochnik/main.schet/services')
+const { MainSchetService } = require('../../spravochnik/main.schet/service')
 const { Jur7RsxodService } = require('./service')
 const { Jur7MonitoringService } = require('../monitoring/service');
 
@@ -14,7 +14,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
@@ -61,7 +61,7 @@ exports.Controller = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
@@ -81,7 +81,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
@@ -132,7 +132,7 @@ exports.Controller = class {
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
@@ -150,7 +150,7 @@ exports.Controller = class {
   static async getRasxod(req, res) {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id } = req.query;
-    const main_schet = await MainSchetService.getByIdMainScet({ region_id, id: main_schet_id });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }

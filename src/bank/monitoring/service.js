@@ -6,7 +6,7 @@ const { mkdir, constants, access } = require('fs').promises;
 
 exports.BankMonitoringService = class {
     static async get(data) {
-        const result = await BankMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+        const result = await BankMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
         let prixod_sum = 0;
         let rasxod_sum = 0;
         for (let item of result.data) {
@@ -14,9 +14,9 @@ exports.BankMonitoringService = class {
             rasxod_sum += item.rasxod_sum;
         }
 
-        const summa_from = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from], '<');
+        const summa_from = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from], '<', data.search);
 
-        const summa_to = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.to], '<=');
+        const summa_to = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.to], '<=', data.search);
 
         return {
             summa_from,

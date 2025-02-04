@@ -45,18 +45,24 @@ exports.BankPrixodDB = class {
         return result;
     }
 
-    static async get(params) {
+    static async get(params, search = null) {
+        let search_filter = ``;
+        if (search) {
+            params.push(search);
+            search_filter = ` AND d.doc_num = $${params.length}`;
+        }
+
         const query = `
             WITH data AS (
                 SELECT 
-                    p.id,
-                    p.doc_num, 
-                    TO_CHAR(p.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                    p.summa, 
-                    p.provodki_boolean, 
-                    p.dop_provodki_boolean, 
-                    p.opisanie, 
-                    p.id_spravochnik_organization, 
+                    d.id,
+                    d.doc_num, 
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                    d.summa, 
+                    d.provodki_boolean, 
+                    d.dop_provodki_boolean, 
+                    d.opisanie, 
+                    d.id_spravochnik_organization, 
                     s_o.name AS spravochnik_organization_name,
                     s_o.okonx AS spravochnik_organization_okonx,
                     s_o.bank_klient AS spravochnik_organization_bank_klient,
@@ -64,7 +70,7 @@ exports.BankPrixodDB = class {
                     s_o.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
                     s_o.mfo AS spravochnik_organization_mfo,
                     s_o.inn AS spravochnik_organization_inn,
-                    p.id_shartnomalar_organization,
+                    d.id_shartnomalar_organization,
                     (
                         SELECT ARRAY_AGG(row_to_json(ch))
                         FROM (
@@ -73,36 +79,46 @@ exports.BankPrixodDB = class {
                                 s_o.sub_schet AS provodki_sub_schet
                             FROM bank_prixod_child AS ch
                             JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
-                            WHERE  ch.id_bank_prixod = p.id 
+                            WHERE  ch.id_bank_prixod = d.id 
                         ) AS ch
                     ) AS provodki_array 
-                FROM bank_prixod AS p
-                JOIN users AS u ON p.user_id = u.id
+                FROM bank_prixod AS d
+                JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_organization AS s_o ON s_o.id = p.id_spravochnik_organization 
-                WHERE p.main_schet_id = $2 AND r.id = $1 AND p.isdeleted = false AND doc_date BETWEEN $3 AND $4 ORDER BY p.doc_date OFFSET $5 LIMIT $6)
-                
+                JOIN spravochnik_organization AS s_o ON s_o.id = d.id_spravochnik_organization 
+                WHERE d.main_schet_id = $2 
+                    AND r.id = $1 
+                    AND d.isdeleted = false 
+                    AND doc_date BETWEEN $3 AND $4 
+                    ${search_filter}
+                ORDER BY d.doc_date 
+                OFFSET $5 LIMIT $6
+            )
                 SELECT 
                     ARRAY_AGG(row_to_json(data)) AS data,
                     (
-                        SELECT SUM(bank_prixod.summa)
-                        FROM bank_prixod 
-                        JOIN users ON bank_prixod.user_id = users.id
+                        SELECT 
+                            COALESCE(SUM(d.summa), 0)
+                        FROM bank_prixod d
+                        JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        WHERE bank_prixod.main_schet_id = $2 
-                            AND bank_prixod.isdeleted = false 
+                        WHERE d.main_schet_id = $2 
+                            AND d.isdeleted = false 
                             AND regions.id = $1 
                             AND doc_date BETWEEN $3 AND $4
+                            ${search_filter}
                     )::FLOAT AS summa,
                     (
-                        SELECT COUNT(bank_prixod.id)
-                        FROM bank_prixod 
-                        JOIN users ON bank_prixod.user_id = users.id
+                        SELECT 
+                            COALESCE(COUNT(d.id), 0)
+                        FROM bank_prixod d
+                        JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        WHERE regions.id = $1 AND 
-                            bank_prixod.main_schet_id = $2 
-                            AND bank_prixod.isdeleted = false 
+                        WHERE regions.id = $1 
+                            AND d.main_schet_id = $2 
+                            AND d.isdeleted = false 
                             AND doc_date BETWEEN $3 AND $4
+                            ${search_filter}
                     )::FLOAT AS total_count
                 FROM data
             `;
@@ -115,15 +131,15 @@ exports.BankPrixodDB = class {
     static async getById(params, isdeleted) {
         const query = `
             SELECT 
-                p.id,
-                p.doc_num, 
-                TO_CHAR(p.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                p.summa::FLOAT, 
-                p.provodki_boolean, 
-                p.dop_provodki_boolean, 
-                p.opisanie, 
-                p.id_spravochnik_organization, 
-                p.id_shartnomalar_organization,
+                d.id,
+                d.doc_num, 
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d.summa::FLOAT, 
+                d.provodki_boolean, 
+                d.dop_provodki_boolean, 
+                d.opisanie, 
+                d.id_spravochnik_organization, 
+                d.id_shartnomalar_organization,
                 (
                     SELECT ARRAY_AGG(row_to_json(ch))
                     FROM (
@@ -147,16 +163,16 @@ exports.BankPrixodDB = class {
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii
                         LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = ch.id_spravochnik_podotchet_litso
-                        WHERE ch.id_bank_prixod = p.id 
+                        WHERE ch.id_bank_prixod = d.id 
                     ) AS ch
                 ) AS childs 
-            FROM bank_prixod AS p
-            JOIN users AS u ON p.user_id = u.id
+            FROM bank_prixod AS d
+            JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
             WHERE r.id = $1 
-                AND p.main_schet_id = $2 
-                AND p.id = $3
-                ${!isdeleted ? 'AND p.isdeleted = false' : ''}
+                AND d.main_schet_id = $2 
+                AND d.id = $3
+                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
         `;
 
         const result = await db.query(query, params);
