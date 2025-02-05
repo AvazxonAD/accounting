@@ -7,7 +7,7 @@ exports.BankPrixodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await BankPrixodDB.createPrixod([
+            const doc = await BankPrixodDB.create([
                 data.doc_num, 
                 data.doc_date, 
                 summa, 

@@ -54,10 +54,10 @@ exports.Controller = class {
         })
     }
 
-    static async getByIdResponsible(req, res) {
+    static async getById(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
-        const data = await ResponsibleDB.getByIdResponsible([region_id, id], true)
+        const data = await ResponsibleDB.getById([region_id, id], true)
         if (!data) {
             return res.status(404).json({
                 message: "responsible not found"
@@ -73,7 +73,7 @@ exports.Controller = class {
         const region_id = req.user.region_id
         const { spravochnik_podrazdelenie_jur7_id, fio } = req.body;
         const id = req.params.id
-        const responsible = await ResponsibleDB.getByIdResponsible([region_id, id])
+        const responsible = await ResponsibleDB.getById([region_id, id])
         if (!responsible) {
             return res.status(404).json({
                 message: "responsible not found"
@@ -100,7 +100,7 @@ exports.Controller = class {
     static async deleteResponsible(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
-        const responsible = await ResponsibleDB.getByIdResponsible([region_id, id])
+        const responsible = await ResponsibleDB.getById([region_id, id])
         if (!responsible) {
             return res.status(404).json({
                 message: "responsible not found"

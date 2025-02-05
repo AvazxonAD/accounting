@@ -1,5 +1,5 @@
 const { ReportService } = require('./service')
-const { BudjetService } = require('../../spravochnik/budjet/services');
+const { BudjetService } = require('../../spravochnik/budjet/service');
 const { MainSchetService } = require('../../spravochnik/main.schet/service')
 
 
@@ -10,7 +10,7 @@ exports.Controller = class {
     const budjet_id = req.query.budjet_id;
     const main_schet_id = req.query.main_schet_id;
     const { month, year } = req.body;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
@@ -35,7 +35,7 @@ exports.Controller = class {
   static async getReport(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id, year, month } = req.query;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.status(404).json({
         message: "budjet not found"
@@ -48,7 +48,7 @@ exports.Controller = class {
   static async getByIdReport(req, res) {
     const region_id = req.user.region_id
     const { budjet_id, year, month } = req.query;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
@@ -63,7 +63,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { body, query } = req;
-    const budjet = await BudjetService.getByIdBudjet({ id: query.budjet_id });
+    const budjet = await BudjetService.getById({ id: query.budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
@@ -97,7 +97,7 @@ exports.Controller = class {
   static async deleteReport(req, res) {
     const region_id = req.user.region_id
     const { budjet_id, year, month } = req.query;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
@@ -115,7 +115,7 @@ exports.Controller = class {
   static async getInfo(req, res) {
     const { year, month, budjet_id } = req.query;
     const region_id = req.user.region_id;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }

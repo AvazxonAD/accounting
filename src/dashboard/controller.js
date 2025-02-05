@@ -1,5 +1,6 @@
 const { DashboardService } = require('./service');
 const { MainSchetService } = require('../spravochnik/main.schet/service');
+const { PodotchetService } = require('../spravochnik/podotchet/service')
 
 exports.Controller = class {
     static async budjet(req, res) {
@@ -16,7 +17,7 @@ exports.Controller = class {
 
         if (main_schet_id) {
             const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
-            if(!main_schet){
+            if (!main_schet) {
                 return res.error(req.i18n.t('mainSchetNotFound'), 404);
             }
         }
@@ -34,7 +35,7 @@ exports.Controller = class {
 
         if (main_schet_id) {
             const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
-            if(!main_schet){
+            if (!main_schet) {
                 return res.error(req.i18n.t('mainSchetNotFound'), 404);
             }
         }
@@ -47,20 +48,33 @@ exports.Controller = class {
     }
 
     static async podotchet(req, res) {
-        const { main_schet_id, budjet_id, to } = req.query;
+        const { main_schet_id, budjet_id, to, page, limit } = req.query;
         const region_id = req.user.region_id;
 
         if (main_schet_id) {
             const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
-            if(!main_schet){
+            if (!main_schet) {
                 return res.error(req.i18n.t('mainSchetNotFound'), 404);
             }
         }
 
+        const offset = (page - 1) * limit;
+
+        const { data, total_count } = await PodotchetService.get({ region_id, offset, limit });
+
         const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
 
-        const result = await DashboardService.podotchet({ budjets, to });
+        const pageCount = Math.ceil(total_count / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total_count,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1
+        }
 
-        return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
+        const result = await DashboardService.podotchet({ budjets, to, podotchets: data });
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, result);
     }
 }

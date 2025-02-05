@@ -56,11 +56,11 @@ exports.Controller = class {
     static async prixodRasxodPodotchet(req, res) {
         const region_id = req.user.region_id;
         const { to, budjet_id, excel } = req.query;
-        const bujet = await BudjetDB.getByIdBudjet([budjet_id]);
+        const bujet = await BudjetDB.getById([budjet_id]);
         if (!bujet) {
             return res.error(req.i18n.t('budjetNotFound'), 404);
         }
-        const data = await PodotchetDB.getPodotchet([region_id]);
+        const data = (await PodotchetDB.get([region_id])).data;
         for (let podotchet of data) {
             podotchet.summa = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet.id, '<=', null, budjet_id);
         }

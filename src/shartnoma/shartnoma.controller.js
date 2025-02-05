@@ -21,7 +21,7 @@ const create = async (req, res) => {
     const user_id = req.user.id;
     const budjet_id = req.query.budjet_id
     const data = validationResponse(shartnomaValidation, req.body)
-    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    const smeta = await SmetaDB.getById([data.smeta_id]);
     if(!smeta){
       return res.status(404).json({
         message: "smeta not found"
@@ -29,7 +29,7 @@ const create = async (req, res) => {
     }
     await getByIdBudjetService(budjet_id)
     if (data.smeta2_id) {
-      await getByIdSmeta(data.smeta2_id)
+      await getById(data.smeta2_id)
     }
     const organization = await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     if(!organization) {
@@ -124,7 +124,7 @@ const update_shartnoma = async (req, res) => {
     await getByIdShartnomaService(region_id, budjet_id, id);
     const data = validationResponse(shartnomaValidation, req.body)
     await getByIdBudjetService(budjet_id);
-    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    const smeta = await SmetaDB.getById([data.smeta_id]);
     if(!smeta){
       return res.status(404).json({
         message: "smeta not found"

@@ -1,10 +1,66 @@
 const jwt = require('jsonwebtoken')
 
 exports.HelperFunctions = class {
+    static tashkentTime() {
+        const currentUtcDate = new Date();
+        const tashkentOffset = 10 * 60 * 60 * 1000;
+        const tashkentDate = new Date(currentUtcDate.getTime() + tashkentOffset);
+        return tashkentDate.toISOString();
+    }
+
+    static returnMonth(month) {
+        switch (month) {
+            case 1:
+                return "январь";
+            case 2:
+                return "февраль";
+            case 3:
+                return "март";
+            case 4:
+                return "апрель";
+            case 5:
+                return "май";
+            case 6:
+                return "июнь";
+            case 7:
+                return "июль";
+            case 8:
+                return "август";
+            case 9:
+                return "сентябрь";
+            case 10:
+                return "октябрь";
+            case 11:
+                return "ноябрь";
+            case 12:
+                return "декабрь";
+            default:
+                return "server xatolik";
+        }
+    }
+
+    static formatSubSchet(str) {
+        const result = ['', '', ''];
+        for (let i = 0; i < str.length; i++) {
+            if (i < 2) {
+                result[0] += str[i];
+            } else if (i < 4) {
+                result[1] += str[i];
+            } else {
+                result[2] += str[i];
+            }
+        }
+        return result;
+    };
+
+    static filters(data) {
+        return data.length ? `AND ${data.join(' AND ')}` : '';
+    }
+
     static summaDoc(data) {
         const summa = data.reduce((acc, item) => acc += item.summa, 0);
-        
-        return summa; 
+
+        return summa;
     }
 
     static paramsValues(data) {
@@ -31,8 +87,51 @@ exports.HelperFunctions = class {
     static probelNumber(num) {
         const strNum = String(num);
         return strNum.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-      }
-      
+    }
+
+    static getMonthStartEnd(year, month) {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        return [startDate, endDate];
+    }
+
+    static returnStringDate(date) {
+        function getMonth(month) {
+            switch (month) {
+                case "01":
+                    return "январь";
+                case "02":
+                    return "февраль";
+                case "03":
+                    return "март";
+                case "04":
+                    return "апрель";
+                case "05":
+                    return "май";
+                case "06":
+                    return "июнь";
+                case "07":
+                    return "июль";
+                case "08":
+                    return "август";
+                case "09":
+                    return "сентябрь";
+                case "10":
+                    return "октябрь";
+                case "11":
+                    return "ноябрь";
+                case "12":
+                    return "декабрь";
+                default:
+                    return "server xatolik";
+            }
+        }
+        const day = date.getDate().toString().padStart(2, "0");
+        let month = (date.getMonth() + 1).toString().padStart(2, "0");
+        const year = date.getFullYear().toString();
+        month = getMonth(month);
+        return (`${year} ${day}-${month}`);
+    };
 }
 
 exports.tashkentTime = () => {
@@ -91,24 +190,24 @@ exports.returnStringDate = (date) => {
                 return "server xatolik";
         }
     }
-    const day = date.getDate().toString().padStart(2, "0"); // "05"
-    let month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
-    const year = date.getFullYear().toString(); // "2024"
+    const day = date.getDate().toString().padStart(2, "0");
+    let month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
     month = getMonth(month);
-    return (topshiriqSana = `${year} ${day}-${month}`);
+    return (`${year} ${day}-${month}`);
 };
 
 exports.returnLocalDate = (date) => {
-    const day = date.getDate().toString().padStart(2, "0"); // "05"
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
-    const year = date.getFullYear().toString(); // "2024"
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
     return `${day}.${month}.${year}`;
 };
 
 exports.returnSleshDate = (date) => {
-    const day = date.getDate().toString().padStart(2, "0"); // "05"
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // "01"
-    const year = date.getFullYear().toString(); // "2024"
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
     return `${day}/${month}/${year}`;
 };
 

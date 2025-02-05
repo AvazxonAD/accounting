@@ -59,7 +59,7 @@ exports.ResponsibleDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
-    static async getByIdResponsible(params, isdeleted) {
+    static async getById(params, isdeleted) {
         let ignore = 'AND s.isdeleted = false';
         const query = `--sql
             SELECT 

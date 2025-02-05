@@ -38,13 +38,13 @@ exports.SmetaGrafikService = class {
             oy_11,
             oy_12
         );
-        const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
+        const smeta = await SmetaDB.getById([smeta_id]);
         if (!smeta) {
             return res.status(404).json({
                 message: "smeta not found"
             })
         }
-        const budjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id]);
+        const budjet = await BudjetDB.getById([spravochnik_budjet_name_id]);
         if (!budjet) {
             return res.status(404).json({
                 message: "budjet not found"
@@ -105,13 +105,13 @@ exports.SmetaGrafikService = class {
                 })
             }
         }
-        const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
+        const smeta = await SmetaDB.getById([smeta_id]);
         if (!smeta) {
             return res.status(404).json({
                 message: "smeta not found"
             })
         }
-        const budjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id]);
+        const budjet = await BudjetDB.getById([spravochnik_budjet_name_id]);
         if (!budjet) {
             return res.status(404).json({
                 message: "budjet not found"

@@ -4,49 +4,29 @@ const { tashkentTime } = require('../../../helper/functions');
 const { PereotsenkaDB } = require('../pereotsenka/db')
 const xlsx = require('xlsx')
 
+const { GroupService } = require('./service');
+const { SmetaService } = require('../../../smeta/smeta/service');
+
+
 exports.Controller = class {
     static async createGroup(req, res) {
-        const {
-            smeta_id,
-            name,
-            schet,
-            iznos_foiz,
-            provodka_debet,
-            group_number,
-            provodka_kredit,
-            provodka_subschet,
-            roman_numeral,
-            pod_group
-        } = req.body;
+        const { smeta_id } = req.body;
 
-        const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
+        const smeta = await SmetaService.getById({ id: smeta_id });
         if (!smeta) {
             return res.error('Smeta not found', 404);
         }
-        const result = await GroupDB.createGroup([
-            smeta_id,
-            name,
-            schet,
-            iznos_foiz,
-            provodka_debet,
-            group_number,
-            provodka_kredit,
-            provodka_subschet,
-            roman_numeral,
-            pod_group,
-            tashkentTime(),
-            tashkentTime()
-        ]);
-        return res.status(201).json({
-            message: "Create group successfully",
-            data: result
-        });
+
+        const result = await GroupService.create({ ...req.body });
+
+        return res.success(req.i18n.t('createSuccess'), 201, null, result);
     }
 
     static async getGroup(req, res) {
         const { page, limit, search } = req.query;
         const offset = (page - 1) * limit;
-        const { data, total } = await GroupDB.getGroup([offset, limit], search);
+        const { data, total } = await GroupService.get({ offset, limit, search });
+
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -55,52 +35,33 @@ exports.Controller = class {
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1
         };
-        return res.status(200).json({
-            message: "Group successfully retrieved",
-            meta,
-            data: data || []
-        });
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
-    static async getByIdGroup(req, res) {
+    static async getById(req, res) {
         const id = req.params.id;
-        const data = await GroupDB.getByIdGroup([id], true);
+
+        const data = await GroupService.getById({ id, isdeleted: true });
         if (!data) {
-            return res.status(404).json({
-                message: "Group not found"
-            });
+            return res.error(req.i18n.t('groupNotFound'), 404);
         }
-        return res.status(200).json({
-            message: "Group successfully retrieved",
-            data
-        });
+
+        return res.success(req.i18n.t('getSuccess'), 200, req.query, data);
     }
 
     static async updateGroup(req, res) {
-        const {
-            smeta_id,
-            name,
-            schet,
-            iznos_foiz,
-            provodka_debet,
-            group_number,
-            provodka_kredit,
-            provodka_subschet,
-            roman_numeral,
-            pod_group
-        } = req.body;
+        const { smeta_id } = req.body;
         const id = req.params.id;
-        const group = await GroupDB.getByIdGroup([id]);
+
+        const group = await GroupService.getById({ id });
         if (!group) {
-            return res.status(404).json({
-                message: "Group not found"
-            });
+            return res.error(req.i18n.t('groupNotFound'), 404);
         }
-        const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
+
+        const smeta = await SmetaService.getById({ id: smeta_id });
         if (!smeta) {
-            return res.status(404).json({
-                message: "Smeta not found"
-            });
+            return res.error(req.i18n.t('smetaNotFound'), 404);
         }
         const result = await GroupDB.updateGroup([
             smeta_id,
@@ -124,11 +85,9 @@ exports.Controller = class {
 
     static async deleteGroup(req, res) {
         const id = req.params.id;
-        const group = await GroupDB.getByIdGroup([id]);
+        const group = await GroupDB.getById([id]);
         if (!group) {
-            return res.status(404).json({
-                message: "Group not found"
-            });
+            return res.error(req.i18n.t('groupNotFound'), 404);
         }
         await GroupDB.deleteGroup([id]);
         return res.status(200).json({

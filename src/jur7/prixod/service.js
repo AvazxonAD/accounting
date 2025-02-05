@@ -25,7 +25,7 @@ exports.PrixodJur7Service = class {
         await db.transaction(async client => {
             for (let item of data.data) {
                 let podraz = await PodrazdelenieDB.getByNamePodrazdelenie([data.region_id, item.podraz_name]);
-                if(!podraz){
+                if (!podraz) {
                     podraz = await PodrazdelenieDB.createPodrazdelenie([data.user_id, item.podraz_name, tashkentTime(), tashkentTime()]);
                 };
 
@@ -34,7 +34,7 @@ exports.PrixodJur7Service = class {
             }
 
             for (let doc of data.data) {
-                await this.createPrixod({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
+                await this.create({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
             }
         })
 
@@ -259,13 +259,13 @@ exports.PrixodJur7Service = class {
         return result;
     }
 
-    static async createPrixod(data) {
+    static async create(data) {
         const process = async (data, client) => {
             const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             const summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
-            const doc = await PrixodDB.createPrixod(
+            const doc = await PrixodDB.create(
                 [
                     data.user_id,
                     data.doc_num,
@@ -364,11 +364,11 @@ exports.PrixodJur7Service = class {
         return productIds;
     }
 
-    static async updatePrixod(data) {
+    static async update(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
         const result = await db.transaction(async (client) => {
-            await PrixodDB.updatePrixod([
+            await PrixodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.j_o_num,
@@ -406,23 +406,27 @@ exports.PrixodJur7Service = class {
     }
 
     static async deleteDoc(data) {
-        await db.transaction(async (client) => {
+        const result = await db.transaction(async (client) => {
             const productIds = await PrixodDB.getProductsByDocId([data.id], client);
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
-            await PrixodDB.deletePrixod([data.id], client)
-        })
-    }
+            const docId = await PrixodDB.delete([data.id], client);
 
-    static async getPrixod(data) {
-        const result = await PrixodDB.getPrixod([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
+            return docId
+        });
 
         return result;
     }
 
-    static async getByIdPrixod(data) {
-        const result = await PrixodDB.getByIdPrixod([data.region_id, data.id, data.main_schet_id], data.isdeleted);
+    static async get(data) {
+        const result = await PrixodDB.get([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
+
+        return result;
+    }
+
+    static async getById(data) {
+        const result = await PrixodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
 
         return result;
     }
@@ -447,7 +451,7 @@ exports.PrixodJur7Service = class {
 
         for (let item of result) {
             item.group_number = String(item['Группа']);
-            item.doc_date =  HelperFunctions.excelSerialToDate(item['Дата эксплуатация']);
+            item.doc_date = HelperFunctions.excelSerialToDate(item['Дата эксплуатация']);
             item.doc_num = 'saldo';
             item.kimga_name = item['ФИО'];
             item.podraz_name = item['Наим_под'];
@@ -464,7 +468,7 @@ exports.PrixodJur7Service = class {
             item.eski_iznos_summa = item['салдо износ'];
             item.inventar_num = item['№ инвентарный'];
             item.serial_num = item['Серийный номер'];
-        }   
+        }
 
         return result;
     }
@@ -498,7 +502,7 @@ exports.PrixodJur7Service = class {
                 eski_iznos_summa: item.eski_iznos_summa,
                 podraz_name: item.podraz_name,
                 group_number: item.group_number,
-                group_name: item.group_name, 
+                group_name: item.group_name,
                 inventar_num: item.inventar_num,
                 serial_num: item.serial_num
             });

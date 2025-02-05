@@ -17,7 +17,7 @@ exports.GroupDB = class {
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id
         `;
         const result = await db.query(query, params);
         return result;
@@ -72,7 +72,7 @@ exports.GroupDB = class {
         return result[0];
     }
 
-    static async getByIdGroup(params, isdeleted) {
+    static async getById(params, isdeleted) {
         const ignore = 'AND g_j7.isdeleted = false';
         const query = `--sql
             SELECT 
@@ -97,7 +97,7 @@ exports.GroupDB = class {
         return result[0];
     }
 
-    static async getByNameGroup(params) {
+    static async getByName(params) {
         const query = `--sql
             SELECT 
                 g_j7.id, 
@@ -121,7 +121,7 @@ exports.GroupDB = class {
         return result[0];
     }
 
-    static async getByNumberNameGroup(params) {
+    static async getByNumberName(params) {
         const query = `--sql
             SELECT 
                 g_j7.id, 
@@ -162,7 +162,7 @@ exports.GroupDB = class {
                 roman_numeral = $9,
                 pod_group = $10,
                 updated_at = $11
-            WHERE id = $12 AND isdeleted = false RETURNING *
+            WHERE id = $12 AND isdeleted = false RETURNING id
         `;
         const result = await db.query(query, params);
         return result[0];

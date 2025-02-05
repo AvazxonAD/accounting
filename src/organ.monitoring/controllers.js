@@ -1,7 +1,7 @@
 const { OrganizationmonitoringService } = require('./services')
 const { MainSchetService } = require('../spravochnik/main.schet/service');
 const { OrganizationService } = require('../spravochnik/organization/service')
-const { BudjetService } = require('../spravochnik/budjet/services')
+const { BudjetService } = require('../spravochnik/budjet/service')
 const { ContractService } = require('../shartnoma/service')
 const { RegionDB } = require('../auth/region/db')
 const { MainSchetDB } = require('../spravochnik/main.schet/db')
@@ -46,7 +46,7 @@ exports.Controller = class {
     static async prixodRasxod(req, res) {
         const region_id = req.user.region_id
         const { query } = req;
-        const budjet = await BudjetService.getByIdBudjet({ id: query.budjet_id });
+        const budjet = await BudjetService.getById({ id: query.budjet_id });
         if (!budjet) {
             return res.error(req.i18n.t('budjetNotFound'), 404);
         }
@@ -160,7 +160,7 @@ exports.Controller = class {
     static async aktSverka(req, res) {
         const region_id = req.user.region_id;
         const { main_schet_id, contract_id, organ_id, to, from } = req.query;
-        const region = await RegionDB.getByIdRegion([region_id])
+        const region = await RegionDB.getById([region_id])
         if (!region) {
             return res.status(404).json({
                 message: "region not found"

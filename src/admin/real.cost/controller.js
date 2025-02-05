@@ -1,5 +1,5 @@
 const { ReportService } = require('./service')
-const { BudjetService } = require('../../spravochnik/budjet/services');
+const { BudjetService } = require('../../spravochnik/budjet/service');
 
 
 exports.Controller = class {
@@ -10,7 +10,7 @@ exports.Controller = class {
 
   static async getByIdReport(req, res) {
     const { budjet_id, year, month, region_id } = req.query;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
@@ -24,7 +24,7 @@ exports.Controller = class {
   static async updateReport(req, res) {
     const { budjet_id, year, month, region_id } = req.query;
     const user_id = req.user.id;
-    const budjet = await BudjetService.getByIdBudjet({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }

@@ -7,7 +7,7 @@ exports.PereotsenkaService = class {
     static async createPereotsenka(req, res) {
         const { data } = req.body;
         for(let item of data){
-            const group = await GroupDB.getByIdGroup([item.group_jur7_id])
+            const group = await GroupDB.getById([item.group_jur7_id])
             if (!group) {
                 return res.status(404).json({
                     message: "group not found"

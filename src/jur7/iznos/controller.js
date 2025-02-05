@@ -1,32 +1,33 @@
-const { IznosDB } = require('./db');
-const { NaimenovanieDB } = require('../spravochnik/naimenovanie/db')
+const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
 const { ResponsibleService } = require('../spravochnik/responsible/service')
 const { IznosService } = require('./service');
 
 
 exports.Controller = class {
-    static async getIznos(req, res) {
+    static async get(req, res) {
         const region_id = req.user.region_id;
         const { product_id, responsible_id, search, year, month, page, limit } = req.query;
         const offset = (page - 1) * limit;
         if (product_id) {
-            const product = await NaimenovanieDB.getByIdNaimenovanie([region_id, product_id]);
+            const product = await NaimenovanieService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
             if (!product) {
-                return res.error(req.i18n.t('productNotFound'));
+                return res.error(req.i18n.t('productNotFound'), 404);
             }
         }
+
         if (responsible_id) {
-            const responsible = await ResponsibleService.getByIdResponsible({ region_id, id: responsible_id });
+            const responsible = await ResponsibleService.getById({ region_id, id: responsible_id });
             if (!responsible) {
                 return res.error(req.i18n.t('responsibleNotFound'), 404);
             }
         }
-        const { data, count } = await IznosDB.getIznos([region_id, offset, limit], responsible_id, product_id, year, month, search);
 
-        const pageCount = Math.ceil(count / limit);
+        const { data, total_count } = await IznosService.get({ region_id, offset, limit, responsible_id, product_id, year, month, search });
+
+        const pageCount = Math.ceil(total_count / limit);
         const meta = {
             pageCount: pageCount,
-            count: count,
+            count: total_count,
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1

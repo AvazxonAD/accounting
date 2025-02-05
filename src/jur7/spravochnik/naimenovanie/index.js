@@ -9,6 +9,6 @@ const { Router } = require('express')
 const router = Router()
 
 router.get('/', validator(Controller.getNaimenovanie, getNaimenovanieSchema));
-router.get('/:id', validator(Controller.getByIdNaimenovanie, getByIdNaimenovanieSchema));
+router.get('/:id', validator(Controller.getById, getByIdNaimenovanieSchema));
 
 module.exports = router;

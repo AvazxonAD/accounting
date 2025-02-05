@@ -5,13 +5,13 @@ const {
   getBudjet,
   updateBudjet,
   deleteBudjet,
-  getByIdBudjet,
+  getById,
 } = require("./budjet_name.controller");
 
 router.post("/",  createBudjet);
 router.get("/",  getBudjet);
 router.put("/:id",  updateBudjet);
 router.delete("/:id",  deleteBudjet);
-router.get("/:id",  getByIdBudjet);
+router.get("/:id",  getById);
 
 module.exports = router;

@@ -27,7 +27,7 @@ exports.BankRasxodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await BankRasxodDB.createPrixod([
+            const doc = await BankRasxodDB.create([
                 data.doc_num,
                 data.doc_date,
                 summa,

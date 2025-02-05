@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 
 exports.BankPrixodDB = class {
-    static async createPrixod(params, client) {
+    static async create(params, client) {
         const query = `
             INSERT INTO bank_prixod(
                 doc_num, 
