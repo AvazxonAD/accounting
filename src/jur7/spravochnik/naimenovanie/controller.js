@@ -17,13 +17,13 @@ exports.Controller = class {
             serial_num
         } = req.body;
 
-        const bedjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id])
+        const bedjet = await BudjetDB.getById([spravochnik_budjet_name_id])
         if (!bedjet) {
             return res.status(404).json({
                 message: "bedjet not found"
             })
         }
-        const group = await GroupDB.getByIdGroup([group_jur7_id])
+        const group = await GroupDB.getById([group_jur7_id])
         if (!group) {
             return res.status(404).json({
                 message: "group not found"
@@ -66,10 +66,10 @@ exports.Controller = class {
         })
     }
 
-    static async getByIdNaimenovanie(req, res) {
+    static async getById(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
-        const data = await NaimenovanieDB.getByIdNaimenovanie([region_id, id], true)
+        const data = await NaimenovanieDB.getById([region_id, id], true)
         if (!data) {
             return res.status(404).json({
                 message: "naimenovanie not found"
@@ -92,19 +92,19 @@ exports.Controller = class {
             serial_num
         } = req.body;
         const id = req.params.id
-        const old_naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, id])
+        const old_naimenovanie = await NaimenovanieDB.getById([region_id, id])
         if (!old_naimenovanie) {
             return res.status(404).json({
                 message: "naimenovanie not found"
             })
         }
-        const bedjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id])
+        const bedjet = await BudjetDB.getById([spravochnik_budjet_name_id])
         if (!bedjet) {
             return res.status(404).json({
                 message: "bedjet not found"
             })
         }
-        const proup = await GroupDB.getByIdGroup([group_jur7_id])
+        const proup = await GroupDB.getById([group_jur7_id])
         if (!proup) {
             return res.status(404).json({
                 message: "proup not found"
@@ -129,7 +129,7 @@ exports.Controller = class {
     static async deleteNaimenovanie(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
-        const naimenovanie = await NaimenovanieDB.getByIdNaimenovanie([region_id, id])
+        const naimenovanie = await NaimenovanieDB.getById([region_id, id])
         if (!naimenovanie) {
             return res.status(404).json({
                 message: "naimenovanie not found"
@@ -144,7 +144,7 @@ exports.Controller = class {
     static async getProductKol(req, res) {
         const { kimdan_id, search } = req.query;
         const region_id = req.user.region_id;
-        const responsible = await ResponsibleDB.getByIdResponsible([region_id, kimdan_id])
+        const responsible = await ResponsibleDB.getById([region_id, kimdan_id])
         if(!responsible){
             return res.status(404).json({
                 message: "responsible not found"

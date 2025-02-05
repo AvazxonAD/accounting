@@ -68,7 +68,7 @@ exports.NaimenovanieDB = class {
         return result[0];
     }
 
-    static async getByIdNaimenovanie(params, isdeleted) {
+    static async getById(params, isdeleted) {
         let ignore = 'AND n_t_j7.isdeleted = false';
         const query = `--sql
             SELECT 

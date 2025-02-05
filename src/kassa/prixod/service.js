@@ -7,7 +7,7 @@ exports.KassaPrixodService = class {
         const summa = HelperFunctions.summaDoc(data.childs);
 
         const result = await db.transaction(async client => {
-            const doc = await KassaPrixodDB.createPrixod([
+            const doc = await KassaPrixodDB.create([
                 data.doc_num,
                 data.doc_date,
                 data.opisanie,

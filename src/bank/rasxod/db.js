@@ -27,7 +27,7 @@ exports.BankRasxodDB = class {
         return result.rows[0];
     }
 
-    static async createPrixod(params, client) {
+    static async create(params, client) {
         const query = `
              INSERT INTO bank_rasxod(
                 doc_num, 

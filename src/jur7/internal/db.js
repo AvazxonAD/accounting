@@ -1,7 +1,7 @@
 const { db } = require('../../db/index');
 
 exports.RasxodDB = class {
-    static async createRasxod(params, client) {
+    static async create(params, client) {
         const query = `--sql
             INSERT INTO document_vnutr_peremesh_jur7 (
                 user_id,
@@ -50,7 +50,7 @@ exports.RasxodDB = class {
         await client.query(query, params);
     }
 
-    static async getRasxod(params, search) {
+    static async get(params, search) {
         let search_filter = ``
         if (search) {
             search_filter = `AND (
@@ -109,7 +109,7 @@ exports.RasxodDB = class {
         return result[0];
     }
 
-    static async getByIdRasxod(params, isdeleted) {
+    static async getById(params, isdeleted) {
         let ignore = 'AND d_j.isdeleted = false';
         const query = `--sql
             SELECT 
@@ -153,7 +153,7 @@ exports.RasxodDB = class {
         return result[0];
     }
 
-    static async updateRasxod(params) {
+    static async update(params) {
         const query = `--sql
             UPDATE document_vnutr_peremesh_jur7 SET 
               doc_num = $1,
@@ -172,7 +172,7 @@ exports.RasxodDB = class {
         await db.query(query, params);
     }
 
-    static async deleteRasxod(params, client) {
+    static async delete(params, client) {
         await client.query(`UPDATE document_vnutr_peremesh_jur7_child SET isdeleted = true WHERE document_vnutr_peremesh_jur7_id = $1`, params);
         await client.query(`UPDATE document_vnutr_peremesh_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
     }

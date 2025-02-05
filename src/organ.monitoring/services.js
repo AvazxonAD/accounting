@@ -592,7 +592,7 @@ exports.OrganizationmonitoringService = class {
     static async aktSverka(req, res) {
         const region_id = req.user.region_id;
         const { main_schet_id, contract_id, organ_id, to, from } = req.query;
-        const region = await RegionDB.getByIdRegion([region_id])
+        const region = await RegionDB.getById([region_id])
         if (!region) {
             return res.status(404).json({
                 message: "region not found"

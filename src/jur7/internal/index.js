@@ -1,20 +1,14 @@
 const { Controller } = require('./controller');
 const { validator } = require('../../helper/validator');
-const {
-    createRasxodSchema,
-    getRasxodSchema,
-    updateRasxodSchema,
-    getByIdRasxodSchema,
-    deleteRasxodSchema
-} = require("./schema");
+const { InternalSchema } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(Controller.createRasxod, createRasxodSchema));
-router.get('/:id', validator(Controller.getByIdRasxod, getByIdRasxodSchema));
-router.put('/:id', validator(Controller.updateRasxod, updateRasxodSchema));
-router.delete('/:id', validator(Controller.deleteRasxod, deleteRasxodSchema));
-router.get('/', validator(Controller.getRasxod, getRasxodSchema));
+router.post('/', validator(Controller.create, InternalSchema.create()))
+    .get('/:id', validator(Controller.getById, InternalSchema.getById()))
+    .put('/:id', validator(Controller.update, InternalSchema.update()))
+    .delete('/:id', validator(Controller.delete, InternalSchema.delete()))
+    .get('/', validator(Controller.get, InternalSchema.get()));
 
 module.exports = router;

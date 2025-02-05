@@ -26,11 +26,14 @@ exports.DashboardService = class {
     }
 
     static async podotchet(data) {
-        for (let budjet of data.budjets) {
-            for (let schet of budjet.main_schets) {
-                schet.podotchets = await DashboardDB.podotchets([schet.id, data.to]);
+        for (let podotchet of data.podotchets) {
+            podotchet.budjets = JSON.parse(JSON.stringify(data.budjets));
+            for (let budjet of podotchet.budjets) {
+                for (let schet of budjet.main_schets) {
+                    schet.podotchet = await DashboardDB.podotchet([schet.id, data.to, podotchet.id]);
+                }
             }
         }
-        return data.budjets;
+        return data.podotchets;
     }
 }

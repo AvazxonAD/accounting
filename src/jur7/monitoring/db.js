@@ -1,7 +1,7 @@
 const { db } = require('../../db/index');
 const { sqlFilter } = require('../../helper/functions')
 
-exports.Monitoringjur7DB = class {
+exports.Jur7MonitoringDB = class {
     static async getSchets(params, responsible_id = null) {
         let index_responsible_id = null;
         if (responsible_id) {

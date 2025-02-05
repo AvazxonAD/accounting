@@ -15,7 +15,7 @@ const router = Router()
 router.get('/percent', Controller.getGroupWithPercent)
 router.post('/import', upload.single('file'), validator(Controller.importExcel));
 router.post('/', validator(Controller.createGroup, createGroupSchema));
-router.get('/:id', validator(Controller.getByIdGroup, getByIdGroupSchema));
+router.get('/:id', validator(Controller.getById, getByIdGroupSchema));
 router.put('/:id', validator(Controller.updateGroup, updateGroupSchema));
 router.delete('/:id', validator(Controller.deleteGroup, deleteGroupSchema));
 router.get('/', validator(Controller.getGroup, getGroupSchema));

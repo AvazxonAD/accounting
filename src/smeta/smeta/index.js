@@ -12,7 +12,7 @@ const {
 } = require('./schema')
 
 
-router.get("/:id", validator(Controller.getByIdSmeta, getByIdSchema));
+router.get("/:id", validator(Controller.getById, getByIdSchema));
 router.get("/", validator(Controller.getSmeta, getSchema));
 router.post("/import", upload.single('file'), validator(Controller.importSmetaData));
 router.post("/", validator(Controller.createSmeta, createSchema));

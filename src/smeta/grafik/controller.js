@@ -2,7 +2,7 @@ const { SmetaGrafikDB } = require('./db')
 const { SmetaDB } = require('../smeta/db')
 const { BudjetDB } = require('../../spravochnik/budjet/db')
 const { sum } = require('../../helper/functions');
-const { BudjetService } = require('../../spravochnik/budjet/services')
+const { BudjetService } = require('../../spravochnik/budjet/service')
 
 exports.Controller = class {
     static async createSmetaGrafik(req, res) {
@@ -39,13 +39,13 @@ exports.Controller = class {
             oy_11,
             oy_12
         );
-        const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
+        const smeta = await SmetaDB.getById([smeta_id]);
         if (!smeta) {
             return res.status(404).json({
                 message: "smeta not found"
             })
         }
-        const budjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id]);
+        const budjet = await BudjetDB.getById([spravochnik_budjet_name_id]);
         if (!budjet) {
             return res.status(404).json({
                 message: "budjet not found"
@@ -71,7 +71,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const { page, limit, budjet_id, operator, year, search } = req.query;
         if (budjet_id) {
-            const budjet = await BudjetService.getByIdBudjet({ id: budjet_id })
+            const budjet = await BudjetService.getById({ id: budjet_id })
             if (!budjet) {
                 return res.error(req.i18n.t('budjetNotFound'), 404);
             }
@@ -166,13 +166,13 @@ exports.Controller = class {
                 })
             }
         }
-        const smeta = await SmetaDB.getByIdSmeta([smeta_id]);
+        const smeta = await SmetaDB.getById([smeta_id]);
         if (!smeta) {
             return res.status(404).json({
                 message: "smeta not found"
             })
         }
-        const budjet = await BudjetDB.getByIdBudjet([spravochnik_budjet_name_id]);
+        const budjet = await BudjetDB.getById([spravochnik_budjet_name_id]);
         if (!budjet) {
             return res.status(404).json({
                 message: "budjet not found"

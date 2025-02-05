@@ -10,4 +10,10 @@ exports.IznosService = class {
         const result = await IznosDB.updateIznos([data.iznos_start_date, data.eski_iznos_summa, data.id]);
         return result;
     }
+
+    static async get(data) {
+        const result = await IznosDB.get([data.region_id, data.offset, data.limit], data.responsible_id, data.product_id, data.year, data.month, data.search);
+
+        return { total_count: result.total_count, data: result.data };
+    }
 }

@@ -36,8 +36,8 @@ exports.Controller = class {
         })
     }
 
-    static async getByIdSmeta(req, res) {
-        const result = await SmetaDB.getByIdSmeta([req.params.id], true);
+    static async getById(req, res) {
+        const result = await SmetaDB.getById([req.params.id], true);
         if (!result) {
             return res.status(404).json({
                 message: "smeta not found"
@@ -52,7 +52,7 @@ exports.Controller = class {
     static async updateSmeta(req, res) {
         const id = req.params.id;
         const { smeta_name, smeta_number, father_smeta_name, group_number } = req.body;
-        const smeta = await SmetaDB.getByIdSmeta([id]);
+        const smeta = await SmetaDB.getById([id]);
         if (!smeta) {
             return res.status(404).json({
                 message: "smeta not found"
@@ -79,7 +79,7 @@ exports.Controller = class {
 
     static async deleteSmeta(req, res) {
         const id = req.params.id;
-        const smeta = await SmetaDB.getByIdSmeta([id]);
+        const smeta = await SmetaDB.getById([id]);
         if (!smeta) {
             return res.status(404).json({
                 message: "smeta not found"

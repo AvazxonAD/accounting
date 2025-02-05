@@ -29,7 +29,7 @@ const getSchet = async (req, res) => {
 const createOperatsii = async (req, res) => {
   try {
     const data = validationResponse(operatsiiValidation, req.body)
-    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    const smeta = await SmetaDB.getById([data.smeta_id]);
     if(!smeta){
       return res.status(404).json({
         message: "smeta not found"
@@ -68,7 +68,7 @@ const updateOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
     const data = validationResponse(operatsiiValidation, req.body)
-    const smeta = await SmetaDB.getByIdSmeta([data.smeta_id]);
+    const smeta = await SmetaDB.getById([data.smeta_id]);
     if(!smeta){
       return res.status(404).json({
         message: "smeta not found"

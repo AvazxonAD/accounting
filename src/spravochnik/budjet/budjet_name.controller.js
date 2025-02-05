@@ -62,7 +62,7 @@ const deleteBudjet = async (req, res) => {
 }
 
 // get element by id
-const getByIdBudjet = async (req, res) => {
+const getById = async (req, res) => {
   try {
     const result = await getByIdBudjetService(req.params.id, true);
     resFunc(res, 200, result)
@@ -72,7 +72,7 @@ const getByIdBudjet = async (req, res) => {
 }
 
 module.exports = {
-  getByIdBudjet,
+  getById,
   createBudjet,
   getBudjet,
   deleteBudjet,

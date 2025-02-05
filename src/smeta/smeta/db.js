@@ -32,7 +32,7 @@ exports.SmetaDB = class {
         return { data: result[0]?.data || [], total: result[0]?.total_count || 0 }
     }
 
-    static async getByIdSmeta(params, isdeleted) {
+    static async getById(params, isdeleted) {
         let ignore = `AND isdeleted = false`
         const query = `--sql
             SELECT 

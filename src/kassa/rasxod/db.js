@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 
 exports.KassaRasxodDB = class {
-    static async createPrixod(params, client) {
+    static async create(params, client) {
         const query = `
             INSERT INTO kassa_rasxod(
                 doc_num, 

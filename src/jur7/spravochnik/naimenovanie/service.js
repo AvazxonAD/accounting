@@ -2,8 +2,8 @@ const { NaimenovanieDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions')
 
 exports.NaimenovanieService = class {
-    static async getByIdNaimenovanie(data) {
-        const result = await NaimenovanieDB.getByIdNaimenovanie([data.region_id, data.id]);
+    static async getById(data) {
+        const result = await NaimenovanieDB.getById([data.region_id, data.id]);
         return result;
     }
 

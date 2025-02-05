@@ -22,7 +22,7 @@ exports.PrixodDB = class {
         return result.rows[0];
     }
 
-    static async createPrixod(params, client) {
+    static async create(params, client) {
         const query = `--sql
             INSERT INTO document_prixod_jur7 (
                 user_id,
@@ -76,7 +76,7 @@ exports.PrixodDB = class {
         return result.rows[0];
     }
 
-    static async getPrixod(params, search) {
+    static async get(params, search) {
         let search_filter = ``
         if (search) {
             search_filter = `AND (
@@ -144,7 +144,7 @@ exports.PrixodDB = class {
         return result[0];
     }
 
-    static async getByIdPrixod(params, isdeleted) {
+    static async getById(params, isdeleted) {
         let ignore = 'AND d_j.isdeleted = false';
         const query = `--sql
             SELECT 
@@ -209,7 +209,7 @@ exports.PrixodDB = class {
         return result[0];
     }
 
-    static async updatePrixod(params) {
+    static async update(params) {
         const query = `--sql
             UPDATE document_prixod_jur7 SET 
               doc_num = $1,
@@ -230,9 +230,11 @@ exports.PrixodDB = class {
         return result[0];
     }
 
-    static async deletePrixod(params, client) {
+    static async delete(params, client) {
         await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
-        await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
+        const result = await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`, params);
+
+        return result.rows[0];
     }
 
     static async deletePrixodChild(documentPrixodId, productIds, client) {
@@ -363,9 +365,9 @@ exports.PrixodDB = class {
         `;
 
         const _db = client || db;
-        
+
         const result = await _db.query(query, params);
-        
+
         const data = client ? result.rows : result;
 
         return data.map(row => row.product_id);

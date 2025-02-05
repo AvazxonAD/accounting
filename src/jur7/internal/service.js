@@ -3,17 +3,17 @@ const { RasxodDB } = require('./db');
 const { tashkentTime, returnParamsValues } = require('../../helper/functions');
 
 exports.Jur7RsxodService = class {
-    static async deleteRasxod(data) {
+    static async delete(data) {
         await db.transaction(async (client) => {
-            await RasxodDB.deleteRasxod([data.id], client)
+            await RasxodDB.delete([data.id], client)
         })
     }
 
-    static async createRasxod(data) {
+    static async create(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
         const result = await db.transaction(async client => {
-            const doc = await RasxodDB.createRasxod([
+            const doc = await RasxodDB.create([
                 data.user_id,
                 data.doc_num,
                 data.doc_date,
@@ -64,11 +64,11 @@ exports.Jur7RsxodService = class {
         await RasxodDB.createRasxodChild(create_childs, _values, data.client);
     }
 
-    static async updateRasxod(data) {
+    static async update(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
         const result = await db.transaction(async client => {
-            await RasxodDB.updateRasxod([
+            await RasxodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.j_o_num,
@@ -93,13 +93,13 @@ exports.Jur7RsxodService = class {
         return result;
     }
 
-    static async getByIdRasxod(data) {
-        const result = await RasxodDB.getByIdRasxod([data.region_id, data.id, data.main_schet_id], data.isdeleted)
+    static async getById(data) {
+        const result = await RasxodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted)
         return result;
     }
 
-    static async getRasxod(data) {
-        const result = await RasxodDB.getRasxod([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
+    static async get(data) {
+        const result = await RasxodDB.get([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
         return result;
     }
 }

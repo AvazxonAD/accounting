@@ -74,25 +74,22 @@ exports.DashboardDB = class {
         return result[0];
     }
 
-    static async podotchets(params) {
+    static async podotchet(params) {
         const query = `
             SELECT 
                 COALESCE(SUM(a.summa), 0)::FLOAT AS rasxod,   
-                0 AS prixod,   
-                s.id AS podotchet_id,  
-                s.name AS spravochnik_podotchet_litso_name,
-                s.rayon AS spravochnik_podotchet_litso_rayon
+                0 AS prixod
             FROM avans_otchetlar_jur4 AS a
             JOIN users AS u ON u.id = a.user_id
             JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_podotchet_litso AS s ON s.id = a.spravochnik_podotchet_litso_id 
             WHERE a.main_schet_id = $1 
                 AND a.doc_date <= $2
-            GROUP BY s.id;
+                AND s.id = $3
         `;
 
         const result = await db.query(query, params);
 
-        return result;
+        return result[0];
     }
 }

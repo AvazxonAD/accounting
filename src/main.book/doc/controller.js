@@ -17,7 +17,7 @@ exports.Controller = class {
       type_document,
       childs
     } = req.body;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getById([budjet_id])
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
@@ -70,7 +70,7 @@ exports.Controller = class {
   static async getDoc(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id, year, month, type_document } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getById([budjet_id])
     if (!budjet) {
       return res.status(404).json({
         message: "budjet not found"
@@ -88,7 +88,7 @@ exports.Controller = class {
       month,
       type_document
     } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getById([budjet_id])
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -112,7 +112,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { query } = req;
     const { body } = req;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getById([budjet_id])
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -175,7 +175,7 @@ exports.Controller = class {
       month,
       type_document
     } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getById([budjet_id])
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }
@@ -202,7 +202,7 @@ exports.Controller = class {
   static async getBySchetSumma(req, res) {
     const region_id = req.user.region_id;
     const { year, month, budjet_id, schet_id } = req.query;
-    const budjet = await BudjetDB.getByIdBudjet([budjet_id])
+    const budjet = await BudjetDB.getById([budjet_id])
     if (!budjet) {
       return res.error('Budjet not found', 404)
     }

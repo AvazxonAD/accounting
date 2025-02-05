@@ -2,13 +2,13 @@ const { ResponsibleDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
 
 exports.ResponsibleService = class {
-    static async getByIdResponsible(data) {
-        const result = await ResponsibleDB.getByIdResponsible([data.region_id, data.id], data.isdeleted);
+    static async getById(data) {
+        const result = await ResponsibleDB.getById([data.region_id, data.id], data.isdeleted);
         return result;
     }
 
     static async getResponsible(data) {
-        const result = await ResponsibleDB.getResponsible([data.region_id, 0, 9999]);
+        const result = await ResponsibleDB.getResponsible([data.region_id, data.offset, data.limit]);
         return result;
     }
 

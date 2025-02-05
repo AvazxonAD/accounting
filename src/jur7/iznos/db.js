@@ -1,4 +1,5 @@
 const { db } = require('../../db/index');
+const { HelperFunctions } = require('../../helper/functions');
 
 exports.IznosDB = class {
     static async createIznos(params, client) {
@@ -26,7 +27,7 @@ exports.IznosDB = class {
         await client.query(query, params);
     }
 
-    static async getIznos(params, responsible_id, product_id, year, month, search, client) {
+    static async get(params, responsible_id, product_id, year, month, search, client) {
         const filters = [];
         if (responsible_id) {
             params.push(responsible_id);
@@ -52,7 +53,7 @@ exports.IznosDB = class {
             )`);
         }
 
-        const whereClause = filters.length ? `AND ${filters.join(' AND ')}` : '';
+        const whereClause = HelperFunctions.filters(filters);
 
         const query = `
             WITH data AS (
@@ -68,8 +69,9 @@ exports.IznosDB = class {
                 JOIN spravochnik_javobgar_shaxs_jur7 s ON s.id = i.kimning_buynida
                 JOIN users u ON u.id = i.user_id
                 JOIN regions r ON r.id = u.region_id
-                WHERE r.id = $1 AND i.isdeleted = false
-                ${whereClause}
+                WHERE r.id = $1 
+                    AND i.isdeleted = false
+                    ${whereClause}
                 ORDER BY i.id DESC
                 OFFSET $2 LIMIT $3
             )
@@ -77,13 +79,15 @@ exports.IznosDB = class {
                 ARRAY_AGG(ROW_TO_JSON(data)) AS data,
                 (
                     SELECT
-                        COALESCE(COUNT(i.id), 0)::INTEGER AS count
+                        COALESCE(COUNT(i.id), 0)::INTEGER AS total_count
                     FROM iznos_tovar_jur7 i
                     JOIN naimenovanie_tovarov_jur7 n ON n.id = i.naimenovanie_tovarov_jur7_id
                     JOIN spravochnik_javobgar_shaxs_jur7 s ON s.id = i.kimning_buynida
                     JOIN users u ON u.id = i.user_id
                     JOIN regions r ON r.id = u.region_id
-                    WHERE r.id = $1 AND i.isdeleted = false ${whereClause}
+                    WHERE r.id = $1 
+                        AND i.isdeleted = false 
+                        ${whereClause}
                 )
             FROM data
         `;
