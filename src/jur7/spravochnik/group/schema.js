@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-exports.createGroupSchema = Joi.object({
+exports.createSchema = Joi.object({
   body: Joi.object({
     smeta_id: Joi.number().min(1).integer().required(),
     name: Joi.string().trim(),
@@ -16,7 +16,7 @@ exports.createGroupSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.updateGroupSchema = Joi.object({
+exports.updateSchema = Joi.object({
   body: Joi.object({
     smeta_id: Joi.number().required().min(1).integer(),
     name: Joi.string().trim(),
@@ -34,7 +34,7 @@ exports.updateGroupSchema = Joi.object({
   })
 });
 
-exports.getGroupSchema = Joi.object({
+exports.getSchema = Joi.object({
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).default(10),
@@ -48,7 +48,7 @@ exports.getByIdGroupSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.deleteGroupSchema = Joi.object({
+exports.deleteSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
   })

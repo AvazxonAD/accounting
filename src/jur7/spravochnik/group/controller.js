@@ -9,7 +9,7 @@ const { SmetaService } = require('../../../smeta/smeta/service');
 
 
 exports.Controller = class {
-    static async createGroup(req, res) {
+    static async create(req, res) {
         const { smeta_id } = req.body;
 
         const smeta = await SmetaService.getById({ id: smeta_id });
@@ -22,7 +22,7 @@ exports.Controller = class {
         return res.success(req.i18n.t('createSuccess'), 201, null, result);
     }
 
-    static async getGroup(req, res) {
+    static async get(req, res) {
         const { page, limit, search } = req.query;
         const offset = (page - 1) * limit;
         const { data, total } = await GroupService.get({ offset, limit, search });
@@ -50,7 +50,7 @@ exports.Controller = class {
         return res.success(req.i18n.t('getSuccess'), 200, req.query, data);
     }
 
-    static async updateGroup(req, res) {
+    static async update(req, res) {
         const { smeta_id } = req.body;
         const id = req.params.id;
 
@@ -63,48 +63,27 @@ exports.Controller = class {
         if (!smeta) {
             return res.error(req.i18n.t('smetaNotFound'), 404);
         }
-        const result = await GroupDB.updateGroup([
-            smeta_id,
-            name,
-            schet,
-            iznos_foiz,
-            provodka_debet,
-            group_number,
-            provodka_kredit,
-            provodka_subschet,
-            roman_numeral,
-            pod_group,
-            tashkentTime(),
-            id
-        ]);
-        return res.status(200).json({
-            message: 'Update successful',
-            data: result
-        });
+        const result = await GroupService.update({ id, ...req.body });
+
+        return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }
 
-    static async deleteGroup(req, res) {
+    static async delete(req, res) {
         const id = req.params.id;
-        const group = await GroupDB.getById([id]);
+        const group = await GroupService.getById({ id });
         if (!group) {
             return res.error(req.i18n.t('groupNotFound'), 404);
         }
-        await GroupDB.deleteGroup([id]);
-        return res.status(200).json({
-            message: 'Delete group successfully'
-        });
+
+        const result = await GroupService.delete([id]);
+
+        return res.success(req.i18n.t('deleteSuccess'), 200, null, result);
     }
 
-    static async getGroupWithPercent(req, res) {
-        const data = await GroupDB.getGroupWithPercent()
-        for (let item of data) {
-            const percent = await PereotsenkaDB.getByGroupId([item.id])
-            item.percent = percent?.pereotsenka_foiz || 0
-        }
-        return res.status(200).json({
-            message: "get group successfully",
-            data
-        })
+    static async getWithPercent(req, res) {
+        const result = await GroupService.getWithPercent();
+
+        return res.success(req.i18n.t('getSuccess'), 200, null, result);
     }
 
     static async importExcel(req, res) {
@@ -125,7 +104,7 @@ exports.Controller = class {
             return newRow;
         });
         for (let group of data) {
-            await GroupDB.createGroup([
+            await GroupDB.create([
                 null,
                 group.name ? group.name : '',
                 group.schet ? group.schet : '',
