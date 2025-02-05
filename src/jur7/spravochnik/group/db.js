@@ -1,7 +1,7 @@
 const { db } = require('../../../db/index');
 
 exports.GroupDB = class {
-    static async createGroup(params) {
+    static async create(params) {
         const query = `--sql
             INSERT INTO group_jur7 (
                 smeta_id, 
@@ -23,16 +23,16 @@ exports.GroupDB = class {
         return result;
     }
 
-    static async getGroup(params, search = null) {
+    static async get(params, search = null) {
         let search_filter = ``;
         if (search) {
             search_filter = `AND (
-                    g_j7.name ILIKE '%' || $${params.length + 1} || '%' OR 
-                    g_j7.provodka_subschet ILIKE '%' || $${params.length + 1} || '%' OR 
-                    g_j7.schet ILIKE '%' || $${params.length + 1} || '%' OR 
-                    g_j7.provodka_debet ILIKE '%' || $${params.length + 1} || '%' OR 
-                    g_j7.group_number ILIKE '%' || $${params.length + 1} || '%' OR 
-                    g_j7.provodka_kredit ILIKE '%' || $${params.length + 1} || '%'
+                    g.name ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g.provodka_subschet ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g.schet ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g.provodka_debet ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g.group_number ILIKE '%' || $${params.length + 1} || '%' OR 
+                    g.provodka_kredit ILIKE '%' || $${params.length + 1} || '%'
                 )
             `;
             params.push(search);
@@ -40,30 +40,30 @@ exports.GroupDB = class {
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    g_j7.id, 
-                    g_j7.smeta_id,
-                    g_j7.name, 
-                    g_j7.schet, 
-                    g_j7.iznos_foiz, 
-                    g_j7.provodka_debet, 
-                    g_j7.group_number, 
-                    g_j7.provodka_kredit,
-                    g_j7.provodka_subschet,
-                    g_j7.roman_numeral,
-                    g_j7.pod_group,
+                    g.id, 
+                    g.smeta_id,
+                    g.name, 
+                    g.schet, 
+                    g.iznos_foiz, 
+                    g.provodka_debet, 
+                    g.group_number, 
+                    g.provodka_kredit,
+                    g.provodka_subschet,
+                    g.roman_numeral,
+                    g.pod_group,
                     s.smeta_name,
                     s.smeta_number
-                FROM group_jur7 AS g_j7
-                LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
-                WHERE g_j7.isdeleted = false ${search_filter}
+                FROM group_jur7 AS g
+                LEFT JOIN smeta AS s ON s.id = g.smeta_id
+                WHERE g.isdeleted = false ${search_filter}
                 OFFSET $1 LIMIT $2
             )
             SELECT 
                 ARRAY_AGG(row_to_json(data)) AS data,
                 (
-                    SELECT COALESCE(COUNT(g_j7.id), 0)::INTEGER 
-                    FROM group_jur7 AS g_j7
-                    WHERE g_j7.isdeleted = false ${search_filter}
+                    SELECT COALESCE(COUNT(g.id), 0)::INTEGER 
+                    FROM group_jur7 AS g
+                    WHERE g.isdeleted = false ${search_filter}
                 ) AS total
             FROM data
         `;
@@ -73,25 +73,25 @@ exports.GroupDB = class {
     }
 
     static async getById(params, isdeleted) {
-        const ignore = 'AND g_j7.isdeleted = false';
+        const ignore = 'AND g.isdeleted = false';
         const query = `--sql
             SELECT 
-                g_j7.id, 
-                g_j7.smeta_id,
-                g_j7.name, 
-                g_j7.schet, 
-                g_j7.iznos_foiz, 
-                g_j7.provodka_debet, 
-                g_j7.group_number, 
-                g_j7.provodka_kredit,
-                g_j7.provodka_subschet,
-                g_j7.roman_numeral,
-                g_j7.pod_group,
+                g.id, 
+                g.smeta_id,
+                g.name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
                 s.smeta_name,
                 s.smeta_number
-            FROM group_jur7 AS g_j7
-            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
-            WHERE g_j7.id = $1 ${isdeleted ? `` : ignore}
+            FROM group_jur7 AS g
+            LEFT JOIN smeta AS s ON s.id = g.smeta_id
+            WHERE g.id = $1 ${isdeleted ? `` : ignore}
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -100,22 +100,22 @@ exports.GroupDB = class {
     static async getByName(params) {
         const query = `--sql
             SELECT 
-                g_j7.id, 
-                g_j7.smeta_id,
-                g_j7.name, 
-                g_j7.schet, 
-                g_j7.iznos_foiz, 
-                g_j7.provodka_debet, 
-                g_j7.group_number, 
-                g_j7.provodka_kredit,
-                g_j7.provodka_subschet,
-                g_j7.roman_numeral,
-                g_j7.pod_group,
+                g.id, 
+                g.smeta_id,
+                g.name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
                 s.smeta_name,
                 s.smeta_number
-            FROM group_jur7 AS g_j7
-            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
-            WHERE g_j7.name ILIKE '%' || $1 || '%' AND g_j7.isdeleted = false
+            FROM group_jur7 AS g
+            LEFT JOIN smeta AS s ON s.id = g.smeta_id
+            WHERE g.name ILIKE '%' || $1 || '%' AND g.isdeleted = false
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -124,30 +124,30 @@ exports.GroupDB = class {
     static async getByNumberName(params) {
         const query = `--sql
             SELECT 
-                g_j7.id, 
-                g_j7.smeta_id,
-                g_j7.name, 
-                g_j7.schet, 
-                g_j7.iznos_foiz, 
-                g_j7.provodka_debet, 
-                g_j7.group_number, 
-                g_j7.provodka_kredit,
-                g_j7.provodka_subschet,
-                g_j7.roman_numeral,
-                g_j7.pod_group,
+                g.id, 
+                g.smeta_id,
+                g.name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
                 s.smeta_name,
                 s.smeta_number
-            FROM group_jur7 AS g_j7
-            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
-            WHERE g_j7.group_number = $1 
-                AND g_j7.name ILIKE '%' || $2 || '%' 
-                AND g_j7.isdeleted = false
+            FROM group_jur7 AS g
+            LEFT JOIN smeta AS s ON s.id = g.smeta_id
+            WHERE g.group_number = $1 
+                AND g.name ILIKE '%' || $2 || '%' 
+                AND g.isdeleted = false
         `;
         const result = await db.query(query, params);
         return result[0];
     }
 
-    static async updateGroup(params) {
+    static async update(params) {
         const query = `--sql
             UPDATE group_jur7
             SET 
@@ -168,30 +168,35 @@ exports.GroupDB = class {
         return result[0];
     }
 
-    static async deleteGroup(params) {
-        const query = `UPDATE group_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`;
-        await db.query(query, params);
+    static async delete(params) {
+        const query = `UPDATE group_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`;
+
+        const data = await db.query(query, params);
+
+        return data[0];
     }
 
-    static async getGroupWithPercent() {
+    static async getWithPercent() {
         const query = `--sql
             SELECT
-                g_j7.id, 
-                g_j7.smeta_id,
-                g_j7.name, 
-                g_j7.schet, 
-                g_j7.iznos_foiz, 
-                g_j7.provodka_debet, 
-                g_j7.group_number, 
-                g_j7.provodka_kredit,
-                g_j7.provodka_subschet,
-                g_j7.roman_numeral,
-                g_j7.pod_group,
+                g.id, 
+                g.smeta_id,
+                g.name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
                 s.smeta_name,
-                s.smeta_number
-            FROM group_jur7 AS g_j7
-            LEFT JOIN smeta AS s ON s.id = g_j7.smeta_id
-            WHERE g_j7.isdeleted = false
+                s.smeta_number,
+                COALESCE(p.pereotsenka_foiz, 0)
+            FROM group_jur7 AS g
+            LEFT JOIN smeta AS s ON s.id = g.smeta_id
+            LEFT JOIN pereotsenka_jur7 p ON p.group_jur7_id = g.id
+            WHERE g.isdeleted = false
         `;
         const data = await db.query(query)
         return data;

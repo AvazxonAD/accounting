@@ -1,5 +1,7 @@
 const { GroupDB } = require('./db');
 const { HelperFunctions } = require('../../../helper/functions');
+const { PereotsenkaDB } = require('../pereotsenka/db');
+
 
 exports.GroupService = class {
     static async getById(data) {
@@ -20,13 +22,13 @@ exports.GroupService = class {
     }
 
     static async get(data) {
-        const result = await GroupDB.getGroup([data.offset, data.limit], data.search);
+        const result = await GroupDB.get([data.offset, data.limit], data.search);
 
         return { data: result.data || [], total: result.total }
     }
 
     static async create(data) {
-        const result = await GroupDB.createGroup([
+        const result = await GroupDB.create([
             data.smeta_id,
             data.name,
             data.schet,
@@ -45,7 +47,7 @@ exports.GroupService = class {
     }
 
     static async update(data) {
-        const result = await GroupDB.updateGroup([
+        const result = await GroupDB.update([
             data.smeta_id,
             data.name,
             data.schet,
@@ -59,6 +61,18 @@ exports.GroupService = class {
             HelperFunctions.tashkentTime(),
             data.id
         ]);
+
+        return result;
+    }
+
+    static async delete(data) {
+        const result = await GroupDB.delete([data.id]);
+
+        return result;
+    }
+
+    static async getWithPercent() {
+        const result = await GroupDB.getWithPercent();
 
         return result;
     }
