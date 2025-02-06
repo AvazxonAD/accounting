@@ -99,10 +99,11 @@ exports.Controller = class {
 
     static async import(req, res) {
         const filePath = req.file.path;
+        const user_id = req.user.id;
 
         const data = await OrganizationService.readFile({ filePath });
 
-        await OrganizationService.import(data);
+        await OrganizationService.import({ data, user_id });
 
         return res.success(req.i18n.t('importSuccess'), 201);
     }

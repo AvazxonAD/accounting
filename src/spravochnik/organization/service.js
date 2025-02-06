@@ -59,7 +59,7 @@ exports.OrganizationService = class {
 
     static async import(data) {
         await db.transaction(async client => {
-            for (let item of data) {
+            for (let item of data.data) {
                 if (item.bank_klient && item.mfo) {
                     const bank = await BankService.getByMfoName({ bank_name: item.bank_klient, mfo: item.mfo });
                     if (!bank) {
@@ -67,7 +67,7 @@ exports.OrganizationService = class {
                     }
                 }
 
-                await this.create(item, client);
+                await this.create({...item, user_id: data.user_id}, client);
             }
         })
     }
