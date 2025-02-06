@@ -2,6 +2,14 @@ const Joi = require('joi')
 
 
 exports.OrganizationSchema = class {
+    static import() {
+        return Joi.object({
+            file: Joi.object({
+                path: Joi.string().trim().required()
+            })       
+        })
+    }
+
     static create() {
         return Joi.object({
             body: Joi.object({

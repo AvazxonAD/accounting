@@ -26,5 +26,6 @@
     "typeOperatsiiNotFound": "Type operatsii topilmadi!",
     "schetDifferentError": "Pravodki schetlari turlicha!",
     "organizationExists": "Ushbu Hamkor tashkilot avval kiritilgan!",
-    "pageNotFound": "Sahifa topilmadi!"
+    "pageNotFound": "Sahifa topilmadi!",
+    "importSuccess": "Malumot muvaffaqiyatli import qilindi"
 }
