@@ -12,13 +12,13 @@ const { ResponsibleDB } = require('../spravochnik/responsible/db');
 exports.PrixodJur7Service = class {
     static async templateFile() {
         const fileName = `prixod.template.xlsx`;
-        const folderPath = path.join(__dirname, `../../../public/template`);
+        const folderPath = path.join(__dirname, `../../../template`);
 
         const filePath = path.join(folderPath, fileName);
 
         const fileRes = await fs.readFile(filePath);
 
-        return { fileName: `${fileName}.${new Date().getTime()}.xlsx`, fileRes };
+        return { fileName, fileRes };
     }
 
     static async importData(data) {

@@ -2,7 +2,11 @@ const { OrganizationService } = require('./service');
 
 exports.Controller = class {
     static async template(req, res) {
-        
+        const { fileName, fileRes } = await OrganizationService.templateFile();
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        return res.send(fileRes);
     }
 
     static async create(req, res) {
