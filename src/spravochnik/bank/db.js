@@ -1,7 +1,7 @@
 const { db } = require('../../db/index')
 
 exports.BankMfoDB = class {
-    static async createBankMfo(params) {
+    static async create(params) {
         const query = `--sql
             INSERT INTO spravochnik_bank_mfo (
                 mfo, 
@@ -10,7 +10,7 @@ exports.BankMfoDB = class {
                 updated_at
             ) 
             VALUES ($1, $2, $3, $4) 
-            RETURNING *
+            RETURNING id
         `
         const result = await db.query(query, params)
         return result;
@@ -59,7 +59,7 @@ exports.BankMfoDB = class {
         return result[0]
     }
 
-    static async getByNameBankMfo(params) {
+    static async getByMfoName(params) {
         const query = `--sql
             SELECT s_b_m.*
             FROM spravochnik_bank_mfo AS s_b_m

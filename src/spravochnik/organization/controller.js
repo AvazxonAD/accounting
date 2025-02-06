@@ -98,14 +98,12 @@ exports.Controller = class {
     }
 
     static async import(req, res) {
-        if (!req.file) {
-            return res.error(req.i18n.t('fileErrror'), 400);
-        }
-
         const filePath = req.file.path;
 
         const data = await OrganizationService.readFile({ filePath });
 
-        return res.send(data)
+        await OrganizationService.import(data);
+
+        return res.success(req.i18n.t('importSuccess'), 201);
     }
 }

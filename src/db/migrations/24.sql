@@ -1,0 +1,1 @@
+ALTER TABLE spravochnik_bank_mfo DROP CONSTRAINT spravochnik_bank_mfo_pkey;

@@ -1,5 +1,8 @@
-const { OrganizationDB } = require('./db')
-const { tashkentTime } = require('../../helper/functions')
+const { OrganizationDB } = require('./db');
+const xlsx = require('xlsx');
+const { tashkentTime } = require('../../helper/functions');
+const { db } = require('../../db/index');
+const { BankService } = require('../bank/service')
 
 exports.OrganizationService = class {
     static async getByInn(data) {
@@ -55,28 +58,36 @@ exports.OrganizationService = class {
     }
 
     static async import(data) {
-        
+        await db.transaction(async client => {
+            for (let item of data) {
+                if (item.bank_klient && item.mfo) {
+                    const bank = await BankService.getByMfoName({ bank_name: item.bank_klient, mfo: item.mfo });
+                    if (!bank) {
+                        await BankService.create({ bank_name: item.bank_klient, mfo: item.mfo });
+                    }
+                }
+
+                await this.create(item, client);
+            }
+        })
     }
 
     static async readFile(data) {
         const workbook = xlsx.readFile(data.filePath);
-        const sheetName = workbook.SheetNames[3];
+        const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-
-        const result = xlsx.utils.sheet_to_json(sheet).map(row => {
+        const excel_data = xlsx.utils.sheet_to_json(sheet).map((row, index) => {
             const newRow = {};
-
             for (const key in row) {
                 if (Object.prototype.hasOwnProperty.call(row, key)) {
-                    if (row < 4) {
-                        continue
-                    }
                     newRow[key] = row[key];
                 }
             }
 
             return newRow;
         });
+
+        const result = excel_data.filter((item, index) => index >= 2);
 
         return result;
     }
