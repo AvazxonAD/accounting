@@ -34,7 +34,7 @@ exports.Controller = class {
     }
 
     static async cap(req, res) {
-        const { from, to, main_schet_id } = req.query;
+        const { from, to, main_schet_id, excel } = req.query;
         const region_id = req.user.region_id;
 
         const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
@@ -46,10 +46,14 @@ exports.Controller = class {
 
         const { fileName, filePath } = await KassaMonitoringService.capExcel({ ...data, main_schet, from, to });
 
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        if (excel === 'true') {
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 
-        return res.sendFile(filePath);
+            return res.sendFile(filePath);
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, null, data);
     }
 
     static async daily(req, res) {
