@@ -12,6 +12,7 @@ exports.FeaturesService = class {
         else if (data.page === 'jur7_rasxod') return 'document_rasxod_jur7';
         else if (data.page === 'jur7_internal') return 'document_vnutr_peremesh_jur7';
         else if (data.page === 'show_service') return 'kursatilgan_hizmatlar_jur152';
+        else if(data.page === 'contract') return 'shartnomalar_organization';
         else return null;
     }
 
