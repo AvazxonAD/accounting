@@ -1,5 +1,19 @@
 const Joi = require('joi')
 
+exports.DocSchema = class {
+  static auto() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().integer().min(1),
+        main_schet_id: Joi.number().integer().min(1),
+        month: Joi.number().integer().min(1).max(12).required(),
+        year: Joi.number().integer().min(1900).required(),
+        type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end').required()
+      })
+    }).options({ stripUnknown: true });
+  }
+}
+
 exports.createDocSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
@@ -65,15 +79,6 @@ exports.deleteDocSchema = Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
     year: Joi.number().integer().min(1900).required(),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end')
-  })
-}).options({ stripUnknown: true });
-
-exports.getBySchetSchema = Joi.object({
-  query: Joi.object({
-    budjet_id: Joi.number().integer().min(1).required(),
-    month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
-    schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 

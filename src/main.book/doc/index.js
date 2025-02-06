@@ -6,7 +6,8 @@ const {
     updateDocSchema,
     getByIdDocSchema,
     deleteDocSchema,
-    getBySchetSchema
+    getBySchetSchema,
+    DocSchema
 } = require("./schema");
 
 const { Router } = require('express')
@@ -17,7 +18,7 @@ router.post('/', validator(Controller.createDoc, createDocSchema))
     .put('/', validator(Controller.updateDoc, updateDocSchema))
     .delete('/', validator(Controller.deleteDoc, deleteDocSchema))
     .get('/by/schet', validator(Controller.getBySchetSumma, getBySchetSchema))
-    .get('/auto', validator(Controller.getBySchetSumma, getBySchetSchema))
+    .get('/auto', validator(Controller.auto, DocSchema.auto()))
     .get('/', validator(Controller.getDoc, getDocSchema));
 
 

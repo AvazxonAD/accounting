@@ -1,4 +1,4 @@
-const { MainBookSchetService } = require("./service");
+const { Controller } = require("./controller");
 const { validator } = require('../../helper/validator');
 const {
     createMainBookSchetSchema,
@@ -11,12 +11,12 @@ const upload = require('../../helper/upload')
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(MainBookSchetService.createMainBookSchet, createMainBookSchetSchema))
-    .get('/:id', validator(MainBookSchetService.getByIdMainBookSchet, getByIdMainBookSchetSchema))
-    .post('/import', upload.single('file'), validator(MainBookSchetService.importSmetaData))
-    .put('/:id', validator(MainBookSchetService.updateMainBookSchet, updateMainBookSchetSchema))
-    .delete('/:id', validator(MainBookSchetService.deleteMainBookSchet, deleteMainBookSchetSchema))
-    .get('/', validator(MainBookSchetService.getMainBookSchet, getMainBookSchetSchema));
+router.post('/', validator(Controller.createMainBookSchet, createMainBookSchetSchema))
+    .get('/:id', validator(Controller.getByIdMainBookSchet, getByIdMainBookSchetSchema))
+    .post('/import', upload.single('file'), validator(Controller.importSmetaData))
+    .put('/:id', validator(Controller.updateMainBookSchet, updateMainBookSchetSchema))
+    .delete('/:id', validator(Controller.deleteMainBookSchet, deleteMainBookSchetSchema))
+    .get('/', validator(Controller.getMainBookSchet, getMainBookSchetSchema));
 
 
 module.exports = router;
