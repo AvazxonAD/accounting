@@ -10,6 +10,10 @@ exports.AktService = class {
     static async getSchets(data) {
         const result = await AktDB.getSchets([data.region_id, data.main_schet_id, data.from, data.to]);
 
+        for(let item of result){
+            
+        }
+
         return result;
     }
 
