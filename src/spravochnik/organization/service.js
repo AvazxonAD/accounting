@@ -9,7 +9,7 @@ const fs = require('fs').promises;
 exports.OrganizationService = class {
     static async templateFile() {
         const fileName = `organization.template.xlsx`;
-        const folderPath = path.join(__dirname, `../../../template`);
+        const folderPath = path.join(__dirname, `../../../public/template`);
 
         const filePath = path.join(folderPath, fileName);
 
