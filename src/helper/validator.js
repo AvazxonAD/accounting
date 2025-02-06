@@ -25,7 +25,7 @@ exports.validator = function (callback, schema) {
             });
 
         if (error) {
-            return res.status(400).json({ message: error.details[0].message });
+            return res.error(req.i18n.t('validationError'), 400, error.details[0].message);
         }
 
         req.body = value.body;

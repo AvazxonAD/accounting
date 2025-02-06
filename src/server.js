@@ -26,7 +26,7 @@ app.use(require('./middleware/response.metods'))
 app.use(router);
 
 app.use('*', (req, res) => {
-  return res.error('Page not found', 404);
+  return res.error(req.i18n.t('pageNotFound'), 404);
 });
 
 app.use(require("./middleware/errorHandler"));

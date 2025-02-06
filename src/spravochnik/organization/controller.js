@@ -55,7 +55,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
 
-        const { name, inn, parent_id } = req.body;
+        const { parent_id } = req.body;
 
         if (parent_id) {
             const organization = await OrganizationService.getById([region_id, parent_id])
@@ -97,4 +97,15 @@ exports.Controller = class {
         })
     }
 
+    static async import(req, res) {
+        if (!req.file) {
+            return res.error(req.i18n.t('fileErrror'), 400);
+        }
+
+        const filePath = req.file.path;
+
+        const data = await OrganizationService.readFile({ filePath });
+
+        return res.send(data)
+    }
 }
