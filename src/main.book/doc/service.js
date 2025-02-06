@@ -1,8 +1,16 @@
 const { db } = require('../../db/index')
 const { tashkentTime } = require('../../helper/functions')
-const { DocMainBookDB } = require('./db')
+const { DocMainBookDB } = require('./db');
 
 exports.MainBookDocService = class {
+    static getTableName(data) {
+        if(data.type_document === 'jur1') return 'kassa';
+        if(data.type_document === 'jur2') return 'bank';
+        if(data.type_document === 'jur3') return 'bajarilgan_ishlar_jur3';
+        if(data.type_document === 'jur4') return 'avans_otchetlar_jur4';
+        if(data.type_document === 'jur5') return 'kursatilgan_hizmatlar_jur152';
+    }
+
     static async createDoc(data) {
         const doc = await db.transaction(async client => {
             const result = [];

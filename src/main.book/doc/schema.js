@@ -76,3 +76,11 @@ exports.getBySchetSchema = Joi.object({
     schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
+
+exports.auto = Joi.object({
+  query: Joi.object({
+    budjet_id: Joi.number().integer().min(1).required(),
+    month: Joi.number().integer().min(1).max(12).required(),
+    year: Joi.number().integer().min(1900).required()
+  })
+}).options({ stripUnknown: true });
