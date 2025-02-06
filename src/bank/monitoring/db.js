@@ -5,7 +5,10 @@ exports.BankMonitoringDB = class {
         let search_filter = ``;
         if (search) {
             params.push(search);
-            search_filter = ` AND d.doc_num = $${params.length}`;
+            search_filter = ` AND (
+                d.doc_num = $${params.length} OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
         }
 
         const query = `
@@ -280,7 +283,10 @@ exports.BankMonitoringDB = class {
         let search_filter = ``;
         if (search) {
             params.push(search);
-            search_filter = ` AND d.doc_num = $${params.length}`;
+            search_filter = ` AND (
+                d.doc_num = $${params.length} OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
         }
 
         const query = `
