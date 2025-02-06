@@ -34,7 +34,7 @@ exports.MainBookSchetDB = class {
                 OFFSET $1 LIMIT $2
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
                 (
                     SELECT COALESCE(COUNT(id), 0)::INTEGER 
                     FROM spravochnik_main_book_schet

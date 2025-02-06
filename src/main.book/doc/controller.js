@@ -1,11 +1,38 @@
 const { BudjetDB } = require('../../spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
+const { MainBookSchetService } = require('../../spravochnik/main.book.schet/service');
 const { MainSchetService } = require('../../spravochnik/main.schet/service')
 const { MainBookDocService } = require('./service')
 const { checkUniqueIds } = require('../../helper/functions')
+const { BudjetService } = require('../../spravochnik/budjet/service');
 
 
 exports.Controller = class {
+  static async auto(req, res) {
+    const { main_schet_id, budjet_id } = req.query;
+    const region_id = req.user.region_id;
+
+    if (budjet_id) {
+      const budjet = await BudjetService.getById({ budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t('budjetNotFound'), 404);
+      }
+    }
+
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id })
+      if (!main_schet) {
+        return res.error(req.i18n.t('mainSchetNotFound'), 404);
+      }
+    }
+
+    const schets = await MainBookSchetService.get({ offset: 0, limit: 9999 });
+
+    const result = await MainBookDocService.auto({ schets: schets.data, ...req.query, region_id})
+
+    return res.success(req.i18n.t('getSucccess'), 200, req.query, result);
+  }
+
   static async createDoc(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -48,7 +75,7 @@ exports.Controller = class {
         }
       }
     }
-    if(!checkUniqueIds(childs)){
+    if (!checkUniqueIds(childs)) {
       return res.error('Duplicate id found in schets', 400);
     }
     const result = await MainBookDocService.createDoc({
@@ -153,7 +180,7 @@ exports.Controller = class {
         }
       }
     }
-    if(!checkUniqueIds(body.childs)){
+    if (!checkUniqueIds(body.childs)) {
       return res.error('Duplicate id found in schets', 400);
     }
     const result = await MainBookDocService.updateDoc({

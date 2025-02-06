@@ -2,7 +2,7 @@ const { db } = require('../../db/index');
 const { HelperFunctions } = require('../../helper/functions');
 
 exports.DocMainBookDB = class {
-    static async autoSumma(params, main_schet_id, budjet_id) {
+    static async autoSumma(params, type_document, main_schet_id, budjet_id) {
         const filters = [];
 
         if (main_schet_id) {
@@ -17,9 +17,91 @@ exports.DocMainBookDB = class {
 
         const metaWhere = HelperFunctions.filters(filters);
 
-        const query = `
-            
+        const jur2 = `
+            WITH prixod AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
+                FROM bank_prixod d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN bank_prixod_child AS ch ON d.id = ch.id_bank_prixod 
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                WHERE r.id = $1 
+                    AND d.doc_date < $2
+                    AND d.isdeleted = false
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.isdeleted = false
+                    ${metaWhere}
+            ), 
+            rasxod AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
+                FROM bank_rasxod d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN bank_rasxod_child AS ch ON d.id = ch.id_bank_rasxod 
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                WHERE r.id = $1 
+                    AND d.doc_date < $2
+                    AND d.isdeleted = false
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.isdeleted = false
+                    ${metaWhere}
+            )
+            SELECT 
+                rasxod.summa AS rasxod_sum,
+                prixod.summa AS prixod_sum
+            FROM rasxod
+            CROSS JOIN prixod;
         `;
+
+        const jur1 = `
+            WITH prixod AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
+                FROM kassa_prixod d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN kassa_prixod_child AS ch ON d.id = ch.kassa_prixod_id 
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                WHERE r.id = $1 
+                    AND d.doc_date < $2
+                    AND d.isdeleted = false
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.isdeleted = false
+                    ${metaWhere}
+            ), 
+            rasxod AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
+                FROM kassa_rasxod d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN kassa_rasxod_child AS ch ON d.id = ch.kassa_rasxod_id 
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                WHERE r.id = $1 
+                    AND d.doc_date < $2
+                    AND d.isdeleted = false
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.isdeleted = false
+                    ${metaWhere}
+            )
+            SELECT 
+                rasxod.summa AS rasxod_sum,
+                prixod.summa AS prixod_sum
+            FROM rasxod
+            CROSS JOIN prixod;
+        `;
+
+        const queries = { jur1, jur2 };
+
+        const result = await db.query(queries[type_document], params);
+
+        return result;
     }
 
     static async createDoc(params, client) {

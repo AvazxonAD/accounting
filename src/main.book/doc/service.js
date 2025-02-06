@@ -1,14 +1,15 @@
 const { db } = require('../../db/index')
-const { tashkentTime } = require('../../helper/functions')
+const { tashkentTime, HelperFunctions } = require('../../helper/functions')
 const { DocMainBookDB } = require('./db');
 
 exports.MainBookDocService = class {
-    static getTableName(data) {
-        if(data.type_document === 'jur1') return 'kassa';
-        if(data.type_document === 'jur2') return 'bank';
-        if(data.type_document === 'jur3') return 'bajarilgan_ishlar_jur3';
-        if(data.type_document === 'jur4') return 'avans_otchetlar_jur4';
-        if(data.type_document === 'jur5') return 'kursatilgan_hizmatlar_jur152';
+    static async auto(data) {
+        const dates = HelperFunctions.getMonthStartEnd(data.year, data.month);
+        for (let schet of data.schets) {
+            schet.summa = await DocMainBookDB.autoSumma([data.region_id, dates[1], schet.schet], data.type_document, data.main_schet_id, data.budjet_id);
+        }
+
+        return data.schets;
     }
 
     static async createDoc(data) {
