@@ -55,7 +55,7 @@ exports.OrganizationService = class {
     }
 
     static async import(data) {
-
+        
     }
 
     static async readFile(data) {
@@ -68,6 +68,9 @@ exports.OrganizationService = class {
 
             for (const key in row) {
                 if (Object.prototype.hasOwnProperty.call(row, key)) {
+                    if (row < 4) {
+                        continue
+                    }
                     newRow[key] = row[key];
                 }
             }

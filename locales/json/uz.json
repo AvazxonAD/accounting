@@ -17,7 +17,7 @@
     "deleteSuccess": "Muvaffaqiyatli o'chirildi!",
     "productNotFound": "Tovar topilmadi!",
     "fileErrror": "Fayl yuklashda xatolik!",
-    "validationError": "Ma'lumot noto'g'ri kiritildi!",
+    "validationError": "Ma'lumot noto'g'ri kiritildi! Malumot turlariga etiborli boling!",
     "rasxodProductError": "Ushbu tovar bilan bog'liq xarajat hujjatlari mavjud!",
     "podotchetNotFound": "Pododchet topilmadi!",
     "operatsiiNotFound": "Operatsii topilmadi!",
@@ -25,5 +25,6 @@
     "sostavNotFound": "Sostav topilmadi!",
     "typeOperatsiiNotFound": "Type operatsii topilmadi!",
     "schetDifferentError": "Pravodki schetlari turlicha!",
-    "organizationExists": "Ushbu Hamkor tashkilot avval kiritilgan!"
+    "organizationExists": "Ushbu Hamkor tashkilot avval kiritilgan!",
+    "pageNotFound": "Sahifa topilmadi!"
 }
