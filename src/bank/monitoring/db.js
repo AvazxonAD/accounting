@@ -38,7 +38,8 @@ exports.BankMonitoringDB = class {
                             JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
                             WHERE  ch.id_bank_prixod = d.id AND ch.isdeleted = false 
                         ) AS ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    'prixod' AS type
                 FROM bank_prixod d
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
@@ -79,7 +80,8 @@ exports.BankMonitoringDB = class {
                             JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
                             WHERE  ch.id_bank_rasxod = d.id AND ch.isdeleted = false 
                         ) AS ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    'rasxod' AS type
                 FROM bank_rasxod d
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
