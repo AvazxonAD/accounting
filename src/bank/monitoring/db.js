@@ -14,7 +14,13 @@ exports.BankMonitoringDB = class {
                     d.id,
                     d.doc_num,
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-                    d.summa AS prixod_sum,
+                    (
+                        SELECT 
+                            COALESCE(SUM(ch.summa), 0::NUMERIC)
+                        FROM bank_prixod_child AS ch
+                        WHERE  ch.id_bank_prixod = d.id 
+                            AND ch.isdeleted = false
+                    ) AS prixod_sum,
                     0 AS rasxod_sum,
                     d.id_spravochnik_organization,
                     so.name AS spravochnik_organization_name,
@@ -50,6 +56,7 @@ exports.BankMonitoringDB = class {
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $3 AND $4
                     ${search_filter}
+                
                 UNION ALL
                 
                 SELECT 
@@ -57,7 +64,12 @@ exports.BankMonitoringDB = class {
                     d.doc_num,
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                     0 AS prixod_sum,
-                    d.summa AS rasxod_sum,
+                    (
+                        SELECT 
+                            COALESCE(SUM(ch.summa), 0::NUMERIC)
+                        FROM bank_rasxod_child AS ch
+                        WHERE  ch.id_bank_rasxod = d.id AND ch.isdeleted = false
+                    ) AS rasxod_sum,
                     d.id_spravochnik_organization,
                     so.name AS spravochnik_organization_name,
                     so.raschet_schet AS spravochnik_organization_raschet_schet,
@@ -125,8 +137,9 @@ exports.BankMonitoringDB = class {
                 )::INTEGER AS total_count,
                 (
                     SELECT 
-                        COALESCE(SUM(d.summa), 0)
+                        COALESCE(SUM(ch.summa), 0)
                     FROM bank_prixod d
+                    JOIN bank_prixod_child ch ON ch.id_bank_prixod = d.id
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 
@@ -134,11 +147,13 @@ exports.BankMonitoringDB = class {
                         AND d.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         ${search_filter}
+                        AND ch.isdeleted = false
                 )::FLOAT AS prixod_sum,
                 (
                     SELECT 
-                        COALESCE(SUM(d.summa), 0)
+                        COALESCE(SUM(ch.summa), 0)
                     FROM bank_rasxod d
+                    JOIN bank_rasxod_child ch ON ch.id_bank_rasxod = d.id
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     WHERE r.id = $1 
@@ -146,6 +161,7 @@ exports.BankMonitoringDB = class {
                         AND d.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         ${search_filter}
+                        AND ch.isdeleted = false
                 )::FLOAT AS rasxod_sum,
                 ARRAY_AGG(row_to_json(data)) AS data
             FROM data
@@ -166,24 +182,28 @@ exports.BankMonitoringDB = class {
         const query = `
             WITH prixod AS (
                 SELECT 
-                    COALESCE(SUM(d.summa), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod d
+                JOIN bank_prixod_child ch ON ch.id_bank_prixod = d.id 
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 
                     AND d.isdeleted = false
+                    AND ch.isdeleted = false
                     AND d.main_schet_id = $2 
                     AND d.doc_date ${operator} $3
                     ${search_filter} 
             ), 
             rasxod AS (
                 SELECT 
-                    COALESCE(SUM(d.summa), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bank_rasxod d
+                JOIN bank_rasxod_child ch ON ch.id_bank_rasxod = d.id
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 
                     AND d.isdeleted = false
+                    AND ch.isdeleted = false
                     AND d.main_schet_id = $2 
                     AND d.doc_date ${operator} $3
                     ${search_filter} 
@@ -251,7 +271,7 @@ exports.BankMonitoringDB = class {
                 JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4 
+                    AND d.doc_date BETWEEN $3 AND $4
                     AND d.isdeleted = false
                     AND s_o.schet = $5
                     AND ch.isdeleted = false
@@ -284,7 +304,6 @@ exports.BankMonitoringDB = class {
     }
 
     static async daily(params) {
-        2
         const query = `
             SELECT 
                 s_o.schet,
