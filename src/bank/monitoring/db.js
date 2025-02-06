@@ -246,7 +246,7 @@ exports.BankMonitoringDB = class {
                         JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
                         WHERE r.id = $1 
                             AND d.main_schet_id = $2 
-                            AND d.doc_date < $3 
+                            AND d.doc_date < $3
                             AND d.isdeleted = false
                     ) -
                     (
@@ -259,7 +259,7 @@ exports.BankMonitoringDB = class {
                         JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
                         WHERE r.id = $1 
                             AND d.main_schet_id = $2 
-                            AND d.doc_date < $3 
+                            AND d.doc_date < $3
                             AND d.isdeleted = false
                     )
                 )::FLOAT AS balance_from,
