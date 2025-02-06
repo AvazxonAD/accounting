@@ -17,6 +17,7 @@ router.post('/', validator(Controller.createDoc, createDocSchema))
     .put('/', validator(Controller.updateDoc, updateDocSchema))
     .delete('/', validator(Controller.deleteDoc, deleteDocSchema))
     .get('/by/schet', validator(Controller.getBySchetSumma, getBySchetSchema))
+    .get('/auto', validator(Controller.getBySchetSumma, getBySchetSchema))
     .get('/', validator(Controller.getDoc, getDocSchema));
 
 

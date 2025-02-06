@@ -1,7 +1,27 @@
-const { db } = require('../../db/index')
-const { returnParamsValues } = require('../../helper/functions')
+const { db } = require('../../db/index');
+const { HelperFunctions } = require('../../helper/functions');
 
 exports.DocMainBookDB = class {
+    static async autoSumma(params, main_schet_id, budjet_id) {
+        const filters = [];
+
+        if (main_schet_id) {
+            params.push(main_schet_id);
+            filters.push(`m.id = $${params.length}`);
+        }
+
+        if (budjet_id) {
+            params.push(budjet_id);
+            filters.push(`b.id = $${params.length}`);
+        }
+
+        const metaWhere = HelperFunctions.filters(filters);
+
+        const query = `
+            
+        `;
+    }
+
     static async createDoc(params, client) {
         const query = `--sql
             INSERT INTO documents_glavniy_kniga (
