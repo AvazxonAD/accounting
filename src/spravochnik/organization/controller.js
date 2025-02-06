@@ -1,6 +1,10 @@
 const { OrganizationService } = require('./service');
 
 exports.Controller = class {
+    static async template(req, res) {
+        
+    }
+
     static async create(req, res) {
         const user_id = req.user.id;
         const region_id = req.user.region_id;

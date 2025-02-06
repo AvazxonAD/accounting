@@ -5,6 +5,17 @@ const { db } = require('../../db/index');
 const { BankService } = require('../bank/service')
 
 exports.OrganizationService = class {
+    static async templateFile() {
+        const fileName = `organization.template.xlsx`;
+        const folderPath = path.join(__dirname, `../../../public/template`);
+
+        const filePath = path.join(folderPath, fileName);
+
+        const fileRes = await fs.readFile(filePath);
+
+        return { fileName: `${fileName}.${new Date().getTime()}.xlsx`, fileRes };
+    }
+
     static async getByInn(data) {
         const result = await OrganizationDB.getByInn([data.region_id, data.inn]);
 
@@ -67,7 +78,7 @@ exports.OrganizationService = class {
                     }
                 }
 
-                await this.create({...item, user_id: data.user_id}, client);
+                await this.create({ ...item, user_id: data.user_id }, client);
             }
         })
     }
