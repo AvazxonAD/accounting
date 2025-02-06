@@ -2,18 +2,20 @@ const { OrganizationDB } = require('./db');
 const xlsx = require('xlsx');
 const { tashkentTime } = require('../../helper/functions');
 const { db } = require('../../db/index');
-const { BankService } = require('../bank/service')
+const { BankService } = require('../bank/service');
+const path = require('path');
+const fs = require('fs').promises;
 
 exports.OrganizationService = class {
     static async templateFile() {
         const fileName = `organization.template.xlsx`;
-        const folderPath = path.join(__dirname, `../../../public/template`);
+        const folderPath = path.join(__dirname, `../../../template`);
 
         const filePath = path.join(folderPath, fileName);
 
         const fileRes = await fs.readFile(filePath);
 
-        return { fileName: `${fileName}.${new Date().getTime()}.xlsx`, fileRes };
+        return { fileName, fileRes };
     }
 
     static async getByInn(data) {
