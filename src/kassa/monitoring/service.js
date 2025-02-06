@@ -2,7 +2,7 @@ const { KassaMonitoringDB } = require('./db');
 const { returnStringSumma, returnStringDate, HelperFunctions, returnSleshDate } = require('../../helper/functions');
 const ExcelJS = require('exceljs');
 const path = require('path');
-const { readFile, mkdir, constants, access } = require('fs').promises;
+const { mkdir, constants, access } = require('fs').promises;
 
 exports.KassaMonitoringService = class {
     static async get(data) {
@@ -29,9 +29,24 @@ exports.KassaMonitoringService = class {
     }
 
     static async cap(data) {
-        const result = await KassaMonitoringDB.cap([data.region_id, data.main_schet_id, data.from, data.to]);
+        const schets = await KassaMonitoringDB.getSchets([data.region_id, data.main_schet_id, data.from, data.to]);
+        for (let schet of schets) {
+            schet.summa = await KassaMonitoringDB.getSummaSchet([data.region_id, data.main_schet_id, data.from, data.to, schet.schet]);
+        }
 
-        return result;
+        let prixod_sum = 0
+        let rasxod_sum = 0
+
+        schets.forEach(item => {
+            prixod_sum += item.summa.prixod_sum
+            rasxod_sum += item.summa.rasxod_sum
+        })
+
+        const balance_from = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from], '<');
+
+        const balance_to = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.to], '<=');
+
+        return { balance_from, balance_to, prixod_sum, rasxod_sum, data: schets };
     }
 
     static async capExcel(data) {
@@ -63,7 +78,7 @@ exports.KassaMonitoringService = class {
         worksheet.getRow(2).height = 25;
         worksheet.mergeCells('A4', 'D4');
         const balanceFromCell = worksheet.getCell('A4');
-        const balance_from = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
+        const balance_from = `Остаток к началу дня: ${returnStringSumma(data.balance_from.summa)}`;
         Object.assign(balanceFromCell, {
             value: balance_from,
             font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
@@ -116,10 +131,10 @@ exports.KassaMonitoringService = class {
                 }
             });
             const prixod_sum = worksheet.getCell(`C${row_number + 1}`);
-            prixod_sum.value = item.prixod_sum;
+            prixod_sum.value = item.summa.prixod_sum;
             prixod_sum.numFmt = '#,##0.00';
             const rasxod_sum = worksheet.getCell(`D${row_number + 1}`);
-            rasxod_sum.value = item.rasxod_sum;
+            rasxod_sum.value = item.summa.rasxod_sum;
             rasxod_sum.numFmt = '#,##0.00';
             const array = [prixod_sum, rasxod_sum];
             array.forEach(cell => {
@@ -174,7 +189,7 @@ exports.KassaMonitoringService = class {
         row_number++
         worksheet.mergeCells(`A${row_number + 1}`, `D${row_number + 1}`);
         const balanceToCell = worksheet.getCell('A' + (row_number + 1));
-        balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
+        balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to.summa)}`;
         Object.assign(balanceToCell, {
             font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: 'left' },
@@ -239,7 +254,7 @@ exports.KassaMonitoringService = class {
         const workbook = new ExcelJS.Workbook();
         const fileName = `kundalik_hisobot_kassa_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('Hisobot');
-        
+
         worksheet.mergeCells('A1', 'G1');
         const titleCell = worksheet.getCell('A1');
         Object.assign(titleCell, {
@@ -247,7 +262,7 @@ exports.KassaMonitoringService = class {
             font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: 'left' }
         });
-        
+
         worksheet.mergeCells('A2', 'G2');
         const dateCell = worksheet.getCell('A2');
         Object.assign(dateCell, {
@@ -255,7 +270,7 @@ exports.KassaMonitoringService = class {
             font: { size: 11, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: 'left' }
         });
-       
+
         worksheet.mergeCells('A4', 'G4');
         const balanceFromCell = worksheet.getCell('A4');
         balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
