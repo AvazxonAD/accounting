@@ -45,9 +45,9 @@ const createOperatsii = async (req, res) => {
 // get all
 const getOperatsii = async (req, res) => {
   try {
-    const { page, limit, type_schet, search, meta_search } = validationResponse(operatsiiQueryValidation, req.query)
+    const { page, limit, type_schet, search, meta_search, schet, sub_schet } = validationResponse(operatsiiQueryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search);
+    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search, schet, sub_schet);
     const pageCount = Math.ceil(total / limit)
     const meta = {
       pageCount,

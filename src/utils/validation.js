@@ -378,7 +378,9 @@ const operatsiiQueryValidation = Joi.object({
   limit: Joi.number().min(1).default(10),
   type_schet: Joi.string().trim(),
   search: Joi.string().trim(),
-  meta_search: Joi.string().trim()
+  meta_search: Joi.string().trim(),
+  schet: Joi.string().trim(),
+  sub_schet: Joi.string().trim()
 }).options({ stripUnknown: true });
 
 const organizationValidation = Joi.object({

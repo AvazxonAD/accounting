@@ -34,11 +34,14 @@ const getByNameAndSchetOperatsiiService = async (name, type_schet, smeta_id) => 
   }
 }
 
-const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_search) => {
+const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_search, schet, sub_schet) => {
   try {
+    let schet_filter = ``;
+    let sub_schet_filter = '';
     let type_schet_filter = ''
     let search_filter = ``
     let meta_search_filter = ``;
+    
     const params = [offset, limit];
 
     if (search) {
@@ -56,18 +59,40 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
       meta_search_filter = `AND sub_schet ILIKE '%' || $${params.length} || '%'`;
     }
 
+    if(schet){
+      params.push(schet);
+      schet_filter = `AND schet ILIKE '%' || $${params.length} || '%'`;
+    } 
+
+    if(sub_schet){
+      params.push(sub_schet);
+      sub_schet_filter = `AND sub_schet ILIKE '%' || $${params.length} || '%'`;
+    }
+
     const result = await pool.query(`
       WITH data AS (
         SELECT id, name, schet, sub_schet, type_schet, smeta_id
         FROM spravochnik_operatsii  
         WHERE isdeleted = false 
+          ${schet_filter}
+          ${sub_schet_filter}
           ${search_filter} 
           ${type_schet_filter}
           ${meta_search_filter} 
         OFFSET $1 LIMIT $2)
       SELECT 
         ARRAY_AGG(row_to_json(data)) AS data,
-        (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter} ${type_schet_filter})::INTEGER AS total_count
+        (
+          SELECT 
+            COUNT(spravochnik_operatsii.id) 
+          FROM spravochnik_operatsii 
+          WHERE isdeleted = false 
+            ${schet_filter}
+            ${sub_schet_filter}
+            ${search_filter} 
+            ${type_schet_filter}
+            ${meta_search_filter}
+        )::INTEGER AS total_count
       FROM data
     `, params);
     return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 }
