@@ -42,12 +42,12 @@
         "name": "Nomi majburiy maydon!",
         "kol": "Miqdori kamida 1 bo‘lishi zarur!",
         "summa": "Summasi kamida 1 bo‘lishi zarur!",
-        "debetSchet": "Debet hisob raqami majburiy!",
-        "debetSubSchet": "Debet subhisob raqami majburiy!",
-        "kreditSchet": "Kredit hisob raqami noto‘g‘ri formatda!",
-        "kreditSubSchet": "Kredit subhisob raqami noto‘g‘ri formatda!",
+        "debetSchet": "Debet hisob text formatida bolishi kerak!",
+        "debetSubSchet": "Debet subhisob text formatida bolishi kerak!",
+        "kreditSchet": "Kredit hisob raqami text formatida bolishi kerak!",
+        "kreditSubSchet": "Kredit subhisob raqami text formatida bolishi kerak!",
         "iznos": "Iznos qiymati faqat boolean (true yoki false) bo‘lishi zarur!",
-        "edin": "O‘lchov birligi majburiy maydon!",
+        "edin": "O‘lchov birligi text formatida bolishi kerak majburiy maydon!",
         "eskiIznosSumma": "Eski iznos summasi kamida 0 bo‘lishi zarur!"
     }
 }

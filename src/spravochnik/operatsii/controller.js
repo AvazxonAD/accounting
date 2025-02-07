@@ -15,6 +15,16 @@ const { SmetaDB } = require("../../smeta/smeta/db");
 const { errorCatch } = require('../../utils/errorCatch')
 const { resFunc } = require("../../utils/resFunc");
 const { validationResponse } = require("../../utils/response-for-validation");
+const { OperatsiiService } = require('./service');
+
+const Controller = class {
+  static async uniqueSchets(req, res) {
+    const result = await OperatsiiService.uniqueSchets({});
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
+  }
+}
+
 
 const getSchet = async (req, res) => {
   try {
@@ -30,7 +40,7 @@ const createOperatsii = async (req, res) => {
   try {
     const data = validationResponse(operatsiiValidation, req.body)
     const smeta = await SmetaDB.getById([data.smeta_id]);
-    if(!smeta){
+    if (!smeta) {
       return res.status(404).json({
         message: "smeta not found"
       })
@@ -69,7 +79,7 @@ const updateOperatsii = async (req, res) => {
     await getByIdOperatsiiService(id, null);
     const data = validationResponse(operatsiiValidation, req.body)
     const smeta = await SmetaDB.getById([data.smeta_id]);
-    if(!smeta){
+    if (!smeta) {
       return res.status(404).json({
         message: "smeta not found"
       })
@@ -165,4 +175,5 @@ module.exports = {
   updateOperatsii,
   importToExcel,
   getSchet,
+  Controller
 };
