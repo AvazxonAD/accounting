@@ -157,6 +157,14 @@ exports.PrixodSchema = class {
         productName: Joi.string().trim().required().message({
           'string.base': lang('validation.productName')
         }),
+        edin: Joi.string().trim().required().message({
+          'any.required': lang('validation.edin')
+        }),
+        
+        
+        
+        
+        
         serial_num: Joi.string().trim().allow(null, '').message({
           'string.base': lang('validation.serialNum')
         }),
@@ -192,9 +200,6 @@ exports.PrixodSchema = class {
         iznos: Joi.boolean().required().message({
           'any.required': lang('validation.iznos'),
           'boolean.base': lang('validation.iznos')
-        }),
-        edin: Joi.string().trim().required().message({
-          'any.required': lang('validation.edin')
         }),
         eski_iznos_summa: Joi.number().min(0).required().message({
           'number.min': lang('validation.eskiIznosSumma'),
