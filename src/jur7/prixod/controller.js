@@ -40,26 +40,35 @@ exports.Controller = class {
 
     const data = await PrixodJur7Service.readFile({ filePath });
 
-    return res.send(data)
-
-    const { error, value } = PrixodSchema.import().validate(data);
+    const { error, value } = PrixodSchema.import(req.i18n).validate(data);
     if (error) {
-      return res.error(req.i18n.t('validationError'), 400, { message: error.details[0].message });
+      return res.error(error.details[0].message, 400);
     }
 
     const result_data = PrixodJur7Service.groupData(value);
 
     for (let doc of result_data) {
+      const organization = await OrganizationService.getById({ region_id, id: doc.kimdan_id });
+      if (!organization) {
+        return res.error(req.i18n.t('organizationNotFound'), 404);
+      }
 
-      doc.kimdan_id = null;
+      const responsible = await ResponsibleService.getById({ region_id, id: doc.kimga_id });
+      if (!responsible) {
+        return res.error(req.i18n.t('responsibleNotFound'), 404);
+      }
 
       for (let child of doc.childs) {
-        const group = await GroupService.getByNumberName({ number: child.group_number, name: child.group_name });
+        const group = await GroupService.getById({ id: child.group_jur7_id });
         if (!group) {
           return res.error(req.i18n.t('groupNotFound'), 404);
         }
 
-        child.group_jur7_id = group.id;
+        if (!child.iznos && child.eski_iznos_summa > 0) {
+          return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
+        }
+
+        child.iznos_foiz = group.iznos_foiz;
       }
     }
 

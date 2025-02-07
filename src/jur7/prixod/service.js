@@ -6,8 +6,6 @@ const fs = require('fs').promises;
 const ExcelJS = require('exceljs');
 const path = require('path');
 const xlsx = require('xlsx');
-const { PodrazdelenieDB } = require('../spravochnik/podrazdelenie/db')
-const { ResponsibleDB } = require('../spravochnik/responsible/db');
 
 exports.PrixodJur7Service = class {
     static async templateFile() {
@@ -23,16 +21,6 @@ exports.PrixodJur7Service = class {
 
     static async importData(data) {
         await db.transaction(async client => {
-            for (let item of data.data) {
-                let podraz = await PodrazdelenieDB.getByNamePodrazdelenie([data.region_id, item.podraz_name]);
-                if (!podraz) {
-                    podraz = await PodrazdelenieDB.createPodrazdelenie([data.user_id, item.podraz_name, tashkentTime(), tashkentTime()]);
-                };
-
-                const responsible = await ResponsibleDB.createResponsible([podraz.id, item.kimga_name, data.user_id, tashkentTime(), tashkentTime()]);
-                item.kimga_id = responsible.id;
-            }
-
             for (let doc of data.data) {
                 await this.create({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
             }
@@ -324,7 +312,6 @@ exports.PrixodJur7Service = class {
                 data.user_id,
                 data.docId,
                 data.main_schet_id,
-                child.iznos,
                 child.eski_iznos_summa,
                 tashkentTime(),
                 tashkentTime()
@@ -333,6 +320,7 @@ exports.PrixodJur7Service = class {
             const product_sena = summa_s_nds / child.kol;
             const iznos_summa = (product_sena * (child.iznos_foiz / 100) / 12) + child.eski_iznos_summa;
             const month = new Date(data.doc_date).getMonth() + 1;
+            console.log(data.doc_date)
             const year = new Date(data.doc_date).getFullYear();
 
             if (child.iznos) {
@@ -448,46 +436,54 @@ exports.PrixodJur7Service = class {
             return newRow;
         });
 
-        const result = excel_data.filter((item, index) => index > 1);
+        const result = excel_data.filter((item, index) => index > 2);
 
         return result;
     }
 
     static groupData(data) {
-        const grouped = {};
+        const groupedData = {};
 
         data.forEach(item => {
-            if (!grouped[item.doc_num]) {
-                grouped[item.doc_num] = {
-                    doc_num: item.doc_num,
-                    doc_date: item.doc_date,
-                    kimga_name: item.kimga_name,
-                    inn: item.inn,
-                    account_number: item.account_number,
+            const key = `${item.docNum}_${item.responsibleId}`;
+
+            if (!groupedData[key]) {
+                const date = item.docDate.split('.');
+                groupedData[key] = {
+                    doc_num: item.docNum,
+                    doc_date: `${date[2]}-${date[1]}-${date[0]}`,
+                    j_o_num: "",
+                    opisanie: "",
+                    doverennost: "",
+                    kimdan_id: item.organizationId,
+                    kimdan_name: item.organizationName,
+                    kimga_id: item.responsibleId,
+                    kimga_name: item.kimgaName,
+                    id_shartnomalar_organization: null,
                     childs: []
                 };
             }
 
-            grouped[item.doc_num].childs.push({
-                name: item.name,
+            groupedData[key].childs.push({
+                name: item.productName,
                 edin: item.edin,
+                group_jur7_id: item.groupId,
+                inventar_num: item.inventarNum,
+                serial_num: item.serialNum,
                 kol: item.kol,
                 sena: item.summa / item.kol,
-                summa: item.summa,
-                debet_schet: item.debet_schet,
-                kredit_schet: item.kredit_schet,
-                debet_sub_schet: item.debet_sub_schet,
-                kredit_sub_schet: item.kredit_sub_schet,
-                iznos: item.iznos,
-                eski_iznos_summa: item.eski_iznos_summa,
-                podraz_name: item.podraz_name,
-                group_number: item.group_number,
-                group_name: item.group_name,
-                inventar_num: item.inventar_num,
-                serial_num: item.serial_num
+                nds_foiz: item.ndsFoiz,
+                debet_schet: item.debetSchet,
+                kredit_sub_schet: item.kreditSubSchet,
+                debet_sub_schet: item.debetSubSchet,
+                kredit_schet: item.kreditSchet,
+                iznos: item.iznos?.trim() === "ha",
+                eski_iznos_summa: item.eskiIznosSumma || 0
             });
         });
 
-        return Object.values(grouped);
+        const groupedArray = Object.values(groupedData);
+
+        return groupedArray;
     }
 }

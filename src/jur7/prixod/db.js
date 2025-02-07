@@ -65,12 +65,11 @@ exports.PrixodDB = class {
                 user_id,
                 document_prixod_jur7_id,
                 main_schet_id,
-                iznos,
                 eski_iznos_summa,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `;
         const result = await client.query(query, params)
         return result.rows[0];
@@ -93,7 +92,13 @@ exports.PrixodDB = class {
               d.doc_num,
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
               d.opisanie, 
-              d.summa,
+              ( 
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)
+                FROM document_prixod_jur7_child ch
+                WHERE ch.isdeleted = false  
+                    AND ch.document_prixod_jur7_id = d.id
+              ) AS summa,
               d.main_schet_id, 
               s_o.name AS kimdan_name,
               s_o.okonx AS spravochnik_organization_okonx,
@@ -176,7 +181,6 @@ exports.PrixodDB = class {
                             n.group_jur7_id,
                             n.inventar_num,
                             n.serial_num,
-                            ch.iznos,
                             COALESCE(SUM(ch.eski_iznos_summa), 0) AS eski_iznos_summa,
                             COALESCE(SUM(ch.kol), 0) AS kol,
                             COALESCE(SUM(ch.summa), 0) AS summa,
@@ -196,8 +200,7 @@ exports.PrixodDB = class {
                             n.edin,
                             n.group_jur7_id,
                             n.inventar_num,
-                            n.serial_num,
-                            ch.iznos
+                            n.serial_num
                     ) AS child
                 ) AS childs
             FROM document_prixod_jur7 AS d_j
