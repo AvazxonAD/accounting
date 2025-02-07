@@ -4,9 +4,9 @@ const {
   updateOperatsiiService,
   deleteOperatsiiService,
   getByIdOperatsiiService,
-  getSchetService,
-  ForFilterService
+  getSchetService
 } = require("./operatsii.service");
+
 const pool = require("../../config/db");
 const ErrorResponse = require("../../utils/errorResponse");
 const xlsx = require("xlsx");
@@ -16,6 +16,7 @@ const { errorCatch } = require('../../utils/errorCatch')
 const { resFunc } = require("../../utils/resFunc");
 const { validationResponse } = require("../../utils/response-for-validation");
 const { OperatsiiService } = require('./service');
+const { BudjetService } = require('../budjet/service');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
@@ -46,6 +47,12 @@ const createOperatsii = async (req, res) => {
         message: "smeta not found"
       })
     };
+
+    const budjet = await BudjetService.getById({ id: data.budjet_id })
+    if (!budjet) {
+      return res.error(req.i18n.t('budjetNotFound'), 404);
+    }
+
     const result = await createOperatsiiService({ ...data });
     resFunc(res, 200, result)
   } catch (error) {
@@ -85,6 +92,12 @@ const updateOperatsii = async (req, res) => {
         message: "smeta not found"
       })
     };
+
+    const budjet = await BudjetService.getById({ id: data.budjet_id })
+    if (!budjet) {
+      return res.error(req.i18n.t('budjetNotFound'), 404);
+    }
+
     const result = await updateOperatsiiService({ ...data, id });
     resFunc(res, 200, result)
   } catch (error) {

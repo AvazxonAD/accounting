@@ -371,6 +371,7 @@ const operatsiiValidation = Joi.object({
   sub_schet: Joi.string().trim().required(),
   type_schet: Joi.string().trim().required(),
   smeta_id: Joi.number().required(),
+  budjet_id: Joi.number().min(1).integer().required()
 }).options({ stripUnknown: true });
 
 const operatsiiQueryValidation = Joi.object({

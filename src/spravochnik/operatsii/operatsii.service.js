@@ -1,18 +1,20 @@
 const pool = require("../../config/db");
 const ErrorResponse = require('../../utils/errorResponse');
+const { db } = require('../../db/index');
 
 const createOperatsiiService = async (data) => {
   try {
     const result = await pool.query(
       `INSERT INTO spravochnik_operatsii(
-          name,  schet, sub_schet, type_schet, smeta_id
-          ) VALUES($1, $2, $3, $4, $5) RETURNING * 
+          name,  schet, sub_schet, type_schet, smeta_id, budjet_id
+          ) VALUES($1, $2, $3, $4, $5, $6) RETURNING * 
       `, [
       data.name,
       data.schet,
       data.sub_schet,
       data.type_schet,
       data.smeta_id,
+      data.budjet_id
     ]);
     return result.rows[0]
   } catch (error) {
@@ -41,52 +43,62 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
     let type_schet_filter = ''
     let search_filter = ``
     let meta_search_filter = ``;
-    
+
     const params = [offset, limit];
 
     if (search) {
       params.push(search)
-      search_filter = `AND ( schet = $${params.length} OR name ILIKE '%' || $${params.length} || '%' ) `;
+      search_filter = `AND ( s.schet = $${params.length} OR s.name ILIKE '%' || $${params.length} || '%' ) `;
     }
 
     if (type_schet) {
-      type_schet_filter = `AND type_schet = $${params.length + 1}`
+      type_schet_filter = `AND s.type_schet = $${params.length + 1}`
       params.push(type_schet)
     }
 
     if (meta_search) {
       params.push(meta_search);
-      meta_search_filter = `AND sub_schet ILIKE '%' || $${params.length} || '%'`;
+      meta_search_filter = `AND s.sub_schet ILIKE '%' || $${params.length} || '%'`;
     }
 
-    if(schet){
+    if (schet) {
       params.push(schet);
-      schet_filter = `AND schet ILIKE '%' || $${params.length} || '%'`;
-    } 
-
-    if(sub_schet){
-      params.push(sub_schet);
-      sub_schet_filter = `AND sub_schet ILIKE '%' || $${params.length} || '%'`;
+      schet_filter = `AND s.schet ILIKE '%' || $${params.length} || '%'`;
     }
 
-    const result = await pool.query(`
+    if (sub_schet) {
+      params.push(sub_schet);
+      sub_schet_filter = `AND s.sub_schet ILIKE '%' || $${params.length} || '%'`;
+    }
+
+    const query = `
       WITH data AS (
-        SELECT id, name, schet, sub_schet, type_schet, smeta_id
-        FROM spravochnik_operatsii  
-        WHERE isdeleted = false 
+        SELECT 
+          s.id, 
+          s.name, 
+          s.schet, 
+          s.sub_schet, 
+          s.type_schet, 
+          s.smeta_id, 
+          b.id AS budjet_id, 
+          b.name AS budjet_name
+        FROM spravochnik_operatsii s 
+        JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
+        WHERE s.isdeleted = false 
           ${schet_filter}
           ${sub_schet_filter}
           ${search_filter} 
           ${type_schet_filter}
           ${meta_search_filter} 
-        OFFSET $1 LIMIT $2)
+        OFFSET $1 LIMIT $2
+      )
       SELECT 
         ARRAY_AGG(row_to_json(data)) AS data,
         (
           SELECT 
-            COUNT(spravochnik_operatsii.id) 
-          FROM spravochnik_operatsii 
-          WHERE isdeleted = false 
+            COUNT(s.id) 
+          FROM spravochnik_operatsii s
+          WHERE s.isdeleted = false 
             ${schet_filter}
             ${sub_schet_filter}
             ${search_filter} 
@@ -94,8 +106,11 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
             ${meta_search_filter}
         )::INTEGER AS total_count
       FROM data
-    `, params);
-    return { result: result.rows[0]?.data || [], total: result.rows[0]?.total_count || 0 }
+    `;
+
+    const result = await db.query(query, params);
+
+    return { result: result[0]?.data || [], total: result[0]?.total_count || 0 }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode);
   }
@@ -123,20 +138,34 @@ const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = fa
     let ignore = ``
     let type_schet_filter = ``
     if (!ignoreDeleted) {
-      ignore = `AND isdeleted = false`
+      ignore = `AND s.isdeleted = false`
     }
     if (type_schet) {
-      type_schet_filter = ` AND type_schet = $${params.length + 1}`
+      type_schet_filter = ` AND s.type_schet = $${params.length + 1}`
       params.push(type_schet)
     }
-    const result = await pool.query(
-      `SELECT id, name, schet, sub_schet, type_schet, smeta_id 
-        FROM spravochnik_operatsii 
-        WHERE id = $1 ${type_schet_filter} ${ignore}
+    const result = await pool.query(`
+      SELECT 
+        s.id, 
+        s.name, 
+        s.schet, 
+        s.sub_schet, 
+        s.type_schet, 
+        s.smeta_id, 
+        b.id AS budjet_id, 
+        b.name AS budjet_name
+      FROM spravochnik_operatsii s 
+      JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
+      WHERE s.isdeleted = false
+        AND s.id = $1 
+        ${type_schet_filter} 
+        ${ignore}
       `, params);
+    
     if (!result.rows[0]) {
       throw new ErrorResponse(`Spravochnik operatsii not found`, 404);
     }
+
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode);
@@ -147,14 +176,15 @@ const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = fa
 const updateOperatsiiService = async (data) => {
   const result = await pool.query(
     `UPDATE spravochnik_operatsii 
-      SET name = $1, schet = $2, sub_schet = $3, type_schet = $4, smeta_id = $5
-      WHERE id = $6 RETURNING * 
+      SET name = $1, schet = $2, sub_schet = $3, type_schet = $4, smeta_id = $5, budjet_id = $6
+      WHERE id = $7 RETURNING * 
     `, [
     data.name,
     data.schet,
     data.sub_schet,
     data.type_schet,
     data.smeta_id,
+    data.budjet_id,
     data.id,
   ]);
   return result.rows[0]
@@ -170,7 +200,7 @@ const deleteOperatsiiService = async (id) => {
 const getBySchetService = async (schet) => {
   try {
     const result = await pool.query(`
-          SELECT id, name, schet, sub_schet, type_schet, smeta_id 
+          SELECT id, name, schet, sub_schet, type_schet, smeta_id, budjet_id
           FROM spravochnik_operatsii 
           WHERE schet = $1  AND isdeleted = false
         `, [schet])
