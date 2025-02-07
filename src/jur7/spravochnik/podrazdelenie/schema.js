@@ -1,5 +1,16 @@
 const Joi = require('joi')
 
+
+exports.PodrazSchema = class {
+  static import() {
+      return Joi.object({
+          file: Joi.object({
+              path: Joi.string().trim().required()
+          })       
+      })
+  }
+}
+
 exports.createPodrazdelenieSchema = Joi.object({
   body : Joi.object({
     name: Joi.string().trim()

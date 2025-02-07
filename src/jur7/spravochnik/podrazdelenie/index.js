@@ -5,17 +5,19 @@ const {
     getPodrazdelenieSchema,
     updatePodrazdelenieSchema,
     getByIdPodrazdelenieSchema,
-    deletePodrazdelenieSchema
+    deletePodrazdelenieSchema,
+    PodrazSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(Controller.createPodrazdelenie, createPodrazdelenieSchema));
-router.get('/:id', validator(Controller.getByIdPodrazdelenie, getByIdPodrazdelenieSchema));
-router.put('/:id', validator(Controller.updatePodrazdelenie, updatePodrazdelenieSchema));
-router.delete('/:id', validator(Controller.deletePodrazdelenie, deletePodrazdelenieSchema));
-router.get('/', validator(Controller.getPodrazdelenie, getPodrazdelenieSchema));
+router
+    .post('/', validator(Controller.createPodrazdelenie, createPodrazdelenieSchema))
+    .get('/:id', validator(Controller.getByIdPodrazdelenie, getByIdPodrazdelenieSchema))
+    .put('/:id', validator(Controller.updatePodrazdelenie, updatePodrazdelenieSchema))
+    .delete('/:id', validator(Controller.deletePodrazdelenie, deletePodrazdelenieSchema))
+    .get('/', validator(Controller.getPodrazdelenie, getPodrazdelenieSchema));
 
 
 module.exports = router;

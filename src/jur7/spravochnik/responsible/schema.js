@@ -1,5 +1,24 @@
 const Joi = require('joi')
 
+exports.ResponsibleSchema = class {
+  static importFile() {
+    return Joi.object({
+      file: Joi.object({
+        path: Joi.string().trim().required()
+      })
+    })
+  }
+
+  static importData(lang) {
+    return Joi.array().items(
+      Joi.object({
+        spravochnik_podrazdelenie_jur7_id: Joi.number().min(1).required().messages({ '*': lang.t('validation.podrazId') }),
+        fio: Joi.string().trim().required().messages({ '*': lang.t('validation.responsibleFio') })
+      })
+    ).options({ stripUnknown: true });
+  }
+}
+
 exports.createResponsibleSchema = Joi.object({
   body: Joi.object({
     fio: Joi.string().trim(),

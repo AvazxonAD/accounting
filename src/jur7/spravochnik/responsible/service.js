@@ -3,6 +3,7 @@ const { tashkentTime } = require('../../../helper/functions');
 const path = require('path');
 const fs = require('fs').promises;
 const xlsx = require('xlsx');
+const { db } = require('../../../db/index');
 
 exports.ResponsibleService = class {
     static async readFile(data) {
@@ -41,6 +42,12 @@ exports.ResponsibleService = class {
         return result;
     }
 
+    static async getByFio(data) {
+        const result = await ResponsibleDB.getByFio([data.region_id, data.fio]);
+
+        return result;
+    }
+
     static async getResponsible(data) {
         const result = await ResponsibleDB.getResponsible([data.region_id, data.offset, data.limit]);
         return result;
@@ -48,13 +55,26 @@ exports.ResponsibleService = class {
 
     static async createResponsible(data) {
         const result = await ResponsibleDB.createResponsible([
-            data.poraz_id,
+            data.podraz_id,
             data.fio,
             data.user_id,
             tashkentTime(),
             tashkentTime()
-        ]);
+        ], data.client);
 
         return result;
+    }
+
+    static async import(data) {
+        for (let item of data.responsibles) {
+            await db.transaction(async client => {
+                await this.createResponsible({
+                    client,
+                    podraz_id: item.spravochnik_podrazdelenie_jur7_id,
+                    user_id: data.user_id,
+                    fio: item.fio
+                })
+            })
+        }
     }
 }

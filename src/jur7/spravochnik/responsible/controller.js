@@ -2,8 +2,33 @@ const { PodrazdelenieDB } = require('../podrazdelenie/db');
 const { ResponsibleDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
 const { ResponsibleService } = require('./service');
+const { ResponsibleSchema } = require('./schema');
 
 exports.Controller = class {
+    static async import(req, res) {
+        const user_id = req.user.id;
+        const filePath = req.file.path;
+        const region_id = req.user.region_id;
+
+        const data = await ResponsibleService.readFile({ filePath });
+
+        const { error, value } = ResponsibleSchema.importData(req.i18n).validate(data);
+        if (error) {
+            return res.error(error.details[0].message, 400);
+        }
+
+        for (let doc of value) {
+            const responsible = await ResponsibleService.getByFio({ region_id, fio: doc.fio });
+            if (responsible) {
+                return res.error(req.i18n.t(`responsibleExists`, { data: doc.fio }), 404);
+            }
+        }
+
+        await ResponsibleService.import({ responsibles: value, user_id });
+
+        return res.success(req.i18n.t('createSuccess'), 201);
+    }
+
     static async template(req, res) {
         const { fileName, fileRes } = await ResponsibleService.templateFile();
 
@@ -22,13 +47,15 @@ exports.Controller = class {
                 message: "podrazdelenie not found"
             })
         }
+
         const result = await ResponsibleDB.createResponsible([
             spravochnik_podrazdelenie_jur7_id,
             fio,
             user_id,
             tashkentTime(),
             tashkentTime()
-        ])
+        ]);
+
         return res.status(201).json({
             message: "Create responsible successfully",
             data: result
