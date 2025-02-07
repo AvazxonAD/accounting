@@ -82,7 +82,6 @@ exports.Controller = class {
         const region_id = req.user.region_id;
 
         const old_data = await OrganizationService.getById({ region_id, id });
-        console.log(old_data);
 
         if (!old_data) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
