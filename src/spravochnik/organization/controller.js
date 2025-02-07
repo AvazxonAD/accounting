@@ -80,12 +80,15 @@ exports.Controller = class {
     static async delete(req, res) {
         const id = req.params.id;
         const region_id = req.user.region_id;
-        const old_data = await OrganizationService.getById([region_id, id]);
+
+        const old_data = await OrganizationService.getById({ region_id, id });
+        console.log(old_data);
+
         if (!old_data) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
 
-        const result = await OrganizationService.delete([id]);
+        const result = await OrganizationService.delete({ id });
 
         return res.success(req.i18n.t('deleteSuccess'), 200, null, result);
     }
@@ -94,7 +97,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const id = req.params.id;
 
-        const result = await OrganizationService.getById({ region_id, id }, true);
+        const result = await OrganizationService.getById({ region_id, id, isdeleted: true });
         if (!result) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
