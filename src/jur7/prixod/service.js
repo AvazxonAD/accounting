@@ -9,7 +9,7 @@ const xlsx = require('xlsx');
 
 exports.PrixodJur7Service = class {
     static async templateFile() {
-        const fileName = `prixod.template.xlsx`;
+        const fileName = `prixod.xlsx`;
         const folderPath = path.join(__dirname, `../../../template`);
 
         const filePath = path.join(folderPath, fileName);
@@ -320,7 +320,6 @@ exports.PrixodJur7Service = class {
             const product_sena = summa_s_nds / child.kol;
             const iznos_summa = (product_sena * (child.iznos_foiz / 100) / 12) + child.eski_iznos_summa;
             const month = new Date(data.doc_date).getMonth() + 1;
-            console.log(data.doc_date)
             const year = new Date(data.doc_date).getFullYear();
 
             if (child.iznos) {
