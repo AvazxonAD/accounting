@@ -131,27 +131,28 @@ exports.PrixodSchema = class {
     }).options({ stripUnknown: true });
   }
 
+
   static import(lang) {
     return Joi.array().items(
       Joi.object({
-        responsibleId: Joi.number().min(1).required().message({ '*': lang('validation.responsibleId') }),
-        groupId: Joi.number().required().message({ '*': lang('validation.groupNumber') }),
-        docDate: Joi.string().trim().pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/).required().message({ '*': lang('validation.importDocDate') }),
-        docNum: Joi.string().trim().required().message({ '*': lang('validation.docNum') }),
-        organizationId: Joi.number().required().message({ '*': lang('validation.organizationId') }),
-        productName: Joi.string().trim().required().message({ '*': lang('validation.productName') }),
-        edin: Joi.string().trim().required().message({ '*': lang('validation.edin') }),
-        kol: Joi.number().min(1).required().message({ '*': lang('validation.kol') }),
-        summa: Joi.number().min(1).required().message({ '*': lang('validation.summa') }),
-        inventarNum: Joi.string().trim().message({ '*': lang('validation.inventarNum') }),
-        serialNum: Joi.string().trim().message({ '*': lang('validation.serialNum') }),
-        debetSchet: Joi.string().trim().message({ '*': lang('validation.debetSchet') }),
-        debetSubSchet: Joi.any().required().message({ '*': lang('validation.debetSubSchet') }),
-        kreditSchet: Joi.any().message({ '*': lang('validation.kreditSchet') }),
-        kreditSubSchet: Joi.any().message({ '*': lang('validation.kreditSubSchet') }),
-        iznos: Joi.string().trim().valid('ha', 'yoq').message({ '*': lang('validation.iznos') }),
-        ndsFoiz: Joi.number().min(1).max(99).message({ '*': lang('validation.ndsFoiz') }),
-        eskiIznosSumma: Joi.number().min(0).default(0).message({ '*': lang('validation.eskiIznosSumma') })
+        responsibleId: Joi.number().min(1).required().messages({ '*': lang.t('validation.responsibleId') }),
+        groupId: Joi.number().required().messages({ '*': lang.t('validation.groupNumber') }),
+        docDate: Joi.string().trim().pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/).required().messages({ '*': lang.t('validation.importDocDate') }),
+        docNum: Joi.number().required().messages({ '*': lang.t('validation.docNum') }),
+        organizationId: Joi.number().required().messages({ '*': lang.t('validation.organizationId') }),
+        productName: Joi.string().trim().required().messages({ '*': lang.t('validation.productName') }),
+        edin: Joi.string().trim().required().messages({ '*': lang.t('validation.edin') }),
+        kol: Joi.number().min(1).required().messages({ '*': lang.t('validation.kol') }),
+        summa: Joi.number().min(1).required().messages({ '*': lang.t('validation.summa') }),
+        inventarNum: Joi.any().messages({ '*': lang.t('validation.inventarNum') }),
+        serialNum: Joi.any().messages({ '*': lang.t('validation.serialNum') }),
+        debetSchet: Joi.any().messages({ '*': lang.t('validation.debetSchet') }),
+        debetSubSchet: Joi.any().required().messages({ '*': lang.t('validation.debetSubSchet') }),
+        kreditSchet: Joi.any().messages({ '*': lang.t('validation.kreditSchet') }),
+        kreditSubSchet: Joi.any().messages({ '*': lang.t('validation.kreditSubSchet') }),
+        iznos: Joi.any().messages({ '*': lang.t('validation.iznos') }),
+        ndsFoiz: Joi.number().min(0).max(99).messages({ '*': lang.t('validation.ndsFoiz') }),
+        eskiIznosSumma: Joi.number().min(0).default(0).messages({ '*': lang.t('validation.eskiIznosSumma') })
       })
     ).options({ stripUnknown: true });
   }
