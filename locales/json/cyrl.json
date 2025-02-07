@@ -17,6 +17,15 @@
     "deleteSuccess": "Муваффақиятли ўчирилди!",
     "productNotFound": "Товар топилмади!",
     "fileErrror": "Файл юклашда хатолик!",
-    "validationError": "Маълумот нотўғри киритилди!",
-    "rasxodProductError": "Ушбу товар билан боғлиқ харажат ҳужжатлари мавжуд!"
+    "validationError": "Маълумот нотўғри киритилди! Малумот тўғрисида эътиборли бўлинг!",
+    "rasxodProductError": "Ушбу товар билан боғлиқ харажат ҳужжатлари мавжуд!",
+    "podotchetNotFound": "Подотчёт топилмади!",
+    "operatsiiNotFound": "Операция топилмади!",
+    "podrazNotFound": "Подразделение топилмади!",
+    "sostavNotFound": "Состав топилмади!",
+    "typeOperatsiiNotFound": "Тип операция топилмади!",
+    "schetDifferentError": "Проводки счётлари турлича!",
+    "organizationExists": "Ушбу Ҳамкор ташкилот аввал кiritилган!",
+    "pageNotFound": "Саҳифа топилмади!",
+    "importSuccess": "Маълумот муваффақиятли импорт қилинди"
 }

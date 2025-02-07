@@ -27,5 +27,27 @@
     "schetDifferentError": "Pravodki schetlari turlicha!",
     "organizationExists": "Ushbu Hamkor tashkilot avval kiritilgan!",
     "pageNotFound": "Sahifa topilmadi!",
-    "importSuccess": "Malumot muvaffaqiyatli import qilindi"
+    "importSuccess": "Malumot muvaffaqiyatli import qilindi",
+    "validation": {
+        "groupId": "Gruppa id raqami raqam turida bo'lishi zarur!",
+        "organizationId": "Hamkor tashkilot id raqami raqam turida bo'lishi zarur!",
+        "importDocDate": "Hujjat sanasi noto‘g‘ri kiritildi! To‘g‘ri format: YYYY-MM-DD",
+        "docNum": "Hujjat raqami majburiy va text formatida bo‘lishi zarur!",
+        "kimgaName": "Qabul qiluvchi shaxs maydoni matn formatida bo‘lishi zarur!",
+        "inventarNum": "Inventar raqami text formatida bo‘lishi yoki bo‘sh bo‘lishi mumkin!",
+        "serialNum": "Seriya raqami text formatida bo‘lishi yoki bo‘sh bo‘lishi mumkin!",
+        "productName": "Tovar nomi text formatida bo‘lishi kerak!",
+        "groupName": "Guruh nomi majburiy maydon!",
+        "podrazName": "Bo‘lim nomi majburiy maydon!",
+        "name": "Nomi majburiy maydon!",
+        "kol": "Miqdori kamida 1 bo‘lishi zarur!",
+        "summa": "Summasi kamida 1 bo‘lishi zarur!",
+        "debetSchet": "Debet hisob raqami majburiy!",
+        "debetSubSchet": "Debet subhisob raqami majburiy!",
+        "kreditSchet": "Kredit hisob raqami noto‘g‘ri formatda!",
+        "kreditSubSchet": "Kredit subhisob raqami noto‘g‘ri formatda!",
+        "iznos": "Iznos qiymati faqat boolean (true yoki false) bo‘lishi zarur!",
+        "edin": "O‘lchov birligi majburiy maydon!",
+        "eskiIznosSumma": "Eski iznos summasi kamida 0 bo‘lishi zarur!"
+    }
 }
