@@ -91,4 +91,17 @@ exports.OperatsiiDB = class {
         const result = await db.query(query, params);
         return result;
     }
+
+    static async uniqueSchets(params){
+        const query = `
+            SELECT 
+                DISTINCT schet
+            FROM spravochnik_operatsii 
+            WHERE isdeleted = false
+        `;
+
+        const result = await db.query(query, params);
+
+        return result;
+    }
 }
