@@ -10,7 +10,7 @@ const xlsx = require('xlsx');
 exports.PrixodJur7Service = class {
     static async templateFile() {
         const fileName = `prixod.xlsx`;
-        const folderPath = path.join(__dirname, `../../../template`);
+        const folderPath = path.join(__dirname, `../../../public/template`);
 
         const filePath = path.join(folderPath, fileName);
 
