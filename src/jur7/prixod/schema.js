@@ -165,6 +165,7 @@ exports.PrixodSchema = class {
         
         
         
+        
         serial_num: Joi.string().trim().allow(null, '').message({
           'string.base': lang('validation.serialNum')
         }),
