@@ -1,7 +1,7 @@
 const { db } = require('../../../db/index')
 
 exports.ResponsibleDB = class {
-    static async createResponsible(params) {
+    static async createResponsible(params, client) {
         const query = `--sql
             INSERT INTO spravochnik_javobgar_shaxs_jur7 (
                 spravochnik_podrazdelenie_jur7_id, 
@@ -13,9 +13,14 @@ exports.ResponsibleDB = class {
             VALUES ($1, $2, $3, $4, $5) 
             RETURNING id
         `;
-        const result = await db.query(query, params)
+
+        const _db = client || db;
+
+        const result = await _db.query(query, params)
+        
         return result[0];
     }
+    
     static async getResponsible(params, search = null, podraz_id = null) {
         let search_filter = ``;
         let podraz_filter = ``;
@@ -59,6 +64,7 @@ exports.ResponsibleDB = class {
         const result = await db.query(query, params)
         return result[0];
     }
+
     static async getById(params, isdeleted) {
         let ignore = 'AND s.isdeleted = false';
         const query = `--sql
@@ -76,6 +82,28 @@ exports.ResponsibleDB = class {
         const result = await db.query(query, params)
         return result[0]
     }
+
+    static async getByFio(params) {
+        const query = `--sql
+            SELECT 
+                s.id, 
+                s.fio,
+                p.name AS spravochnik_podrazdelenie_jur7_name,
+                s.spravochnik_podrazdelenie_jur7_id
+            FROM spravochnik_javobgar_shaxs_jur7 AS s
+            JOIN users AS u ON u.id = s.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_podrazdelenie_jur7 AS p ON p.id = s.spravochnik_podrazdelenie_jur7_id  
+            WHERE  r.id = $1 
+                AND s.fio = $2
+                AND s.isdeleted = false
+        `;
+
+        const result = await db.query(query, params)
+        
+        return result[0]
+    }
+
     static async updateResponsible(params) {
         const query = `--sql
             UPDATE spravochnik_javobgar_shaxs_jur7 
