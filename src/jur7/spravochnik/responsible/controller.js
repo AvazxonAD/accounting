@@ -1,8 +1,17 @@
 const { PodrazdelenieDB } = require('../podrazdelenie/db');
 const { ResponsibleDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
+const { ResponsibleService } = require('./service');
 
 exports.Controller = class {
+    static async template(req, res) {
+        const { fileName, fileRes } = await ResponsibleService.templateFile();
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        return res.send(fileRes);
+    }
+
     static async createResponsible(req, res) {
         const { id: user_id, region_id } = req.user
         const { spravochnik_podrazdelenie_jur7_id, fio } = req.body;

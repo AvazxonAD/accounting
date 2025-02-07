@@ -6,7 +6,9 @@ exports.MainBookDocService = class {
     static async auto(data) {
         const dates = HelperFunctions.getMonthStartEnd(data.year, data.month);
         for (let schet of data.schets) {
-            schet.summa = await DocMainBookDB.autoSumma([data.region_id, dates[1], schet.schet], data.type_document, data.main_schet_id, data.budjet_id);
+            const summa = await DocMainBookDB.autoSumma([data.region_id, dates[1], schet.schet], data.type_document, data.main_schet_id, data.budjet_id);
+            schet.debet_sum = summa.prixod_sum;
+            schet.kredit_sum = summa.rasxod_sum;
         }
 
         return data.schets;

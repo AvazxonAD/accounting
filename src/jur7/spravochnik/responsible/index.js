@@ -11,11 +11,13 @@ const {
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(Controller.createResponsible, createResponsibleSchema));
-router.get('/:id', validator(Controller.getById, getByIdResponsibleSchema));
-router.put('/:id', validator(Controller.updateResponsible, updateResponsibleSchema));
-router.delete('/:id', validator(Controller.deleteResponsible, deleteResponsibleSchema));
-router.get('/', validator(Controller.getResponsible, getResponsibleSchema));
+router
+    .post('/', validator(Controller.createResponsible, createResponsibleSchema))
+    .get('/template', validator(Controller.template))
+    .get('/:id', validator(Controller.getById, getByIdResponsibleSchema))
+    .put('/:id', validator(Controller.updateResponsible, updateResponsibleSchema))
+    .delete('/:id', validator(Controller.deleteResponsible, deleteResponsibleSchema))
+    .get('/', validator(Controller.getResponsible, getResponsibleSchema));
 
 
 module.exports = router;

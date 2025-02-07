@@ -101,7 +101,7 @@ exports.DocMainBookDB = class {
 
         const result = await db.query(queries[type_document], params);
 
-        return result;
+        return result[0];
     }
 
     static async createDoc(params, client) {
