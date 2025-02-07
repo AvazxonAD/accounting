@@ -92,12 +92,20 @@ exports.OperatsiiDB = class {
         return result;
     }
 
-    static async uniqueSchets(params){
+    static async uniqueSchets(params, type_schet){
+        let type_schet_filter = ``;
+
+        if(type_schet){
+            params.push(type_schet)
+            type_schet_filter = `AND type_schet ILIKE '%' || $${params.length} || '%'`;
+        }
+        
         const query = `
             SELECT 
                 DISTINCT schet
             FROM spravochnik_operatsii 
             WHERE isdeleted = false
+                ${type_schet_filter}
         `;
 
         const result = await db.query(query, params);
