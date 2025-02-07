@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const router = Router();
 const { validator } = require('../../helper/validator');
+const { OperatsiiSchema } = require('./schema');
 
 const {
   createOperatsii,
@@ -14,7 +15,7 @@ const {
 
 router
   .get('/schet', getSchet)
-  .get("/unique", validator(Controller.uniqueSchets))
+  .get("/unique", validator(Controller.uniqueSchets, OperatsiiSchema.uniqueSchets()))
   .get("/:id", getByIdOperatsii)
   .post("/", createOperatsii)
   .get("/", getOperatsii)

@@ -40,6 +40,8 @@ exports.Controller = class {
 
     const data = await PrixodJur7Service.readFile({ filePath });
 
+    return res.send(data)
+
     const { error, value } = PrixodSchema.import().validate(data);
     if (error) {
       return res.error(req.i18n.t('validationError'), 400, { message: error.details[0].message });

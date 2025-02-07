@@ -436,7 +436,7 @@ exports.PrixodJur7Service = class {
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
 
-        const result = xlsx.utils.sheet_to_json(sheet).map(row => {
+        const excel_data = xlsx.utils.sheet_to_json(sheet).map(row => {
             const newRow = {};
 
             for (const key in row) {
@@ -448,27 +448,7 @@ exports.PrixodJur7Service = class {
             return newRow;
         });
 
-
-        for (let item of result) {
-            item.group_number = String(item['Группа']);
-            item.doc_date = HelperFunctions.excelSerialToDate(item['Дата эксплуатация']);
-            item.doc_num = 'saldo';
-            item.kimga_name = item['ФИО'];
-            item.podraz_name = item['Наим_под'];
-            item.name = item['Наим_тов'];
-            item.kol = item['Кол'];
-            item.summa = item['Сумма'];
-            item.debet_schet = item['Счет'];
-            item.debet_sub_schet = item['Статя'];
-            item.kredit_schet = item[''];
-            item.kredit_sub_schet = item[''];
-            item.group_name = item['Наименование'];
-            item.iznos = item['Износ %'] ? true : false;
-            item.edin = item['Един'];
-            item.eski_iznos_summa = item['салдо износ'];
-            item.inventar_num = item['№ инвентарный'];
-            item.serial_num = item['Серийный номер'];
-        }
+        const result = excel_data.filter((item, index) => index > 1);
 
         return result;
     }

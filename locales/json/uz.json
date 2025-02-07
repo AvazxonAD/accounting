@@ -31,9 +31,10 @@
     "validation": {
         "groupId": "Gruppa id raqami raqam turida bo'lishi zarur!",
         "organizationId": "Hamkor tashkilot id raqami raqam turida bo'lishi zarur!",
+        "responsibleId": "Javobgar shaxs id raqami raqam turida bo'lishi zarur!",
         "importDocDate": "Hujjat sanasi noto‘g‘ri kiritildi! To‘g‘ri format: YYYY-MM-DD",
         "docNum": "Hujjat raqami majburiy va text formatida bo‘lishi zarur!",
-        "kimgaName": "Qabul qiluvchi shaxs maydoni matn formatida bo‘lishi zarur!",
+        "kimgaName": "Qabul qiluvchi shaxs maydoni text formatida bo‘lishi zarur!",
         "inventarNum": "Inventar raqami text formatida bo‘lishi yoki bo‘sh bo‘lishi mumkin!",
         "serialNum": "Seriya raqami text formatida bo‘lishi yoki bo‘sh bo‘lishi mumkin!",
         "productName": "Tovar nomi text formatida bo‘lishi kerak!",
@@ -46,7 +47,8 @@
         "debetSubSchet": "Debet subhisob text formatida bolishi kerak!",
         "kreditSchet": "Kredit hisob raqami text formatida bolishi kerak!",
         "kreditSubSchet": "Kredit subhisob raqami text formatida bolishi kerak!",
-        "iznos": "Iznos qiymati faqat boolean (true yoki false) bo‘lishi zarur!",
+        "iznos": "Iznos qiymati faqat text formatida bolishi kerak (ha yoki yoq) bo‘lishi zarur!",
+        "ndsFoiz": "nds foiz qiymati faqat raqam formatida bo‘lishi zarur!",
         "edin": "O‘lchov birligi text formatida bolishi kerak majburiy maydon!",
         "eskiIznosSumma": "Eski iznos summasi kamida 0 bo‘lishi zarur!"
     }

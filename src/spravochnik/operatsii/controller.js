@@ -19,7 +19,8 @@ const { OperatsiiService } = require('./service');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
-    const result = await OperatsiiService.uniqueSchets({});
+    const { type_schet } = req.query;
+    const result = await OperatsiiService.uniqueSchets({ type_schet });
 
     return res.success(req.i18n.t('getSuccess'), 200, null, result);
   }
