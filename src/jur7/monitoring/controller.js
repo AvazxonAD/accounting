@@ -8,7 +8,7 @@ const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
 exports.Controller = class {
     static async getSaldo(req, res) {
         const region_id = req.user.region_id;
-        const { responsible_id, page, limit, product_id } = req.query;
+        const { responsible_id, page, limit, product_id, search } = req.query;
 
         const responsible = await ResponsibleService.getById({ id: responsible_id, region_id });
         if (!responsible) {

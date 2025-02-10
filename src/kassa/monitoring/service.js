@@ -6,7 +6,7 @@ const { mkdir, constants, access } = require('fs').promises;
 
 exports.KassaMonitoringService = class {
     static async get(data) {
-        const result = await KassaMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit]);
+        const result = await KassaMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
         let prixod_sum = 0;
         let rasxod_sum = 0;
         for (let item of result.data) {

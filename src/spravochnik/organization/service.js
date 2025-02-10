@@ -100,7 +100,7 @@ exports.OrganizationService = class {
             return newRow;
         });
 
-        const result = excel_data.filter((item, index) => index >= 2);
+        const result = excel_data.filter((item, index) => index >= 3);
 
         return result;
     }

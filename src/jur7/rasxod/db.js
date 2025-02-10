@@ -54,55 +54,61 @@ exports.RasxodDB = class {
     static async get(params, search) {
         let search_filter = ``
         if (search) {
+            params.push(search);
             search_filter = `AND (
-                d_j.doc_num ILIKE '%' || $${params.length + 1} || '%' OR 
-                d_j.kimdan_name ILIKE '%' || $${params.length + 1} || '%' OR
-                d_j.kimga_name  ILIKE '%' || $${params.length + 1} || '%'
+                d.doc_num = $${params.length} OR 
+                so.inn ILIKE '%' || $${params.length} || '%' OR
+                rj.fio  ILIKE '%' || $${params.length} || '%'
             )`;
-            params.push(search)
         }
         const query = `--sql
             WITH data AS (
                 SELECT 
-                d_j.id, 
-                d_j.doc_num,
-                TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                d_j.opisanie, 
-                d_j.summa, 
-                s_j_sh.fio AS kimdan_name
-                FROM document_rasxod_jur7 AS d_j
-                LEFT JOIN spravochnik_organization AS s_o ON s_o.id = d_j.kimga_id
-                JOIN spravochnik_javobgar_shaxs_jur7 AS s_j_sh ON s_j_sh.id = d_j.kimdan_id 
-                JOIN users AS u ON u.id = d_j.user_id
+                    d.id, 
+                    d.doc_num,
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                    d.opisanie, 
+                    d.summa, 
+                    rj.fio AS kimdan_name
+                FROM document_rasxod_jur7 AS d
+                LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
+                JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
+                JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 WHERE r.id = $1 
-                AND d_j.isdeleted = false 
-                AND d_j.doc_date BETWEEN $2 AND $3 ${search_filter}
-                AND d_j.main_schet_id = $4
-                ORDER BY d_j.doc_date
+                AND d.isdeleted = false 
+                AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
+                AND d.main_schet_id = $4
+                ORDER BY d.doc_date
                 OFFSET $5 LIMIT $6
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
                 (
-                SELECT COALESCE(SUM(d_j.summa), 0)
-                FROM document_rasxod_jur7 AS d_j
-                JOIN users AS u ON u.id = d_j.user_id
-                JOIN regions AS r ON r.id = u.region_id  
-                WHERE r.id = $1 
-                    AND d_j.isdeleted = false 
-                    AND d_j.doc_date BETWEEN $2 AND $3 ${search_filter}
-                    AND d_j.main_schet_id = $4
+                    SELECT 
+                        COALESCE(SUM(d.summa), 0)
+                    FROM document_rasxod_jur7 AS d
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id  
+                    LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
+                    JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
+                    WHERE r.id = $1 
+                        AND d.isdeleted = false 
+                        AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
+                        AND d.main_schet_id = $4
                 )::FLOAT AS summa,
                 (
-                SELECT COALESCE(COUNT(d_j.id), 0)
-                FROM document_rasxod_jur7 AS d_j
-                JOIN users AS u ON u.id = d_j.user_id
-                JOIN regions AS r ON r.id = u.region_id  
-                WHERE r.id = $1 
-                    AND d_j.isdeleted = false 
-                    AND d_j.doc_date BETWEEN $2 AND $3 ${search_filter}
-                    AND d_j.main_schet_id = $4
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0)
+                    FROM document_rasxod_jur7 AS d
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id  
+                    LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
+                    JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
+                    WHERE r.id = $1 
+                        AND d.isdeleted = false 
+                        AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
+                        AND d.main_schet_id = $4
                 )::INTEGER AS total
             FROM data
         `;
@@ -111,19 +117,19 @@ exports.RasxodDB = class {
     }
 
     static async getById(params, isdeleted) {
-        let ignore = 'AND d_j.isdeleted = false';
+        let ignore = 'AND d.isdeleted = false';
         const query = `--sql
             SELECT 
-                d_j.id, 
-                d_j.doc_num,
-                TO_CHAR(d_j.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                d_j.opisanie, 
-                d_j.summa::FLOAT, 
-                d_j.kimdan_name, 
-                d_j.doverennost,
-                d_j.kimdan_id,
-                d_j.doverennost,
-                d_j.j_o_num,
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d.opisanie, 
+                d.summa::FLOAT, 
+                d.kimdan_name, 
+                d.doverennost,
+                d.kimdan_id,
+                d.doverennost,
+                d.j_o_num,
                 (
                 SELECT ARRAY_AGG(row_to_json(d_j_ch))
                 FROM (
@@ -142,13 +148,13 @@ exports.RasxodDB = class {
                         d_j_ch.nds_summa,
                         d_j_ch.summa_s_nds
                     FROM document_rasxod_jur7_child AS d_j_ch
-                    WHERE d_j_ch.document_rasxod_jur7_id = d_j.id
+                    WHERE d_j_ch.document_rasxod_jur7_id = d.id
                 ) AS d_j_ch
                 ) AS childs
-            FROM document_rasxod_jur7 AS d_j
-            JOIN users AS u ON u.id = d_j.user_id
+            FROM document_rasxod_jur7 AS d
+            JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d_j.id = $2 AND d_j.main_schet_id = $3 ${isdeleted ? `` : ignore}
+            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
         `;
         const result = await db.query(query, params);
         return result[0];

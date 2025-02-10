@@ -2,12 +2,24 @@ const { db } = require('../db/index');
 const { sqlFilter } = require('../helper/functions')
 
 exports.OrganizationMonitoringDB = class {
-    static async monitoring(params, organ_id) {
+    static async monitoring(params, organ_id, search) {
         let index_organ_id = 0;
+        let search_filter = ``;
+
         if (organ_id) {
             index_organ_id = params.length + 1;
             params.push(organ_id)
         }
+
+        if (search) {
+            params.push(search);
+            search_filter = `AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
+
         const query = `--sql
             SELECT
                 d.id,
@@ -43,7 +55,10 @@ exports.OrganizationMonitoringDB = class {
                 AND op.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${search_filter}
+            
             UNION ALL
+        
             SELECT 
                 d.id,
                 d.doc_num,
@@ -79,7 +94,10 @@ exports.OrganizationMonitoringDB = class {
                 AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${search_filter}    
+            
             UNION ALL
+        
             SELECT 
                 d.id,
                 d.doc_num,
@@ -115,7 +133,10 @@ exports.OrganizationMonitoringDB = class {
                 AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${search_filter}     
+            
             UNION ALL
+        
             SELECT 
                 d.id,
                 d.doc_num,
@@ -150,7 +171,10 @@ exports.OrganizationMonitoringDB = class {
                 AND op.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${search_filter}    
+            
             UNION ALL 
+        
             SELECT 
                 d.id,
                 d.doc_num,
@@ -184,7 +208,10 @@ exports.OrganizationMonitoringDB = class {
                 AND ch.kredit_schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 ${organ_id ? sqlFilter('d.kimdan_id', index_organ_id) : ''}
+                ${search_filter}    
+            
             ORDER BY doc_date 
+
             OFFSET $6 LIMIT $7
         `;
         const data = await db.query(query, params);
@@ -371,7 +398,7 @@ exports.OrganizationMonitoringDB = class {
             FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
         `;
         const result = await db.query(query, params);
-        
+
         return result[0];
     }
 
@@ -756,5 +783,5 @@ exports.OrganizationMonitoringDB = class {
         `;
         const result = await db.query(query, params);
         return result;
-    }    
+    }
 }

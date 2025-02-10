@@ -25,7 +25,7 @@ exports.Controller = class {
             }
         }
         
-        const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await OrganizationmonitoringService.monitoring({ ...query, offset, region_id }, organ_id)
+        const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await OrganizationmonitoringService.monitoring({ ...query, offset, region_id, organ_id })
         
         const pageCount = Math.ceil(total / limit);
         const meta = {

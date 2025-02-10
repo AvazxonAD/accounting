@@ -1,7 +1,18 @@
 const { db } = require('../../db/index');
 
 exports.KassaMonitoringDB = class {
-    static async get(params) {
+    static async get(params, search) {
+        let search_filter = '';
+        
+        if(search){
+            params.push(search);
+            search_filter = `AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
+
         const query = `
             WITH data AS (
                 SELECT 
@@ -17,7 +28,7 @@ exports.KassaMonitoringDB = class {
                     ) AS prixod_sum,
                     0::FLOAT AS rasxod_sum,
                     d.id_podotchet_litso,
-                    spravochnik_podotchet_litso.name AS spravochnik_podotchet_litso_name,
+                    p.name AS spravochnik_podotchet_litso_name,
                     d.opisanie,
                     d.doc_date AS combined_date,
                     u.login,
@@ -27,10 +38,10 @@ exports.KassaMonitoringDB = class {
                         SELECT ARRAY_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
-                                s_o.schet AS provodki_schet,
-                                s_o.sub_schet AS provodki_sub_schet
+                                op.schet AS provodki_schet,
+                                op.sub_schet AS provodki_sub_schet
                             FROM kassa_prixod_child AS ch
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                             WHERE  ch.kassa_prixod_id = d.id
                                 AND ch.isdeleted = false
                         ) AS ch
@@ -38,11 +49,12 @@ exports.KassaMonitoringDB = class {
                 FROM kassa_prixod d
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
-                LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = d.id_podotchet_litso
+                LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
                 WHERE r.id = $1 
                   AND d.main_schet_id = $2
                   AND d.doc_date BETWEEN $3 AND $4 
                   AND d.isdeleted = false
+                  ${search_filter}
 
                 UNION ALL
 
@@ -59,7 +71,7 @@ exports.KassaMonitoringDB = class {
                             AND ch.isdeleted = false
                     ) AS rasxod_sum,
                     d.id_podotchet_litso,
-                    spravochnik_podotchet_litso.name,
+                    p.name,
                     d.opisanie,
                     d.doc_date AS combined_date,
                     u.login,
@@ -69,10 +81,10 @@ exports.KassaMonitoringDB = class {
                         SELECT ARRAY_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
-                                s_o.schet AS provodki_schet,
-                                s_o.sub_schet AS provodki_sub_schet
+                                op.schet AS provodki_schet,
+                                op.sub_schet AS provodki_sub_schet
                             FROM kassa_rasxod_child AS ch
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                             WHERE  ch.kassa_rasxod_id = d.id
                                 AND ch.isdeleted = false  
                         ) AS ch
@@ -80,13 +92,14 @@ exports.KassaMonitoringDB = class {
                 FROM kassa_rasxod d
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
-                LEFT JOIN spravochnik_podotchet_litso ON spravochnik_podotchet_litso.id = d.id_podotchet_litso
+                LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
                 WHERE r.id = $1 
                   AND d.main_schet_id = $2
                   AND d.doc_date BETWEEN $3 AND $4 
                   AND d.isdeleted = false
+                  ${search_filter}
                 
-                  ORDER BY combined_date
+                ORDER BY combined_date
                 OFFSET $5 LIMIT $6
             ) 
             SELECT 
@@ -98,10 +111,12 @@ exports.KassaMonitoringDB = class {
                         FROM kassa_rasxod d
                         JOIN users u ON d.user_id = u.id
                         JOIN regions r ON u.region_id = r.id
+                        LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
                         WHERE r.id = $1 
                             AND d.main_schet_id = $2 
                             AND d.doc_date BETWEEN $3 AND $4 
                             AND d.isdeleted = false
+                            ${search_filter}
                     ) +
                     (
                         SELECT 
@@ -109,10 +124,12 @@ exports.KassaMonitoringDB = class {
                         FROM kassa_prixod d
                         JOIN users u ON d.user_id = u.id
                         JOIN regions r ON u.region_id = r.id
+                        LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
                         WHERE r.id = $1 
                             AND d.main_schet_id = $2 
                             AND d.doc_date BETWEEN $3 AND $4 
                             AND d.isdeleted = false
+                            ${search_filter}
                     )
                 )::INTEGER AS total_count,
                 (
@@ -122,11 +139,13 @@ exports.KassaMonitoringDB = class {
                     JOIN kassa_rasxod_child ch ON ch.kassa_rasxod_id = d.id
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
+                    LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.doc_date BETWEEN $3 AND $4 
                         AND d.isdeleted = false
                         AND ch.isdeleted = false
+                        ${search_filter}
                 )::FLOAT AS rasxod,
                 (
                     SELECT 
@@ -135,12 +154,15 @@ exports.KassaMonitoringDB = class {
                     JOIN kassa_prixod_child ch ON ch.kassa_prixod_id = d.id
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
+                    LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.doc_date BETWEEN $3 AND $4 
                         AND d.isdeleted = false
                         AND ch.isdeleted = false
+                        ${search_filter}
                 )
+                        
             FROM data
         `;
 
@@ -192,22 +214,22 @@ exports.KassaMonitoringDB = class {
     static async daily(params) {
         const query = `
             SELECT 
-                s_o.schet,
+                op.schet,
                 ARRAY_AGG(
                     json_build_object(
                         'doc_num', d.doc_num, 
                         'doc_date', d.doc_date,
                         'spravochnik_podotchet_litso_name', s_p_l.name,
                         'opisanie', d.opisanie,
-                        'schet', s_o.schet,
+                        'schet', op.schet,
                         'prixod_sum', ch.summa,
                         'rasxod_sum', 0
                     )
                 ) AS docs,
                 COALESCE(SUM(ch.summa), 0) AS prixod_sum,
                 0 AS rasxod_sum
-            FROM spravochnik_operatsii AS s_o
-            JOIN kassa_prixod_child AS ch ON ch.spravochnik_operatsii_id = s_o.id
+            FROM spravochnik_operatsii AS op
+            JOIN kassa_prixod_child AS ch ON ch.spravochnik_operatsii_id = op.id
             JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
             LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON d.id_podotchet_litso = s_p_l.id
             JOIN users AS u ON u.id = d.user_id
@@ -218,27 +240,27 @@ exports.KassaMonitoringDB = class {
                 AND d.isdeleted = false
                 AND ch.isdeleted = false
 
-            GROUP BY s_o.schet
+            GROUP BY op.schet
             
             UNION ALL 
             
             SELECT 
-                s_o.schet,
+                op.schet,
                 ARRAY_AGG(
                     json_build_object(
                         'doc_num', d.doc_num, 
                         'doc_date', d.doc_date,
                         'spravochnik_podotchet_litso_name', s_p_l.name,
                         'opisanie', d.opisanie,
-                        'schet', s_o.schet,
+                        'schet', op.schet,
                         'prixod_sum', 0,
                         'rasxod_sum', ch.summa
                     )
                 ) AS docs,
                 0 AS prixod_sum,
                 COALESCE(SUM(ch.summa), 0) AS rasxod_sum
-            FROM spravochnik_operatsii AS s_o
-            JOIN kassa_rasxod_child AS ch ON ch.spravochnik_operatsii_id = s_o.id
+            FROM spravochnik_operatsii AS op
+            JOIN kassa_rasxod_child AS ch ON ch.spravochnik_operatsii_id = op.id
             JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
             LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON d.id_podotchet_litso = s_p_l.id
             JOIN users AS u ON u.id = d.user_id
@@ -248,7 +270,7 @@ exports.KassaMonitoringDB = class {
                 AND d.main_schet_id = $1 
                 AND d.isdeleted = false
                 AND ch.isdeleted = false
-            GROUP BY s_o.schet
+            GROUP BY op.schet
         `;
 
         const result = await db.query(query, params);
@@ -261,8 +283,8 @@ exports.KassaMonitoringDB = class {
             WITH prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0) AS summa
-                FROM spravochnik_operatsii AS s_o
-                JOIN kassa_prixod_child AS ch ON ch.spravochnik_operatsii_id = s_o.id
+                FROM spravochnik_operatsii AS op
+                JOIN kassa_prixod_child AS ch ON ch.spravochnik_operatsii_id = op.id
                 JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id 
@@ -275,8 +297,8 @@ exports.KassaMonitoringDB = class {
             rasxod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0) AS summa
-                FROM spravochnik_operatsii AS s_o
-                JOIN kassa_rasxod_child AS ch ON ch.spravochnik_operatsii_id = s_o.id
+                FROM spravochnik_operatsii AS op
+                JOIN kassa_rasxod_child AS ch ON ch.spravochnik_operatsii_id = op.id
                 JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -304,12 +326,12 @@ exports.KassaMonitoringDB = class {
                 DISTINCT schet 
             FROM (
                 SELECT 
-                    s_o.schet
+                    op.schet
                 FROM kassa_prixod d
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN kassa_prixod_child AS ch ON d.id = ch.kassa_prixod_id 
-                JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.doc_date BETWEEN $3 AND $4 
@@ -319,12 +341,12 @@ exports.KassaMonitoringDB = class {
                 UNION ALL
             
                 SELECT 
-                    s_o.schet
+                    op.schet
                 FROM kassa_rasxod d
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN kassa_rasxod_child AS ch ON d.id = ch.kassa_rasxod_id 
-                JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.doc_date BETWEEN $3 AND $4 
@@ -346,12 +368,12 @@ exports.KassaMonitoringDB = class {
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN kassa_prixod_child AS ch ON d.id = ch.kassa_prixod_id 
-                JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.doc_date BETWEEN $3 AND $4
                     AND d.isdeleted = false
-                    AND s_o.schet = $5
+                    AND op.schet = $5
                     AND ch.isdeleted = false
             ), 
             rasxod AS (
@@ -361,12 +383,12 @@ exports.KassaMonitoringDB = class {
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN kassa_rasxod_child AS ch ON d.id = ch.kassa_rasxod_id 
-                JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.doc_date BETWEEN $3 AND $4 
                     AND d.isdeleted = false
-                    AND s_o.schet = $5
+                    AND op.schet = $5
                     AND ch.isdeleted = false
             )
             SELECT 
