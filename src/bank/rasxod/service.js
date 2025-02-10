@@ -38,6 +38,8 @@ exports.BankRasxodService = class {
                 data.user_id,
                 data.rukovoditel,
                 data.glav_buxgalter,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
                 tashkentTime(),
                 tashkentTime()
             ], client)
@@ -99,6 +101,8 @@ exports.BankRasxodService = class {
                 data.id_shartnomalar_organization,
                 data.rukovoditel,
                 data.glav_buxgalter,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
                 tashkentTime(),
                 data.id
             ], client);
