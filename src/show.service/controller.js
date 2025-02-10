@@ -9,7 +9,7 @@ const { TypeOperatsiiDB } = require('../spravochnik/type.operatsii/db')
 const { ShowServiceDB } = require('./db')
 const { db } = require('../db/index')
 
-exports.ShowServiceService = class {
+exports.Controller = class {
     static async createShowService(req, res) {
         const {
             doc_num,
@@ -127,7 +127,7 @@ exports.ShowServiceService = class {
 
     static async getShowService(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, from, to, main_schet_id } =  req.query;
+        const { page, limit, from, to, main_schet_id, search } =  req.query;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.status(404).json({
@@ -135,7 +135,7 @@ exports.ShowServiceService = class {
             })
         }
         const offset = (page - 1) * limit;
-        const { data, summa, total } = await ShowServiceDB.getShowService([region_id, from, to, main_schet_id, offset, limit]);
+        const { data, summa, total } = await ShowServiceDB.getShowService([region_id, from, to, main_schet_id, offset, limit], search);
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,

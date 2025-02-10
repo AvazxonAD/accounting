@@ -8,8 +8,7 @@ exports.KassaMonitoringDB = class {
             params.push(search);
             search_filter = `AND (
                 d.doc_num = $${params.length} OR 
-                so.name ILIKE '%' || $${params.length} || '%' OR 
-                so.inn ILIKE '%' || $${params.length} || '%'
+                p.name ILIKE '%' || $${params.length} || '%'
             )`;
         }
 

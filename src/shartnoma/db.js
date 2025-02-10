@@ -13,6 +13,7 @@ exports.ContractDB = class {
             organ_filter = `AND s_o.id = $${params.length + 1}`
             params.push(organ_id)
         }
+        
         let query = `--sql
             SELECT
                 sh_o.id, 

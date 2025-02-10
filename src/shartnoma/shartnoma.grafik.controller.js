@@ -45,13 +45,13 @@ const updateShartnomaGrafik = async (req, res) => {
 const getAllGrafik = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const { organization, budjet_id, page, limit } = validationResponse(ShartnomaqueryValidation, req.query)
+    const { organization, budjet_id, page, limit, search } = validationResponse(ShartnomaqueryValidation, req.query)
     const offset = (page - 1) * limit;
     await getByIdBudjetService(budjet_id);
     if(organization){
       await (region_id, organization)
     }
-    const { data, total } = await getAllGrafikDB(region_id, budjet_id, organization, limit, offset);
+    const { data, total } = await getAllGrafikDB(region_id, budjet_id, organization, limit, offset, search);
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
