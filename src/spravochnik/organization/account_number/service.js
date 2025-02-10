@@ -1,12 +1,12 @@
-const { OrganizationDB } = require('./db');
+const { AccountNumberDB } = require('./db');
 const xlsx = require('xlsx');
-const { tashkentTime } = require('../../helper/functions');
-const { db } = require('../../db/index');
-const { BankService } = require('../bank/service');
+const { tashkentTime } = require('../../../helper/functions');
+const { db } = require('../../../db/index');
+const { BankService } = require('../../bank/service');
 const path = require('path');
 const fs = require('fs').promises;
 
-exports.OrganizationService = class {
+exports.AccountNumberService = class {
     static async templateFile() {
         const fileName = `organization.xlsx`;
         const folderPath = path.join(__dirname, `../../../public/template`);
@@ -18,54 +18,55 @@ exports.OrganizationService = class {
         return { fileName, fileRes };
     }
 
-    static async getByInn(data) {
-        const result = await OrganizationDB.getByInn([data.region_id, data.inn]);
+    static async getByAccountNumber(data) {
+        const result = await AccountNumberDB.getByAccountNumber([data.raschet_schet, data.spravochnik_organization_id]);
 
         return result;
     }
 
     static async getByName(data) {
-        const result = await OrganizationDB.getByName([data.region_id, data.name]);
+        const result = await AccountNumberDB.getByName([data.region_id, data.name]);
 
         return result;
     }
 
     static async create(data) {
-        const result = await OrganizationDB.create([
-            data.name, data.bank_klient, data.raschet_schet,
-            data.raschet_schet_gazna, data.mfo, data.inn, data.user_id,
-            data.okonx, data.parent_id, tashkentTime(), tashkentTime()
+        const result = await AccountNumberDB.create([
+            data.spravochnik_organization_id,
+            data.raschet_schet,
+            tashkentTime(), tashkentTime()
         ]);
 
         return result;
     }
 
     static async get(data) {
-        const result = await OrganizationDB.get(
-            [data.region_id, data.offset, data.limit], data.search, data.organ_id
+        const result = await AccountNumberDB.get(
+            [data.region_id, data.offset, data.limit], 
+            data.search, data.organ_id
         );
 
         return result;
     }
 
     static async update(data) {
-        const result = await OrganizationDB.update([
-            data.name, data.bank_klient, data.raschet_schet,
-            data.raschet_schet_gazna, data.mfo, data.inn, data.okonx,
-            data.parent_id, data.id
+        const result = await AccountNumberDB.update([
+            data.spravochnik_organization_id,
+            data.raschet_schet,
+            tashkentTime(), data.id
         ]);
 
         return result;
     }
 
     static async delete(data) {
-        const result = await OrganizationDB.delete([data.id]);
+        const result = await AccountNumberDB.delete([data.id]);
 
         return result;
     }
 
     static async getById(data) {
-        const result = await OrganizationDB.getById([data.region_id, data.id], data.isdeleted);
+        const result = await AccountNumberDB.getById([data.id], data.isdeleted);
 
         return result;
     }

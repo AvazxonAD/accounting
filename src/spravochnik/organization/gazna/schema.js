@@ -1,26 +1,20 @@
 const Joi = require('joi')
 
 
-exports.OrganizationSchema = class {
+exports.GaznaSchema = class {
     static import() {
         return Joi.object({
             file: Joi.object({
                 path: Joi.string().trim().required()
-            })       
+            })
         })
     }
 
     static create() {
         return Joi.object({
             body: Joi.object({
-                name: Joi.string().trim().required(),
-                bank_klient: Joi.string().trim().required(),
-                raschet_schet: Joi.string().trim().required(),
                 raschet_schet_gazna: Joi.string().trim().required(),
-                mfo: Joi.string().trim().required(),
-                inn: Joi.string().trim().required(),
-                okonx: Joi.string().trim().required(),
-                parent_id: Joi.number().min(1).allow(null)
+                spravochnik_organization_id: Joi.number().min(1).integer().required()
             })
         }).options({ stripUnknown: true });
     }
@@ -28,14 +22,8 @@ exports.OrganizationSchema = class {
     static update() {
         return Joi.object({
             body: Joi.object({
-                name: Joi.string().trim().required(),
-                bank_klient: Joi.string().trim().required(),
-                raschet_schet: Joi.string().trim().required(),
                 raschet_schet_gazna: Joi.string().trim().required(),
-                mfo: Joi.string().trim().required(),
-                inn: Joi.string().trim().required(),
-                okonx: Joi.string().trim().required(),
-                parent_id: Joi.number().min(1).allow(null)
+                spravochnik_organization_id: Joi.number().min(1).integer().required()
             }),
             params: Joi.object({
                 id: Joi.number().integer().min(1).required()

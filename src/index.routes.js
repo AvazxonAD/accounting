@@ -25,6 +25,8 @@ routes
     .use('/spravochnik/main/book/schet', protect, require('./spravochnik/main.book.schet/index'))
     .use("/spravochnik/podrazdelenie", protect, require("./spravochnik/podrazdelenie/podrazdelenie.routes"))
     .use("/spravochnik/type-operatsii", protect, require("./spravochnik/type.operatsii/type_operatsii.routes"))
+    .use("/spravochnik/organization/gazna", protect, require("./spravochnik/organization/gazna/index"))
+    .use("/spravochnik/organization/account_number", protect, require("./spravochnik/organization/account_number/index"))
     .use("/spravochnik/organization", protect, require("./spravochnik/organization/index"))
     .use("/spravochnik/operatsii", protect, require("./spravochnik/operatsii/index"))
     .use("/spravochnik/main-schet", require("./spravochnik/main.schet/main_schet.routes"))
