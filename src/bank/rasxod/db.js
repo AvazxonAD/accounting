@@ -40,10 +40,12 @@ exports.BankRasxodDB = class {
                 user_id,
                 rukovoditel,
                 glav_buxgalter,
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
             RETURNING id
         `;
 
@@ -107,6 +109,8 @@ exports.BankRasxodDB = class {
                 d.glav_buxgalter,
                 d.tulanmagan_summa::FLOAT,
                 d.tulangan_tulanmagan,
+                d.organization_by_raschet_schet_id,
+                d.organization_by_raschet_schet_gazna_id,
                 (
                     SELECT ARRAY_AGG(row_to_json(ch))
                     FROM (
@@ -179,6 +183,8 @@ exports.BankRasxodDB = class {
                 d.rukovoditel,
                 d.tulanmagan_summa::FLOAT,
                 d.glav_buxgalter,
+                d.organization_by_raschet_schet_id,
+                d.organization_by_raschet_schet_gazna_id,
                 (
                     SELECT 
                         ARRAY_AGG(row_to_json(ch))
@@ -231,9 +237,11 @@ exports.BankRasxodDB = class {
                 rukovoditel = $7,
                 glav_buxgalter = $8,
                 summa = 0,
-                updated_at = $9,
+                d.organization_by_raschet_schet_id = $9,
+                d.organization_by_raschet_schet_gazna_id = $10,
+                updated_at = $11,
                 tulangan_tulanmagan = false
-            WHERE id = $10 RETURNING id 
+            WHERE id = $12 RETURNING id 
         `, params);
 
         return result.rows[0];
