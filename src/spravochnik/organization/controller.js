@@ -15,7 +15,7 @@ exports.Controller = class {
         const { name, inn, parent_id } = req.body;
 
         if (parent_id) {
-            const organization = await OrganizationService.getById([region_id, parent_id])
+            const organization = await OrganizationService.getById({ region_id, id: parent_id })
             if (!organization) {
                 return res.error(req.i18n.t('organizationNotFound'), 404);
             }
@@ -58,7 +58,7 @@ exports.Controller = class {
     static async update(req, res) {
         const id = req.params.id;
         const region_id = req.user.region_id;
-        const old_data = await OrganizationService.getById([region_id, id]);
+        const old_data = await OrganizationService.getById({ region_id, id });
         if (!old_data) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
@@ -66,7 +66,7 @@ exports.Controller = class {
         const { parent_id } = req.body;
 
         if (parent_id) {
-            const organization = await OrganizationService.getById([region_id, parent_id])
+            const organization = await OrganizationService.getById({ region_id, id: parent_id })
             if (!organization) {
                 return res.error(req.i18n.t('organizationNotFound'), 404);
             }
@@ -74,7 +74,7 @@ exports.Controller = class {
 
         const result = await OrganizationService.update({ id, ...req.body });
 
-        return res.success(req.i18n.t('updateSucccess'), 200, null, result);
+        return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }
 
     static async delete(req, res) {
@@ -101,10 +101,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
 
-        return res.status(200).json({
-            message: "organization get successfully",
-            data: result
-        })
+        return res.success(req.i18n.t('getSuccess'), 200, null, result);
     }
 
     static async import(req, res) {
