@@ -1,14 +1,18 @@
-const { SmetaDB } = require('../../../smeta/smeta/db');
-const { GroupDB } = require('./db');
-const { tashkentTime } = require('../../../helper/functions');
-const { PereotsenkaDB } = require('../pereotsenka/db')
-const xlsx = require('xlsx')
-
 const { GroupService } = require('./service');
 const { SmetaService } = require('../../../smeta/smeta/service');
+const { GroupSchema } = require('./schema');
 
 
 exports.Controller = class {
+    static async templateFile(req, res) {
+        const { fileName, fileRes } = await GroupService.templateFile();
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        return res.send(fileRes);
+    }
+
     static async create(req, res) {
         const { smeta_id } = req.body;
 
@@ -86,41 +90,18 @@ exports.Controller = class {
         return res.success(req.i18n.t('getSuccess'), 200, null, result);
     }
 
-    static async importExcel(req, res) {
-        if (!req.file) {
-            return res.status(400).json({
-                message: "file not found"
-            })
-        }
+    static async import(req, res) {
         const filePath = req.file.path;
-        const workbook = xlsx.readFile(filePath);
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const data = xlsx.utils.sheet_to_json(sheet).map((row) => {
-            const newRow = {};
-            for (const key in row) {
-                newRow[key.trim()] = row[key];
-            }
-            return newRow;
-        });
-        for (let group of data) {
-            await GroupDB.create([
-                null,
-                group.name ? group.name : '',
-                group.schet ? group.schet : '',
-                group.iznos_foiz ? group.iznos_foiz : 0,
-                group.provodka_debet ? group.provodka_debet : '',
-                group.group_number ? group.group_number : '',
-                group.provodka_kredit ? group.provodka_kredit : '',
-                group.provodka_subschet ? String(group.provodka_subschet).replace(/\s+/g, '') : '',
-                group.roman_numeral ? group.roman_numeral : '',
-                group.pod_group ? group.pod_group : '',
-                tashkentTime(),
-                tashkentTime()
-            ])
+
+        const data = await GroupService.readFile({ filePath });
+
+        const { error, value } = GroupSchema.importData(req.i18n).validate(data)
+        if (error) {
+            return res.error(error.details[0].message, 400);
         }
-        return res.status(200).json({
-            message: "import data successfully"
-        })
+
+        await GroupService.import({ groups: value });
+
+        return res.success(req.i18n.t('importSuccess'), 201);
     }
 };

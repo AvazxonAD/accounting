@@ -1,25 +1,40 @@
-static import(lang) {
-    console.log(lang.t('validation.responsibleId'))
-    return Joi.array().items(
-      Joi.object({
-        responsibleId: Joi.number().min(1).required().message({ '*': lang.t('validation.responsibleId') }),
-        groupId: Joi.number().required().message({ '*': lang.t('validation.groupNumber') }),
-        docDate: Joi.string().trim().pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/).required().message({ '*': lang.t('validation.importDocDate') }),
-        docNum: Joi.string().trim().required().message({ '*': lang.t('validation.docNum') }),
-        organizationId: Joi.number().required().message({ '*': lang.t('validation.organizationId') }),
-        productName: Joi.string().trim().required().message({ '*': lang.t('validation.productName') }),
-        edin: Joi.string().trim().required().message({ '*': lang.t('validation.edin') }),
-        kol: Joi.number().min(1).required().message({ '*': lang.t('validation.kol') }),
-        summa: Joi.number().min(1).required().message({ '*': lang.t('validation.summa') }),
-        inventarNum: Joi.string().trim().message({ '*': lang.t('validation.inventarNum') }),
-        serialNum: Joi.string().trim().message({ '*': lang.t('validation.serialNum') }),
-        debetSchet: Joi.string().trim().message({ '*': lang.t('validation.debetSchet') }),
-        debetSubSchet: Joi.any().required().message({ '*': lang.t('validation.debetSubSchet') }),
-        kreditSchet: Joi.any().message({ '*': lang.t('validation.kreditSchet') }),
-        kreditSubSchet: Joi.any().message({ '*': lang.t('validation.kreditSubSchet') }),
-        iznos: Joi.boolean().required().message({ '*': lang.t('validation.iznos') }),
-        ndsFoiz: Joi.number().min(1).max(99).message({ '*': lang.t('validation.ndsFoiz') }),
-        eskiIznosSumma: Joi.number().min(0).default(0).message({ '*': lang.t('validation.eskiIznosSumma') })
-      })
-    ).options({ stripUnknown: true });
-  }
+static async importExcel(req, res) {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "file not found"
+            })
+        }
+
+        const filePath = req.file.path;
+        const workbook = xlsx.readFile(filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(sheet).map((row) => {
+            const newRow = {};
+            for (const key in row) {
+                newRow[key.trim()] = row[key];
+            }
+            return newRow;
+        });
+
+        for (let group of data) {
+            await GroupDB.create([
+                null,
+                group.name ? group.name : '',
+                group.schet ? group.schet : '',
+                group.iznos_foiz ? group.iznos_foiz : 0,
+                group.provodka_debet ? group.provodka_debet : '',
+                group.group_number ? group.group_number : '',
+                group.provodka_kredit ? group.provodka_kredit : '',
+                group.provodka_subschet ? String(group.provodka_subschet).replace(/\s+/g, '') : '',
+                group.roman_numeral ? group.roman_numeral : '',
+                group.pod_group ? group.pod_group : '',
+                tashkentTime(),
+                tashkentTime()
+            ])
+        }
+        
+        return res.status(200).json({
+            message: "import data successfully"
+        })
+    }
