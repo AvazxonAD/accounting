@@ -254,7 +254,7 @@ exports.Jur7MonitoringService = class {
     }
 
     static async getSaldo(data) {
-        let { products, total } = await Jur7MonitoringDB.getProducts([data.responsible_id, data.offset, data.limit], data.product_id);
+        let { products, total } = await Jur7MonitoringDB.getProducts([data.responsible_id, data.offset, data.limit], data.product_id, data.search);
 
         for (let product of products) {
 

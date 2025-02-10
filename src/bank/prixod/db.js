@@ -66,29 +66,29 @@ exports.BankPrixodDB = class {
                     d.dop_provodki_boolean, 
                     d.opisanie, 
                     d.id_spravochnik_organization, 
-                    s_o.name AS spravochnik_organization_name,
-                    s_o.okonx AS spravochnik_organization_okonx,
-                    s_o.bank_klient AS spravochnik_organization_bank_klient,
-                    s_o.raschet_schet AS spravochnik_organization_raschet_schet,
-                    s_o.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-                    s_o.mfo AS spravochnik_organization_mfo,
-                    s_o.inn AS spravochnik_organization_inn,
+                    so.name AS spravochnik_organization_name,
+                    so.okonx AS spravochnik_organization_okonx,
+                    so.bank_klient AS spravochnik_organization_bank_klient,
+                    so.raschet_schet AS spravochnik_organization_raschet_schet,
+                    so.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
+                    so.mfo AS spravochnik_organization_mfo,
+                    so.inn AS spravochnik_organization_inn,
                     d.id_shartnomalar_organization,
                     (
                         SELECT ARRAY_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
-                                s_o.schet AS provodki_schet,
-                                s_o.sub_schet AS provodki_sub_schet
+                                so.schet AS provodki_schet,
+                                so.sub_schet AS provodki_sub_schet
                             FROM bank_prixod_child AS ch
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                            JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                             WHERE  ch.id_bank_prixod = d.id 
                         ) AS ch
                     ) AS provodki_array 
                 FROM bank_prixod AS d
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_organization AS s_o ON s_o.id = d.id_spravochnik_organization 
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization 
                 WHERE d.main_schet_id = $2 
                     AND r.id = $1 
                     AND d.isdeleted = false 
@@ -105,6 +105,7 @@ exports.BankPrixodDB = class {
                         FROM bank_prixod d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
+                        JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization 
                         WHERE d.main_schet_id = $2 
                             AND d.isdeleted = false 
                             AND regions.id = $1 
@@ -117,6 +118,7 @@ exports.BankPrixodDB = class {
                         FROM bank_prixod d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
+                        JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization 
                         WHERE regions.id = $1 
                             AND d.main_schet_id = $2 
                             AND d.isdeleted = false 
@@ -149,7 +151,7 @@ exports.BankPrixodDB = class {
                         SELECT 
                             ch.id,
                             ch.spravochnik_operatsii_id,
-                            s_o.name AS spravochnik_operatsii_name,
+                            so.name AS spravochnik_operatsii_name,
                             ch.summa,
                             ch.id_spravochnik_podrazdelenie,
                             s_p.name AS spravochnik_podrazdelenie_name,
@@ -161,7 +163,7 @@ exports.BankPrixodDB = class {
                             s_p_l.name AS spravochnik_podotchet_litso_name,
                             ch.main_zarplata_id
                         FROM bank_prixod_child AS ch
-                        JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                        JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii

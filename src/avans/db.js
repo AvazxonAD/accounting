@@ -7,7 +7,7 @@ exports.AvansDB = class {
             params.push(search);
             search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
-                so.inn ILIKE '%' || $${params.length} || '%'
+                sp.name ILIKE '%' || $${params.length} || '%'
             )`;
         }
 
@@ -20,8 +20,8 @@ exports.AvansDB = class {
                     d.opisanie, 
                     d.summa::FLOAT, 
                     d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,  
-                    s_p_l.name AS spravochnik_podotchet_litso_name,
-                    s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                    sp.name AS spravochnik_podotchet_litso_name,
+                    sp.rayon AS spravochnik_podotchet_litso_rayon,
                     d.spravochnik_operatsii_own_id,
                     (
                         SELECT ARRAY_AGG(row_to_json(a_j_ch))
@@ -37,7 +37,7 @@ exports.AvansDB = class {
                 FROM avans_otchetlar_jur4 AS d
                 JOIN users AS u ON u.id =  d.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = d.spravochnik_podotchet_litso_id 
+                JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.spravochnik_podotchet_litso_id 
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
@@ -53,6 +53,7 @@ exports.AvansDB = class {
                     FROM avans_otchetlar_jur4 AS d
                     JOIN users AS u ON u.id =  d.user_id
                     JOIN regions AS r ON u.region_id = r.id
+                    JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.spravochnik_podotchet_litso_id 
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
@@ -64,6 +65,7 @@ exports.AvansDB = class {
                     FROM avans_otchetlar_jur4 AS d
                     JOIN users AS u ON u.id =  d.user_id
                     JOIN regions AS r ON u.region_id = r.id
+                    JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.spravochnik_podotchet_litso_id 
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
@@ -129,8 +131,8 @@ exports.AvansDB = class {
                 d.opisanie, 
                 d.summa::FLOAT, 
                 d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,
-                s_p_l.name AS spravochnik_podotchet_litso_name,
-                s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
+                sp.name AS spravochnik_podotchet_litso_name,
+                sp.rayon AS spravochnik_podotchet_litso_rayon,
                 d.spravochnik_operatsii_own_id,
                 (
                     SELECT ARRAY_AGG(row_to_json(a_o_j_4_child))
@@ -157,7 +159,7 @@ exports.AvansDB = class {
             FROM avans_otchetlar_jur4 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
-            JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = d.spravochnik_podotchet_litso_id 
+            JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.spravochnik_podotchet_litso_id 
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3

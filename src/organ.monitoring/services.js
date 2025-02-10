@@ -10,7 +10,7 @@ const path = require('path')
 const fs = require('fs').promises;
 
 exports.OrganizationmonitoringService = class {
-    static async monitoring(data, organ_id) {
+    static async monitoring(data) {
         const docs = await OrganizationMonitoringDB.monitoring([
             data.region_id,
             data.main_schet_id,
@@ -19,7 +19,7 @@ exports.OrganizationmonitoringService = class {
             data.to,
             data.offset,
             data.limit
-        ], organ_id);
+        ], data.organ_id, data.search);
 
         const summa_from = await OrganizationMonitoringDB.getSumma([
             data.region_id,

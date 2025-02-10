@@ -546,11 +546,18 @@ exports.Jur7MonitoringDB = class {
         return result[0];
     }
 
-    static async getProducts(params, product_id = null) {
+    static async getProducts(params, product_id = null, search = null) {
         let product_filter = ``;
+        let search_filter =  ``;
+
         if (product_id) {
             params.push(product_id);
             product_filter = `AND n.id = $${params.length}`;
+        }
+
+        if(search){
+            params.push(search);
+            search_filter = `AND n.name ILIKE '%' || $${params.length} || '%'`;
         }
 
         const query = `
@@ -579,6 +586,7 @@ exports.Jur7MonitoringDB = class {
                 JOIN group_jur7 g ON g.id = n.group_jur7_id
                 WHERE d.kimga_id = $1 
                     ${product_filter} 
+                    ${search_filter}
                     AND ch.isdeleted = false
                 OFFSET $2 LIMIT $3
             )
@@ -593,6 +601,7 @@ exports.Jur7MonitoringDB = class {
                     JOIN group_jur7 g ON g.id = n.group_jur7_id
                     WHERE d.kimga_id = $1 
                         ${product_filter}
+                        ${search_filter}
                         AND ch.isdeleted = false
                 ) AS total
             FROM data

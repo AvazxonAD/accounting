@@ -46,61 +46,84 @@ exports.KassaPrixodDB = class {
         return result;
     }
 
-    static async get(params) {
+    static async get(params, search) {
+        let search_filter = ``;
+        
+        if (search) {
+            params.push(search);
+            search_filter = `AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
+
         const query = `
-                WITH data AS (
-                    SELECT 
-                        kp.id, 
-                        kp.doc_num,
-                        TO_CHAR(kp.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                        kp.opisanie, 
-                        kp.summa, 
-                        kp.id_podotchet_litso,
-                        s_p_l.name AS spravochnik_podotchet_litso_name,
-                        s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
-                        kp.main_zarplata_id,
-                        (
-                            SELECT ARRAY_AGG(row_to_json(k_p_ch))
-                            FROM (
-                                SELECT 
-                                    s_o.schet AS provodki_schet,
-                                    s_o.sub_schet AS provodki_sub_schet
-                                FROM kassa_prixod_child AS k_p_ch
-                                JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
-                                WHERE  k_p_ch.kassa_prixod_id = kp.id 
-                            ) AS k_p_ch
-                        ) AS provodki_array
-                    FROM kassa_prixod AS kp
-                    JOIN users AS u ON u.id = kp.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = kp.id_podotchet_litso
-                    WHERE r.id = $1 AND kp.main_schet_id = $2 AND kp.isdeleted = false AND kp.doc_date BETWEEN $3 AND $4 ORDER BY kp.doc_date
-                    OFFSET $5 LIMIT $6
-                )
+            WITH data AS (
                 SELECT 
-                    ARRAY_AGG(row_to_json(data)) AS data,
+                    d.id, 
+                    d.doc_num,
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                    d.opisanie, 
+                    d.summa, 
+                    d.id_podotchet_litso,
+                    p.name AS spravochnik_podotchet_litso_name,
+                    p.rayon AS spravochnik_podotchet_litso_rayon,
+                    d.main_zarplata_id,
                     (
-                        SELECT COALESCE(SUM(kp.summa), 0)
-                        FROM kassa_prixod AS kp
-                        JOIN users AS u ON u.id = kp.user_id
-                        JOIN regions AS r ON r.id = u.region_id  
-                        WHERE kp.main_schet_id = $2 
-                            AND r.id = $1
-                            AND kp.doc_date BETWEEN $3 AND $4 
-                            AND kp.isdeleted = false
-                    )::FLOAT AS summa,
-                    (
-                        SELECT COALESCE(COUNT(kp.id), 0)
-                        FROM kassa_prixod AS kp
-                        JOIN users AS u ON u.id = kp.user_id
-                        JOIN regions AS r ON r.id = u.region_id  
-                        WHERE r.id = $1 
-                            AND kp.main_schet_id = $2 
-                            AND kp.doc_date BETWEEN $3 AND $4 
-                            AND kp.isdeleted = false
-                    )::INTEGER AS total_count
-                FROM data
-            `;
+                        SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                        FROM (
+                            SELECT 
+                                s_o.schet AS provodki_schet,
+                                s_o.sub_schet AS provodki_sub_schet
+                            FROM kassa_prixod_child AS k_p_ch
+                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
+                            WHERE  k_p_ch.kassa_prixod_id = d.id 
+                        ) AS k_p_ch
+                    ) AS provodki_array
+                FROM kassa_prixod AS d
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+                WHERE r.id = $1 
+                    AND d.main_schet_id = $2 
+                    AND d.isdeleted = false 
+                    AND d.doc_date BETWEEN $3 AND $4 
+                    ${search_filter}
+                    
+                ORDER BY d.doc_date
+                OFFSET $5 LIMIT $6
+            )
+            SELECT 
+                ARRAY_AGG(row_to_json(data)) AS data,
+                (
+                    SELECT 
+                        COALESCE(SUM(d.summa), 0)
+                    FROM kassa_prixod AS d
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id  
+                    LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+                    WHERE d.main_schet_id = $2 
+                        AND r.id = $1
+                        AND d.doc_date BETWEEN $3 AND $4 
+                        AND d.isdeleted = false
+                        ${search_filter}
+                )::FLOAT AS summa,
+                (
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0)
+                    FROM kassa_prixod AS d
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id  
+                    LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.doc_date BETWEEN $3 AND $4 
+                        AND d.isdeleted = false
+                        ${search_filter}
+                )::INTEGER AS total_count
+            FROM data
+        `;
 
         const result = await db.query(query, params);
 
@@ -110,15 +133,15 @@ exports.KassaPrixodDB = class {
     static async getById(params, isdeleted) {
         const query = `
             SELECT 
-                kp.id, 
-                kp.doc_num,
-                TO_CHAR(kp.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                kp.opisanie, 
-                kp.summa::FLOAT, 
-                kp.id_podotchet_litso,
-                s_p_l.name AS spravochnik_podotchet_litso_name,
-                s_p_l.rayon AS spravochnik_podotchet_litso_rayon,
-                kp.main_zarplata_id,
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d.opisanie, 
+                d.summa::FLOAT, 
+                d.id_podotchet_litso,
+                p.name AS spravochnik_podotchet_litso_name,
+                p.rayon AS spravochnik_podotchet_litso_rayon,
+                d.main_zarplata_id,
                 (
                     SELECT ARRAY_AGG(row_to_json(k_p_ch))
                     FROM (
@@ -130,21 +153,21 @@ exports.KassaPrixodDB = class {
                             k_p_ch.id_spravochnik_sostav,
                             k_p_ch.id_spravochnik_type_operatsii
                         FROM kassa_prixod_child AS k_p_ch 
-                        JOIN users AS u ON u.id = kp.user_id
+                        JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1 
                         AND k_p_ch.main_schet_id = $2 
-                        AND k_p_ch.kassa_prixod_id = kp.id
+                        AND k_p_ch.kassa_prixod_id = d.id
                     ) AS k_p_ch
                 ) AS childs
-            FROM kassa_prixod AS kp
-            JOIN users AS u ON u.id = kp.user_id
+            FROM kassa_prixod AS d
+            JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON s_p_l.id = kp.id_podotchet_litso
+            LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
             WHERE r.id = $1 
-                AND kp.main_schet_id = $2 
-                AND kp.id = $3
-                ${!isdeleted ? 'AND kp.isdeleted = false' : ''}
+                AND d.main_schet_id = $2 
+                AND d.id = $3
+                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
         `;
 
         const result = await db.query(query, params);
@@ -174,9 +197,9 @@ exports.KassaPrixodDB = class {
 
     static async delete(params, client) {
         await client.query(`UPDATE kassa_prixod_child SET isdeleted = true WHERE kassa_prixod_id = $1`, params);
-        
+
         const result = await client.query(`UPDATE kassa_prixod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
-        
+
         return result.rows[0];
     }
 }

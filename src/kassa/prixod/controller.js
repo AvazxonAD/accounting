@@ -69,7 +69,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id
-    const { page, limit, from, to, main_schet_id } = req.query;
+    const { page, limit, main_schet_id } = req.query;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
@@ -78,7 +78,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa } = await KassaPrixodService.get({ region_id, main_schet_id, from, to, offset, limit });
+    const { data, total_count, summa } = await KassaPrixodService.get({ ...req.query, region_id, offset });
 
     const pageCount = Math.ceil(total_count / limit);
 
