@@ -445,7 +445,11 @@ exports.OrganizationMonitoringDB = class {
                 bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum_rasxod,
                 bank_prixod_sum.summa AS bank_prixod_sum_rasxod,
                 jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod
-            FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
+            FROM kursatilgan_hizmatlar_sum, 
+                bajarilgan_ishlar_sum, 
+                bank_rasxod_sum, 
+                bank_prixod_sum, 
+                jur7_prixod_sum
         `;
         const result = await db.query(query, params);
 
