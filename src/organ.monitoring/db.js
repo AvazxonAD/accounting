@@ -3,12 +3,12 @@ const { sqlFilter } = require('../helper/functions')
 
 exports.OrganizationMonitoringDB = class {
     static async monitoring(params, organ_id, search) {
-        let index_organ_id = 0;
+        let organ_filter  = '';
         let search_filter = ``;
 
         if (organ_id) {
-            index_organ_id = params.length + 1;
-            params.push(organ_id)
+            params.push(organ_id);
+            organ_filter = `AND so.id = $${params.length}`;
         }
 
         if (search) {
@@ -54,7 +54,7 @@ exports.OrganizationMonitoringDB = class {
                 AND d.main_schet_id = $2
                 AND op.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${organ_filter}
                 ${search_filter}
             
             UNION ALL
@@ -93,7 +93,7 @@ exports.OrganizationMonitoringDB = class {
                 AND d.main_schet_id = $2
                 AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${organ_filter}
                 ${search_filter}    
             
             UNION ALL
@@ -132,7 +132,7 @@ exports.OrganizationMonitoringDB = class {
                 AND d.main_schet_id = $2
                 AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${organ_filter}
                 ${search_filter}     
             
             UNION ALL
@@ -170,7 +170,7 @@ exports.OrganizationMonitoringDB = class {
                 AND d.main_schet_id = $2
                 AND op.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                ${organ_filter}
                 ${search_filter}    
             
             UNION ALL 
@@ -207,7 +207,7 @@ exports.OrganizationMonitoringDB = class {
                 AND d.main_schet_id = $2
                 AND ch.kredit_schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
-                ${organ_id ? sqlFilter('d.kimdan_id', index_organ_id) : ''}
+                ${organ_filter}
                 ${search_filter}    
             
             ORDER BY doc_date 
@@ -218,26 +218,39 @@ exports.OrganizationMonitoringDB = class {
         return data;
     }
 
-    static async getTotal(params, organ_id) {
-        let index_organ_id = 0;
+    static async getTotal(params, organ_id, search) {
+        let organ_filter  = '';
+        let search_filter = ``;
+
         if (organ_id) {
-            index_organ_id = params.length + 1;
-            params.push(organ_id)
+            params.push(organ_id);
+            organ_filter = `AND so.id = $${params.length}`;
         }
+
+        if (search) {
+            params.push(search);
+            search_filter = `AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
+
         const query = `--sql
             WITH bank_prixod_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
                 FROM bank_prixod_child ch
                 JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id 
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1 
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
+                    ${search_filter}
             ),
             bajarilgan_ishlar_jur3_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
@@ -246,12 +259,14 @@ exports.OrganizationMonitoringDB = class {
                 JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false 
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    ${organ_filter}
+                    ${search_filter}
             ),
             kursatilgan_hizmatlar_jur152_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
@@ -260,12 +275,13 @@ exports.OrganizationMonitoringDB = class {
                 JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false 
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    ${organ_filter}
             ),
             bank_rasxod_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
@@ -273,13 +289,14 @@ exports.OrganizationMonitoringDB = class {
                 JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id 
+                JOIN regions AS r ON r.id = u.region_id \
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1 
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    ${organ_filter}
             ),
             jur7_prixod_count AS (
                 SELECT COALESCE(COUNT(ch.id), 0)::INTEGER AS total_count
@@ -287,12 +304,13 @@ exports.OrganizationMonitoringDB = class {
                 JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND ch.kredit_schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
-                    ${organ_id ? sqlFilter('d.kimdan_id', index_organ_id) : ''}
+                    ${organ_filter}
             )
             SELECT SUM(total_count)::INTEGER AS total
             FROM (
@@ -311,12 +329,24 @@ exports.OrganizationMonitoringDB = class {
         return result[0].total
     }
 
-    static async getSumma(params, operator, organ_id) {
-        let index_organ_id = 0;
+    static async getSumma(params, operator, organ_id, search)  {
+        let organ_filter  = '';
+        let search_filter = ``;
+
         if (organ_id) {
-            index_organ_id = params.length + 1;
-            params.push(organ_id)
+            params.push(organ_id);
+            organ_filter = `AND so.id = $${params.length}`;
         }
+
+        if (search) {
+            params.push(search);
+            search_filter = `AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
+
         const query = `--sql
             WITH 
             kursatilgan_hizmatlar_sum AS (
@@ -326,12 +356,15 @@ exports.OrganizationMonitoringDB = class {
                 JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND own.schet = $3
                     AND d.doc_date ${operator} $4
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
             ),
             bajarilgan_ishlar_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
@@ -340,12 +373,15 @@ exports.OrganizationMonitoringDB = class {
                 JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND own.schet = $3
                     AND d.doc_date ${operator} $4
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
             ),
             bank_rasxod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
@@ -354,12 +390,15 @@ exports.OrganizationMonitoringDB = class {
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND d.doc_date ${operator} $4
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
             ),
             bank_prixod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
@@ -368,12 +407,15 @@ exports.OrganizationMonitoringDB = class {
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND d.doc_date ${operator} $4
-                    ${organ_id ? sqlFilter('d.id_spravochnik_organization', index_organ_id) : ''}
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
             ),
             jur7_prixod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
@@ -381,12 +423,15 @@ exports.OrganizationMonitoringDB = class {
                 JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND ch.kredit_schet = $3
                     AND d.doc_date ${operator} $4
-                    ${organ_id ? sqlFilter('d.kimdan_id', index_organ_id) : ''}
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
             )
             SELECT 
                 (
@@ -394,7 +439,12 @@ exports.OrganizationMonitoringDB = class {
                     - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
                 ) AS summa,
                 (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) AS prixod,
-                (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod
+                (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod,
+                kursatilgan_hizmatlar_sum.summa AS kursatilgan_hizmatlar_sum_prixod,
+                bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
+                bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum_rasxod,
+                bank_prixod_sum.summa AS bank_prixod_sum_rasxod,
+                jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod
             FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
         `;
         const result = await db.query(query, params);
@@ -549,6 +599,7 @@ exports.OrganizationMonitoringDB = class {
             params.push(contract);
             index_contract = params.length;
         }
+        
         const query = `--sql
             WITH 
             bajarilgan_ishlar_sum AS (

@@ -7,7 +7,6 @@ const { PodpisDB } = require('../spravochnik/podpis/db')
 const { returnStringDate, returnStringSumma, returnExcelColumn, formatSubSchet } = require('../helper/functions')
 const ExcelJS = require('exceljs')
 const path = require('path')
-const fs = require('fs').promises;
 
 exports.OrganizationmonitoringService = class {
     static async monitoring(data) {
@@ -26,14 +25,14 @@ exports.OrganizationmonitoringService = class {
             data.main_schet_id,
             data.operatsii,
             data.from
-        ], '<', organ_id);
+        ], '<', data.organ_id, data.search);
 
         const summa_to = await OrganizationMonitoringDB.getSumma([
             data.region_id,
             data.main_schet_id,
             data.operatsii,
             data.to
-        ], '<=', organ_id);
+        ], '<=', data.organ_id, data.search);
 
         const total = await OrganizationMonitoringDB.getTotal([
             data.region_id,
@@ -41,7 +40,7 @@ exports.OrganizationmonitoringService = class {
             data.operatsii,
             data.from,
             data.to
-        ], organ_id)
+        ], data.organ_id, data.search)
 
         let summa_prixod = 0;
         let summa_rasxod = 0;
