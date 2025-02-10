@@ -12,10 +12,9 @@ exports.GroupSchema = class {
   static importData(lang) {
     return Joi.array().items(
       Joi.object({
-        smeta_id: Joi.number().min(1).integer().required().messages({ '*': lang.t('validation.smetaId') }),
         name: Joi.string().trim().messages({ '*': lang.t('validation.groupName') }),
         schet: Joi.any().messages({ '*': lang.t('validation.schet') }),
-        iznos_foiz: Joi.number().messages({ '*': lang.t('validation.iznosFoiz') }),
+        iznos_foiz: Joi.number().default(0).messages({ '*': lang.t('validation.iznosFoiz') }),
         provodka_debet: Joi.any().messages({ '*': lang.t('validation.provodkaDebet') }),
         group_number: Joi.any().messages({ '*': lang.t('validation.groupNumber') }),
         provodka_kredit: Joi.any().messages({ '*': lang.t('validation.provodkaKredit') }),
