@@ -1,10 +1,13 @@
 const { OrganizationDB } = require('./db');
 const xlsx = require('xlsx');
-const { tashkentTime } = require('../../helper/functions');
+const { tashkentTime, HelperFunctions } = require('../../helper/functions');
 const { db } = require('../../db/index');
 const { BankService } = require('../bank/service');
 const path = require('path');
 const fs = require('fs').promises;
+const { GaznaDB } = require('./gazna/db');
+const { AccountNumberDB } = require('./account_number/db');
+
 
 exports.OrganizationService = class {
     static async templateFile() {
@@ -31,11 +34,33 @@ exports.OrganizationService = class {
     }
 
     static async create(data) {
-        const result = await OrganizationDB.create([
-            data.name, data.bank_klient, data.raschet_schet,
-            data.raschet_schet_gazna, data.mfo, data.inn, data.user_id,
-            data.okonx, data.parent_id, tashkentTime(), tashkentTime()
-        ]);
+        const result = await db.transaction(async client => {
+            const organ = await OrganizationDB.create([
+                data.name, data.bank_klient, data.raschet_schet,
+                data.raschet_schet_gazna, data.mfo, data.inn, data.user_id,
+                data.okonx, data.parent_id, tashkentTime(), tashkentTime()
+            ], client);
+
+            for (let gazna of data.gaznas) {
+                await GaznaDB.create([
+                    organ.id,
+                    gazna.raschet_schet_gazna,
+                    HelperFunctions.tashkentTime(), 
+                    HelperFunctions.tashkentTime()
+                ], client);
+            }
+
+            for (let acccount_number of data.account_numbers) {
+                await AccountNumberDB.create([
+                    organ.id,
+                    acccount_number.raschet_schet,
+                    HelperFunctions.tashkentTime(), 
+                    HelperFunctions.tashkentTime()
+                ], client);
+            }
+
+            return organ;
+        })
 
         return result;
     }

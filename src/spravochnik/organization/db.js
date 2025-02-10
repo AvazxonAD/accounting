@@ -2,23 +2,23 @@ const { db } = require('../../db/index');
 
 exports.OrganizationDB = class {
     static async getByInn(params) {
-        const query =  `
+        const query = `
             SELECT 
-                s_o.id, 
-                s_o.name, 
-                s_o.bank_klient, 
-                s_o.raschet_schet, 
-                s_o.raschet_schet_gazna, 
-                s_o.mfo, 
-                s_o.inn, 
-                s_o.okonx,
-                s_o.parent_id
-            FROM spravochnik_organization AS s_o 
-            JOIN users ON s_o.user_id = users.id
+                so.id, 
+                so.name, 
+                so.bank_klient, 
+                so.raschet_schet, 
+                so.raschet_schet_gazna, 
+                so.mfo, 
+                so.inn, 
+                so.okonx,
+                so.parent_id
+            FROM spravochnik_organization AS so 
+            JOIN users ON so.user_id = users.id
             JOIN regions ON users.region_id = regions.id
             WHERE regions.id = $1 
-                AND s_o.inn = $2 
-                AND s_o.isdeleted = false
+                AND so.inn = $2 
+                AND so.isdeleted = false
             LIMIT 1
         `;
         const result = await db.query(query, params);
@@ -26,23 +26,23 @@ exports.OrganizationDB = class {
     }
 
     static async getByName(params) {
-        const query =  `
+        const query = `
             SELECT 
-                s_o.id, 
-                s_o.name, 
-                s_o.bank_klient, 
-                s_o.raschet_schet, 
-                s_o.raschet_schet_gazna, 
-                s_o.mfo, 
-                s_o.inn, 
-                s_o.okonx,
-                s_o.parent_id
-            FROM spravochnik_organization AS s_o 
-            JOIN users ON s_o.user_id = users.id
+                so.id, 
+                so.name, 
+                so.bank_klient, 
+                so.raschet_schet, 
+                so.raschet_schet_gazna, 
+                so.mfo, 
+                so.inn, 
+                so.okonx,
+                so.parent_id
+            FROM spravochnik_organization AS so 
+            JOIN users ON so.user_id = users.id
             JOIN regions ON users.region_id = regions.id
             WHERE regions.id = $1 
-                AND s_o.name = $2 
-                AND s_o.isdeleted = false
+                AND so.name = $2 
+                AND so.isdeleted = false
             LIMIT 1
         `;
         const result = await db.query(query, params);
@@ -50,44 +50,73 @@ exports.OrganizationDB = class {
     }
 
     static async getById(params, isdeleted) {
-        const ignore = `AND s_o.isdeleted = false`
+        const ignore = `AND so.isdeleted = false`
         let query = `--sql
             SELECT 
-                s_o.id, 
-                s_o.name, 
-                s_o.bank_klient, 
-                s_o.raschet_schet, 
-                s_o.raschet_schet_gazna, 
-                s_o.mfo, 
-                s_o.inn, 
-                s_o.okonx,
-                s_o.parent_id
-            FROM spravochnik_organization AS s_o 
-            JOIN users ON s_o.user_id = users.id
+                so.id, 
+                so.name, 
+                so.bank_klient, 
+                so.raschet_schet, 
+                so.raschet_schet_gazna, 
+                so.mfo, 
+                so.inn, 
+                so.okonx,
+                so.parent_id,
+                (
+                    SELECT 
+                        JSON_AGG(g)
+                    FROM organization_by_raschet_schet_gazna g  
+                    WHERE g.isdeleted = false
+                        AND g.spravochnik_organization_id = so.id
+                ) AS gazna,
+                (
+                    SELECT 
+                        JSON_AGG(a)
+                    FROM organization_by_raschet_schet a  
+                    WHERE a.isdeleted = false
+                        AND a.spravochnik_organization_id = so.id
+                ) AS account_numbers
+            FROM spravochnik_organization AS so 
+            JOIN users ON so.user_id = users.id
             JOIN regions ON users.region_id = regions.id 
             WHERE regions.id = $1 
-                AND s_o.id = $2 
+                AND so.id = $2 
                 ${isdeleted ? '' : ignore}
         `;
-        
+
         const result = await db.query(query, params)
         if (result[0]) {
             const child_query = `--sql
                 SELECT 
-                    s_o.id, 
-                    s_o.name, 
-                    s_o.bank_klient, 
-                    s_o.raschet_schet, 
-                    s_o.raschet_schet_gazna, 
-                    s_o.mfo, 
-                    s_o.inn, 
-                    s_o.okonx,
-                    s_o.parent_id
-                FROM spravochnik_organization AS s_o 
-                JOIN users ON s_o.user_id = users.id
+                    so.id, 
+                    so.name, 
+                    so.bank_klient, 
+                    so.raschet_schet, 
+                    so.raschet_schet_gazna, 
+                    so.mfo, 
+                    so.inn, 
+                    so.okonx,
+                    so.parent_id,
+                    (
+                        SELECT 
+                            JSON_AGG(g)
+                        FROM organization_by_raschet_schet_gazna g  
+                        WHERE g.isdeleted = false
+                            AND g.spravochnik_organization_id = so.id
+                    ) AS gazna,
+                    (
+                        SELECT 
+                            JSON_AGG(a)
+                        FROM organization_by_raschet_schet a  
+                        WHERE a.isdeleted = false
+                            AND a.spravochnik_organization_id = so.id
+                    ) AS account_numbers
+                FROM spravochnik_organization AS so 
+                JOIN users ON so.user_id = users.id
                 JOIN regions ON users.region_id = regions.id 
-                WHERE regions.id = $1 AND s_o.parent_id = $2 AND s_o.isdeleted = false
+                WHERE regions.id = $1 AND so.parent_id = $2 AND so.isdeleted = false
             `;
+
             result[0].childs = await db.query(child_query, params);
         }
         return result[0];
@@ -97,29 +126,29 @@ exports.OrganizationDB = class {
         let organ_filter = ``;
         let search_filter = ``
         if (search) {
-            search_filter = `AND ( s_o.inn ILIKE '%' || $${params.length + 1} || '%' OR s_o.name ILIKE '%' || $${params.length + 1} || '%' )`;
+            search_filter = `AND ( so.inn ILIKE '%' || $${params.length + 1} || '%' OR so.name ILIKE '%' || $${params.length + 1} || '%' )`;
             params.push(search);
         }
         if (organ_id) {
             params.push(organ_id);
-            organ_filter = `AND s_o.id = $${params.length}`;
+            organ_filter = `AND so.id = $${params.length}`;
         }
 
         const query = `--sql
             WITH data AS (SELECT 
-                  s_o.id, 
-                  s_o.name, 
-                  s_o.bank_klient, 
-                  s_o.raschet_schet, 
-                  s_o.raschet_schet_gazna, 
-                  s_o.mfo, 
-                  s_o.inn, 
-                  s_o.okonx,
-                  s_o.parent_id 
-                FROM spravochnik_organization AS s_o  
-                JOIN users AS u ON s_o.user_id = u.id
+                  so.id, 
+                  so.name, 
+                  so.bank_klient, 
+                  so.raschet_schet, 
+                  so.raschet_schet_gazna, 
+                  so.mfo, 
+                  so.inn, 
+                  so.okonx,
+                  so.parent_id 
+                FROM spravochnik_organization AS so  
+                JOIN users AS u ON so.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id 
-                WHERE s_o.isdeleted = false 
+                WHERE so.isdeleted = false 
                     AND r.id = $1 
                     ${search_filter}
                     ${organ_filter}
@@ -130,11 +159,11 @@ exports.OrganizationDB = class {
                 ARRAY_AGG(row_to_json(data)) AS data,
                 (
                         
-                    SELECT COALESCE(COUNT(s_o.id), 0)
-                    FROM spravochnik_organization AS s_o  
-                    JOIN users AS u ON s_o.user_id = u.id
+                    SELECT COALESCE(COUNT(so.id), 0)
+                    FROM spravochnik_organization AS so  
+                    JOIN users AS u ON so.user_id = u.id
                     JOIN regions AS r ON u.region_id = r.id 
-                    WHERE s_o.isdeleted = false 
+                    WHERE so.isdeleted = false 
                         AND r.id = $1 
                         ${search_filter}
                         ${organ_filter}
@@ -147,7 +176,9 @@ exports.OrganizationDB = class {
         return { data: result[0]?.data || [], total: result[0].total_count };
     }
 
-    static async create(params) {
+    static async create(params, client) {
+        const _db = client || db;
+
         const query = `--sql
            INSERT INTO spravochnik_organization(
                 name, bank_klient, raschet_schet, raschet_schet_gazna, 
@@ -155,9 +186,12 @@ exports.OrganizationDB = class {
             ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
             RETURNING id
         `;
-        const result = await db.query(query, params);
- 
-        return result[0];
+
+        const result = await _db.query(query, params);
+
+        const response = client ? result.rows[0] : result[0]
+        
+        return response
     }
 
     static async update(params) {
@@ -174,7 +208,7 @@ exports.OrganizationDB = class {
     static async delete(params) {
         const query = `UPDATE spravochnik_organization SET isdeleted = true WHERE id = $1 RETURNING id`;
         const result = await db.query(query, params);
-        
+
         return result[0];
     }
 }
