@@ -1,7 +1,9 @@
 const { db } = require('../../../db/index');
 
 exports.GroupDB = class {
-    static async create(params) {
+    static async create(params, client) {
+        const _db = client || db;
+
         const query = `--sql
             INSERT INTO group_jur7 (
                 smeta_id, 
@@ -19,7 +21,9 @@ exports.GroupDB = class {
             ) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id
         `;
-        const result = await db.query(query, params);
+        
+        const result = await _db.query(query, params);
+        
         return result;
     }
 

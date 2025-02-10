@@ -1,9 +1,19 @@
 const { GroupDB } = require('./db');
 const { HelperFunctions } = require('../../../helper/functions');
-const { PereotsenkaDB } = require('../pereotsenka/db');
-
+const xlsx = require('xlsx');
+const path = require('path');
+const fs = require('fs').promises;
+const { db } = require('../../../db/index');
 
 exports.GroupService = class {
+    static async import(data) {
+        await db.transaction(async client => {
+            for (let item of data.groups) {
+                await this.create({ ...item, client });
+            }
+        })
+    }
+
     static async getById(data) {
         const result = await GroupDB.getById([data.id]);
         return result;
@@ -41,7 +51,7 @@ exports.GroupService = class {
             data.pod_group,
             HelperFunctions.tashkentTime(),
             HelperFunctions.tashkentTime()
-        ]);
+        ], data.client);
 
         return result;
     }
@@ -75,5 +85,38 @@ exports.GroupService = class {
         const result = await GroupDB.getWithPercent();
 
         return result;
+    }
+
+    static async readFile(data) {
+        const workbook = xlsx.readFile(data.filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        const excel_data = xlsx.utils.sheet_to_json(sheet).map(row => {
+            const newRow = {};
+
+            for (const key in row) {
+                if (Object.prototype.hasOwnProperty.call(row, key)) {
+                    newRow[key] = row[key];
+                }
+            }
+
+            return newRow;
+        });
+
+        const result = excel_data.filter((item, index) => index > 2);
+
+        return result;
+    }
+
+    static async templateFile() {
+        const fileName = `group.xlsx`;
+        const folderPath = path.join(__dirname, `../../../../public/template`);
+
+        const filePath = path.join(folderPath, fileName);
+
+        const fileRes = await fs.readFile(filePath);
+
+        return { fileName, fileRes };
     }
 }
