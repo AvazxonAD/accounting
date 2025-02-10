@@ -100,14 +100,14 @@ exports.OrganizationDB = class {
                     (
                         SELECT 
                             JSON_AGG(g)
-                        FROM organization_by_raschet_schet_gazna g  
+                        FROM organization_by_raschet_schet_gazna g
                         WHERE g.isdeleted = false
                             AND g.spravochnik_organization_id = so.id
                     ) AS gazna,
                     (
                         SELECT 
                             JSON_AGG(a)
-                        FROM organization_by_raschet_schet a  
+                        FROM organization_by_raschet_schet a 
                         WHERE a.isdeleted = false
                             AND a.spravochnik_organization_id = so.id
                     ) AS account_numbers
