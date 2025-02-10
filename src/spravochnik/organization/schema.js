@@ -6,7 +6,7 @@ exports.OrganizationSchema = class {
         return Joi.object({
             file: Joi.object({
                 path: Joi.string().trim().required()
-            })       
+            })
         })
     }
 
@@ -20,7 +20,17 @@ exports.OrganizationSchema = class {
                 mfo: Joi.string().trim().required(),
                 inn: Joi.string().trim().required(),
                 okonx: Joi.string().trim().required(),
-                parent_id: Joi.number().min(1).allow(null)
+                parent_id: Joi.number().min(1).allow(null),
+                gaznas: Joi.array().items(
+                    Joi.object({
+                        raschet_schet_gazna: Joi.string().trim().required()
+                    })
+                ),
+                account_numbers: Joi.array().items(
+                    Joi.object({
+                        raschet_schet: Joi.string().trim().required()
+                    })
+                ).empty()
             })
         }).options({ stripUnknown: true });
     }

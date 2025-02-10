@@ -34,7 +34,7 @@ exports.GaznaDB = class {
     static async get(params, search, organ_id) {
         let organ_filter = ``;
         let search_filter = ``
-        
+
         if (search) {
             params.push(search);
             search_filter = `AND ( 
@@ -87,7 +87,9 @@ exports.GaznaDB = class {
         return { data: result[0]?.data || [], total: result[0].total_count };
     }
 
-    static async create(params) {
+    static async create(params, client) {
+        const _db = client || db;
+        
         const query = `--sql
            INSERT INTO organization_by_raschet_schet_gazna(
                 spravochnik_organization_id, 
@@ -96,9 +98,12 @@ exports.GaznaDB = class {
             ) VALUES($1, $2, $3, $4) 
             RETURNING id
         `;
-        const result = await db.query(query, params);
 
-        return result[0];
+        const result = await _db.query(query, params);
+
+        const response = client ? result.rows[0] : result[0];
+
+        return response;
     }
 
     static async update(params) {
