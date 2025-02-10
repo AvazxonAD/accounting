@@ -11,7 +11,7 @@ const { PodotchetMonitoringService } = require('./service')
 exports.Controller = class {
 
     static async getMonitoring(req, res) {
-        const { limit, page, main_schet_id, from, to, operatsii, podotchet_id } = req.query
+        const { limit, page, main_schet_id, from, to, operatsii, podotchet_id, search } = req.query
         const region_id = req.user.region_id;
         const offset = (page - 1) * limit;
         if (podotchet_id) {
@@ -28,10 +28,10 @@ exports.Controller = class {
                 message: "main schet not found"
             })
         }
-        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, offset, limit], podotchet_id);
-        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id, from], podotchet_id, '<', main_schet_id, null, operatsii);
-        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet_id, '<=', main_schet_id, null, operatsii);
-        const total = await PodotchetMonitoringDB.getTotalMonitoring([region_id, main_schet_id, from, to, operatsii], podotchet_id);
+        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, offset, limit], podotchet_id, search);
+        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id, from], podotchet_id, '<', main_schet_id, null, operatsii, search);
+        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet_id, '<=', main_schet_id, null, operatsii, search);
+        const total = await PodotchetMonitoringDB.getTotalMonitoring([region_id, main_schet_id, from, to, operatsii], podotchet_id, search);
         let summa_rasxod = 0
         let summa_prixod = 0
         data.forEach(item => {

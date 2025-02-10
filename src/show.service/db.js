@@ -3,18 +3,18 @@ const { returnParamsValues, designParams } = require('../helper/functions')
 
 exports.ShowServiceDB = class {
     static async getByIdShowService(params, isdeleted) {
-        const ignore = 'AND k_h_j.isdeleted = false'
+        const ignore = 'AND d.isdeleted = false'
         const query = `--sql
             SELECT 
-                k_h_j.id,
-                k_h_j.doc_num,
-                k_h_j.doc_date,
-                TO_CHAR(k_h_j.doc_date, 'YYYY-MM-DD') AS doc_date,
-                k_h_j.id_spravochnik_organization,
-                k_h_j.shartnomalar_organization_id,
-                k_h_j.summa::FLOAT,
-                k_h_j.opisanie,
-                k_h_j.spravochnik_operatsii_own_id,
+                d.id,
+                d.doc_num,
+                d.doc_date,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                d.id_spravochnik_organization,
+                d.shartnomalar_organization_id,
+                d.summa::FLOAT,
+                d.opisanie,
+                d.spravochnik_operatsii_own_id,
                 (
                     SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
                     FROM (
@@ -34,13 +34,13 @@ exports.ShowServiceDB = class {
                             FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
                             JOIN users AS u ON k_h_j_ch.user_id = u.id
                             JOIN regions AS r ON u.region_id = r.id
-                            WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = k_h_j.id
+                            WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = d.id
                         ) AS k_h_j_ch
                 ) AS childs
-            FROM kursatilgan_hizmatlar_jur152 AS k_h_j
-            JOIN users AS u ON u.id = k_h_j.user_id
+            FROM kursatilgan_hizmatlar_jur152 AS d
+            JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
-            WHERE r.id = $1 AND k_h_j.id = $2 AND k_h_j.main_schet_id = $3 ${!isdeleted ? ignore : ''}
+            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${!isdeleted ? ignore : ''}
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -112,56 +112,82 @@ exports.ShowServiceDB = class {
         const result = await client.query(query, _params)
         return result.rows;
     }
-    static async getShowService(params) {
+    static async getShowService(params, search) {
+        let search_filter = ``;
+
+        if (search) {
+            params.push(search);
+            search_filter = `AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`;
+        }
+
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    k_h_j.id,
-                    k_h_j.doc_num,
-                    k_h_j.doc_date,
-                    TO_CHAR(k_h_j.doc_date, 'YYYY-MM-DD') AS doc_date,
-                    k_h_j.id_spravochnik_organization,
-                    s_o.name AS spravochnik_organization_name,
-                    s_o.raschet_schet AS spravochnik_organization_raschet_schet,
-                    s_o.inn AS spravochnik_organization_inn,
-                    k_h_j.shartnomalar_organization_id,
-                    sh_o.doc_num AS shartnomalar_organization_doc_num,
-                    sh_o.doc_date AS shartnomalar_organization_doc_date,
-                    k_h_j.summa::FLOAT,
-                    k_h_j.opisanie,
-                    k_h_j.spravochnik_operatsii_own_id,
+                    d.id,
+                    d.doc_num,
+                    d.doc_date,
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                    d.id_spravochnik_organization,
+                    so.name AS spravochnik_organization_name,
+                    so.raschet_schet AS spravochnik_organization_raschet_schet,
+                    so.inn AS spravochnik_organization_inn,
+                    d.shartnomalar_organization_id,
+                    sho.doc_num AS shartnomalar_organization_doc_num,
+                    sho.doc_date AS shartnomalar_organization_doc_date,
+                    d.summa::FLOAT,
+                    d.opisanie,
+                    d.spravochnik_operatsii_own_id,
                     (
                         SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
                         FROM (
                             SELECT 
-                                s_o.schet AS provodki_schet,
-                                s_o.sub_schet AS provodki_sub_schet
+                                so.schet AS provodki_schet,
+                                so.sub_schet AS provodki_sub_schet
                             FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_h_j_ch.spravochnik_operatsii_id
-                            WHERE  k_h_j_ch.kursatilgan_hizmatlar_jur152_id = k_h_j.id 
+                            JOIN spravochnik_operatsii AS so ON so.id = k_h_j_ch.spravochnik_operatsii_id
+                            WHERE  k_h_j_ch.kursatilgan_hizmatlar_jur152_id = d.id 
                         ) AS k_h_j_ch
                     ) AS provodki_array
-                FROM kursatilgan_hizmatlar_jur152 AS k_h_j
-                JOIN users AS u ON u.id = k_h_j.user_id
+                FROM kursatilgan_hizmatlar_jur152 AS d
+                JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_organization AS s_o ON s_o.id = k_h_j.id_spravochnik_organization
-                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = k_h_j.shartnomalar_organization_id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false ORDER BY k_h_j.doc_date
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                LEFT JOIN shartnomalar_organization AS sho ON sho.id = d.shartnomalar_organization_id
+                WHERE r.id = $1 
+                    AND d.doc_date BETWEEN $2 AND $3 
+                    AND d.main_schet_id = $4 
+                    AND d.isdeleted = false 
+                    ${search_filter}    
+                ORDER BY d.doc_date
                 OFFSET $5 LIMIT $6 
             )
             SELECT 
             ARRAY_AGG(row_to_json(data)) AS data,
-            (SELECT COUNT(k_h_j.id) 
-                FROM kursatilgan_hizmatlar_jur152 AS k_h_j
-                JOIN users AS u ON u.id = k_h_j.user_id
+            (SELECT COUNT(d.id) 
+                FROM kursatilgan_hizmatlar_jur152 AS d
+                JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                WHERE r.id = $1 
+                    AND d.doc_date BETWEEN $2 AND $3 
+                    AND d.main_schet_id = $4 
+                    AND d.isdeleted = false
+                    ${search_filter}
             )::INTEGER AS total_count,
-            (SELECT SUM(k_h_j.summa) 
-                FROM kursatilgan_hizmatlar_jur152 AS k_h_j
-                JOIN users AS u ON u.id = k_h_j.user_id
+            (SELECT SUM(d.summa) 
+                FROM kursatilgan_hizmatlar_jur152 AS d
+                JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                WHERE r.id = $1 AND k_h_j.doc_date BETWEEN $2 AND $3 AND k_h_j.main_schet_id = $4 AND k_h_j.isdeleted = false
+                JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                WHERE r.id = $1 
+                    AND d.doc_date BETWEEN $2 AND $3 
+                    AND d.main_schet_id = $4 
+                    AND d.isdeleted = false
+                    ${search_filter}
             )::FLOAT AS summa
             FROM data
         `;
