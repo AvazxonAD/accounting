@@ -64,9 +64,11 @@ exports.Controller = class {
 
     static async getResponsible(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, search, podraz_id } = req.query;
+        const { page, limit, search, podraz_id, excel } = req.query;
         const offset = (page - 1) * limit;
+
         const { data, total } = await ResponsibleDB.getResponsible([region_id, offset, limit], search, podraz_id)
+
         if (podraz_id) {
             const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, podraz_id])
             if (!podrazdelenie) {
@@ -75,7 +77,9 @@ exports.Controller = class {
                 })
             }
         }
+
         const pageCount = Math.ceil(total / limit);
+
         const meta = {
             pageCount: pageCount,
             count: total,
@@ -83,11 +87,16 @@ exports.Controller = class {
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1
         }
-        return res.status(200).json({
-            message: "responsible successfully get",
-            meta,
-            data: data || []
-        })
+
+        if (excel === 'true') {
+            const { fileName, filePath } = await ResponsibleService.export(data);
+
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            return res.sendFile(filePath);
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async getById(req, res) {

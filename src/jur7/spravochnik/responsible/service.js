@@ -4,8 +4,68 @@ const path = require('path');
 const fs = require('fs').promises;
 const xlsx = require('xlsx');
 const { db } = require('../../../db/index');
+const ExcelJS = require('exceljs');
 
 exports.ResponsibleService = class {
+    static async export(data) {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('responsibles');
+
+        worksheet.columns = [
+            { header: 'ID', key: 'id', width: 10 },
+            { header: 'FIO', key: 'fio', width: 25 },
+            { header: 'Podraz ID', key: 'podraz_id', width: 30 },
+            { header: 'Podrazdelenie', key: 'poraz_name', width: 20 }
+        ];
+
+        data.forEach((item) => {
+            worksheet.addRow({
+                id: item.id,
+                fio: item.fio,
+                podraz_id: item.spravochnik_podrazdelenie_jur7_id,
+                poraz_name: item.spravochnik_podrazdelenie_jur7_name
+            });
+        });
+
+        worksheet.eachRow((row, rowNumber) => {
+            let bold = false;
+            if (rowNumber === 1) {
+                worksheet.getRow(rowNumber).height = 30;
+                bold = true;
+            }
+
+            row.eachCell((cell, columnNumber) => {
+                Object.assign(cell, {
+                    font: { size: 13, name: 'Times New Roman', bold },
+                    alignment: { vertical: "middle", horizontal: "center", wrapText: true },
+                    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                });
+            });
+        });
+
+        const folderPath = path.join(__dirname, `../../../../public/exports`);
+        
+        try {
+            await fs.access(folderPath, fs.constants.W_OK)
+        } catch (error) {
+            await fs.mkdir(folderPath);
+        }
+
+        const fileName = `responsibles.${new Date().getTime()}.xlsx`;
+
+        const filePath = `${folderPath}/${fileName}`;
+
+        await workbook.xlsx.writeFile(filePath);
+
+        return { fileName, filePath };
+    }
+
     static async readFile(data) {
         const workbook = xlsx.readFile(data.filePath);
         const sheetName = workbook.SheetNames[0];
