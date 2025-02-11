@@ -129,15 +129,16 @@ const update_shartnoma = async (req, res) => {
     const region_id = req.user.region_id;
     const budjet_id = req.query.budjet_id;
     const id = req.params.id;
+
     await getByIdShartnomaService(region_id, budjet_id, id);
     const data = validationResponse(shartnomaValidation, req.body)
     await getByIdBudjetService(budjet_id);
     const smeta = await SmetaDB.getById([data.smeta_id]);
+   
     if (!smeta) {
-      return res.status(404).json({
-        message: "smeta not found"
-      })
+      return res.error(req.i18n.t('smetaNotFound'), 404)
     };
+
     await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     const result = await updateShartnomaDB({ ...data, id });
     const grafik_data = { 
@@ -147,6 +148,7 @@ const update_shartnoma = async (req, res) => {
       yillik_oylik: result.yillik_oylik, 
       smeta_id: data.smeta_id 
     }
+    
     if (result.yillik_oylik) {
       let oy_maoshi = Math.floor((result.summa / 12) * 100) / 100;
       let umumiy_summa = oy_maoshi * 12;

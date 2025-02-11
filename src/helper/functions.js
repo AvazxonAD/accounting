@@ -1,6 +1,12 @@
 const jwt = require('jsonwebtoken')
 
 exports.HelperFunctions = class {
+    sum(...args) {
+        let sum = 0;
+        args.map((arg) => (sum += Number(arg)));
+        return sum;
+    };
+
     static tashkentTime() {
         const currentUtcDate = new Date();
         const tashkentOffset = 10 * 60 * 60 * 1000;
