@@ -34,7 +34,7 @@ exports.ResponsibleService = class {
                 bold = true;
             }
 
-            row.eachCell((cell, columnNumber) => {
+            row.eachCell((cell) => {
                 Object.assign(cell, {
                     font: { size: 13, name: 'Times New Roman', bold },
                     alignment: { vertical: "middle", horizontal: "center", wrapText: true },
