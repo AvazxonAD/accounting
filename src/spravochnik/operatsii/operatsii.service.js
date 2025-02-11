@@ -63,7 +63,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
 
     if (schet) {
       params.push(schet);
-      schet_filter = `AND s.schet ILIKE '%' || $${params.length} || '%'`;
+      schet_filter = `AND s.schet = $${params.length}`;
     }
 
     if (sub_schet) {
