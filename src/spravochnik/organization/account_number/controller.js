@@ -33,10 +33,18 @@ exports.Controller = class {
 
     static async get(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, search } = req.query;
+        const { page, limit, organ_id } = req.query;
         const offset = (page - 1) * limit;
 
-        const { data, total } = await AccountNumberService.get({ region_id, search, offset, limit });
+        if (organ_id) {
+            const organization = await OrganizationService.getById({ region_id, id: organ_id });
+            if(!organization){
+                return res.error(req.i18n.t('organizationNotFound'), 404);
+            }
+        }
+
+
+        const { data, total } = await AccountNumberService.get({ region_id, offset, ...req.query });
 
         const pageCount = Math.ceil(total / limit);
         const meta = {

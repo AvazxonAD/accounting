@@ -52,6 +52,7 @@ exports.AccountNumberSchema = class {
             query: Joi.object({
                 page: Joi.number().min(1).default(1),
                 limit: Joi.number().min(1).default(10),
+                organ_id: Joi.number().integer().min(1),
                 search: Joi.string()
             })
         }).options({ stripUnknown: true });
