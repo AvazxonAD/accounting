@@ -139,7 +139,7 @@ const getByIdShartnomaService = async (region_id, budjet_id, id, organization_id
         sh_o.smeta2_id,
         sh_o.smeta_id,
         sh_o.opisanie,
-        sh_o.summa,
+        sh_o.summa::FLOAT,
         sh_o.pudratchi_bool,
         sh_o.yillik_oylik
       FROM shartnomalar_organization AS sh_o
