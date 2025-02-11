@@ -15,14 +15,22 @@ exports.AccountNumberDB = class {
         return result[0]
     }
 
-    static async getById(params, isdeleted) {
+    static async getById(params, organ_id, isdeleted) {
+        let organ_filter = ``;
+
+        if(organ_id){
+            params.push(organ_id);
+            organ_filter = `AND a.spravochnik_organization_id = $${params.length}`;
+        }
+        
         const query = `--sql
             SELECT 
                 row_to_json(a) AS account_number,
                 row_to_json(so) AS organization
             FROM organization_by_raschet_schet a  
             JOIN spravochnik_organization so ON so.id = a.spravochnik_organization_id
-            WHERE a.id = $1 
+            WHERE a.id = $1
+                ${organ_filter} 
                 ${!isdeleted ? 'AND a.isdeleted = false' : ''}
         `;
 
