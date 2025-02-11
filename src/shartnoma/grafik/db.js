@@ -68,10 +68,10 @@ exports.GrafikDB = class {
         return response;
     }
 
-    static async update(params) {
+    static async update(params, client) {
         const _db = client || db;
 
-        const qyery = `
+        const query = `
             UPDATE shartnoma_grafik SET 
             oy_1 = $1,
             oy_2 = $2,
@@ -86,15 +86,57 @@ exports.GrafikDB = class {
             oy_11 = $11,
             oy_12 = $12,
             smeta_id = $13,
-            id_shartnomalar_organization = $14
-            WHERE id = $15 RETURNING id
+            id_shartnomalar_organization = $14,
+            year = $15
+            WHERE id = $16 RETURNING id
         `;
 
         const result = await _db.query(query, params);
 
 
         const response = client ? result.rows[0] : result[0];
-        
+
         return response;
+    }
+
+    static async getById(params, isdeleted) {
+        const query = `
+            SELECT 
+                g.id,
+                g.id_shartnomalar_organization,
+                sh.doc_num, 
+                TO_CHAR(sh.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                sh.summa::FLOAT,
+                sh.opisanie,
+                g.oy_1::FLOAT,
+                g.oy_2::FLOAT,
+                g.oy_3::FLOAT,
+                g.oy_4::FLOAT,
+                g.oy_5::FLOAT,
+                g.oy_6::FLOAT,
+                g.oy_7::FLOAT,
+                g.oy_8::FLOAT,
+                g.oy_9::FLOAT,
+                g.oy_10::FLOAT,
+                g.oy_11::FLOAT,
+                g.oy_12::FLOAT,
+                (oy_1 + oy_2 + oy_3 + oy_4 + oy_5 + oy_6 + oy_7 + oy_8 + oy_9 + oy_10 + oy_11 + oy_12)::FLOAT AS summa,
+                g.year,
+                s.id smeta_id,
+                s.smeta_number sub_schet
+            FROM shartnoma_grafik AS g
+            JOIN users  ON g.user_id = users.id
+            JOIN regions ON users.region_id = regions.id
+            JOIN shartnomalar_organization AS sh ON sh.id = g.id_shartnomalar_organization
+            JOIN smeta s ON s.id = g.smeta_id 
+            WHERE regions.id = $1 
+                AND g.budjet_id = $2 
+                AND g.id = $3
+                ${!isdeleted ? 'AND g.isdeleted = false' : ''} 
+        `;
+
+        const data = await db.query(query, params);
+
+        return data[0];
     }
 }

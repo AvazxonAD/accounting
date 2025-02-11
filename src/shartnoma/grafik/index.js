@@ -14,6 +14,6 @@ router
   .post('/', validator(Controller.create, GrafikSchema.create()))
   .get("/", getAllGrafik)
   .get("/:id", getElementByIdGrafik)
-  .put("/:id", updateShartnomaGrafik);
+  .put("/:id", validator(Controller.update, GrafikSchema.update()));
 
 module.exports = router;

@@ -76,6 +76,7 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
           g.oy_10::FLOAT,
           g.oy_11::FLOAT,
           g.oy_12::FLOAT,
+          (oy_1 + oy_2 + oy_3 + oy_4 + oy_5 + oy_6 + oy_7 + oy_8 + oy_9 + oy_10 + oy_11 + oy_12)::FLOAT AS summa,
           g.year,
           s.id smeta_id,
           s.smeta_number sub_schet
