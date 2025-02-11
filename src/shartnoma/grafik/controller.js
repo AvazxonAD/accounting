@@ -3,6 +3,7 @@ const { BudjetService } = require('../../spravochnik/budjet/service');
 const { HelperFunctions } = require('../../helper/functions');
 const { SmetaService } = require('../../smeta/smeta/service');
 const { ContractService } = require('../contract/service');
+const { ContractDB } = require('../contract/db');
 
 exports.Controller = class {
     static async create(req, res) {
@@ -30,8 +31,8 @@ exports.Controller = class {
 
         const summa = HelperFunctions.sum(oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, oy_7, oy_8, oy_9, oy_10, oy_11, oy_12);
 
-        const result = await GrafikService.create({ ...req.body, id, summa, user_id, budjet_id, year: new Date(contract.doc_date).getFullYear() });
+        const result = await GrafikService.create({ ...req.body, id, summa, user_id, budjet_id, contract });
 
-        return res.success(req.i18n.t('createSuccces'), 201, null, result);
+        return res.success(req.i18n.t('createSuccces'), 201, result.contract, result.grafik);
     }
 }

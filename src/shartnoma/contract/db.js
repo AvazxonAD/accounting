@@ -13,7 +13,7 @@ exports.ContractDB = class {
             organ_filter = `AND s_o.id = $${params.length + 1}`
             params.push(organ_id)
         }
-        
+
         let query = `--sql
             SELECT
                 sh_o.id, 
@@ -23,7 +23,7 @@ exports.ContractDB = class {
                 sh_o.smeta2_id,
                 sh_o.smeta_id,
                 sh_o.opisanie,
-                sh_o.summa,
+                sh_o.summa::FLOAT,
                 sh_o.pudratchi_bool,
                 sh_o.yillik_oylik
             FROM shartnomalar_organization AS sh_o
@@ -100,7 +100,7 @@ exports.ContractDB = class {
 
     static async getContractByOrganizations(params, organ_id) {
         let organ_filter = ``;
-        if(organ_id){
+        if (organ_id) {
             params.push(organ_id);
             organ_filter = `AND so.id = $${params.length}`;
         }
@@ -121,5 +121,18 @@ exports.ContractDB = class {
         `;
         const result = await db.query(query, params);
         return result;
+    }
+
+    static async updateSumma(params, client) {
+        const _db = client || db;
+
+        const query = `UPDATE shartnomalar_organization SET summa = $1 WHERE id  = $2 RETURNING * `;
+
+
+        const result = await _db.query(query, params);
+
+        const response = client ? result.rows[0] : result[0];
+
+        return response;
     }
 }
