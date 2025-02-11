@@ -97,13 +97,13 @@ exports.OrganizationDB = class {
                     so.inn, 
                     so.okonx,
                     so.parent_id,
-                    (
+                    COALESCE((
                         SELECT 
                             JSON_AGG(g)
                         FROM organization_by_raschet_schet_gazna g
                         WHERE g.isdeleted = false
                             AND g.spravochnik_organization_id = so.id
-                    ) AS gaznas,
+                    ), '[]'::JSON) AS gaznas,
                     (
                         SELECT 
                             JSON_AGG(a)
