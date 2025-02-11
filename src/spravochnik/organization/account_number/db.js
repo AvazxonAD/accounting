@@ -25,7 +25,7 @@ exports.AccountNumberDB = class {
         
         const query = `--sql
             SELECT 
-                row_to_json(a) AS account_number,
+                row_to_json(a) AS account_numbers,
                 row_to_json(so) AS organization
             FROM organization_by_raschet_schet a  
             JOIN spravochnik_organization so ON so.id = a.spravochnik_organization_id
@@ -60,7 +60,7 @@ exports.AccountNumberDB = class {
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    row_to_json(a) AS account_number,
+                    row_to_json(a) AS account_numbers,
                     row_to_json(so) AS organization
                 FROM organization_by_raschet_schet a  
                 JOIN spravochnik_organization so ON so.id = a.spravochnik_organization_id  
