@@ -66,7 +66,7 @@ exports.AccountNumberService = class {
     }
 
     static async getById(data) {
-        const result = await AccountNumberDB.getById([data.id], data.isdeleted);
+        const result = await AccountNumberDB.getById([data.id], data.organ_id, data.isdeleted);
 
         return result;
     }

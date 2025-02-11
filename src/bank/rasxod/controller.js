@@ -8,6 +8,8 @@ const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/servi
 const { BankRasxodService } = require('./service');
 const { OrganizationService } = require('../../spravochnik/organization/service');
 const { ContractService } = require('../../shartnoma/service');
+const { GaznaService } = require('../../spravochnik/organization/gazna/service');
+const { AccountNumberService } = require('../../spravochnik/organization/account_number/service');
 
 exports.Controller = class {
   static async payment(req, res) {
@@ -67,7 +69,13 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { id_podotchet_litso, id_spravochnik_organization, id_shartnomalar_organization, childs } = req.body;
+    const {
+      id_spravochnik_organization,
+      id_shartnomalar_organization,
+      childs,
+      organization_by_raschet_schet_id,
+      organization_by_raschet_schet_gazna_id
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
@@ -83,6 +91,20 @@ exports.Controller = class {
       const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_id) {
+      const account_number = await AccountNumberService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_id });
+      if (!account_number) {
+        return res.error(req.i18n.t('account_number_not_found'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_gazna_id) {
+      const gazna = await GaznaService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_gazna_id });
+      if (!gazna) {
+        return res.error(req.i18n.t('gaznaNotFound'), 404);
       }
     }
 
@@ -184,7 +206,13 @@ exports.Controller = class {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { id_podotchet_litso, id_spravochnik_organization, id_shartnomalar_organization, childs } = req.body;
+    const {
+      id_spravochnik_organization,
+      id_shartnomalar_organization,
+      childs,
+      organization_by_raschet_schet_id,
+      organization_by_raschet_schet_gazna_id
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
@@ -205,6 +233,20 @@ exports.Controller = class {
       const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_id) {
+      const account_number = await AccountNumberService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_id });
+      if (!account_number) {
+        return res.error(req.i18n.t('account_number_not_found'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_gazna_id) {
+      const gazna = await GaznaService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_gazna_id });
+      if (!gazna) {
+        return res.error(req.i18n.t('gaznaNotFound'), 404);
       }
     }
 

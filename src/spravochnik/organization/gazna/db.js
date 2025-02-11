@@ -15,14 +15,22 @@ exports.GaznaDB = class {
         return result[0]
     }
 
-    static async getById(params, isdeleted) {
+    static async getById(params, organ_id, isdeleted) {
+        let organ_filter = ``;
+
+        if(organ_id){
+            params.push(organ_id);
+            organ_filter = `AND g.spravochnik_organization_id = $${params.length}`;
+        }
+        
         const query = `--sql
             SELECT 
                 row_to_json(g) AS gazna,
                 row_to_json(so) AS organization
             FROM organization_by_raschet_schet_gazna g  
             JOIN spravochnik_organization so ON so.id = g.spravochnik_organization_id
-            WHERE g.id = $1 
+            WHERE g.id = $1
+                ${organ_filter} 
                 ${!isdeleted ? 'AND g.isdeleted = false' : ''}
         `;
 

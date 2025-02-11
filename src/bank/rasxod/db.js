@@ -183,8 +183,8 @@ exports.BankRasxodDB = class {
                 d.rukovoditel,
                 d.tulanmagan_summa::FLOAT,
                 d.glav_buxgalter,
-                d.organization_by_raschet_schet_id,
-                d.organization_by_raschet_schet_gazna_id,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
                 (
                     SELECT 
                         ARRAY_AGG(row_to_json(ch))
@@ -237,8 +237,8 @@ exports.BankRasxodDB = class {
                 rukovoditel = $7,
                 glav_buxgalter = $8,
                 summa = 0,
-                d.organization_by_raschet_schet_id = $9,
-                d.organization_by_raschet_schet_gazna_id = $10,
+                organization_by_raschet_schet_id = $9,
+                organization_by_raschet_schet_gazna_id = $10,
                 updated_at = $11,
                 tulangan_tulanmagan = false
             WHERE id = $12 RETURNING id 

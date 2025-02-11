@@ -65,7 +65,7 @@ exports.GaznaService = class {
     }
 
     static async getById(data) {
-        const result = await GaznaDB.getById([data.id], data.isdeleted);
+        const result = await GaznaDB.getById([data.id], data.organ_id, data.isdeleted);
 
         return result;
     }
