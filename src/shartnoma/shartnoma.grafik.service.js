@@ -54,41 +54,45 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
   try {
     let ignore = ``
     if (!ignoreDeleted) {
-      ignore = ` AND sh_g.isdeleted = false`;
+      ignore = ` AND g.isdeleted = false`;
     }
     const result = await pool.query(`
         SELECT 
-          sh_g.id,
-          sh_g.id_shartnomalar_organization,
+          g.id,
+          g.id_shartnomalar_organization,
           sh.doc_num, 
           TO_CHAR(sh.doc_date, 'YYYY-MM-DD') AS doc_date, 
           sh.summa::FLOAT,
           sh.opisanie,
-          sh_g.oy_1::FLOAT,
-          sh_g.oy_2::FLOAT,
-          sh_g.oy_3::FLOAT,
-          sh_g.oy_4::FLOAT,
-          sh_g.oy_5::FLOAT,
-          sh_g.oy_6::FLOAT,
-          sh_g.oy_7::FLOAT,
-          sh_g.oy_8::FLOAT,
-          sh_g.oy_9::FLOAT,
-          sh_g.oy_10::FLOAT,
-          sh_g.oy_11::FLOAT,
-          sh_g.oy_12::FLOAT,
-          sh_g.year,
+          g.oy_1::FLOAT,
+          g.oy_2::FLOAT,
+          g.oy_3::FLOAT,
+          g.oy_4::FLOAT,
+          g.oy_5::FLOAT,
+          g.oy_6::FLOAT,
+          g.oy_7::FLOAT,
+          g.oy_8::FLOAT,
+          g.oy_9::FLOAT,
+          g.oy_10::FLOAT,
+          g.oy_11::FLOAT,
+          g.oy_12::FLOAT,
+          g.year,
           s.id smeta_id,
           s.smeta_number sub_schet
-        FROM shartnoma_grafik AS sh_g
-        JOIN users  ON sh_g.user_id = users.id
+        FROM shartnoma_grafik AS g
+        JOIN users  ON g.user_id = users.id
         JOIN regions ON users.region_id = regions.id
-        JOIN shartnomalar_organization AS sh ON sh.id = sh_g.id_shartnomalar_organization
-        JOIN smeta s ON s.id = sh_g.smeta_id 
-        WHERE regions.id = $1 AND sh_g.budjet_id = $2 AND sh_g.id = $3 ${ignore}
+        JOIN shartnomalar_organization AS sh ON sh.id = g.id_shartnomalar_organization
+        JOIN smeta s ON s.id = g.smeta_id 
+        WHERE regions.id = $1 
+          AND g.budjet_id = $2 
+          AND g.id = $3 ${ignore}
       `, [region_id, budjet_id, id])
+   
     if (!result.rows[0]) {
       throw new ErrorResponse('shartnoma_grafik not found', 404)
     }
+
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
@@ -96,8 +100,9 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
 }
 
 
-const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset, search = null) => {
+const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset, search = null, contract_id = null) => {
   try {
+    let contract_filter = ``;
     let organization_filter = '';
     let search_filter = ``;
 
@@ -117,6 +122,11 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
       )`;
     }
 
+    if(contract_id){
+      params.push(contract_id);
+      contract_filter = `AND sho.id = $${params.length}`;
+    }
+
     const { rows } = await pool.query(`
       WITH data AS (
         SELECT
@@ -126,40 +136,40 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
           so.mfo AS spravochnik_organization_mfo,
           so.inn AS spravochnik_organization_inn,
           so.raschet_schet AS spravochnik_organization_raschet_schet,
-          sh_g.id_shartnomalar_organization,
+          g.id_shartnomalar_organization,
           sho.doc_num AS shartnomalar_organization_doc_num,
           TO_CHAR(sho.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
           s.id AS smeta_id,
           s.smeta_number AS smeta_number,
-          s_2.smeta_number AS smeta2_number,
           sho.opisanie AS shartnomalar_organization_opisanie,
           sho.summa::FLOAT AS shartnomalar_organization_summa,
           sho.pudratchi_bool AS shartnomalar_organization_pudratchi_bool,
-          sh_g.id,
-          sh_g.oy_1::FLOAT,
-          sh_g.oy_2::FLOAT,
-          sh_g.oy_3::FLOAT,
-          sh_g.oy_4::FLOAT,
-          sh_g.oy_5::FLOAT,
-          sh_g.oy_6::FLOAT,
-          sh_g.oy_7::FLOAT,
-          sh_g.oy_8::FLOAT,
-          sh_g.oy_9::FLOAT,
-          sh_g.oy_10::FLOAT,
-          sh_g.oy_11::FLOAT,
-          sh_g.oy_12::FLOAT,
-          sh_g.year
-        FROM shartnoma_grafik AS sh_g
-        JOIN users AS u ON sh_g.user_id = u.id
+          g.id,
+          g.oy_1::FLOAT,
+          g.oy_2::FLOAT,
+          g.oy_3::FLOAT,
+          g.oy_4::FLOAT,
+          g.oy_5::FLOAT,
+          g.oy_6::FLOAT,
+          g.oy_7::FLOAT,
+          g.oy_8::FLOAT,
+          g.oy_9::FLOAT,
+          g.oy_10::FLOAT,
+          g.oy_11::FLOAT,
+          g.oy_12::FLOAT,
+          g.year
+        FROM shartnoma_grafik AS g
+        JOIN users AS u ON g.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        JOIN shartnomalar_organization AS sho ON sho.id = sh_g.id_shartnomalar_organization
+        JOIN shartnomalar_organization AS sho ON sho.id = g.id_shartnomalar_organization
         JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
-        JOIN smeta AS s ON s.id = sh_g.smeta_id
-        WHERE sh_g.isdeleted = false 
+        JOIN smeta AS s ON s.id = g.smeta_id
+        WHERE g.isdeleted = false 
           AND r.id = $1 
-          AND sh_g.budjet_id = $2 
+          AND g.budjet_id = $2 
           ${organization_filter}
           ${search_filter}
+          ${contract_filter}
         
         ORDER BY sho.doc_date 
         OFFSET $3 LIMIT $4
@@ -168,18 +178,19 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
         ARRAY_AGG(row_to_json(data)) AS data,
         COALESCE(
           (
-            SELECT COUNT(sh_g.id)
-            FROM shartnoma_grafik AS sh_g
-            JOIN users AS u ON sh_g.user_id = u.id
+            SELECT COUNT(g.id)
+            FROM shartnoma_grafik AS g
+            JOIN users AS u ON g.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
-            JOIN shartnomalar_organization AS sho ON sho.id = sh_g.id_shartnomalar_organization
+            JOIN shartnomalar_organization AS sho ON sho.id = g.id_shartnomalar_organization
             JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
-            JOIN smeta AS s ON s.id = sh_g.smeta_id
-            WHERE sh_g.isdeleted = false 
+            JOIN smeta AS s ON s.id = g.smeta_id
+            WHERE g.isdeleted = false 
               AND r.id = $1 
-              AND sh_g.budjet_id = $2 
+              AND g.budjet_id = $2 
               ${organization_filter}
               ${search_filter}
+              ${contract_filter}
           ), 0
         )::INTEGER AS total_count
       FROM data
@@ -209,8 +220,9 @@ const updateShartnomaGrafikDB = async (data) => {
         oy_10 = $10,
         oy_11 = $11,
         oy_12 = $12,
-        smeta_id = $13
-        WHERE id = $14 RETURNING *
+        smeta_id = $13,
+        id_shartnomalar_organization = $14
+        WHERE id = $15 RETURNING *
     `,
       [
         data.oy_1,
@@ -226,6 +238,7 @@ const updateShartnomaGrafikDB = async (data) => {
         data.oy_11,
         data.oy_12,
         data.smeta_id,
+        data.id_shartnomalar_organization,
         data.id
       ],
     );

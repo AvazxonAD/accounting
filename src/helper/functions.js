@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 
 exports.HelperFunctions = class {
-    sum(...args) {
+    static sum(...args) {
         let sum = 0;
         args.map((arg) => (sum += Number(arg)));
         return sum;
