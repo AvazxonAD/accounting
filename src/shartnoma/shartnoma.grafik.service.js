@@ -21,9 +21,10 @@ const createShartnomaGrafik = async (data) => {
         oy_10,
         oy_11,
         oy_12,
-        yillik_oylik
+        yillik_oylik,
+        smeta_id
       ) 
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) 
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
       RETURNING *
     `, [
     data.shartnoma_id,
@@ -42,8 +43,10 @@ const createShartnomaGrafik = async (data) => {
     data.oy_10 || 0,
     data.oy_11 || 0,
     data.oy_12 || 0,
-    data.yillik_oylik
+    data.yillik_oylik,
+    data.smeta_id
   ]);
+  
   return grafik.rows[0]
 }
 
@@ -80,7 +83,7 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
         JOIN users  ON sh_g.user_id = users.id
         JOIN regions ON users.region_id = regions.id
         JOIN shartnomalar_organization AS sh ON sh.id = sh_g.id_shartnomalar_organization
-        JOIN smeta s ON s.id = sh.smeta_id 
+        JOIN smeta s ON s.id = sh_g.smeta_id 
         WHERE regions.id = $1 AND sh_g.budjet_id = $2 AND sh_g.id = $3 ${ignore}
       `, [region_id, budjet_id, id])
     if (!result.rows[0]) {
@@ -151,8 +154,7 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
         JOIN regions AS r ON u.region_id = r.id
         JOIN shartnomalar_organization AS sho ON sho.id = sh_g.id_shartnomalar_organization
         JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
-        JOIN smeta AS s ON s.id = sho.smeta_id
-        LEFT JOIN smeta AS s_2 ON s_2.id = sho.smeta2_id
+        JOIN smeta AS s ON s.id = sh_g.smeta_id
         WHERE sh_g.isdeleted = false 
           AND r.id = $1 
           AND sh_g.budjet_id = $2 
@@ -172,8 +174,7 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
             JOIN regions AS r ON u.region_id = r.id
             JOIN shartnomalar_organization AS sho ON sho.id = sh_g.id_shartnomalar_organization
             JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
-            JOIN smeta AS s ON s.id = sho.smeta_id
-            LEFT JOIN smeta AS s_2 ON s_2.id = sho.smeta2_id
+            JOIN smeta AS s ON s.id = sh_g.smeta_id
             WHERE sh_g.isdeleted = false 
               AND r.id = $1 
               AND sh_g.budjet_id = $2 
@@ -207,8 +208,9 @@ const updateShartnomaGrafikDB = async (data) => {
         oy_9 = $9,
         oy_10 = $10,
         oy_11 = $11,
-        oy_12 = $12
-        WHERE id = $13 RETURNING *
+        oy_12 = $12,
+        smeta_id = $13
+        WHERE id = $14 RETURNING *
     `,
       [
         data.oy_1,
@@ -223,6 +225,7 @@ const updateShartnomaGrafikDB = async (data) => {
         data.oy_10,
         data.oy_11,
         data.oy_12,
+        data.smeta_id,
         data.id
       ],
     );
@@ -232,53 +235,9 @@ const updateShartnomaGrafikDB = async (data) => {
   }
 }
 
-const updateShartnomaGrafikService = async (grafik_data) => {
-  try {
-    const grafik = await pool.query(`
-      UPDATE shartnoma_grafik SET
-          year = $1, 
-          oy_1 = $2,
-          oy_2 = $3,
-          oy_3 = $4,
-          oy_4 = $5,
-          oy_5 = $6,
-          oy_6 = $7,
-          oy_7 = $8,
-          oy_8 = $9,
-          oy_9 = $10,
-          oy_10 = $11,
-          oy_11 = $12,
-          oy_12 = $13,
-          yillik_oylik = $14
-        WHERE id_shartnomalar_organization = $15   
-        RETURNING *
-      `, [
-      grafik_data.year,
-      grafik_data.oy_1 || 0,
-      grafik_data.oy_2 || 0,
-      grafik_data.oy_3 || 0,
-      grafik_data.oy_4 || 0,
-      grafik_data.oy_5 || 0,
-      grafik_data.oy_6 || 0,
-      grafik_data.oy_7 || 0,
-      grafik_data.oy_8 || 0,
-      grafik_data.oy_9 || 0,
-      grafik_data.oy_10 || 0,
-      grafik_data.oy_11 || 0,
-      grafik_data.oy_12 || 0,
-      grafik_data.yillik_oylik,
-      grafik_data.shartnoma_id
-    ]);
-    return grafik.rows[0]
-  } catch (error) {
-    throw new ErrorResponse(error, error.statusCode)
-  }
-}
-
 module.exports = {
   createShartnomaGrafik,
   getByIdGrafikDB,
   getAllGrafikDB,
-  updateShartnomaGrafikDB,
-  updateShartnomaGrafikService
+  updateShartnomaGrafikDB
 };

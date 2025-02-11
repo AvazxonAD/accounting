@@ -8,7 +8,7 @@ const {
 const { SmetaDB } = require("../smeta/smeta/db.js");
 const { OrganizationDB } = require("../spravochnik/organization/db.js");
 const { shartnomaValidation, ShartnomaqueryValidation } = require("../utils/validation");;
-const { createShartnomaGrafik, updateShartnomaGrafikService } = require("../shartnoma/shartnoma.grafik.service.js");
+const { createShartnomaGrafik } = require("../shartnoma/shartnoma.grafik.service.js");
 const { validationResponse } = require('../utils/response-for-validation.js')
 const { errorCatch } = require("../utils/errorCatch.js");
 const { resFunc } = require("../utils/resFunc.js");
@@ -21,30 +21,30 @@ const create = async (req, res) => {
     const user_id = req.user.id;
     const budjet_id = req.query.budjet_id
     const data = validationResponse(shartnomaValidation, req.body)
+    
     const smeta = await SmetaDB.getById([data.smeta_id]);
     if(!smeta){
-      return res.status(404).json({
-        message: "smeta not found"
-      })
+      return res.error(req.i18n.t('smetaNotFound'), 404);
     }
+
     await getByIdBudjetService(budjet_id)
-    if (data.smeta2_id) {
-      await getById(data.smeta2_id)
-    }
+   
     const organization = await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     if(!organization) {
-      return res.status(404).json({
-        message: "organization not found"
-      })
+      return res.error(req.i18n.t('organizationNotFound'), 404);
     }
+
     const shartnoma = await createShartnoma({ ...data, user_id, budjet_id });
+    
     const grafik_data = {
       user_id,
       shartnoma_id: shartnoma.id,
       year: data.doc_date.split('-')[0],
       budjet_id,
       yillik_oylik: shartnoma.yillik_oylik,
+      smeta_id: data.smeta_id
     };
+    
     if (shartnoma.yillik_oylik) {
       let oy_maoshi = Math.floor((shartnoma.summa / 12) * 100) / 100;
       let umumiy_summa = oy_maoshi * 12;
@@ -68,9 +68,13 @@ const create = async (req, res) => {
       const key = `oy_` + `${new Date(shartnoma.doc_date).getMonth() + 1}`;
       grafik_data[key] = shartnoma.summa;
     }
+
     const grafik = await createShartnomaGrafik(grafik_data);
+    
     shartnoma.grafik = grafik
-    resFunc(res, 200, shartnoma)
+    
+    resFunc(res, 200, shartnoma);
+    
   } catch (error) {
     errorCatch(error, res)
   }
@@ -156,7 +160,7 @@ const update_shartnoma = async (req, res) => {
       const key = `oy_` + `${new Date(result.doc_date).getMonth() + 1}`;
       grafik_data[key] = result.summa;
     }
-    const grafik = await updateShartnomaGrafikService(grafik_data)
+    const grafik = await createShartnomaGrafik(grafik_data);
     result.grafik = grafik
     resFunc(res, 200, result)
   } catch (error) {

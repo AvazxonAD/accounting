@@ -1,4 +1,4 @@
-const { ContractService } = require('../../shartnoma/service');
+const { ContractService } = require('../../shartnoma/contract/service');
 const { GroupService } = require('../spravochnik/group/service');
 const { PrixodSchema } = require('./schema');
 const { PrixodJur7Service } = require('./service');

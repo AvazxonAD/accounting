@@ -7,7 +7,7 @@ const { SostavService } = require('../../spravochnik/sostav/service')
 const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');
 const { BankRasxodService } = require('./service');
 const { OrganizationService } = require('../../spravochnik/organization/service');
-const { ContractService } = require('../../shartnoma/service');
+const { ContractService } = require('../../shartnoma/contract/service');
 const { GaznaService } = require('../../spravochnik/organization/gazna/service');
 const { AccountNumberService } = require('../../spravochnik/organization/account_number/service');
 

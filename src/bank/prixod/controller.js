@@ -7,7 +7,7 @@ const { SostavService } = require('../../spravochnik/sostav/service')
 const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');
 const { BankPrixodService } = require('./service');
 const { OrganizationService } = require('../../spravochnik/organization/service');
-const { ContractService } = require('../../shartnoma/service');
+const { ContractService } = require('../../shartnoma/contract/service');
 
 exports.Controller = class {
   static async create(req, res) {
