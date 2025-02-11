@@ -1,0 +1,1 @@
+ALTER TABLE saldo_naimenovanie_jur7 ADD COLUMN prixod_id INTEGER REFERENCES document_prixod_jur7(id);
