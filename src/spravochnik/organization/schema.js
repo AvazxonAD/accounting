@@ -15,8 +15,6 @@ exports.OrganizationSchema = class {
             body: Joi.object({
                 name: Joi.string().trim().required(),
                 bank_klient: Joi.string().trim().required(),
-                raschet_schet: Joi.string().trim().required(),
-                raschet_schet_gazna: Joi.string().trim().required(),
                 mfo: Joi.string().trim().required(),
                 inn: Joi.string().trim().required(),
                 okonx: Joi.string().trim().required(),
@@ -40,8 +38,6 @@ exports.OrganizationSchema = class {
             body: Joi.object({
                 name: Joi.string().trim().required(),
                 bank_klient: Joi.string().trim().required(),
-                raschet_schet: Joi.string().trim().required(),
-                raschet_schet_gazna: Joi.string().trim().required(),
                 mfo: Joi.string().trim().required(),
                 inn: Joi.string().trim().required(),
                 okonx: Joi.string().trim().required(),

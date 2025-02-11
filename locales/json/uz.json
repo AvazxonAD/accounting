@@ -13,6 +13,7 @@
     "responsibleExists": "{{data}} ushbu javobgar shaxs avval kiritilgan!",
     "contractNotFound": "Shartnoma topilmadi!",
     "groupNotFound": "Guruh topilmadi!",
+    "smetaNotFound": "Smeta topilmadi!",
     "createSuccess": "Muvaffaqiyatli kiritildi",
     "getSuccess": "Muvaffaqiyatli ma'lumot olindi",
     "docNotFound": "Hujjat topilmadi!",

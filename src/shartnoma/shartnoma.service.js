@@ -4,35 +4,32 @@ const ErrorResponse = require("../utils/errorResponse");
 const createShartnoma = async (data) => {
   try {
     const shartnoma = await pool.query(
-      `INSERT INTO shartnomalar_organization(
+      `
+        INSERT INTO shartnomalar_organization(
           doc_num, 
           doc_date, 
           summa, 
           opisanie, 
-          smeta_id,
-          user_id,
-          smeta2_id, 
+          user_id, 
           spravochnik_organization_id, 
           pudratchi_bool, 
           budjet_id,
           yillik_oylik
         )
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
-        `,
+      `,
       [
         data.doc_num,
         data.doc_date,
         data.summa,
         data.opisanie,
-        data.smeta_id,
         data.user_id,
-        data.smeta2_id,
         data.spravochnik_organization_id,
         data.pudratchi_bool,
         data.budjet_id,
         data.yillik_oylik
-      ],
+      ]
     );
     return shartnoma.rows[0];
   } catch (error) {
