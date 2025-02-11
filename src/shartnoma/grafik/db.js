@@ -68,4 +68,33 @@ exports.GrafikDB = class {
         return response;
     }
 
+    static async update(params) {
+        const _db = client || db;
+
+        const qyery = `
+            UPDATE shartnoma_grafik SET 
+            oy_1 = $1,
+            oy_2 = $2,
+            oy_3 = $3,
+            oy_4 = $4,
+            oy_5 = $5,
+            oy_6 = $6,
+            oy_7 = $7,
+            oy_8 = $8,
+            oy_9 = $9,
+            oy_10 = $10,
+            oy_11 = $11,
+            oy_12 = $12,
+            smeta_id = $13,
+            id_shartnomalar_organization = $14
+            WHERE id = $15 RETURNING id
+        `;
+
+        const result = await _db.query(query, params);
+
+
+        const response = client ? result.rows[0] : result[0];
+        
+        return response;
+    }
 }
