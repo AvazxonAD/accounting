@@ -25,7 +25,7 @@ exports.GaznaDB = class {
         
         const query = `--sql
             SELECT 
-                row_to_json(g) AS gaznas,
+                row_to_json(g) AS gazna,
                 row_to_json(so) AS organization
             FROM organization_by_raschet_schet_gazna g  
             JOIN spravochnik_organization so ON so.id = g.spravochnik_organization_id
@@ -60,7 +60,7 @@ exports.GaznaDB = class {
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    row_to_json(g) AS gaznas,
+                    row_to_json(g) AS gazna,
                     row_to_json(so) AS organization
                 FROM organization_by_raschet_schet_gazna g  
                 JOIN spravochnik_organization so ON so.id = g.spravochnik_organization_id  
