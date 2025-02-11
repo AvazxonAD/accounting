@@ -68,7 +68,7 @@ exports.OrganizationDB = class {
                     FROM organization_by_raschet_schet_gazna g  
                     WHERE g.isdeleted = false
                         AND g.spravochnik_organization_id = so.id
-                ) AS gazna,
+                ) AS gaznas,
                 (
                     SELECT 
                         JSON_AGG(a)
@@ -103,7 +103,7 @@ exports.OrganizationDB = class {
                         FROM organization_by_raschet_schet_gazna g
                         WHERE g.isdeleted = false
                             AND g.spravochnik_organization_id = so.id
-                    ) AS gazna,
+                    ) AS gaznas,
                     (
                         SELECT 
                             JSON_AGG(a)

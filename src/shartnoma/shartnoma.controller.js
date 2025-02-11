@@ -125,6 +125,7 @@ const getElementById = async (req, res) => {
 // update shartnoma
 const update_shartnoma = async (req, res) => {
   try {
+    const user_id = req.user.id;
     const region_id = req.user.region_id;
     const budjet_id = req.query.budjet_id;
     const id = req.params.id;
@@ -139,7 +140,13 @@ const update_shartnoma = async (req, res) => {
     };
     await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     const result = await updateShartnomaDB({ ...data, id });
-    const grafik_data = { shartnoma_id: result.id, year: data.doc_date.split('-')[0], yillik_oylik: result.yillik_oylik, smeta_id: data.smeta_id }
+    const grafik_data = { 
+      shartnoma_id: result.id, 
+      year: data.doc_date.split('-')[0], 
+      budjet_id, user_id,
+      yillik_oylik: result.yillik_oylik, 
+      smeta_id: data.smeta_id 
+    }
     if (result.yillik_oylik) {
       let oy_maoshi = Math.floor((result.summa / 12) * 100) / 100;
       let umumiy_summa = oy_maoshi * 12;
