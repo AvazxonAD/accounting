@@ -32,5 +32,7 @@ exports.Controller = class {
 
 
         const result = await GrafikService.create({ ...data, id, summa, user_id, smeta_id });
+
+        
     }
 }
