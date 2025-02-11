@@ -69,13 +69,13 @@ exports.OrganizationDB = class {
                     WHERE g.isdeleted = false
                         AND g.spravochnik_organization_id = so.id
                 ), '[]'::JSON) AS gaznas,
-                (
+                COALESCE((
                     SELECT 
                         JSON_AGG(a)
                     FROM organization_by_raschet_schet a  
                     WHERE a.isdeleted = false
                         AND a.spravochnik_organization_id = so.id
-                ) AS account_numbers
+                ), '[]'::JSON) AS account_numbers
             FROM spravochnik_organization AS so 
             JOIN users ON so.user_id = users.id
             JOIN regions ON users.region_id = regions.id 
@@ -104,13 +104,13 @@ exports.OrganizationDB = class {
                         WHERE g.isdeleted = false
                             AND g.spravochnik_organization_id = so.id
                     ), '[]'::JSON) AS gaznas,
-                    (
+                    COALESCE((
                         SELECT 
                             JSON_AGG(a)
-                        FROM organization_by_raschet_schet a 
+                        FROM organization_by_raschet_schet a  
                         WHERE a.isdeleted = false
                             AND a.spravochnik_organization_id = so.id
-                    ) AS account_numbers
+                    ), '[]'::JSON) AS account_numbers
                 FROM spravochnik_organization AS so 
                 JOIN users ON so.user_id = users.id
                 JOIN regions ON users.region_id = regions.id 
