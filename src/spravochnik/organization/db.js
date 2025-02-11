@@ -144,7 +144,21 @@ exports.OrganizationDB = class {
                   so.mfo, 
                   so.inn, 
                   so.okonx,
-                  so.parent_id 
+                  so.parent_id,
+                  COALESCE((
+                        SELECT 
+                            JSON_AGG(g)
+                        FROM organization_by_raschet_schet_gazna g
+                        WHERE g.isdeleted = false
+                            AND g.spravochnik_organization_id = so.id
+                    ), '[]'::JSON) AS gaznas,
+                    COALESCE((
+                        SELECT 
+                            JSON_AGG(a)
+                        FROM organization_by_raschet_schet a  
+                        WHERE a.isdeleted = false
+                            AND a.spravochnik_organization_id = so.id
+                    ), '[]'::JSON) AS account_numbers
                 FROM spravochnik_organization AS so  
                 JOIN users AS u ON so.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id 
@@ -190,7 +204,7 @@ exports.OrganizationDB = class {
         const result = await _db.query(query, params);
 
         const response = client ? result.rows[0] : result[0]
-        
+
         return response
     }
 
