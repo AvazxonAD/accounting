@@ -48,7 +48,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
 
     if (search) {
       params.push(search)
-      search_filter = `AND ( s.schet = $${params.length} OR s.name ILIKE '%' || $${params.length} || '%' ) `;
+      search_filter = `AND ( s.schet ILIKE '%' || $${params.length} || '%' OR s.name ILIKE '%' || $${params.length} || '%' ) `;
     }
 
     if (type_schet) {
