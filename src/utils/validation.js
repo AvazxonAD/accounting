@@ -282,6 +282,8 @@ const shartnomaGarfikValidation = Joi.object({
   oy_10: Joi.number().required(),
   oy_11: Joi.number().required(),
   oy_12: Joi.number().required(),
+  smeta_id: Joi.number().integer().min(1).required(),
+  id_shartnomalar_organization: Joi.number().integer().min(1).required()
 }).options({ stripUnknown: true });
 
 const ShartnomaqueryValidation = Joi.object({
@@ -290,7 +292,8 @@ const ShartnomaqueryValidation = Joi.object({
   budjet_id: Joi.number().min(1),
   organization: Joi.number().min(1),
   pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
-  search: Joi.string().trim()
+  search: Joi.string().trim(),
+  contract_id: Joi.number().min(1).integer()
 }).options({ stripUnknown: true });
 
 const showServicesValidation = Joi.object({
