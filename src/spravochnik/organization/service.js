@@ -35,6 +35,7 @@ exports.OrganizationService = class {
 
     static async create(data) {
         const result = await db.transaction(async client => {
+            console.log(data)
             const organ = await OrganizationDB.create([
                 data.name, data.bank_klient, data.raschet_schet,
                 data.raschet_schet_gazna, data.mfo, data.inn, data.user_id,
@@ -105,7 +106,7 @@ exports.OrganizationService = class {
                     }
                 }
 
-                await this.create({ ...item, user_id: data.user_id }, client);
+                await this.create({ ...item, user_id: data.user_id, account_numbers: [], gaznas: [] }, client);
             }
         })
     }
