@@ -91,6 +91,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
         FROM spravochnik_operatsii s 
         JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
         WHERE s.isdeleted = false 
+          AND s.budjet_id IS NOT NULL
           ${schet_filter}
           ${sub_schet_filter}
           ${search_filter} 
@@ -105,7 +106,8 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
           SELECT 
             COUNT(s.id) 
           FROM spravochnik_operatsii s
-          WHERE s.isdeleted = false 
+          WHERE s.isdeleted = false
+            AND s.budjet_id IS NOT NULL 
             ${schet_filter}
             ${sub_schet_filter}
             ${search_filter} 

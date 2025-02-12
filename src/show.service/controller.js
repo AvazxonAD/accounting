@@ -54,7 +54,7 @@ exports.Controller = class {
             }
         }
         for (let child of childs) {
-            const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service");
+            const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service", req.query.budjet_id);
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
@@ -225,7 +225,7 @@ exports.Controller = class {
             }
         }
         for (let child of childs) {
-            const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service");
+            const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service", req.query.budjet_id);
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }

@@ -1,18 +1,27 @@
 const { db } = require('../../../db/index');
 
 exports.OperatsiiDB = class {
-    static async getById(params, type, isdeleted) {
+    static async getById(params, type, budjet_id, isdeleted) {
         let type_filter = ``;
+        let budjet_filter = ``;
+
         if (type) {
             type_filter = `AND type_schet = $${params.length + 1}`;
             params.push(type)
         }
 
+        if (budjet_id) {
+            params.push(budjet_id);
+            budjet_filter = `AND budjet_id = $${params.length}`;
+        }
+
         const query = `--sql
-            SELECT id, name, schet, sub_schet, type_schet, smeta_id 
+            SELECT id, name, schet, sub_schet, type_schet, smeta_id, budjet_id 
             FROM spravochnik_operatsii 
-            WHERE id = $1 
-                ${type_filter} 
+            WHERE id = $1
+                AND budjet_id IS NOT NULL
+                ${type_filter}
+                ${budjet_filter} 
                 ${!isdeleted ? 'AND isdeleted = false' : ''}
         `;
         const result = await db.query(query, params);
@@ -64,11 +73,24 @@ exports.OperatsiiDB = class {
         };
         const query = `--sql
             WITH data AS (
-                SELECT id, name, schet, sub_schet, type_schet, smeta_id
-                FROM spravochnik_operatsii  WHERE isdeleted = false ${search_filter} ${type_schet_filter})
+                SELECT 
+                    id, name, schet, sub_schet, 
+                    type_schet, smeta_id
+                FROM spravochnik_operatsii  
+                WHERE isdeleted = false 
+                    AND budjet_id IS NOT NULL
+                    ${search_filter} 
+                    ${type_schet_filter})
             SELECT 
                 ARRAY_AGG(row_to_json(data)) AS data,
-                (SELECT COUNT(spravochnik_operatsii.id) FROM spravochnik_operatsii WHERE isdeleted = false ${search_filter} ${type_schet_filter})::INTEGER AS total_count
+                (
+                    SELECT COUNT(spravochnik_operatsii.id) 
+                    FROM spravochnik_operatsii 
+                    WHERE isdeleted = false 
+                        AND budjet_id IS NOT NULL
+                        ${search_filter} 
+                        ${type_schet_filter}
+                )::INTEGER AS total_count
             FROM data
         `;
         const result = await db.query(query, params);
