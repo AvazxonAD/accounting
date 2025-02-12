@@ -1,4 +1,4 @@
-const { BudjetDB } = require('../../spravochnik/budjet/db');
+const { BudjetDB } = require('../../admin/spravochnik/budjet/db');
 const { MainSchetService } = require('../../spravochnik/main.schet/service');
 const { SmetaGrafikService } = require('../../smeta/grafik/services')
 const { DocRealCostService } = require('./service');

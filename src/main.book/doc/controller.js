@@ -1,10 +1,10 @@
-const { BudjetDB } = require('../../spravochnik/budjet/db');
+const { BudjetDB } = require('../../admin/spravochnik/budjet/db');
 const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
 const { MainBookSchetService } = require('../../spravochnik/main.book.schet/service');
 const { MainSchetService } = require('../../spravochnik/main.schet/service');
 const { MainBookDocService } = require('./service');
 const { checkUniqueIds } = require('../../helper/functions');
-const { BudjetService } = require('../../spravochnik/budjet/service');
+const { BudjetService } = require('../../admin/spravochnik/budjet/service');
 
 exports.Controller = class {
   static async auto(req, res) {

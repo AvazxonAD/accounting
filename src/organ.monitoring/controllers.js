@@ -1,7 +1,7 @@
 const { OrganizationmonitoringService } = require('./services')
 const { MainSchetService } = require('../spravochnik/main.schet/service');
 const { OrganizationService } = require('../spravochnik/organization/service')
-const { BudjetService } = require('../spravochnik/budjet/service')
+const { BudjetService } = require('../admin/spravochnik/budjet/service')
 const { ContractService } = require('../shartnoma/contract/service')
 const { RegionDB } = require('../auth/region/db')
 const { MainSchetDB } = require('../spravochnik/main.schet/db')

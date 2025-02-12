@@ -14,7 +14,7 @@ const { createShartnomaGrafik } = require("../shartnoma/shartnoma.grafik.service
 const { validationResponse } = require('../utils/response-for-validation.js')
 const { errorCatch } = require("../utils/errorCatch.js");
 const { resFunc } = require("../utils/resFunc.js");
-const { getByIdBudjetService } = require('../spravochnik/budjet/budjet.name.service.js');
+const { getByIdBudjetService } = require('../admin/spravochnik/budjet/budjet.name.service.js');
 
 
 // create contract 

@@ -1,8 +1,8 @@
 const { SmetaGrafikDB } = require('./db')
 const { SmetaDB } = require('../smeta/db')
-const { BudjetDB } = require('../../spravochnik/budjet/db')
+const { BudjetDB } = require('../../admin/spravochnik/budjet/db')
 const { sum } = require('../../helper/functions');
-const { BudjetService } = require('../../spravochnik/budjet/service')
+const { BudjetService } = require('../../admin/spravochnik/budjet/service')
 
 exports.Controller = class {
     static async createSmetaGrafik(req, res) {

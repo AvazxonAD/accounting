@@ -1,7 +1,7 @@
 const { ResponsibleService } = require('../spravochnik/responsible/service');
 const { MainSchetService } = require('../../spravochnik/main.schet/service')
 const { RegionService } = require('../../auth/region/service')
-const { BudjetService } = require('../../spravochnik/budjet/service');
+const { BudjetService } = require('../../admin/spravochnik/budjet/service');
 const { Jur7MonitoringService } = require('./service');
 const { NaimenovanieService } = require('../spravochnik/naimenovanie/service')
 

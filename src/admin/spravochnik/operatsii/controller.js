@@ -7,16 +7,16 @@ const {
   getSchetService
 } = require("./operatsii.service");
 
-const pool = require("../../config/db");
-const ErrorResponse = require("../../utils/errorResponse");
+const pool = require("../../../config/db");
+const ErrorResponse = require("../../../utils/errorResponse");
 const xlsx = require("xlsx");
-const { operatsiiValidation, operatsiiQueryValidation } = require("../../utils/validation");;
-const { SmetaDB } = require("../../smeta/smeta/db");
-const { errorCatch } = require('../../utils/errorCatch')
-const { resFunc } = require("../../utils/resFunc");
-const { validationResponse } = require("../../utils/response-for-validation");
+const { operatsiiValidation, operatsiiQueryValidation } = require("../../../utils/validation");;
+const { SmetaDB } = require("../../../smeta/smeta/db");
+const { errorCatch } = require('../../../utils/errorCatch')
+const { resFunc } = require("../../../utils/resFunc");
+const { validationResponse } = require("../../../utils/response-for-validation");
 const { OperatsiiService } = require('./service');
-const { BudjetService } = require('../budjet/service');
+const { BudjetService } = require('../../../admin/spravochnik/budjet/service');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
@@ -63,9 +63,9 @@ const createOperatsii = async (req, res) => {
 // get all
 const getOperatsii = async (req, res) => {
   try {
-    const { page, limit, type_schet, search, meta_search, schet, sub_schet } = validationResponse(operatsiiQueryValidation, req.query)
+    const { page, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id } = validationResponse(operatsiiQueryValidation, req.query)
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search, schet, sub_schet);
+    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id);
     const pageCount = Math.ceil(total / limit)
     const meta = {
       pageCount,

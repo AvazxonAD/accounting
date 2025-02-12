@@ -379,6 +379,7 @@ const operatsiiValidation = Joi.object({
 const operatsiiQueryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(10),
+  budjet_id: Joi.number().min(1).integer(),
   type_schet: Joi.string().trim(),
   search: Joi.string().trim(),
   meta_search: Joi.string().trim(),

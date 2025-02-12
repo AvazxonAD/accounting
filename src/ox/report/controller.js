@@ -1,5 +1,5 @@
 const { ReportService } = require('./service');
-const { BudjetService } = require('../../spravochnik/budjet/service');
+const { BudjetService } = require('../../admin/spravochnik/budjet/service');
 const { MainSchetService } = require('../../spravochnik/main.schet/service');
 
 exports.Controller = class {

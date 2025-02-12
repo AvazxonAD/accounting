@@ -1,6 +1,6 @@
 const { SmetaGrafikDB } = require('./db')
 const { SmetaDB } = require('../smeta/db')
-const { BudjetDB } = require('../../spravochnik/budjet/db')
+const { BudjetDB } = require('../../admin/spravochnik/budjet/db')
 const { sum } = require('../../helper/functions')
 
 exports.SmetaGrafikService = class {
