@@ -14,9 +14,10 @@ const createShartnoma = async (data) => {
           spravochnik_organization_id, 
           pudratchi_bool, 
           budjet_id,
-          yillik_oylik
+          yillik_oylik,
+          smeta_id
         )
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
       `,
       [
@@ -28,9 +29,11 @@ const createShartnoma = async (data) => {
         data.spravochnik_organization_id,
         data.pudratchi_bool,
         data.budjet_id,
-        data.yillik_oylik
+        data.yillik_oylik,
+        data.smeta_id
       ]
     );
+    
     return shartnoma.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCodes)
@@ -75,24 +78,40 @@ const getAllShartnoma = async (region_id, budjet_id, offset, limit, organization
           FROM shartnomalar_organization AS sh_o
           JOIN users AS u ON sh_o.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
-          JOIN smeta ON sh_o.smeta_id = smeta.id
-          WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
+          LEFT JOIN smeta ON sh_o.smeta_id = smeta.id
+          WHERE sh_o.isdeleted = false 
+              ${filter_organization} 
+              ${pudratchi_filter} 
+              ${search_filter}
               AND r.id = $1
               AND sh_o.budjet_id = $2
+          
           ORDER BY sh_o.doc_date 
-          OFFSET $3 
-          LIMIT $4
+          
+          OFFSET $3 LIMIT $4
         ) 
         SELECT 
           ARRAY_AGG(row_to_json(data)) AS data,
-          (SELECT COUNT(sh_o.id) 
-           FROM shartnomalar_organization AS sh_o
-           JOIN users AS u  ON sh_o.user_id = u.id
-           JOIN regions AS r ON u.region_id = r.id
-           WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
-             AND r.id = $1
-             AND sh_o.budjet_id = $2)::INTEGER AS total_count
-        FROM data`, params);
+          (
+              SELECT 
+                COALESCE(COUNT(sh_o.id), 0)::INTEGER 
+              FROM shartnomalar_organization AS sh_o
+              JOIN users AS u  ON sh_o.user_id = u.id
+              JOIN regions AS r ON u.region_id = r.id
+              WHERE sh_o.isdeleted = false 
+                ${filter_organization} 
+                ${pudratchi_filter} 
+                ${search_filter}
+                AND r.id = $1
+                AND sh_o.budjet_id = $2
+          )::INTEGER AS total_count
+        
+        FROM data
+
+    `, params);
+
+    console.log(rows[0]?.data.length)
+    console.log(rows[0]?.total_count)
     return { data: rows[0]?.data || [], total: rows[0]?.total_count }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
