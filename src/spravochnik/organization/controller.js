@@ -1,3 +1,4 @@
+const { OrganizationSchema } = require('./schema');
 const { OrganizationService } = require('./service');
 
 exports.Controller = class {
@@ -110,6 +111,7 @@ exports.Controller = class {
 
         const data = await OrganizationService.readFile({ filePath });
 
+        OrganizationSchema
         await OrganizationService.import({ data, user_id });
 
         return res.success(req.i18n.t('importSuccess'), 201);
