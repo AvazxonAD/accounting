@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "paths": {
+            "@budjet/*": [ "admin/spravochnik/budjet/*" ],
+            "@main_book_schet/*": [ "admin/spravochnik/main.book.schet/*" ],
+            "@group/*": [ "admin/spravochnik/group/*" ],
+            "@admin_main_book/*": [ "admin/main.book/*" ],
+            "@admin_dashboard/*": [ "admin/dashboard/*" ],
+            "@unit/*": [ "admin/spravochnik/unit/*" ],
+            "@log/*": [ "admin/log/*" ],
+            "@pereotsenka/*": [ "admin/spravochnik/pereotsenka/*" ],
+            "@bank/*": [ "admin/spravochnik/bank/*" ],
+            "@operatsii/*": [ "admin/spravochnik/operatsii/*" ],
+            "@auth/*": [ "auth/auth/*" ],
+            "@user/*": [ "auth/user/*" ],
+            "@admin/*": [ "auth/admin/*" ],
+            "@main_schet/*": [ "region/spravochnik/main.schet/*" ],
+            "@organization/*": [ "region/spravochnik/organization/*" ],
+            "@features/*": [ "region/features/*" ],
+            "@region/*": [ "admin/region/*" ],
+            "@middleware/*": [ "middleware/*" ],
+            "@utils/*": [ "delete/utils/*" ],
+            "@helper/*": [ "helper/*" ],
+            "@db/*": [ "db/*" ],
+            "@config/*": [ "delete/config/*" ]
+        }
+    },
+    "include": [
+        "src"
+    ]
+}
