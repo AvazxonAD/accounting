@@ -110,8 +110,6 @@ const getAllShartnoma = async (region_id, budjet_id, offset, limit, organization
 
     `, params);
 
-    console.log(rows[0]?.data.length)
-    console.log(rows[0]?.total_count)
     return { data: rows[0]?.data || [], total: rows[0]?.total_count }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
