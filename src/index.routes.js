@@ -1,6 +1,6 @@
 const express = require("express");
 const routes = express.Router();
-const { protect } = require('./middleware/auth');
+const { protect } = require('@middleware/auth');
 
 // Bank monitoring
 routes
@@ -12,12 +12,12 @@ routes
     .use("/kassa/income", protect, require("@kassa_prixod/index"))
     .use("/kassa/expense", protect, require('@kassa_rasxod/index'))
     // Auth routes
-    .use("/auth", require("./auth/auth/index"))
+    .use("/auth", require("@auth/index"))
     .use("/auth/region", protect, require("@region/index"))
-    .use("/auth/role", protect, require("./auth/role/index"))
-    .use("/auth/access", protect, require('./auth/access/index'))
-    .use("/auth/user", protect, require('./auth/user/index'))
-    .use("/auth/admin", protect, require('./auth/admin/index'))
+    .use("/auth/role", protect, require("@role/index"))
+    .use("/auth/access", protect, require('@access/index'))
+    .use("/auth/user", protect, require('@user/index'))
+    .use("/auth/admin", protect, require('@admin/index'))
     // Organization monitoring
     .use('/organization/monitoring', protect, require('@organ_monitoring/index'))
     // Spravochnik routes
@@ -28,9 +28,9 @@ routes
     .use("/spravochnik/organization/gazna", protect, require("@gazna/index"))
     .use("/spravochnik/organization/account_number", protect, require("@account_number/index"))
     .use("/spravochnik/organization", protect, require("@organization/index"))
-    .use("/spravochnik/operatsii", protect, require("./admin/spravochnik/operatsii/index"))
+    .use("/spravochnik/operatsii", protect, require("@operatsii/index"))
     .use("/spravochnik/main-schet", require("@main_schet/main_schet.routes"))
-    .use("/spravochnik/budjet-name", protect, require("./admin/spravochnik/budjet/budjet_name.routes"))
+    .use("/spravochnik/budjet-name", protect, require("@budjet/budjet_name.routes"))
     .use("/spravochnik/sostav", protect, require("@sostav/sostav.routes"))
     .use("/spravochnik/podpis", protect, require("@podpis/podpis.routes"))
     .use("/spravochnik/bank", protect, require("@bank/index"))
@@ -77,7 +77,7 @@ routes
     .use('/dashboard', protect, require('@region_dashboard/index'))
 
     // Admin
-    .use('/admin/main/book', protect, require('./admin/main.book/index'))
+    .use('/admin/main/book', protect, require('@admin_main_book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))
     .use('/admin/dashboard', protect, require('./admin/dashboard/index'))
     .use("/admin/control", protect, require('./admin/control/index'))
