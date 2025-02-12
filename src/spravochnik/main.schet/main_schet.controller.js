@@ -8,7 +8,7 @@ const {
   getByAccountNumberMainSchetService,
   getByBudjetIdMainSchetService
 } = require("./main.schet.service");
-const { getByIdBudjetService } = require("../budjet/budjet.name.service");
+const { getByIdBudjetService } = require("../../admin/spravochnik/budjet/budjet.name.service");
 const { mainSchetValidator, queryMainSchetValidation } = require("../../utils/validation");;
 const { resFunc } = require("../../utils/resFunc");
 const { validationResponse } = require("../../utils/response-for-validation");

@@ -1,6 +1,6 @@
-const pool = require("../../config/db");
-const ErrorResponse = require('../../utils/errorResponse');
-const { db } = require('../../db/index');
+const pool = require("../../../config/db");
+const ErrorResponse = require('../../../utils/errorResponse');
+const { db } = require('../../../db/index');
 
 const createOperatsiiService = async (data) => {
   try {
@@ -36,13 +36,14 @@ const getByNameAndSchetOperatsiiService = async (name, type_schet, smeta_id) => 
   }
 }
 
-const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_search, schet, sub_schet) => {
+const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id) => {
   try {
     let schet_filter = ``;
     let sub_schet_filter = '';
     let type_schet_filter = ''
     let search_filter = ``
     let meta_search_filter = ``;
+    let budjet_filter = ``;
 
     const params = [offset, limit];
 
@@ -71,6 +72,11 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
       sub_schet_filter = `AND s.sub_schet ILIKE '%' || $${params.length} || '%'`;
     }
 
+    if(budjet_id){
+      params.push(budjet_id);
+      budjet_filter = `AND s.budjet_id = $${params.length}`;
+    }
+
     const query = `
       WITH data AS (
         SELECT 
@@ -90,6 +96,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
           ${search_filter} 
           ${type_schet_filter}
           ${meta_search_filter} 
+          ${budjet_filter}
         OFFSET $1 LIMIT $2
       )
       SELECT 
@@ -104,6 +111,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
             ${search_filter} 
             ${type_schet_filter}
             ${meta_search_filter}
+            ${budjet_filter}
         )::INTEGER AS total_count
       FROM data
     `;

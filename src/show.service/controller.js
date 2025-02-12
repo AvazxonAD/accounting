@@ -1,5 +1,5 @@
 const { MainSchetDB } = require('../spravochnik/main.schet/db')
-const { OperatsiiDB } = require('../spravochnik/operatsii/db')
+const { OperatsiiDB } = require('../admin/spravochnik/operatsii/db')
 const { OrganizationDB } = require('../spravochnik/organization/db')
 const { ContractDB } = require('../shartnoma/contract/db')
 const { checkSchetsEquality, tashkentTime } = require('../helper/functions')

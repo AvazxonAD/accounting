@@ -1,4 +1,4 @@
-const { BudjetService } = require('../../spravochnik/budjet/service');
+const { BudjetService } = require('../../admin/spravochnik/budjet/service');
 const { MainSchetService } = require('../../spravochnik/main.schet/service')
 const { OxDocService } = require('./service')
 const { checkUniqueIds } = require('../../helper/functions')

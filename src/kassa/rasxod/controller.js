@@ -1,7 +1,7 @@
 const { checkSchetsEquality } = require('../../helper/functions');
 const { MainSchetService } = require('../../spravochnik/main.schet/service');
 const { PodotchetService } = require('../../spravochnik/podotchet/service');
-const { OperatsiiService } = require('../../spravochnik/operatsii/service')
+const { OperatsiiService } = require('../../admin/spravochnik/operatsii/service')
 const { PodrazdelenieService } = require('../../spravochnik/podrazdelenie/service')
 const { SostavService } = require('../../spravochnik/sostav/service')
 const { TypeOperatsiiService } = require('../../spravochnik/type.operatsii/service');

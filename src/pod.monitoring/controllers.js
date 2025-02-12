@@ -1,6 +1,6 @@
 const { PodotchetDB } = require('../spravochnik/podotchet/db');
 const { MainSchetDB } = require('../spravochnik/main.schet/db');
-const { BudjetDB } = require('../spravochnik/budjet/db');
+const { BudjetDB } = require('../admin/spravochnik/budjet/db');
 const ExcelJS = require('exceljs');
 const { returnStringDate } = require('../helper/functions');
 const path = require('path');

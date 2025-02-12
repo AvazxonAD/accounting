@@ -6,10 +6,10 @@ const {
   updateBudjetService,
   deleteBudjetService,
 } = require("./budjet.name.service");
-const { budjetValidation } = require("../../utils/validation");;
-const { validationResponse } = require("../../utils/response-for-validation");
-const { resFunc } = require("../../utils/resFunc");
-const { errorCatch } = require("../../utils/errorCatch");
+const { budjetValidation } = require("../../../utils/validation");;
+const { validationResponse } = require("../../../utils/response-for-validation");
+const { resFunc } = require("../../../utils/resFunc");
+const { errorCatch } = require("../../../utils/errorCatch");
 
 // createBudjet
 const createBudjet = async (req, res) => {

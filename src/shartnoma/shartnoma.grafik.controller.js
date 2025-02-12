@@ -9,7 +9,7 @@ const { OrganizationDB } = require("../spravochnik/organization/db.js");
 const { errorCatch } = require("../utils/errorCatch");
 const { resFunc } = require("../utils/resFunc");
 const { validationResponse } = require('../utils/response-for-validation')
-const { getByIdBudjetService } = require('../spravochnik/budjet/budjet.name.service')
+const { getByIdBudjetService } = require('../admin/spravochnik/budjet/budjet.name.service')
 
 // update conctract grafik 
 const updateShartnomaGrafik = async (req, res) => {

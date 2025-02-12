@@ -1,6 +1,6 @@
 const { NaimenovanieDB } = require('./db');
 const { tashkentTime } = require('../../../helper/functions');
-const { BudjetDB } = require('../../../spravochnik/budjet/db')
+const { BudjetDB } = require('../../../admin/spravochnik/budjet/db')
 const { GroupDB } = require('../group/db')
 const { ResponsibleDB } = require('../responsible/db')
 
