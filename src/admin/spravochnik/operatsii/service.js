@@ -2,7 +2,7 @@ const { OperatsiiDB } = require('./db');
 
 exports.OperatsiiService = class {
     static async getById(data) {
-        const result = await OperatsiiDB.getById([data.id], data.type, data.isdeleted);
+        const result = await OperatsiiDB.getById([data.id], data.type, data.budjet_id, data.isdeleted);
         return result;
     }
 

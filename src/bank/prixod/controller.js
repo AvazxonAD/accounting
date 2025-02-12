@@ -35,7 +35,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getById({ type: "bank_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, type: "bank_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
@@ -156,7 +156,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getById({ type: "bank_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, type: "bank_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }

@@ -21,7 +21,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
 
-        const operatsii = await OperatsiiService.getById({ id: spravochnik_operatsii_own_id, type: "general" });
+        const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, id: spravochnik_operatsii_own_id, type: "general" });
         if (!operatsii) {
             return res.error(req.i18n.t('operatsiiNotFound'), 404);
         }
@@ -34,7 +34,7 @@ exports.Controller = class {
         const operatsiis = [];
 
         for (let child of childs) {
-            const operatsii = await OperatsiiService.getById({ id: child.spravochnik_operatsii_id, type: "avans_otchet" });
+            const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, id: child.spravochnik_operatsii_id, type: "avans_otchet" });
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
@@ -126,7 +126,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('docNotFound'), 404);
         }
 
-        const operatsii = await OperatsiiService.getById({ id: spravochnik_operatsii_own_id, type: "general" });
+        const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, id: spravochnik_operatsii_own_id, type: "general" });
         if (!operatsii) {
             return res.error(req.i18n.t('operatsiiNotFound'), 404);
         }
@@ -139,7 +139,7 @@ exports.Controller = class {
         const operatsiis = [];
 
         for (let child of childs) {
-            const operatsii = await OperatsiiService.getById({ id: child.spravochnik_operatsii_id, type: "avans_otchet" });
+            const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, id: child.spravochnik_operatsii_id, type: "avans_otchet" });
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404);
             }
