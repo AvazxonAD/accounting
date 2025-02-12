@@ -50,7 +50,7 @@ exports.BankMonitoringService = class {
     }
 
     static async capExcel(data) {
-        const title = `Дневной отчет по Журнал-Ордеру №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${returnStringSumma(data.main_schet.account_number)}`;
+        const title = `Дневной отчет по Журнал-Ордеру №2. Счет: ${data.main_schet.jur2_schet}. Ҳисоб рақами: ${data.main_schet.account_number}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
         const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
