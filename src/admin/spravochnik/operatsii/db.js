@@ -1,4 +1,4 @@
-const { db } = require('../../../db/index');
+const { db } = require('@db/index');
 
 exports.OperatsiiDB = class {
     static async getById(params, type, budjet_id, isdeleted) {

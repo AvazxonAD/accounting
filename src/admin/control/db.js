@@ -1,4 +1,4 @@
-const { db } = require('../../db/index')
+const { db } = require('@db/index')
 
 exports.ControlDB = class {
     static async getTablesCount(params) {

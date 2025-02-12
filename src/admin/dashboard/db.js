@@ -1,4 +1,4 @@
-const { db } = require('../../db/index');
+const { db } = require('@db/index');
 
 exports.DashboardDB = class {
     static async getBudjet(params, budjet_id, main_schet_id) {

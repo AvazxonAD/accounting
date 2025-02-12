@@ -7,16 +7,16 @@ const {
   getSchetService
 } = require("./operatsii.service");
 
-const pool = require("../../../config/db");
-const ErrorResponse = require("../../../utils/errorResponse");
+const pool = require("@config/db");
+const ErrorResponse = require("@utils/errorResponse");
 const xlsx = require("xlsx");
-const { operatsiiValidation, operatsiiQueryValidation } = require("../../../utils/validation");;
-const { SmetaDB } = require("../../../smeta/smeta/db");
-const { errorCatch } = require('../../../utils/errorCatch')
-const { resFunc } = require("../../../utils/resFunc");
-const { validationResponse } = require("../../../utils/response-for-validation");
+const { operatsiiValidation, operatsiiQueryValidation } = require("@utils/validation");;
+const { SmetaDB } = require("@smeta/db");
+const { errorCatch } = require('@utils/errorCatch')
+const { resFunc } = require("@utils/resFunc");
+const { validationResponse } = require("@utils/response-for-validation");
 const { OperatsiiService } = require('./service');
-const { BudjetService } = require('../../../admin/spravochnik/budjet/service');
+const { BudjetService } = require('@budjet/db');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
@@ -74,7 +74,9 @@ const getOperatsii = async (req, res) => {
     const { page, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id } = validationResponse(operatsiiQueryValidation, req.query)
     const offset = (page - 1) * limit;
     const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id);
+    
     const pageCount = Math.ceil(total / limit)
+    
     const meta = {
       pageCount,
       count: total,
@@ -82,6 +84,8 @@ const getOperatsii = async (req, res) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
+
+
     resFunc(res, 200, result, meta)
   } catch (error) {
     return errorCatch(error, res)

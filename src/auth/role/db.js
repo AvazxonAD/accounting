@@ -1,4 +1,4 @@
-const { db } = require('../../db/index');
+const { db } = require('@db/index');
 
 exports.RoleDB = class {
     static async getRole(client) {

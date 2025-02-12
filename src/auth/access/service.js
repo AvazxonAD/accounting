@@ -1,6 +1,6 @@
 const { AccessDB } = require('./db')
-const { tashkentTime } = require('../../helper/functions')
-const { RoleDB } = require('../role/db')
+const { tashkentTime } = require('@helper/functions')
+const { RoleDB } = require('@role/db')
 
 exports.AccessService = class {
     static async updateAccess(req, res) {

@@ -1,7 +1,7 @@
 const { ReportMainBookDB } = require('./db');
-const { typeDocuments } = require('../../helper/data');
-const { tashkentTime } = require('../../helper/functions')
-const { SmetaGrafikDB } = require('../../smeta/grafik/db');
+const { typeDocuments } = require('@helper/data');
+const { tashkentTime } = require('@helper/functions')
+const { SmetaGrafikDB } = require('@smeta_grafik/db');
 
 exports.ReportService = class {
     static async getReport(data) {

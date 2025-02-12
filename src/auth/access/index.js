@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const router = Router()
-const { validator } = require('../../helper/validator')
+const { validator } = require('@helper/validator')
 const { AccessService } = require('./service')
 const {
     updateAccessSchema,

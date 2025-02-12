@@ -1,5 +1,5 @@
-const { RoleDB } = require('../role/db')
-const { tashkentTime } = require('../../helper/functions')
+const { RoleDB } = require('@role/db')
+const { tashkentTime } = require('@helper/functions')
 const { AdminDB } = require('./db')
 const { AuthDB } = require('../auth/db')
 const bcrypt = require('bcrypt')

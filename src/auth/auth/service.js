@@ -1,7 +1,7 @@
-const { tashkentTime, generateToken } = require('../../helper/functions')
+const { tashkentTime, generateToken } = require('@helper/functions')
 const { AuthDB } = require('./db')
 const bcrypt = require('bcrypt')
-const { AccessDB } = require('../access/db')
+const { AccessDB } = require('@access/db')
 
 exports.AuthService = class {
     static async loginAuth(req, res) {

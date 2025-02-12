@@ -1,4 +1,4 @@
-const ErrorResponse = require('../utils/errorResponse')
+const ErrorResponse = require('@utils/errorResponse')
 const police = (accessKey) => {
   try {
     return (req, res, next) => {

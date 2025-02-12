@@ -143,8 +143,8 @@ exports.getByRoleIdAccessSchema = Joi.object({
 
 // db 
 
-const { returnParamsValues } = require('../../helper/functions')
-const { db } = require('../../db/index')
+const { returnParamsValues } = require('@helper/functions')
+const { db } = require('@db/index')
 
 exports.AccessDB = class {
     static async createAccess(params, client) {
@@ -313,8 +313,8 @@ exports.AccessDB = class {
 
 // service 
 const { AccessDB } = require('./db')
-const { tashkentTime } = require('../../helper/functions')
-const { RoleDB } = require('../role/db')
+const { tashkentTime } = require('@helper/functions')
+const { RoleDB } = require('@role/db')
 
 exports.AccessService = class {
     static async updateAccess(req, res) {

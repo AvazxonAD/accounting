@@ -1,5 +1,5 @@
 const { ReportService } = require('./service')
-const { BudjetService } = require('../../admin/spravochnik/budjet/service');
+const { BudjetService } = require('@budjet/db');
 
 
 exports.Controller = class {
