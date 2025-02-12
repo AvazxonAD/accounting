@@ -10,6 +10,12 @@ exports.OrganizationSchema = class {
         })
     }
 
+    static importData(lang) {
+        return Joi.array().items({
+
+        });
+    }
+
     static create() {
         return Joi.object({
             body: Joi.object({
