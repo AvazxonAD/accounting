@@ -1,7 +1,7 @@
 const { ReportMainBookDB } = require('./db');
-const { typeDocuments } = require('../../helper/data');
-const { MainBookSchetDB } = require('../../spravochnik/main.book.schet/db');
-const { tashkentTime } = require('../../helper/functions')
+const { typeDocuments } = require('@helper/data');
+const { MainBookSchetDB } = require('@main_book_schet/db');
+const { tashkentTime } = require('@helper/functions')
 
 exports.ReportService = class {
     static async getReport(data) {

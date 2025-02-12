@@ -1,6 +1,6 @@
-const { validator } = require('../../helper/validator');
+const { validator } = require('@helper/validator');
 const { AuthService } = require('./service')
-const { protect } = require('../../middleware/auth')
+const { protect } = require('@middleware/auth')
 const {
     loginSchema,
     updateSchema,

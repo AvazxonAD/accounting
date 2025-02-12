@@ -1,4 +1,4 @@
-const { validator } = require('../../helper/validator');
+const { validator } = require('@helper/validator');
 const { RoleService } = require('./service')
 const {
     createSchema,

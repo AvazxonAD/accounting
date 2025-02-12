@@ -1,6 +1,6 @@
 const { ReportOx } = require('./db');
-const { SmetaGrafikDB } = require('../../smeta/grafik/db');
-const { tashkentTime } = require('../../helper/functions')
+const { SmetaGrafikDB } = require('@smeta_grafik/db');
+const { tashkentTime } = require('@helper/functions')
 
 exports.ReportService = class {
     static async getReport(data) {

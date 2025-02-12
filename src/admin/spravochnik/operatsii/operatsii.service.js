@@ -1,6 +1,6 @@
-const pool = require("../../../config/db");
-const ErrorResponse = require('../../../utils/errorResponse');
-const { db } = require('../../../db/index');
+const pool = require("@config/db");
+const ErrorResponse = require('@utils/errorResponse');
+const { db } = require('@db/index');
 
 const createOperatsiiService = async (data) => {
   try {

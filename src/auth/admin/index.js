@@ -1,4 +1,4 @@
-const { validator } = require('../../helper/validator');
+const { validator } = require('@helper/validator');
 const { AdminService } = require('./service')
 const {
     createSchema,

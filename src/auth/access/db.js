@@ -1,6 +1,6 @@
 
-const { returnParamsValues } = require('../../helper/functions')
-const { db } = require('../../db/index')
+const { returnParamsValues } = require('@helper/functions')
+const { db } = require('@db/index')
 
 exports.AccessDB = class {
     static async createAccess(params, client) {
