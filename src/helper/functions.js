@@ -230,8 +230,9 @@ exports.sqlFilter = (column_name, index_contract_id) => {
 
 exports.returnStringSumma = (num) => {
     const formatNumber = (number) => {
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     };
+
     if (Number.isInteger(num)) {
         return formatNumber(num) + ".00";
     } else {
