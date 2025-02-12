@@ -7,7 +7,7 @@ exports.OperatsiiDB = class {
             type_filter = `AND type_schet = $${params.length + 1}`;
             params.push(type)
         }
-        
+
         const query = `--sql
             SELECT id, name, schet, sub_schet, type_schet, smeta_id 
             FROM spravochnik_operatsii 
@@ -58,7 +58,7 @@ exports.OperatsiiDB = class {
             type_schet_filter = `AND type_schet = $${params.length + 1}`
             params.push(type_schet)
         };
-        if((offset !== undefined && offset !== null) && limit){
+        if ((offset !== undefined && offset !== null) && limit) {
             offset_limit = `OFFSET $${params.length + 1} LIMIT $${params.length + 2}`;
             params.push(offset, limit);
         };
@@ -92,20 +92,27 @@ exports.OperatsiiDB = class {
         return result;
     }
 
-    static async uniqueSchets(params, type_schet){
+    static async uniqueSchets(params, type_schet, budjet_id = null) {
         let type_schet_filter = ``;
+        let budjet_filter = ``;
 
-        if(type_schet){
+        if (type_schet) {
             params.push(type_schet)
             type_schet_filter = `AND type_schet ILIKE '%' || $${params.length} || '%'`;
         }
-        
+
+        if (budjet_id) {
+            params.push(budjet_id);
+            budjet_filter = `AND budjet_id = $${params.length}`;
+        }
+
         const query = `
             SELECT 
                 DISTINCT schet
             FROM spravochnik_operatsii 
             WHERE isdeleted = false
                 ${type_schet_filter}
+                ${budjet_filter}
         `;
 
         const result = await db.query(query, params);

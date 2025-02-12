@@ -11,7 +11,7 @@ exports.OperatsiiService = class {
     }
 
     static async uniqueSchets(data) {
-        const result = await OperatsiiDB.uniqueSchets([], data.type_schet);
+        const result = await OperatsiiDB.uniqueSchets([], data.type_schet, data.budjet_id);
 
         return result;
     }

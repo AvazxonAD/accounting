@@ -20,8 +20,16 @@ const { BudjetService } = require('../../../admin/spravochnik/budjet/service');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
-    const { type_schet } = req.query;
-    const result = await OperatsiiService.uniqueSchets({ type_schet });
+    const { type_schet, budjet_id } = req.query;
+
+    if (budjet_id) {
+      const budjet = await BudjetService.getById({ id: budjet_id })
+      if (!budjet) {
+        return res.error(req.i18n.t('budjetNotFound'), 404);
+      }
+    }
+
+    const result = await OperatsiiService.uniqueSchets({ type_schet, budjet_id });
 
     return res.success(req.i18n.t('getSuccess'), 200, null, result);
   }
