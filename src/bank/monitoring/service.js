@@ -79,6 +79,7 @@ exports.BankMonitoringService = class {
         worksheet.mergeCells('A4', 'D4');
         const balanceFromCell = worksheet.getCell('A4');
         const balance_from = `Остаток к началу дня: ${returnStringSumma(data.balance_from.summa)}`;
+        console.log(returnStringSumma(data.balance_from.summa))
         Object.assign(balanceFromCell, {
             value: balance_from,
             font: { size: 12, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
