@@ -1,5 +1,5 @@
 {
-  "name": "2-jurnal",
+  "name": "jurnal",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {

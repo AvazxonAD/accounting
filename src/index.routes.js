@@ -1,5 +1,6 @@
 const express = require("express");
 const routes = express.Router();
+
 const { protect } = require('@middleware/auth');
 
 // Bank monitoring

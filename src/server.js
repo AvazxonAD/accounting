@@ -1,3 +1,4 @@
+require('module-alias/register');
 const dotenv = require("dotenv");
 dotenv.config();
 const express = require("express");
@@ -10,7 +11,6 @@ const { Db } = require('./db/index');
 app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 require("colors");
-require('module-alias/register');
 
 const PORT = process.env.PORT || 3005;
 
