@@ -1,5 +1,6 @@
 const { db } = require('@db/index')
 
+
 exports.SaldoDB = class {
     static async getKolSumma(params) {
         const query = `--sql
