@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon -r module-alias/register src/server.js",
-    "start": "node -r module-alias/register src/server.js",
+    "dev": "nodemon --watch . src/server.js",
+    "start": "node src/server.js",
     "format": "prettier --write \"src/**/*.js\"",
     "sort-imports": "sort-imports 'src/**/*.js'",
     "lint": "eslint . --fix"

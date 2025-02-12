@@ -16,12 +16,11 @@ const { errorCatch } = require('@utils/errorCatch')
 const { resFunc } = require("@utils/resFunc");
 const { validationResponse } = require("@utils/response-for-validation");
 const { OperatsiiService } = require('./service');
-const { BudjetService } = require('@budjet/db');
+const { BudjetService } = require('@budjet/service');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
     const { type_schet, budjet_id } = req.query;
-
     if (budjet_id) {
       const budjet = await BudjetService.getById({ id: budjet_id })
       if (!budjet) {
