@@ -125,10 +125,12 @@ exports.OrganizationDB = class {
     static async get(params, search, organ_id) {
         let organ_filter = ``;
         let search_filter = ``
+        
         if (search) {
             search_filter = `AND ( so.inn ILIKE '%' || $${params.length + 1} || '%' OR so.name ILIKE '%' || $${params.length + 1} || '%' )`;
             params.push(search);
         }
+        
         if (organ_id) {
             params.push(organ_id);
             organ_filter = `AND so.id = $${params.length}`;

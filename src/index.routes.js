@@ -39,8 +39,7 @@ routes
     .use("/smeta/grafik", protect, require("@smeta_grafik/index"))
     .use("/smeta", protect, require("@smeta/index"))
     // Shartnoma routes
-    .use("/shartnoma/grafik", protect, require("@contract_grafik/index"))
-    .use("/shartnoma", protect, require("@contract/shartnoma.routes"))
+    .use("/shartnoma", protect, require("@contract/index"))
     // Akt routes
     .use("/akt", protect, require("@akt/index"))
     // Avans routes
