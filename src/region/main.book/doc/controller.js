@@ -4,7 +4,7 @@ const { MainBookSchetService } = require('@main_book_schet/service');
 const { MainSchetService } = require('@main_schet/service');
 const { MainBookDocService } = require('./service');
 const { checkUniqueIds } = require('@helper/functions');
-const { BudjetService } = require('@budjet/db');
+const { BudjetService } = require('@budjet/service');
 
 exports.Controller = class {
   static async auto(req, res) {

@@ -4,7 +4,7 @@ const { PrixodSchema } = require('./schema');
 const { PrixodJur7Service } = require('./service');
 const { MainSchetService } = require('@main_schet/service');
 const { OrganizationService } = require('@organization/service');
-const { BudjetService } = require('@budjet/db');
+const { BudjetService } = require('@budjet/service');
 const { ResponsibleService } = require('@responsible/service');
 
 exports.Controller = class {

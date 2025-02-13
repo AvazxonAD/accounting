@@ -8,26 +8,6 @@ const path = require('path');
 const xlsx = require('xlsx');
 
 exports.PrixodJur7Service = class {
-    static async templateFile() {
-        const fileName = `prixod.xlsx`;
-        const folderPath = path.join(__dirname, `../../../public/template`);
-
-        const filePath = path.join(folderPath, fileName);
-
-        const fileRes = await fs.readFile(filePath);
-
-        return { fileName, fileRes };
-    }
-
-    static async importData(data) {
-        await db.transaction(async client => {
-            for (let doc of data.data) {
-                await this.create({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
-            }
-        })
-
-    }
-
     static async prixodReport(data) {
         const result = await PrixodDB.prixodReport([data.region_id, data.from, data.to, data.main_schet_id]);
         await Promise.all(result.map(async (item) => {
@@ -194,7 +174,7 @@ exports.PrixodJur7Service = class {
         worksheet.getColumn(7).width = 20;
         worksheet.getColumn(8).width = 27;
 
-        const folderPath = path.join(__dirname, `../../../public/exports`);
+        const folderPath = path.join(__dirname, `../../../../public/exports`);
         try {
             await fs.access(folderPath, fs.constants.W_OK);
         } catch (error) {
@@ -244,11 +224,12 @@ exports.PrixodJur7Service = class {
                 result.push({ ...product, ...doc });
             }
         }
+        
         return result;
     }
 
     static async create(data) {
-        const process = async (data, client) => {
+        const result = await db.transaction(async (client) => {
             const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             const summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
@@ -275,17 +256,6 @@ exports.PrixodJur7Service = class {
             await this.createPrixodChild({ ...data, docId: doc.id, client, childs });
 
             return doc;
-        }
-        let result;
-
-        if (data.client) {
-            result = await process(data, data.client);
-            return result;
-        }
-
-        result = await db.transaction(async (client) => {
-            const docId = await process(data, client);
-            return docId;
         });
 
         return result;
@@ -294,11 +264,14 @@ exports.PrixodJur7Service = class {
     static async createPrixodChild(data) {
         for (const child of data.childs) {
             const summa = !child.summa ? child.kol * child.sena : child.summa;
-            const nds_summa = !child.summa ? child.nds_foiz / 100 * summa : child.summa;
-            const summa_s_nds = !child.summa ? summa + nds_summa : child.summa;
+
+            const nds_summa = child.nds_foiz ? child.nds_foiz / 100 * summa : child.summa;
+
+            const summa_s_nds = summa + nds_summa;
+
             await PrixodDB.createPrixodChild([
                 child.id,
-                child.kol,
+                child.kol,  
                 child.sena,
                 summa,
                 child.nds_foiz,
@@ -484,5 +457,25 @@ exports.PrixodJur7Service = class {
         const groupedArray = Object.values(groupedData);
 
         return groupedArray;
+    }
+
+    static async templateFile() {
+        const fileName = `prixod.xlsx`;
+        const folderPath = path.join(__dirname, `../../../public/template`);
+
+        const filePath = path.join(folderPath, fileName);
+
+        const fileRes = await fs.readFile(filePath);
+
+        return { fileName, fileRes };
+    }
+
+    static async importData(data) {
+        await db.transaction(async client => {
+            for (let doc of data.data) {
+                await this.create({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
+            }
+        })
+
     }
 }
