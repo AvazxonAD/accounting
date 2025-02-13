@@ -216,7 +216,7 @@ exports.BankMonitoringService = class {
         worksheet.getRow(row_number + 3).height = 30;
         worksheet.getRow(row_number + 4).height = 30;
 
-        const folderPath = path.join(__dirname, '../../../public/exports');
+        const folderPath = path.join(__dirname, '../../../../public/exports');
 
         try {
             await access(folderPath, constants.W_OK);
@@ -406,7 +406,7 @@ exports.BankMonitoringService = class {
         worksheet.getRow(2).height = 20;
         worksheet.getRow(5).height = 25;
 
-        const folderPath = path.join(__dirname, '../../../public/exports');
+        const folderPath = path.join(__dirname, '../../../../public/exports');
 
         try {
             await access(folderPath, constants.W_OK);
