@@ -1,7 +1,7 @@
 const { ResponsibleService } = require('@responsible/service');
 const { MainSchetService } = require('@main_schet/service')
 const { RegionService } = require('@region/service')
-const { BudjetService } = require('@budjet/db');
+const { BudjetService } = require('@budjet/service');
 const { Jur7MonitoringService } = require('./service');
 const { NaimenovanieService } = require('@product/service')
 

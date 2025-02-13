@@ -1,5 +1,5 @@
 const { GrafikService } = require('./service');
-const { BudjetService } = require('@budjet/db');
+const { BudjetService } = require('@budjet/service');
 const { HelperFunctions } = require('@helper/functions');
 const { SmetaService } = require('@smeta/service');
 const { ContractService } = require('../contract/service');

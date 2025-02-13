@@ -12,7 +12,6 @@ const {
 
 
 router.post('/', validator(Controller.createSaldo, createSaldoSchema))
-    .get('/', validator(Controller.getSaldo, getSaldoSchema))
-    .get('/rasxod', validator(Controller.getSaldoForRasxod, getSaldoRasxodSchema));
+    .get('/', validator(Controller.getSaldo, getSaldoSchema));
 
 module.exports = router;

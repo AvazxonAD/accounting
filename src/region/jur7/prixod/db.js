@@ -14,7 +14,9 @@ exports.PrixodDB = class {
                 created_at, 
                 updated_at
             ) 
+
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            
             RETURNING *
         `;
         const result = await client.query(query, params);
@@ -404,7 +406,9 @@ exports.PrixodDB = class {
             JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
             LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
             JOIN spravochnik_javobgar_shaxs_jur7 c ON c.id = d.kimdan_id 
-            WHERE  ch.naimenovanie_tovarov_jur7_id = $1 AND d.isdeleted = false
+            WHERE  ch.naimenovanie_tovarov_jur7_id = $1 
+                AND d.isdeleted = false
+                AND ch.isdeleted = false
             
             UNION ALL 
 
@@ -427,7 +431,9 @@ exports.PrixodDB = class {
             JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
             LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
             JOIN spravochnik_javobgar_shaxs_jur7 c ON c.id = d.kimdan_id 
-            WHERE  ch.naimenovanie_tovarov_jur7_id = $1 AND d.isdeleted = false
+            WHERE  ch.naimenovanie_tovarov_jur7_id = $1 
+                AND d.isdeleted = false
+                AND ch.isdeleted = false
         `;
 
         const result = await db.query(query, params);
