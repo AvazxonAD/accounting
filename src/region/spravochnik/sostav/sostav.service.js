@@ -56,7 +56,7 @@ const getSostavService = async (region_id, offset, limit, search) => {
           OFFSET $2 
           LIMIT $3)
         SELECT 
-          ARRAY_AGG(row_to_json(data)) AS data,
+          COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
           (SELECT COUNT(spravochnik_sostav.id) AS total
           FROM spravochnik_sostav
           JOIN users ON spravochnik_sostav.user_id = users.id

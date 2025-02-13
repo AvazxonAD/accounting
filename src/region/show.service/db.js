@@ -16,7 +16,7 @@ exports.ShowServiceDB = class {
                 d.opisanie,
                 d.spravochnik_operatsii_own_id,
                 (
-                    SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
+                    SELECT JSON_AGG(row_to_json(k_h_j_ch))
                     FROM (
                             SELECT  
                                 k_h_j_ch.id,
@@ -142,7 +142,7 @@ exports.ShowServiceDB = class {
                     d.opisanie,
                     d.spravochnik_operatsii_own_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(k_h_j_ch))
+                        SELECT JSON_AGG(row_to_json(k_h_j_ch))
                         FROM (
                             SELECT 
                                 so.schet AS provodki_schet,
@@ -166,7 +166,7 @@ exports.ShowServiceDB = class {
                 OFFSET $5 LIMIT $6 
             )
             SELECT 
-            ARRAY_AGG(row_to_json(data)) AS data,
+            COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
             (SELECT COUNT(d.id) 
                 FROM kursatilgan_hizmatlar_jur152 AS d
                 JOIN users AS u ON u.id = d.user_id
@@ -178,7 +178,9 @@ exports.ShowServiceDB = class {
                     AND d.isdeleted = false
                     ${search_filter}
             )::INTEGER AS total_count,
-            (SELECT SUM(d.summa) 
+            (
+                SELECT 
+                    COALESCE(SUM(d.summa), 0) 
                 FROM kursatilgan_hizmatlar_jur152 AS d
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -192,7 +194,8 @@ exports.ShowServiceDB = class {
             FROM data
         `;
         const result = await db.query(query, params);
-        return { data: result[0]?.data || [], total: result[0]?.total_count || 0, summa: result[0]?.summa || 0 };
+        
+        return result[0];
     }
 
     static async updateShowService(params, client) {
@@ -220,7 +223,10 @@ exports.ShowServiceDB = class {
     }
 
     static async deleteShowService(params, client) {
-        await client.query(`UPDATE kursatilgan_hizmatlar_jur152 SET  isdeleted = true WHERE id = $1`, params);
         await client.query(`UPDATE kursatilgan_hizmatlar_jur152_child SET isdeleted = true WHERE kursatilgan_hizmatlar_jur152_id = $1`, params);
+        
+        const result = await client.query(`UPDATE kursatilgan_hizmatlar_jur152 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+        
+        return result;
     }
 }

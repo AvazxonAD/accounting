@@ -124,7 +124,7 @@ exports.PrixodDB = class {
             OFFSET $5 LIMIT $6
           )
           SELECT 
-            ARRAY_AGG(row_to_json(data)) AS data,
+            COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
             
             (
               SELECT COALESCE(SUM(d.summa), 0)
@@ -175,7 +175,7 @@ exports.PrixodDB = class {
                 d.j_o_num,
                 d.id_shartnomalar_organization,
                 (
-                    SELECT ARRAY_AGG(row_to_json(child))
+                    SELECT JSON_AGG(row_to_json(child))
                     FROM (
                         SELECT  
                             ch.sena,

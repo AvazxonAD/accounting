@@ -47,70 +47,83 @@ const getAllShartnoma = async (region_id, budjet_id, offset, limit, organization
     let pudratchi_filter = ``
     const params = [region_id, budjet_id, offset, limit]
     if (organization) {
-      filter_organization = `AND sh_o.spravochnik_organization_id = $5`
+      filter_organization = `AND sho.spravochnik_organization_id = $5`
       params.push(organization)
     }
     if (pudratchi === 'true') {
-      pudratchi_filter = `AND sh_o.pudratchi_bool = true`
+      pudratchi_filter = `AND sho.pudratchi_bool = true`
     }
     if (pudratchi === 'false') {
-      pudratchi_filter = `AND sh_o.pudratchi_bool = false`
+      pudratchi_filter = `AND sho.pudratchi_bool = false`
     }
     if(search){
-      search_filter = `AND (sh_o.doc_num ILIKE '%' || $${params.length + 1} || '%' OR sh_o.opisanie ILIKE '%' || $${params.length + 1} || '%')`
+      search_filter = `AND (sho.doc_num ILIKE '%' || $${params.length + 1} || '%' OR sho.opisanie ILIKE '%' || $${params.length + 1} || '%')`
       params.push(search)
     }
     const { rows } = await pool.query(`--sql
       WITH data AS (
           SELECT 
-              sh_o.id,
-              sh_o.spravochnik_organization_id,
-              sh_o.doc_num,
-              TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-              sh_o.smeta_id,
-              sh_o.smeta2_id,
-              sh_o.opisanie,
-              sh_o.summa,
-              sh_o.pudratchi_bool,
+              sho.id,
+              sho.spravochnik_organization_id,
+              sho.doc_num,
+              TO_CHAR(sho.doc_date, 'YYYY-MM-DD') AS doc_date,
+              sho.smeta_id,
+              sho.smeta2_id,
+              sho.opisanie,
+              sho.summa,
+              sho.pudratchi_bool,
               smeta.smeta_number,
-              sh_o.budjet_id,
-              sh_o.yillik_oylik
-          FROM shartnomalar_organization AS sh_o
-          JOIN users AS u ON sh_o.user_id = u.id
+              sho.budjet_id,
+              sho.yillik_oylik
+          FROM shartnomalar_organization AS sho
+          JOIN users AS u ON sho.user_id = u.id
           JOIN regions AS r ON u.region_id = r.id
-          LEFT JOIN smeta ON sh_o.smeta_id = smeta.id
-          WHERE sh_o.isdeleted = false 
+          LEFT JOIN smeta ON sho.smeta_id = smeta.id
+          WHERE sho.isdeleted = false 
               ${filter_organization} 
               ${pudratchi_filter} 
               ${search_filter}
               AND r.id = $1
-              AND sh_o.budjet_id = $2
+              AND sho.budjet_id = $2
           
-          ORDER BY sh_o.doc_date 
+          ORDER BY sho.doc_date 
           
           OFFSET $3 LIMIT $4
         ) 
         SELECT 
-          ARRAY_AGG(row_to_json(data)) AS data,
+          COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
           (
               SELECT 
-                COALESCE(COUNT(sh_o.id), 0)::INTEGER 
-              FROM shartnomalar_organization AS sh_o
-              JOIN users AS u  ON sh_o.user_id = u.id
+                COALESCE(COUNT(sho.id), 0)::INTEGER 
+              FROM shartnomalar_organization AS sho
+              JOIN users AS u  ON sho.user_id = u.id
               JOIN regions AS r ON u.region_id = r.id
-              WHERE sh_o.isdeleted = false 
+              WHERE sho.isdeleted = false 
                 ${filter_organization} 
                 ${pudratchi_filter} 
                 ${search_filter}
                 AND r.id = $1
-                AND sh_o.budjet_id = $2
-          )::INTEGER AS total_count
+                AND sho.budjet_id = $2
+          )::INTEGER AS total_count,
+          (
+            SELECT 
+              COALESCE(COUNT(sho.summa), 0)::INTEGER 
+            FROM shartnomalar_organization AS sho
+            JOIN users AS u  ON sho.user_id = u.id
+            JOIN regions AS r ON u.region_id = r.id
+            WHERE sho.isdeleted = false 
+              ${filter_organization} 
+              ${pudratchi_filter} 
+              ${search_filter}
+              AND r.id = $1
+              AND sho.budjet_id = $2
+          )::FLOAT AS summa
         
         FROM data
 
     `, params);
 
-    return { data: rows[0]?.data || [], total: rows[0]?.total_count }
+    return { data: rows[0]?.data || [], total: rows[0]?.total_count, summa: rows[0]?.summa }
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode)
   }
@@ -119,11 +132,11 @@ const getAllShartnoma = async (region_id, budjet_id, offset, limit, organization
 const getByIdShartnomaServiceForJur7 = async (region_id, id, organization_id) => {
   try {
     const result = await pool.query(`--sql
-        SELECT sh_o.id
-        FROM shartnomalar_organization AS sh_o
-        JOIN users  ON sh_o.user_id = users.id
+        SELECT sho.id
+        FROM shartnomalar_organization AS sho
+        JOIN users  ON sho.user_id = users.id
         JOIN regions ON users.region_id = regions.id
-        WHERE regions.id = $1 AND sh_o.id = $2 AND sh_o.isdeleted = false AND sh_o.spravochnik_organization_id = $3
+        WHERE regions.id = $1 AND sho.id = $2 AND sho.isdeleted = false AND sho.spravochnik_organization_id = $3
     `, [region_id, id, organization_id]);
     if(!result.rows[0]){
       throw new ErrorResponse('contract not found', 404)
@@ -141,30 +154,30 @@ const getByIdShartnomaService = async (region_id, budjet_id, id, organization_id
     let ignore = ``;
 
     if (!ignoreDeleted) {
-      ignore = `AND sh_o.isdeleted = false`;
+      ignore = `AND sho.isdeleted = false`;
     }
     if (organization_id) {
-      organization = `AND sh_o.spravochnik_organization_id = $4`
+      organization = `AND sho.spravochnik_organization_id = $4`
       params.push(organization_id)
     }
     const query = `--sql
       SELECT
-        sh_o.id, 
-        sh_o.spravochnik_organization_id,
-        sh_o.doc_num,
-        TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-        sh_o.smeta2_id,
-        sh_o.smeta_id,
-        sh_o.opisanie,
-        sh_o.summa::FLOAT,
-        sh_o.pudratchi_bool,
-        sh_o.yillik_oylik
-      FROM shartnomalar_organization AS sh_o
-      JOIN users  ON sh_o.user_id = users.id
+        sho.id, 
+        sho.spravochnik_organization_id,
+        sho.doc_num,
+        TO_CHAR(sho.doc_date, 'YYYY-MM-DD') AS doc_date,
+        sho.smeta2_id,
+        sho.smeta_id,
+        sho.opisanie,
+        sho.summa::FLOAT,
+        sho.pudratchi_bool,
+        sho.yillik_oylik
+      FROM shartnomalar_organization AS sho
+      JOIN users  ON sho.user_id = users.id
       JOIN regions ON users.region_id = regions.id
       WHERE regions.id = $1
-        AND sh_o.budjet_id = $2
-        AND sh_o.id = $3 ${ignore} ${organization}
+        AND sho.budjet_id = $2
+        AND sho.id = $3 ${ignore} ${organization}
     `;
     const result = await pool.query(query, params);
     if (!result.rows[0]) {

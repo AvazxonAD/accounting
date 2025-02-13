@@ -132,7 +132,7 @@ exports.DocMainBookDB = class {
                 d.month,
                 d.year,
                 (
-                    SELECT ARRAY_AGG(row_to_json(child))
+                    SELECT JSON_AGG(row_to_json(child))
                     FROM (
                         SELECT 
                         spravochnik_main_book_schet_id,

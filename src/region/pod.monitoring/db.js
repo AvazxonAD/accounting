@@ -189,12 +189,23 @@ exports.PodotchetMonitoringDB = class {
         return result;
     }
 
-    static async getSummaMonitoring(params, podotcbet_id, operator, main_schet_id, budjet_id, operatsii, search) {
+    static async getSummaMonitoring(params, date, dates, podotcbet_id, main_schet_id, budjet_id, operatsii, search) {
         let search_filter = ``;
         let main_schet_filter = ``
         let budjet_filter = ``
         let podotchet_filter = ``;
         let operatsii_filter = ``;
+        let date_filter = ``;
+
+        if (date) {
+            params.push(date.date);
+            date_filter = `AND d.doc_date ${date.operator} $${params.length}`;
+        }
+
+        if (dates) {
+            params.push(dates[0], dates[1]);
+            date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+        }
 
         if (podotcbet_id) {
             params.push(podotcbet_id);
@@ -237,7 +248,7 @@ exports.PodotchetMonitoringDB = class {
                     JOIN main_schet AS m ON m.id = d.main_schet_id
                     WHERE r.id = $1  
                         AND d.isdeleted = false 
-                        AND d.doc_date ${operator} $2
+                        ${date_filter}
                         ${podotchet_filter}
                         AND p.id IS NOT NULL
                         ${main_schet_filter}
@@ -257,7 +268,7 @@ exports.PodotchetMonitoringDB = class {
                     JOIN main_schet AS m ON m.id = d.main_schet_id
                     WHERE r.id = $1  
                         AND d.isdeleted = false 
-                        AND d.doc_date ${operator} $2
+                        ${date_filter}
                         ${podotchet_filter}
                         AND p.id IS NOT NULL
                         ${main_schet_filter}
@@ -277,7 +288,7 @@ exports.PodotchetMonitoringDB = class {
                     JOIN main_schet AS m ON m.id = d.main_schet_id
                     WHERE r.id = $1  
                         AND d.isdeleted = false 
-                        AND d.doc_date ${operator} $2
+                        ${date_filter}
                         ${podotchet_filter}
                         AND p.id IS NOT NULL
                         ${main_schet_filter}
@@ -297,7 +308,7 @@ exports.PodotchetMonitoringDB = class {
                     JOIN main_schet AS m ON m.id = d.main_schet_id
                     WHERE r.id = $1  
                         AND d.isdeleted = false
-                        AND d.doc_date ${operator} $2
+                        ${date_filter}
                         ${podotchet_filter}
                         AND p.id IS NOT NULL
                         ${main_schet_filter}
@@ -317,7 +328,7 @@ exports.PodotchetMonitoringDB = class {
                     JOIN main_schet AS m ON m.id = d.main_schet_id
                     WHERE r.id = $1  
                         AND d.isdeleted = false 
-                        AND d.doc_date ${operator} $2
+                        ${date_filter}
                         ${podotchet_filter}
                         AND p.id IS NOT NULL
                         ${main_schet_filter}
@@ -326,8 +337,15 @@ exports.PodotchetMonitoringDB = class {
                         ${search_filter}
                 )
             SELECT 
+                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum) AS prixod_sum,
+                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS rasxod_sum,
+                bank_rasxod.prixod_sum AS bank_rasxod_sum,
+                kassa_rasxod.prixod_sum AS kassa_rasxod_sum,
+                bank_prixod.rasxod_sum AS bank_prixod_sum,
+                kassa_prixod.rasxod_sum AS kassa_prixod_sum,
+                avans_otchet.rasxod_sum AS avans_otchet_sum,
                 (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum) - 
-                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS balance
+                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS summa
             FROM bank_rasxod
             CROSS JOIN bank_prixod
             CROSS JOIN kassa_prixod
@@ -335,7 +353,7 @@ exports.PodotchetMonitoringDB = class {
             CROSS JOIN avans_otchet
         `;
         const result = await db.query(query, params);
-        return result[0].balance;
+        return result[0];
     }
 
     static async getTotalMonitoring(params, podotcbet_id, operator) {

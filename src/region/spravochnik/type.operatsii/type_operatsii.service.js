@@ -59,7 +59,7 @@ const getAlltypeOperatsiiService = async (region_id, offset, limit, search) => {
           LIMIT $3
       )
       SELECT 
-          ARRAY_AGG(row_to_json(data)) AS data,
+          COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
           (SELECT COUNT(s_t_o.id) AS total 
           FROM  spravochnik_type_operatsii s_t_o
           JOIN users ON s_t_o.user_id = users.id

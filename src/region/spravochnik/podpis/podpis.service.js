@@ -52,7 +52,7 @@ const getAllPodpisService = async (region_id, offset, limit, search, type) => {
           OFFSET $2 LIMIT $3
         )
         SELECT 
-          ARRAY_AGG(ROW_TO_JSON(data)) AS data,
+          COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
           (
             SELECT 
               COALESCE(COUNT(s_p.id), 0)::INTEGER

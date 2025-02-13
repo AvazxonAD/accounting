@@ -130,7 +130,7 @@ const getAllMainSchetService = async (region_id, offset, limit, search) => {
                 ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
             WHERE main_schet.isdeleted = false AND regions.id = $1 ${search_filter} OFFSET $2 LIMIT $3)
           SELECT 
-            ARRAY_AGG(row_to_json(data)) AS data,
+            COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
             (SELECT COUNT(main_schet.id)
               FROM main_schet
               JOIN users ON main_schet.user_id = users.id

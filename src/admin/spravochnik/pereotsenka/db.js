@@ -50,7 +50,7 @@ exports.PereotsenkaDB = class {
                 WHERE p.isdeleted = false ${search_filter}
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (SELECT COALESCE(COUNT(id), 0)::INTEGER FROM pereotsenka_jur7 AS p WHERE p.isdeleted = false ${search_filter}) AS total
             FROM data
         `;

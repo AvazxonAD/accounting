@@ -82,7 +82,7 @@ exports.OperatsiiDB = class {
                     ${search_filter} 
                     ${type_schet_filter})
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COUNT(spravochnik_operatsii.id) 
                     FROM spravochnik_operatsii 

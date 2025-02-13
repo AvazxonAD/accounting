@@ -591,7 +591,7 @@ exports.Jur7MonitoringDB = class {
                 OFFSET $2 LIMIT $3
             )
             SELECT 
-                ARRAy_AGG(ROW_TO_JSON(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT 
                         COALESCE(COUNT(n.id))::FLOAT

@@ -23,7 +23,8 @@ exports.GrafikService = class {
                 data.oy_11,
                 data.oy_12,
                 data.yillik_oylik,
-                data.smeta_id
+                data.smeta_id,
+                data.summa
             ], client);
 
             let contract = {};
@@ -65,6 +66,7 @@ exports.GrafikService = class {
                 data.smeta_id,
                 data.id_shartnomalar_organization,
                 new Date(data.contract.doc_date).getFullYear(),
+                data.summa,
                 data.id
             ], client);
 

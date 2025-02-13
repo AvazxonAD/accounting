@@ -3,7 +3,7 @@ const { sqlFilter } = require('@helper/functions')
 
 exports.OrganizationMonitoringDB = class {
     static async monitoring(params, organ_id, search) {
-        let organ_filter  = '';
+        let organ_filter = '';
         let search_filter = ``;
 
         if (organ_id) {
@@ -219,7 +219,7 @@ exports.OrganizationMonitoringDB = class {
     }
 
     static async getTotal(params, organ_id, search) {
-        let organ_filter  = '';
+        let organ_filter = '';
         let search_filter = ``;
 
         if (organ_id) {
@@ -329,9 +329,10 @@ exports.OrganizationMonitoringDB = class {
         return result[0].total
     }
 
-    static async getSumma(params, operator, organ_id, search)  {
-        let organ_filter  = '';
+    static async getSumma(params, date, dates, organ_id, search) {
+        let organ_filter = '';
         let search_filter = ``;
+        let date_filter = ``;
 
         if (organ_id) {
             params.push(organ_id);
@@ -345,6 +346,16 @@ exports.OrganizationMonitoringDB = class {
                 so.name ILIKE '%' || $${params.length} || '%' OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
+        }
+
+        if (date) {
+            params.push(date.date);
+            date_filter = `AND d.doc_date ${date.operator} $${params.length}`;
+        }
+        
+        if (dates) {
+            params.push(dates[0], dates[1]);
+            date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
         }
 
         const query = `--sql
@@ -361,7 +372,7 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND own.schet = $3
-                    AND d.doc_date ${operator} $4
+                    ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
                     ${search_filter}
@@ -378,7 +389,7 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND own.schet = $3
-                    AND d.doc_date ${operator} $4
+                    ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
                     ${search_filter}
@@ -395,7 +406,7 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND op.schet = $3
-                    AND d.doc_date ${operator} $4
+                    ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
                     ${search_filter}
@@ -412,7 +423,7 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND op.schet = $3
-                    AND d.doc_date ${operator} $4
+                    ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
                     ${search_filter}
@@ -428,7 +439,7 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND ch.kredit_schet = $3
-                    AND d.doc_date ${operator} $4
+                    ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
                     ${search_filter}
@@ -438,8 +449,8 @@ exports.OrganizationMonitoringDB = class {
                     (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) 
                     - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
                 ) AS summa,
-                (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) AS prixod,
-                (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod,
+                ( kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa ) AS prixod_sum,
+                ( bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa ) AS rasxod_sum,
                 kursatilgan_hizmatlar_sum.summa AS kursatilgan_hizmatlar_sum_prixod,
                 bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
                 bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum_rasxod,
@@ -603,7 +614,7 @@ exports.OrganizationMonitoringDB = class {
             params.push(contract);
             index_contract = params.length;
         }
-        
+
         const query = `--sql
             WITH 
             bajarilgan_ishlar_sum AS (

@@ -23,16 +23,20 @@ exports.OrganizationmonitoringService = class {
         const summa_from = await OrganizationMonitoringDB.getSumma([
             data.region_id,
             data.main_schet_id,
-            data.operatsii,
-            data.from
-        ], '<', data.organ_id, data.search);
+            data.operatsii
+        ], { operator: '<', date: data.from }, null, data.organ_id, data.search);
 
         const summa_to = await OrganizationMonitoringDB.getSumma([
             data.region_id,
             data.main_schet_id,
-            data.operatsii,
-            data.to
-        ], '<=', data.organ_id, data.search);
+            data.operatsii
+        ], { operator: '<=', date: data.to }, null, data.organ_id, data.search);
+
+        const summa = await OrganizationMonitoringDB.getSumma([
+            data.region_id,
+            data.main_schet_id,
+            data.operatsii
+        ], null, [data.from, data.to], data.organ_id, data.search);
 
         const total = await OrganizationMonitoringDB.getTotal([
             data.region_id,
@@ -42,20 +46,24 @@ exports.OrganizationmonitoringService = class {
             data.to
         ], data.organ_id, data.search)
 
-        let summa_prixod = 0;
-        let summa_rasxod = 0;
+        let page_rasxod_sum = 0;
+        let page_prixod_sum = 0;
         for (let item of docs) {
-            summa_prixod += item.summa_prixod
-            summa_rasxod += item.summa_rasxod
+            page_prixod_sum += item.summa_prixod
+            page_rasxod_sum += item.summa_rasxod
         }
-        
+
         return {
             data: docs,
             summa_from,
             summa_to,
-            summa_prixod,
-            summa_rasxod,
-            total
+            page_prixod_sum,
+            page_rasxod_sum,
+            page_total_sum: page_prixod_sum - page_rasxod_sum,
+            total,
+            summa,
+            prixod_sum: summa.prixod_sum,
+            rasxod_sum: summa.rasxod_sum,
         }
     }
 
@@ -194,7 +202,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.getColumn(2).width = 20;
         worksheet.getColumn(3).width = 20;
         worksheet.getRow(1).height = 30;
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return filePath;
     }
@@ -253,10 +261,10 @@ exports.OrganizationmonitoringService = class {
                     bold = true;
                     horizontal = 'center'
                 }
-                if(rowNumber > 5 && columnNumber === 6){
+                if (rowNumber > 5 && columnNumber === 6) {
                     horizontal = 'right'
                 }
-                if(rowNumber > 5 && columnNumber !== 1 && columnNumber !== 6){
+                if (rowNumber > 5 && columnNumber !== 1 && columnNumber !== 6) {
                     horizontal = 'center'
                 }
                 Object.assign(cell, {
@@ -273,7 +281,7 @@ exports.OrganizationmonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return filePath;
     }
@@ -460,7 +468,7 @@ exports.OrganizationmonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
     }
@@ -580,7 +588,7 @@ exports.OrganizationmonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
     }
@@ -859,7 +867,7 @@ exports.OrganizationmonitoringService = class {
         worksheet.getColumn(9).width = 8;
         worksheet.getColumn(10).width = 8;
         worksheet.getColumn(11).width = 8;
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);

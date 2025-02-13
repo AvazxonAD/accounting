@@ -29,27 +29,39 @@ exports.Controller = class {
             })
         }
         const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, offset, limit], podotchet_id, search);
-        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id, from], podotchet_id, '<', main_schet_id, null, operatsii, search);
-        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet_id, '<=', main_schet_id, null, operatsii, search);
+        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { date: from, operator: '<' }, null, podotchet_id, main_schet_id, null, operatsii, search);
+        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { date: to, operator: '<=' }, null, podotchet_id, main_schet_id, null, operatsii, search);
+        const summa = await PodotchetMonitoringDB.getSummaMonitoring([region_id], null, [from, to], podotchet_id, main_schet_id, null, operatsii, search);
         const total = await PodotchetMonitoringDB.getTotalMonitoring([region_id, main_schet_id, from, to, operatsii], podotchet_id, search);
-        let summa_rasxod = 0
-        let summa_prixod = 0
+
+        let page_rasxod_sum = 0
+        let page_prixod_sum = 0
         data.forEach(item => {
-            summa_rasxod += item.rasxod_sum
-            summa_prixod += item.prixod_sum
-        })
+            page_rasxod_sum += item.rasxod_sum
+            page_prixod_sum += item.prixod_sum
+        });
+
         const pageCount = Math.ceil(total / limit);
+
         const meta = {
             pageCount: pageCount,
             count: total,
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
-            summa_from,
-            summa_to,
-            summa_prixod,
-            summa_rasxod
+            summa_from: summa_from.summa,
+            summa_to: summa_to.summa,
+            page_prixod_sum,
+            page_rasxod_sum,
+            page_total_sum: page_prixod_sum - page_rasxod_sum,
+            prixod_sum: summa.prixod_sum,
+            rasxod_sum: summa.rasxod_sum,
+            summa: summa.summa,
+            summa_object: summa,
+            summa_from_object: summa_from,
+            summa_to_object: summa_to
         }
+
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
@@ -60,10 +72,12 @@ exports.Controller = class {
         if (!bujet) {
             return res.error(req.i18n.t('budjetNotFound'), 404);
         }
-        const data = (await PodotchetDB.get([region_id])).data;
+        const data = (await PodotchetDB.get([region_id, 0, 9999])).data;
         for (let podotchet of data) {
-            podotchet.summa = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet.id, '<=', null, budjet_id);
+            const summa = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { operator: '<=', date: to }, null, podotchet.id, null, budjet_id);
+            podotchet.summa = summa.summa
         }
+
         if (excel === 'true') {
             const workbook = new ExcelJS.Workbook();
             const fileName = `prixod_rasxod_${new Date().getTime()}.xlsx`;
@@ -142,12 +156,12 @@ exports.Controller = class {
             worksheet.getRow(1).height = 35
             worksheet.getRow(2).height = 20
 
-            const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+            const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
             await workbook.xlsx.writeFile(filePath);
-            
+
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-            
+
             return res.download(filePath);
         }
 
@@ -171,8 +185,12 @@ exports.Controller = class {
             })
         }
         const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, 0, 9999], podotchet_id)
-        const summa_from = await PodotchetMonitoringDB.getSummaMonitoring([region_id, from], podotchet_id, '<', main_schet_id, null, operatsii);
-        const summa_to = await PodotchetMonitoringDB.getSummaMonitoring([region_id, to], podotchet_id, '<=', main_schet_id, null, operatsii);
+        const summa_from_object = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { operator: '<=', date: from }, null, podotchet_id, main_schet_id, null, operatsii);
+        const summa_to_object = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { operator: '<=', date: to }, null, podotchet_id, main_schet_id, null, operatsii);
+
+        const summa_from = summa_from_object.summa;
+        const summa_to = summa_to_object.summa;
+
         let summa_prixod = 0;
         let summa_rasxod = 0;
         for (let item of data) {
@@ -376,8 +394,9 @@ exports.Controller = class {
         worksheet.getRow(4).height = 40
         worksheet.getRow(itogoCell.row).height = 40
         worksheet.getRow(summaToCell.row).height = 40
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
+
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);
         });

@@ -24,7 +24,7 @@ exports.AvansDB = class {
                     sp.rayon AS spravochnik_podotchet_litso_rayon,
                     d.spravochnik_operatsii_own_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(a_j_ch))
+                        SELECT JSON_AGG(row_to_json(a_j_ch))
                         FROM (
                             SELECT 
                                 s_o.schet AS provodki_schet,
@@ -47,7 +47,7 @@ exports.AvansDB = class {
                 OFFSET $5 LIMIT $6 
             ) 
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COALESCE(COUNT(d.id), 0)
                     FROM avans_otchetlar_jur4 AS d
@@ -135,7 +135,7 @@ exports.AvansDB = class {
                 sp.rayon AS spravochnik_podotchet_litso_rayon,
                 d.spravochnik_operatsii_own_id,
                 (
-                    SELECT ARRAY_AGG(row_to_json(a_o_j_4_child))
+                    SELECT JSON_AGG(row_to_json(a_o_j_4_child))
                     FROM (
                         SELECT   
                             ch.id,

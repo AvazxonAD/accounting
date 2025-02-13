@@ -33,7 +33,7 @@ exports.BankMfoDB = class {
                 OFFSET $1 LIMIT $2
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COALESCE(COUNT(s_b_m.id), 0)::INTEGER 
                     FROM spravochnik_bank_mfo AS s_b_m

@@ -59,7 +59,7 @@ const getAllPodotChetService = async (region_id, offset, limit, search) => {
         ORDER BY s_p_l.id OFFSET $2 LIMIT $3
       )
       SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
+        COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
         (SELECT COUNT(s_p_l.id)
         FROM spravochnik_podotchet_litso AS s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id

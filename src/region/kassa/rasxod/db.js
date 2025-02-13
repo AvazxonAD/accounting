@@ -70,7 +70,7 @@ exports.KassaRasxodDB = class {
                         p.rayon AS spravochnik_podotchet_litso_rayon,
                         d.main_zarplata_id,
                         (
-                            SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                            SELECT JSON_AGG(row_to_json(k_p_ch))
                             FROM (
                                 SELECT 
                                     s_o.schet AS provodki_schet,
@@ -93,7 +93,7 @@ exports.KassaRasxodDB = class {
                     OFFSET $5 LIMIT $6
                 )
                 SELECT 
-                    ARRAY_AGG(row_to_json(data)) AS data,
+                    COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                     (
                         SELECT COALESCE(SUM(d.summa), 0)
                         FROM kassa_rasxod AS d
@@ -139,7 +139,7 @@ exports.KassaRasxodDB = class {
                 p.rayon AS spravochnik_podotchet_litso_rayon,
                 d.main_zarplata_id,
                 (
-                    SELECT ARRAY_AGG(row_to_json(k_p_ch))
+                    SELECT JSON_AGG(row_to_json(k_p_ch))
                     FROM (
                         SELECT  
                             k_p_ch.id,

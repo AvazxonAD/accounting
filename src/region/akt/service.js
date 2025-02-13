@@ -124,7 +124,7 @@ exports.AktService = class {
             worksheet.getColumn(6).width = 5;
         }
 
-        const folderPath = path.join(__dirname, '../../public/exports/');
+        const folderPath = path.join(__dirname, '../../../public/exports/');
         try {
             await access(folderPath, constants.W_OK);
         } catch (error) {

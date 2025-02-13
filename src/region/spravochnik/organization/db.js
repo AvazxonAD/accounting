@@ -170,7 +170,7 @@ exports.OrganizationDB = class {
                 LIMIT $3
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                         
                     SELECT COALESCE(COUNT(so.id), 0)

@@ -33,7 +33,7 @@ exports.PodrazdelenieDB = class {
                 OFFSET $2 LIMIT $3
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COALESCE(COUNT(s_p_j7.id), 0)::INTEGER 
                     FROM spravochnik_podrazdelenie_jur7 AS s_p_j7

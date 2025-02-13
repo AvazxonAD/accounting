@@ -53,7 +53,12 @@ exports.KassaPrixodService = class {
     static async get(data) {
         const result = await KassaPrixodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
 
-        return { data: result.data || [], summa: result.summa, total_count: result.total_count };
+        let page_summa = 0;
+        result.data.forEach(item => {
+            page_summa += item.summa;
+        });
+
+        return { ...result, page_summa };
     }
 
     static async getById(data) {
@@ -90,10 +95,10 @@ exports.KassaPrixodService = class {
     static async delete(data) {
         const result = await db.transaction(async client => {
             const doc = await KassaPrixodDB.delete([data.id], client);
-            
+
             return doc;
         });
-        
-        return result; 
+
+        return result;
     }
 }

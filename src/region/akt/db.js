@@ -35,7 +35,7 @@ exports.AktDB = class {
                     TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
                     d.spravochnik_operatsii_own_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 so.schet AS provodki_schet,
@@ -62,7 +62,7 @@ exports.AktDB = class {
                 OFFSET $5 LIMIT $6
             )
             SELECT 
-                ARRAY_AGG(ROW_TO_JSON(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT 
                         COALESCE(COUNT(d.id), 0)::INTEGER
@@ -173,7 +173,7 @@ exports.AktDB = class {
                 TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
                 d.spravochnik_operatsii_own_id,
                 (
-                    SELECT ARRAY_AGG(row_to_json(ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT  
                         ch.id,

@@ -53,7 +53,12 @@ exports.KassaRasxodService = class {
     static async get(data) {
         const result = await KassaRasxodDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
 
-        return { data: result.data || [], summa: result.summa, total_count: result.total_count };
+        let page_summa = 0;
+        result.data.forEach(item => {
+            page_summa += item.summa;
+        });
+
+        return { ...result, page_summa };
     }
 
     static async getById(data) {

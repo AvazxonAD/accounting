@@ -43,8 +43,10 @@ exports.DashboardDB = class {
     static async kassa(params) {
         const query = `
             SELECT 
+                COALESCE(SUM(p.summa), 0)::FLOAT AS prixod_sum,
+                COALESCE(SUM(r.summa), 0)::FLOAT AS rasxod_sum,
                 COALESCE(SUM(p.summa), 0)::FLOAT - 
-                COALESCE(SUM(r.summa), 0)::FLOAT summa 
+                COALESCE(SUM(r.summa), 0)::FLOAT summa
             FROM kassa_prixod p 
             FULL JOIN kassa_rasxod r ON p.main_schet_id = r.main_schet_id AND p.doc_date = r.doc_date
             WHERE p.main_schet_id = $1 AND p.doc_date <= $2
@@ -58,8 +60,10 @@ exports.DashboardDB = class {
     static async bank(params) {
         const query = `
             SELECT
-                COALESCE(SUM(p.summa), 0) :: FLOAT - 
-                COALESCE(SUM(r.summa), 0) :: FLOAT summa
+                COALESCE(SUM(p.summa), 0)::FLOAT AS prixod_sum,
+                COALESCE(SUM(r.summa), 0)::FLOAT AS rasxod_sum,
+                COALESCE(SUM(p.summa), 0)::FLOAT - 
+                COALESCE(SUM(r.summa), 0)::FLOAT summa
             FROM
                 bank_prixod p FULL
                 JOIN bank_rasxod r ON p.main_schet_id = r.main_schet_id
@@ -161,8 +165,10 @@ exports.DashboardDB = class {
                         AND p.id = $3
                 )
             SELECT 
-                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum)::FLOAT AS prixod, 
-                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum)::FLOAT AS rasxod
+                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum)::FLOAT AS prixod_sum, 
+                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum)::FLOAT AS rasxod_sum,
+                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum)::FLOAT -
+                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum)::FLOAT AS summa
             FROM bank_rasxod
             CROSS JOIN bank_prixod
             CROSS JOIN kassa_prixod

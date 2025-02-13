@@ -14,7 +14,7 @@ exports.SmetaDB = class {
             search_filter = `AND (smeta_name ILIKE '%' || $${params.length + 1} || '%' OR smeta_number ILIKE '%' || $${params.length + 1} || '%')`
             params.push(search)
         }
-        if(group_number){
+        if (group_number) {
             group_number_filter = `AND group_number ILIKE '%' || $${params.length + 1} || '%'`
             params.push(group_number)
         }
@@ -24,7 +24,7 @@ exports.SmetaDB = class {
             WHERE isdeleted = false ${search_filter} ${group_number_filter} ORDER BY group_number, smeta_number OFFSET $1 LIMIT $2
             )
             SELECT 
-            ARRAY_AGG(row_to_json(data)) AS data,
+            COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
             (SELECT COUNT(id) FROM smeta WHERE isdeleted = false ${search_filter} ${group_number_filter})::INTEGER AS total_count
             FROM data
         `;
@@ -68,6 +68,9 @@ exports.SmetaDB = class {
                 throw new ErrorResponse('Cannot delete this data as it is linked to existing documents', 400)
             }
         }
-        await db.query(`UPDATE smeta SET isdeleted = true WHERE id = $1`, params);
+
+        const result = await db.query(`UPDATE smeta SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+
+        return result;
     }
 }

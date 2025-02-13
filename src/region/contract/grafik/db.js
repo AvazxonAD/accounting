@@ -31,10 +31,11 @@ exports.GrafikDB = class {
                 oy_11,
                 oy_12,
                 yillik_oylik,
-                smeta_id
+                smeta_id,
+                itogo
             ) 
             
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) 
             
             RETURNING id
         `;
@@ -87,8 +88,9 @@ exports.GrafikDB = class {
             oy_12 = $12,
             smeta_id = $13,
             id_shartnomalar_organization = $14,
-            year = $15
-            WHERE id = $16 RETURNING id
+            year = $15,
+            year = $16
+            WHERE id = $17 RETURNING id
         `;
 
         const result = await _db.query(query, params);
