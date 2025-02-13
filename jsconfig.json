@@ -3,6 +3,8 @@
         "baseUrl": "./src",
         "paths": {
             "@budjet/*": [ "admin/spravochnik/budjet/*" ],
+            "@smeta/*": [ "admin/smeta/*" ],
+            "@smeta_grafik/*": [ "region/smeta.grafik/*" ],
             "@main_book_schet/*": [ "admin/spravochnik/main.book.schet/*" ],
             "@group/*": [ "admin/spravochnik/group/*" ],
             "@admin_main_book/*": [ "admin/main.book/*" ],
@@ -18,6 +20,7 @@
             "@main_schet/*": [ "region/spravochnik/main.schet/*" ],
             "@organization/*": [ "region/spravochnik/organization/*" ],
             "@features/*": [ "region/features/*" ],
+            "@contract/*": [ "region/contract/*" ],
             "@region/*": [ "admin/region/*" ],
             "@middleware/*": [ "middleware/*" ],
             "@utils/*": [ "delete/utils/*" ],

@@ -1,5 +1,5 @@
 const { SmetaGrafikDB } = require('./db')
-const { SmetaDB } = require('../smeta/db')
+const { SmetaDB } = require('../../admin/smeta/db')
 const { BudjetDB } = require('@budjet/db')
 const { sum } = require('@helper/functions')
 

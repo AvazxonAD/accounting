@@ -45,7 +45,7 @@ exports.OrganizationService = class {
                 await GaznaDB.create([
                     organ.id,
                     gazna.raschet_schet_gazna,
-                    HelperFunctions.tashkentTime(), 
+                    HelperFunctions.tashkentTime(),
                     HelperFunctions.tashkentTime()
                 ], client);
             }
@@ -54,7 +54,7 @@ exports.OrganizationService = class {
                 await AccountNumberDB.create([
                     organ.id,
                     acccount_number.raschet_schet,
-                    HelperFunctions.tashkentTime(), 
+                    HelperFunctions.tashkentTime(),
                     HelperFunctions.tashkentTime()
                 ], client);
             }
@@ -66,9 +66,7 @@ exports.OrganizationService = class {
     }
 
     static async get(data) {
-        const result = await OrganizationDB.get(
-            [data.region_id, data.offset, data.limit], data.search, data.organ_id
-        );
+        const result = await OrganizationDB.get([data.region_id, data.offset, data.limit], data.search, data.organ_id);
 
         return result;
     }

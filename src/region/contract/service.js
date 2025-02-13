@@ -1,0 +1,122 @@
+const { ContractDB } = require('./db');
+const { db } = require('@db/index');
+const { HelperFunctions } = require('@helper/functions');
+
+exports.ContractService = class {
+    static async create(data) {
+        const result = await db.transaction(async client => {
+            const contract = await ContractDB.create([
+                data.doc_num,
+                data.doc_date,
+                data.summa,
+                data.opisanie,
+                data.user_id,
+                data.spravochnik_organization_id,
+                data.pudratchi_bool,
+                data.budjet_id
+            ], client);
+
+            await this.createGrafik({ ...data, contract, client });
+
+            return contract;
+        })
+
+        return result;
+    }
+
+    static async createGrafik(data) {
+        const create_grafiks = [];
+        for (let grafik of data.grafiks) {
+            create_grafiks.push(
+                data.contract.id,
+                data.user_id,
+                data.budjet_id,
+                new Date(data.contract.doc_date).getFullYear(),
+                grafik.oy_1,
+                grafik.oy_2,
+                grafik.oy_3,
+                grafik.oy_4,
+                grafik.oy_5,
+                grafik.oy_6,
+                grafik.oy_7,
+                grafik.oy_8,
+                grafik.oy_9,
+                grafik.oy_10,
+                grafik.oy_11,
+                grafik.oy_12,
+                data.yillik_oylik,
+                grafik.smeta_id,
+                grafik.itogo
+            );
+
+        }
+
+        const _values = HelperFunctions.paramsValues({ params: create_grafiks, column_count: 19 });
+
+        await ContractDB.createGrafik(create_grafiks, _values, data.client);
+    }
+
+    static async get(data) {
+        const result = await ContractDB.get([
+            data.region_id,
+            data.budjet_id,
+            data.offset,
+            data.limit
+        ], data.organ_id, data.pudratchi, data.search);
+
+        let page_summa = 0;
+        result.data.forEach(item => {
+            page_summa += item.summa;
+        });
+
+        return { ...result, page_summa };
+    }
+
+    static async getById(data) {
+        const result = await ContractDB.getById([data.region_id, data.id], data.isdeleted, data.budjet_id, data.organ_id);
+
+        if (result) {
+            result.grafiks = await ContractDB.getGrafiks([data.id, data.budjet_id]);
+        }
+
+        return result;
+    }
+
+    static async getContractByOrganizations(data) {
+        const result = await ContractDB.getContractByOrganizations([data.region_id], data.organ_id);
+        return result;
+    }
+
+    static async update(data) {
+        const result = await db.transaction(async client => {
+            const contract = await ContractDB.update([
+                data.doc_num,
+                data.doc_date,
+                data.summa,
+                data.opisanie,
+                data.spravochnik_organization_id,
+                data.pudratchi_bool,
+                data.yillik_oylik,
+                data.id
+            ], client);
+
+            await ContractDB.deleteGrafiks([data.id], client);
+
+            await this.createGrafik({ ...data, contract, client });
+
+            return contract;
+        })
+
+        return result;
+    }
+
+    static async delete(data) {
+        const result = await db.transaction(async client => {
+            const doc = await ContractDB.delete([data.id], client);
+
+            return doc;
+        })
+
+        return result;
+    }
+}
