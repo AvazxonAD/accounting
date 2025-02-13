@@ -23,7 +23,8 @@
             "@utils/*": [ "delete/utils/*" ],
             "@helper/*": [ "helper/*" ],
             "@db/*": [ "db/*" ],
-            "@config/*": [ "delete/config/*" ]
+            "@config/*": [ "delete/config/*" ],
+            "@public/*": [ "../public/*" ]
         }
     },
     "include": [

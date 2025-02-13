@@ -65,6 +65,7 @@
     "@organ_monitoring": "./src/region/organ.monitoring",
     "@jur7_prixod": "./src/region/jur7/prixod",
     "@iznos": "./src/region/jur7/iznos",
+    "@public": "./public",
     "@jur7_rasxod": "./src/region/jur7/rasxod",
     "@jur7_internal": "./src/region/jur7/internal",
     "@jur7_monitoring": "./src/region/jur7/monitoring",

@@ -157,7 +157,7 @@ exports.Jur7MonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
     }
@@ -248,7 +248,7 @@ exports.Jur7MonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { filePath, fileName };
     }
@@ -351,7 +351,7 @@ exports.Jur7MonitoringService = class {
 
         worksheet.getRow(1).height = 25;
         worksheet.getRow(2).height = 18;
-        const folderPath = path.join(__dirname, '../../../public/exports');
+        const folderPath = path.join(__dirname, '../../../../public/exports');
         const fileName = `obrotka_${new Date().getTime()}.xlsx`
 
         try {
@@ -556,7 +556,7 @@ exports.Jur7MonitoringService = class {
             })
         })
 
-        const folderPath = path.join(__dirname, '../../../public/exports');
+        const folderPath = path.join(__dirname, '../../../../public/exports');
         const fileName = `material_${new Date().getTime()}.xlsx`
 
         try {
