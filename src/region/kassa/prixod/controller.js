@@ -78,7 +78,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa } = await KassaPrixodService.get({ ...req.query, region_id, offset });
+    const { data, total_count, summa, page_summa } = await KassaPrixodService.get({ ...req.query, region_id, offset });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -88,7 +88,7 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      summa
+      summa, page_summa
     };
 
     return res.success(req.i18n.t('getSuccess'), 200, meta, data);

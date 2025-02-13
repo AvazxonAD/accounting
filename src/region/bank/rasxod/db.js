@@ -112,7 +112,7 @@ exports.BankRasxodDB = class {
                 d.organization_by_raschet_schet_id,
                 d.organization_by_raschet_schet_gazna_id,
                 (
-                    SELECT ARRAY_AGG(row_to_json(ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT 
                             so.schet AS provodki_schet,
@@ -135,7 +135,7 @@ exports.BankRasxodDB = class {
                 OFFSET $5 LIMIT $6
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT 
                         COALESCE(SUM(d.summa), 0)
@@ -187,7 +187,7 @@ exports.BankRasxodDB = class {
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
                 (
                     SELECT 
-                        ARRAY_AGG(row_to_json(ch))
+                        JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT 
                             ch.id,

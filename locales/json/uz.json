@@ -14,6 +14,7 @@
     "contractNotFound": "Shartnoma topilmadi!",
     "groupNotFound": "Guruh topilmadi!",
     "smetaNotFound": "Smeta topilmadi!",
+    "docExists": "Ushbu hujjat avval kiritilgan!",
     "createSuccess": "Muvaffaqiyatli kiritildi",
     "getSuccess": "Muvaffaqiyatli ma'lumot olindi",
     "docNotFound": "Hujjat topilmadi!",

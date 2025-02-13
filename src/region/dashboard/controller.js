@@ -22,11 +22,15 @@ exports.Controller = class {
             }
         }
 
-        const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
+        const _budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
 
-        const result = await DashboardService.kassa({ budjets, to });
+        const { budjets, page_prixod_sum, page_rasxod_sum, page_total_sum } = await DashboardService.kassa({ budjets: _budjets, to });
 
-        return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
+        const meta = {
+            page_prixod_sum, page_rasxod_sum, page_total_sum
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, budjets);
     }
 
     static async bank(req, res) {
@@ -40,11 +44,15 @@ exports.Controller = class {
             }
         }
 
-        const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
+        const _budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
 
-        const result = await DashboardService.bank({ budjets, to });
+        const { budjets, page_prixod_sum, page_rasxod_sum, page_total_sum } = await DashboardService.bank({ budjets: _budjets, to });
 
-        return res.success(req.i18n.t('getSuccess'), 200, req.query, result);
+        const meta = {
+            page_prixod_sum, page_rasxod_sum, page_total_sum
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, budjets);
     }
 
     static async podotchet(req, res) {
@@ -62,19 +70,24 @@ exports.Controller = class {
 
         const { data, total_count } = await PodotchetService.get({ region_id, offset, limit });
 
-        const budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
+        const _budjets = await DashboardService.getBudjet({ main_schet_id, budjet_id, region_id });
 
         const pageCount = Math.ceil(total_count / limit);
+        
+        const { podotchets, page_prixod_sum, page_rasxod_sum, page_total_sum } = await DashboardService.podotchet({ budjets: _budjets, to, podotchets: data });
+
         const meta = {
             pageCount: pageCount,
             count: total_count,
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
-            backPage: page === 1 ? null : page - 1
+            backPage: page === 1 ? null : page - 1,
+            page_prixod_sum, 
+            page_rasxod_sum, 
+            page_total_sum
         }
 
-        const result = await DashboardService.podotchet({ budjets, to, podotchets: data });
 
-        return res.success(req.i18n.t('getSuccess'), 200, meta, result);
+        return res.success(req.i18n.t('getSuccess'), 200, meta, podotchets);
     }
 }

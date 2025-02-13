@@ -108,7 +108,7 @@ exports.PodotchetMonitoringService = class {
                 });
             });
         });
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return { fileName, filePath };
     }

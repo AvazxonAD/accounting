@@ -25,21 +25,15 @@ exports.Controller = class {
         const main_schet_id = req.query.main_schet_id;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
         const operatsii = await OperatsiiDB.getById([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
-            return res.status(404).json({
-                message: "operatsii not found"
-            })
+            return res.error(req.i18n.t('operatsiiNotFound'), 404)
         }
         const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
+            return res.error(req.i18n.t('organizationNotFound'), 404);
         }
         if (shartnomalar_organization_id) {
             const shartnoma = await ContractDB.getById(
@@ -48,9 +42,7 @@ exports.Controller = class {
                 id_spravochnik_organization
             );
             if (!shartnoma || shartnoma.pudratchi_bool) {
-                return res.status(404).json({
-                    message: "conrtact not found"
-                })
+                return res.error(req.i18n.t('contractNotFound'), 404);
             }
         }
         for (let child of childs) {
@@ -119,37 +111,38 @@ exports.Controller = class {
             const items = await ShowServiceDB.createShowServiceChild(result_childs, client)
             doc.childs = items;
         })
-        return res.status(201).json({
-            message: "akt created successfully",
-            data: doc
-        })
+
+        return res.success(req.i18n.t('createSuccess'), 201, null, doc);
     }
 
     static async getShowService(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, from, to, main_schet_id, search } =  req.query;
+        const { page, limit, from, to, main_schet_id, search } = req.query;
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const offset = (page - 1) * limit;
-        const { data, summa, total } = await ShowServiceDB.getShowService([region_id, from, to, main_schet_id, offset, limit], search);
-        const pageCount = Math.ceil(total / limit);
+        const { data, summa, total_count } = await ShowServiceDB.getShowService([region_id, from, to, main_schet_id, offset, limit], search);
+
+        let page_summa = 0;
+        data.forEach(item => {
+            page_summa += item.summa;
+        });
+
+        const pageCount = Math.ceil(total_count / limit);
         const meta = {
             pageCount: pageCount,
-            count: total,
+            count: total_count,
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
-            summa,
+            summa, page_summa
         }
-        return res.status(200).json({
-            message: "show service get successfully",
-            meta,
-            data
-        })
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async getByIdShowService(req, res) {
@@ -158,20 +151,14 @@ exports.Controller = class {
         const id = req.params.id;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
         const result = await ShowServiceDB.getByIdShowService([region_id, id, main_schet_id], true);
-        if(!result){
-            return res.status(404).json({
-                message: "show service doc not found"
-            })
+        if (!result) {
+            return res.error(req.i18n.t('docNotFound'), 404);
         }
-        return res.status(200).json({
-            message: "show service doc get successfully",
-            data: result
-        })
+
+        return res.error(req.i18n.t('getSuccess'), 200, null, result);
     }
 
     static async updateShowService(req, res) {
@@ -189,28 +176,20 @@ exports.Controller = class {
         const main_schet_id = req.query.main_schet_id;
         const id = req.params.id;
         const old_data = await ShowServiceDB.getByIdShowService([region_id, id, main_schet_id])
-        if(!old_data){
-            return res.status(404).json({
-                message: "show service doc not found"
-            })
+        if (!old_data) {
+            return res.error(req.i18n.t('docNotFound'), 404);
         }
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
         const operatsii = await OperatsiiDB.getById([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
-            return res.status(404).json({
-                message: "operatsii not found"
-            })
+            return res.error(req.i18n.t('operatsiiNotFound'), 404)
         }
         const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
-            return res.status(404).json({
-                message: "organization not found"
-            })
+            return res.error(req.i18n.t('organizationNotFound'), 404);
         }
         if (shartnomalar_organization_id) {
             const shartnoma = await ContractDB.getById(
@@ -219,9 +198,7 @@ exports.Controller = class {
                 id_spravochnik_organization
             );
             if (!shartnoma || !shartnoma.pudratchi_bool) {
-                return res.status(404).json({
-                    message: "conrtact not found"
-                })
+                return res.error(req.i18n.t('contractNotFound'), 404);
             }
         }
         for (let child of childs) {
@@ -259,12 +236,12 @@ exports.Controller = class {
         let doc;
         await db.transaction(async (client) => {
             doc = await ShowServiceDB.updateShowService([
-                doc_num, 
-                doc_date, 
-                opisanie, 
-                summa, 
-                id_spravochnik_organization, 
-                shartnomalar_organization_id, 
+                doc_num,
+                doc_date,
+                opisanie,
+                summa,
+                id_spravochnik_organization,
+                shartnomalar_organization_id,
                 spravochnik_operatsii_own_id,
                 tashkentTime(),
                 id
@@ -289,10 +266,7 @@ exports.Controller = class {
             const items = await ShowServiceDB.createShowServiceChild(result_childs, client)
             doc.childs = items;
         })
-        return res.status(201).json({
-            message: "akt created successfully",
-            data: doc
-        })
+        return res.success(req.i18n.t('createSuccess'), 201, null, doc);
     }
 
     static async deleteShowService(req, res) {
@@ -301,21 +275,19 @@ exports.Controller = class {
         const id = req.params.id;
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
-            return res.status(404).json({
-                message: "main schet not found"
-            })
+            return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
         const result = await ShowServiceDB.getByIdShowService([region_id, id, main_schet_id]);
-        if(!result){
-            return res.status(404).json({
-                message: "show service doc not found"
-            })
+        if (!result) {
+            return res.error(req.i18n.t('docNotFound'), 404);
         }
-        await db.transaction( async (client) => {
-            await ShowServiceDB.deleteShowService([id], client)
+
+        const data = await db.transaction(async (client) => {
+            const docId = await ShowServiceDB.deleteShowService([id], client);
+
+            return docId;
         })
-        return res.status(200).json({
-            message: 'delete show service successfully'
-        })
+
+        return res.success(req.i18n.t('deleteSuccess'), 200, null, data);
     }
 };

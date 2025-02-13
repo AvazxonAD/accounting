@@ -167,7 +167,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa } = await BankRasxodService.get({ search, region_id, main_schet_id, from, to, offset, limit });
+    const { data, total_count, summa, page_summa } = await BankRasxodService.get({ search, region_id, main_schet_id, from, to, offset, limit });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -177,7 +177,8 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      summa
+      summa,
+      page_summa
     };
 
     return res.success(req.i18n.t('getSuccess'), 200, meta, data);

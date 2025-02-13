@@ -12,7 +12,12 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await BankMonitoringService.get({ region_id, main_schet_id, offset, limit, from, to, search });
+        const {
+            total_count, data, summa_from,
+            summa_to, prixod_sum, rasxod_sum,
+            page_prixod_sum, page_rasxod_sum,
+            total_sum, page_total_sum
+        } = await BankMonitoringService.get({ region_id, main_schet_id, offset, limit, from, to, search });
 
         const pageCount = Math.ceil(total_count / limit);
 
@@ -24,10 +29,15 @@ exports.Controller = class {
             backPage: page === 1 ? null : page - 1,
             prixod_sum,
             rasxod_sum,
-            summa_from_object: summa_from,
-            summa_to_object: summa_to,
+            total_sum,
             summa_from: summa_from.summa,
-            summa_to: summa_to.summa
+            summa_to: summa_to.summa,
+            page_prixod_sum,
+            page_rasxod_sum,
+            total_sum, 
+            page_total_sum,
+            summa_from_object: summa_from,
+            summa_to_object: summa_to
         };
 
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);

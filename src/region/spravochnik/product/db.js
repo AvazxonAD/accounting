@@ -53,7 +53,7 @@ exports.NaimenovanieDB = class {
                 OFFSET $2 LIMIT $3
             )
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COALESCE(COUNT(n_t_j7.id), 0)::INTEGER  
                     FROM naimenovanie_tovarov_jur7 AS n_t_j7

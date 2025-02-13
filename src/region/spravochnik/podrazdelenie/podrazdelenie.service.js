@@ -56,7 +56,7 @@ const getAllPodrazdelenieService = async (region_id, offset, limit, search) => {
         LIMIT $3
       )
       SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
+        COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
         (SELECT COUNT(s_p.id)
         FROM spravochnik_podrazdelenie AS s_p
         JOIN users AS u ON s_p.user_id = u.id

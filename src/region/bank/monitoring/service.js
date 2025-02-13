@@ -7,11 +7,12 @@ const { mkdir, constants, access } = require('fs').promises;
 exports.BankMonitoringService = class {
     static async get(data) {
         const result = await BankMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
-        let prixod_sum = 0;
-        let rasxod_sum = 0;
+        
+        let page_prixod_sum = 0;
+        let page_rasxod_sum = 0;
         for (let item of result.data) {
-            prixod_sum += item.prixod_sum;
-            rasxod_sum += item.rasxod_sum;
+            page_prixod_sum += item.prixod_sum;
+            page_rasxod_sum += item.rasxod_sum;
         }
 
         const summa_from = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from], '<', data.search);
@@ -23,8 +24,12 @@ exports.BankMonitoringService = class {
             summa_to,
             data: result.data || [],
             total_count: result.total_count,
-            prixod_sum,
-            rasxod_sum
+            page_prixod_sum,
+            page_rasxod_sum,
+            prixod_sum: result.prixod_sum, 
+            rasxod_sum: result.rasxod_sum,
+            total_sum: result.prixod_sum - result.rasxod_sum,
+            page_total_sum: page_prixod_sum - page_rasxod_sum
         };
     }
 

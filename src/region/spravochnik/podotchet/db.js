@@ -31,7 +31,7 @@ exports.PodotchetDB = class {
                 OFFSET $2 LIMIT $3
             )
             SELECT 
-                ARRAY_AGG(ROW_TO_JSON(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COALESCE(COUNT(s.id), 0)::FLOAT
                     FROM spravochnik_podotchet_litso AS s

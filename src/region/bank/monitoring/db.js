@@ -38,7 +38,7 @@ exports.BankMonitoringDB = class {
                     u.fio,
                     u.id AS user_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 s_o.schet AS provodki_schet,
@@ -86,7 +86,7 @@ exports.BankMonitoringDB = class {
                     u.fio,
                     u.id AS user_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 s_o.schet AS provodki_schet,
@@ -170,20 +170,20 @@ exports.BankMonitoringDB = class {
                         ${search_filter}
                         AND ch.isdeleted = false
                 )::FLOAT AS rasxod_sum,
-                ARRAY_AGG(row_to_json(data)) AS data
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data
             FROM data
         `;
 
         const result = await db.query(query, params);
 
-        return { data: result[0].data || [], total_count: result[0].total_count };
+        return result[0];
     };
 
     static async daily(params) {
         const query = `
             SELECT 
                 s_o.schet,
-                ARRAY_AGG(
+                JSON_AGG(
                     json_build_object(
                         'doc_num', d.doc_num, 
                         'doc_date', d.doc_date,
@@ -211,7 +211,7 @@ exports.BankMonitoringDB = class {
             
             SELECT 
                 s_o.schet,
-                ARRAY_AGG(
+                JSON_AGG(
                     json_build_object(
                         'doc_num', d.doc_num, 
                         'doc_date', d.doc_date,

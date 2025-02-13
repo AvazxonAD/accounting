@@ -76,7 +76,7 @@ const getByIdGrafikDB = async (region_id, budjet_id, id, ignoreDeleted = false) 
           g.oy_10::FLOAT,
           g.oy_11::FLOAT,
           g.oy_12::FLOAT,
-          (oy_1 + oy_2 + oy_3 + oy_4 + oy_5 + oy_6 + oy_7 + oy_8 + oy_9 + oy_10 + oy_11 + oy_12)::FLOAT AS summa,
+          g.itogo::FLOAT AS summa,
           g.year,
           s.id smeta_id,
           s.smeta_number sub_schet
@@ -158,6 +158,7 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
           g.oy_10::FLOAT,
           g.oy_11::FLOAT,
           g.oy_12::FLOAT,
+          g.itogo::FLOAT AS summa,
           g.year
         FROM shartnoma_grafik AS g
         JOIN users AS u ON g.user_id = u.id
@@ -176,28 +177,43 @@ const getAllGrafikDB = async (region_id, budjet_id, organization, limit, offset,
         OFFSET $3 LIMIT $4
       )
       SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
-        COALESCE(
-          (
-            SELECT COUNT(g.id)
-            FROM shartnoma_grafik AS g
-            JOIN users AS u ON g.user_id = u.id
-            JOIN regions AS r ON u.region_id = r.id
-            JOIN shartnomalar_organization AS sho ON sho.id = g.id_shartnomalar_organization
-            JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
-            JOIN smeta AS s ON s.id = g.smeta_id
-            WHERE g.isdeleted = false 
-              AND r.id = $1 
-              AND g.budjet_id = $2 
-              ${organization_filter}
-              ${search_filter}
-              ${contract_filter}
-          ), 0
-        )::INTEGER AS total_count
+        COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
+        (
+          SELECT 
+            COALESCE( COUNT(g.id), 0 )
+          FROM shartnoma_grafik AS g
+          JOIN users AS u ON g.user_id = u.id
+          JOIN regions AS r ON u.region_id = r.id
+          JOIN shartnomalar_organization AS sho ON sho.id = g.id_shartnomalar_organization
+          JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
+          JOIN smeta AS s ON s.id = g.smeta_id
+          WHERE g.isdeleted = false 
+            AND r.id = $1 
+            AND g.budjet_id = $2 
+            ${organization_filter}
+            ${search_filter}
+            ${contract_filter}
+        )::INTEGER AS total_count,
+        (
+          SELECT 
+            COALESCE( SUM(g.itogo), 0 )
+          FROM shartnoma_grafik AS g
+          JOIN users AS u ON g.user_id = u.id
+          JOIN regions AS r ON u.region_id = r.id
+          JOIN shartnomalar_organization AS sho ON sho.id = g.id_shartnomalar_organization
+          JOIN spravochnik_organization AS so ON so.id = sho.spravochnik_organization_id
+          JOIN smeta AS s ON s.id = g.smeta_id
+          WHERE g.isdeleted = false 
+            AND r.id = $1 
+            AND g.budjet_id = $2 
+            ${organization_filter}
+            ${search_filter}
+            ${contract_filter}
+        )::FLOAT AS summa
       FROM data
     `, params);
 
-    return { data: rows[0]?.data || [], total: rows[0].total_count };
+    return rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode);
   }

@@ -74,15 +74,25 @@ const getAllGrafik = async (req, res) => {
       }
     }
 
-    const { data, total } = await getAllGrafikDB(region_id, budjet_id, organization, limit, offset, search, contract_id);
-    const pageCount = Math.ceil(total / limit);
+    const { data, total_count, summa } = await getAllGrafikDB(region_id, budjet_id, organization, limit, offset, search, contract_id);
+
+    let page_summa = 0;
+    data.forEach(item => {
+      page_summa += item.summa;
+    });
+
+    const pageCount = Math.ceil(total_count / limit);
+
     const meta = {
       pageCount: pageCount,
-      count: total,
+      count: total_count,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
+      summa,
+      page_summa
     }
+
     resFunc(res, 200, data, meta)
   } catch (error) {
     errorCatch(error, res)

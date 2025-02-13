@@ -34,7 +34,7 @@ exports.KassaMonitoringDB = class {
                     u.fio,
                     u.id AS user_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 op.schet AS provodki_schet,
@@ -77,7 +77,7 @@ exports.KassaMonitoringDB = class {
                     u.fio,
                     u.id AS user_id,
                     (
-                        SELECT ARRAY_AGG(row_to_json(ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 op.schet AS provodki_schet,
@@ -102,7 +102,7 @@ exports.KassaMonitoringDB = class {
                 OFFSET $5 LIMIT $6
             ) 
             SELECT 
-                ARRAY_AGG(row_to_json(data)) AS data,
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 ( 
                     (
                         SELECT 
@@ -145,7 +145,7 @@ exports.KassaMonitoringDB = class {
                         AND d.isdeleted = false
                         AND ch.isdeleted = false
                         ${search_filter}
-                )::FLOAT AS rasxod,
+                )::FLOAT AS rasxod_sum,
                 (
                     SELECT 
                         COALESCE(SUM(ch.summa), 0) 
@@ -160,14 +160,14 @@ exports.KassaMonitoringDB = class {
                         AND d.isdeleted = false
                         AND ch.isdeleted = false
                         ${search_filter}
-                )
+                ) AS prixod_sum
                         
             FROM data
         `;
 
         const result = await db.query(query, params);
 
-        return { data: result[0].data || [], total_count: result[0].total_count };
+        return result[0];
     };
 
     static async getSumma(params, operator) {
@@ -214,7 +214,7 @@ exports.KassaMonitoringDB = class {
         const query = `
             SELECT 
                 op.schet,
-                ARRAY_AGG(
+                JSON_AGG(
                     json_build_object(
                         'doc_num', d.doc_num, 
                         'doc_date', d.doc_date,
@@ -245,7 +245,7 @@ exports.KassaMonitoringDB = class {
             
             SELECT 
                 op.schet,
-                ARRAY_AGG(
+                JSON_AGG(
                     json_build_object(
                         'doc_num', d.doc_num, 
                         'doc_date', d.doc_date,

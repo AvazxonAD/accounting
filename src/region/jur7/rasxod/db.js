@@ -83,7 +83,7 @@ exports.RasxodDB = class {
                 OFFSET $5 LIMIT $6
             )
             SELECT 
-                COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
+                COALESCE(COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ), '[]'::JSON) AS data,
                 (
                     SELECT 
                         COALESCE(SUM(d.summa), 0)
@@ -131,7 +131,7 @@ exports.RasxodDB = class {
                 d.doverennost,
                 d.j_o_num,
                 (
-                SELECT ARRAY_AGG(row_to_json(d_j_ch))
+                SELECT JSON_AGG(row_to_json(d_j_ch))
                 FROM (
                     SELECT  
                         d_j_ch.id,

@@ -101,7 +101,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
         OFFSET $1 LIMIT $2
       )
       SELECT 
-        ARRAY_AGG(row_to_json(data)) AS data,
+        COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
         (
           SELECT 
             COUNT(s.id) 

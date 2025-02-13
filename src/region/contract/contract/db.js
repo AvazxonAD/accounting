@@ -82,7 +82,7 @@ exports.ContractDB = class {
                     LIMIT $4
                 ) 
                 SELECT 
-                    ARRAY_AGG(row_to_json(data)) AS data,
+                    COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                     (
                         SELECT COUNT(sh_o.id) 
                         FROM shartnomalar_organization AS sh_o

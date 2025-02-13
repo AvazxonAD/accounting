@@ -93,15 +93,24 @@ const getAll = async (req, res) => {
     if (organization) {
       await OrganizationDB.getById([region_id, organization])
     }
-    const { data, total } = await getAllShartnoma(region_id, budjet_id, offset, limit, organization, pudratchi_bool, search);
+    const { data, total, summa } = await getAllShartnoma(region_id, budjet_id, offset, limit, organization, pudratchi_bool, search);
     const pageCount = Math.ceil(total / limit);
+
+    let page_summa = 0;
+    data.forEach(item => {
+      page_summa += item.summa;
+    });
+
     const meta = {
       pageCount: pageCount,
       count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
+      summa,
+      page_summa
     }
+
     resFunc(res, 200, data, meta)
   } catch (error) {
     errorCatch(error, res)
@@ -134,21 +143,21 @@ const update_shartnoma = async (req, res) => {
     const data = validationResponse(shartnomaValidation, req.body)
     await getByIdBudjetService(budjet_id);
     const smeta = await SmetaDB.getById([data.smeta_id]);
-   
+
     if (!smeta) {
       return res.error(req.i18n.t('smetaNotFound'), 404)
     };
 
     await OrganizationDB.getById([region_id, data.spravochnik_organization_id]);
     const result = await updateShartnomaDB({ ...data, id });
-    const grafik_data = { 
-      shartnoma_id: result.id, 
-      year: data.doc_date.split('-')[0], 
+    const grafik_data = {
+      shartnoma_id: result.id,
+      year: data.doc_date.split('-')[0],
       budjet_id, user_id,
-      yillik_oylik: result.yillik_oylik, 
-      smeta_id: data.smeta_id 
+      yillik_oylik: result.yillik_oylik,
+      smeta_id: data.smeta_id
     }
-    
+
     if (result.yillik_oylik) {
       let oy_maoshi = Math.floor((result.summa / 12) * 100) / 100;
       let umumiy_summa = oy_maoshi * 12;

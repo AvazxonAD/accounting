@@ -24,9 +24,13 @@ exports.Controller = class {
                 res.error('Organization not found', 404)
             }
         }
-        
-        const { data, summa_from, summa_prixod, summa_rasxod, summa_to, total } = await OrganizationmonitoringService.monitoring({ ...query, offset, region_id, organ_id })
-        
+
+        const {
+            data, summa_from, page_rasxod_sum,
+            page_prixod_sum, summa_to, total, summa,
+            page_total_sum, prixod_sum, rasxod_sum, total_sum,
+        } = await OrganizationmonitoringService.monitoring({ ...query, offset, region_id, organ_id })
+
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -34,10 +38,17 @@ exports.Controller = class {
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
-            summa_prixod,
-            summa_rasxod,
-            summa_from,
-            summa_to
+            page_prixod_sum,
+            page_rasxod_sum,
+            page_total_sum,
+            summa_from_object: summa_from,
+            summa_from: summa_from.summa,
+            summa_to_object: summa_to,
+            summa_to: summa_to.summa,
+            prixod_sum, 
+            rasxod_sum,
+            total_sum,
+            summa_object: summa
         }
 
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);
@@ -428,7 +439,7 @@ exports.Controller = class {
         worksheet.getColumn(9).width = 8;
         worksheet.getColumn(10).width = 8;
         worksheet.getColumn(11).width = 8;
-        const filePath = path.join(__dirname, '../../public/exports/' + fileName);
+        const filePath = path.join(__dirname, '../../../public/exports/' + fileName);
         await workbook.xlsx.writeFile(filePath);
         return res.download(filePath, (err) => {
             if (err) throw new ErrorResponse(err, err.statusCode);

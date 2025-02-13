@@ -12,7 +12,11 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum } = await KassaMonitoringService.get({ ...req.query, region_id, offset, limit });
+        const { 
+            total_count, data, summa_from, summa_to, 
+            prixod_sum, rasxod_sum, page_prixod_sum, 
+            page_rasxod_sum, page_total_sum,
+        } = await KassaMonitoringService.get({ ...req.query, region_id, offset, limit });
 
         const pageCount = Math.ceil(total_count / limit);
 
@@ -27,7 +31,10 @@ exports.Controller = class {
             summa_from_object: summa_from,
             summa_to_object: summa_to,
             summa_from: summa_from.summa,
-            summa_to: summa_to.summa
+            summa_to: summa_to.summa,
+            page_prixod_sum, 
+            page_rasxod_sum,
+            page_total_sum
         };
 
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);

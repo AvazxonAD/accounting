@@ -75,7 +75,7 @@ exports.BankPrixodDB = class {
                     so.inn AS spravochnik_organization_inn,
                     d.id_shartnomalar_organization,
                     (
-                        SELECT ARRAY_AGG(row_to_json(ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 so.schet AS provodki_schet,
@@ -98,7 +98,7 @@ exports.BankPrixodDB = class {
                 OFFSET $5 LIMIT $6
             )
                 SELECT 
-                    ARRAY_AGG(row_to_json(data)) AS data,
+                    COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                     (
                         SELECT 
                             COALESCE(SUM(d.summa), 0)
@@ -146,7 +146,7 @@ exports.BankPrixodDB = class {
                 d.id_spravochnik_organization, 
                 d.id_shartnomalar_organization,
                 (
-                    SELECT ARRAY_AGG(row_to_json(ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT 
                             ch.id,
