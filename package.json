@@ -85,7 +85,7 @@
     "@bank_rasxod": "./src/region/bank/rasxod",
     "@gazna": "./src/region/spravochnik/organization/gazna",
     "@smeta": "./src/admin/smeta",
-    "@role": "./src/auth/role",
+    "@role": "./src/admin/spravochnik/role",
     "@access": "./src/auth/access",
     "@podotchet": "./src/region/spravochnik/podotchet",
     "@podpis": "./src/region/spravochnik/podpis",

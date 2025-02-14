@@ -3,7 +3,7 @@ const { RoleDB } = require('@role/db')
 const { tashkentTime } = require('@helper/functions')
 const { AccessDB } = require('@access/db')
 const { db } = require('@db/index')
-const { logRequest } = require('../../../helper/log')
+const { logRequest } = require('@helper/log')
 
 exports.Controller = class {
     static async createRegion(req, res) {
