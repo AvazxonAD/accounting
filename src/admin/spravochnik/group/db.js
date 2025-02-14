@@ -173,7 +173,7 @@ exports.GroupDB = class {
     }
 
     static async delete(params) {
-        const query = `UPDATE group_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`;
+        const query = `UPDATE group_jur7 SET isdeleted = true WHERE id = $1 RETURNING id`;
 
         const data = await db.query(query, params);
 
