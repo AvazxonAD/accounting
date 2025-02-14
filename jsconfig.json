@@ -17,7 +17,7 @@
             "@operatsii/*": [ "admin/spravochnik/operatsii/*" ],
             "@auth/*": [ "auth/auth/*" ],
             "@user/*": [ "auth/user/*" ],
-            "@admin/*": [ "auth/admin/*" ],
+            "@admin_users/*": [ "admin/users/*" ],
             "@main_schet/*": [ "region/spravochnik/main.schet/*" ],
             "@organization/*": [ "region/spravochnik/organization/*" ],
             "@features/*": [ "region/features/*" ],
