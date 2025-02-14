@@ -54,7 +54,7 @@
     "@operatsii": "./src/admin/spravochnik/operatsii",
     "@auth": "./src/auth/auth",
     "@user": "./src/auth/user",
-    "@admin": "./src/auth/admin",
+    "@admin_users": "./src/admin/users",
     "@main_schet": "./src/region/spravochnik/main.schet",
     "@organization": "./src/region/spravochnik/organization",
     "@features": "./src/region/features",

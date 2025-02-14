@@ -1,7 +1,7 @@
 const { RoleDB } = require('@role/db')
 const { tashkentTime } = require('@helper/functions')
 const { AdminDB } = require('./db')
-const { AuthDB } = require('../auth/db')
+const { AuthDB } = require('../../auth/auth/db')
 const bcrypt = require('bcrypt')
 
 exports.AdminService = class {
@@ -29,12 +29,22 @@ exports.AdminService = class {
     }
 
     static async getAdmin(req, res) {
-        const { search } = req.query
-        const admins = await AdminDB.getAdmin([], search)
-        return res.status(200).json({
-            message: "Admins get successfully",
-            data: admins
-        })
+        const { search, page, limit } = req.query;
+
+        const offset = (page - 1) * limit;
+
+        const { total, data } = await AdminDB.getAdmin([offset, limit], search)
+
+        const pageCount = Math.ceil(total / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1,
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async getByIdAdmin(req, res) {

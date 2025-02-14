@@ -18,7 +18,7 @@ routes
     .use("/auth/role", protect, require("@role/index"))
     .use("/auth/access", protect, require('@access/index'))
     .use("/auth/user", protect, require('@user/index'))
-    .use("/auth/admin", protect, require('@admin/index'))
+    .use("/auth/admin", protect, require('@admin_users/index'))
     // Organization monitoring
     .use('/organization/monitoring', protect, require('@organ_monitoring/index'))
     // Spravochnik routes

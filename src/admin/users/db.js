@@ -3,33 +3,50 @@ const { db } = require('@db/index');
 exports.AdminDB = class {
     static async getAdmin(params, search) {
         let search_filter = ``;
-        if(search){
+        if (search) {
             params.push(search);
-            search_filter =  `AND (
+            search_filter = `AND (
                 r_g.name ILIKE '%' || $${params.length} || '%' OR
                 u.fio ILIKE '%' || $${params.length} || '%' OR
                 u.login ILIKE '%' || $${params.length} || '%'
             )`;
         }
         const query = `--sql
+            WITH data AS (
+                SELECT 
+                    u.id, 
+                    u.role_id, 
+                    u.region_id, 
+                    u.fio,
+                    u.login,
+                    r.name AS role_name,
+                    r_g.name AS region_name
+                FROM users AS u
+                JOIN role AS r ON r.id = u.role_id
+                JOIN regions AS r_g ON r_g.id = u.region_id
+                WHERE u.isdeleted = false 
+                    AND r.name = 'region-admin'
+                    ${search_filter}
+                ORDER BY u.fio
+                OFFSET $1 LIMIT $2
+            )
             SELECT 
-                u.id, 
-                u.role_id, 
-                u.region_id, 
-                u.fio,
-                u.login,
-                r.name AS role_name,
-                r_g.name AS region_name
-            FROM users AS u
-            JOIN role AS r ON r.id = u.role_id
-            JOIN regions AS r_g ON r_g.id = u.region_id
-            WHERE u.isdeleted = false 
-                AND r.name = 'region-admin'
-                ${search_filter}
+                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
+                (
+                    SELECT 
+                        COALESCE( COUNT( u.id ), 0)
+                    FROM users AS u
+                    JOIN role AS r ON r.id = u.role_id
+                    JOIN regions AS r_g ON r_g.id = u.region_id
+                    WHERE u.isdeleted = false 
+                        AND r.name = 'region-admin'
+                        ${search_filter}
+                )::INTEGER AS total
+            FROM data
         `;
 
         const result = await db.query(query, params);
-        return result;
+        return result[0];
     }
 
     static async isExistsAdmin(params) {
