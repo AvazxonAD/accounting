@@ -22,6 +22,7 @@ exports.RegionDB = class {
 
     static async getRegion(params, search, client) {
         let search_filter = ``;
+        
         if (search) {
             params.push(search);
             search_filter = `AND name LIKE '%' || $${params.length} || '%'`;

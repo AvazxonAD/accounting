@@ -1,16 +1,49 @@
 const { db } = require('@db/index');
 
 exports.RoleDB = class {
-    static async getRole(client) {
-        const query = `SELECT id, name FROM role WHERE isdeleted = false AND name != 'region-admin' AND name != 'super-admin' ORDER BY id`;
+    static async getRole(params, search, client) {
+        let search_filter = ``;
+
+        if (search) {
+            params.push(search);
+            search_filter = `AND name LIKE '%' || $${params.length} || '%'`;
+        }
+
+        const query = `
+            WITH data AS (
+                SELECT 
+                    id, name 
+                FROM role 
+                WHERE isdeleted = false 
+                    AND name != 'region-admin' 
+                    AND name != 'super-admin' 
+                    ${search_filter}    
+                ORDER BY id
+                OFFSET $1 LIMIT $2
+            )
+            SELECT 
+                JSON_AGG( row_to_json( data ) ) AS data,
+                (
+                    SELECT 
+                        COALESCE( COUNT ( id ), 0)
+                    FROM role 
+                    WHERE isdeleted = false 
+                        AND name != 'region-admin' 
+                        AND name != 'super-admin' 
+                        ${search_filter}    
+                )::INTEGER AS total
+            FROM data
+        `;
+
         let result;
         if (client) {
-            result = await client.query(query)
+            result = await client.query(query, params)
             result = result.rows
         } else {
-            result = await db.query(query)
+            result = await db.query(query, params)
         }
-        return result;
+        
+        return result[0];
     }
 
     static async getByNameRole(params) {

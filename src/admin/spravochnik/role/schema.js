@@ -26,3 +26,16 @@ exports.getByIdSchema = Joi.object({
         id: Joi.number().min(1).integer().required()
     })
 }).options({ stripUnknown: true });
+
+
+exports.RoleSchema = class {
+    static get() {
+        return Joi.object({
+            query: Joi.object({
+                page: Joi.number().min(1).integer().default(1),
+                limit: Joi.number().min(1).integer().default(10),
+                search: Joi.string().trim()
+            })
+        }).options({ stripUnknown: true });
+    }
+}

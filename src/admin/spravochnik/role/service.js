@@ -3,7 +3,7 @@ const { tashkentTime } = require('@helper/functions')
 const { AccessDB } = require('@access/db')
 const { db } = require('@db/index')
 const { RegionDB } = require('@region/db')
-const { logRequest } = require('../../helper/log')
+const { logRequest } = require('@helper/log')
 
 exports.RoleService = class {
     static async createRole(req, res) {
@@ -31,11 +31,22 @@ exports.RoleService = class {
     }
 
     static async getRole(req, res) {
-        const roles = await RoleDB.getRole()
-        return res.status(200).json({
-            message: "Roles get successfully",
-            data: roles
-        })
+        const { page, limit, search } = req.query;
+
+        const offset = (page - 1) * limit;
+
+        const { data, total } = await RoleDB.getRole([offset, limit], search);
+
+        const pageCount = Math.ceil(total / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1,
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async getByIdRole(req, res) {

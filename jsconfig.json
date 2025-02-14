@@ -3,6 +3,7 @@
         "baseUrl": "./src",
         "paths": {
             "@budjet/*": [ "admin/spravochnik/budjet/*" ],
+            "@role/*": [ "admin/spravochnik/role/*" ],
             "@smeta/*": [ "admin/smeta/*" ],
             "@smeta_grafik/*": [ "region/smeta.grafik/*" ],
             "@main_book_schet/*": [ "admin/spravochnik/main.book.schet/*" ],

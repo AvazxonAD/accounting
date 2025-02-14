@@ -4,14 +4,15 @@ const {
     createSchema,
     updateSchema,
     getByIdSchema,
-    deleteSchema
+    deleteSchema,
+    RoleSchema
 } = require('./schema');
 
 const { Router } = require('express');
 const router = Router();
 
 router.post('/', validator(RoleService.createRole, createSchema))
-    .get('/', validator(RoleService.getRole))
+    .get('/', validator(RoleService.getRole, RoleSchema.get()))
     .get('/:id', validator(RoleService.getByIdRole, getByIdSchema))
     .delete('/:id', validator(RoleService.deleteRole, deleteSchema))
     .put('/:id', validator(RoleService.updateRole, updateSchema))
