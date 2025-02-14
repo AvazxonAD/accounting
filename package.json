@@ -58,7 +58,7 @@
     "@main_schet": "./src/region/spravochnik/main.schet",
     "@organization": "./src/region/spravochnik/organization",
     "@features": "./src/region/features",
-    "@region": "./src/admin/region",
+    "@region": "./src/admin/spravochnik/region",
     "@bank_monitoring": "./src/region/bank/monitoring",
     "@kassa_monitoring": "./src/region/kassa/monitoring",
     "@region_dashboard": "./src/region/dashboard",

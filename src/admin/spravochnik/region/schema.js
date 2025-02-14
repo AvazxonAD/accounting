@@ -1,4 +1,16 @@
-const Joi = require('joi')
+const Joi = require('joi');
+
+exports.RegionSchema = class {
+    static get() {
+        return Joi.object({
+            query: Joi.object({
+                page: Joi.number().min(1).integer().default(1),
+                limit: Joi.number().min(1).integer().default(10),
+                search: Joi.string().trim()
+            })
+        })
+    }
+}
 
 exports.createSchema = Joi.object({
     body: Joi.object({

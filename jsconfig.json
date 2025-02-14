@@ -21,7 +21,7 @@
             "@organization/*": [ "region/spravochnik/organization/*" ],
             "@features/*": [ "region/features/*" ],
             "@contract/*": [ "region/contract/*" ],
-            "@region/*": [ "admin/region/*" ],
+            "@region/*": [ "admin/spravochnik/region/*" ],
             "@middleware/*": [ "middleware/*" ],
             "@utils/*": [ "delete/utils/*" ],
             "@helper/*": [ "helper/*" ],

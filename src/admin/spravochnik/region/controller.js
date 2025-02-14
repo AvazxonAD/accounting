@@ -3,7 +3,7 @@ const { RoleDB } = require('@role/db')
 const { tashkentTime } = require('@helper/functions')
 const { AccessDB } = require('@access/db')
 const { db } = require('@db/index')
-const { logRequest } = require('../../helper/log')
+const { logRequest } = require('../../../helper/log')
 
 exports.Controller = class {
     static async createRegion(req, res) {
@@ -23,7 +23,7 @@ exports.Controller = class {
             }, [])
             await AccessDB.createAccess(params, client)
         })
-        logRequest('post',{type: 'region', id: result.id, user_id: req.user.id});
+        logRequest('post', { type: 'region', id: result.id, user_id: req.user.id });
         return res.status(201).json({
             message: "region created sucessfully",
             data: result
@@ -31,24 +31,36 @@ exports.Controller = class {
     }
 
     static async getRegion(req, res) {
-        const regions = await RegionDB.getRegion()
-        const ids = regions.map(item => item.id)
-        logRequest('get', {type: 'region', id: ids, user_id: req.user.id});
-        return res.status(200).json({
-            message: "Regions get successfully",
-            data: regions
-        })
+        const { page, limit, search } = req.query;
+
+        const offset = (page - 1) * limit;
+
+        const { data, total } = await RegionDB.getRegion([offset, limit], search);
+
+        const ids = data.map(item => item.id)
+        logRequest('get', { type: 'region', id: ids, user_id: req.user.id });
+
+        const pageCount = Math.ceil(total / limit);
+        const meta = {
+            pageCount: pageCount,
+            count: total,
+            currentPage: page,
+            nextPage: page >= pageCount ? null : page + 1,
+            backPage: page === 1 ? null : page - 1,
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data);
     }
 
     static async getById(req, res) {
         const id = req.params.id
         const data = await RegionDB.getById([id], true)
-        if(!data){
+        if (!data) {
             return res.status(404).json({
                 message: "region not found"
             })
         }
-        logRequest('get',{type: 'region', id: data.id, user_id: req.user.id});
+        logRequest('get', { type: 'region', id: data.id, user_id: req.user.id });
         return res.status(200).json({
             message: "region get successfully",
             data
@@ -73,7 +85,7 @@ exports.Controller = class {
             }
         }
         const data = await RegionDB.updateRegion([name, tashkentTime(), id])
-        logRequest('put',{type: 'region', id: data.id, user_id: req.user.id});
+        logRequest('put', { type: 'region', id: data.id, user_id: req.user.id });
         return res.status(200).json({
             message: 'update region successfully',
             data
@@ -92,7 +104,7 @@ exports.Controller = class {
             await RegionDB.deleteRegion([id], client)
             await AccessDB.deleteAccess([id], client)
         })
-        logRequest('delete',{type: 'region', id: data.id, user_id: req.user.id});
+        logRequest('delete', { type: 'region', id: data.id, user_id: req.user.id });
         return res.status(200).json({
             message: 'delete region successfully'
         })
