@@ -79,7 +79,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('groupNotFound'), 404);
         }
 
-        const result = await GroupService.delete([id]);
+        const result = await GroupService.delete({ id });
 
         return res.success(req.i18n.t('deleteSuccess'), 200, null, result);
     }
