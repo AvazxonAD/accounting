@@ -1,5 +1,5 @@
 const { GroupService } = require('./service');
-const { SmetaService } = require('@smeta/db.js');
+const { SmetaService } = require('@smeta/service');
 const { GroupSchema } = require('./schema');
 
 
