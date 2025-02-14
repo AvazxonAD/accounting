@@ -370,7 +370,9 @@ const queryMainSchetValidation = Joi.object({
 const operatsiiValidation = Joi.object({
   name: Joi.string().trim().required(),
   schet: Joi.string().trim().required(),
-  sub_schet: Joi.string().trim().required(),
+  sub_schet: Joi.string().trim().custom((value) => {
+    return value.replace(/\s+/g, '');
+  }),
   type_schet: Joi.string().trim().required(),
   smeta_id: Joi.number().required(),
   budjet_id: Joi.number().min(1).integer().required()
@@ -384,7 +386,9 @@ const operatsiiQueryValidation = Joi.object({
   search: Joi.string().trim(),
   meta_search: Joi.string().trim(),
   schet: Joi.string().trim(),
-  sub_schet: Joi.string().trim()
+  sub_schet: Joi.string().trim().custom((value) => {
+    return value.replace(/\s+/g, '');
+  })
 }).options({ stripUnknown: true });
 
 const organizationValidation = Joi.object({
