@@ -74,6 +74,7 @@ exports.Controller = class {
 
     static async delete(req, res) {
         const id = req.params.id;
+        
         const group = await GroupService.getById({ id });
         if (!group) {
             return res.error(req.i18n.t('groupNotFound'), 404);

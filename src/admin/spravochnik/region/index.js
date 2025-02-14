@@ -3,7 +3,8 @@ const {
     createSchema,
     getByIdSchema,
     updateSchema,
-    deleteSchema
+    deleteSchema,
+    RegionSchema
 } = require('./schema');
 
 const { Router } = require('express')
@@ -11,7 +12,7 @@ const router = Router()
 const { validator } = require('@helper/validator')
 
 router.post('/', validator(Controller.createRegion, createSchema))
-    .get('/', validator(Controller.getRegion))
+    .get('/', validator(Controller.getRegion, RegionSchema.get()))
     .get('/:id', validator(Controller.getById, getByIdSchema))
     .delete('/:id', validator(Controller.deleteRegion, deleteSchema))
     .put('/:id', validator(Controller.updateRegion, updateSchema))
