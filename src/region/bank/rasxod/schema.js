@@ -33,6 +33,7 @@ exports.BankRasxodSchema = class {
                 glav_buxgalter: Joi.string().trim().allow(null, ''),
                 id_spravochnik_organization: Joi.number().min(1).integer().required(),
                 id_shartnomalar_organization: Joi.number().min(1).integer().allow(null),
+                grafik_id: Joi.number().min(1).integer().allow(null),
                 organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
                 organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
                 main_zarplata_id: Joi.number().allow(null),

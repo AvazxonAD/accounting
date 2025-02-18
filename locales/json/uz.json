@@ -6,6 +6,7 @@
     "IznosSummaError": "Iznoz summasi noto'g'ri kiritildi!",
     "budjetNotFound": "Budjet topilmadi!",
     "mainSchetNotFound": "Hisob raqami topilmadi!",
+    "grafikNotFound": "Grafik topilmadi!",
     "organizationNotFound": "Hamkor tashkilot topilmadi!",
     "gaznaNotFound": "Gazna raqami topilmadi!",
     "account_number_not_found": "Hisob raqami raqami topilmadi!",
@@ -34,6 +35,7 @@
     "gaznaExists": "Ushbu gazna raqami avval kiritilgan!",
     "pageNotFound": "Sahifa topilmadi!",
     "importSuccess": "Malumot muvaffaqiyatli import qilindi",
+    "conflictAccountNumber": "Hisob raqam yoki gazna raqamni tanlashinggiz kerak !",
     "validation": {
         "groupId": "Gruppa id raqami raqam turida bo'lishi zarur!",
         "organizationId": "Hamkor tashkilot id raqami raqam turida bo'lishi zarur!",

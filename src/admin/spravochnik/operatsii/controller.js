@@ -48,16 +48,20 @@ const getSchet = async (req, res) => {
 const createOperatsii = async (req, res) => {
   try {
     const data = validationResponse(operatsiiValidation, req.body)
-    const smeta = await SmetaDB.getById([data.smeta_id]);
-    if (!smeta) {
-      return res.status(404).json({
-        message: "smeta not found"
-      })
-    };
+    if (data.smeta_id) {
+      const smeta = await SmetaDB.getById([data.smeta_id]);
+      if (!smeta) {
+        return res.status(404).json({
+          message: "smeta not found"
+        })
+      };
+    }
 
-    const budjet = await BudjetService.getById({ id: data.budjet_id })
-    if (!budjet) {
-      return res.error(req.i18n.t('budjetNotFound'), 404);
+    if(data.budjet_id){
+      const budjet = await BudjetService.getById({ id: data.budjet_id })
+      if (!budjet) {
+        return res.error(req.i18n.t('budjetNotFound'), 404);
+      }
     }
 
     const result = await createOperatsiiService({ ...data });
@@ -73,9 +77,9 @@ const getOperatsii = async (req, res) => {
     const { page, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id } = validationResponse(operatsiiQueryValidation, req.query)
     const offset = (page - 1) * limit;
     const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id);
-    
+
     const pageCount = Math.ceil(total / limit)
-    
+
     const meta = {
       pageCount,
       count: total,
@@ -97,16 +101,20 @@ const updateOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
     const data = validationResponse(operatsiiValidation, req.body)
-    const smeta = await SmetaDB.getById([data.smeta_id]);
-    if (!smeta) {
-      return res.status(404).json({
-        message: "smeta not found"
-      })
-    };
+    if (data.smeta_id) {
+      const smeta = await SmetaDB.getById([data.smeta_id]);
+      if (!smeta) {
+        return res.status(404).json({
+          message: "smeta not found"
+        })
+      };
+    }
 
-    const budjet = await BudjetService.getById({ id: data.budjet_id })
-    if (!budjet) {
-      return res.error(req.i18n.t('budjetNotFound'), 404);
+    if(data.budjet_id){
+      const budjet = await BudjetService.getById({ id: data.budjet_id })
+      if (!budjet) {
+        return res.error(req.i18n.t('budjetNotFound'), 404);
+      }
     }
 
     const result = await updateOperatsiiService({ ...data, id });

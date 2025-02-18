@@ -54,12 +54,12 @@ exports.ContractDB = class {
     }
 
     static async getById(params, isdeleted, budjet_id, organ_id) {
-        const ignore = `AND sh_o.isdeleted = false`
+        const ignore = `AND sho.isdeleted = false`
         let budjet_filter = ``
         let organ_filter = ``
 
         if (budjet_id) {
-            budjet_filter = `AND sh_o.budjet_id = $${params.length + 1}`
+            budjet_filter = `AND sho.budjet_id = $${params.length + 1}`
             params.push(budjet_id)
         }
 
@@ -69,29 +69,34 @@ exports.ContractDB = class {
         }
 
         let query = `--sql
-            SELECT
-                sh_o.id, 
-                sh_o.spravochnik_organization_id,
-                sh_o.doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-                sh_o.smeta2_id,
-                sh_o.smeta_id,
-                sh_o.opisanie,
-                sh_o.summa::FLOAT,
-                sh_o.pudratchi_bool,
-                sh_o.yillik_oylik
-            FROM shartnomalar_organization AS sh_o
-            JOIN users  ON sh_o.user_id = users.id
-            JOIN regions ON users.region_id = regions.id
-            JOIN spravochnik_organization AS s_o ON s_o.id = sh_o.spravochnik_organization_id
-            WHERE regions.id = $1 
-                AND sh_o.id = $2 
+            SELECT 
+                sho.*,
+                row_to_json(so) AS organization,
+                (
+                    SELECT 
+                        COALESCE(JSON_AGG(garfik), '[]'::JSON)
+                        FROM (
+                            SELECT 
+                                row_to_json(g) AS grafik,
+                                row_to_json(s) AS smeta
+                            FROM shartnoma_grafik g
+                            JOIN smeta s ON s.id = g.smeta_id
+                            WHERE g.id_shartnomalar_organization = sho.id
+                                AND g.isdeleted = false
+                        ) AS garfik
+                ) AS grafiks
+            FROM shartnomalar_organization AS sho
+            JOIN users AS u ON sho.user_id = u.id
+            JOIN regions AS r ON u.region_id = r.id
+            JOIN spravochnik_organization so ON so.id = sho.spravochnik_organization_id
+            WHERE r.id = $1 
+                AND sho.id = $2 
                 ${isdeleted ? '' : ignore} 
                 ${budjet_filter} 
                 ${organ_filter}
         `;
         const result = await db.query(query, params)
-        
+
         return result[0]
     }
 
@@ -102,62 +107,65 @@ exports.ContractDB = class {
 
         if (organ_id) {
             params.push(organ_id)
-            filter_organization = `AND sh_o.spravochnik_organization_id = $${params.length}`
+            filter_organization = `AND sho.spravochnik_organization_id = $${params.length}`
         }
 
         if (pudratchi === 'true') {
-            pudratchi_filter = `AND sh_o.pudratchi_bool = true`
+            pudratchi_filter = `AND sho.pudratchi_bool = true`
         }
 
         if (pudratchi === 'false') {
-            pudratchi_filter = `AND sh_o.pudratchi_bool = false`
+            pudratchi_filter = `AND sho.pudratchi_bool = false`
         }
 
         if (search) {
             params.push(search)
-            search_filter = `AND (sh_o.doc_num ILIKE '%' || $${params.length} || '%' OR sh_o.opisanie ILIKE '%' || $${params.length} || '%')`
+            search_filter = `AND (sho.doc_num ILIKE '%' || $${params.length} || '%' OR sho.opisanie ILIKE '%' || $${params.length} || '%')`
         }
 
         const query = `--sql
             WITH 
                 data AS (
                     SELECT 
-                        sh_o.id,
-                        sh_o.spravochnik_organization_id,
-                        sh_o.doc_num,
-                        TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
-                        sh_o.smeta_id,
-                        sh_o.smeta2_id,
-                        sh_o.opisanie,
-                        sh_o.summa,
-                        sh_o.pudratchi_bool,
-                        smeta.smeta_number,
-                        sh_o.budjet_id,
-                        sh_o.yillik_oylik
-                    FROM shartnomalar_organization AS sh_o
-                    JOIN users AS u ON sh_o.user_id = u.id
+                        sho.*,
+                        row_to_json(so) AS organization,
+                        (
+                            SELECT 
+                                COALESCE(JSON_AGG(garfik), '[]'::JSON)
+                                FROM (
+                                    SELECT 
+                                        row_to_json(g) AS grafik,
+                                        row_to_json(s) AS smeta
+                                    FROM shartnoma_grafik g
+                                    JOIN smeta s ON s.id = g.smeta_id
+                                    WHERE g.id_shartnomalar_organization = sho.id
+                                        AND g.isdeleted = false
+                                ) AS garfik
+                        ) AS grafiks
+                    FROM shartnomalar_organization AS sho
+                    JOIN users AS u ON sho.user_id = u.id
                     JOIN regions AS r ON u.region_id = r.id
-                    LEFT JOIN smeta ON sh_o.smeta_id = smeta.id
-                    WHERE sh_o.isdeleted = false 
-                        ${filter_organization} 
-                        ${pudratchi_filter} 
+                    JOIN spravochnik_organization so ON so.id = sho.spravochnik_organization_id
+                    WHERE sho.isdeleted = false 
+                        ${filter_organization}
+                        ${pudratchi_filter}
                         ${search_filter}
                         AND r.id = $1
-                        AND sh_o.budjet_id = $2
-                    ORDER BY sh_o.doc_date 
+                        AND sho.budjet_id = $2
+                    ORDER BY sho.doc_date 
                     OFFSET $3 
                     LIMIT $4
                 ) 
                 SELECT 
                     COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                     (
-                        SELECT COUNT(sh_o.id) 
-                        FROM shartnomalar_organization AS sh_o
-                        JOIN users AS u  ON sh_o.user_id = u.id
+                        SELECT COUNT(sho.id) 
+                        FROM shartnomalar_organization AS sho
+                        JOIN users AS u  ON sho.user_id = u.id
                         JOIN regions AS r ON u.region_id = r.id
-                        WHERE sh_o.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
+                        WHERE sho.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
                             AND r.id = $1
-                            AND sh_o.budjet_id = $2
+                            AND sho.budjet_id = $2
                     )::INTEGER AS total_count
                 FROM data
         `;
@@ -221,16 +229,16 @@ exports.ContractDB = class {
         }
         const query = `--sql
             SELECT 
-                sh_o.id AS contract_id,
-                sh_o.doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS doc_date,
+                sho.id AS contract_id,
+                sho.doc_num,
+                TO_CHAR(sho.doc_date, 'YYYY-MM-DD') AS doc_date,
                 so.id,
                 so.name
-            FROM shartnomalar_organization sh_o
-            JOIN users u ON sh_o.user_id = u.id
+            FROM shartnomalar_organization sho
+            JOIN users u ON sho.user_id = u.id
             JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_organization so ON so.id = sh_o.spravochnik_organization_id 
-            WHERE sh_o.isdeleted = false 
+            JOIN spravochnik_organization so ON so.id = sho.spravochnik_organization_id 
+            WHERE sho.isdeleted = false 
                 AND r.id = $1
                 ${organ_filter}
         `;

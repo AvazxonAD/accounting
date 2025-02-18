@@ -22,16 +22,6 @@ exports.Controller = class {
             }
         }
 
-        // const checkInn = await OrganizationService.getByInn({ region_id, inn });
-        // if (checkInn) {
-        //     return res.error(`${req.i18n.t('organizationExists')} Inn: ${inn}`, 409);
-        // }
-
-        // const checkName = await OrganizationService.getByName({ region_id, name });
-        // if (checkName) {
-        //     return res.error(`${req.i18n.t('organizationExists')} Name: ${name}`, 409);
-        // }
-
         const result = await OrganizationService.create({ ...req.body, user_id });
 
         return res.success(req.i18n.t('createSuccess'), 201, null, result);

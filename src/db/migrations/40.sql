@@ -1,0 +1,1 @@
+ALTER TABLE spravochnik_operatsii ALTER COLUMN budjet_id DROP NOT NULL;
