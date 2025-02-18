@@ -1,4 +1,4 @@
-const { PodrazdelenieDB } = require('../podrazdelenie/db');
+const { PodrazdelenieDB } = require('../jur7.podrazdelenie/db');
 const { ResponsibleDB } = require('./db');
 const { tashkentTime } = require('@helper/functions');
 const { ResponsibleService } = require('./service');

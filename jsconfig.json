@@ -19,6 +19,8 @@
             "@user/*": [ "auth/user/*" ],
             "@admin_users/*": [ "admin/users/*" ],
             "@main_schet/*": [ "region/spravochnik/main.schet/*" ],
+            "@podraz/*": [ "region/spravochnik/podrazdelenie/*" ],
+            "@jur7_podraz/*": [ "region/spravochnik/jur7.podrazdelenie/*" ],
             "@organization/*": [ "region/spravochnik/organization/*" ],
             "@features/*": [ "region/features/*" ],
             "@contract/*": [ "region/contract/*" ],

@@ -75,7 +75,7 @@ exports.Controller = class {
       childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
-      grafik_id
+      shartnoma_grafik_id
     } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
@@ -88,13 +88,9 @@ exports.Controller = class {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
 
-    if (!id_shartnomalar_organization && grafik_id) {
+    if (!id_shartnomalar_organization && shartnoma_grafik_id) {
       return res.error(req.i18n.t('contractNotFound'), 404);
     }
-
-    // if (organization_by_raschet_schet_id && organization_by_raschet_schet_gazna_id) {
-    //   return res.error(req.i18n.t('conflictAccountNumber'), 400);
-    // }
 
     if (id_shartnomalar_organization) {
       const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
@@ -102,8 +98,8 @@ exports.Controller = class {
         return res.error(req.i18n.t('contractNotFound'), 404);
       }
 
-      if (grafik_id) {
-        const grafik = contract.grafiks.find(item => item.id === grafik_id);
+      if (shartnoma_grafik_id) {
+        const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t('grafikNotFound'), 404);
         }
@@ -229,7 +225,7 @@ exports.Controller = class {
       childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
-      grafik_id
+      shartnoma_grafik_id
     } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
@@ -253,8 +249,8 @@ exports.Controller = class {
         return res.error(req.i18n.t('contractNotFound'), 404);
       }
 
-      if (grafik_id) {
-        const grafik = contract.grafiks.find(item => item.id === grafik_id);
+      if (shartnoma_grafik_id) {
+        const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t('grafikNotFound'), 404);
         }

@@ -42,6 +42,7 @@ const getAllPodrazdelenieService = async (region_id, offset, limit, search) => {
       search_filter = `AND s_p.name ILIKE '%' || $${params.length + 1} || '%'`
       params.push(search)
     }
+    console.log('/////////')
     const result = await pool.query(
       ` WITH data AS (
         SELECT s_p.id, 
@@ -50,7 +51,8 @@ const getAllPodrazdelenieService = async (region_id, offset, limit, search) => {
         FROM spravochnik_podrazdelenie AS  s_p
         JOIN users AS u ON s_p.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
-        WHERE r.id = $1 AND s_p.isdeleted = false ${search_filter}
+        WHERE r.id = $1 
+          AND s_p.isdeleted = false ${search_filter}
         ORDER BY s_p.id
         OFFSET $2 
         LIMIT $3
