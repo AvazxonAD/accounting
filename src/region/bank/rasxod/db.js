@@ -110,8 +110,8 @@ exports.BankRasxodDB = class {
                 d.glav_buxgalter,
                 d.tulanmagan_summa::FLOAT,
                 d.tulangan_tulanmagan,
-                d.organization_by_raschet_schet_id,
-                d.organization_by_raschet_schet_gazna_id,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
                 d.shartnoma_grafik_id::INTEGER,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
@@ -123,7 +123,7 @@ exports.BankRasxodDB = class {
                         JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                         WHERE  ch.id_bank_rasxod = d.id 
                     ) AS ch
-                ) AS provodki_array 
+                ) AS provodki_array
                 FROM bank_rasxod AS d
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
