@@ -41,12 +41,16 @@ exports.PrixodDB = class {
                 id_shartnomalar_organization,
                 main_schet_id,
                 shartnoma_grafik_id,
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id
-        `
-        const result = await client.query(query, params)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id
+        `;
+
+        const result = await client.query(query, params);
+        
         return result.rows[0];
     }
 
@@ -112,7 +116,9 @@ exports.PrixodDB = class {
               so.inn AS spravochnik_organization_inn,
               rj.fio AS kimga_name,
               d.kimga_id,
-              d.shartnoma_grafik_id::INTEGER
+              d.shartnoma_grafik_id::INTEGER,
+              d.organization_by_raschet_schet_id::INTEGER,
+              d.organization_by_raschet_schet_gazna_id::INTEGER
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -214,6 +220,8 @@ exports.PrixodDB = class {
                             n.serial_num
                     ) AS child
                 ) AS childs,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
                 d.shartnoma_grafik_id::INTEGER
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
@@ -238,8 +246,11 @@ exports.PrixodDB = class {
               kimga_id = $9, 
               kimga_name = $10, 
               id_shartnomalar_organization = $11, 
-              updated_at = $12
-            WHERE id = $13
+              shartnoma_grafik_id = $12,
+              organization_by_raschet_schet_id = $13,
+              organization_by_raschet_schet_gazna_id = $14,
+              updated_at = $15
+            WHERE id = $16
         `;
         const result = await db.query(query, params);
         return result[0];

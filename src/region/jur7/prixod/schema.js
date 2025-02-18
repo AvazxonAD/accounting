@@ -56,7 +56,10 @@ exports.PrixodSchema = class {
         kimdan_name: Joi.string().trim().allow(null),
         kimga_id: Joi.number().integer().min(1).required(),
         kimga_name: Joi.string().trim().allow(null),
-        id_shartnomalar_organization: Joi.number().min(1).allow(null),
+        id_shartnomalar_organization: Joi.number().min(1).integer().allow(null),
+        organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
+        organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
+        shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array().required().items(
           Joi.object({
             group_jur7_id: Joi.number().required(),

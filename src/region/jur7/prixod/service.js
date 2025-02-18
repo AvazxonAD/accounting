@@ -250,6 +250,8 @@ exports.PrixodJur7Service = class {
                     data.id_shartnomalar_organization,
                     data.main_schet_id,
                     data.shartnoma_grafik_id,
+                    data.organization_by_raschet_schet_id,
+                    data.organization_by_raschet_schet_gazna_id,
                     tashkentTime(),
                     tashkentTime()
                 ], client);
@@ -341,6 +343,9 @@ exports.PrixodJur7Service = class {
                 data.kimga_id,
                 data.kimga_name,
                 data.id_shartnomalar_organization,
+                data.shartnoma_grafik_id,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
                 tashkentTime(),
                 data.id
             ], client);
