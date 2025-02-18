@@ -117,6 +117,17 @@ exports.Controller = class {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
 
+    for (let grafik of doc.grafiks) {
+      const old_grafik = grafiks.find(item => item.id === grafik.id);
+      if (!old_grafik) {
+        const check = await ContractService.checkGrafik({ grafik_id: grafik.id });
+
+        if (check.length) {
+          return res.error(req.i18n.t('grafikError'), 400, check);
+        }
+      }
+    }
+
     let summa = 0;
 
     for (let grafik of grafiks) {
@@ -135,7 +146,7 @@ exports.Controller = class {
     }
 
 
-    const result = await ContractService.update({ ...req.body, budjet_id, summa, user_id, id });
+    const result = await ContractService.update({ ...req.body, budjet_id, summa, user_id, id, oldData: doc });
 
     return res.success(req.i18n.t('updateSuccess'), 200, null, result);
 

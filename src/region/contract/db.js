@@ -1,6 +1,58 @@
 const { db } = require('@db/index')
 
 exports.ContractDB = class {
+    static async checkGrafik(params) {
+        const query = `
+            SELECT 
+                id, 
+                'bank_rasxod' AS type
+            FROM bank_rasxod
+            WHERE isdeleted = false 
+                AND shartnoma_grafik_id = $1
+
+            UNION ALL 
+
+            SELECT 
+                id, 
+                'bank_prixod' AS type
+            FROM bank_prixod
+            WHERE isdeleted = false 
+                AND shartnoma_grafik_id = $1
+
+            UNION ALL 
+
+            SELECT 
+                id, 
+                'show_service' AS type
+            FROM kursatilgan_hizmatlar_jur152
+            WHERE isdeleted = false 
+                AND shartnoma_grafik_id = $1
+            
+            UNION ALL 
+
+            SELECT 
+                id, 
+                'akt' AS type
+            FROM bajarilgan_ishlar_jur3
+            WHERE isdeleted = false 
+                AND shartnoma_grafik_id = $1
+
+            UNION ALL 
+
+            SELECT 
+                id, 
+                'jur7_prixod' AS type
+            FROM document_prixod_jur7
+            WHERE isdeleted = false 
+                AND shartnoma_grafik_id = $1
+        `;
+
+        const result = await db.query(query, params);
+
+        return result;
+
+    }
+
     static async create(params, client) {
         const query = `
             INSERT INTO shartnomalar_organization(
@@ -15,6 +67,35 @@ exports.ContractDB = class {
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id, doc_date
+        `;
+
+        const result = await client.query(query, params);
+
+        return result.rows[0];
+    }
+
+    static async updateGrafik(params, client) {
+        const query = `
+            UPDATE shartnoma_grafik
+            SET 
+                oy_1 = $1,
+                oy_2 = $2,
+                oy_3 = $3,
+                oy_4 = $4,
+                oy_5 = $5,
+                oy_6 = $6,
+                oy_7 = $7,
+                oy_8 = $8,
+                oy_9 = $9,
+                oy_10 = $10,
+                oy_11 = $11,
+                oy_12 = $12,
+                year = $13, 
+                yillik_oylik = $14,
+                smeta_id = $15,
+                itogo = $16
+            WHERE id = $17
+            RETURNING id
         `;
 
         const result = await client.query(query, params);
@@ -71,6 +152,7 @@ exports.ContractDB = class {
         let query = `--sql
             SELECT 
                 sho.*,
+                sho.summa::FLOAT,
                 row_to_json(so) AS organization,
                 (
                     SELECT 
@@ -210,6 +292,17 @@ exports.ContractDB = class {
         await client.query(query, params)
     }
 
+    static async deleteGrafik(params, client) {
+        const query = `
+            UPDATE shartnoma_grafik 
+            SET isdeleted = true 
+            WHERE id_shartnomalar_organization = $1
+                AND id = $2
+        `;
+
+        await client.query(query, params)
+    }
+
     static async delete(params, client) {
         const query1 = `UPDATE shartnoma_grafik SET isdeleted = true WHERE id_shartnomalar_organization = $1`;
         const query2 = `UPDATE shartnomalar_organization SET isdeleted = true WHERE id = $1 RETURNING id`;
@@ -219,7 +312,6 @@ exports.ContractDB = class {
 
         return data.rows[0];
     }
-
 
     static async getContractByOrganizations(params, organ_id) {
         let organ_filter = ``;

@@ -17,9 +17,9 @@ exports.Controller = class {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const {
+      childs,
       id_spravochnik_organization,
       id_shartnomalar_organization,
-      childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id

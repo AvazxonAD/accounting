@@ -45,6 +45,7 @@ exports.ContractSchema = class {
                 yillik_oylik: Joi.boolean(),
                 grafiks: Joi.array().items(
                     Joi.object({
+                        id: Joi.number().integer().min(1),
                         smeta_id: Joi.number().integer().min(1).required(),
                         oy_1: Joi.number().required(),
                         oy_2: Joi.number().required(),

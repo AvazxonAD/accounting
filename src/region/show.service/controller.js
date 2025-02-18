@@ -6,8 +6,10 @@ const { checkSchetsEquality, tashkentTime } = require('@helper/functions')
 const { PodrazdelenieDB } = require('../spravochnik/podrazdelenie/db')
 const { SostavDB } = require('../spravochnik/sostav/db')
 const { TypeOperatsiiDB } = require('../spravochnik/type.operatsii/db')
-const { ShowServiceDB } = require('./db')
-const { db } = require('@db/index')
+const { ShowServiceDB } = require('./db');
+const { db } = require('@db/index');
+const { GaznaService } = require('@gazna/service');
+const { AccountNumberService } = require('@account_number/service');
 
 exports.Controller = class {
     static async createShowService(req, res) {
@@ -18,33 +20,68 @@ exports.Controller = class {
             id_spravochnik_organization,
             shartnomalar_organization_id,
             spravochnik_operatsii_own_id,
+            organization_by_raschet_schet_id,
+            organization_by_raschet_schet_gazna_id,
+            shartnoma_grafik_id,
             childs
         } = req.body;
+
         const region_id = req.user.region_id;
         const user_id = req.user.id;
         const main_schet_id = req.query.main_schet_id;
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const operatsii = await OperatsiiDB.getById([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
             return res.error(req.i18n.t('operatsiiNotFound'), 404)
         }
+
         const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
+
+        if (!shartnomalar_organization_id && shartnoma_grafik_id) {
+            return res.error(req.i18n.t('contractNotFound'), 404);
+        }
+
         if (shartnomalar_organization_id) {
-            const shartnoma = await ContractDB.getById(
+            const contract = await ContractDB.getById(
                 [region_id, shartnomalar_organization_id],
                 false, main_schet.spravochnik_budjet_name_id,
                 id_spravochnik_organization
             );
-            if (!shartnoma || shartnoma.pudratchi_bool) {
+
+            if (!contract || contract.pudratchi_bool) {
                 return res.error(req.i18n.t('contractNotFound'), 404);
             }
+
+            if (shartnoma_grafik_id) {
+                const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
+                if (!grafik) {
+                    return res.error(req.i18n.t('grafikNotFound'), 404);
+                }
+            }
         }
+
+        if (organization_by_raschet_schet_id) {
+            const account_number = await AccountNumberService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_id });
+            if (!account_number) {
+                return res.error(req.i18n.t('account_number_not_found'), 404);
+            }
+        }
+
+        if (organization_by_raschet_schet_gazna_id) {
+            const gazna = await GaznaService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_gazna_id });
+            if (!gazna) {
+                return res.error(req.i18n.t('gaznaNotFound'), 404);
+            }
+        }
+
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service", req.query.budjet_id);
             if (!operatsii) {
@@ -89,6 +126,9 @@ exports.Controller = class {
                 id_spravochnik_organization,
                 shartnomalar_organization_id,
                 main_schet_id,
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
+                shartnoma_grafik_id,
                 tashkentTime(),
                 tashkentTime()
             ], client);
@@ -169,38 +209,74 @@ exports.Controller = class {
             id_spravochnik_organization,
             shartnomalar_organization_id,
             spravochnik_operatsii_own_id,
-            childs
+            childs,
+            organization_by_raschet_schet_id,
+            organization_by_raschet_schet_gazna_id,
+            shartnoma_grafik_id
         } = req.body;
+
         const region_id = req.user.region_id;
         const user_id = req.user.id;
         const main_schet_id = req.query.main_schet_id;
         const id = req.params.id;
+
         const old_data = await ShowServiceDB.getByIdShowService([region_id, id, main_schet_id])
         if (!old_data) {
             return res.error(req.i18n.t('docNotFound'), 404);
         }
+
         const main_schet = await MainSchetDB.getByIdMainSchet([region_id, main_schet_id]);
         if (!main_schet) {
             return res.error(req.i18n.t('mainSchetNotFound'), 404);
         }
+
         const operatsii = await OperatsiiDB.getById([spravochnik_operatsii_own_id], "general");
         if (!operatsii) {
             return res.error(req.i18n.t('operatsiiNotFound'), 404)
         }
+
         const organization = await OrganizationDB.getById([region_id, id_spravochnik_organization]);
         if (!organization) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
+
+        if (!shartnomalar_organization_id && shartnoma_grafik_id) {
+            return res.error(req.i18n.t('contractNotFound'), 404);
+        }
+
         if (shartnomalar_organization_id) {
-            const shartnoma = await ContractDB.getById(
+            const contract = await ContractDB.getById(
                 [region_id, shartnomalar_organization_id],
                 false, main_schet.spravochnik_budjet_name_id,
                 id_spravochnik_organization
             );
-            if (!shartnoma || !shartnoma.pudratchi_bool) {
+
+            if (!contract || contract.pudratchi_bool) {
                 return res.error(req.i18n.t('contractNotFound'), 404);
             }
+
+            if (shartnoma_grafik_id) {
+                const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
+                if (!grafik) {
+                    return res.error(req.i18n.t('grafikNotFound'), 404);
+                }
+            }
         }
+
+        if (organization_by_raschet_schet_id) {
+            const account_number = await AccountNumberService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_id });
+            if (!account_number) {
+                return res.error(req.i18n.t('account_number_not_found'), 404);
+            }
+        }
+
+        if (organization_by_raschet_schet_gazna_id) {
+            const gazna = await GaznaService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_gazna_id });
+            if (!gazna) {
+                return res.error(req.i18n.t('gaznaNotFound'), 404);
+            }
+        }
+
         for (let child of childs) {
             const operatsii = await OperatsiiDB.getById([child.spravochnik_operatsii_id], "show_service", req.query.budjet_id);
             if (!operatsii) {
@@ -244,6 +320,9 @@ exports.Controller = class {
                 shartnomalar_organization_id,
                 spravochnik_operatsii_own_id,
                 tashkentTime(),
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
+                shartnoma_grafik_id,
                 id
             ], client);
             await ShowServiceDB.deleteShowServiceChild([id], client)

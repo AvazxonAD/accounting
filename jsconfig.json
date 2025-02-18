@@ -22,6 +22,8 @@
             "@podraz/*": [ "region/spravochnik/podrazdelenie/*" ],
             "@jur7_podraz/*": [ "region/spravochnik/jur7.podrazdelenie/*" ],
             "@organization/*": [ "region/spravochnik/organization/*" ],
+            "@gazna/*": [ "region/spravochnik/organization/gazna/*" ],
+            "@account_number/*": [ "region/spravochnik/organization/account_number/*" ],
             "@features/*": [ "region/features/*" ],
             "@contract/*": [ "region/contract/*" ],
             "@region/*": [ "admin/spravochnik/region/*" ],
