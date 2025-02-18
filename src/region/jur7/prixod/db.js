@@ -40,10 +40,11 @@ exports.PrixodDB = class {
                 kimga_name,
                 id_shartnomalar_organization,
                 main_schet_id,
+                shartnoma_grafik_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id
         `
         const result = await client.query(query, params)
         return result.rows[0];
