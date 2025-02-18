@@ -16,7 +16,7 @@ exports.PrixodSchema = class {
         id_shartnomalar_organization: Joi.number().min(1).integer().allow(null),
         organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
         organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
-        grafik_id: Joi.number().min(1).integer().allow(null),
+        shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array().required().items(
           Joi.object({
             group_jur7_id: Joi.number().required(),

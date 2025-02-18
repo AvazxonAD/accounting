@@ -21,6 +21,7 @@ exports.PodrazdelenieDB = class {
             search_filter = `AND s_p_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
         }
+
         const query = `--sql
             WITH data AS (
                 SELECT 
@@ -29,7 +30,9 @@ exports.PodrazdelenieDB = class {
                 FROM spravochnik_podrazdelenie_jur7 AS s_p_j7
                 JOIN users AS u ON u.id = s_p_j7.user_id
                 JOIN regions AS r ON r.id = u.region_id
-                WHERE s_p_j7.isdeleted = false AND r.id = $1 ${search_filter} 
+                WHERE s_p_j7.isdeleted = false 
+                    AND r.id = $1 
+                    ${search_filter} 
                 OFFSET $2 LIMIT $3
             )
             SELECT 

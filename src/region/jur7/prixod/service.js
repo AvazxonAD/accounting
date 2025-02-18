@@ -249,7 +249,7 @@ exports.PrixodJur7Service = class {
                     data.kimga_name,
                     data.id_shartnomalar_organization,
                     data.main_schet_id,
-                    data.grafik_id,
+                    data.shartnoma_grafik_id,
                     tashkentTime(),
                     tashkentTime()
                 ], client);

@@ -134,7 +134,7 @@ exports.ContractDB = class {
                                 COALESCE(JSON_AGG(garfik), '[]'::JSON)
                                 FROM (
                                     SELECT 
-                                        row_to_json(g) AS grafik,
+                                        g.*,
                                         row_to_json(s) AS smeta
                                     FROM shartnoma_grafik g
                                     JOIN smeta s ON s.id = g.smeta_id
