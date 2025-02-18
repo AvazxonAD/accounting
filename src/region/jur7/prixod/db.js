@@ -111,7 +111,8 @@ exports.PrixodDB = class {
               so.mfo AS spravochnik_organization_mfo,
               so.inn AS spravochnik_organization_inn,
               rj.fio AS kimga_name,
-              d.kimga_id
+              d.kimga_id,
+              d.shartnoma_grafik_id::INTEGER
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -212,7 +213,8 @@ exports.PrixodDB = class {
                             n.inventar_num,
                             n.serial_num
                     ) AS child
-                ) AS childs
+                ) AS childs,
+                d.shartnoma_grafik_id::INTEGER
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
