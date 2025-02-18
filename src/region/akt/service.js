@@ -162,6 +162,9 @@ exports.AktService = class {
                 data.main_schet_id,
                 data.user_id,
                 data.spravochnik_operatsii_own_id,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
+                data.shartnoma_grafik_id,
                 tashkentTime(),
                 tashkentTime()
             ], client);
@@ -224,6 +227,9 @@ exports.AktService = class {
                 data.id_spravochnik_organization,
                 data.shartnomalar_organization_id,
                 data.spravochnik_operatsii_own_id,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
+                data.shartnoma_grafik_id,
                 tashkentTime(),
                 data.id
             ], client);

@@ -45,7 +45,10 @@ exports.AktDB = class {
                             WHERE  ch.bajarilgan_ishlar_jur3_id = d.id
                                 AND  ch.isdeleted = false
                         ) AS ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    d.organization_by_raschet_schet_id::INTEGER,
+                    d.organization_by_raschet_schet_gazna_id::INTEGER,
+                    d.shartnoma_grafik_id::INTEGER
                 FROM  bajarilgan_ishlar_jur3 AS d 
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
@@ -111,10 +114,13 @@ exports.AktDB = class {
                 main_schet_id,
                 user_id,
                 spravochnik_operatsii_own_id,
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
+                shartnoma_grafik_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
             RETURNING id
         `;
         const result = await client.query(query, params)
@@ -201,7 +207,10 @@ exports.AktDB = class {
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii
                         WHERE ch.bajarilgan_ishlar_jur3_id = d.id
                     ) AS ch
-                ) AS childs
+                ) AS childs,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
+                d.shartnoma_grafik_id::INTEGER
             FROM  bajarilgan_ishlar_jur3 AS d 
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
@@ -227,8 +236,11 @@ exports.AktDB = class {
                 id_spravochnik_organization = $5, 
                 shartnomalar_organization_id = $6, 
                 spravochnik_operatsii_own_id = $7,
-                updated_at = $8
-            WHERE id = $9 RETURNING id
+                organization_by_raschet_schet_id = $8,
+                organization_by_raschet_schet_gazna_id = $9,
+                shartnoma_grafik_id = $10,
+                updated_at = $11
+            WHERE id = $12 RETURNING id
         `;
         const result = await client.query(query, params);
 
