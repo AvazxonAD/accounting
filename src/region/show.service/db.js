@@ -36,13 +36,18 @@ exports.ShowServiceDB = class {
                             JOIN regions AS r ON u.region_id = r.id
                             WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = d.id
                         ) AS k_h_j_ch
-                ) AS childs
+                ) AS childs,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
+                d.shartnoma_grafik_id::INTEGER
             FROM kursatilgan_hizmatlar_jur152 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
             WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${!isdeleted ? ignore : ''}
         `;
+
         const result = await db.query(query, params);
+        
         return result[0];
     }
 
@@ -58,10 +63,13 @@ exports.ShowServiceDB = class {
                 id_spravochnik_organization,
                 shartnomalar_organization_id,
                 main_schet_id,
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
+                shartnoma_grafik_id,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING *
         `;
         const result = await client.query(query, params);
@@ -87,8 +95,10 @@ exports.ShowServiceDB = class {
             "created_at",
             "updated_at"
         ];
+
         const _params = designParams(params, design_params);
-        const _values = returnParamsValues(_params, 16)
+        const _values = returnParamsValues(_params, 16);
+        
         const query = `--sql
             INSERT INTO kursatilgan_hizmatlar_jur152_child(
                 user_id,
@@ -151,7 +161,10 @@ exports.ShowServiceDB = class {
                             JOIN spravochnik_operatsii AS so ON so.id = k_h_j_ch.spravochnik_operatsii_id
                             WHERE  k_h_j_ch.kursatilgan_hizmatlar_jur152_id = d.id 
                         ) AS k_h_j_ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    d.organization_by_raschet_schet_id::INTEGER,
+                    d.organization_by_raschet_schet_gazna_id::INTEGER,
+                    d.shartnoma_grafik_id::INTEGER
                 FROM kursatilgan_hizmatlar_jur152 AS d
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -199,7 +212,7 @@ exports.ShowServiceDB = class {
     }
 
     static async updateShowService(params, client) {
-        const query = `--sql
+        const query = `
             UPDATE kursatilgan_hizmatlar_jur152
             SET 
                 doc_num = $1, 
@@ -209,8 +222,11 @@ exports.ShowServiceDB = class {
                 id_spravochnik_organization = $5, 
                 shartnomalar_organization_id = $6, 
                 spravochnik_operatsii_own_id = $7,
-                updated_at = $8
-            WHERE id = $9
+                updated_at = $8,
+                organization_by_raschet_schet_id = $9,
+                organization_by_raschet_schet_gazna_id = $10,
+                shartnoma_grafik_id = $11
+            WHERE id = $12
             RETURNING *
         `;
         const result = await client.query(query, params);

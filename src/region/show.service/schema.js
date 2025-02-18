@@ -9,6 +9,9 @@ exports.createSchema = Joi.object({
         opisanie: Joi.string().trim(),
         id_spravochnik_organization: Joi.number().required().min(1).integer(),
         shartnomalar_organization_id: Joi.number().allow(null).min(1).integer(),
+        organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
+        organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
+        shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array().items(
             Joi.object({
                 kol: Joi.number().min(1).required(),
@@ -34,6 +37,9 @@ exports.updateSchema = Joi.object({
         opisanie: Joi.string().trim(),
         id_spravochnik_organization: Joi.number().required().min(1).integer(),
         shartnomalar_organization_id: Joi.number().allow(null).min(1).integer(),
+        organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
+        organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
+        shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array().items(
             Joi.object({
                 kol: Joi.number().min(1).required(),

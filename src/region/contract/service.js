@@ -3,6 +3,12 @@ const { db } = require('@db/index');
 const { HelperFunctions } = require('@helper/functions');
 
 exports.ContractService = class {
+    static async checkGrafik(data) {
+        const result = await ContractDB.checkGrafik([data.grafik_id]);
+
+        return result;
+    }
+
     static async create(data) {
         const result = await db.transaction(async client => {
             const contract = await ContractDB.create([
@@ -95,10 +101,44 @@ exports.ContractService = class {
                 data.yillik_oylik,
                 data.id
             ], client);
+            const create_grafiks = [];
 
-            await ContractDB.deleteGrafiks([data.id], client);
+            for (let grafik of data.oldData.grafiks) {
+                const check = data.grafiks.find(item => item.id === grafik.id);
+                if (!check) {
+                    await ContractDB.deleteGrafik([contract.id, grafik.id], client);
+                }
+            }
 
-            await this.createGrafik({ ...data, contract, client });
+            for (let grafik of data.grafiks) {
+                if (!grafik.id) {
+                    create_grafiks.push(grafik);
+                } else {
+                    await ContractDB.updateGrafik([
+                        grafik.oy_1,
+                        grafik.oy_2,
+                        grafik.oy_3,
+                        grafik.oy_4,
+                        grafik.oy_5,
+                        grafik.oy_6,
+                        grafik.oy_7,
+                        grafik.oy_8,
+                        grafik.oy_9,
+                        grafik.oy_10,
+                        grafik.oy_11,
+                        grafik.oy_12,
+                        new Date(contract.doc_date).getFullYear(),
+                        data.yillik_oylik,
+                        grafik.smeta_id,
+                        grafik.itogo,
+                        grafik.id
+                    ], client);
+                }
+            }
+
+            if (create_grafiks.length) {
+                await this.createGrafik({ ...data, grafiks: create_grafiks, contract, client });
+            }
 
             return contract;
         })
