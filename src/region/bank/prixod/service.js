@@ -16,7 +16,10 @@ exports.BankPrixodService = class {
                 data.id_spravochnik_organization,
                 data.id_shartnomalar_organization,
                 data.main_schet_id,
-                data.user_id
+                data.user_id,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
+                data.shartnoma_grafik_id
             ], client)
 
             await this.createChild({ childs: data.childs, client, docId: doc.id, user_id: data.user_id, main_schet_id: data.main_schet_id });
@@ -78,7 +81,10 @@ exports.BankPrixodService = class {
                 data.opisanie,
                 data.id_spravochnik_organization,
                 data.id_shartnomalar_organization,
-                data.id
+                data.id,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
+                data.shartnoma_grafik_id
             ], client);
 
             await BankPrixodDB.deleteChild([doc.id], client);

@@ -12,9 +12,12 @@ exports.BankPrixodDB = class {
                 id_spravochnik_organization, 
                 id_shartnomalar_organization, 
                 main_schet_id, 
-                user_id
+                user_id,
+                organization_by_raschet_schet_id,
+                organization_by_raschet_schet_gazna_id,
+                shartnoma_grafik_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
             RETURNING id
         `;
 
@@ -74,6 +77,9 @@ exports.BankPrixodDB = class {
                     so.mfo AS spravochnik_organization_mfo,
                     so.inn AS spravochnik_organization_inn,
                     d.id_shartnomalar_organization,
+                    d.organization_by_raschet_schet_id::INTEGER,
+                    d.organization_by_raschet_schet_gazna_id::INTEGER,
+                    d.shartnoma_grafik_id::INTEGER,
                     (
                         SELECT JSON_AGG(row_to_json(ch))
                         FROM (
@@ -145,6 +151,9 @@ exports.BankPrixodDB = class {
                 d.opisanie, 
                 d.id_spravochnik_organization, 
                 d.id_shartnomalar_organization,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
+                d.shartnoma_grafik_id::INTEGER,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -194,8 +203,11 @@ exports.BankPrixodDB = class {
                 provodki_boolean = $4, 
                 opisanie = $5, 
                 id_spravochnik_organization = $6, 
-                id_shartnomalar_organization = $7
-            WHERE id = $8 RETURNING id
+                id_shartnomalar_organization = $7,
+                organization_by_raschet_schet_id = $8,
+                organization_by_raschet_schet_gazna_id = $9,
+                shartnoma_grafik_id = $10
+            WHERE id = $11 RETURNING id
         `, params);
 
         return result.rows[0];

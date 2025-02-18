@@ -14,7 +14,14 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { id_spravochnik_organization, id_shartnomalar_organization, childs } = req.body;
+    const {
+      id_spravochnik_organization,
+      id_shartnomalar_organization,
+      childs,
+      organization_by_raschet_schet_id,
+      organization_by_raschet_schet_gazna_id,
+      shartnoma_grafik_id
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
@@ -26,10 +33,35 @@ exports.Controller = class {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
 
+    if (!id_shartnomalar_organization && shartnoma_grafik_id) {
+      return res.error(req.i18n.t('contractNotFound'), 404);
+    }
+
     if (id_shartnomalar_organization) {
       const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
+      }
+
+      if (shartnoma_grafik_id) {
+        const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
+        if (!grafik) {
+          return res.error(req.i18n.t('grafikNotFound'), 404);
+        }
+      }
+    }
+
+    if (organization_by_raschet_schet_id) {
+      const account_number = await AccountNumberService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_id });
+      if (!account_number) {
+        return res.error(req.i18n.t('account_number_not_found'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_gazna_id) {
+      const gazna = await GaznaService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_gazna_id });
+      if (!gazna) {
+        return res.error(req.i18n.t('gaznaNotFound'), 404);
       }
     }
 
@@ -91,7 +123,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa, page_summa} = await BankPrixodService.get({ search, region_id, main_schet_id, from, to, offset, limit });
+    const { data, total_count, summa, page_summa } = await BankPrixodService.get({ search, region_id, main_schet_id, from, to, offset, limit });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -118,7 +150,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 400)
     }
 
-    const result = await BankPrixodService.getById({ region_id, main_schet_id, id, isdeleted: true});
+    const result = await BankPrixodService.getById({ region_id, main_schet_id, id, isdeleted: true });
     if (!result) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
@@ -131,7 +163,14 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { id_podotchet_litso, childs, id_spravochnik_organization, id_shartnomalar_organization } = req.body;
+    const {
+      id_spravochnik_organization,
+      id_shartnomalar_organization,
+      childs,
+      organization_by_raschet_schet_id,
+      organization_by_raschet_schet_gazna_id,
+      shartnoma_grafik_id
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
@@ -148,10 +187,35 @@ exports.Controller = class {
       return res.error(req.i18n.t('organizationNotFound'), 404);
     }
 
+    if (!id_shartnomalar_organization && shartnoma_grafik_id) {
+      return res.error(req.i18n.t('contractNotFound'), 404);
+    }
+
     if (id_shartnomalar_organization) {
       const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
+      }
+
+      if (shartnoma_grafik_id) {
+        const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
+        if (!grafik) {
+          return res.error(req.i18n.t('grafikNotFound'), 404);
+        }
+      }
+    }
+
+    if (organization_by_raschet_schet_id) {
+      const account_number = await AccountNumberService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_id });
+      if (!account_number) {
+        return res.error(req.i18n.t('account_number_not_found'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_gazna_id) {
+      const gazna = await GaznaService.getById({ organ_id: id_spravochnik_organization, id: organization_by_raschet_schet_gazna_id });
+      if (!gazna) {
+        return res.error(req.i18n.t('gaznaNotFound'), 404);
       }
     }
 
