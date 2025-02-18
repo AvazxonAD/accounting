@@ -1,0 +1,1 @@
+ALTER TABLE bank_rasxod ADD COLUMN  shartnoma_grafik_id BIGINT REFERENCES shartnoma_grafik(id);

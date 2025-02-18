@@ -374,8 +374,8 @@ const operatsiiValidation = Joi.object({
     return value.replace(/\s+/g, '');
   }),
   type_schet: Joi.string().trim().required(),
-  smeta_id: Joi.number().required(),
-  budjet_id: Joi.number().min(1).integer().required()
+  smeta_id: Joi.number().min(1),
+  budjet_id: Joi.number().min(1).integer()
 }).options({ stripUnknown: true });
 
 const operatsiiQueryValidation = Joi.object({

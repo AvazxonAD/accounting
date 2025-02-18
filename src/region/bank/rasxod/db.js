@@ -42,10 +42,11 @@ exports.BankRasxodDB = class {
                 glav_buxgalter,
                 organization_by_raschet_schet_id,
                 organization_by_raschet_schet_gazna_id,
+                shartnoma_grafik_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) 
             RETURNING id
         `;
 

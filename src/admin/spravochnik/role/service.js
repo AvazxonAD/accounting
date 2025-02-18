@@ -18,7 +18,7 @@ exports.RoleService = class {
         await db.transaction(async (client) => {
             result = await RoleDB.createRole([name, tashkentTime(), tashkentTime()], client);
             const regions = await RegionDB.getRegion([0, 9999], null, client)
-            const params = regions.reduce((acc, obj) => {
+            const params = regions.data.reduce((acc, obj) => {
                 return acc.concat(result.id, obj.id, tashkentTime(), tashkentTime())
             }, [])
             await AccessDB.createAccess(params, client)
