@@ -112,6 +112,7 @@ exports.BankRasxodDB = class {
                 d.tulangan_tulanmagan,
                 d.organization_by_raschet_schet_id,
                 d.organization_by_raschet_schet_gazna_id,
+                d.shartnoma_grafik_id::INTEGER,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -186,6 +187,7 @@ exports.BankRasxodDB = class {
                 d.glav_buxgalter,
                 d.organization_by_raschet_schet_id::INTEGER,
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
+                d.shartnoma_grafik_id::INTEGER,
                 (
                     SELECT 
                         JSON_AGG(row_to_json(ch))
@@ -240,9 +242,10 @@ exports.BankRasxodDB = class {
                 summa = 0,
                 organization_by_raschet_schet_id = $9,
                 organization_by_raschet_schet_gazna_id = $10,
-                updated_at = $11,
+                shartnoma_grafik_id = $11,
+                updated_at = $12,
                 tulangan_tulanmagan = false
-            WHERE id = $12 RETURNING id 
+            WHERE id = $13 RETURNING id 
         `, params);
 
         return result.rows[0];

@@ -74,11 +74,6 @@ exports.ContractService = class {
 
     static async getById(data) {
         const result = await ContractDB.getById([data.region_id, data.id], data.isdeleted, data.budjet_id, data.organ_id);
-        console.log(result)
-
-        if (result) {
-            result.grafiks = await ContractDB.getGrafiks([data.id, data.budjet_id]);
-        }
 
         return result;
     }

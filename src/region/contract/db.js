@@ -64,7 +64,7 @@ exports.ContractDB = class {
         }
 
         if (organ_id) {
-            organ_filter = `AND s_o.id = $${params.length + 1}`
+            organ_filter = `AND so.id = $${params.length + 1}`
             params.push(organ_id)
         }
 
@@ -77,7 +77,7 @@ exports.ContractDB = class {
                         COALESCE(JSON_AGG(garfik), '[]'::JSON)
                         FROM (
                             SELECT 
-                                row_to_json(g) AS grafik,
+                                g.*,
                                 row_to_json(s) AS smeta
                             FROM shartnoma_grafik g
                             JOIN smeta s ON s.id = g.smeta_id

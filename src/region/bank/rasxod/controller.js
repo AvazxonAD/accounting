@@ -101,6 +101,7 @@ exports.Controller = class {
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
       }
+
       if (grafik_id) {
         const grafik = contract.grafiks.find(item => item.id === grafik_id);
         if (!grafik) {
@@ -227,7 +228,8 @@ exports.Controller = class {
       id_shartnomalar_organization,
       childs,
       organization_by_raschet_schet_id,
-      organization_by_raschet_schet_gazna_id
+      organization_by_raschet_schet_gazna_id,
+      grafik_id
     } = req.body;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
@@ -249,6 +251,13 @@ exports.Controller = class {
       const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
+      }
+
+      if (grafik_id) {
+        const grafik = contract.grafiks.find(item => item.id === grafik_id);
+        if (!grafik) {
+          return res.error(req.i18n.t('grafikNotFound'), 404);
+        }
       }
     }
 

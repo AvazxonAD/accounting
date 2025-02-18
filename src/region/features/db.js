@@ -3,7 +3,8 @@ const { db } = require('@db/index');
 exports.FeaturesDB = class {
     static async getDocNum(tableName, params) {
         const main_schet_filter = tableName !== 'shartnomalar_organization' ? 'AND d.main_schet_id = $2' : '';
-        params = tableName !== 'shartnomalar_organization' ? params : params.splice(1, 1);
+ 
+        params = tableName !== 'shartnomalar_organization' ? params : [params[0]];
         
         const query = `
             SELECT d.doc_num
