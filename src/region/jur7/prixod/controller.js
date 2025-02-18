@@ -6,6 +6,8 @@ const { MainSchetService } = require('@main_schet/service');
 const { OrganizationService } = require('@organization/service');
 const { BudjetService } = require('@budjet/service');
 const { ResponsibleService } = require('@responsible/service');
+const { GaznaService } = require('@gazna/service');
+const { AccountNumberService } = require('@account_number/service');
 
 exports.Controller = class {
   // static async templateFile(req, res) {
@@ -81,7 +83,15 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, budjet_id } = req.query;
-    const { kimdan_id, kimga_id, id_shartnomalar_organization, childs, shartnoma_grafik_id } = req.body;
+    const {
+      kimdan_id,
+      kimga_id,
+      id_shartnomalar_organization,
+      childs,
+      shartnoma_grafik_id,
+      organization_by_raschet_schet_id,
+      organization_by_raschet_schet_gazna_id
+    } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -114,6 +124,20 @@ exports.Controller = class {
         if (!grafik) {
           return res.error(req.i18n.t('grafikNotFound'), 404);
         }
+      }
+    }
+
+    if (organization_by_raschet_schet_id) {
+      const account_number = await AccountNumberService.getById({ organ_id: kimdan_id, id: organization_by_raschet_schet_id });
+      if (!account_number) {
+        return res.error(req.i18n.t('account_number_not_found'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_gazna_id) {
+      const gazna = await GaznaService.getById({ organ_id: kimdan_id, id: organization_by_raschet_schet_gazna_id });
+      if (!gazna) {
+        return res.error(req.i18n.t('gaznaNotFound'), 404);
       }
     }
 
@@ -181,7 +205,15 @@ exports.Controller = class {
     const id = req.params.id;
     const user_id = req.user.id;
     const { main_schet_id, budjet_id } = req.query;
-    const { kimdan_id, kimga_id, id_shartnomalar_organization, childs } = req.body;
+    const {
+      kimdan_id,
+      kimga_id,
+      id_shartnomalar_organization,
+      childs,
+      shartnoma_grafik_id,
+      organization_by_raschet_schet_id,
+      organization_by_raschet_schet_gazna_id
+    } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -207,20 +239,41 @@ exports.Controller = class {
       }
     }
 
-    const organization = await OrganizationService.getById({ region_id, id: kimdan_id });
-    if (!organization) {
-      return res.error(req.i18n.t('organizationNotFound'), 404);
-    }
-
     const responsible = await ResponsibleService.getById({ region_id, id: kimga_id });
     if (!responsible) {
       return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
+    const organization = await OrganizationService.getById({ region_id, id: kimdan_id });
+    if (!organization) {
+      return res.error(req.i18n.t('organizationNotFound'), 404);
+    }
+
     if (id_shartnomalar_organization) {
-      const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization, organ_id: kimdan_id });
+      const contract = await ContractService.getById({ region_id, id: id_shartnomalar_organization });
       if (!contract) {
         return res.error(req.i18n.t('contractNotFound'), 404);
+      }
+
+      if (shartnoma_grafik_id) {
+        const grafik = contract.grafiks.find(item => item.id === shartnoma_grafik_id);
+        if (!grafik) {
+          return res.error(req.i18n.t('grafikNotFound'), 404);
+        }
+      }
+    }
+
+    if (organization_by_raschet_schet_id) {
+      const account_number = await AccountNumberService.getById({ organ_id: kimdan_id, id: organization_by_raschet_schet_id });
+      if (!account_number) {
+        return res.error(req.i18n.t('account_number_not_found'), 404);
+      }
+    }
+
+    if (organization_by_raschet_schet_gazna_id) {
+      const gazna = await GaznaService.getById({ organ_id: kimdan_id, id: organization_by_raschet_schet_gazna_id });
+      if (!gazna) {
+        return res.error(req.i18n.t('gaznaNotFound'), 404);
       }
     }
 
