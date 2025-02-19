@@ -2,7 +2,14 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
-    static async getKolSumma(params) {
+    static async getKolSumma(params, start) {
+        let start_filter = ``;
+
+        if (start) {
+            params.push(start);
+            start_filter = `AND d.doc_date >= $${params.length}`;
+        }
+
         const query = `--sql
             WITH prixod AS (
                 SELECT
@@ -14,6 +21,7 @@ exports.SaldoDB = class {
                     AND d.kimga_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date <= $3
+                    ${start_filter}
             ),
             prixod_internal AS (
                 SELECT
@@ -25,6 +33,7 @@ exports.SaldoDB = class {
                     AND d.kimga_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date <= $3
+                    ${start_filter}
             ),
             rasxod AS (
                 SELECT
@@ -36,6 +45,7 @@ exports.SaldoDB = class {
                     AND d.kimdan_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date <= $3
+                    ${start_filter}
             ),
             rasxod_internal AS (
                 SELECT
@@ -47,6 +57,7 @@ exports.SaldoDB = class {
                     AND d.kimdan_id = $2
                     AND d.isdeleted = false
                     AND d.doc_date <= $3
+                    ${start_filter}
             )
             SELECT
                 (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0) - COALESCE(r.kol, 0) - COALESCE(ri.kol, 0))::FLOAT AS kol,
@@ -61,12 +72,123 @@ exports.SaldoDB = class {
                 rasxod r,
                 rasxod_internal ri        
         `;
-        
+
         const result = await db.query(query, params);
 
         return result[0];
     }
 
+    static async createSaldo(params, client) {
+        const query = `--sql
+            INSERT INTO saldo_naimenovanie_jur7 (
+                user_id,
+                naimenovanie_tovarov_jur7_id,
+                kol,
+                sena,
+                summa,
+                month,
+                year,
+                date_saldo,
+                kimning_buynida,
+                iznos_summa_bir_oylik,
+                created_at,
+                updated_at
+            )
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
+        `;
+        const result = await client.query(query, params)
+        return result.rows[0];
+    }
+
+    static async getSaldo(params, product_id) {
+        let product_filter = ``;
+
+        if (product_id) {
+            params.push(product_id);
+            product_filter = `AND d.naimenovanie_tovarov_jur7_id = $${params.length}`;
+        }
+
+        const query = `--sql
+            SELECT
+                d.id::INTEGER, 
+                d.user_id,
+                d.naimenovanie_tovarov_jur7_id::INTEGER,
+                d.sena::FLOAT,
+                JSON_BUILD_OBJECT(
+                    'kol', d.kol::FLOAT,
+                    'summa', d.summa::FLOAT,
+                    'sena', d.sena
+                ) AS from,
+                d.month,
+                d.year,
+                d.date_saldo,
+                d.kimning_buynida,
+                n.name AS naimenovanie_tovarov,
+                n.edin,
+                g.id AS group_jur7_id,
+                g.name group_name, 
+                g.schet, 
+                g.iznos_foiz, 
+                g.provodka_debet, 
+                g.group_number, 
+                g.provodka_kredit,
+                g.provodka_subschet,
+                g.roman_numeral,
+                g.pod_group,
+                n.group_jur7_id,
+                n.spravochnik_budjet_name_id,
+                n.inventar_num,
+                n.serial_num
+            FROM saldo_naimenovanie_jur7 AS d
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
+            JOIN group_jur7 AS g ON n.group_jur7_id = g.id
+            WHERE r.id = $1 
+                AND d.isdeleted = false 
+                AND d.kimning_buynida = $2
+                AND d.year = $3
+                AND d.month = $4
+                AND n.isdeleted = false
+                ${product_filter}
+        `;
+
+        const data = await db.query(query, params)
+        return data[0];
+    }
+
+    static async deleteSaldo(params, client) {
+        const query = `--sql
+            UPDATE saldo_naimenovanie_jur7 
+            SET isdeleted = true 
+            WHERE EXISTS (
+                SELECT 1
+                FROM users AS u
+                JOIN regions AS r ON r.id = u.region_id
+                WHERE u.id = saldo_naimenovanie_jur7.user_id
+                    AND r.id = $1
+                    AND saldo_naimenovanie_jur7.month = $2
+                    AND saldo_naimenovanie_jur7.year = $3
+                    AND saldo_naimenovanie_jur7.isdeleted = false
+            )
+        `;
+        await client.query(query, params);
+    }
+
+    static async getProductPrixod(params) {
+        const query = `--sql
+            SELECT 
+                TO_CHAR(d_ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
+                d.doc_num
+            FROM document_prixod_jur7_child d_ch
+            JOIN document_prixod_jur7 d ON d_ch.document_prixod_jur7_id = d.id
+            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
+        `;
+        const result = await db.query(query, params);
+        return result[0];
+    }
+
+    // old queries
     static async getKol(params) {
         const query = `--sql
             WITH prixod AS (
@@ -125,93 +247,6 @@ exports.SaldoDB = class {
         const result = await db.query(query, params);
 
         return result[0]?.kol;
-    }
-
-    static async createSaldo(params, client) {
-        const query = `--sql
-            INSERT INTO saldo_naimenovanie_jur7 (
-                user_id,
-                naimenovanie_tovarov_jur7_id,
-                kol,
-                sena,
-                summa,
-                month,
-                year,
-                date_saldo,
-                kimning_buynida,
-                iznos_summa_bir_oylik,
-                created_at,
-                updated_at
-            )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
-        `;
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
-
-    static async getSaldo(params) {
-        const query = `--sql
-            SELECT
-                d.id::INTEGER, 
-                d.user_id,
-                d.naimenovanie_tovarov_jur7_id::INTEGER,
-                d.sena::FLOAT,
-                JSON_BUILD_OBJECT(
-                    'kol', d.kol::FLOAT,
-                    'summa', d.summa::FLOAT
-                ) AS from,
-                d.month,
-                d.year,
-                d.date_saldo,
-                d.kimning_buynida,
-                n.name AS naimenovanie_tovarov,
-                n.edin,
-                g.id AS group_jur7_id,
-                g.name group_name, 
-                g.schet, 
-                g.iznos_foiz, 
-                g.provodka_debet, 
-                g.group_number, 
-                g.provodka_kredit,
-                g.provodka_subschet,
-                g.roman_numeral,
-                g.pod_group,
-                n.group_jur7_id,
-                n.spravochnik_budjet_name_id,
-                n.inventar_num,
-                n.serial_num
-            FROM saldo_naimenovanie_jur7 AS d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
-            JOIN group_jur7 AS g ON n.group_jur7_id = g.id
-            WHERE r.id = $1 
-                AND d.isdeleted = false 
-                AND d.kimning_buynida = $2
-                AND d.year = $3
-                AND d.month = $4
-                AND n.isdeleted = false
-        `;
-        const data = await db.query(query, params)
-        return data;
-    }
-
-    static async deleteSaldo(params, client) {
-        const query = `--sql
-            UPDATE saldo_naimenovanie_jur7 
-            SET isdeleted = true 
-            WHERE EXISTS (
-                SELECT 1
-                FROM users AS u
-                JOIN regions AS r ON r.id = u.region_id
-                WHERE u.id = saldo_naimenovanie_jur7.user_id
-                    AND r.id = $1
-                    AND saldo_naimenovanie_jur7.month = $2
-                    AND saldo_naimenovanie_jur7.year = $3
-                    AND saldo_naimenovanie_jur7.isdeleted = false
-            )
-        `;
-        await client.query(query, params);
     }
 
     static async getKolInternal(params) {
@@ -276,18 +311,5 @@ exports.SaldoDB = class {
         const _db = client || db;
         const result = await _db.query(query, params);
         return result[0]?.sena || result.rows[0]?.sena;
-    }
-
-    static async getProductPrixod(params) {
-        const query = `--sql
-            SELECT 
-                TO_CHAR(d_ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
-                d.doc_num
-            FROM document_prixod_jur7_child d_ch
-            JOIN document_prixod_jur7 d ON d_ch.document_prixod_jur7_id = d.id
-            WHERE d_ch.naimenovanie_tovarov_jur7_id = $1 
-        `;
-        const result = await db.query(query, params);
-        return result[0];
     }
 }

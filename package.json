@@ -68,6 +68,7 @@
     "@public": "./public",
     "@jur7_rasxod": "./src/region/jur7/rasxod",
     "@jur7_internal": "./src/region/jur7/internal",
+    "@saldo": "./src/region/jur7/saldo",
     "@jur7_monitoring": "./src/region/jur7/monitoring",
     "@pod_monitoring": "./src/region/pod.monitoring",
     "@main_book_doc": "./src/region/main.book/doc",

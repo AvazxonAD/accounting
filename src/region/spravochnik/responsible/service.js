@@ -50,7 +50,7 @@ exports.ResponsibleService = class {
         });
 
         const folderPath = path.join(__dirname, `../../../../public/exports`);
-        
+
         try {
             await fs.access(folderPath, fs.constants.W_OK)
         } catch (error) {
@@ -109,7 +109,7 @@ exports.ResponsibleService = class {
     }
 
     static async getResponsible(data) {
-        const result = await ResponsibleDB.getResponsible([data.region_id, data.offset, data.limit]);
+        const result = await ResponsibleDB.getResponsible([data.region_id, data.offset, data.limit], data.search, data.podraz_id);
         return result;
     }
 

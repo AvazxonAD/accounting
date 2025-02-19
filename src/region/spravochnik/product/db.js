@@ -26,55 +26,59 @@ exports.NaimenovanieDB = class {
         let search_filter = ``
 
         if (search) {
-            search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
+            search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
         };
 
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    n_t_j7.id, 
-                    n_t_j7.name, 
-                    n_t_j7.edin,
-                    n_t_j7.group_jur7_id,
-                    n_t_j7.spravochnik_budjet_name_id,
-                    n_t_j7.inventar_num,
-                    n_t_j7.serial_num,
+                    pr.id, 
+                    pr.name, 
+                    pr.edin,
+                    pr.group_jur7_id,
+                    pr.spravochnik_budjet_name_id,
+                    pr.inventar_num,
+                    pr.serial_num,
                     g.id AS group_jur7_id,
                     g.name AS group_jur7_name,
                     g.iznos_foiz,
-                    s_b_n.name AS spravochnik_budjet_name
-                FROM naimenovanie_tovarov_jur7 AS n_t_j7
-                JOIN users AS u ON u.id = n_t_j7.user_id
+                    b.name AS spravochnik_budjet_name
+                FROM naimenovanie_tovarov_jur7 AS pr
+                JOIN users AS u ON u.id = pr.user_id
                 JOIN regions AS r ON r.id = u.region_id
-                JOIN group_jur7 AS g ON g.id = n_t_j7.group_jur7_id
-                JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
-                WHERE n_t_j7.isdeleted = false AND r.id = $1 ${search_filter}
+                JOIN group_jur7 AS g ON g.id = pr.group_jur7_id
+                JOIN spravochnik_budjet_name AS b ON b.id = pr.spravochnik_budjet_name_id 
+                WHERE pr.isdeleted = false 
+                    AND r.id = $1 
+                    ${search_filter}
                 OFFSET $2 LIMIT $3
             )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
-                    SELECT COALESCE(COUNT(n_t_j7.id), 0)::INTEGER  
-                    FROM naimenovanie_tovarov_jur7 AS n_t_j7
-                    JOIN users AS u ON u.id = n_t_j7.user_id
+                    SELECT 
+                        COALESCE(COUNT(pr.id), 0)::INTEGER  
+                    FROM naimenovanie_tovarov_jur7 AS pr
+                    JOIN users AS u ON u.id = pr.user_id
                     JOIN regions AS r ON r.id = u.region_id
-                    WHERE n_t_j7.isdeleted = false AND r.id = $1 ${search_filter}
+                    WHERE pr.isdeleted = false AND r.id = $1 ${search_filter}
                 ) AS total
             FROM data
-        `
+        `;
 
         const result = await db.query(query, params)
+        
         return result[0];
     }
 
     static async getById(params, isdeleted) {
-        let ignore = 'AND n_t_j7.isdeleted = false';
+        let ignore = 'AND pr.isdeleted = false';
         const query = `--sql
             SELECT 
-                n_t_j7.id, 
-                n_t_j7.name, 
-                n_t_j7.edin,
+                pr.id, 
+                pr.name, 
+                pr.edin,
                 g.id AS group_jur7_id,
                 g.name group_name, 
                 g.schet, 
@@ -85,17 +89,17 @@ exports.NaimenovanieDB = class {
                 g.provodka_subschet,
                 g.roman_numeral,
                 g.pod_group,
-                n_t_j7.group_jur7_id,
-                n_t_j7.spravochnik_budjet_name_id,
-                n_t_j7.inventar_num,
-                n_t_j7.serial_num,
-                s_b_n.name AS spravochnik_budjet_name
-            FROM naimenovanie_tovarov_jur7 AS n_t_j7
-            JOIN users AS u ON u.id = n_t_j7.user_id
+                pr.group_jur7_id,
+                pr.spravochnik_budjet_name_id,
+                pr.inventar_num,
+                pr.serial_num,
+                b.name AS spravochnik_budjet_name
+            FROM naimenovanie_tovarov_jur7 AS pr
+            JOIN users AS u ON u.id = pr.user_id
             JOIN regions AS r ON r.id = u.region_id
-            LEFT JOIN group_jur7 AS g ON g.id = n_t_j7.group_jur7_id
-            LEFT JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id 
-            WHERE r.id = $1 AND n_t_j7.id = $2  ${isdeleted ? `` : ignore}
+            LEFT JOIN group_jur7 AS g ON g.id = pr.group_jur7_id
+            LEFT JOIN spravochnik_budjet_name AS b ON b.id = pr.spravochnik_budjet_name_id 
+            WHERE r.id = $1 AND pr.id = $2  ${isdeleted ? `` : ignore}
         `
         const result = await db.query(query, params)
         return result[0]
@@ -123,25 +127,25 @@ exports.NaimenovanieDB = class {
         let tovar_filter = '';
         let search_filter = ''
         if (search) {
-            search_filter = `AND n_t_j7.name ILIKE '%' || $${params.length + 1} || '%'`;
+            search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search);
         }
         if (tovar_id) {
-            tovar_filter = `AND n_t_j7.id = $${params.length + 1}`;
+            tovar_filter = `AND pr.id = $${params.length + 1}`;
             params.push(tovar_id);
         }
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    n_t_j7.name, 
-                    n_t_j7.id::INTEGER, 
-                    n_t_j7.edin,
-                    n_t_j7.group_jur7_id,
-                    n_t_j7.inventar_num,
-                    n_t_j7.serial_num,
+                    pr.name, 
+                    pr.id::INTEGER, 
+                    pr.edin,
+                    pr.group_jur7_id,
+                    pr.inventar_num,
+                    pr.serial_num,
                     g_j7.name AS group_jur7_name,
-                    n_t_j7.spravochnik_budjet_name_id,
-                    s_b_n.name AS spravochnik_budjet_name,
+                    pr.spravochnik_budjet_name_id,
+                    b.name AS spravochnik_budjet_name,
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                     (d_ch.summa_s_nds / d_ch.kol)::FLOAT AS sena,
                     (
@@ -150,7 +154,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_prixod_jur7_child AS d_ch ON d.id = d_ch.document_prixod_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2 AND d.isdeleted = false
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = pr.id AND d.kimga_id = $2 AND d.isdeleted = false
                     )::FLOAT AS prixod1,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -158,7 +162,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimga_id = $2 AND d.isdeleted = false
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = pr.id AND d.kimga_id = $2 AND d.isdeleted = false
                     )::FLOAT AS prixod2,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -166,7 +170,7 @@ exports.NaimenovanieDB = class {
                         JOIN document_rasxod_jur7_child AS d_ch ON d.id = d_ch.document_rasxod_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2 AND d.isdeleted = false
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = pr.id AND d.kimdan_id = $2 AND d.isdeleted = false
                     )::FLOAT AS rasxod1,
                     (
                         SELECT COALESCE(SUM(d_ch.kol), 0)
@@ -174,16 +178,16 @@ exports.NaimenovanieDB = class {
                         JOIN document_vnutr_peremesh_jur7_child AS d_ch ON d.id = d_ch.document_vnutr_peremesh_jur7_id
                         JOIN users AS u ON u.id = d.user_id 
                         JOIN regions AS r ON r.id = u.region_id
-                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id AND d.kimdan_id = $2 AND d.isdeleted = false
+                        WHERE r.id = $1 AND d_ch.naimenovanie_tovarov_jur7_id = pr.id AND d.kimdan_id = $2 AND d.isdeleted = false
                     )::FLOAT AS rasxod2
-                FROM naimenovanie_tovarov_jur7 AS n_t_j7
-                JOIN document_prixod_jur7_child AS d_ch ON d_ch.naimenovanie_tovarov_jur7_id = n_t_j7.id
+                FROM naimenovanie_tovarov_jur7 AS pr
+                JOIN document_prixod_jur7_child AS d_ch ON d_ch.naimenovanie_tovarov_jur7_id = pr.id
                 JOIN document_prixod_jur7 AS d ON d_ch.document_prixod_jur7_id = d.id
-                JOIN users AS u ON u.id = n_t_j7.user_id
+                JOIN users AS u ON u.id = pr.user_id
                 JOIN regions AS r ON r.id = u.region_id
-                JOIN group_jur7 AS g_j7 ON g_j7.id = n_t_j7.group_jur7_id
-                JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = n_t_j7.spravochnik_budjet_name_id
-                WHERE n_t_j7.isdeleted = false AND r.id = $1 ${tovar_filter} ${search_filter} 
+                JOIN group_jur7 AS g_j7 ON g_j7.id = pr.group_jur7_id
+                JOIN spravochnik_budjet_name AS b ON b.id = pr.spravochnik_budjet_name_id
+                WHERE pr.isdeleted = false AND r.id = $1 ${tovar_filter} ${search_filter} 
             )
             SELECT *
             FROM (
