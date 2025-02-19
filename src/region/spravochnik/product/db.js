@@ -1,6 +1,6 @@
 const { db } = require('@db/index')
 
-exports.NaimenovanieDB = class {
+exports.ProductDB = class {
     static async create(params, client) {
         const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (

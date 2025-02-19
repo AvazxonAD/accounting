@@ -1,4 +1,4 @@
-const { NaimenovanieDB } = require('./db');
+const { ProductDB } = require('./db');
 const { tashkentTime } = require('@helper/functions');
 const { BudjetDB } = require('@budjet/db')
 const { GroupDB } = require('@group/db')
@@ -29,7 +29,7 @@ exports.Controller = class {
                 message: "group not found"
             })
         }
-        const result = await NaimenovanieDB.create([
+        const result = await ProductDB.create([
             user_id,
             spravochnik_budjet_name_id,
             name,
@@ -50,7 +50,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const { page, limit, search } = req.query;
         const offset = (page - 1) * limit;
-        const { data, total } = await NaimenovanieDB.getNaimenovanie([region_id, offset, limit], search)
+        const { data, total } = await ProductDB.getNaimenovanie([region_id, offset, limit], search)
         const pageCount = Math.ceil(total / limit);
         const meta = {
             pageCount: pageCount,
@@ -69,7 +69,7 @@ exports.Controller = class {
     static async getById(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
-        const data = await NaimenovanieDB.getById([region_id, id], true)
+        const data = await ProductDB.getById([region_id, id], true)
         if (!data) {
             return res.status(404).json({
                 message: "naimenovanie not found"
@@ -92,7 +92,7 @@ exports.Controller = class {
             serial_num
         } = req.body;
         const id = req.params.id
-        const old_naimenovanie = await NaimenovanieDB.getById([region_id, id])
+        const old_naimenovanie = await ProductDB.getById([region_id, id])
         if (!old_naimenovanie) {
             return res.status(404).json({
                 message: "naimenovanie not found"
@@ -110,7 +110,7 @@ exports.Controller = class {
                 message: "proup not found"
             })
         }
-        const result = await NaimenovanieDB.updateNaimenovanie([
+        const result = await ProductDB.updateNaimenovanie([
             name,
             edin,
             spravochnik_budjet_name_id,
@@ -129,13 +129,13 @@ exports.Controller = class {
     static async deleteNaimenovanie(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
-        const naimenovanie = await NaimenovanieDB.getById([region_id, id])
+        const naimenovanie = await ProductDB.getById([region_id, id])
         if (!naimenovanie) {
             return res.status(404).json({
                 message: "naimenovanie not found"
             })
         }
-        await NaimenovanieDB.deleteNaimenovanie([id])
+        await ProductDB.deleteNaimenovanie([id])
         return res.status(200).json({
             message: 'delete naimenovanie successfully'
         })
@@ -150,7 +150,7 @@ exports.Controller = class {
                 message: "responsible not found"
             })
         }
-        const data = await NaimenovanieDB.getProductKol([region_id, kimdan_id], search)
+        const data = await ProductDB.getProductKol([region_id, kimdan_id], search)
         const result = data.filter(item => item.result > 0)
         return res.status(200).json({
             message: "product get succcessfully!",

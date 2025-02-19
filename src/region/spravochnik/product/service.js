@@ -1,14 +1,14 @@
-const { NaimenovanieDB } = require('./db');
+const { ProductDB } = require('./db');
 const { tashkentTime } = require('@helper/functions')
 
 exports.ProductService = class {
     static async getById(data) {
-        const result = await NaimenovanieDB.getById([data.region_id, data.id]);
+        const result = await ProductDB.getById([data.region_id, data.id]);
         return result;
     }
 
     static async getNaimenovanie(data) {
-        const result = await NaimenovanieDB.getNaimenovanie([data.region_id, data.offset, data.limit]);
+        const result = await ProductDB.getNaimenovanie([data.region_id, data.offset, data.limit]);
         return result;
     }
 
@@ -17,7 +17,7 @@ exports.ProductService = class {
         for (let doc of data.childs) {
             if (doc.iznos) {
                 for (let i = 1; i <= doc.kol; i++) {
-                    const product = await NaimenovanieDB.create([
+                    const product = await ProductDB.create([
                         data.user_id,
                         data.budjet_id,
                         doc.name,
@@ -31,7 +31,7 @@ exports.ProductService = class {
                     result.push({ ...product, ...doc, kol: 1 });
                 }
             } else {
-                const product = await NaimenovanieDB.create([
+                const product = await ProductDB.create([
                     data.user_id,
                     data.budjet_id,
                     doc.name,
@@ -50,7 +50,7 @@ exports.ProductService = class {
 
     static async deleteNaimenovanie(data) {
         for (let child of data.childs) {
-            await NaimenovanieDB.deleteNaimenovanie(child.naimenovanie_tovarov_jur7_id);
+            await ProductDB.deleteNaimenovanie(child.naimenovanie_tovarov_jur7_id);
         }
     }
 }

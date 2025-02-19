@@ -1,6 +1,18 @@
 const Joi = require('joi')
 
 exports.SaldoSchema = class {
+  static import() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+        budjet_id: Joi.number().integer().min(1).required()
+      }),
+      file: Joi.object({
+        path: Joi.string().trim().required()
+      })
+    })
+  }
+
   static create() {
     return Joi.object({
       body: Joi.object({
@@ -31,7 +43,6 @@ exports.SaldoSchema = class {
         main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required()
       })
-      
     }).options({ stripUnknown: true });
   }
 }

@@ -163,7 +163,7 @@ const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = fa
         b.id AS budjet_id, 
         b.name AS budjet_name
       FROM spravochnik_operatsii s 
-      JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
+      LEFT JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
       WHERE s.isdeleted = false
         AND s.id = $1 
         ${type_schet_filter} 
