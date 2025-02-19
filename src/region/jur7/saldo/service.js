@@ -157,38 +157,85 @@ exports.SaldoService = class {
     }
 
     static async importData(data) {
-        console.log(data)
         await db.transaction(async client => {
+            const saldo_create = [];
             for (let doc of data.docs) {
-                console.log(doc)
-                const product = await ProductDB.create([
-                    data.user_id,
-                    data.budjet_id,
-                    doc.name,
-                    doc.edin,
-                    doc.group_jur7_id,
-                    doc.inventar_num,
-                    doc.serial_num,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client);
+                if (doc.iznos) {
+                    for (let i = 1; i <= doc.kol; i++) {
+                        const product = await ProductDB.create([
+                            data.user_id,
+                            data.budjet_id,
+                            doc.name,
+                            doc.edin,
+                            doc.group_jur7_id,
+                            doc.inventar_num,
+                            doc.serial_num,
+                            tashkentTime(),
+                            tashkentTime()
+                        ], client);
 
-                doc = { ...doc, ...product };
+                        const sena = doc.summa / doc.kol;
+
+                        saldo_create.push({
+                            product_id: product.id,
+                            kol: 1,
+                            sena,
+                            summa: sena,
+                            doc_date: doc.doc_date,
+                            responsible_id: doc.responsible_id
+                        });
+
+                        const old_iznos = doc.eski_iznos_summa / doc.kol;
+                        const iznos_summa = (sena * (doc.iznos_foiz / 100) / 12) + old_iznos;
+
+                        await IznosDB.createIznos([
+                            data.user_id,
+                            doc.inventar_num,
+                            doc.serial_num,
+                            product.id,
+                            1,
+                            sena,
+                            doc.doc_date,
+                            doc.responsible_id,
+                            iznos_summa,
+                            doc.doc_date ? (new Date(doc.doc_date).getFullYear()) : new Date().getFullYear(),
+                            doc.doc_date ? (new Date(doc.doc_date).getMonth() + 1) : new Date().getMonth() + 1,
+                            doc.doc_date,
+                            data.budjet_id,
+                            old_iznos,
+                            tashkentTime(),
+                            tashkentTime()
+                        ], client)
+                    }
+                } else {
+                    const product = await ProductDB.create([
+                        data.user_id,
+                        data.budjet_id,
+                        doc.name,
+                        doc.edin,
+                        doc.group_jur7_id,
+                        doc.inventar_num,
+                        doc.serial_num,
+                        tashkentTime(),
+                        tashkentTime()
+                    ], client);
+
+                    saldo_create.push({ product_id: product.id, ...doc });
+                }
             }
 
-            for (let doc of data.data) {
+            for (let doc of saldo_create) {
                 await SaldoDB.create([
-                    doc.user_id,
-                    doc.id,
+                    data.user_id,
+                    doc.product_id,
                     doc.kol,
-                    doc.sena,
+                    doc.summa / doc.kol,
                     doc.summa,
                     doc.doc_date,
-                    tashkentTime(),
                     doc.responsible_id,
                     tashkentTime(),
                     tashkentTime()
-                ], client)
+                ], client);
             }
         })
     }

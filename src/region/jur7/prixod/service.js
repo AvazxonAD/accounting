@@ -219,7 +219,7 @@ exports.PrixodJur7Service = class {
                     doc.serial_num,
                     tashkentTime(),
                     tashkentTime()
-                ], data.client)
+                ], data.client);
 
                 result.push({ ...product, ...doc });
             }

@@ -3,6 +3,7 @@ const { ResponsibleService } = require('@responsible/service');
 const { ProductService } = require('@product/service');
 const { BudjetService } = require('@budjet/service');
 const { MainSchetService } = require('@main_schet/service');
+const { GroupService } = require('@group/service');
 
 exports.Controller = class {
   static async templateFile(req, res) {
@@ -33,6 +34,21 @@ exports.Controller = class {
     }
 
     const data = await SaldoService.readFile({ filePath: req.file.path });
+
+    for (let doc of data) {
+      const group = await GroupService.getById({ id: doc.group_jur7_id });
+      if (!group) {
+        return res.error(req.i18n.t('groupNotFound'), 404);
+      }
+
+      doc.iznos = doc.iznos === 'ha' ? true : false;
+
+      if (!doc.iznos && doc.eski_iznos_summa > 0) {
+        return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
+      }
+
+      doc.iznos_foiz = group.iznos_foiz;
+    }
 
     await SaldoService.importData({ docs: data, main_schet_id, budjet_id, user_id });
 

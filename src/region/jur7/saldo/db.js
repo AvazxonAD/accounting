@@ -110,11 +110,10 @@ exports.SaldoDB = class {
                 summa,
                 date_saldo,
                 kimning_buynida,
-                iznos_summa_bir_oylik,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *
         `;
         const result = await client.query(query, params)
         return result.rows[0];
