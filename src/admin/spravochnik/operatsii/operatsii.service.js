@@ -91,7 +91,6 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
         FROM spravochnik_operatsii s 
         LEFT JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
         WHERE s.isdeleted = false 
-          AND s.budjet_id IS NOT NULL
           ${schet_filter}
           ${sub_schet_filter}
           ${search_filter} 
@@ -104,10 +103,9 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
         COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
         (
           SELECT 
-            COUNT(s.id) 
+            COALESCE(COUNT(s.id), 0)::INTEGER
           FROM spravochnik_operatsii s
           WHERE s.isdeleted = false
-            AND s.budjet_id IS NOT NULL 
             ${schet_filter}
             ${sub_schet_filter}
             ${search_filter} 
