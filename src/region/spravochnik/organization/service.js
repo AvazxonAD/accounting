@@ -12,7 +12,7 @@ const { AccountNumberDB } = require('./account_number/db');
 exports.OrganizationService = class {
     static async templateFile() {
         const fileName = `organization.xlsx`;
-        const folderPath = path.join(__dirname, `../../../public/template`);
+        const folderPath = path.join(__dirname, `../../../../public/template`);
 
         const filePath = path.join(folderPath, fileName);
 

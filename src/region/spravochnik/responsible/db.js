@@ -17,18 +17,18 @@ exports.ResponsibleDB = class {
         const _db = client || db;
 
         const result = await _db.query(query, params)
-        
+
         return result[0];
     }
-    
+
     static async getResponsible(params, search = null, podraz_id = null) {
         let search_filter = ``;
         let podraz_filter = ``;
-        if(search){
+        if (search) {
             search_filter = `AND s_j_s_j7.fio ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
         }
-        if(podraz_id){
+        if (podraz_id) {
             params.push(podraz_id);
             podraz_filter = `AND s_p_j7.id = $${params.length}`;
         }
@@ -100,7 +100,7 @@ exports.ResponsibleDB = class {
         `;
 
         const result = await db.query(query, params)
-        
+
         return result[0]
     }
 
@@ -119,7 +119,7 @@ exports.ResponsibleDB = class {
         await db.query(query, params)
     }
 
-    static async getResponsibleReport(params){
+    static async getResponsibleReport(params) {
         const query = `--sql
             SELECT 
                 s_j_s_j7.id, 
