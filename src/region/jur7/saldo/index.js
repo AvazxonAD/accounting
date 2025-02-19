@@ -4,14 +4,12 @@ const router = Router();
 const { Controller } = require('./controller');
 const { validator } = require('@helper/validator');
 
-const {
-    createSaldoSchema,
-    getSaldoSchema,
-    SaldoSchema
-} = require("./schema");
+const { getSaldoSchema, SaldoSchema } = require("./schema");
 
+const upload = require('../../../helper/upload');
 
-router.post('/', validator(Controller.create, SaldoSchema.create()))
+router
+    .post('/import', upload.single('file'), validator(Controller.import, SaldoSchema.import()))
     .get('/temlate', Controller.templateFile)
     .get('/', validator(Controller.getSaldo, getSaldoSchema));
 

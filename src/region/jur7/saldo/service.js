@@ -3,9 +3,11 @@ const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
 const { getMonthStartEnd } = require('@helper/functions');
 const { IznosDB } = require('../iznos/db');
-const { ProductService } = require('../../spravochnik/product/service');
+const { ProductService } = require('@product/service');
 const path = require('path');
-const fs = require('fs')
+const fs = require('fs');
+const xlsx = require('xlsx');
+const { ProductDB } = require('@product/db');
 
 exports.SaldoService = class {
     static async getInfo(data) {
@@ -155,9 +157,22 @@ exports.SaldoService = class {
     }
 
     static async importData(data) {
+        console.log(data)
         await db.transaction(async client => {
-            for (let doc of data) {
-                const product = await ProductService.create({})
+            for (let doc of data.docs) {
+                console.log(doc)
+                const product = await ProductDB.create([
+                    data.user_id,
+                    data.budjet_id,
+                    doc.name,
+                    doc.edin,
+                    doc.group_jur7_id,
+                    doc.inventar_num,
+                    doc.serial_num,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client);
+
                 doc = { ...doc, ...product };
             }
 
@@ -176,5 +191,25 @@ exports.SaldoService = class {
                 ], client)
             }
         })
+    }
+
+    static async readFile(data) {
+        const workbook = xlsx.readFile(data.filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const excel_data = xlsx.utils.sheet_to_json(sheet).map((row, index) => {
+            const newRow = {};
+            for (const key in row) {
+                if (Object.prototype.hasOwnProperty.call(row, key)) {
+                    newRow[key] = row[key];
+                }
+            }
+
+            return newRow;
+        });
+
+        const result = excel_data.filter((item, index) => index >= 3);
+
+        return result;
     }
 }
