@@ -1,6 +1,6 @@
 const { checkTovarId } = require('@helper/functions');
 const { ResponsibleService } = require('@responsible/service');
-const { NaimenovanieService } = require('@product/service');
+const { ProductService } = require('@product/service');
 const { MainSchetService } = require('@main_schet/service');
 const { Jur7RsxodService } = require('./service');
 const { Jur7MonitoringService } = require('../monitoring/service');
@@ -28,7 +28,7 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      const product = await NaimenovanieService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
+      const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
       if (!product) {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
@@ -99,7 +99,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('responsibleNotFound', 404));
     }
     for (let child of childs) {
-      const product = await NaimenovanieService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
+      const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
       if (!product) {
         return res.error(req.i18n.t('productNotFound'));
       }

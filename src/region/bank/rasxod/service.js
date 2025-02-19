@@ -74,7 +74,7 @@ exports.BankRasxodService = class {
 
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 12 });
 
-        await BankRasxodDB.createPrixodChild(create_childs, _values, data.client);
+        await BankRasxodDB.createChild(create_childs, _values, data.client);
     }
 
     static async get(data) {

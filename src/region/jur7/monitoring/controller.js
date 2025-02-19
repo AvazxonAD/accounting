@@ -3,7 +3,7 @@ const { MainSchetService } = require('@main_schet/service')
 const { RegionService } = require('@region/service')
 const { BudjetService } = require('@budjet/service');
 const { Jur7MonitoringService } = require('./service');
-const { NaimenovanieService } = require('@product/service')
+const { ProductService } = require('@product/service')
 
 exports.Controller = class {
     static async getSaldo(req, res) {
@@ -16,7 +16,7 @@ exports.Controller = class {
         }
 
         if (product_id) {
-            const product = await NaimenovanieService.getById({ region_id, id: product_id });
+            const product = await ProductService.getById({ region_id, id: product_id });
             if (!product) {
                 return res.error(req.i18n.t('productNotFound'), 404);
             }

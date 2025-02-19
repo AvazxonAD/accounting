@@ -5,7 +5,7 @@ const { GroupDB } = require('@group/db')
 const { ResponsibleDB } = require('../responsible/db')
 
 exports.Controller = class {
-    static async createNaimenovanie(req, res) {
+    static async create(req, res) {
         const user_id = req.user.id
         const region_id = req.user.region_id
         const {
@@ -29,7 +29,7 @@ exports.Controller = class {
                 message: "group not found"
             })
         }
-        const result = await NaimenovanieDB.createNaimenovanie([
+        const result = await NaimenovanieDB.create([
             user_id,
             spravochnik_budjet_name_id,
             name,
@@ -145,11 +145,11 @@ exports.Controller = class {
         const { kimdan_id, search } = req.query;
         const region_id = req.user.region_id;
         const responsible = await ResponsibleDB.getById([region_id, kimdan_id])
-        if(!responsible){
+        if (!responsible) {
             return res.status(404).json({
                 message: "responsible not found"
             })
-        } 
+        }
         const data = await NaimenovanieDB.getProductKol([region_id, kimdan_id], search)
         const result = data.filter(item => item.result > 0)
         return res.status(200).json({

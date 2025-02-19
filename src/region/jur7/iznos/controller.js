@@ -1,4 +1,4 @@
-const { NaimenovanieService } = require('@product/service')
+const { ProductService } = require('@product/service')
 const { ResponsibleService } = require('@responsible/service')
 const { IznosService } = require('./service');
 
@@ -9,7 +9,7 @@ exports.Controller = class {
         const { product_id, responsible_id, search, year, month, page, limit } = req.query;
         const offset = (page - 1) * limit;
         if (product_id) {
-            const product = await NaimenovanieService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
+            const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
             if (!product) {
                 return res.error(req.i18n.t('productNotFound'), 404);
             }

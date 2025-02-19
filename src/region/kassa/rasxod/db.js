@@ -24,7 +24,7 @@ exports.KassaRasxodDB = class {
         return result.rows[0]
     }
 
-    static async createPrixodChild(params, _values, client) {
+    static async createChild(params, _values, client) {
         const query = `
             INSERT INTO kassa_rasxod_child (
               spravochnik_operatsii_id,

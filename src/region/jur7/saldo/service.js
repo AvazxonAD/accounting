@@ -3,7 +3,9 @@ const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
 const { getMonthStartEnd } = require('@helper/functions');
 const { IznosDB } = require('../iznos/db');
-
+const { ProductService } = require('../../spravochnik/product/service');
+const path = require('path');
+const fs = require('fs')
 
 exports.SaldoService = class {
     static async getInfo(data) {
@@ -139,5 +141,40 @@ exports.SaldoService = class {
             data.month,
             data.budjet_id
         ])
+    }
+
+    static async templateFile() {
+        const fileName = `saldo.xlsx`;
+        const folderPath = path.join(__dirname, `../../../../public/template/`);
+
+        const filePath = path.join(folderPath, fileName);
+
+        const fileRes = await fs.promises.readFile(filePath);
+
+        return { fileName, fileRes };
+    }
+
+    static async importData(data) {
+        await db.transaction(async client => {
+            for (let doc of data) {
+                const product = await ProductService.create({})
+                doc = { ...doc, ...product };
+            }
+
+            for (let doc of data.data) {
+                await SaldoDB.create([
+                    doc.user_id,
+                    doc.id,
+                    doc.kol,
+                    doc.sena,
+                    doc.summa,
+                    doc.doc_date,
+                    tashkentTime(),
+                    doc.responsible_id,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client)
+            }
+        })
     }
 }

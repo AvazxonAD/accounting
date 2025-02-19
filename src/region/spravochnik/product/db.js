@@ -1,7 +1,7 @@
 const { db } = require('@db/index')
 
 exports.NaimenovanieDB = class {
-    static async createNaimenovanie(params, client) {
+    static async create(params, client) {
         const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
