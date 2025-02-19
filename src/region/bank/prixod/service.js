@@ -49,7 +49,7 @@ exports.BankPrixodService = class {
 
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 10 });
 
-        await BankPrixodDB.createPrixodChild(create_childs, _values, data.client);
+        await BankPrixodDB.createChild(create_childs, _values, data.client);
     }
 
     static async get(data) {

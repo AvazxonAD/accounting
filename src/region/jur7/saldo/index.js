@@ -7,11 +7,12 @@ const { validator } = require('@helper/validator');
 const {
     createSaldoSchema,
     getSaldoSchema,
-    getSaldoRasxodSchema
+    SaldoSchema
 } = require("./schema");
 
 
-router.post('/', validator(Controller.createSaldo, createSaldoSchema))
+router.post('/', validator(Controller.create, SaldoSchema.create()))
+    .get('/temlate', Controller.templateFile)
     .get('/', validator(Controller.getSaldo, getSaldoSchema));
 
 module.exports = router;

@@ -1,28 +1,58 @@
 const { SaldoService } = require('./service')
 const { ResponsibleService } = require('@responsible/service');
-const { NaimenovanieService } = require('@product/service');
+const { ProductService } = require('@product/service');
 const { BudjetService } = require('@budjet/service');
 
 exports.Controller = class {
-  static async createSaldo(req, res) {
+  static async templateFile(req, res) {
+    const { fileName, fileRes } = await SaldoService.templateFile();
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    return res.send(fileRes);
+  }
+
+  static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const budjet_id = req.query.budjet_id;
-    const { year, month } = req.body;
+    const { main_schet_id, budjet_id } = req.query;
+
+    const { kimga_id, childs } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
     }
 
-    const { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999 });
-    const { data: products } = await NaimenovanieService.getNaimenovanie({ region_id, offset: 0, limit: 9999 });
+    const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
+    if (!main_schet) {
+      return res.error(req.i18n.t('mainSchetNotFound'), 404);
+    }
 
-    const info = await SaldoService.getInfo({ region_id, responsibles, products, year, month });
+    for (let child of childs) {
+      const responsible = await ResponsibleService.getById({ region_id, id: child.responsible_id });
+      if (!responsible) {
+        return res.error(req.i18n.t('responsibleNotFound'), 404);
+      }
 
-    await SaldoService.createSaldo({ user_id, year, month, info, region_id });
+      const group = await GroupService.getById({ id: child.group_jur7_id });
+      if (!group) {
+        return res.error(req.i18n.t('groupNotFound'), 404);
+      }
 
-    return res.success('Create successfully', 201);
+      child.iznos = child.iznos === 'ha' ? true : false;
+
+      if (!child.iznos && child.eski_iznos_summa > 0) {
+        return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
+      }
+
+      child.iznos_foiz = group.iznos_foiz;
+    }
+
+    const result = await SaldoService.importData({ ...req.body, user_id, main_schet_id, budjet_id, childs });
+
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   }
 
   static async getSaldo(req, res) {
@@ -30,10 +60,10 @@ exports.Controller = class {
     const { kimning_buynida, to, product_id } = req.query;
 
     let { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999, id: kimning_buynida });
-    let { data: products } = await NaimenovanieService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id });
+    let { data: products } = await ProductService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id });
 
     if (product_id) {
-      const product = await NaimenovanieService.getById({ region_id, id: product_id })
+      const product = await ProductService.getById({ region_id, id: product_id })
       if (!product) {
         return res.error(req.i18n.t('productNotFound'));
       }
@@ -51,5 +81,9 @@ exports.Controller = class {
     const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles });
 
     return res.success(req.i18n.t('getSuccess'), 200, null, data);
+  }
+
+  static async import(req, res) {
+
   }
 }

@@ -1,7 +1,7 @@
 const { NaimenovanieDB } = require('./db');
 const { tashkentTime } = require('@helper/functions')
 
-exports.NaimenovanieService = class {
+exports.ProductService = class {
     static async getById(data) {
         const result = await NaimenovanieDB.getById([data.region_id, data.id]);
         return result;
@@ -12,12 +12,12 @@ exports.NaimenovanieService = class {
         return result;
     }
 
-    static async createNaimenovanie(data) {
+    static async create(data) {
         const result = [];
         for (let doc of data.childs) {
             if (doc.iznos) {
                 for (let i = 1; i <= doc.kol; i++) {
-                    const product = await NaimenovanieDB.createNaimenovanie([
+                    const product = await NaimenovanieDB.create([
                         data.user_id,
                         data.budjet_id,
                         doc.name,
@@ -31,7 +31,7 @@ exports.NaimenovanieService = class {
                     result.push({ ...product, ...doc, kol: 1 });
                 }
             } else {
-                const product = await NaimenovanieDB.createNaimenovanie([
+                const product = await NaimenovanieDB.create([
                     data.user_id,
                     data.budjet_id,
                     doc.name,

@@ -14,7 +14,4 @@ router
     .delete('/:id', validator(Controller.delete, PrixodSchema.delete()))
     .get('/', validator(Controller.get, PrixodSchema.get()));
     
-    // .post('/import', upload.single('file'), validator(Controller.importData, PrixodSchema.importSchema2()))
-    // .get('/template', validator(Controller.templateFile))
-
 module.exports = router;

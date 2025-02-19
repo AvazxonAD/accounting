@@ -100,6 +100,26 @@ exports.SaldoDB = class {
         return result.rows[0];
     }
 
+    static async create(params, client) {
+        const query = `--sql
+            INSERT INTO saldo_naimenovanie_jur7 (
+                user_id,
+                naimenovanie_tovarov_jur7_id,
+                kol,
+                sena,
+                summa,
+                date_saldo,
+                kimning_buynida,
+                iznos_summa_bir_oylik,
+                created_at,
+                updated_at
+            )
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
+        `;
+        const result = await client.query(query, params)
+        return result.rows[0];
+    }
+
     static async getSaldo(params, product_id) {
         let product_filter = ``;
 

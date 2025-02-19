@@ -1,7 +1,7 @@
 const { db } = require('@db/index')
 
 exports.PrixodDB = class {
-    static async createNaimenovanie(params, client) {
+    static async create(params, client) {
         const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
@@ -54,7 +54,7 @@ exports.PrixodDB = class {
         return result.rows[0];
     }
 
-    static async createPrixodChild(params, client) {
+    static async createChild(params, client) {
         const query = `--sql
             INSERT INTO document_prixod_jur7_child (
                 naimenovanie_tovarov_jur7_id,

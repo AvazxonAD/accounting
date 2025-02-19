@@ -47,7 +47,7 @@ exports.KassaPrixodService = class {
 
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 10 });
 
-        await KassaPrixodDB.createPrixodChild(create_childs, _values, data.client);
+        await KassaPrixodDB.createChild(create_childs, _values, data.client);
     }
 
     static async get(data) {

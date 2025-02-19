@@ -189,12 +189,12 @@ exports.PrixodJur7Service = class {
         return { fileName, filePath }
     }
 
-    static async createNaimenovanie(data) {
+    static async create(data) {
         const result = [];
         for (let doc of data.childs) {
             if (doc.iznos) {
                 for (let i = 1; i <= doc.kol; i++) {
-                    const product = await PrixodDB.createNaimenovanie([
+                    const product = await PrixodDB.create([
                         data.user_id,
                         data.budjet_id,
                         doc.name,
@@ -209,7 +209,7 @@ exports.PrixodJur7Service = class {
                     result.push({ ...product, ...doc, kol: 1 });
                 }
             } else {
-                const product = await PrixodDB.createNaimenovanie([
+                const product = await PrixodDB.create([
                     data.user_id,
                     data.budjet_id,
                     doc.name,
@@ -224,13 +224,13 @@ exports.PrixodJur7Service = class {
                 result.push({ ...product, ...doc });
             }
         }
-        
+
         return result;
     }
 
     static async create(data) {
         const result = await db.transaction(async (client) => {
-            const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
+            const childs = await this.create({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             const summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
@@ -256,7 +256,7 @@ exports.PrixodJur7Service = class {
                     tashkentTime()
                 ], client);
 
-            await this.createPrixodChild({ ...data, docId: doc.id, client, childs });
+            await this.createChild({ ...data, docId: doc.id, client, childs });
 
             return doc;
         });
@@ -264,7 +264,7 @@ exports.PrixodJur7Service = class {
         return result;
     }
 
-    static async createPrixodChild(data) {
+    static async createChild(data) {
         for (const child of data.childs) {
             const summa = !child.summa ? child.kol * child.sena : child.summa;
 
@@ -272,9 +272,9 @@ exports.PrixodJur7Service = class {
 
             const summa_s_nds = summa + nds_summa;
 
-            await PrixodDB.createPrixodChild([
+            await PrixodDB.createChild([
                 child.id,
-                child.kol,  
+                child.kol,
                 child.sena,
                 summa,
                 child.nds_foiz,
@@ -354,9 +354,9 @@ exports.PrixodJur7Service = class {
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
-            const childs = await this.createNaimenovanie({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
+            const childs = await this.create({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
-            await this.createPrixodChild({ ...data, docId: data.id, childs, client });
+            await this.createChild({ ...data, docId: data.id, childs, client });
 
             return { id: data.id }
         });
@@ -395,93 +395,5 @@ exports.PrixodJur7Service = class {
         const result = await PrixodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
 
         return result;
-    }
-
-    static async readFile(data) {
-        const workbook = xlsx.readFile(data.filePath);
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-
-        const excel_data = xlsx.utils.sheet_to_json(sheet).map(row => {
-            const newRow = {};
-
-            for (const key in row) {
-                if (Object.prototype.hasOwnProperty.call(row, key)) {
-                    newRow[key] = row[key];
-                }
-            }
-
-            return newRow;
-        });
-
-        const result = excel_data.filter((item, index) => index > 2);
-
-        return result;
-    }
-
-    static groupData(data) {
-        const groupedData = {};
-
-        data.forEach(item => {
-            const key = `${item.docNum}_${item.responsibleId}`;
-
-            if (!groupedData[key]) {
-                const date = item.docDate.split('.');
-                groupedData[key] = {
-                    doc_num: item.docNum,
-                    doc_date: `${date[2]}-${date[1]}-${date[0]}`,
-                    j_o_num: "",
-                    opisanie: "",
-                    doverennost: "",
-                    kimdan_id: item.organizationId,
-                    kimdan_name: item.organizationName,
-                    kimga_id: item.responsibleId,
-                    kimga_name: item.kimgaName,
-                    id_shartnomalar_organization: null,
-                    childs: []
-                };
-            }
-
-            groupedData[key].childs.push({
-                name: item.productName,
-                edin: item.edin,
-                group_jur7_id: item.groupId,
-                inventar_num: item.inventarNum,
-                serial_num: item.serialNum,
-                kol: item.kol,
-                sena: item.summa / item.kol,
-                nds_foiz: item.ndsFoiz,
-                debet_schet: item.debetSchet,
-                kredit_sub_schet: item.kreditSubSchet,
-                debet_sub_schet: item.debetSubSchet,
-                kredit_schet: item.kreditSchet,
-                iznos: item.iznos?.trim() === "ha",
-                eski_iznos_summa: item.eskiIznosSumma || 0
-            });
-        });
-
-        const groupedArray = Object.values(groupedData);
-
-        return groupedArray;
-    }
-
-    static async templateFile() {
-        const fileName = `prixod.xlsx`;
-        const folderPath = path.join(__dirname, `../../../public/template`);
-
-        const filePath = path.join(folderPath, fileName);
-
-        const fileRes = await fs.readFile(filePath);
-
-        return { fileName, fileRes };
-    }
-
-    static async importData(data) {
-        await db.transaction(async client => {
-            for (let doc of data.data) {
-                await this.create({ ...doc, client, user_id: data.user_id, budjet_id: data.budjet_id, main_schet_id: data.main_schet_id });
-            }
-        })
-
     }
 }

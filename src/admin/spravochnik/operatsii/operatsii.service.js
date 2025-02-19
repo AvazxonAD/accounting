@@ -89,7 +89,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
           b.id AS budjet_id, 
           b.name AS budjet_name
         FROM spravochnik_operatsii s 
-        JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
+        LEFT JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
         WHERE s.isdeleted = false 
           AND s.budjet_id IS NOT NULL
           ${schet_filter}
