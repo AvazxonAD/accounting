@@ -99,35 +99,18 @@ exports.SaldoService = class {
     }
 
     static async getSaldo(data) {
-        const parts = data.to.match(/(\d{4})-(\d{2})-(\d{2})/).slice(1);
-        const year = parts[0];
-        const month = parts[1];
-        const start = `${year}-${month}-01`;
-
         for (let responsible of data.responsibles) {
             responsible.products = JSON.parse(JSON.stringify(data.products));
 
             for (let product of responsible.products) {
-                const from = await SaldoDB.getSaldo([data.region_id, responsible.id, year, month], product.id);
-                if (!from) {
-                    product.from = { kol: 0, summa: 0, sena: 0 };
-                } else {
-                    product.from = from.from;
-                }
+                
+                product.from = await SaldoDB.getKolSumma([product.id, responsible.id], data.from);
 
-                product.internal = await SaldoDB.getKolSumma([product.id, responsible.id, data.to], start);
-                product.to = { kol: product.from.kol + product.internal.kol };
+                product.internal = await SaldoDB.getKolSumma([product.id, responsible.id], data.from, data.to);
 
-                if (product.to.kol !== 0) {
-                    product.to.summa = Math.round((product.from.summa + product.internal.summa) / product.to.kol * 100) / 100;
-                    product.to.sena = Math.round((product.to.summa / product.to.kol) * 100) / 100;
-                } else {
-                    product.to.summa = 0;
-                    product.to.sena = 0;
-                }
+                product.to = await SaldoDB.getKolSumma([product.id, responsible.id], null, data.to);
 
                 product.prixod_data = await SaldoDB.getProductPrixod([product.naimenovanie_tovarov_jur7_id]);
-
             }
 
             responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
@@ -231,6 +214,7 @@ exports.SaldoService = class {
                     doc.kol,
                     doc.summa / doc.kol,
                     doc.summa,
+                    doc.doc_date,
                     doc.doc_date,
                     doc.responsible_id,
                     tashkentTime(),

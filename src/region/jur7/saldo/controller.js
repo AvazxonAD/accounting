@@ -36,10 +36,14 @@ exports.Controller = class {
     const data = await SaldoService.readFile({ filePath: req.file.path });
 
     for (let doc of data) {
+      // validate 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
+
+      const dates = doc.doc_date.split('.');
+      doc.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
 
       doc.iznos = doc.iznos === 'ha' ? true : false;
 
@@ -99,7 +103,7 @@ exports.Controller = class {
 
   static async getSaldo(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, product_id } = req.query;
+    const { kimning_buynida, to, product_id, from } = req.query;
 
     let { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999, id: kimning_buynida });
     let { data: products } = await ProductService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id });
@@ -120,7 +124,7 @@ exports.Controller = class {
       responsibles = responsibles.filter(item => item.id === kimning_buynida);
     }
 
-    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles });
+    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles, from });
 
     return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
