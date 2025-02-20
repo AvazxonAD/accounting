@@ -13,6 +13,25 @@ exports.SaldoSchema = class {
     })
   }
 
+  static importData(lang) {
+    return Joi.array().items(
+      Joi.object({
+        responsible_id: Joi.number().min(1).required().messages({ '*': lang.t('validation.responsibleId') }),
+        group_jur7_id: Joi.number().required().messages({ '*': lang.t('validation.groupId') }),
+        doc_date: Joi.string().trim().pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/).messages({ '*': lang.t('validation.importDocDate') }),
+        doc_num: Joi.number().required().messages({ '*': lang.t('validation.docNum') }),
+        name: Joi.string().trim().required().messages({ '*': lang.t('validation.productName') }),
+        edin: Joi.string().trim().required().messages({ '*': lang.t('validation.edin') }),
+        kol: Joi.number().min(1).required().messages({ '*': lang.t('validation.kol') }),
+        summa: Joi.number().min(1).required().messages({ '*': lang.t('validation.summa') }),
+        inventar_num: Joi.any().messages({ '*': lang.t('validation.inventarNum') }),
+        serial_num: Joi.any().messages({ '*': lang.t('validation.serialNum') }),
+        iznos: Joi.any().messages({ '*': lang.t('validation.iznos') }),
+        eski_iznos_summa: Joi.number().min(0).default(0).messages({ '*': lang.t('validation.eskiIznosSumma') })
+      })
+    ).options({ stripUnknown: true });
+  }
+
   static create() {
     return Joi.object({
       body: Joi.object({
@@ -53,6 +72,7 @@ exports.getSaldoSchema = Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).default(10),
     product_id: Joi.number().integer().min(1),
+    search: Joi.string().trim(),
     to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
     from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
   })
