@@ -4,6 +4,7 @@ const { ProductService } = require('@product/service');
 const { BudjetService } = require('@budjet/service');
 const { MainSchetService } = require('@main_schet/service');
 const { GroupService } = require('@group/service');
+const { SaldoSchema } = require('./schema');
 
 exports.Controller = class {
   static async templateFile(req, res) {
@@ -13,6 +14,34 @@ exports.Controller = class {
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
+  }
+
+  static async getSaldo(req, res) {
+    const region_id = req.user.region_id;
+    const { kimning_buynida, to, product_id, from, search } = req.query;
+
+    let { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999, id: kimning_buynida });
+    let { data: products } = await ProductService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id, search });
+
+    if (product_id) {
+      const product = await ProductService.getById({ region_id, id: product_id })
+      if (!product) {
+        return res.error(req.i18n.t('productNotFound'));
+      }
+      products = products.filter(item => item.id === product_id);
+    }
+
+    if (kimning_buynida) {
+      const responsible = await ResponsibleService.getById({ region_id, id: kimning_buynida });
+      if (!responsible) {
+        return res.error(req.i18n.t('responsibleNotFound'), 404);
+      }
+      responsibles = responsibles.filter(item => item.id === kimning_buynida);
+    }
+
+    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles, from });
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
 
   static async import(req, res) {
@@ -35,15 +64,24 @@ exports.Controller = class {
 
     const data = await SaldoService.readFile({ filePath: req.file.path });
 
-    for (let doc of data) {
-      // validate 
+    const { error, value } = SaldoSchema.importData(req.i18n).validate(data);
+    if (error) {
+      return res.error(error.details[0].message, 400);
+    }
+
+    for (let doc of value) {
+
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
-      const dates = doc.doc_date.split('.');
-      doc.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+      if (doc.doc_date) {
+        const dates = doc.doc_date.split('.');
+        doc.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+      } else {
+        doc.doc_date = new Date();
+      }
 
       doc.iznos = doc.iznos === 'ha' ? true : false;
 
@@ -54,7 +92,7 @@ exports.Controller = class {
       doc.iznos_foiz = group.iznos_foiz;
     }
 
-    await SaldoService.importData({ docs: data, main_schet_id, budjet_id, user_id });
+    await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id });
 
     return res.success(req.i18n.t('importSuccess'), 201);
   }
@@ -99,33 +137,5 @@ exports.Controller = class {
     const result = await SaldoService.importData({ ...req.body, user_id, main_schet_id, budjet_id, childs });
 
     return res.success(req.i18n.t('createSuccess'), 200, null, result);
-  }
-
-  static async getSaldo(req, res) {
-    const region_id = req.user.region_id;
-    const { kimning_buynida, to, product_id, from } = req.query;
-
-    let { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999, id: kimning_buynida });
-    let { data: products } = await ProductService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id });
-
-    if (product_id) {
-      const product = await ProductService.getById({ region_id, id: product_id })
-      if (!product) {
-        return res.error(req.i18n.t('productNotFound'));
-      }
-      products = products.filter(item => item.id === product_id);
-    }
-
-    if (kimning_buynida) {
-      const responsible = await ResponsibleService.getById({ region_id, id: kimning_buynida });
-      if (!responsible) {
-        return res.error(req.i18n.t('responsibleNotFound'), 404);
-      }
-      responsibles = responsibles.filter(item => item.id === kimning_buynida);
-    }
-
-    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles, from });
-
-    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
 }

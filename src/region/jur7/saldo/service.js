@@ -110,7 +110,7 @@ exports.SaldoService = class {
 
                 product.to = await SaldoDB.getKolSumma([product.id, responsible.id], null, data.to);
 
-                product.prixod_data = await SaldoDB.getProductPrixod([product.naimenovanie_tovarov_jur7_id]);
+                product.prixod_data = await SaldoDB.getProductPrixod([product.id]);
             }
 
             responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);

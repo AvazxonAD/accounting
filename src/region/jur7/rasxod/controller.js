@@ -3,7 +3,7 @@ const { ResponsibleService } = require('@responsible/service')
 const { ProductService } = require('@product/service')
 const { MainSchetService } = require('@main_schet/service')
 const { Jur7RsxodService } = require('./service')
-const { Jur7MonitoringService } = require('../monitoring/service');
+const { SaldoService } = require('@saldo/service');
 
 exports.Controller = class {
   static async create(req, res) {
@@ -28,15 +28,13 @@ exports.Controller = class {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
 
-      const { products } = await Jur7MonitoringService.getSaldo({
-        responsible_id: kimdan_id,
-        to: doc_date,
-        product_id: child.naimenovanie_tovarov_jur7_id,
-        offset: 0,
-        limit: 1
+      const data = await SaldoService.getSaldo({
+        responsibles: [{ id: kimdan_id }],
+        products: [{ id: child.naimenovanie_tovarov_jur7_id }],
+        to: doc_date
       });
 
-      if (!products[0] || products[0].kol < child.kol) {
+      if (!data[0].products[0] || data[0].products[0].to.kol < child.kol) {
         return res.error(req.i18n.t('kolError'), 400);
       }
 
@@ -84,7 +82,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await Jur7RsxodService.getById({ region_id, id, main_schet_id, isdeleted: true });
+    const oldData = await Jur7RsxodService.getById({ region_id, id, main_schet_id });
     if (!oldData) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
@@ -99,16 +97,18 @@ exports.Controller = class {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
 
-      const { products } = await Jur7MonitoringService.getSaldo({
-        responsible_id: kimdan_id,
-        to: doc_date,
-        product_id: child.naimenovanie_tovarov_jur7_id,
-        offset: 0,
-        limit: 1
+      const old_kol = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id).kol || 0;
+
+      const data = await SaldoService.getSaldo({
+        responsibles: [{ id: kimdan_id }],
+        products: [{ id: child.naimenovanie_tovarov_jur7_id }],
+        to: doc_date
       });
 
-      if (!products[0] || products[0].kol < child.kol) {
-        return res.error(req.i18n.t('kolError'), 404);
+      const kol = data[0].products[0] ? data[0].products[0].to.kol : 0;
+      
+      if (kol + old_kol < child.kol) {
+        return res.error(req.i18n.t('kolError'), 400);
       }
 
       child.summa = child.sena * child.kol;

@@ -234,7 +234,7 @@ exports.SaldoDB = class {
             WHERE ch.naimenovanie_tovarov_jur7_id = $1 
         `;
         const result = await db.query(query, params);
-        return result[0];
+        return result[0] || null;
     }
 
     // old queries
