@@ -87,8 +87,7 @@ exports.Controller = class {
     if (!oldData) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
-// test
-//assdsad
+
     const responsible = await ResponsibleService.getById({ region_id, id: kimdan_id });
     if (!responsible) {
       return res.error(req.i18n.t('responsibleNotFound', 404));
