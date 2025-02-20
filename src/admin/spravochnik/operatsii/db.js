@@ -120,7 +120,7 @@ exports.OperatsiiDB = class {
 
         if (type_schet) {
             params.push(type_schet)
-            type_schet_filter = `AND type_schet ILIKE '%' || $${params.length} || '%'`;
+            type_schet_filter = `AND type_schet = $${params.length}`;
         }
 
         if (budjet_id) {

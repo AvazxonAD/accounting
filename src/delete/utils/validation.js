@@ -373,7 +373,7 @@ const operatsiiValidation = Joi.object({
   sub_schet: Joi.string().trim().custom((value) => {
     return value.replace(/\s+/g, '');
   }),
-  type_schet: Joi.string().trim().required(),
+  type_schet: Joi.string().trim().required().valid('akt', 'bank_prixod', 'avans_otchet', 'kassa_prixod', 'kassa_rasxod', 'bank_rasxod', 'general', 'show_service'),
   smeta_id: Joi.number().min(1),
   budjet_id: Joi.number().min(1).integer()
 }).options({ stripUnknown: true });
