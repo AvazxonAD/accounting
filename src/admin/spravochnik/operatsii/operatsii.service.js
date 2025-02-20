@@ -91,6 +91,16 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
         FROM spravochnik_operatsii s 
         LEFT JOIN spravochnik_budjet_name b ON b.id = s.budjet_id
         WHERE s.isdeleted = false 
+          (
+            s.type_schet = 'akt' OR 
+            s.type_schet = 'bank_prixod' OR 
+            s.type_schet = 'avans_otchet' OR 
+            s.type_schet = 'kassa_prixod' OR 
+            s.type_schet = 'kassa_rasxod' OR 
+            s.type_schet = 'bank_rasxod' OR 
+            s.type_schet = 'general' OR 
+            s.type_schet = 'show_service'
+          )
           ${schet_filter}
           ${sub_schet_filter}
           ${search_filter} 
