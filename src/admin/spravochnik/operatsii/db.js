@@ -19,12 +19,14 @@ exports.OperatsiiDB = class {
             SELECT id, name, schet, sub_schet, type_schet, smeta_id, budjet_id 
             FROM spravochnik_operatsii 
             WHERE id = $1
-                AND budjet_id IS NOT NULL
+                
                 ${type_filter}
                 ${budjet_filter} 
                 ${!isdeleted ? 'AND isdeleted = false' : ''}
         `;
+
         const result = await db.query(query, params);
+        
         return result[0];
     }
 
@@ -78,7 +80,7 @@ exports.OperatsiiDB = class {
                     type_schet, smeta_id
                 FROM spravochnik_operatsii  
                 WHERE isdeleted = false 
-                    AND budjet_id IS NOT NULL
+                    
                     ${search_filter} 
                     ${type_schet_filter})
             SELECT 
@@ -87,7 +89,7 @@ exports.OperatsiiDB = class {
                     SELECT COUNT(spravochnik_operatsii.id) 
                     FROM spravochnik_operatsii 
                     WHERE isdeleted = false 
-                        AND budjet_id IS NOT NULL
+                        
                         ${search_filter} 
                         ${type_schet_filter}
                 )::INTEGER AS total_count
