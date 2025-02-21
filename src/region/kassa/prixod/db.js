@@ -70,15 +70,15 @@ exports.KassaPrixodDB = class {
                     p.rayon AS spravochnik_podotchet_litso_rayon,
                     d.main_zarplata_id,
                     (
-                        SELECT JSON_AGG(row_to_json(k_p_ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 s_o.schet AS provodki_schet,
                                 s_o.sub_schet AS provodki_sub_schet
-                            FROM kassa_prixod_child AS k_p_ch
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
-                            WHERE  k_p_ch.kassa_prixod_id = d.id 
-                        ) AS k_p_ch
+                            FROM kassa_prixod_child AS ch
+                            JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                            WHERE  ch.kassa_prixod_id = d.id 
+                        ) AS ch
                     ) AS provodki_array
                 FROM kassa_prixod AS d
                 JOIN users AS u ON u.id = d.user_id
@@ -132,33 +132,24 @@ exports.KassaPrixodDB = class {
     static async getById(params, isdeleted) {
         const query = `
             SELECT 
-                d.id, 
-                d.doc_num,
-                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                d.opisanie, 
-                d.summa::FLOAT, 
-                d.id_podotchet_litso,
+                d.*,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                 p.name AS spravochnik_podotchet_litso_name,
                 p.rayon AS spravochnik_podotchet_litso_rayon,
-                d.main_zarplata_id,
                 (
-                    SELECT JSON_AGG(row_to_json(k_p_ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT  
-                            k_p_ch.id,
-                            k_p_ch.spravochnik_operatsii_id,
-                            k_p_ch.summa,
-                            k_p_ch.id_spravochnik_podrazdelenie,
-                            k_p_ch.id_spravochnik_sostav,
-                            k_p_ch.id_spravochnik_type_operatsii
-                        FROM kassa_prixod_child AS k_p_ch 
+                            ch.*
+                        FROM kassa_prixod_child AS ch 
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1 
-                        AND k_p_ch.main_schet_id = $2 
-                        AND k_p_ch.kassa_prixod_id = d.id
-                    ) AS k_p_ch
-                ) AS childs
+                        AND ch.main_schet_id = $2 
+                        AND ch.kassa_prixod_id = d.id
+                    ) AS ch
+                ) AS childs, 
+                row_to_json(p) AS podotchet 
             FROM kassa_prixod AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id

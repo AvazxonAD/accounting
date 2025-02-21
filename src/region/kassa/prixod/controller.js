@@ -28,7 +28,8 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, type: "kassa_prixod", id: child.spravochnik_operatsii_id });
+      console.log(child.spravochnik_operatsii_id)
+      const operatsii = await OperatsiiService.getById({ type: "kassa_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
@@ -59,7 +60,7 @@ exports.Controller = class {
     }
 
     if (!checkSchetsEquality(operatsiis)) {
-      res.error(req.i18n.t('schetDifferentError'), 400)
+      return res.error(req.i18n.t('schetDifferentError'), 400)
     }
 
     const result = await KassaPrixodService.create({ ...req.body, main_schet_id, user_id })
@@ -138,7 +139,7 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      const operatsii = await OperatsiiService.getById({ budjet_id: req.query.budjet_id, type: "kassa_prixod", id: child.spravochnik_operatsii_id });
+      const operatsii = await OperatsiiService.getById({ type: "kassa_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)
       }
