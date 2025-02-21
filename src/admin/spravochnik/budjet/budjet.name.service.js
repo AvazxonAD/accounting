@@ -60,15 +60,19 @@ const updateBudjetService = async (name, id) => {
 
 const deleteBudjetService = async (id) => {
   try {
-    const tables = await pool.query(`
-      SELECT 
-          conrelid::regclass AS name
-      FROM 
-          pg_constraint
-      WHERE 
-          confrelid = 'spravochnik_budjet_name'::regclass`)
-    for (let table of tables.rows) {
-      const test = await pool.query(`SELECT * FROM ${table.name} WHERE spravochnik_budjet_name_id = $1 AND isdeleted = false`, [id])
+    const queries = await pool.query(`
+      WITH tables_with_columns AS (
+          SELECT table_name, column_name
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND column_name IN ('budjet_id', 'spravochnik_budjet_name_id')
+      )
+      SELECT 'SELECT ' || column_name || ' FROM ' || table_name || ' WHERE ' || column_name || ' = $1' || ' AND isdeleted = false' AS query
+      FROM tables_with_columns
+    `);
+
+    for (let query of queries.rows) {
+      const test = await pool.query(query.query, [id]);
       if (test.rows.length > 0) {
         throw new ErrorResponse('Cannot delete, there are linked documents', 400)
       }

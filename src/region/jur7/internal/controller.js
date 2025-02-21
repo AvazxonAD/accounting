@@ -3,7 +3,6 @@ const { ResponsibleService } = require('@responsible/service');
 const { ProductService } = require('@product/service');
 const { MainSchetService } = require('@main_schet/service');
 const { Jur7RsxodService } = require('./service');
-const { Jur7MonitoringService } = require('../monitoring/service');
 const { SaldoService } = require('@saldo/service');
 
 exports.Controller = class {
