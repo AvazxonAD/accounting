@@ -189,12 +189,12 @@ exports.PrixodJur7Service = class {
         return { fileName, filePath }
     }
 
-    static async create(data) {
+    static async createProduct(data) {
         const result = [];
         for (let doc of data.childs) {
             if (doc.iznos) {
                 for (let i = 1; i <= doc.kol; i++) {
-                    const product = await PrixodDB.create([
+                    const product = await PrixodDB.createProduct([
                         data.user_id,
                         data.budjet_id,
                         doc.name,
@@ -209,7 +209,7 @@ exports.PrixodJur7Service = class {
                     result.push({ ...product, ...doc, kol: 1 });
                 }
             } else {
-                const product = await PrixodDB.create([
+                const product = await PrixodDB.createProduct([
                     data.user_id,
                     data.budjet_id,
                     doc.name,
@@ -230,7 +230,7 @@ exports.PrixodJur7Service = class {
 
     static async create(data) {
         const result = await db.transaction(async (client) => {
-            const childs = await this.create({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
+            const childs = await this.createProduct({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             const summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
@@ -329,7 +329,6 @@ exports.PrixodJur7Service = class {
 
     static async update(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
-
         const result = await db.transaction(async (client) => {
             await PrixodDB.update([
                 data.doc_num,
@@ -354,7 +353,7 @@ exports.PrixodJur7Service = class {
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
-            const childs = await this.create({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
+            const childs = await this.createProduct({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
             await this.createChild({ ...data, docId: data.id, childs, client });
 

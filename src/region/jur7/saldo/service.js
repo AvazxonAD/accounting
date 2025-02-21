@@ -105,10 +105,13 @@ exports.SaldoService = class {
             for (let product of responsible.products) {
                 
                 product.from = await SaldoDB.getKolSumma([product.id, responsible.id], data.from);
+                product.from.sena = Math.round((product.from.summa && product.from.kol) ? product.from.summa / product.from.kol : 0 * 100) / 100;
 
                 product.internal = await SaldoDB.getKolSumma([product.id, responsible.id], data.from, data.to);
+                product.internal.sena = Math.round(product.internal.summa / product.internal.kol * 100) / 100;
 
                 product.to = await SaldoDB.getKolSumma([product.id, responsible.id], null, data.to);
+                product.to.sena = Math.round(product.to.summa / product.to.kol * 100) / 100;
 
                 product.prixod_data = await SaldoDB.getProductPrixod([product.id]);
             }

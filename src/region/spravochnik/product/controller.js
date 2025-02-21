@@ -7,7 +7,6 @@ const { ResponsibleDB } = require('../responsible/db')
 exports.Controller = class {
     static async create(req, res) {
         const user_id = req.user.id
-        const region_id = req.user.region_id
         const {
             spravochnik_budjet_name_id,
             name,

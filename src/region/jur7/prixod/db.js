@@ -1,7 +1,7 @@
 const { db } = require('@db/index')
 
 exports.PrixodDB = class {
-    static async create(params, client) {
+    static async createProduct(params, client) {
         const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
@@ -252,7 +252,9 @@ exports.PrixodDB = class {
               updated_at = $15
             WHERE id = $16
         `;
+
         const result = await db.query(query, params);
+        
         return result[0];
     }
 
