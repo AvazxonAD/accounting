@@ -23,7 +23,7 @@ exports.OrganizationSchema = class {
                 bank_klient: Joi.string().trim().required(),
                 mfo: Joi.string().trim().required(),
                 inn: Joi.string().trim().required(),
-                okonx: Joi.string().trim().required(),
+                okonx: Joi.string().trim(),
                 parent_id: Joi.number().min(1).allow(null),
                 gaznas: Joi.array().items(
                     Joi.object({
@@ -46,7 +46,7 @@ exports.OrganizationSchema = class {
                 bank_klient: Joi.string().trim().required(),
                 mfo: Joi.string().trim().required(),
                 inn: Joi.string().trim().required(),
-                okonx: Joi.string().trim().required(),
+                okonx: Joi.string().trim(),
                 parent_id: Joi.number().min(1).allow(null)
             }),
             params: Joi.object({
