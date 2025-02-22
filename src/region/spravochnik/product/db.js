@@ -43,7 +43,8 @@ exports.ProductDB = class {
                     g.id AS group_jur7_id,
                     g.name AS group_jur7_name,
                     g.iznos_foiz,
-                    b.name AS spravochnik_budjet_name
+                    b.name AS spravochnik_budjet_name,
+                    (g) AS group
                 FROM naimenovanie_tovarov_jur7 AS pr
                 JOIN users AS u ON u.id = pr.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -68,7 +69,7 @@ exports.ProductDB = class {
         `;
 
         const result = await db.query(query, params)
-        
+
         return result[0];
     }
 
