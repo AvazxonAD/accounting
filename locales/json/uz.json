@@ -71,6 +71,13 @@
         "provodkaSubschet": "Subhisob uchun provodka matn formatida bo‘lishi kerak!",
         "romanNumeral": "Rim raqami matn formatida bo‘lishi kerak!",
         "podGroup": "Podgruppa matn formatida bo‘lishi kerak!",
+        "organ_name": "Hamkor tashkilot nomi matn formatida bo‘lishi kerak!",
+        "bank_name": "Bank nomi matn formatida bo‘lishi kerak!",
+        "mfo": "MFO matn formatida bo‘lishi kerak!",
+        "inn": "INN matn formatida bo‘lishi kerak!",
+        "okonx": "Okonx matn formatida bo‘lishi kerak!",
+        "gaznas": "Gazna raqamlari matn formatida bo‘lishi kerak! Agar ular bir nechta bolsa ular orasi unday ajratilishi kerak  => / ",
+        "account_numbers": "Xisob raqamlari matn formatida bo‘lishi kerak! Agar ular bir nechta bolsa ular orasi unday ajratilishi kerak  => / ",
         "groupMinError": "File bosh siz import uchun malumot kiritmadinggiz"
     }
 }

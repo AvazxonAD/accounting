@@ -13,7 +13,7 @@ exports.Controller = class {
     static async create(req, res) {
         const user_id = req.user.id;
         const region_id = req.user.region_id;
-        const { name, inn, parent_id } = req.body;
+        const { parent_id } = req.body;
 
         if (parent_id) {
             const organization = await OrganizationService.getById({ region_id, id: parent_id })
@@ -101,8 +101,12 @@ exports.Controller = class {
 
         const data = await OrganizationService.readFile({ filePath });
 
-        OrganizationSchema
-        await OrganizationService.import({ data, user_id });
+        const { error, value } = OrganizationSchema.importData(req.i18n).validate(data);
+        if (error) {
+            return res.error(error.details[0].message, 400);
+        }
+
+        await OrganizationService.import({ data: value, user_id });
 
         return res.success(req.i18n.t('importSuccess'), 201);
     }

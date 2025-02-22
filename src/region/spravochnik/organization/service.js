@@ -102,8 +102,7 @@ exports.OrganizationService = class {
                         await BankService.create({ bank_name: item.bank_klient, mfo: item.mfo });
                     }
                 }
-
-                await this.create({ ...item, user_id: data.user_id, account_numbers: [], gaznas: [] }, client);
+                await this.create({ ...item, user_id: data.user_id }, client);
             }
         })
     }
