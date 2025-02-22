@@ -144,11 +144,11 @@ exports.KassaPrixodDB = class {
                         FROM kassa_prixod_child AS ch 
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
-                        WHERE r.id = $1 
-                        AND ch.main_schet_id = $2 
+                        WHERE r.id = $1
+                        AND ch.main_schet_id = $2
                         AND ch.kassa_prixod_id = d.id
                     ) AS ch
-                ) AS childs, 
+                ) AS childs,
                 row_to_json(p) AS podotchet 
             FROM kassa_prixod AS d
             JOIN users AS u ON u.id = d.user_id
