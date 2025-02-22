@@ -6,7 +6,7 @@ exports.RoleDB = class {
 
         if (search) {
             params.push(search);
-            search_filter = `AND name LIKE '%' || $${params.length} || '%'`;
+            search_filter = `AND name ILIKE '%' || $${params.length} || '%'`;
         }
 
         const query = `

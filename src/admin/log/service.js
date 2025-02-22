@@ -9,7 +9,7 @@ exports.LogService = class {
         const result = []
         try {
             for(let type of type_logs) {
-                const filePath = path.join(__dirname, `../../logs/${type}.log`);
+                const filePath = path.join(__dirname, `../../../logs/${type}.log`);
                 await access(filePath, constants.F_OK);
                 const data = await readFile(filePath, 'utf8')
                 const result_data = parseLogs(data.split(/\r?\n/), type);
