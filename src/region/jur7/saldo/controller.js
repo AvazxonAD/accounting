@@ -70,7 +70,6 @@ exports.Controller = class {
     }
 
     for (let doc of value) {
-
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
