@@ -12,7 +12,17 @@ exports.OrganizationSchema = class {
 
     static importData(lang) {
         return Joi.array().items({
-
+            name: Joi.string().trim().required().messages({ '*': lang.t('validation.organ_name') }),
+            bank_klient: Joi.string().trim().required().messages({ '*': lang.t('validation.bank_name') }),
+            mfo: Joi.string().trim().required().messages({ '*': lang.t('validation.mfo') }),
+            inn: Joi.string().trim().required().messages({ '*': lang.t('validation.inn') }),
+            okonx: Joi.string().trim().messages({ '*': lang.t('validation.okonx') }),
+            gaznas: Joi.string()
+                .custom(value => value.split(/\s*\/\s*/).map(i => ({ raschet_schet_gazna: i })))
+                .messages({ '*': lang.t('validation.gaznas') }),
+            account_numbers: Joi.string()
+                .custom(value => value.split(/\s*\/\s*/).map(i => ({ raschet_schet: i })))
+                .messages({ '*': lang.t('validation.gaznas') })
         });
     }
 
