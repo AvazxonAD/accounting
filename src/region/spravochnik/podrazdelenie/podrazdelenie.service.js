@@ -42,7 +42,6 @@ const getAllPodrazdelenieService = async (region_id, offset, limit, search) => {
       search_filter = `AND s_p.name ILIKE '%' || $${params.length + 1} || '%'`
       params.push(search)
     }
-    console.log('/////////')
     const result = await pool.query(
       ` WITH data AS (
         SELECT s_p.id, 

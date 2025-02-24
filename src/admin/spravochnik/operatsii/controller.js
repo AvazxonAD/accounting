@@ -10,13 +10,14 @@ const {
 const pool = require("@config/db");
 const ErrorResponse = require("@utils/errorResponse");
 const xlsx = require("xlsx");
-const { operatsiiValidation, operatsiiQueryValidation } = require("@utils/validation");;
+const { operatsiiValidation, operatsiiQueryValidation, } = require("@utils/validation");;
 const { SmetaDB } = require("@smeta/db");
 const { errorCatch } = require('@utils/errorCatch')
 const { resFunc } = require("@utils/resFunc");
 const { validationResponse } = require("@utils/response-for-validation");
 const { OperatsiiService } = require('./service');
 const { BudjetService } = require('@budjet/service');
+const { HelperFunctions } = require('../../../helper/functions');
 
 const Controller = class {
   static async uniqueSchets(req, res) {
@@ -31,6 +32,15 @@ const Controller = class {
     const result = await OperatsiiService.uniqueSchets({ type_schet, budjet_id });
 
     return res.success(req.i18n.t('getSuccess'), 200, null, result);
+  }
+
+  static async templateFile(req, res) {
+    const { fileName, fileRes } = await OperatsiiService.templateFile();
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    return res.send(fileRes);
   }
 }
 
@@ -57,7 +67,7 @@ const createOperatsii = async (req, res) => {
       };
     }
 
-    if(data.budjet_id){
+    if (data.budjet_id) {
       const budjet = await BudjetService.getById({ id: data.budjet_id })
       if (!budjet) {
         return res.error(req.i18n.t('budjetNotFound'), 404);
@@ -110,7 +120,7 @@ const updateOperatsii = async (req, res) => {
       };
     }
 
-    if(data.budjet_id){
+    if (data.budjet_id) {
       const budjet = await BudjetService.getById({ id: data.budjet_id })
       if (!budjet) {
         return res.error(req.i18n.t('budjetNotFound'), 404);

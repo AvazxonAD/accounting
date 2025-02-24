@@ -19,6 +19,7 @@ router
   .get("/:id", getByIdOperatsii)
   .post("/", createOperatsii)
   .get("/", getOperatsii)
+  .get('/template', )
   .put("/:id", updateOperatsii)
   .delete("/:id", deleteOperatsii);
 
