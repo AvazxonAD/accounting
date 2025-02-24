@@ -16,6 +16,10 @@ exports.Controller = class {
     return res.send(fileRes);
   }
 
+  static async deleteSaldo(req, res) {
+     
+  }
+
   static async getSaldo(req, res) {
     const region_id = req.user.region_id;
     const { kimning_buynida, to, product_id, from, search, ids } = req.query;

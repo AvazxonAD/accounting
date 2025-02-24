@@ -1,6 +1,19 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const path = require('path');
+const fs = require('fs').promises;
 
 exports.HelperFunctions = class {
+    static async getTemplateFile(fileName) {
+        const folderPath = path.join(__dirname, `@public/template`);
+        
+        console.log(folderPath)
+        const filePath = path.join(folderPath, fileName);
+
+        const fileRes = await fs.readFile(filePath);
+
+        return { fileName, fileRes };
+    }
+
     static sum(...args) {
         let sum = 0;
         args.map((arg) => (sum += Number(arg)));

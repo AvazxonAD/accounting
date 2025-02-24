@@ -73,10 +73,11 @@ exports.PrixodDB = class {
                 document_prixod_jur7_id,
                 main_schet_id,
                 eski_iznos_summa,
+                iznos,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         `;
         const result = await client.query(query, params)
         return result.rows[0];
@@ -198,6 +199,7 @@ exports.PrixodDB = class {
                             n.group_jur7_id,
                             n.inventar_num,
                             n.serial_num,
+                            ch.iznos,
                             COALESCE(SUM(ch.eski_iznos_summa), 0) AS eski_iznos_summa,
                             COALESCE(SUM(ch.kol), 0) AS kol,
                             COALESCE(SUM(ch.summa), 0) AS summa,
@@ -217,7 +219,8 @@ exports.PrixodDB = class {
                             n.edin,
                             n.group_jur7_id,
                             n.inventar_num,
-                            n.serial_num
+                            n.serial_num,
+                            ch.iznos
                     ) AS child
                 ) AS childs,
                 d.organization_by_raschet_schet_id::INTEGER,

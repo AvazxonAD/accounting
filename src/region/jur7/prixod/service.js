@@ -289,6 +289,7 @@ exports.PrixodJur7Service = class {
                 data.docId,
                 data.main_schet_id,
                 child.eski_iznos_summa,
+                child.iznos,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);
