@@ -6,6 +6,8 @@ const { Router } = require('express')
 const router = Router()
 
 router.get('/', validator(Controller.get, IznosSchema.get()))
+    .post('/', validator(Controller.create, IznosSchema.create()))
+    .get('/date', validator(Controller.getIznosDate))
     .put('/:id', validator(Controller.updateIznos, IznosSchema.update()))
     .get('/:id', validator(Controller.getByIdIznos, IznosSchema.getById()));
 

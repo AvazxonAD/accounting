@@ -38,7 +38,8 @@ exports.Controller = class {
             serial_num,
             tashkentTime(),
             tashkentTime()
-        ])
+        ]);
+        
         return res.status(201).json({
             message: "Create naimenovanie successfully",
             data: result

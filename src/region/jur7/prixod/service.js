@@ -208,6 +208,7 @@ exports.PrixodJur7Service = class {
                         doc.group_jur7_id,
                         doc.inventar_num,
                         doc.serial_num,
+                        doc.iznos,
                         tashkentTime(),
                         tashkentTime()
                     ], data.client)
@@ -223,6 +224,7 @@ exports.PrixodJur7Service = class {
                     doc.group_jur7_id,
                     doc.inventar_num,
                     doc.serial_num,
+                    doc.iznos,
                     tashkentTime(),
                     tashkentTime()
                 ], data.client);

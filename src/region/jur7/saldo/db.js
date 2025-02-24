@@ -234,7 +234,8 @@ exports.SaldoDB = class {
 
     static async getProductPrixod(params) {
         const query = `--sql
-            SELECT 
+            SELECT
+                d.id, 
                 TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
                 d.doc_num
             FROM document_prixod_jur7_child ch

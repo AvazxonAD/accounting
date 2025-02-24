@@ -4,6 +4,7 @@
     "kolError": "Tovar soni noto'g'ri kiritildi!",
     "productIdError": "Tovar ID lari noto'g'ri!",
     "IznosSummaError": "Iznoz summasi noto'g'ri kiritildi!",
+    "IznosAlreadyExist": "Ushbu oy uchun iznos allaqachon kiritib bolingan!",
     "budjetNotFound": "Budjet topilmadi!",
     "mainSchetNotFound": "Hisob raqami topilmadi!",
     "grafikNotFound": "Grafik topilmadi!",

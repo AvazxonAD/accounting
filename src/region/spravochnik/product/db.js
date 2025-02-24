@@ -11,10 +11,11 @@ exports.ProductDB = class {
                 group_jur7_id, 
                 inventar_num,
                 serial_num,
+                iznos,
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *
         `;
         const result = await client.query(query, params);
@@ -22,8 +23,14 @@ exports.ProductDB = class {
         return result.rows[0];
     }
 
-    static async getNaimenovanie(params, search = null) {
+    static async getNaimenovanie(params, search = null, iznos) {
         let search_filter = ``
+        let iznos_filter = ``;
+
+        if (iznos) {
+            params.push(iznos);
+            iznos_filter = `AND iznos = $${params.length}`;
+        }
 
         if (search) {
             search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
@@ -44,6 +51,7 @@ exports.ProductDB = class {
                     g.name AS group_jur7_name,
                     g.iznos_foiz,
                     b.name AS spravochnik_budjet_name,
+                    pr.iznos,
                     (g) AS group
                 FROM naimenovanie_tovarov_jur7 AS pr
                 JOIN users AS u ON u.id = pr.user_id
@@ -53,6 +61,7 @@ exports.ProductDB = class {
                 WHERE pr.isdeleted = false 
                     AND r.id = $1 
                     ${search_filter}
+                    ${iznos_filter}
                 OFFSET $2 LIMIT $3
             )
             SELECT 
@@ -63,7 +72,10 @@ exports.ProductDB = class {
                     FROM naimenovanie_tovarov_jur7 AS pr
                     JOIN users AS u ON u.id = pr.user_id
                     JOIN regions AS r ON r.id = u.region_id
-                    WHERE pr.isdeleted = false AND r.id = $1 ${search_filter}
+                    WHERE pr.isdeleted = false 
+                        AND r.id = $1 
+                        ${search_filter}
+                        ${iznos_filter}
                 ) AS total
             FROM data
         `;

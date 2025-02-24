@@ -2,6 +2,51 @@ const { db } = require('@db/index');
 const { HelperFunctions } = require('@helper/functions');
 
 exports.IznosDB = class {
+    static async getByProductId(params, date) {
+        let date_filter = ``;
+
+        if (date?.year && date?.month) {
+            params.push(date.year, date.month)
+            date_filter = ` AND year = $${params.length - 1} AND month = $${params.length}`;
+        }
+
+        const query = `
+            SELECT
+                eski_iznos_summa::FLOAT, 
+                iznos_summa::FLOAT,
+                (eski_iznos_summa + iznos_summa)::FLOAT AS summa,
+                year,
+                month
+            FROM iznos_tovar_jur7 
+            WHERE naimenovanie_tovarov_jur7_id = $1
+                AND isdeleted = false
+                ${date_filter}
+            ORDER BY year DESC, month DESC
+            LIMIT 1
+        `;
+
+        const data = await db.query(query, params);
+
+        return data[0] || null;
+    }
+
+    static async getIznosDate(params) {
+        const query = `
+            SELECT 
+                i.year, i.month 
+            FROM iznos_tovar_jur7 i  
+            JOIN users u ON u.id = i.user_id
+            JOIN regions r ON r.id = u.region_id
+            WHERE r.id = $1
+            ORDER BY i.year DESC, i.month DESC
+            LIMIT 1
+        `;
+
+        const result = await db.query(query, params);
+
+        return result[0]
+    }
+
     static async createIznos(params, client) {
         const query = `--sql
             INSERT INTO iznos_tovar_jur7(
