@@ -36,6 +36,7 @@
     "organizationExists": "Ushbu Hamkor tashkilot avval kiritilgan!",
     "gaznaExists": "Ushbu gazna raqami avval kiritilgan!",
     "pageNotFound": "Sahifa topilmadi!",
+    "productDelete": "Ushbu document qoldiqda mavjud emas!",
     "importSuccess": "Malumot muvaffaqiyatli import qilindi",
     "conflictAccountNumber": "Hisob raqam yoki gazna raqamni tanlashinggiz kerak !",
     "validation": {

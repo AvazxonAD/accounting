@@ -1,6 +1,35 @@
 const { db } = require('@db/index')
 
 exports.PrixodDB = class {
+    static async getByProductId(params) {
+        const query = `
+            SELECT 
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d.opisanie, 
+                d.summa::FLOAT, 
+                d.kimdan_id,
+                d.kimdan_name, 
+                d.kimga_id,
+                d.kimga_name, 
+                d.doverennost,
+                d.j_o_num,
+                d.id_shartnomalar_organization,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
+                d.shartnoma_grafik_id::INTEGER
+            FROM document_prixod_jur7 AS d
+            JOIN document_prixod_jur7_child AS ch ON ch.document_prixod_jur7_id = d.id
+            WHERE d.isdeleted = false 
+                AND ch.naimenovanie_tovarov_jur7_id = $1
+        `;
+
+        const data = await db.query(query, params);
+
+        return data[0];
+    }
+
     static async createProduct(params, client) {
         const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
@@ -50,7 +79,7 @@ exports.PrixodDB = class {
         `;
 
         const result = await client.query(query, params);
-        
+
         return result.rows[0];
     }
 
@@ -93,6 +122,7 @@ exports.PrixodDB = class {
                 rj.fio  ILIKE '%' || $${params.length} || '%'
             )`;
         }
+
         const query = `--sql
         WITH data AS (
             SELECT 
@@ -257,7 +287,7 @@ exports.PrixodDB = class {
         `;
 
         const result = await db.query(query, params);
-        
+
         return result[0];
     }
 
