@@ -5,8 +5,29 @@ const { BudjetService } = require('@budjet/service');
 const { MainSchetService } = require('@main_schet/service');
 const { GroupService } = require('@group/service');
 const { SaldoSchema } = require('./schema');
+const { PrixodJur7Service } = require('../prixod/service');
 
 exports.Controller = class {
+  static async delete(req, res) {
+    const region_id = req.user.region_id;
+    const { product_id } = req.params;
+
+    const check = await ProductService.getById({ region_id, id: product_id });
+    if (!check) {
+      return res.error(req.i18n.t('productNotFound'), 404);
+    }
+
+    const data = await SaldoService.delete({ product_id });
+
+    if (!data) {
+      const prixod = await PrixodJur7Service.getByProductId({ product_id });
+
+      return res.error(req.i18n.t('productDelete'), 404, prixod);
+    }
+
+    return res.success(req.i18n.t('deleteSuccess'), 200);
+  }
+
   static async templateFile(req, res) {
     const { fileName, fileRes } = await SaldoService.templateFile();
 
@@ -17,7 +38,7 @@ exports.Controller = class {
   }
 
   static async deleteSaldo(req, res) {
-     
+
   }
 
   static async getSaldo(req, res) {

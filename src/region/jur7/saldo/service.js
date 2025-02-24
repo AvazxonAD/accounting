@@ -10,6 +10,12 @@ const xlsx = require('xlsx');
 const { ProductDB } = require('@product/db');
 
 exports.SaldoService = class {
+    static async delete(data) {
+        const result = await SaldoDB.delete([data.product_id]);
+
+        return result;
+    }
+
     static async getInfo(data) {
         const date = getMonthStartEnd(data.year, data.month);
 

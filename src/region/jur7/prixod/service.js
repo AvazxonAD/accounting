@@ -8,6 +8,12 @@ const path = require('path');
 const xlsx = require('xlsx');
 
 exports.PrixodJur7Service = class {
+    static async getByProductId(data) {
+        const result = await PrixodDB.getByProductId([data.product_id]);
+
+        return result;
+    }
+
     static async prixodReport(data) {
         const result = await PrixodDB.prixodReport([data.region_id, data.from, data.to, data.main_schet_id]);
         await Promise.all(result.map(async (item) => {

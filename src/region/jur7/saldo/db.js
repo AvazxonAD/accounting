@@ -2,6 +2,14 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async delete(params) {
+        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE naimenovanie_tovarov_jur7_id = $1 RETURNING id`;
+        
+        const data = await db.query(query, params); 
+
+        return data[0];
+    }
+
     static async getKolSumma(params, start, end) {
         let start_filter = ``;
         let end_filter = ``;
