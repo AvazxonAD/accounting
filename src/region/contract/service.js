@@ -68,7 +68,7 @@ exports.ContractService = class {
             data.budjet_id,
             data.offset,
             data.limit
-        ], data.organ_id, data.pudratchi, data.search);
+        ], data.organ_id, data.pudratchi_bool, data.search);
 
         let page_summa = 0;
         result.data.forEach(item => {
