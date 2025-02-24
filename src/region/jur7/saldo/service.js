@@ -103,7 +103,7 @@ exports.SaldoService = class {
             responsible.products = JSON.parse(JSON.stringify(data.products));
 
             for (let product of responsible.products) {
-                
+
                 product.from = await SaldoDB.getKolSumma([product.id, responsible.id], data.from);
                 product.from.sena = Math.round((product.from.summa && product.from.kol) ? product.from.summa / product.from.kol : 0 * 100) / 100;
 
@@ -118,6 +118,8 @@ exports.SaldoService = class {
 
             responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
         }
+
+        data.responsibles = data.responsibles.filter(item => item.products.length !== 0);
 
         return data.responsibles;
     }
