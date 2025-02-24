@@ -18,7 +18,7 @@ exports.Controller = class {
 
   static async getSaldo(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, product_id, from, search } = req.query;
+    const { kimning_buynida, to, product_id, from, search, ids } = req.query;
 
     let { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999, id: kimning_buynida });
     let { data: products } = await ProductService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id, search });
@@ -26,7 +26,7 @@ exports.Controller = class {
     if (product_id) {
       const product = await ProductService.getById({ region_id, id: product_id })
       if (!product) {
-        return res.error(req.i18n.t('productNotFound'));
+        return res.error(req.i18n.t('productNotFound'), 404);
       }
       products = products.filter(item => item.id === product_id);
     }
@@ -40,6 +40,15 @@ exports.Controller = class {
     }
 
     const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles, from });
+
+    if (ids) {
+      for (let i of ids) {
+        for (let responsible of data) {
+          responsible.products = responsible.products.filter(item => item.id !== i);
+        }
+      }
+
+    }
 
     return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
