@@ -8,7 +8,7 @@ exports.ProductService = class {
     }
 
     static async getNaimenovanie(data) {
-        const result = await ProductDB.getNaimenovanie([data.region_id, data.offset, data.limit], data.search);
+        const result = await ProductDB.getNaimenovanie([data.region_id, data.offset, data.limit], data.search, data.iznos);
         return result;
     }
 
@@ -25,9 +25,11 @@ exports.ProductService = class {
                         doc.group_jur7_id,
                         doc.inventar_num,
                         doc.serial_num,
+                        doc.iznos,
                         tashkentTime(),
                         tashkentTime()
-                    ])
+                    ]);
+                    
                     result.push({ ...product, ...doc, kol: 1 });
                 }
             } else {
@@ -39,6 +41,7 @@ exports.ProductService = class {
                     doc.group_jur7_id,
                     doc.inventar_num,
                     doc.serial_num,
+                    doc.iznos,
                     tashkentTime(),
                     tashkentTime()
                 ])

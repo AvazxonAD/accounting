@@ -40,11 +40,12 @@ exports.PrixodDB = class {
                 group_jur7_id, 
                 inventar_num,
                 serial_num,
+                iznos,
                 created_at, 
                 updated_at
             ) 
 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             
             RETURNING *
         `;

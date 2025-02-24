@@ -3,7 +3,6 @@ const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
 const { getMonthStartEnd } = require('@helper/functions');
 const { IznosDB } = require('../iznos/db');
-const { ProductService } = require('@product/service');
 const path = require('path');
 const fs = require('fs');
 const xlsx = require('xlsx');
@@ -105,6 +104,8 @@ exports.SaldoService = class {
     }
 
     static async getSaldo(data) {
+        const products = [];
+
         for (let responsible of data.responsibles) {
             responsible.products = JSON.parse(JSON.stringify(data.products));
 
@@ -120,14 +121,25 @@ exports.SaldoService = class {
                 product.to.sena = Math.round(product.to.summa / product.to.kol * 100) / 100;
 
                 product.prixod_data = await SaldoDB.getProductPrixod([product.id]);
+
+                product.iznos_data = await IznosDB.getByProductId([product.id]);
+                if (product.iznos_data) {
+                    product.iznos_data.kol = product.to.kol;
+                    product.iznos_data.sena = product.to.sena;
+                    product.iznos_data.new_summa = ((product.group.iznos_foiz / 100) * product.to.summa) + product.iznos_data.eski_iznos_summa + product.iznos_data.summa;
+                    product.iznos_data.responsible_id = responsible.id;
+                }
+
+
             }
 
             responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
+            products.push(...responsible.products);
         }
 
         data.responsibles = data.responsibles.filter(item => item.products.length !== 0);
 
-        return data.responsibles;
+        return { responsibles: data.responsibles, products };
     }
 
     static async deleteSaldo(data) {
@@ -164,6 +176,7 @@ exports.SaldoService = class {
                             doc.group_jur7_id,
                             doc.inventar_num,
                             doc.serial_num,
+                            doc.iznos,
                             tashkentTime(),
                             tashkentTime()
                         ], client);
@@ -210,6 +223,7 @@ exports.SaldoService = class {
                         doc.group_jur7_id,
                         doc.inventar_num,
                         doc.serial_num,
+                        doc.iznos,
                         tashkentTime(),
                         tashkentTime()
                     ], client);

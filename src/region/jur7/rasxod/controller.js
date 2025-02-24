@@ -34,7 +34,7 @@ exports.Controller = class {
         to: doc_date
       });
 
-      if (!data[0].products[0] || data[0].products[0].to.kol < child.kol) {
+      if (!data.responsibles[0].products[0] || data.responsibles[0].products[0].to.kol < child.kol) {
         return res.error(req.i18n.t('kolError'), 400);
       }
 
@@ -105,8 +105,8 @@ exports.Controller = class {
         to: doc_date
       });
 
-      const kol = data[0].products[0] ? data[0].products[0].to.kol : 0;
-      
+      const kol = data.responsibles[0].products[0] ? data.responsibles[0].products[0].to.kol : 0;
+
       if (kol + old_kol < child.kol) {
         return res.error(req.i18n.t('kolError'), 400);
       }
