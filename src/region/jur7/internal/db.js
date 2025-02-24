@@ -56,7 +56,7 @@ exports.RasxodDB = class {
             params.push(search);
             search_filter = `AND (
                 d.doc_num = $${params.length} OR 
-                so.inn ILIKE '%' || $${params.length} || '%' OR
+                rj2.fio ILIKE '%' || $${params.length} || '%' OR
                 rj.fio  ILIKE '%' || $${params.length} || '%'
             )`;
         }
@@ -68,9 +68,10 @@ exports.RasxodDB = class {
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
                     d.opisanie, 
                     d.summa, 
-                    rj.fio AS kimdan_name
+                    rj.fio AS kimdan_name,
+                    row_to_json(rj2) AS kimga
                 FROM document_vnutr_peremesh_jur7 AS d
-                LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
+                JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
@@ -85,11 +86,12 @@ exports.RasxodDB = class {
             SELECT 
                 COALESCE(COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ), '[]'::JSON) AS data,
                 (
-                    SELECT COALESCE(SUM(d.summa), 0)
+                    SELECT 
+                        COALESCE(SUM(d.summa), 0)
                     FROM document_vnutr_peremesh_jur7 AS d
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id  
-                    LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
+                    JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
                     JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
                     WHERE r.id = $1 
                         AND d.isdeleted = false 
@@ -98,11 +100,12 @@ exports.RasxodDB = class {
                         AND d.main_schet_id = $4
                 )::FLOAT AS summa,
                 (
-                    SELECT COALESCE(COUNT(d.id), 0)
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0)
                     FROM document_vnutr_peremesh_jur7 AS d
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id  
-                    LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
+                    JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
                     JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
                     WHERE r.id = $1 
                         AND d.isdeleted = false 
@@ -131,29 +134,33 @@ exports.RasxodDB = class {
                 d.doverennost,
                 d.j_o_num,
                 (
-                SELECT JSON_AGG(row_to_json(d_j_ch))
-                FROM (
-                    SELECT  
-                        d_j_ch.id,
-                        d_j_ch.naimenovanie_tovarov_jur7_id,
-                        d_j_ch.kol,
-                        d_j_ch.sena,
-                        d_j_ch.summa,
-                        d_j_ch.debet_schet,
-                        d_j_ch.debet_sub_schet,
-                        d_j_ch.kredit_schet,
-                        d_j_ch.kredit_sub_schet,
-                        TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
-                        d_j_ch.nds_foiz,
-                        d_j_ch.nds_summa,
-                        d_j_ch.summa_s_nds
-                    FROM document_vnutr_peremesh_jur7_child AS d_j_ch
-                    WHERE d_j_ch.document_vnutr_peremesh_jur7_id = d.id
-                ) AS d_j_ch
-                ) AS childs
+                    SELECT JSON_AGG(row_to_json(d_j_ch))
+                    FROM (
+                        SELECT  
+                            d_j_ch.id,
+                            d_j_ch.naimenovanie_tovarov_jur7_id,
+                            d_j_ch.kol,
+                            d_j_ch.sena,
+                            d_j_ch.summa,
+                            d_j_ch.debet_schet,
+                            d_j_ch.debet_sub_schet,
+                            d_j_ch.kredit_schet,
+                            d_j_ch.kredit_sub_schet,
+                            TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
+                            d_j_ch.nds_foiz,
+                            d_j_ch.nds_summa,
+                            d_j_ch.summa_s_nds
+                        FROM document_vnutr_peremesh_jur7_child AS d_j_ch
+                        WHERE d_j_ch.document_vnutr_peremesh_jur7_id = d.id
+                    ) AS d_j_ch
+                ) AS childs,
+                row_to_json(rj) AS kimdan,
+                row_to_json(rj2) AS kimga
             FROM document_vnutr_peremesh_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
+            LEFT JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
+            JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
             WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
         `;
         const result = await db.query(query, params);
