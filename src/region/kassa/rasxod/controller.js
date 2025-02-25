@@ -59,7 +59,7 @@ exports.Controller = class {
     }
 
     if (!checkSchetsEquality(operatsiis)) {
-      res.error(req.i18n.t('schetDifferentError'), 400)
+      return res.error(req.i18n.t('schetDifferentError'), 400)
     }
 
     const result = await KassaRasxodService.create({ ...req.body, main_schet_id, user_id })

@@ -2,7 +2,7 @@ const { SaldoDB } = require('./db');
 const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
 const { getMonthStartEnd } = require('@helper/functions');
-const { IznosDB } = require('../iznos/db');
+const { IznosDB } = require('@iznos/db');
 const path = require('path');
 const fs = require('fs');
 const xlsx = require('xlsx');
@@ -15,7 +15,6 @@ exports.SaldoService = class {
         if (data.check_prixod) {
             doc = await db.transaction(async client => {
                 const result = await SaldoDB.delete([data.product_id], client);
-
                 return result;
             })
         } else {
@@ -132,15 +131,18 @@ exports.SaldoService = class {
 
                 product.prixod_data = await SaldoDB.getProductPrixod([product.id]);
 
+                if (!product.prixod_data) {
+                    product.prixod_data = await SaldoDB.getInfo([product.id]);
+                }
+
                 product.iznos_data = await IznosDB.getByProductId([product.id]);
+
                 if (product.iznos_data) {
                     product.iznos_data.kol = product.to.kol;
                     product.iznos_data.sena = product.to.sena;
                     product.iznos_data.new_summa = ((product.group.iznos_foiz / 100) * product.to.summa) + product.iznos_data.eski_iznos_summa + product.iznos_data.summa;
                     product.iznos_data.responsible_id = responsible.id;
                 }
-
-
             }
 
             responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
@@ -176,6 +178,7 @@ exports.SaldoService = class {
         await db.transaction(async client => {
             const saldo_create = [];
             for (let doc of data.docs) {
+                console.log(doc)
                 if (doc.iznos) {
                     for (let i = 1; i <= doc.kol; i++) {
                         const product = await ProductDB.create([
@@ -205,6 +208,9 @@ exports.SaldoService = class {
                         const old_iznos = doc.eski_iznos_summa / doc.kol;
                         const iznos_summa = (sena * (doc.iznos_foiz / 100) / 12) + old_iznos;
 
+                        const year = doc.doc_date ? (new Date(doc.doc_date).getFullYear()) : new Date().getFullYear();
+                        const month = doc.doc_date ? (new Date(doc.doc_date).getMonth() + 1) : new Date().getMonth() + 1;
+
                         await IznosDB.createIznos([
                             data.user_id,
                             doc.inventar_num,
@@ -215,9 +221,9 @@ exports.SaldoService = class {
                             doc.doc_date,
                             doc.responsible_id,
                             iznos_summa,
-                            doc.doc_date ? (new Date(doc.doc_date).getFullYear()) : new Date().getFullYear(),
-                            doc.doc_date ? (new Date(doc.doc_date).getMonth() + 1) : new Date().getMonth() + 1,
-                            doc.doc_date,
+                            year,
+                            month,
+                            `${year}-${month}-01`,
                             data.budjet_id,
                             old_iznos,
                             tashkentTime(),
@@ -243,6 +249,7 @@ exports.SaldoService = class {
             }
 
             for (let doc of saldo_create) {
+                console.log(doc)
                 await SaldoDB.create([
                     data.user_id,
                     doc.product_id,
@@ -252,6 +259,7 @@ exports.SaldoService = class {
                     doc.doc_date,
                     doc.doc_date,
                     doc.responsible_id,
+                    doc.doc_num,
                     tashkentTime(),
                     tashkentTime()
                 ], client);

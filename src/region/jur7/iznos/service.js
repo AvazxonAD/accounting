@@ -45,7 +45,7 @@ exports.IznosService = class {
     }
 
     static async get(data) {
-        const result = await IznosDB.get([data.region_id, data.offset, data.limit], data.responsible_id, data.product_id, data.year, data.month, data.search);
+        const result = await IznosDB.get([data.region_id, data.offset, data.limit], data.responsible_id, data.product_id, data.year, data.month, data.search, data.internal);
 
         return { total_count: result.total_count, data: result.data };
     }
