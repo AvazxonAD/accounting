@@ -7,8 +7,9 @@ const { BudjetService } = require('@budjet/service');
 exports.Controller = class {
     static async get(req, res) {
         const region_id = req.user.region_id;
-        const { product_id, responsible_id, search, year, month, page, limit } = req.query;
+        const { product_id, responsible_id, search, year, month, page, limit, from, to } = req.query;
         const offset = (page - 1) * limit;
+
         if (product_id) {
             const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
             if (!product) {
@@ -23,7 +24,7 @@ exports.Controller = class {
             }
         }
 
-        const { data, total_count } = await IznosService.get({ region_id, offset, limit, responsible_id, product_id, year, month, search });
+        const { data, total_count } = await IznosService.get({ region_id, offset, limit, responsible_id, product_id, year, month, search, internal: { from, to } });
 
         const pageCount = Math.ceil(total_count / limit);
         const meta = {

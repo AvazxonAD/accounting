@@ -17,7 +17,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('productNotFound'), 404);
     }
 
-    const check_prixod = await PrixodJur7Service.getByProductId({ product_id: data.product_id })
+    const check_prixod = await PrixodJur7Service.getByProductId({ product_id: product_id })
 
     const data = await SaldoService.delete({ product_id, check_prixod });
 

@@ -72,30 +72,40 @@ exports.IznosDB = class {
         await client.query(query, params);
     }
 
-    static async get(params, responsible_id, product_id, year, month, search, client) {
+    static async get(params, responsible_id = null, product_id = null, year = null, month = null, search = null, internal = null) {
         const filters = [];
+
         if (responsible_id) {
             params.push(responsible_id);
             filters.push(`i.kimning_buynida = $${params.length}`);
         }
+
         if (product_id) {
             params.push(product_id);
             filters.push(`i.naimenovanie_tovarov_jur7_id = $${params.length}`);
         }
+
         if (year) {
             params.push(year);
             filters.push(`i.year = $${params.length}`);
         }
+
         if (month) {
             params.push(month);
             filters.push(`i.month = $${params.length}`);
         }
+
         if (search) {
             params.push(search);
             filters.push(`(
                 n.name ILIKE '%' || $${params.length} || '%'
                 OR s.fio ILIKE '%' || $${params.length} || '%'
             )`);
+        }
+
+        if (internal.from && internal.to) {
+            params.push(internal.from, internal.to);
+            filters.push(`(i.full_date BETWEEN $${params.length - 1} AND $${params.length})`);
         }
 
         const whereClause = HelperFunctions.filters(filters);
@@ -136,9 +146,12 @@ exports.IznosDB = class {
                 )
             FROM data
         `;
-        const _db = client || db;
-        const result = await _db.query(query, params);
-        return result[0] || result.rows[0];
+
+        // const _db = client || db;
+        
+        const result = await db.query(query, params);
+        
+        return result[0]; //|| result.rows[0];
     }
 
 

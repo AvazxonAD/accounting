@@ -2,11 +2,28 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async getInfo(params) {
+        const query = `
+            SELECT 
+                id, 
+                date_saldo AS doc_date,
+                doc_num
+            FROM saldo_naimenovanie_jur7
+            WHERE naimenovanie_tovarov_jur7_id = $1
+                AND isdeleted = false
+        `;
+
+        const result = await db.query(query, params);
+
+        return result[0];
+    }
+
     static async delete(params, client) {
         const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE naimenovanie_tovarov_jur7_id = $1 RETURNING id`;
-
+        const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE naimenovanie_tovarov_jur7_id = $1`;
         const _db = client || db;
 
+        await _db.query(query2, params);
         const data = await _db.query(query, params);
 
         const response = client ? data.rows[0] : data[0];
@@ -152,12 +169,15 @@ exports.SaldoDB = class {
                 doc_date,
                 date_saldo,
                 kimning_buynida,
+                doc_num,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
         `;
+
         const result = await client.query(query, params)
+
         return result.rows[0];
     }
 
@@ -241,7 +261,8 @@ exports.SaldoDB = class {
             SELECT
                 d.id, 
                 TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
-                d.doc_num
+                d.doc_num, 
+                'prixod' AS type
             FROM document_prixod_jur7_child ch
             JOIN document_prixod_jur7 d ON ch.document_prixod_jur7_id = d.id
             WHERE ch.naimenovanie_tovarov_jur7_id = $1 
