@@ -2,6 +2,25 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async get(params) {
+        const query = `
+            SELECT 
+                * 
+            FROM saldo_naimenovanie_jur7 s 
+            JOIN users AS u ON u.id = s.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE r.id = $1
+                AND s.year = $2 
+                AND s.month = $3 
+                AND s.isdeleted = false 
+        `;
+
+        const data = await db.query(query, params);
+
+        return data;
+    }
+
+    // old queries
     static async getInfo(params) {
         const query = `
             SELECT 
@@ -271,7 +290,6 @@ exports.SaldoDB = class {
         return result[0] || null;
     }
 
-    // old queries
     static async getKol(params) {
         const query = `--sql
             WITH prixod AS (

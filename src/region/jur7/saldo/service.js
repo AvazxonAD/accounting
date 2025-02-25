@@ -9,6 +9,16 @@ const xlsx = require('xlsx');
 const { ProductDB } = require('@product/db');
 
 exports.SaldoService = class {
+    static async create(data) {
+
+    }
+
+    static async get(data) {
+        const result = await SaldoDB.get([data.region_id, data.year, data.month]);
+
+        return result;
+    }
+
     static async delete(data) {
         let doc;
 

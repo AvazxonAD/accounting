@@ -52,7 +52,7 @@ exports.getSchema = Joi.object({
         type: Joi.string().trim(),
         group_number: Joi.string().trim(),
         operator: Joi.string().trim().valid('=', '>'),
-        year: Joi.number().integer().min(1900)
+        year: Joi.number().integer().min(1901)
     })
 }).options({ stripUnknown: true });
 
