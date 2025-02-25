@@ -6,7 +6,7 @@ exports.Schema = class {
     return Joi.object({
       query: Joi.object({
         month: Joi.number().integer().min(1).required().max(12),
-        year: Joi.number().integer().min(1900).required(),
+        year: Joi.number().integer().min(1901).required(),
         main_schet_id: Joi.number().integer().min(1).required()
       })
     }).options({ stripUnknown: true });
@@ -16,7 +16,7 @@ exports.Schema = class {
     return Joi.object({
       query: Joi.object({
         month: Joi.number().integer().min(1).required().max(12),
-        year: Joi.number().integer().min(1900).required(),
+        year: Joi.number().integer().min(1901).required(),
         main_schet_id: Joi.number().integer().min(1).required()
       })
     }).options({ stripUnknown: true });

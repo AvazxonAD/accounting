@@ -7,7 +7,7 @@ exports.IznosSchema = class {
         product_id: Joi.number().integer().min(1),
         responsible_id: Joi.number().integer().min(1),
         search: Joi.string().trim().allow(null, ''),
-        year: Joi.number().integer().min(1900),
+        year: Joi.number().integer().min(1901),
         month: Joi.number().integer().min(1).max(12),
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(10),
@@ -24,7 +24,7 @@ exports.IznosSchema = class {
       }),
 
       body: Joi.object({
-        year: Joi.number().integer().min(1900).required(),
+        year: Joi.number().integer().min(1901).required(),
         month: Joi.number().integer().min(1).max(12).required(),
         products: Joi.array().items(
           Joi.object({

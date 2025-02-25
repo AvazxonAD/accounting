@@ -6,6 +6,7 @@ const { MainSchetService } = require('@main_schet/service');
 const { GroupService } = require('@group/service');
 const { SaldoSchema } = require('./schema');
 const { PrixodJur7Service } = require('../prixod/service');
+const { HelperFunctions } = require('../../../helper/functions');
 
 exports.Controller = class {
   static async delete(req, res) {
@@ -128,8 +129,6 @@ exports.Controller = class {
     const user_id = req.user.id;
     const { main_schet_id, budjet_id } = req.query;
 
-    const { kimga_id, childs } = req.body;
-
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);
@@ -140,28 +139,8 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    for (let child of childs) {
-      const responsible = await ResponsibleService.getById({ region_id, id: child.responsible_id });
-      if (!responsible) {
-        return res.error(req.i18n.t('responsibleNotFound'), 404);
-      }
+    await SaldoService.create({ region_id, user_id, ...req.body });
 
-      const group = await GroupService.getById({ id: child.group_jur7_id });
-      if (!group) {
-        return res.error(req.i18n.t('groupNotFound'), 404);
-      }
-
-      child.iznos = child.iznos === 'ha' ? true : false;
-
-      if (!child.iznos && child.eski_iznos_summa > 0) {
-        return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
-      }
-
-      child.iznos_foiz = group.iznos_foiz;
-    }
-
-    const result = await SaldoService.importData({ ...req.body, user_id, main_schet_id, budjet_id, childs });
-
-    return res.success(req.i18n.t('createSuccess'), 200, null, result);
+    return res.success(req.i18n.t('createSuccess'), 200);
   }
 }

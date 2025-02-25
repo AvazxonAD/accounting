@@ -3,7 +3,7 @@ const Joi = require('joi')
 exports.createDocSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
+    year: Joi.number().integer().min(1901).required(),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
     childs: Joi.array().required().items(
       Joi.object({
@@ -22,7 +22,7 @@ exports.createDocSchema = Joi.object({
 exports.updateDocSchema = Joi.object({
   body: Joi.object({
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
+    year: Joi.number().integer().min(1901).required(),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
     childs: Joi.array().required().items(
       Joi.object({
@@ -35,7 +35,7 @@ exports.updateDocSchema = Joi.object({
   query: Joi.object({
     budjet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
+    year: Joi.number().integer().min(1901).required(),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end'),
     main_schet_id: Joi.number().integer().min(1).required()
   })
@@ -45,7 +45,7 @@ exports.getDocSchema = Joi.object({
   query: Joi.object({
     budjet_id: Joi.number().integer().min(1),
     month: Joi.number().integer().min(1).max(12),
-    year: Joi.number().integer().min(1900),
+    year: Joi.number().integer().min(1901),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end')
   })
 }).options({ stripUnknown: true });
@@ -54,7 +54,7 @@ exports.getByIdDocSchema = Joi.object({
   query: Joi.object({
     budjet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
+    year: Joi.number().integer().min(1901).required(),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end')
   })
 }).options({ stripUnknown: true });
@@ -63,7 +63,7 @@ exports.deleteDocSchema = Joi.object({
   query: Joi.object({
     budjet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
+    year: Joi.number().integer().min(1901).required(),
     type_document: Joi.string().trim().valid('jur1', 'jur2', 'jur3', 'jur4', 'jur5', 'jur6', 'jur7', 'jur8', 'start', 'end')
   })
 }).options({ stripUnknown: true });
@@ -72,7 +72,7 @@ exports.getByGrafikSchema = Joi.object({
   query: Joi.object({
     budjet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().min(1).max(12).required(),
-    year: Joi.number().integer().min(1900).required(),
+    year: Joi.number().integer().min(1901).required(),
     schet_id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
