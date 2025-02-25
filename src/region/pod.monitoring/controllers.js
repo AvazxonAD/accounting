@@ -72,7 +72,7 @@ exports.Controller = class {
         if (!bujet) {
             return res.error(req.i18n.t('budjetNotFound'), 404);
         }
-        const data = (await PodotchetDB.get([region_id, 0, 9999])).data;
+        const data = (await PodotchetDB.get([region_id, 0, 99999])).data;
         for (let podotchet of data) {
             const summa = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { operator: '<=', date: to }, null, podotchet.id, null, budjet_id);
             podotchet.summa = summa.summa
@@ -184,7 +184,7 @@ exports.Controller = class {
                 message: "main schet not found"
             })
         }
-        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, 0, 9999], podotchet_id)
+        const data = await PodotchetMonitoringDB.getMonitoring([region_id, main_schet_id, from, to, operatsii, 0, 99999], podotchet_id)
         const summa_from_object = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { operator: '<=', date: from }, null, podotchet_id, main_schet_id, null, operatsii);
         const summa_to_object = await PodotchetMonitoringDB.getSummaMonitoring([region_id], { operator: '<=', date: to }, null, podotchet_id, main_schet_id, null, operatsii);
 

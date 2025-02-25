@@ -43,9 +43,7 @@ exports.Controller = class {
 
         const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, spravochnik_podrazdelenie_jur7_id])
         if (!podrazdelenie) {
-            return res.status(404).json({
-                message: "podrazdelenie not found"
-            })
+            return res.error(req.i18n.t('podrazdelenieNotFound'), 404);
         }
 
         const result = await ResponsibleDB.createResponsible([
@@ -56,25 +54,20 @@ exports.Controller = class {
             tashkentTime()
         ]);
 
-        return res.status(201).json({
-            message: "Create responsible successfully",
-            data: result
-        })
+        return res.success(req.i18n.t('createSuccess'), 201, null, result);
     }
 
-    static async getResponsible(req, res) {
+    static async get(req, res) {
         const region_id = req.user.region_id;
         const { page, limit, search, podraz_id, excel } = req.query;
         const offset = (page - 1) * limit;
 
-        const { data, total } = await ResponsibleDB.getResponsible([region_id, offset, limit], search, podraz_id)
+        const { data, total } = await ResponsibleDB.get([region_id, offset, limit], search, podraz_id)
 
         if (podraz_id) {
             const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, podraz_id])
             if (!podrazdelenie) {
-                return res.status(404).json({
-                    message: "podrazdelenie not found"
-                })
+                return res.error(req.i18n.t('podrazdelenieNotFound'), 404);
             }
         }
 
@@ -102,59 +95,52 @@ exports.Controller = class {
     static async getById(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
+
         const data = await ResponsibleDB.getById([region_id, id], true)
         if (!data) {
-            return res.status(404).json({
-                message: "responsible not found"
-            })
+            return res.error(req.i18n.t('responsibleNotFound'), 404);
         }
-        return res.status(201).json({
-            message: "responsible successfully get",
-            data
-        });
+
+        return res.success(req.i18n.t('getSuccess'), 200, null, data);
     }
 
     static async updateResponsible(req, res) {
         const region_id = req.user.region_id
         const { spravochnik_podrazdelenie_jur7_id, fio } = req.body;
         const id = req.params.id
+
         const responsible = await ResponsibleDB.getById([region_id, id])
         if (!responsible) {
-            return res.status(404).json({
-                message: "responsible not found"
-            })
+            return res.error(req.i18n.t('responsibleNotFound'), 404);
         }
+
         const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, spravochnik_podrazdelenie_jur7_id])
         if (!podrazdelenie) {
-            return res.status(404).json({
-                message: "podrazdelenie not found"
-            })
+            return res.error(req.i18n.t('podrazdelenieNotFound'), 404);
         }
+
         const result = await ResponsibleDB.updateResponsible([
             fio,
             tashkentTime(),
             spravochnik_podrazdelenie_jur7_id,
             id
         ])
-        return res.status(200).json({
-            message: 'Update successful',
-            data: result
-        });
+
+        return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }
 
     static async deleteResponsible(req, res) {
         const region_id = req.user.region_id
         const id = req.params.id
+
         const responsible = await ResponsibleDB.getById([region_id, id])
         if (!responsible) {
-            return res.status(404).json({
-                message: "responsible not found"
-            })
+            return res.error(req.i18n.t('responsibleNotFound'), 404);
         }
+
         await ResponsibleDB.deleteResponsible([id])
-        return res.status(200).json({
-            message: 'delete responsible successfully'
-        })
+
+        return res.success(req.i18n.t('deleteSuccess'), 200)
     }
 
 }

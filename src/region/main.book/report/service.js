@@ -8,7 +8,7 @@ const { db } = require('@db/index')
 exports.ReportService = class {
     static async getInfo(data) {
         const types = typeDocuments.map(item => ({ ...item }));
-        const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999]);
+        const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 99999]);
         for (let type of types) {
             type.schets = schets.map(item => ({ ...item }));
             for (let schet of type.schets) {
@@ -73,7 +73,7 @@ exports.ReportService = class {
         const report = await ReportMainBookDB.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
         if (report) {
             report.types = typeDocuments.map(item => ({ ...item }));
-            const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 9999]);
+            const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 99999]);
             for (let type of report.types) {
                 type.schets = schets.map(item => ({ ...item }));
                 for (let schet of type.schets) {

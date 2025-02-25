@@ -65,7 +65,7 @@ exports.Controller = class {
         if (!main_schet) {
             return res.error('main shcet not found', 404);
         }
-        const { data: organizations } = await OrganizationService.get({ region_id, offset: 0, limit: 9999 });
+        const { data: organizations } = await OrganizationService.get({ region_id, offset: 0, limit: 99999 });
         const data = await OrganizationmonitoringService.prixodRasxod(query, organizations);
         if (query.excel === 'true') {
             const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
@@ -129,7 +129,7 @@ exports.Controller = class {
         let data;
         let organizations;
         if (query.contract !== 'true') {
-            organizations = (await OrganizationService.get({ region_id, offset: 0, limit: 9999, organ_id: query.organ_id })).data;
+            organizations = (await OrganizationService.get({ region_id, offset: 0, limit: 99999, organ_id: query.organ_id })).data;
         } else {
             organizations = await ContractService.getContractByOrganizations({ region_id, organ_id: query.organ_id });
         }

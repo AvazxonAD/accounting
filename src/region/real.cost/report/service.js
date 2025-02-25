@@ -8,7 +8,7 @@ const { db } = require('@db/index')
 exports.ReportService = class {
     static async getInfo(data) {
         const types = typeDocuments.map(item => ({ ...item }));
-        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
+        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 99999], data.budjet_id, null, data.year);
         for (let type of types) {
             type.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }));
             for (let grafik of type.smeta_grafiks) {
@@ -73,7 +73,7 @@ exports.ReportService = class {
         const report = await ReportMainBookDB.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
         if (report) {
             report.types = typeDocuments.map(item => ({ ...item }));
-            const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
+            const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 99999], data.budjet_id, null, data.year);
             for (let type of report.types) {
                 type.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }));
                 for (let grafik of type.smeta_grafiks) {

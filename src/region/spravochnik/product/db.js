@@ -23,7 +23,7 @@ exports.ProductDB = class {
         return result.rows[0];
     }
 
-    static async getNaimenovanie(params, search = null, iznos) {
+    static async get(params, search = null, iznos) {
         let search_filter = ``
         let iznos_filter = ``;
 

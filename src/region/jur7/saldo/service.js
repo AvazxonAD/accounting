@@ -1,15 +1,35 @@
 const { SaldoDB } = require('./db');
 const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
-const { getMonthStartEnd } = require('@helper/functions');
+const { getMonthStartEnd, HelperFunctions } = require('@helper/functions');
 const { IznosDB } = require('@iznos/db');
 const path = require('path');
 const fs = require('fs');
 const xlsx = require('xlsx');
 const { ProductDB } = require('@product/db');
+const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
     static async create(data) {
+        const last_date = HelperFunctions.lastDate({ year: data.year, month: data.month });
+
+        const last_saldo = await SaldoDB.get([data.region_id, last_date.year, last_date.month]);
+        if (last_saldo.length === 0) {
+            const { data: responsibles } = await ResponsibleDB.get([data.region_id, 0, 99999]);
+            const { data: products } = await ProductDB.get([data.region_id, 0, 99999]);
+            
+            for (let responsible of responsibles) {
+                responsible.products = JSON.parse(JSON.stringify(products));
+                for (let product of responsible.products) {
+                    product.data = await SaldoDB.getKolAndSumma([product.id, responsible.id], null, `${data.year}-${data.month}-01`);
+                }
+
+                responsible.products = responsible.products.filter(item => item.data.kol !== 0 && item.data.summa !== 0);
+            }
+
+            const result = await responsibles.filter(item => item.products.length !== 0);
+            console.log(result)
+        }
 
     }
 

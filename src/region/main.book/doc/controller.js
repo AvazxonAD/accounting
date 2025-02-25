@@ -25,7 +25,7 @@ exports.Controller = class {
       }
     }
 
-    const schets = await MainBookSchetService.get({ offset: 0, limit: 9999 });
+    const schets = await MainBookSchetService.get({ offset: 0, limit: 99999 });
 
     const result = await MainBookDocService.auto({ schets: schets.data, ...req.query, region_id})
 

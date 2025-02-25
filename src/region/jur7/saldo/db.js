@@ -20,6 +20,98 @@ exports.SaldoDB = class {
         return data;
     }
 
+    static async getKolAndSumma(params, start, end) {
+        let start_filter = ``;
+        let end_filter = ``;
+        let between_filter = ``;
+
+        if (start && end) {
+            params.push(start, end);
+            between_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+        } else if (start) {
+            params.push(start);
+            start_filter = `AND d.doc_date < $${params.length}`;
+        } else if (end) {
+            params.push(end);
+            end_filter = `AND d.doc_date <= $${params.length}`;
+        }
+
+        const query = `--sql
+            WITH prixod AS (
+                SELECT
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa_s_nds), 0) AS summa
+                FROM document_prixod_jur7 d
+                JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimga_id = $2
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+                    ${start_filter}
+                    ${end_filter}
+                    ${between_filter}
+            ),
+            prixod_internal AS (
+                SELECT
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa), 0) AS summa
+                FROM document_vnutr_peremesh_jur7 d
+                JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimga_id = $2
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+                    ${start_filter}
+                    ${end_filter}
+                    ${between_filter}
+            ),
+            rasxod AS (
+                SELECT
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa), 0) AS summa
+                FROM document_rasxod_jur7 d
+                JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimdan_id = $2
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+                    ${start_filter}
+                    ${end_filter}
+                    ${between_filter}
+            ),
+            rasxod_internal AS (
+                SELECT
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa), 0) AS summa
+                FROM document_vnutr_peremesh_jur7 d
+                JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.kimdan_id = $2
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+                    ${start_filter}
+                    ${end_filter}
+                    ${between_filter}
+            )
+            SELECT
+                (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0) - COALESCE(r.kol, 0) - COALESCE(ri.kol, 0))::FLOAT AS kol,
+                (COALESCE(r.kol, 0) - COALESCE(ri.kol, 0))::FLOAT AS kol_rasxod,
+                (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0))::FLOAT AS kol_prixod,
+                (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0) - COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa,
+                (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0))::FLOAT AS summa_prixod,
+                (COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa_rasxod
+            FROM
+                prixod p,
+                prixod_internal pi,
+                rasxod r,
+                rasxod_internal ri
+        `;
+
+        const result = await db.query(query, params);
+
+        return result[0];
+    }
+
     // old queries
     static async getInfo(params) {
         const query = `
