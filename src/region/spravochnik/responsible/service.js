@@ -108,8 +108,8 @@ exports.ResponsibleService = class {
         return result;
     }
 
-    static async getResponsible(data) {
-        const result = await ResponsibleDB.getResponsible([data.region_id, data.offset, data.limit], data.search, data.podraz_id);
+    static async get(data) {
+        const result = await ResponsibleDB.get([data.region_id, data.offset, data.limit], data.search, data.podraz_id);
         return result;
     }
 

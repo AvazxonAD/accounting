@@ -3,9 +3,9 @@ const path = require('path');
 const fs = require('fs').promises;
 
 exports.HelperFunctions = class {
-    static lastMonth(date) {
-        if (data.month === 1) return { month: 12, year: date.year - 1 };
-        else if (month > 1) return { month: date.month - 1, year: date.year };
+    static lastDate(date) {
+        if (date.month === 1) return { month: 12, year: date.year - 1 };
+        else if (date.month > 1) return { month: date.month - 1, year: date.year };
         else return null;
     }
 

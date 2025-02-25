@@ -72,7 +72,7 @@ exports.Controller = class {
 
         const schets = await Jur7MonitoringService.getSchets({ year, month, main_schet_id });
 
-        const responsibles = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999 });
+        const responsibles = await ResponsibleService.get({ region_id, offset: 0, limit: 99999 });
 
         const result = await Jur7MonitoringService.materialReport({ responsibles: responsibles.data, region, main_schet_id, year, month, schets });
 

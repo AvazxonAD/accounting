@@ -7,8 +7,8 @@ exports.ProductService = class {
         return result;
     }
 
-    static async getNaimenovanie(data) {
-        const result = await ProductDB.getNaimenovanie([data.region_id, data.offset, data.limit], data.search, data.iznos);
+    static async get(data) {
+        const result = await ProductDB.get([data.region_id, data.offset, data.limit], data.search, data.iznos);
         return result;
     }
 

@@ -21,7 +21,7 @@ router
     .get('/:id', validator(Controller.getById, getByIdResponsibleSchema))
     .put('/:id', validator(Controller.updateResponsible, updateResponsibleSchema))
     .delete('/:id', validator(Controller.deleteResponsible, deleteResponsibleSchema))
-    .get('/', validator(Controller.getResponsible, getResponsibleSchema));
+    .get('/', validator(Controller.get, getResponsibleSchema));
 
 
 module.exports = router;

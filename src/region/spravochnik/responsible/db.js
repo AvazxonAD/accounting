@@ -21,7 +21,7 @@ exports.ResponsibleDB = class {
         return result[0];
     }
 
-    static async getResponsible(params, search = null, podraz_id = null) {
+    static async get(params, search = null, podraz_id = null) {
         let search_filter = ``;
         let podraz_filter = ``;
         if (search) {

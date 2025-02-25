@@ -7,7 +7,7 @@ const { db } = require('@db/index');
 
 exports.ReportService = class {
     static async getInfo(data) {
-        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
+        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 99999], data.budjet_id, null, data.year);
         data.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }))
         for (let grafik of data.smeta_grafiks) {
             grafik.summa = await DocOx.getGrafikSummaByGrafikId([
@@ -79,7 +79,7 @@ exports.ReportService = class {
     }
 
     static async getByIdReport(data) {
-        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 9999], data.budjet_id, null, data.year);
+        const { data: smeta_grafiks } = await SmetaGrafikDB.getSmetaGrafik([data.region_id, 0, 99999], data.budjet_id, null, data.year);
         data.smeta_grafiks = smeta_grafiks.map(item => ({ ...item }))
         const report = await ReportOx.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
         if (report) {

@@ -48,8 +48,8 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { kimning_buynida, to, product_id, from, search, iznos } = req.query;
 
-    let { data: responsibles } = await ResponsibleService.getResponsible({ region_id, offset: 0, limit: 9999, id: kimning_buynida });
-    let { data: products } = await ProductService.getNaimenovanie({ region_id, offset: 0, limit: 9999, id: product_id, search, iznos });
+    let { data: responsibles } = await ResponsibleService.get({ region_id, offset: 0, limit: 99999, id: kimning_buynida });
+    let { data: products } = await ProductService.get({ region_id, offset: 0, limit: 99999, id: product_id, search, iznos });
 
     if (product_id) {
       const product = await ProductService.getById({ region_id, id: product_id })
