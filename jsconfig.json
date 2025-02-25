@@ -21,6 +21,7 @@
             "@main_schet/*": [ "region/spravochnik/main.schet/*" ],
             "@podraz/*": [ "region/spravochnik/podrazdelenie/*" ],
             "@jur7_podraz/*": [ "region/spravochnik/jur7.podrazdelenie/*" ],
+            "@jur7_prixod/*": [ "region/jur7/prixod/*" ],
             "@saldo/*": [ "region/jur7/saldo/*" ],
             "@organization/*": [ "region/spravochnik/organization/*" ],
             "@responsible/*": [ "region/spravochnik/responsible/*" ],

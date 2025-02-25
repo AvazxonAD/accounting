@@ -10,9 +10,19 @@ const { ProductDB } = require('@product/db');
 
 exports.SaldoService = class {
     static async delete(data) {
-        const result = await SaldoDB.delete([data.product_id]);
+        let doc;
 
-        return result;
+        if (data.check_prixod) {
+            doc = await db.transaction(async client => {
+                const result = await SaldoDB.delete([data.product_id], client);
+
+                return result;
+            })
+        } else {
+            doc = await SaldoDB.delete([data.product_id]);
+        }
+
+        return doc;
     }
 
     static async getInfo(data) {
