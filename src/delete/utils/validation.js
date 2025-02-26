@@ -33,7 +33,7 @@ const schetOperatsiiValidation = Joi.object({
 
 const schetOperatsiiQueryValidation = Joi.object({
   search: Joi.string().trim(),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1)
 }).options({ stripUnknown: true });
 
@@ -116,7 +116,7 @@ const bankPrixodValidation = Joi.object({
 
 const bankQueryValidation = Joi.object({
   main_schet_id: Joi.number().required().min(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1),
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
   to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
@@ -202,14 +202,14 @@ const kassaValidation = Joi.object({
 
 const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   search: Joi.string().trim(),
   budjet_id: Joi.number(),
   type: Joi.string().trim()
 }).options({ stripUnknown: true });
 
 const jur7QueryValidation = Joi.object({
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1),
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
   to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
@@ -217,7 +217,7 @@ const jur7QueryValidation = Joi.object({
 
 const validationQuery = Joi.object({
   main_schet_id: Joi.number().required().min(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1),
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
   to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
@@ -230,7 +230,7 @@ const jur3CapValidation = Joi.object({
 
 const organizationMonitoringValidation = Joi.object({
   main_schet_id: Joi.number().required().min(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1),
   operatsii: Joi.string().required(),
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
@@ -288,7 +288,7 @@ const shartnomaGarfikValidation = Joi.object({
 
 const ShartnomaqueryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   budjet_id: Joi.number().min(1),
   organization: Joi.number().min(1),
   pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
@@ -362,7 +362,7 @@ const mainSchetValidator = Joi.object({
 }).options({ stripUnknown: true });
 
 const queryMainSchetValidation = Joi.object({
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1),
   search: Joi.string().trim()
 }).options({ stripUnknown: true });
@@ -380,7 +380,7 @@ const operatsiiValidation = Joi.object({
 
 const operatsiiQueryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   budjet_id: Joi.number().min(1).integer(),
   type_schet: Joi.string().trim(),
   search: Joi.string().trim(),
@@ -403,14 +403,14 @@ const organizationValidation = Joi.object({
 
 const organizationQueryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   inn: Joi.number(),
   search: Joi.string()
 }).options({ stripUnknown: true });
 
 const podotchetQueryValidation = Joi.object({
   main_schet_id: Joi.number().required().min(1),
-  limit: Joi.number().min(1).default(10),
+  limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1),
   from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
   to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),

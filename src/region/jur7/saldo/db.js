@@ -2,6 +2,21 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async createSaldoDate(params) {
+        const query = `
+            INSERT INTO saldo_date(
+                region_id, 
+                year, 
+                month,
+            ) 
+            VALUES($1, $2, $3) RETURNING *
+        `;
+
+        const result = await db.query(query, params);
+
+        return result[0];
+    }
+
     static async getSaldoDate(params) {
         const query = `
             SELECT 
