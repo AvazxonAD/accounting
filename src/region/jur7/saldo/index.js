@@ -12,7 +12,7 @@ router
     .post('/import', upload.single('file'), validator(Controller.import, SaldoSchema.import()))
     .post('/', validator(Controller.create, SaldoSchema.create()))
     .get('/temlate', Controller.templateFile)
-    .delete('/:product_id', validator(Controller.delete, SaldoSchema.delete()))
-    .get('/', validator(Controller.getSaldo, SaldoSchema.get()));
+    .get('/check', validator(Controller.check, SaldoSchema.check()))
+    .get('/', validator(Controller.get, SaldoSchema.get()));
 
 module.exports = router;

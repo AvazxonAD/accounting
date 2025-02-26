@@ -10,12 +10,12 @@ exports.HelperFunctions = class {
     }
 
     static async getTemplateFile(fileName) {
-        const folderPath = path.join(__dirname, `@public/template`);
+        const folderPath = path.join(__dirname, `../../public/template`);
 
-        console.log(folderPath)
         const filePath = path.join(folderPath, fileName);
 
         const fileRes = await fs.readFile(filePath);
+        console.log(filePath)
 
         return { fileName, fileRes };
     }

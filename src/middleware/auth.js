@@ -9,18 +9,30 @@ exports.protect = async (req, res, next) => {
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
+
     if (!token) {
-      return res.error("Token noto'g'ri yuborildi", 403);
+      return res.error(req.i18n.t('tokenError'), 403);
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    let decoded;
+
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.error(req.i18n.t('notLogged'), 403)
+    }
+
     if (!decoded) {
-      return res.error("Siz tizimga kirmagansiz", 403);
+      return res.error(req.i18n.t('notLogged'), 403)
     }
+
     const currentTimestamp = Math.floor(Date.now() / 1000);
     if (decoded.exp && decoded.exp < currentTimestamp) {
-      return res.error("Token muddati tugagan", 403);
+      return res.error(req.i18n.t('tokenError'), 403);
     }
+
     req.user = decoded;
+
     next();
   } catch (error) {
     return res.error(error.message, 403);

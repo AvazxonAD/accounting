@@ -1,38 +1,15 @@
 const { SaldoService } = require('./service');
 const { ResponsibleService } = require('@responsible/service');
-const { ProductService } = require('@product/service');
 const { BudjetService } = require('@budjet/service');
 const { MainSchetService } = require('@main_schet/service');
 const { GroupService } = require('@group/service');
 const { SaldoSchema } = require('./schema');
-const { PrixodJur7Service } = require('../prixod/service');
 const { HelperFunctions } = require('../../../helper/functions');
 
 exports.Controller = class {
-  static async delete(req, res) {
-    const region_id = req.user.region_id;
-    const { product_id } = req.params;
-
-    const check = await ProductService.getById({ region_id, id: product_id });
-    if (!check) {
-      return res.error(req.i18n.t('productNotFound'), 404);
-    }
-
-    const check_prixod = await PrixodJur7Service.getByProductId({ product_id: product_id })
-
-    const data = await SaldoService.delete({ product_id, check_prixod });
-
-    if (!data) {
-      const prixod = await PrixodJur7Service.getByProductId({ product_id });
-
-      return res.error(req.i18n.t('productDelete'), 404, prixod);
-    }
-
-    return res.success(req.i18n.t('deleteSuccess'), 200);
-  }
-
   static async templateFile(req, res) {
-    const { fileName, fileRes } = await SaldoService.templateFile();
+
+    const { fileName, fileRes } = await HelperFunctions.getTemplateFile('saldo.xlsx');
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -40,34 +17,27 @@ exports.Controller = class {
     return res.send(fileRes);
   }
 
-  static async deleteSaldo(req, res) {
-
-  }
-
-  static async getSaldo(req, res) {
+  static async get(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, product_id, from, search, iznos } = req.query;
-
-    let { data: responsibles } = await ResponsibleService.get({ region_id, offset: 0, limit: 99999, id: kimning_buynida });
-    let { data: products } = await ProductService.get({ region_id, offset: 0, limit: 99999, id: product_id, search, iznos });
-
-    if (product_id) {
-      const product = await ProductService.getById({ region_id, id: product_id })
-      if (!product) {
-        return res.error(req.i18n.t('productNotFound'), 404);
-      }
-      products = products.filter(item => item.id === product_id);
-    }
+    const { kimning_buynida, to, responsible, search } = req.query;
+    const data = { responsibles: [], products: [] };
 
     if (kimning_buynida) {
       const responsible = await ResponsibleService.getById({ region_id, id: kimning_buynida });
       if (!responsible) {
         return res.error(req.i18n.t('responsibleNotFound'), 404);
       }
-      responsibles = responsibles.filter(item => item.id === kimning_buynida);
     }
 
-    const data = await SaldoService.getSaldo({ region_id, kimning_buynida, to, product_id, products, responsibles, from });
+    if (responsible === 'true') {
+      let { data: responsibles } = await ResponsibleService.get({ region_id, offset: 0, limit: 99999, id: kimning_buynida });
+
+      if (kimning_buynida) {
+        responsibles = responsibles.filter(item => item.id === kimning_buynida);
+      }
+
+      data.responsibles = await SaldoService.getByResponsibles({ region_id, kimning_buynida, to, responsibles, search });
+    }
 
     return res.success(req.i18n.t('getSuccess'), 200, null, data);
   }
@@ -119,7 +89,7 @@ exports.Controller = class {
       doc.iznos_foiz = group.iznos_foiz;
     }
 
-    await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id });
+    await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id, region_id });
 
     return res.success(req.i18n.t('importSuccess'), 201);
   }
@@ -143,4 +113,14 @@ exports.Controller = class {
 
     return res.success(req.i18n.t('createSuccess'), 200);
   }
+
+  static async check(req, res) {
+    const region_id = req.user.region_id;
+
+    const response = await SaldoService.check({ region_id, ...req.query });
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, response);
+  }
+
+
 }
