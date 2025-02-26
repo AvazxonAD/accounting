@@ -33,13 +33,16 @@ exports.Controller = class {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
 
-      const data = await SaldoService.getSaldo({
-        responsibles: [{ id: kimdan_id }],
-        products: [{ id: child.naimenovanie_tovarov_jur7_id }],
-        to: doc_date
-      });
+      const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
+      if (!check_saldo) {
+        return res.error(req.i18n.t('saldoNotFound'), 404);
+      }
 
-      if (!data.responsibles[0].products[0] || data.responsibles[0].products[0].to.kol < child.kol) {
+      const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
+
+      if (!data[0]) {
+        return res.error(req.i18n.t('kolError'), 400);
+      } else if (!data[0].products[0] || data[0].products[0].to.kol < child.kol) {
         return res.error(req.i18n.t('kolError'), 400);
       }
 
@@ -104,13 +107,14 @@ exports.Controller = class {
 
       const old_kol = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id).kol || 0;
 
-      const data = await SaldoService.getSaldo({
-        responsibles: [{ id: kimdan_id }],
-        products: [{ id: child.naimenovanie_tovarov_jur7_id }],
-        to: doc_date
-      });
+      const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
+      if (!check_saldo) {
+        return res.error(req.i18n.t('saldoNotFound'), 404);
+      }
 
-      const kol = data.responsibles[0].products[0] ? data.responsibles[0].products[0].to.kol : 0;
+      const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
+
+      const kol = data[0]?.products[0] ? data[0].products[0].to.kol : 0;
 
       if (kol + old_kol < child.kol) {
         return res.error(req.i18n.t('kolError'), 400);
