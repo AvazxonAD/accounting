@@ -75,8 +75,8 @@ exports.SaldoService = class {
                         product.doc_data.doc_date || `${data.year}-${data.month}-01`,
                         product.doc_data.doc_num || 'saldo',
                         responsible.id,
-                        product.doc_data.id,
                         data.region_id,
+                        product.doc_data.id,
                         tashkentTime(),
                         tashkentTime()
                     ], client);

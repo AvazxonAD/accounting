@@ -15,7 +15,6 @@ exports.HelperFunctions = class {
         const filePath = path.join(folderPath, fileName);
 
         const fileRes = await fs.readFile(filePath);
-        console.log(filePath)
 
         return { fileName, fileRes };
     }
