@@ -1,23 +1,28 @@
-const { SaldoDB } = require('./db');
+const { SaldoDB } = require('@saldo/db');
 const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
-const { getMonthStartEnd, HelperFunctions } = require('@helper/functions');
+const { HelperFunctions } = require('@helper/functions');
 const { IznosDB } = require('@iznos/db');
-const path = require('path');
-const fs = require('fs');
 const xlsx = require('xlsx');
 const { ProductDB } = require('@product/db');
 const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
+    static async check(data) {
+        const result = await SaldoDB.check([data.region_id, data.year, data.month]);
+
+        return result;
+    }
+
     static async create(data) {
         const last_date = HelperFunctions.lastDate({ year: data.year, month: data.month });
+        let result;
+        const { data: responsibles } = await ResponsibleDB.get([data.region_id, 0, 99999]);
+        const { data: products } = await ProductDB.get([data.region_id, 0, 99999]);
 
         const last_saldo = await SaldoDB.get([data.region_id, last_date.year, last_date.month]);
+
         if (last_saldo.length === 0) {
-            const { data: responsibles } = await ResponsibleDB.get([data.region_id, 0, 99999]);
-            const { data: products } = await ProductDB.get([data.region_id, 0, 99999]);
-            
             for (let responsible of responsibles) {
                 responsible.products = JSON.parse(JSON.stringify(products));
                 for (let product of responsible.products) {
@@ -25,12 +30,80 @@ exports.SaldoService = class {
                 }
 
                 responsible.products = responsible.products.filter(item => item.data.kol !== 0 && item.data.summa !== 0);
+
+                for (let product of responsible.products) {
+                    product.doc_data = await SaldoDB.getProductPrixod([product.id]);
+                }
             }
 
-            const result = await responsibles.filter(item => item.products.length !== 0);
-            console.log(result)
+            result = await responsibles.filter(item => item.products.length !== 0);
+        } else {
+            for (let responsible of responsibles) {
+                responsible.products = last_saldo.filter(item => item.responsible_id === responsible.id);
+                for (let product of responsible.products) {
+
+                    product.data = await SaldoDB.getKolAndSumma([product.id, responsible.id], `${last_date.year}-${last_date.month}-01`, `${data.year}-${data.month}-01`);
+                    product.data.kol = product.data.kol + product.kol;
+                    product.data.summa = product.data.summa + product.summa;
+                    product.data.sena = product.data.summa / product.data.kol;
+
+                    product.id = product.naimenovanie_tovarov_jur7_id;
+
+                    product.doc_data = { doc_date: product.doc_date, doc_num: product.doc_num, id: product.doc_id };
+                }
+
+                responsible.products = responsible.products.filter(item => item.data.kol !== 0 && item.data.summa !== 0);
+
+            }
+            result = await responsibles.filter(item => item.products.length !== 0);
         }
 
+        await db.transaction(async client => {
+            await SaldoDB.delete([data.year, data.month, data.region_id], client);
+
+            for (let responsible of result) {
+                for (let product of responsible.products) {
+                    await SaldoDB.create([
+                        data.user_id,
+                        product.id,
+                        product.data.kol,
+                        product.data.summa / product.data.kol,
+                        product.data.summa,
+                        data.month,
+                        data.year,
+                        `${data.year}-${data.month}-01`,
+                        product.doc_data.doc_date || `${data.year}-${data.month}-01`,
+                        product.doc_data.doc_num || 'saldo',
+                        responsible.id,
+                        data.region_id,
+                        tashkentTime(),
+                        tashkentTime()
+                    ], client);
+                }
+            }
+        })
+    }
+
+    static async getByResponsibles(data) {
+        const month = new Date(data.to).getMonth() + 1;
+        const year = new Date(data.to).getFullYear();
+
+        for (let responsible of data.responsibles) {
+            responsible.products = await SaldoDB.get([data.region_id, year, month], responsible.id, data.search);
+            for (let product of responsible.products) {
+                product.from = { kol: product.kol, sena: product.sena, summa: product.summa };
+
+                product.internal = await SaldoDB.getKolAndSumma([product.id, responsible.id], `${year}-${month}-01`, data.to);
+
+                product.to = { kol: product.from.kol + product.internal.kol, summa: product.from.summa + product.internal.summa };
+                product.to.sena = product.to.summa / product.to.kol;
+            }
+
+            responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0)
+        }
+        const result = await data.responsibles.filter(item => item.products.length !== 0);
+
+        return result;
     }
 
     static async get(data) {
@@ -54,161 +127,10 @@ exports.SaldoService = class {
         return doc;
     }
 
-    static async getInfo(data) {
-        const date = getMonthStartEnd(data.year, data.month);
-
-        for (let responsible of data.responsibles) {
-            responsible.products = JSON.parse(JSON.stringify(data.products));
-
-            for (let product of responsible.products) {
-                product.kol_summa = await SaldoDB.getKolSumma([product.id, responsible.id, date[0]]);
-            }
-
-            responsible.products = responsible.products.filter(item => item.kol_summa.kol !== 0 && item.kol_summa.summa !== 0);
-        }
-
-        data.responsibles = data.responsibles.filter(item => item.products.length > 0);
-
-        return data.responsibles;
-    }
-
-    static async createSaldo(data) {
-        await db.transaction(async client => {
-            await SaldoDB.deleteSaldo([data.region_id, data.month, data.year], client);
-
-            for (let responsible of data.info) {
-                for (let product of responsible.products) {
-                    product.sena = product.kol_summa.summa / product.kol_summa.kol;
-                    const iznos = (await IznosDB.get([data.region_id], responsible.id, product.id))[0];
-                    product.iznos_summa_month = iznos?.sena || 0;
-
-                    if (iznos) {
-                        await IznosDB.deleteIznos([responsible.id, product.id, data.year, data.month], client);
-
-                        const date1 = new Date(`${data.year}-${data.month}-01`);
-                        const date2 = new Date(iznos.iznos_start_date);
-
-                        const year1 = date1.getFullYear();
-                        const month1 = date1.getMonth();
-
-                        const year2 = date2.getFullYear();
-                        const month2 = date2.getMonth();
-
-                        const month = (year1 - year2) * 12 + (month1 - (month2 + 1));
-
-                        if (month <= 0) {
-                            continue;
-                        }
-
-                        const iznos_summa = Math.round((product.iznos_summa_month * month) * 100) / 100 + iznos.eski_iznos_summa;
-
-                        for (let k = 1; k <= product.kol; k++) {
-                            await IznosDB.createIznos([
-                                data.user_id,
-                                product.inventar_num,
-                                product.serial_num,
-                                product.id,
-                                1,
-                                product.sena,
-                                tashkentTime(),
-                                responsible.id,
-                                iznos_summa,
-                                data.year,
-                                data.month,
-                                `${data.year}-${data.month}-01`,
-                                data.budjet_id,
-                                tashkentTime(),
-                                tashkentTime()
-                            ], client)
-                        }
-                    }
-
-                    await SaldoDB.createSaldo([
-                        data.user_id,
-                        product.id,
-                        product.kol_summa.kol,
-                        product.sena,
-                        product.kol_summa.summa,
-                        data.month,
-                        data.year,
-                        tashkentTime(),
-                        responsible.id,
-                        product.iznos_summa_month,
-                        tashkentTime(),
-                        tashkentTime()
-                    ], client)
-                }
-            }
-        })
-    }
-
-    static async getSaldo(data) {
-        const products = [];
-
-        for (let responsible of data.responsibles) {
-            responsible.products = JSON.parse(JSON.stringify(data.products));
-
-            for (let product of responsible.products) {
-
-                product.from = await SaldoDB.getKolSumma([product.id, responsible.id], data.from);
-                product.from.sena = Math.round((product.from.summa && product.from.kol) ? product.from.summa / product.from.kol : 0 * 100) / 100;
-
-                product.internal = await SaldoDB.getKolSumma([product.id, responsible.id], data.from, data.to);
-                product.internal.sena = Math.round(product.internal.summa / product.internal.kol * 100) / 100;
-
-                product.to = await SaldoDB.getKolSumma([product.id, responsible.id], null, data.to);
-                product.to.sena = Math.round(product.to.summa / product.to.kol * 100) / 100;
-
-                product.prixod_data = await SaldoDB.getProductPrixod([product.id]);
-
-                if (!product.prixod_data) {
-                    product.prixod_data = await SaldoDB.getInfo([product.id]);
-                }
-
-                product.iznos_data = await IznosDB.getByProductId([product.id]);
-
-                if (product.iznos_data) {
-                    product.iznos_data.kol = product.to.kol;
-                    product.iznos_data.sena = product.to.sena;
-                    product.iznos_data.new_summa = ((product.group.iznos_foiz / 100) * product.to.summa) + product.iznos_data.eski_iznos_summa + product.iznos_data.summa;
-                    product.iznos_data.responsible_id = responsible.id;
-                }
-            }
-
-            responsible.products = responsible.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
-            products.push(...responsible.products);
-        }
-
-        data.responsibles = data.responsibles.filter(item => item.products.length !== 0);
-
-        return { responsibles: data.responsibles, products };
-    }
-
-    static async deleteSaldo(data) {
-        await SaldoDB.deleteSaldo([
-            data.region_id,
-            data.year,
-            data.month,
-            data.budjet_id
-        ])
-    }
-
-    static async templateFile() {
-        const fileName = `saldo.xlsx`;
-        const folderPath = path.join(__dirname, `../../../../public/template/`);
-
-        const filePath = path.join(folderPath, fileName);
-
-        const fileRes = await fs.promises.readFile(filePath);
-
-        return { fileName, fileRes };
-    }
-
     static async importData(data) {
         await db.transaction(async client => {
             const saldo_create = [];
             for (let doc of data.docs) {
-                console.log(doc)
                 if (doc.iznos) {
                     for (let i = 1; i <= doc.kol; i++) {
                         const product = await ProductDB.create([
@@ -227,12 +149,11 @@ exports.SaldoService = class {
                         const sena = doc.summa / doc.kol;
 
                         saldo_create.push({
+                            ...doc,
                             product_id: product.id,
                             kol: 1,
                             sena,
                             summa: sena,
-                            doc_date: doc.doc_date,
-                            responsible_id: doc.responsible_id
                         });
 
                         const old_iznos = doc.eski_iznos_summa / doc.kol;
@@ -278,18 +199,25 @@ exports.SaldoService = class {
                 }
             }
 
+
             for (let doc of saldo_create) {
-                console.log(doc)
+                const year = doc.doc_date ? new Date(doc.doc_date).getFullYear() : new Date().getFullYear();
+                const month = doc.doc_date ? new Date(doc.doc_date).getMonth() + 1 : new Date().getMonth() + 1;
+
                 await SaldoDB.create([
                     data.user_id,
                     doc.product_id,
                     doc.kol,
                     doc.summa / doc.kol,
                     doc.summa,
-                    doc.doc_date,
-                    doc.doc_date,
+                    month,
+                    year,
+                    `${year}-${month}-01`,
+                    doc.doc_date || `${year}-${month}-01`,
+                    doc.doc_num || 'saldo',
                     doc.responsible_id,
-                    doc.doc_num,
+                    data.region_id,
+                    null,
                     tashkentTime(),
                     tashkentTime()
                 ], client);

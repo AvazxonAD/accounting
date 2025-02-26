@@ -5,7 +5,7 @@ const { tashkentTime, returnLocalDate, returnSleshDate, HelperFunctions } = requ
 const fs = require('fs').promises;
 const ExcelJS = require('exceljs');
 const path = require('path');
-const xlsx = require('xlsx');
+const { SaldoDB } = require('@saldo/db');
 
 exports.PrixodJur7Service = class {
     static async getByProductId(data) {
@@ -242,29 +242,28 @@ exports.PrixodJur7Service = class {
 
             const summa = childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
-            const doc = await PrixodDB.create(
-                [
-                    data.user_id,
-                    data.doc_num,
-                    data.doc_date,
-                    data.j_o_num,
-                    data.opisanie,
-                    data.doverennost,
-                    summa,
-                    data.kimdan_id,
-                    data.kimdan_name,
-                    data.kimga_id,
-                    data.kimga_name,
-                    data.id_shartnomalar_organization,
-                    data.main_schet_id,
-                    data.shartnoma_grafik_id,
-                    data.organization_by_raschet_schet_id,
-                    data.organization_by_raschet_schet_gazna_id,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client);
+            const doc = await PrixodDB.create([
+                data.user_id,
+                data.doc_num,
+                data.doc_date,
+                data.j_o_num,
+                data.opisanie,
+                data.doverennost,
+                summa,
+                data.kimdan_id,
+                data.kimdan_name,
+                data.kimga_id,
+                data.kimga_name,
+                data.id_shartnomalar_organization,
+                data.main_schet_id,
+                data.shartnoma_grafik_id,
+                data.organization_by_raschet_schet_id,
+                data.organization_by_raschet_schet_gazna_id,
+                tashkentTime(),
+                tashkentTime()
+            ], client);
 
-            await this.createChild({ ...data, docId: doc.id, client, childs });
+            await this.createChild({ ...data, docId: doc.id, doc: doc, client, childs });
 
             return doc;
         });
@@ -304,8 +303,8 @@ exports.PrixodJur7Service = class {
 
             const product_sena = summa_s_nds / child.kol;
             const iznos_summa = (product_sena * (child.iznos_foiz / 100) / 12) + child.eski_iznos_summa;
-            const month = new Date(data.doc_date).getMonth() + 1;
-            const year = new Date(data.doc_date).getFullYear();
+            const month = new Date(data.doc.doc_date).getMonth() + 1;
+            const year = new Date(data.doc.doc_date).getFullYear();
 
             if (child.iznos) {
                 await IznosDB.createIznos([
@@ -327,6 +326,25 @@ exports.PrixodJur7Service = class {
                     tashkentTime()
                 ], data.client)
             }
+
+            const last_date = HelperFunctions.lastDate({ year, month })
+
+            await SaldoDB.create([
+                data.user_id,
+                child.product_id,
+                0,
+                0,
+                0,
+                last_date.month,
+                last_date.year,
+                data.doc.doc_date,
+                data.doc.doc_num,
+                child.kimga_id,
+                data.region_id,
+                data.docId,
+                tashkentTime(),
+                tashkentTime()
+            ], data.client);
         }
     }
 
