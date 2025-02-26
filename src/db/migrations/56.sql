@@ -1,0 +1,1 @@
+ALTER TABLE saldo_naimenovanie_jur7 DROP CONSTRAINT saldo_naimenovanie_jur7_prixod_id_fkey;
