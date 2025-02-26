@@ -265,6 +265,7 @@ exports.PrixodJur7Service = class {
 
             await this.createChild({ ...data, docId: doc.id, doc: doc, client, childs });
 
+            const check = await SaldoDB.get
 
             return doc;
         });

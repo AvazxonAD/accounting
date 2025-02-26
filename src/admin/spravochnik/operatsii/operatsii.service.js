@@ -49,7 +49,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
 
     if (search) {
       params.push(search)
-      search_filter = `AND ( s.schet ILIKE '%' || $${params.length} || '%' OR s.name ILIKE '%' || $${params.length} || '%' ) `;
+      search_filter = `AND ( s.schet ILIKE '%' || $${params.length} || '%' OR s.name ILIKE '%' || $${params.length} || '%' OR s.sub_schet ILIKE '%' || $${params.length} || '%')`;
     }
 
     if (type_schet) {
@@ -72,7 +72,7 @@ const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_se
       sub_schet_filter = `AND s.sub_schet ILIKE '%' || $${params.length} || '%'`;
     }
 
-    if(budjet_id){
+    if (budjet_id) {
       params.push(budjet_id);
       budjet_filter = `AND s.budjet_id = $${params.length}`;
     }
@@ -190,7 +190,7 @@ const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = fa
         ${type_schet_filter} 
         ${ignore}
       `, params);
-    
+
     if (!result.rows[0]) {
       throw new ErrorResponse(`Spravochnik operatsii not found`, 404);
     }
