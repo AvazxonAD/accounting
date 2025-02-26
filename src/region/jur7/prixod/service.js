@@ -265,6 +265,7 @@ exports.PrixodJur7Service = class {
 
             await this.createChild({ ...data, docId: doc.id, doc: doc, client, childs });
 
+
             return doc;
         });
 
@@ -335,7 +336,7 @@ exports.PrixodJur7Service = class {
                 0,
                 month,
                 year,
-                data.doc.doc_date,
+                `${year}-${month}-01`,
                 data.doc.doc_date,
                 data.doc.doc_num,
                 data.kimga_id,

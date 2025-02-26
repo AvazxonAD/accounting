@@ -2,6 +2,22 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async getSaldoDate(params) {
+        const query = `
+            SELECT 
+                year, month
+            FROM saldo_naimenovanie_jur7 
+            WHERE region_id = $1
+                AND date_saldo > $2
+            GROUP BY year, month
+            ORDER BY year, month 
+        `;
+
+        const data = await db.query(query, params);
+
+        return data;
+    }
+
     static async check(params) {
         const query = `
             SELECT

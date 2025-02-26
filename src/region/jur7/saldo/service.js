@@ -8,6 +8,12 @@ const { ProductDB } = require('@product/db');
 const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
+    static async getSaldoDate(data) {
+        const result = await SaldoDB.getSaldoDate([data.region_id, data.date]);
+
+        return result;
+    }
+
     static async check(data) {
         const result = await SaldoDB.check([data.region_id, data.year, data.month]);
 
@@ -42,7 +48,7 @@ exports.SaldoService = class {
                 responsible.products = last_saldo.filter(item => item.responsible_id === responsible.id);
                 for (let product of responsible.products) {
 
-                    product.data = await SaldoDB.getKolAndSumma([product.id, responsible.id], `${last_date.year}-${last_date.month}-01`, `${data.year}-${data.month}-01`);
+                    product.data = await SaldoDB.getKolAndSumma([product.naimenovanie_tovarov_jur7_id, responsible.id], `${last_date.year}-${last_date.month}-01`, `${data.year}-${data.month}-01`);
                     product.data.kol = product.data.kol + product.kol;
                     product.data.summa = product.data.summa + product.summa;
                     product.data.sena = product.data.summa / product.data.kol;
