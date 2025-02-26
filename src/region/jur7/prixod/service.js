@@ -265,9 +265,16 @@ exports.PrixodJur7Service = class {
 
             await this.createChild({ ...data, docId: doc.id, doc: doc, client, childs });
 
-            const check = await SaldoDB.get
+            const year = new Date(data.doc_date).getFullYear();
+            const month = new Date(data.doc_date).getMonth() + 1;
 
-            return doc;
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([data.region_id, date.year, date.month]));
+            }
+
+            return { doc, dates };
         });
 
         return result;
