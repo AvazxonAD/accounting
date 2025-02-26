@@ -61,6 +61,7 @@ exports.SaldoService = class {
         await db.transaction(async client => {
             await SaldoDB.delete([data.year, data.month, data.region_id], client);
 
+            console.log('/./////////////////////////////')
             for (let responsible of result) {
                 for (let product of responsible.products) {
                     await SaldoDB.create([
