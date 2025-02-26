@@ -19,7 +19,7 @@ exports.Controller = class {
 
     const responsible = await ResponsibleService.getById({ region_id, id: kimdan_id });
     if (!responsible) {
-      return res.error(req.i18n.t('responsibleNotFound', 404));
+      return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
     for (let child of childs) {
@@ -28,14 +28,14 @@ exports.Controller = class {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
 
-      const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(month).getMonth() + 1 });
+      const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
       if (!check_saldo) {
         return res.error(req.i18n.t('saldoNotFound'), 404);
       }
 
-      const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id });
+      const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
 
-      if (!data.responsibles[0].products[0] || data.responsibles[0].products[0].to.kol < child.kol) {
+      if (!data[0].products[0] || data[0].products[0].to.kol < child.kol) {
         return res.error(req.i18n.t('kolError'), 400);
       }
 
