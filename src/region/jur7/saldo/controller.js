@@ -36,7 +36,7 @@ exports.Controller = class {
         responsibles = responsibles.filter(item => item.id === kimning_buynida);
       }
 
-      data.responsibles = await SaldoService.getByResponsibles({ region_id, kimning_buynida, to, responsibles, search });
+      data.responsibles = await SaldoService.getByResponsibles({ region_id, to, responsibles, search });
     }
 
     return res.success(req.i18n.t('getSuccess'), 200, null, data);

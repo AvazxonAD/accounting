@@ -327,19 +327,18 @@ exports.PrixodJur7Service = class {
                 ], data.client)
             }
 
-            const last_date = HelperFunctions.lastDate({ year, month })
-
             await SaldoDB.create([
                 data.user_id,
-                child.product_id,
+                child.id,
                 0,
                 0,
                 0,
-                last_date.month,
-                last_date.year,
+                month,
+                year,
+                data.doc.doc_date,
                 data.doc.doc_date,
                 data.doc.doc_num,
-                child.kimga_id,
+                data.kimga_id,
                 data.region_id,
                 data.docId,
                 tashkentTime(),
@@ -357,7 +356,7 @@ exports.PrixodJur7Service = class {
     static async update(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
         const result = await db.transaction(async (client) => {
-            await PrixodDB.update([
+            const doc = await PrixodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.j_o_num,
@@ -380,9 +379,11 @@ exports.PrixodJur7Service = class {
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
+            await SaldoDB.deleteByPrixodId([data.id], client);
+
             const childs = await this.createProduct({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
-            await this.createChild({ ...data, docId: data.id, childs, client });
+            await this.createChild({ ...data, docId: data.id, childs, client, doc });
 
             return { id: data.id }
         });

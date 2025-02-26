@@ -89,11 +89,11 @@ exports.SaldoService = class {
         const year = new Date(data.to).getFullYear();
 
         for (let responsible of data.responsibles) {
-            responsible.products = await SaldoDB.get([data.region_id, year, month], responsible.id, data.search);
+            responsible.products = await SaldoDB.get([data.region_id, year, month], responsible.id, data.search, data.product_id);
             for (let product of responsible.products) {
                 product.from = { kol: product.kol, sena: product.sena, summa: product.summa };
 
-                product.internal = await SaldoDB.getKolAndSumma([product.id, responsible.id], `${year}-${month}-01`, data.to);
+                product.internal = await SaldoDB.getKolAndSumma([product.naimenovanie_tovarov_jur7_id, responsible.id], `${year}-${month < 10 ? `0${month}` : month}-01`, data.to);
 
                 product.to = { kol: product.from.kol + product.internal.kol, summa: product.from.summa + product.internal.summa };
                 product.to.sena = product.to.summa / product.to.kol;
