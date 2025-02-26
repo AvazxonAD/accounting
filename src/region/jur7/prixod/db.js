@@ -285,6 +285,7 @@ exports.PrixodDB = class {
               organization_by_raschet_schet_gazna_id = $14,
               updated_at = $15
             WHERE id = $16
+            RETURNING * 
         `;
 
         const result = await db.query(query, params);

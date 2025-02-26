@@ -18,9 +18,15 @@ exports.SaldoDB = class {
         return result;
     }
 
-    static async get(params, responsible_id = null, search = null) {
+    static async get(params, responsible_id = null, search = null, product_id = null) {
         let responsible_filter = ``;
         let filter = ``;
+        let product_filter = ``;
+
+        if (product_id) {
+            params.push(product_id);
+            product_filter = `AND n.id = $${params.length}`;
+        }
 
         if (search) {
             params.push(search);
@@ -63,6 +69,7 @@ exports.SaldoDB = class {
                 AND s.isdeleted = false
                 ${responsible_filter} 
                 ${filter}
+                ${product_filter}
         `;
 
         const data = await db.query(query, params);
@@ -210,5 +217,11 @@ exports.SaldoDB = class {
         `;
         const result = await db.query(query, params);
         return result[0] || null;
+    }
+
+    static async deleteByPrixodId(params, cleint) {
+        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1`;
+
+        await cleint.query(query, params);
     }
 }
