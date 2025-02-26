@@ -61,7 +61,6 @@ exports.SaldoService = class {
         await db.transaction(async client => {
             await SaldoDB.delete([data.year, data.month, data.region_id], client);
 
-            console.log('/./////////////////////////////')
             for (let responsible of result) {
                 for (let product of responsible.products) {
                     await SaldoDB.create([
@@ -76,6 +75,7 @@ exports.SaldoService = class {
                         product.doc_data.doc_date || `${data.year}-${data.month}-01`,
                         product.doc_data.doc_num || 'saldo',
                         responsible.id,
+                        product.doc_data.id,
                         data.region_id,
                         tashkentTime(),
                         tashkentTime()
