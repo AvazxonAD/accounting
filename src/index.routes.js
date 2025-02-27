@@ -82,6 +82,7 @@ routes
     .use('/admin/main/book', protect, require('@admin_main_book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))
     .use('/admin/dashboard', protect, require('./admin/dashboard/index'))
+    .use('/admin/saldo', protect, require('@admin_saldo/index'))
     .use("/admin/control", protect, require('./admin/control/index'))
     .use('/admin/real/cost', protect, require('./admin/real.cost/index'));
 

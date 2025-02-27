@@ -28,7 +28,6 @@ exports.Controller = class {
 
     const operatsiis = [];
     for (let child of childs) {
-      console.log(child.spravochnik_operatsii_id)
       const operatsii = await OperatsiiService.getById({ type: "kassa_prixod", id: child.spravochnik_operatsii_id });
       if (!operatsii) {
         return res.error(req.i18n.t('operatsiiNotFound'), 404)

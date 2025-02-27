@@ -21,17 +21,26 @@ exports.ResponsibleDB = class {
         return result[0];
     }
 
-    static async get(params, search = null, podraz_id = null) {
+    static async get(params, region_id = null, search = null, podraz_id = null) {
         let search_filter = ``;
         let podraz_filter = ``;
+        let region_filter = ``;
+
         if (search) {
             search_filter = `AND s_j_s_j7.fio ILIKE '%' || $${params.length + 1} || '%'`;
             params.push(search)
         }
+
         if (podraz_id) {
             params.push(podraz_id);
             podraz_filter = `AND s_p_j7.id = $${params.length}`;
         }
+
+        if (region_id) {
+            params.push(region_id);
+            region_filter = `AND r.id = $${params.length}`;
+        }
+
         const query = `--sql
             WITH data AS (
                 SELECT 
@@ -44,10 +53,10 @@ exports.ResponsibleDB = class {
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
                 WHERE s_j_s_j7.isdeleted = false 
-                    AND r.id = $1 
                     ${search_filter} 
                     ${podraz_filter}
-                OFFSET $2 LIMIT $3
+                    ${region_filter}
+                OFFSET $1 LIMIT $2
             )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
@@ -56,7 +65,9 @@ exports.ResponsibleDB = class {
                     FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
                     JOIN users AS u ON u.id = s_j_s_j7.user_id
                     JOIN regions AS r ON r.id = u.region_id
-                    WHERE s_j_s_j7.isdeleted = false AND r.id = $1 ${search_filter}
+                    WHERE s_j_s_j7.isdeleted = false 
+                        ${search_filter}
+                        ${region_filter}
                 ) AS total
             FROM data
         `
@@ -65,8 +76,15 @@ exports.ResponsibleDB = class {
         return result[0];
     }
 
-    static async getById(params, isdeleted) {
+    static async getById(params, region_id, isdeleted) {
         let ignore = 'AND s.isdeleted = false';
+        let region_filter = ``;
+
+        if (region_id) {
+            params.push(region_id)
+            region_filter = `AND r.id = $${params.length}`
+        }
+
         const query = `--sql
             SELECT 
                 s.id, 
@@ -77,7 +95,9 @@ exports.ResponsibleDB = class {
             JOIN users AS u ON u.id = s.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_podrazdelenie_jur7 AS p ON p.id = s.spravochnik_podrazdelenie_jur7_id  
-            WHERE  r.id = $1 AND s.id = $2 ${isdeleted ? `` : ignore}
+            WHERE s.id = $1 
+                ${isdeleted ? `` : ignore}
+                ${region_filter}
         `
         const result = await db.query(query, params)
         return result[0]

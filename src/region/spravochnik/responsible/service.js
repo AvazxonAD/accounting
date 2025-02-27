@@ -98,7 +98,7 @@ exports.ResponsibleService = class {
     }
 
     static async getById(data) {
-        const result = await ResponsibleDB.getById([data.region_id, data.id], data.isdeleted);
+        const result = await ResponsibleDB.getById([data.id], data.region_id, data.isdeleted);
         return result;
     }
 
@@ -109,7 +109,7 @@ exports.ResponsibleService = class {
     }
 
     static async get(data) {
-        const result = await ResponsibleDB.get([data.region_id, data.offset, data.limit], data.search, data.podraz_id);
+        const result = await ResponsibleDB.get([data.offset, data.limit], data.region_id, data.search, data.podraz_id);
         return result;
     }
 

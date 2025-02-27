@@ -16,6 +16,7 @@ const router = Router()
 router
     .get('/percent', Controller.getWithPercent)
     .get('/template', validator(Controller.templateFile))
+    .get('/export', validator(Controller.export))
     .post('/import', upload.single('file'), validator(Controller.import, GroupSchema.import()))
     .post('/', validator(Controller.create, createSchema))
     .get('/:id', validator(Controller.getById, getByIdGroupSchema))

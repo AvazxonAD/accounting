@@ -6,7 +6,7 @@ const { validator } = require('@helper/validator');
 
 const { SaldoSchema } = require("./schema");
 
-const upload = require('../../../helper/upload');
+const upload = require('@helper/upload');
 const { Middleware } = require('@middleware/index');
 
 router
