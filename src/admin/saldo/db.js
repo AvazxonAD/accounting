@@ -2,129 +2,16 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
-    static async createSaldoDate(params, client) {
-        const query = `
-            INSERT INTO saldo_date(
-                region_id, 
-                year, 
-                month,
-                created_at,
-                updated_at
-            ) 
-            VALUES($1, $2, $3, $4, $5) RETURNING *
-        `;
-
-        const result = await client.query(query, params);
-
-        return result[0];
-    }
-
-    static async getSaldoDate(params, client) {
-        const _db = client || db;
-        const query = `
-            SELECT 
-                DISTINCT year, month
-            FROM saldo_naimenovanie_jur7 
-            WHERE region_id = $1
-                AND date_saldo > $2
-                AND isdeleted = false
-            ORDER BY year, month
-        `;
-
-        const data = await _db.query(query, params);
-
-        const response = client ? data.rows : data;
-
-        return response;
-    }
-
-    static async getFirstSaldoDate(params) {
-        const query = `
-           SELECT 
-                DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
-            FROM saldo_naimenovanie_jur7 
-            WHERE region_id = $1
-                AND isdeleted = false
-            ORDER BY date_saldo
-            LIMIT 1
-        `;
-
-        const result = await db.query(query, params);
-
-        return result[0];
-    }
-
-    static async getEndSaldoDate(params) {
-        const query = `
-           SELECT 
-                DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
-            FROM saldo_naimenovanie_jur7 
-            WHERE region_id = $1
-                AND isdeleted = false
-            ORDER BY date_saldo DESC 
-            LIMIT 1
-        `;
-
-        const result = await db.query(query, params);
-
-        return result[0];
-    }
-
-    static async getBlock(params) {
-        const query = `
-            SELECT 
-                DISTINCT year, month
-            FROM saldo_date 
-            WHERE region_id = $1
-                AND isdeleted = false
-            ORDER BY year, month
-            LIMIT 1 
-        `;
-
-        const data = await db.query(query, params);
-
-        return data[0];
-    }
-
-    static async unblock(params) {
-        const query = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1 AND year = $2 AND month = $3`;
-
-        await db.query(query, params);
-    }
-
-    static async check(params, year = null, month = null) {
-        let year_filter = ``;
-        let month_filter = ``;
-
-        if (year) {
-            params.push(year)
-            year_filter = `AND year = $${params.length}`
-        }
-
-        if (month) {
-            params.push(month)
-            month_filter = `AND month = $${params.length}`;
-        }
-
-        const query = `
-            SELECT
-                *
-            FROM saldo_naimenovanie_jur7 
-            WHERE region_id = $1 
-                AND  isdeleted = false 
-                ${year_filter}
-                ${month_filter}  
-        `;
-
-        const result = await db.query(query, params);
-
-        return result;
-    }
-
-    static async get(params, responsible_id = null, search = null, product_id = null) {
+    static async get(params, responsible_id = null, search = null, product_id = null, region_id = null) {
         let responsible_filter = ``;
         let filter = ``;
         let product_filter = ``;
+        let region_filter = ``;
+
+        if (region_id) {
+            params.push(region_id)
+            region_filter = `AND r.id = $${params.length}`
+        }
 
         if (product_id) {
             params.push(product_id);
@@ -169,14 +56,14 @@ exports.SaldoDB = class {
             JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
             JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
             JOIN group_jur7 g ON g.id = n.group_jur7_id  
-            WHERE r.id = $1 
-                AND s.year = $2
-                AND s.month = $3 
+            WHERE s.year = $1 
+                AND s.month = $2
                 AND s.isdeleted = false
                 ${responsible_filter} 
                 ${filter}
                 ${product_filter}
-                OFFSET $4 LIMIT $5
+                ${region_filter}
+                OFFSET $3 LIMIT $4
             )
             SELECT 
                 COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
@@ -188,17 +75,16 @@ exports.SaldoDB = class {
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
                     JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
-                    WHERE r.id = $1
-                        AND s.year = $2 
-                        AND s.month = $3 
+                    WHERE s.year = $1
+                        AND s.month = $2 
                         AND s.isdeleted = false
                         ${responsible_filter} 
                         ${filter}
                         ${product_filter}
+                        ${region_filter}
                 ) AS total
             FROM data
         `;
-
 
         const data = await db.query(query, params);
 
@@ -230,8 +116,8 @@ exports.SaldoDB = class {
         const query = `--sql
             WITH prixod AS (
                 SELECT
-                    COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa_s_nds), 0) AS summa
                 FROM document_prixod_jur7 d
                 JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
@@ -245,8 +131,8 @@ exports.SaldoDB = class {
             ),
             prixod_internal AS (
                 SELECT
-                    COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa), 0) AS summa
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
@@ -260,8 +146,8 @@ exports.SaldoDB = class {
             ),
             rasxod AS (
                 SELECT
-                    COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa), 0) AS summa
                 FROM document_rasxod_jur7 d
                 JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
@@ -275,8 +161,8 @@ exports.SaldoDB = class {
             ),
             rasxod_internal AS (
                 SELECT
-                    COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.kol), 0) AS kol,
+                    COALESCE(SUM(ch.summa), 0) AS summa
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
@@ -305,62 +191,5 @@ exports.SaldoDB = class {
         const result = await db.query(query, params);
 
         return result[0];
-    }
-
-    static async delete(params, client) {
-        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
-        const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
-
-        await client.query(query2, params);
-        await client.query(query, params);
-    }
-
-    static async create(params, client) {
-        const query = `--sql
-            INSERT INTO saldo_naimenovanie_jur7 (
-                user_id,
-                naimenovanie_tovarov_jur7_id,
-                kol,
-                sena,
-                summa,
-                month,
-                year,
-                date_saldo,
-                doc_date,
-                doc_num,
-                kimning_buynida,
-                region_id,
-                prixod_id,
-                iznos,
-                created_at,
-                updated_at
-            )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
-        `;
-
-        const result = await client.query(query, params)
-
-        return result.rows[0];
-    }
-
-    static async getProductPrixod(params) {
-        const query = `--sql
-            SELECT
-                d.id, 
-                TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
-                d.doc_num, 
-                'prixod' AS type
-            FROM document_prixod_jur7_child ch
-            JOIN document_prixod_jur7 d ON ch.document_prixod_jur7_id = d.id
-            WHERE ch.naimenovanie_tovarov_jur7_id = $1 
-        `;
-        const result = await db.query(query, params);
-        return result[0] || null;
-    }
-
-    static async deleteByPrixodId(params, cleint) {
-        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1`;
-
-        await cleint.query(query, params);
     }
 }

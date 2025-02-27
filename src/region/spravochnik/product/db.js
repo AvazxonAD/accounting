@@ -57,7 +57,7 @@ exports.ProductDB = class {
                 JOIN users AS u ON u.id = pr.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN group_jur7 AS g ON g.id = pr.group_jur7_id
-                JOIN spravochnik_budjet_name AS b ON b.id = pr.spravochnik_budjet_name_id 
+                LEFT JOIN spravochnik_budjet_name AS b ON b.id = pr.spravochnik_budjet_name_id 
                 WHERE pr.isdeleted = false 
                     AND r.id = $1 
                     ${search_filter}

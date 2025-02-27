@@ -4,6 +4,17 @@ const { GroupSchema } = require('./schema');
 
 
 exports.Controller = class {
+    static async export(req, res) {
+        const { data, total } = await GroupService.get({ offset: 0, limit: 99999 });
+
+        const { fileName, filePath } = await GroupService.export(data)
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        return res.sendFile(filePath);
+    }
+
     static async templateFile(req, res) {
         const { fileName, fileRes } = await GroupService.templateFile();
 
@@ -74,7 +85,7 @@ exports.Controller = class {
 
     static async delete(req, res) {
         const id = req.params.id;
-        
+
         const group = await GroupService.getById({ id });
         if (!group) {
             return res.error(req.i18n.t('groupNotFound'), 404);

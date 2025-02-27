@@ -62,7 +62,7 @@ exports.Controller = class {
         const { page, limit, search, podraz_id, excel } = req.query;
         const offset = (page - 1) * limit;
 
-        const { data, total } = await ResponsibleDB.get([region_id, offset, limit], search, podraz_id)
+        const { data, total } = await ResponsibleDB.get([offset, limit], region_id, search, podraz_id)
 
         if (podraz_id) {
             const podrazdelenie = await PodrazdelenieDB.getByIdPodrazdelenie([region_id, podraz_id])

@@ -19,8 +19,10 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, responsible, search } = req.query;
+    const { kimning_buynida, to, responsible, search, page, limit } = req.query;
     const data = { responsibles: [], products: [] };
+
+    const offset = (page - 1) * limit;
 
     if (kimning_buynida) {
       const responsible = await ResponsibleService.getById({ region_id, id: kimning_buynida });
@@ -36,10 +38,24 @@ exports.Controller = class {
         responsibles = responsibles.filter(item => item.id === kimning_buynida);
       }
 
-      data.responsibles = await SaldoService.getByResponsibles({ region_id, to, responsibles, search });
+      data.responsibles = await SaldoService.getByResponsibles({ region_id, to, responsibles, search, offset, limit });
+    } else {
+      const _data = await SaldoService.getByProduct({ region_id, responsible_id: kimning_buynida, to, search, offset, limit });
+      data.products = _data.data;
+      data.total = _data.total;
     }
 
-    return res.success(req.i18n.t('getSuccess'), 200, null, data);
+    const pageCount = Math.ceil(data.total / limit);
+
+    const meta = {
+      pageCount: pageCount,
+      count: data.total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1
+    }
+
+    return res.success(req.i18n.t('getSuccess'), 200, meta, data);
   }
 
   static async import(req, res) {
@@ -119,11 +135,11 @@ exports.Controller = class {
     }
 
     const { last_saldo, last_date } = await SaldoService.lastSaldo({ region_id, ...req.body });
-    if (last_saldo.length === 0) {
+    if (last_saldo.data.length === 0) {
       return res.error(req.i18n.t('lastSaldoNotFound'), 404);
     }
 
-    await SaldoService.create({ region_id, user_id, ...req.body, last_saldo, last_date, budjet_id });
+    await SaldoService.create({ region_id, user_id, ...req.body, last_saldo: last_saldo.data, last_date, budjet_id });
 
     return res.success(req.i18n.t('createSuccess'), 200);
   }
