@@ -31,7 +31,11 @@ exports.SaldoService = class {
     static async check(data) {
         const result = await SaldoDB.check([data.region_id], data.year, data.month);
 
-        return result;
+        const first = await SaldoDB.getFirstSaldoDate([data.region_id]);
+
+        const end = await SaldoDB.getEndSaldoDate([data.region_id]);
+
+        return { result, meta: { first, end } };
     }
 
     static async create(data) {
@@ -62,11 +66,12 @@ exports.SaldoService = class {
 
             for (let responsible of result) {
                 for (let product of responsible.products) {
+                    const sena = product.data.summa / product.data.kol;
                     await SaldoDB.create([
                         data.user_id,
                         product.id,
                         product.data.kol,
-                        product.data.summa / product.data.kol,
+                        sena,
                         product.data.summa,
                         data.month,
                         data.year,
@@ -76,6 +81,37 @@ exports.SaldoService = class {
                         responsible.id,
                         data.region_id,
                         product.doc_data?.id,
+                        product.iznos,
+                        tashkentTime(),
+                        tashkentTime()
+                    ], client);
+
+                    const last_date = HelperFunctions.lastDate({ year: data.year, month: data.month });
+
+                    const old_iznos_data = await IznosDB.getByProduct([product.id], last_date.year, last_date.month);
+                    const old_iznos = old_iznos_data ? old_iznos_data.iznos_summa : 0;
+                    let iznos_summa = (sena * (product.group.iznos_foiz / 100)) + old_iznos;
+                    iznos_summa = iznos_summa >= sena ? sena : iznos_summa;
+                    
+                    const month_summa = (sena * (product.group.iznos_foiz / 100));
+
+                    await IznosDB.createIznos([
+                        data.user_id,
+                        product.product.inventar_num,
+                        product.product.serial_num,
+                        product.id,
+                        1,
+                        sena,
+                        product.doc_data.doc_date,
+                        product.responsible_id,
+                        iznos_summa,
+                        data.year,
+                        data.month,
+                        `${data.year}-${data.month}-01`,
+                        data.budjet_id,
+                        old_iznos > sena ? sena : old_iznos,
+                        data.region_id,
+                        month_summa,
                         tashkentTime(),
                         tashkentTime()
                     ], client);
@@ -159,7 +195,9 @@ exports.SaldoService = class {
                         });
 
                         const old_iznos = doc.eski_iznos_summa / doc.kol;
-                        const iznos_summa = (sena * (doc.iznos_foiz / 100) / 12) + old_iznos;
+                        let iznos_summa = (sena * (doc.iznos_foiz / 100)) + old_iznos;
+                        iznos_summa = iznos_summa >= sena ? sena : iznos_summa;
+                        const month_summa = (sena * (doc.iznos_foiz / 100));
 
                         await IznosDB.createIznos([
                             data.user_id,
@@ -175,10 +213,12 @@ exports.SaldoService = class {
                             doc.month,
                             doc.date_saldo,
                             data.budjet_id,
-                            old_iznos,
+                            old_iznos > sena ? sena : old_iznos,
+                            data.region_id,
+                            month_summa,
                             tashkentTime(),
                             tashkentTime()
-                        ], client)
+                        ], client);
                     }
                 } else {
                     const product = await ProductDB.create([
@@ -209,11 +249,16 @@ exports.SaldoService = class {
                 if (first_date < data.date_saldo.full_date) {
                     year = first_date.getFullYear();
                     month = first_date.getMonth() + 1;
+                } else {
+                    year = data.date_saldo.full_date.getFullYear();
+                    month = data.date_saldo.full_date.getMonth() + 1;
                 }
             } else {
                 year = data.date_saldo.full_date.getFullYear();
                 month = data.date_saldo.full_date.getMonth() + 1;
             }
+
+            console.log(year, month, first_date)
 
             for (let doc of saldo_create) {
                 await SaldoDB.create([
@@ -230,6 +275,7 @@ exports.SaldoService = class {
                     doc.responsible_id,
                     data.region_id,
                     null,
+                    doc.iznos,
                     tashkentTime(),
                     tashkentTime()
                 ], client);

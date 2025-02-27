@@ -317,7 +317,11 @@ exports.PrixodJur7Service = class {
             ], data.client);
 
             const product_sena = summa_s_nds / child.kol;
-            const iznos_summa = (product_sena * (child.iznos_foiz / 100) / 12) + child.eski_iznos_summa;
+
+            let iznos_summa = (product_sena * (child.iznos_foiz / 100)) + child.eski_iznos_summa;
+            iznos_summa = iznos_summa >= product_sena ? product_sena : iznos_summa;
+            const month_summa = (product_sena * (child.iznos_foiz / 100));
+
             const month = new Date(data.doc.doc_date).getMonth() + 1;
             const year = new Date(data.doc.doc_date).getFullYear();
 
@@ -336,7 +340,9 @@ exports.PrixodJur7Service = class {
                     month,
                     `${year}-${month}-01`,
                     data.budjet_id,
-                    child.eski_iznos_summa,
+                    child.eski_iznos_summa > product_sena ? product_sena : child.eski_iznos_summa,
+                    data.region_id,
+                    month_summa,
                     tashkentTime(),
                     tashkentTime()
                 ], data.client)
@@ -356,6 +362,7 @@ exports.PrixodJur7Service = class {
                 data.kimga_id,
                 data.region_id,
                 data.docId,
+                child.iznos,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);
