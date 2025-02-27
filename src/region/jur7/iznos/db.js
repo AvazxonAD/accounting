@@ -64,10 +64,12 @@ exports.IznosDB = class {
                 full_date,
                 budjet_id,
                 eski_iznos_summa,
+                region_id,
+                month_summa,
                 created_at,
                 updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `;
         await client.query(query, params);
     }
@@ -148,12 +150,11 @@ exports.IznosDB = class {
         `;
 
         // const _db = client || db;
-        
+
         const result = await db.query(query, params);
-        
+
         return result[0]; //|| result.rows[0];
     }
-
 
     static async deleteIznos(params, client) {
         const query = `--sql
@@ -181,6 +182,36 @@ exports.IznosDB = class {
             WHERE id = $3 AND isdeleted = false RETURNING id
         `;
         const result = await db.query(query, params);
+        return result[0];
+    }
+
+    static async getByProduct(params, year = null, month = null) {
+        let month_filter = ``;
+        let year_filter = ``;
+
+        if (year) {
+            params.push(year)
+            year_filter = `AND year = $${params.length}`;
+        }
+
+        if (month) {
+            params.push(month)
+            month_filter = `AND month = $${params.length}`;
+        }
+
+        const query = `
+            SELECT 
+                *,
+                iznos_summa::FLOAT
+            FROM iznos_tovar_jur7
+            WHERE naimenovanie_tovarov_jur7_id = $1
+                AND isdeleted = false
+                ${year_filter}
+                ${month_filter}
+        `;
+
+        const result = await db.query(query, params);
+
         return result[0];
     }
 }

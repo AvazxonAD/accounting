@@ -123,7 +123,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('lastSaldoNotFound'), 404);
     }
 
-    await SaldoService.create({ region_id, user_id, ...req.body, last_saldo, last_date });
+    await SaldoService.create({ region_id, user_id, ...req.body, last_saldo, last_date, budjet_id });
 
     return res.success(req.i18n.t('createSuccess'), 200);
   }
@@ -131,9 +131,9 @@ exports.Controller = class {
   static async check(req, res) {
     const region_id = req.user.region_id;
 
-    const response = await SaldoService.check({ region_id, ...req.query });
+    const { meta, result: response } = await SaldoService.check({ region_id, ...req.query });
 
-    return res.success(req.i18n.t('getSuccess'), 200, null, response);
+    return res.success(req.i18n.t('getSuccess'), 200, meta, response);
   }
 
 

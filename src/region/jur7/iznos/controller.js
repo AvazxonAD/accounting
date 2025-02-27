@@ -73,32 +73,4 @@ exports.Controller = class {
 
         return res.success(req.i18n.t('updateSuccess'), 200, null, iznos);
     }
-
-    static async create(req, res) {
-        const { budjet_id } = req.query;
-        const { products, year, month, } = req.body;
-        const region_id = req.user.region_id;
-        const user_id = req.user.id;
-
-        const budjet = await BudjetService.getById({ id: budjet_id });
-        if (!budjet) {
-            return res.error(req.i18n.t('budjetNotFound'), 404);
-        }
-
-        for (let product of products) {
-            const is_null = await ProductService.getById({ region_id, id: product.id });
-            if (!is_null) {
-                return res.error(req.i18n.t('productNotFound'), 404);
-            }
-
-            const check = await IznosService.getByProductId({ product_id: product.id, year, month });
-            if (check) {
-                return res.error(req.i18n.t('IznosAlreadyExist'), 400, product);
-            }
-        }
-
-        await IznosService.create({ products, user_id, month, year, budjet_id });
-
-        return res.success(req.i18n.t('createSuccess'), 404);
-    }
 }

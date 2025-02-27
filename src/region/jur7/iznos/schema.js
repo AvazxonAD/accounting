@@ -17,37 +17,6 @@ exports.IznosSchema = class {
     }).options({ stripUnknown: true });
   }
 
-  static create() {
-    return Joi.object({
-      query: Joi.object({
-        budjet_id: Joi.number().integer().min(1).required()
-      }),
-
-      body: Joi.object({
-        year: Joi.number().integer().min(1901).required(),
-        month: Joi.number().integer().min(1).max(12).required(),
-        products: Joi.array().items(
-          Joi.object({
-            id: Joi.number().integer().min(1).required(),
-            inventar_num: Joi.string(),
-            serial_num: Joi.string(),
-            iznos_data: Joi.object({
-              eski_iznos_summa: Joi.number().min(0).required(),
-              iznos_summa: Joi.number().required(),
-              summa: Joi.number().required(),
-              year: Joi.number().integer().min(2000).max(2100).required(),
-              month: Joi.number().integer().min(1).max(12).required(),
-              kol: Joi.number().integer().min(1).required(),
-              sena: Joi.number().integer().min(0).required(),
-              new_summa: Joi.number().required(),
-              responsible_id: Joi.number().integer().min(1).required()
-            })
-          })
-        ).required().min(1)
-      })
-    }).options({ stripUnknown: true });
-  }
-
   static update() {
     return Joi.object({
       params: Joi.object({

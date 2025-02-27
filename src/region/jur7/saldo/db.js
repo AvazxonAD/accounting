@@ -41,11 +41,27 @@ exports.SaldoDB = class {
     static async getFirstSaldoDate(params) {
         const query = `
            SELECT 
-                DISTINCT date_saldo
+                DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
             FROM saldo_naimenovanie_jur7 
             WHERE region_id = $1
                 AND isdeleted = false
             ORDER BY date_saldo
+            LIMIT 1
+        `;
+
+        const result = await db.query(query, params);
+
+        return result[0];
+    }
+
+    static async getEndSaldoDate(params) {
+        const query = `
+           SELECT 
+                DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
+            FROM saldo_naimenovanie_jur7 
+            WHERE region_id = $1
+                AND isdeleted = false
+            ORDER BY date_saldo DESC 
             LIMIT 1
         `;
 
@@ -280,10 +296,11 @@ exports.SaldoDB = class {
                 kimning_buynida,
                 region_id,
                 prixod_id,
+                iznos,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
         `;
 
         const result = await client.query(query, params)
