@@ -32,6 +32,8 @@ exports.SaldoSchema = class {
         edin: Joi.string().trim().required().messages({ '*': lang.t('validation.edin') }),
         kol: Joi.number().min(1).required().messages({ '*': lang.t('validation.kol') }),
         summa: Joi.number().min(1).required().messages({ '*': lang.t('validation.summa') }),
+        year: Joi.number().min(1901).required().messages({ '*': lang.t('validation.year') }),
+        month: Joi.number().min(1).max(12).required().messages({ '*': lang.t('validation.month') }),
         inventar_num: Joi.any().messages({ '*': lang.t('validation.inventarNum') }),
         serial_num: Joi.any().messages({ '*': lang.t('validation.serialNum') }),
         iznos: Joi.any().messages({ '*': lang.t('validation.iznos') }),

@@ -271,7 +271,13 @@ exports.PrixodJur7Service = class {
             const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
             let dates = [];
             for (let date of check) {
-                dates.push(await SaldoDB.createSaldoDate([data.region_id, date.year, date.month]));
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
             }
 
             return { doc, dates };
@@ -394,6 +400,31 @@ exports.PrixodJur7Service = class {
 
             await this.createChild({ ...data, docId: data.id, childs, client, doc });
 
+            let year, month;
+
+            if (new Date(data.oldData.doc_date) > new Date(data.doc_date)) {
+                year = new Date(data.doc_date).getFullYear();
+                month = new Date(data.doc_date).getMonth() + 1;
+            } else if (new Date(data.doc_date) > new Date(data.oldData.doc_date)) {
+                year = new Date(data.oldData.doc_date).getFullYear();
+                month = new Date(data.oldData.doc_date).getMonth() + 1;
+            } else {
+                year = new Date(data.doc_date).getFullYear();
+                month = new Date(data.doc_date).getMonth() + 1;
+            }
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
+            }
+
             return { id: data.id }
         });
 
@@ -414,6 +445,21 @@ exports.PrixodJur7Service = class {
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
             const docId = await PrixodDB.delete([data.id], client);
+
+            const year = new Date(data.oldData.doc_date).getFullYear();
+            const month = new Date(data.oldData.doc_date).getMonth() + 1;
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
+            }
 
             return docId
         });

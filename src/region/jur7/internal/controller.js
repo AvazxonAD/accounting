@@ -55,7 +55,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('productIdError'), 400);
     }
 
-    const result = await Jur7RsxodService.create({ ...req.body, main_schet_id, user_id });
+    const result = await Jur7RsxodService.create({ ...req.body, main_schet_id, user_id, region_id });
 
     return res.success(req.i18n.t('createSuccess'), 200, null, result);
   }
@@ -129,7 +129,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('productIdError'), 400);
     }
 
-    const result = await Jur7RsxodService.update({ ...req.body, user_id, main_schet_id, id });
+    const result = await Jur7RsxodService.update({ ...req.body, user_id, main_schet_id, id, oldData, region_id });
 
     return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   }
@@ -149,7 +149,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
 
-    await Jur7RsxodService.delete({ id });
+    await Jur7RsxodService.delete({ id, region_id, oldData });
 
     return res.error(req.i18n.t('deleteSuccess'), 200, null, { id })
   }

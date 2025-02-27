@@ -1,11 +1,27 @@
 const { db } = require('@db/index')
 const { RasxodDB } = require('./db');
 const { tashkentTime, returnParamsValues } = require('@helper/functions');
+const { SaldoDB } = require('@saldo/db');
 
 exports.Jur7RsxodService = class {
     static async delete(data) {
         await db.transaction(async (client) => {
             await RasxodDB.delete([data.id], client)
+
+            const year = new Date(data.oldData.doc_date).getFullYear();
+            const month = new Date(data.oldData.doc_date).getMonth() + 1;
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
+            }
         })
     }
 
@@ -31,6 +47,21 @@ exports.Jur7RsxodService = class {
             ], client);
 
             await this.createRasxodChild({ ...data, docId: doc.id, client });
+
+            const year = new Date(data.doc_date).getFullYear();
+            const month = new Date(data.doc_date).getMonth() + 1;
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
+            }
 
             return doc;
         });
@@ -86,6 +117,31 @@ exports.Jur7RsxodService = class {
             await RasxodDB.deleteRasxodChild([data.id], client)
 
             await this.createRasxodChild({ ...data, docId: data.id, client })
+
+            let year, month;
+
+            if (new Date(data.oldData.doc_date) > new Date(data.doc_date)) {
+                year = new Date(data.doc_date).getFullYear();
+                month = new Date(data.doc_date).getMonth() + 1;
+            } else if (new Date(data.doc_date) > new Date(data.oldData.doc_date)) {
+                year = new Date(data.oldData.doc_date).getFullYear();
+                month = new Date(data.oldData.doc_date).getMonth() + 1;
+            } else {
+                year = new Date(data.doc_date).getFullYear();
+                month = new Date(data.doc_date).getMonth() + 1;
+            }
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
+            }
 
             return { id: data.id };
         });

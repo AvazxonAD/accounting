@@ -7,6 +7,7 @@ const { BudjetService } = require('@budjet/service');
 const { ResponsibleService } = require('@responsible/service');
 const { GaznaService } = require('@gazna/service');
 const { AccountNumberService } = require('@account_number/service');
+const { SaldoService } = require('@saldo/service');
 
 exports.Controller = class {
   static async create(req, res) {
@@ -92,6 +93,7 @@ exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id, orderType, orderBy } = req.query;
+
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
@@ -117,6 +119,7 @@ exports.Controller = class {
     const region_id = req.user.region_id
     const id = req.params.id
     const main_schet_id = req.query.main_schet_id;
+
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
@@ -220,7 +223,7 @@ exports.Controller = class {
       child.iznos_foiz = group.iznos_foiz;
     }
 
-    const result = await PrixodJur7Service.update({ ...req.body, budjet_id, main_schet_id, user_id, id, childs });
+    const result = await PrixodJur7Service.update({ ...req.body, budjet_id, main_schet_id, user_id, id, childs, oldData, region_id });
 
     return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   }
@@ -249,7 +252,7 @@ exports.Controller = class {
       }
     }
 
-    const result = await PrixodJur7Service.deleteDoc({ id });
+    const result = await PrixodJur7Service.deleteDoc({ id, region_id, oldData });
 
     return res.success(req.i18n.t('deleteSuccess'), 200, null, result);
   }
