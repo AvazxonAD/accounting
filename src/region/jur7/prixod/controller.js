@@ -84,7 +84,6 @@ exports.Controller = class {
 
       child.iznos_foiz = group.iznos_foiz;
     }
-    console.log('////////')
 
     const result = await PrixodJur7Service.create({ ...req.body, user_id, main_schet_id, budjet_id, childs, region_id });
 

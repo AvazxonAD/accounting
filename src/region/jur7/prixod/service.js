@@ -348,8 +348,6 @@ exports.PrixodJur7Service = class {
                 ], data.client)
             }
 
-            console.log('////////////')
-
             await SaldoDB.create([
                 data.user_id,
                 child.id,

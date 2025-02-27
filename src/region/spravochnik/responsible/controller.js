@@ -96,7 +96,7 @@ exports.Controller = class {
         const region_id = req.user.region_id
         const id = req.params.id
 
-        const data = await ResponsibleDB.getById([region_id, id], true)
+        const data = await ResponsibleDB.getById([id], region_id, true)
         if (!data) {
             return res.error(req.i18n.t('responsibleNotFound'), 404);
         }
