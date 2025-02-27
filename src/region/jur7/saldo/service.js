@@ -74,7 +74,6 @@ exports.SaldoService = class {
                 for (let product of responsible.products) {
                     const sena = product.data.summa / product.data.kol;
 
-                    console.log(product.doc_data)
                     await SaldoDB.create([
                         data.user_id,
                         product.id,
@@ -100,10 +99,6 @@ exports.SaldoService = class {
                     const old_iznos = old_iznos_data ? old_iznos_data.iznos_summa : 0;
                     let iznos_summa = (sena * (product.group.iznos_foiz / 100)) + old_iznos;
                     iznos_summa = iznos_summa >= sena ? sena : iznos_summa;
-
-                    // if (isNaN(iznos_summa)) {
-                    //     console.log((sena * (product.group.iznos_foiz / 100)), 'sena', sena, 'data summa', product.data)
-                    // }
 
                     const month_summa = (sena * (product.group.iznos_foiz / 100));
 

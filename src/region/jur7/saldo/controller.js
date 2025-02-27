@@ -20,7 +20,7 @@ exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
     const { kimning_buynida, to, responsible, search, page, limit } = req.query;
-    const data = { responsibles: [], products: [] };
+    const data = { responsibles: [], products: [], total: 0 };
 
     const offset = (page - 1) * limit;
 
