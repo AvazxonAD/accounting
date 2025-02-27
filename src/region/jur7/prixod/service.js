@@ -290,9 +290,11 @@ exports.PrixodJur7Service = class {
         for (const child of data.childs) {
             const summa = !child.summa ? child.kol * child.sena : child.summa;
 
-            const nds_summa = child.nds_foiz ? child.nds_foiz / 100 * summa : child.summa;
+            const nds_summa = child.nds_foiz ? (child.nds_foiz / 100) * summa : 0;
 
             const summa_s_nds = summa + nds_summa;
+
+            const product_sena = summa_s_nds / child.kol;
 
             await PrixodDB.createChild([
                 child.id,
@@ -310,16 +312,15 @@ exports.PrixodJur7Service = class {
                 data.user_id,
                 data.docId,
                 data.main_schet_id,
-                child.eski_iznos_summa,
+                child.old_iznos > product_sena ? product_sena : child.old_iznos,
                 child.iznos,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);
 
-            const product_sena = summa_s_nds / child.kol;
-
-            let iznos_summa = (product_sena * (child.iznos_foiz / 100)) + child.eski_iznos_summa;
+            let iznos_summa = (product_sena * (child.iznos_foiz / 100)) + child.old_iznos;
             iznos_summa = iznos_summa >= product_sena ? product_sena : iznos_summa;
+
             const month_summa = (product_sena * (child.iznos_foiz / 100));
 
             const month = new Date(data.doc.doc_date).getMonth() + 1;
@@ -340,7 +341,7 @@ exports.PrixodJur7Service = class {
                     month,
                     `${year}-${month}-01`,
                     data.budjet_id,
-                    child.eski_iznos_summa > product_sena ? product_sena : child.eski_iznos_summa,
+                    child.old_iznos > product_sena ? product_sena : child.old_iznos,
                     data.region_id,
                     month_summa,
                     tashkentTime(),
