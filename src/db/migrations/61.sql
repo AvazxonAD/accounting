@@ -1,0 +1,6 @@
+UPDATE saldo_naimenovanie_jur7 SET isdeleted = true;
+UPDATE saldo_date SET isdeleted = true; 
+UPDATE iznos_tovar_jur7 SET isdeleted = true;
+UPDATE document_vnutr_peremesh_jur7 SET isdeleted = true;
+UPDATE document_prixod_jur7 SET isdeleted = true;
+UPDATE document_rasxod_jur7 SET isdeleted = true;
