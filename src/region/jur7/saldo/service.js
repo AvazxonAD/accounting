@@ -58,7 +58,7 @@ exports.SaldoService = class {
 
                 product.id = product.naimenovanie_tovarov_jur7_id;
 
-                product.doc_data = { doc_date: product.doc_date, doc_num: product.doc_num, id: product.doc_id };
+                product.doc_data = { doc_date: product.prixod_data.doc_date, doc_num: product.prixod_data.doc_num, id: product.prixod_data.doc_id };
             }
 
             responsible.products = responsible.products.filter(item => item.data.kol !== 0 && item.data.summa !== 0);
@@ -73,7 +73,8 @@ exports.SaldoService = class {
             for (let responsible of result) {
                 for (let product of responsible.products) {
                     const sena = product.data.summa / product.data.kol;
-                    
+
+                    console.log(product.doc_data)
                     await SaldoDB.create([
                         data.user_id,
                         product.id,
@@ -103,7 +104,7 @@ exports.SaldoService = class {
                     // if (isNaN(iznos_summa)) {
                     //     console.log((sena * (product.group.iznos_foiz / 100)), 'sena', sena, 'data summa', product.data)
                     // }
-                    
+
                     const month_summa = (sena * (product.group.iznos_foiz / 100));
 
                     await IznosDB.createIznos([
