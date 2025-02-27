@@ -7,7 +7,6 @@ const { BudjetService } = require('@budjet/service');
 const { ResponsibleService } = require('@responsible/service');
 const { GaznaService } = require('@gazna/service');
 const { AccountNumberService } = require('@account_number/service');
-const { SaldoService } = require('@saldo/service');
 
 exports.Controller = class {
   static async create(req, res) {
@@ -83,6 +82,7 @@ exports.Controller = class {
       }
 
       child.iznos_foiz = group.iznos_foiz;
+      child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
     const result = await PrixodJur7Service.create({ ...req.body, user_id, main_schet_id, budjet_id, childs, region_id });
@@ -221,6 +221,7 @@ exports.Controller = class {
       }
 
       child.iznos_foiz = group.iznos_foiz;
+      child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
     const result = await PrixodJur7Service.update({ ...req.body, budjet_id, main_schet_id, user_id, id, childs, oldData, region_id });
