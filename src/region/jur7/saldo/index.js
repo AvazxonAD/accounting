@@ -7,12 +7,13 @@ const { validator } = require('@helper/validator');
 const { SaldoSchema } = require("./schema");
 
 const upload = require('../../../helper/upload');
+const { Middleware } = require('@middleware/index');
 
 router
-    .post('/import', upload.single('file'), validator(Controller.import, SaldoSchema.import()))
+    .post('/import', Middleware.jur7Block, upload.single('file'), validator(Controller.import, SaldoSchema.import()))
     .post('/', validator(Controller.create, SaldoSchema.create()))
-    .get('/temlate', Controller.templateFile)
+    .get('/temlate', Middleware.jur7Block, Controller.templateFile)
     .get('/check', validator(Controller.check, SaldoSchema.check()))
-    .get('/', validator(Controller.get, SaldoSchema.get()));
+    .get('/', Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()));
 
 module.exports = router;

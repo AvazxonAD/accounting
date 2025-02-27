@@ -2,14 +2,51 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
-    static async createSaldoDate(params) {
+    static async createSaldoDate(params, client) {
         const query = `
             INSERT INTO saldo_date(
                 region_id, 
                 year, 
                 month,
+                created_at,
+                updated_at
             ) 
-            VALUES($1, $2, $3) RETURNING *
+            VALUES($1, $2, $3, $4, $5) RETURNING *
+        `;
+
+        const result = await client.query(query, params);
+
+        return result[0];
+    }
+
+    static async getSaldoDate(params, client) {
+        const _db = client || db;
+        const query = `
+            SELECT 
+                DISTINCT year, month
+            FROM saldo_naimenovanie_jur7 
+            WHERE region_id = $1
+                AND date_saldo > $2
+                AND isdeleted = false
+            ORDER BY year, month
+        `;
+
+        const data = await _db.query(query, params);
+
+        const response = client ? data.rows : data;
+
+        return response;
+    }
+
+    static async getFirstSaldoDate(params) {
+        const query = `
+           SELECT 
+                DISTINCT date_saldo
+            FROM saldo_naimenovanie_jur7 
+            WHERE region_id = $1
+                AND isdeleted = false
+            ORDER BY date_saldo
+            LIMIT 1
         `;
 
         const result = await db.query(query, params);
@@ -17,31 +54,50 @@ exports.SaldoDB = class {
         return result[0];
     }
 
-    static async getSaldoDate(params) {
+    static async getBlock(params) {
         const query = `
             SELECT 
-                year, month
-            FROM saldo_naimenovanie_jur7 
+                DISTINCT year, month
+            FROM saldo_date 
             WHERE region_id = $1
-                AND date_saldo > $2
-            GROUP BY year, month
-            ORDER BY year, month 
+                AND isdeleted = false
+            ORDER BY year, month
+            LIMIT 1 
         `;
 
         const data = await db.query(query, params);
 
-        return data;
+        return data[0];
     }
 
-    static async check(params) {
+    static async unblock(params) {
+        const query = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1 AND year = $2 AND month = $3`;
+
+        await db.query(query, params);
+    }
+
+    static async check(params, year = null, month = null) {
+        let year_filter = ``;
+        let month_filter = ``;
+
+        if (year) {
+            params.push(year)
+            year_filter = `AND year = $${params.length}`
+        }
+
+        if (month) {
+            params.push(month)
+            month_filter = `AND month = $${params.length}`;
+        }
+
         const query = `
             SELECT
                 *
             FROM saldo_naimenovanie_jur7 
             WHERE region_id = $1 
                 AND  isdeleted = false 
-                AND year = $2
-                AND month = $3  
+                ${year_filter}
+                ${month_filter}  
         `;
 
         const result = await db.query(query, params);

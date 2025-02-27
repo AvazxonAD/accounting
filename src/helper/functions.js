@@ -3,9 +3,28 @@ const path = require('path');
 const fs = require('fs').promises;
 
 exports.HelperFunctions = class {
+    static checkYearMonth(array) {
+        const year = array[0].year;
+        const month = array[0].month;
+
+        for (let item of array) {
+            if (item.year !== year || item.month !== month) {
+                return false;
+            }
+        }
+
+        return { year, month, full_date: new Date(`${year}-${month}-01`) };
+    }
+
     static lastDate(date) {
         if (date.month === 1) return { month: 12, year: date.year - 1 };
         else if (date.month > 1) return { month: date.month - 1, year: date.year };
+        else return null;
+    }
+
+    static nextDate(date) {
+        if (date.month === 12) return { month: 1, year: date.year + 1 };
+        else if (date.month < 12) return { month: date.month + 1, year: date.year };
         else return null;
     }
 

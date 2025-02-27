@@ -46,6 +46,7 @@ exports.Controller = class {
     if (!req.file) {
       return res.error(req.i18n.t('fileError'), 400);
     }
+
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const { main_schet_id, budjet_id } = req.query;
@@ -61,10 +62,14 @@ exports.Controller = class {
     }
 
     const data = await SaldoService.readFile({ filePath: req.file.path });
-
     const { error, value } = SaldoSchema.importData(req.i18n).validate(data);
     if (error) {
       return res.error(error.details[0].message, 400);
+    }
+
+    const date_saldo = HelperFunctions.checkYearMonth(value);
+    if (!date_saldo) {
+      return res.error(req.i18n.t('differentSaldoDate'), 400);
     }
 
     for (let doc of value) {
@@ -73,12 +78,16 @@ exports.Controller = class {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
+      doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
+
       if (doc.doc_date) {
         const dates = doc.doc_date.split('.');
-        doc.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+        doc.doc_date = new Date(`${dates[2]}-${dates[1]}-${dates[0]}`);
       } else {
         doc.doc_date = new Date();
       }
+
+      doc.doc_num = doc.doc_num ? doc.doc_num : 'saldo';
 
       doc.iznos = doc.iznos === 'ha' ? true : false;
 
@@ -89,7 +98,7 @@ exports.Controller = class {
       doc.iznos_foiz = group.iznos_foiz;
     }
 
-    await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id, region_id });
+    await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id, region_id, date_saldo });
 
     return res.success(req.i18n.t('importSuccess'), 201);
   }
@@ -109,7 +118,12 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    await SaldoService.create({ region_id, user_id, ...req.body });
+    const { last_saldo, last_date } = await SaldoService.lastSaldo({ region_id, ...req.body });
+    if (last_saldo.length === 0) {
+      return res.error(req.i18n.t('lastSaldoNotFound'), 404);
+    }
+
+    await SaldoService.create({ region_id, user_id, ...req.body, last_saldo, last_date });
 
     return res.success(req.i18n.t('createSuccess'), 200);
   }
