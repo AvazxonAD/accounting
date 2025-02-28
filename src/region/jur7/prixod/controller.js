@@ -67,7 +67,7 @@ exports.Controller = class {
     if (organization_by_raschet_schet_gazna_id) {
       const gazna = await GaznaService.getById({ organ_id: kimdan_id, id: organization_by_raschet_schet_gazna_id });
       if (!gazna) {
-        return res.error(req.i18n.t('gaznaNotFound'), 404);
+        return res.error(req.i18n.t('gazna_not_found'), 404);
       }
     }
 
@@ -206,7 +206,7 @@ exports.Controller = class {
     if (organization_by_raschet_schet_gazna_id) {
       const gazna = await GaznaService.getById({ organ_id: kimdan_id, id: organization_by_raschet_schet_gazna_id });
       if (!gazna) {
-        return res.error(req.i18n.t('gaznaNotFound'), 404);
+        return res.error(req.i18n.t('gazna_not_found'), 404);
       }
     }
 

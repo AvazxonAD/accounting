@@ -1,6 +1,29 @@
 const { db } = require('@db/index');
 
 exports.OrganizationDB = class {
+    static async setNullParentId(params, client) {
+        const query = `
+            UPDATE spravochnik_organization
+            SET parent_id = null 
+            WHERE parent_id = $1 
+        `;
+
+        await client.query(query, params);
+    }
+
+    static async setParentId(params, client) {
+        const query = `
+            UPDATE spravochnik_organization
+            SET parent_id = $1 
+            WHERE id = $2 
+            RETURNING id
+        `;
+
+        const data = await client.query(query, params);
+
+        return data.rows[0];
+    }
+
     static async getByInn(params) {
         const query = `
             SELECT 
@@ -21,8 +44,8 @@ exports.OrganizationDB = class {
                 AND so.isdeleted = false
             LIMIT 1
         `;
-        const result = await db.query(query, params);
-        return result[0]
+        const data = await db.query(query, params);
+        return data[0]
     }
 
     static async getByName(params) {
@@ -45,8 +68,8 @@ exports.OrganizationDB = class {
                 AND so.isdeleted = false
             LIMIT 1
         `;
-        const result = await db.query(query, params);
-        return result[0]
+        const data = await db.query(query, params);
+        return data[0]
     }
 
     static async getById(params, isdeleted) {
@@ -84,8 +107,8 @@ exports.OrganizationDB = class {
                 ${isdeleted ? '' : ignore}
         `;
 
-        const result = await db.query(query, params)
-        if (result[0]) {
+        const data = await db.query(query, params)
+        if (data[0]) {
             const child_query = `--sql
                 SELECT 
                     so.id, 
@@ -117,23 +140,63 @@ exports.OrganizationDB = class {
                 WHERE regions.id = $1 AND so.parent_id = $2 AND so.isdeleted = false
             `;
 
-            result[0].childs = await db.query(child_query, params);
+            data[0].childs = await db.query(child_query, params);
         }
-        return result[0];
+        return data[0];
     }
 
-    static async get(params, search, organ_id) {
+    static async get(params, search, organ_id, parent, parent_id) {
         let organ_filter = ``;
         let search_filter = ``
-        
+        let parent_filter = ``;
+
         if (search) {
             search_filter = `AND ( so.inn ILIKE '%' || $${params.length + 1} || '%' OR so.name ILIKE '%' || $${params.length + 1} || '%' )`;
             params.push(search);
         }
-        
+
         if (organ_id) {
             params.push(organ_id);
             organ_filter = `AND so.id = $${params.length}`;
+        }
+
+        if (parent === 'true') {
+            parent_filter = `
+                 AND (
+                    so.parent_id IS NULL
+                    AND EXISTS (
+                        SELECT 1
+                        FROM spravochnik_organization sub
+                        WHERE sub.isdeleted = false
+                            AND sub.parent_id = so.id
+                    )
+                )
+            `;
+        } else if (parent === 'false' && parent_id) {
+            params.push(parent_id)
+            parent_filter = `
+                AND (
+                    ( so.parent_id IS NULL OR so.parent_id = $${params.length})
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM spravochnik_organization sub
+                        WHERE sub.isdeleted = false
+                            AND sub.parent_id = so.id
+                    )
+                )
+            `;
+        } else if (parent === 'false' && !parent_id) {
+            parent_filter = `
+                AND (
+                    so.parent_id IS NULL
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM spravochnik_organization sub
+                        WHERE sub.isdeleted = false
+                            AND sub.parent_id = so.id
+                    )
+                )
+            `;
         }
 
         const query = `--sql
@@ -163,11 +226,12 @@ exports.OrganizationDB = class {
                     ), '[]'::JSON) AS account_numbers
                 FROM spravochnik_organization AS so  
                 JOIN users AS u ON so.user_id = u.id
-                JOIN regions AS r ON u.region_id = r.id 
+                JOIN regions AS r ON u.region_id = r.id
                 WHERE so.isdeleted = false 
                     AND r.id = $1 
                     ${search_filter}
                     ${organ_filter}
+                    ${parent_filter}
                 OFFSET $2
                 LIMIT $3
             )
@@ -183,13 +247,14 @@ exports.OrganizationDB = class {
                         AND r.id = $1 
                         ${search_filter}
                         ${organ_filter}
+                        ${parent_filter}
                 )::INTEGER AS total_count
             FROM data
         `;
 
-        const result = await db.query(query, params);
+        const data = await db.query(query, params);
 
-        return { data: result[0]?.data || [], total: result[0].total_count };
+        return { data: data[0]?.data || [], total: data[0].total_count };
     }
 
     static async create(params, client) {
@@ -203,28 +268,28 @@ exports.OrganizationDB = class {
             RETURNING id
         `;
 
-        const result = await _db.query(query, params);
+        const data = await _db.query(query, params);
 
-        const response = client ? result.rows[0] : result[0]
+        const response = client ? data.rows[0] : data[0]
 
         return response
     }
 
-    static async update(params) {
+    static async update(params, client) {
         const query = `--sql
             UPDATE spravochnik_organization 
             SET name = $1, bank_klient = $2, raschet_schet = $3, 
                 raschet_schet_gazna = $4, mfo = $5, inn = $6, okonx = $7, parent_id = $8
             WHERE id = $9 AND isdeleted = false RETURNING id
         `;
-        const result = await db.query(query, params);
-        return result[0];
+        const data = await client.query(query, params);
+        return data.rows[0];
     }
 
     static async delete(params) {
         const query = `UPDATE spravochnik_organization SET isdeleted = true WHERE id = $1 RETURNING id`;
-        const result = await db.query(query, params);
+        const data = await db.query(query, params);
 
-        return result[0];
+        return data[0];
     }
 }
