@@ -2,6 +2,28 @@ const { OrganizationSchema } = require('./schema');
 const { OrganizationService } = require('./service');
 
 exports.Controller = class {
+    static async setParentId(req, res) {
+        const region_id = req.user.region_id;
+
+        const { parent_id, organization_ids } = req.body;
+
+        const organization = await OrganizationService.getById({ region_id, id: parent_id })
+        if (!organization) {
+            return res.error(req.i18n.t('organizationNotFound'), 404);
+        }
+
+        for (let doc of organization_ids) {
+            const organization = await OrganizationService.getById({ region_id, id: doc.id })
+            if (!organization) {
+                return res.error(req.i18n.t('organizationNotFound'), 404);
+            }
+        }
+
+        const response = await OrganizationService.setParentId(req.body);
+
+        return res.success(req.i18n.t('getSuccess'), 200, null, response);
+    }
+
     static async template(req, res) {
         const { fileName, fileRes } = await OrganizationService.templateFile();
 
@@ -12,15 +34,6 @@ exports.Controller = class {
 
     static async create(req, res) {
         const user_id = req.user.id;
-        const region_id = req.user.region_id;
-        const { parent_id } = req.body;
-
-        if (parent_id) {
-            const organization = await OrganizationService.getById({ region_id, id: parent_id })
-            if (!organization) {
-                return res.error(req.i18n.t('organizationNotFound'), 404);
-            }
-        }
 
         const result = await OrganizationService.create({ ...req.body, user_id });
 
@@ -29,10 +42,17 @@ exports.Controller = class {
 
     static async get(req, res) {
         const region_id = req.user.region_id;
-        const { page, limit, search } = req.query;
+        const { page, limit, search, parent, parent_id } = req.query;
         const offset = (page - 1) * limit;
 
-        const { data, total } = await OrganizationService.get({ region_id, search, offset, limit });
+        if (parent_id) {
+            const organization = await OrganizationService.getById({ region_id, id: parent_id })
+            if (!organization) {
+                return res.error(req.i18n.t('organizationNotFound'), 404);
+            }
+        }
+
+        const { data, total } = await OrganizationService.get({ region_id, search, offset, limit, parent, parent_id });
 
         const pageCount = Math.ceil(total / limit);
         const meta = {
@@ -49,21 +69,33 @@ exports.Controller = class {
     static async update(req, res) {
         const id = req.params.id;
         const region_id = req.user.region_id;
+
+        const { gaznas, account_numbers } = req.body;
+
         const old_data = await OrganizationService.getById({ region_id, id });
         if (!old_data) {
             return res.error(req.i18n.t('organizationNotFound'), 404);
         }
 
-        const { parent_id } = req.body;
-
-        if (parent_id) {
-            const organization = await OrganizationService.getById({ region_id, id: parent_id })
-            if (!organization) {
-                return res.error(req.i18n.t('organizationNotFound'), 404);
+        for (let gazna of gaznas) {
+            if (gazna.id) {
+                const check = old_data.gaznas.find(item => item.id === gazna.id);
+                if (!check) {
+                    return res.error(req.i18n.t('gazna_not_found'), 404);
+                }
             }
         }
 
-        const result = await OrganizationService.update({ id, ...req.body });
+        for (let acccount_number of account_numbers) {
+            if (acccount_number.id) {
+                const check = old_data.account_numbers.find(item => item.id === acccount_number.id);
+                if (!check) {
+                    return res.error(req.i18n.t('account_number_not_found'), 404);
+                }
+            }
+        }
+
+        const result = await OrganizationService.update({ id, ...req.body, old_data });
 
         return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }

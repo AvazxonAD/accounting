@@ -18,11 +18,11 @@ exports.GaznaDB = class {
     static async getById(params, organ_id, isdeleted) {
         let organ_filter = ``;
 
-        if(organ_id){
+        if (organ_id) {
             params.push(organ_id);
             organ_filter = `AND g.spravochnik_organization_id = $${params.length}`;
         }
-        
+
         const query = `--sql
             SELECT 
                 row_to_json(g) AS gazna,
@@ -97,7 +97,7 @@ exports.GaznaDB = class {
 
     static async create(params, client) {
         const _db = client || db;
-        
+
         const query = `--sql
            INSERT INTO organization_by_raschet_schet_gazna(
                 spravochnik_organization_id, 
@@ -109,12 +109,12 @@ exports.GaznaDB = class {
 
         const result = await _db.query(query, params);
 
-        const response = client ? result.rows[0] : result[0];
-
-        return response;
+        return result.rows[0] || result[0];
     }
 
-    static async update(params) {
+    static async update(params, client) {
+        const _db = client || db;
+
         const query = `--sql
             UPDATE organization_by_raschet_schet_gazna 
             SET 
@@ -125,14 +125,19 @@ exports.GaznaDB = class {
                 AND isdeleted = false 
             RETURNING id
         `;
-        const result = await db.query(query, params);
-        return result[0];
+
+        const data = await _db.query(query, params);
+
+        return data[0] || data.rows[0];
     }
 
-    static async delete(params) {
-        const query = `UPDATE organization_by_raschet_schet_gazna SET isdeleted = true WHERE id = $1 RETURNING id`;
-        const result = await db.query(query, params);
+    static async delete(params, client) {
+        const _db = client || db;
 
-        return result[0];
+        const query = `UPDATE organization_by_raschet_schet_gazna SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`;
+
+        const data = await _db.query(query, params);
+
+        return data[0] || data.rows[0];
     }
 }

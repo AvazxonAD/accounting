@@ -10,6 +10,7 @@ const upload = require('@helper/upload');
 router
     .post('/', validator(Controller.create, OrganizationSchema.create()))
     .post('/import', upload.single('file'), validator(Controller.import, OrganizationSchema.import()))
+    .put('/parent', validator(Controller.setParentId, OrganizationSchema.setParentId()))
     .get('/template', validator(Controller.template))
     .get('/:id', validator(Controller.getById, OrganizationSchema.getById()))
     .put('/:id', validator(Controller.update, OrganizationSchema.update()))

@@ -11,18 +11,18 @@ exports.AccountNumberDB = class {
                 AND a.spravochnik_organization_id = $2
             LIMIT 1
         `;
-        const result = await db.query(query, params);
-        return result[0]
+        const data = await db.query(query, params);
+        return data[0]
     }
 
     static async getById(params, organ_id, isdeleted) {
         let organ_filter = ``;
 
-        if(organ_id){
+        if (organ_id) {
             params.push(organ_id);
             organ_filter = `AND a.spravochnik_organization_id = $${params.length}`;
         }
-        
+
         const query = `--sql
             SELECT 
                 row_to_json(a) AS account_number,
@@ -34,15 +34,15 @@ exports.AccountNumberDB = class {
                 ${!isdeleted ? 'AND a.isdeleted = false' : ''}
         `;
 
-        const result = await db.query(query, params)
+        const data = await db.query(query, params)
 
-        return result[0];
+        return data[0];
     }
 
     static async get(params, search, organ_id) {
         let organ_filter = ``;
         let search_filter = ``
-        
+
         if (search) {
             params.push(search);
             search_filter = `AND ( 
@@ -90,14 +90,14 @@ exports.AccountNumberDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params);
+        const data = await db.query(query, params);
 
-        return { data: result[0]?.data || [], total: result[0].total_count };
+        return { data: data[0]?.data || [], total: data[0].total_count };
     }
 
     static async create(params, client) {
         const _db = client || db;
-        
+
         const query = `--sql
            INSERT INTO organization_by_raschet_schet(
                 spravochnik_organization_id, 
@@ -106,15 +106,17 @@ exports.AccountNumberDB = class {
             ) VALUES($1, $2, $3, $4) 
             RETURNING id
         `;
-        
-        const result = await _db.query(query, params);
 
-        const response = client ? result.rows[0] : result[0];
+        const data = await _db.query(query, params);
+
+        const response = client ? data.rows[0] : data[0];
 
         return response;
     }
 
-    static async update(params) {
+    static async update(params, client) {
+        const _db = client || db;
+
         const query = `--sql
             UPDATE organization_by_raschet_schet 
             SET 
@@ -125,14 +127,19 @@ exports.AccountNumberDB = class {
                 AND isdeleted = false 
             RETURNING id
         `;
-        const result = await db.query(query, params);
-        return result[0];
+
+        const data = await _db.query(query, params);
+
+        return data[0] || data.rows[0];
     }
 
-    static async delete(params) {
-        const query = `UPDATE organization_by_raschet_schet SET isdeleted = true WHERE id = $1 RETURNING id`;
-        const result = await db.query(query, params);
+    static async delete(params, cleint) {
+        const _db = cleint || db;
 
-        return result[0];
+        const query = `UPDATE organization_by_raschet_schet SET isdeleted = true WHERE id = $1 RETURNING id`;
+
+        const data = await _db.query(query, params);
+
+        return data[0] || data.rows[0];
     }
 }

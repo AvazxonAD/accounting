@@ -2,6 +2,19 @@ const Joi = require('joi')
 
 
 exports.OrganizationSchema = class {
+    static setParentId() {
+        return Joi.object({
+            body: Joi.object({
+                parent_id: Joi.number().integer().min(1).required(),
+                organization_ids: Joi.array().items(
+                    Joi.object({
+                        id: Joi.number().integer().min(1).required()
+                    })
+                )
+            })
+        }).options({ stripUnknown: true });
+    }
+
     static import() {
         return Joi.object({
             file: Joi.object({
@@ -39,7 +52,7 @@ exports.OrganizationSchema = class {
                     Joi.object({
                         raschet_schet_gazna: Joi.string().trim().required()
                     })
-                ),
+                ).empty(),
                 account_numbers: Joi.array().items(
                     Joi.object({
                         raschet_schet: Joi.string().trim().required()
@@ -57,7 +70,19 @@ exports.OrganizationSchema = class {
                 mfo: Joi.string().trim().required(),
                 inn: Joi.string().trim().required(),
                 okonx: Joi.string().trim(),
-                parent_id: Joi.number().min(1).allow(null)
+                parent_id: Joi.number().min(1).allow(null),
+                gaznas: Joi.array().items(
+                    Joi.object({
+                        id: Joi.number().integer().min(1),
+                        raschet_schet_gazna: Joi.string().trim().required()
+                    })
+                ).empty(),
+                account_numbers: Joi.array().items(
+                    Joi.object({
+                        id: Joi.number().integer().min(1),
+                        raschet_schet: Joi.string().trim().required()
+                    })
+                ).empty()
             }),
             params: Joi.object({
                 id: Joi.number().integer().min(1).required()
@@ -86,7 +111,9 @@ exports.OrganizationSchema = class {
             query: Joi.object({
                 page: Joi.number().min(1).default(1),
                 limit: Joi.number().min(1).default(10),
-                search: Joi.string()
+                search: Joi.string(),
+                parent: Joi.string().valid('false', 'true'),
+                parent_id: Joi.number().min(1).integer()
             })
         }).options({ stripUnknown: true });
     }

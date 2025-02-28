@@ -62,7 +62,7 @@ exports.Controller = class {
         const region_id = req.user.region_id;
         const old_data = await GaznaService.getById({ id });
         if (!old_data) {
-            return res.error(req.i18n.t('gaznaNotFound'), 404);
+            return res.error(req.i18n.t('gazna_not_found'), 404);
         }
 
         const { spravochnik_organization_id, raschet_schet_gazna } = req.body;
@@ -90,7 +90,7 @@ exports.Controller = class {
         const old_data = await GaznaService.getById({ id });
 
         if (!old_data) {
-            return res.error(req.i18n.t('gaznaNotFound'), 404);
+            return res.error(req.i18n.t('gazna_not_found'), 404);
         }
 
         const result = await GaznaService.delete({ id });
@@ -104,7 +104,7 @@ exports.Controller = class {
 
         const result = await GaznaService.getById({ region_id, id, isdeleted: true });
         if (!result) {
-            return res.error(req.i18n.t('gaznaNotFound'), 404);
+            return res.error(req.i18n.t('gazna_not_found'), 404);
         }
 
         return res.success(req.i18n.t('getSuccess'), 200, null, result);

@@ -14,7 +14,7 @@
     "grafikError": "Ushbu grafik bogliq bolgan hujjatlar mavjud!",
     "fileError": "File yuklashda xatolik mavjud!",
     "organizationNotFound": "Hamkor tashkilot topilmadi!",
-    "gaznaNotFound": "Gazna raqami topilmadi!",
+    "gazna_not_found": "Gazna raqami topilmadi!",
     "account_number_not_found": "Hisob raqami raqami topilmadi!",
     "responsibleNotFound": "Javobgar shaxs topilmadi!",
     "responsibleExists": "{{data}} ushbu javobgar shaxs avval kiritilgan!",
