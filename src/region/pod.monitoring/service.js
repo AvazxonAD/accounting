@@ -39,7 +39,7 @@ exports.PodotchetMonitoringService = class {
         const fileName = `cap_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('organization prixod rasxod');
         worksheet.mergeCells(`A1`, 'F1');
-        worksheet.getCell('A1').value = 'Журнал-ордер N_4';
+        worksheet.getCell('A1').value = 'Мемориал ордер N_4';
         worksheet.mergeCells(`A2`, 'F2');
         worksheet.getCell('A2').value = `(${data.budjet_name} буджети)`;
         worksheet.mergeCells(`A3`, 'F3');
