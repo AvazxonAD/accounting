@@ -370,6 +370,9 @@ exports.PrixodJur7Service = class {
                 data.region_id,
                 data.docId,
                 child.iznos,
+                iznos_summa,
+                child.iznos_schet,
+                child.iznos_sub_schet,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);

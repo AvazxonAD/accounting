@@ -26,7 +26,7 @@ exports.RasxodDB = class {
         return result.rows[0];
     }
 
-    static async createRasxodChild(params, _values, client) {
+    static async createChild(params, _values, client) {
         const query = `--sql
             INSERT INTO document_vnutr_peremesh_jur7_child (
                 naimenovanie_tovarov_jur7_id,
@@ -41,6 +41,10 @@ exports.RasxodDB = class {
                 user_id,
                 document_vnutr_peremesh_jur7_id,
                 main_schet_id,
+                iznos,
+                iznos_summa,
+                iznos_schet,
+                iznos_sub_schet,
                 created_at,
                 updated_at
             ) 
@@ -134,25 +138,14 @@ exports.RasxodDB = class {
                 d.doverennost,
                 d.j_o_num,
                 (
-                    SELECT JSON_AGG(row_to_json(d_j_ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT  
-                            d_j_ch.id,
-                            d_j_ch.naimenovanie_tovarov_jur7_id,
-                            d_j_ch.kol,
-                            d_j_ch.sena,
-                            d_j_ch.summa,
-                            d_j_ch.debet_schet,
-                            d_j_ch.debet_sub_schet,
-                            d_j_ch.kredit_schet,
-                            d_j_ch.kredit_sub_schet,
-                            TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
-                            d_j_ch.nds_foiz,
-                            d_j_ch.nds_summa,
-                            d_j_ch.summa_s_nds
-                        FROM document_vnutr_peremesh_jur7_child AS d_j_ch
-                        WHERE d_j_ch.document_vnutr_peremesh_jur7_id = d.id
-                    ) AS d_j_ch
+                            ch.*,
+                            TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
+                        FROM document_vnutr_peremesh_jur7_child AS ch
+                        WHERE ch.document_vnutr_peremesh_jur7_id = d.id
+                    ) AS ch
                 ) AS childs,
                 row_to_json(rj) AS kimdan,
                 row_to_json(rj2) AS kimga

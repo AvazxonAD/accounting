@@ -46,7 +46,7 @@ exports.Jur7RsxodService = class {
                 tashkentTime()
             ], client);
 
-            await this.createRasxodChild({ ...data, docId: doc.id, client });
+            await this.createChild({ ...data, docId: doc.id, client });
 
             const year = new Date(data.doc_date).getFullYear();
             const month = new Date(data.doc_date).getMonth() + 1;
@@ -69,7 +69,7 @@ exports.Jur7RsxodService = class {
         return result;
     }
 
-    static async createRasxodChild(data) {
+    static async createChild(data) {
         const create_childs = [];
         for (let child of data.childs) {
             create_childs.push(
@@ -85,14 +85,18 @@ exports.Jur7RsxodService = class {
                 data.user_id,
                 data.docId,
                 data.main_schet_id,
+                child.iznos,
+                child.iznos_summa,
+                child.iznos_schet,
+                child.iznos_sub_schet,
                 tashkentTime(),
                 tashkentTime()
             );
         }
 
-        const _values = returnParamsValues(create_childs, 14);
+        const _values = returnParamsValues(create_childs, 18);
 
-        await RasxodDB.createRasxodChild(create_childs, _values, data.client);
+        await RasxodDB.createChild(create_childs, _values, data.client);
     }
 
     static async update(data) {
@@ -116,7 +120,7 @@ exports.Jur7RsxodService = class {
 
             await RasxodDB.deleteRasxodChild([data.id], client)
 
-            await this.createRasxodChild({ ...data, docId: data.id, client })
+            await this.createChild({ ...data, docId: data.id, client })
 
             let year, month;
 

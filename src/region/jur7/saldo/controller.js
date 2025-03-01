@@ -36,7 +36,7 @@ exports.Controller = class {
       const _data = await SaldoService.getByProduct({ region_id, responsible_id: kimning_buynida, to, search, offset, limit });
       data.products = _data.data;
       data.total = _data.total;
-    } 
+    }
 
     // group
     else if (type === 'group') {
@@ -49,8 +49,8 @@ exports.Controller = class {
 
       data.groups = await SaldoService.getByGroup({ region_id, to, groups, search, offset, limit })
       data.total = total;
-    } 
-    
+    }
+
     // responsible
     else {
       let { data: responsibles, total } = await ResponsibleService.get({ region_id, offset, limit, id: kimning_buynida });

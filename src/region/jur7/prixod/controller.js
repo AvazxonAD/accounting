@@ -108,7 +108,7 @@ exports.Controller = class {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
-      if ((!child.iznos && child.eski_iznos_summa) || (!child.iznos && child.group.iznos_foiz)) {
+      if ((!child.iznos && child.eski_iznos_summa) || (child.iznos && !child.group.iznos_foiz)) {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
@@ -246,7 +246,7 @@ exports.Controller = class {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
-      if ((!child.iznos && child.eski_iznos_summa) || (!child.iznos && child.group.iznos_foiz)) {
+      if ((!child.iznos && child.eski_iznos_summa) || (child.iznos && !child.group.iznos_foiz)) {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 

@@ -106,7 +106,8 @@ exports.ProductDB = class {
                 pr.spravochnik_budjet_name_id,
                 pr.inventar_num,
                 pr.serial_num,
-                b.name AS spravochnik_budjet_name
+                b.name AS spravochnik_budjet_name,
+                row_to_json(g) AS group
             FROM naimenovanie_tovarov_jur7 AS pr
             JOIN users AS u ON u.id = pr.user_id
             JOIN regions AS r ON r.id = u.region_id

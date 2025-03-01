@@ -27,15 +27,19 @@ exports.Controller = class {
       return res.error(req.i18n.t('responsibleNotFound'), 404);
     }
 
+    const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
+    if (!check_saldo) {
+      return res.error(req.i18n.t('saldoNotFound'), 404);
+    }
+
     for (let child of childs) {
       const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
       if (!product) {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
 
-      const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
-      if (!check_saldo) {
-        return res.error(req.i18n.t('saldoNotFound'), 404);
+      if ((!child.iznos && child.iznos_summa) || (child.iznos && !product.group.iznos_foiz) || (child.sena < child.iznos_summa)) {
+        return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
       const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
@@ -99,6 +103,12 @@ exports.Controller = class {
     if (!responsible) {
       return res.error(req.i18n.t('responsibleNotFound', 404));
     }
+
+    const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
+    if (!check_saldo) {
+      return res.error(req.i18n.t('saldoNotFound'), 404);
+    }
+
     for (let child of childs) {
       const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
       if (!product) {
@@ -107,9 +117,8 @@ exports.Controller = class {
 
       const old_kol = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id).kol || 0;
 
-      const check_saldo = await SaldoService.check({ region_id, year: new Date(doc_date).getFullYear(), month: new Date(doc_date).getMonth() + 1 });
-      if (!check_saldo) {
-        return res.error(req.i18n.t('saldoNotFound'), 404);
+      if ((!child.iznos && child.iznos_summa) || (child.iznos && !product.group.iznos_foiz) || (child.sena < child.iznos_summa)) {
+        return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
       const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
