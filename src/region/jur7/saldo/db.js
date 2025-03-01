@@ -121,10 +121,11 @@ exports.SaldoDB = class {
         return result;
     }
 
-    static async get(params, responsible_id = null, search = null, product_id = null) {
+    static async get(params, responsible_id = null, search = null, product_id = null, group_id = null) {
         let responsible_filter = ``;
         let filter = ``;
         let product_filter = ``;
+        let group_filter = ``;
 
         if (product_id) {
             params.push(product_id);
@@ -139,6 +140,11 @@ exports.SaldoDB = class {
         if (responsible_id) {
             params.push(responsible_id)
             responsible_filter = `AND kimning_buynida = $${params.length}`;
+        }
+
+        if (group_id) {
+            params.push(group_id);
+            group_filter = `AND g.id = $${params.length}`;
         }
 
         const query = `
@@ -176,6 +182,7 @@ exports.SaldoDB = class {
                 ${responsible_filter} 
                 ${filter}
                 ${product_filter}
+                ${group_filter}
                 OFFSET $4 LIMIT $5
             )
             SELECT 
@@ -188,6 +195,7 @@ exports.SaldoDB = class {
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
                     JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
+                    JOIN group_jur7 g ON g.id = n.group_jur7_id
                     WHERE r.id = $1
                         AND s.year = $2 
                         AND s.month = $3 
@@ -195,6 +203,7 @@ exports.SaldoDB = class {
                         ${responsible_filter} 
                         ${filter}
                         ${product_filter}
+                        ${group_filter}
                 ) AS total
             FROM data
         `;
