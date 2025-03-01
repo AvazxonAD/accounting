@@ -232,6 +232,7 @@ exports.OrganizationDB = class {
                     ${search_filter}
                     ${organ_filter}
                     ${parent_filter}
+                ORDER BY so.name
                 OFFSET $2
                 LIMIT $3
             )
