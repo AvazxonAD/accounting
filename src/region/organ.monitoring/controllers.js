@@ -6,7 +6,7 @@ const { ContractService } = require('@contract/service')
 const { RegionDB } = require('@region/db')
 const { MainSchetDB } = require('@main_schet/db')
 const { OrganizationDB } = require('@organization/db')
-const { OrganizationMonitoringDB } = require('../organ.monitoring/db')
+const { OrganizationMonitoringDB } = require('./db')
 
 exports.Controller = class {
     static async monitoring(req, res) {

@@ -23,15 +23,16 @@ exports.Controller = class {
 
     for (let item of value) {
       item.iznos = item.iznos === 'ha' ? true : false;
-      if (!item.iznos && item.eski_iznos_summa) {
-        return res.error(req.i18n.t('IznosSummaError'), 400, item);
-      }
 
       item.nds_summa = item.nds_foiz ? (item.nds_foiz / 100) * item.summa : 0;
 
       item.summa_s_nds = item.summa + item.nds_summa;
 
       item.group = await GroupService.getById({ id: item.group_jur7_id });
+
+      if ((!item.iznos && item.eski_iznos_summa) || item.iznos && item.group.iznos_foiz) {
+        return res.error(req.i18n.t('IznosSummaError'), 400, item);
+      }
 
       item.sena = item.summa / item.kol;
     }
@@ -102,16 +103,15 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      const group = await GroupService.getById({ id: child.group_jur7_id });
-      if (!group) {
+      child.group = await GroupService.getById({ id: child.group_jur7_id });
+      if (!child.group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
-      if (!child.iznos && child.eski_iznos_summa > 0) {
-        return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
+      if ((!child.iznos && child.eski_iznos_summa) || (!child.iznos && child.group.iznos_foiz)) {
+        return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      child.iznos_foiz = group.iznos_foiz;
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
@@ -241,16 +241,15 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      const group = await GroupService.getById({ id: child.group_jur7_id });
-      if (!group) {
+      child.group = await GroupService.getById({ id: child.group_jur7_id });
+      if (!child.group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
 
-      if (!child.iznos && child.eski_iznos_summa > 0) {
-        return res.error(req.i18n.t('iznosSummmaError'), 400);
+      if ((!child.iznos && child.eski_iznos_summa) || (!child.iznos && child.group.iznos_foiz)) {
+        return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      child.iznos_foiz = group.iznos_foiz;
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 

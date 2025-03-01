@@ -41,7 +41,10 @@ exports.PrixodJur7Schema = class {
             edin: Joi.string().trim().required(),
             inventar_num: Joi.string().trim(),
             serial_num: Joi.string().trim(),
-            eski_iznos_summa: Joi.number().min(0).default(0)
+            eski_iznos_summa: Joi.number().min(0).default(0),
+            iznos_schet: Joi.string().trim().allow(''),
+            iznos_sub_schet: Joi.string().trim().allow(''),
+            iznos_summa: Joi.number().min(0).default(0),
           })
         )
       }),
