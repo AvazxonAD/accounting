@@ -7,8 +7,38 @@ const { BudjetService } = require('@budjet/service');
 const { ResponsibleService } = require('@responsible/service');
 const { GaznaService } = require('@gazna/service');
 const { AccountNumberService } = require('@account_number/service');
+const { HelperFunctions } = require('@helper/functions');
+const { PrixodJur7Schema } = require('./schema')
 
 exports.Controller = class {
+  static async readFile(req, res) {
+    const filePath = req.file.path;
+
+    const data = await HelperFunctions.readFile(filePath);
+
+    const { error, value } = PrixodJur7Schema.import(req.i18n).validate(data);
+    if (error) {
+      return res.error(error.details[0].message, 400);
+    }
+
+    for (let item of value) {
+      item.iznos = item.iznos === 'ha' ? true : false;
+      if (!item.iznos && item.eski_iznos_summa) {
+        return res.error(req.i18n.t('IznosSummaError'), 400, item);
+      }
+
+      item.nds_summa = item.nds_foiz ? (item.nds_foiz / 100) * item.summa : 0;
+
+      item.summa_s_nds = item.summa + item.nds_summa;
+
+      item.group = await GroupService.getById({ id: item.group_jur7_id });
+
+      item.sena = item.summa / item.kol;
+    }
+
+    return res.success(req.i18n.t('readFileSuccess'), 200, null, value);
+  }
+
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;

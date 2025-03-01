@@ -1,17 +1,18 @@
 const { Controller } = require('./controller');
 const { validator } = require('@helper/validator');
 const upload = require('@helper/upload');
-const { PrixodSchema } = require("./schema");
+const { PrixodJur7Schema } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
 router
-    .get('/report', validator(Controller.getPrixodReport, PrixodSchema.report()))
-    .post('/', validator(Controller.create, PrixodSchema.create()))
-    .get('/:id', validator(Controller.getById, PrixodSchema.getById()))
-    .put('/:id', validator(Controller.update, PrixodSchema.update()))
-    .delete('/:id', validator(Controller.delete, PrixodSchema.delete()))
-    .get('/', validator(Controller.get, PrixodSchema.get()));
-    
+    .get('/report', validator(Controller.getPrixodReport, PrixodJur7Schema.report()))
+    .post('/', validator(Controller.create, PrixodJur7Schema.create()))
+    .post('/read', upload.single('file'), validator(Controller.readFile, PrixodJur7Schema.readFile()))
+    .get('/:id', validator(Controller.getById, PrixodJur7Schema.getById()))
+    .put('/:id', validator(Controller.update, PrixodJur7Schema.update()))
+    .delete('/:id', validator(Controller.delete, PrixodJur7Schema.delete()))
+    .get('/', validator(Controller.get, PrixodJur7Schema.get()));
+
 module.exports = router;
