@@ -46,6 +46,7 @@ exports.SaldoSchema = class {
     return Joi.object({
       query: Joi.object({
         kimning_buynida: Joi.number().integer().min(1),
+        group_id: Joi.number().integer().min(1),
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(99999),
         search: Joi.string().trim(),

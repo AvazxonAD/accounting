@@ -104,10 +104,13 @@ exports.PrixodDB = class {
                 main_schet_id,
                 eski_iznos_summa,
                 iznos,
+                iznos_summa,
+                iznos_schet,
+                iznos_sub_schet,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
         `;
         const result = await client.query(query, params)
         return result.rows[0];
@@ -218,40 +221,16 @@ exports.PrixodDB = class {
                     SELECT JSON_AGG(row_to_json(child))
                     FROM (
                         SELECT  
-                            ch.sena,
-                            ch.debet_schet,
-                            ch.debet_sub_schet,
-                            ch.kredit_schet,
-                            ch.kredit_sub_schet,
-                            ch.nds_foiz,
+                            ch.*,
                             TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
                             n.name,
                             n.edin,
                             n.group_jur7_id,
                             n.inventar_num,
-                            n.serial_num,
-                            ch.iznos,
-                            COALESCE(SUM(ch.eski_iznos_summa), 0) AS eski_iznos_summa,
-                            COALESCE(SUM(ch.kol), 0) AS kol,
-                            COALESCE(SUM(ch.summa), 0) AS summa,
-                            COALESCE(SUM(ch.nds_summa), 0) AS nds_summa,
-                            COALESCE(SUM(ch.summa_s_nds), 0) AS summa_s_nds 
+                            n.serial_num
                         FROM document_prixod_jur7_child AS ch
                         JOIN naimenovanie_tovarov_jur7 AS n ON n.id = ch.naimenovanie_tovarov_jur7_id
                         WHERE ch.document_prixod_jur7_id = d.id  AND ch.isdeleted = false
-                        GROUP BY ch.sena,
-                            ch.debet_schet,
-                            ch.debet_sub_schet,
-                            ch.kredit_schet,
-                            ch.kredit_sub_schet,
-                            ch.nds_foiz,
-                            ch.data_pereotsenka,
-                            n.name,
-                            n.edin,
-                            n.group_jur7_id,
-                            n.inventar_num,
-                            n.serial_num,
-                            ch.iznos
                     ) AS child
                 ) AS childs,
                 d.organization_by_raschet_schet_id::INTEGER,
