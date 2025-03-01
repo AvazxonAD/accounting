@@ -240,7 +240,8 @@ exports.SaldoDB = class {
             WITH prixod AS (
                 SELECT
                     COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa,
+                    COALESCE(SUM(ch.iznos_summa), 0)::FLOAT AS iznos_summa
                 FROM document_prixod_jur7 d
                 JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
@@ -255,7 +256,8 @@ exports.SaldoDB = class {
             prixod_internal AS (
                 SELECT
                     COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                    COALESCE(SUM(ch.iznos_summa), 0)::FLOAT AS iznos_summa
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
@@ -270,7 +272,8 @@ exports.SaldoDB = class {
             rasxod AS (
                 SELECT
                     COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                    COALESCE(SUM(ch.iznos_summa), 0)::FLOAT AS iznos_summa
                 FROM document_rasxod_jur7 d
                 JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
@@ -285,7 +288,8 @@ exports.SaldoDB = class {
             rasxod_internal AS (
                 SELECT
                     COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
-                    COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                    COALESCE(SUM(ch.iznos_summa), 0)::FLOAT AS iznos_summa
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
@@ -303,7 +307,10 @@ exports.SaldoDB = class {
                 (COALESCE(p.kol, 0) + COALESCE(pi.kol, 0))::FLOAT AS kol_prixod,
                 (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0) - COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa,
                 (COALESCE(p.summa, 0) + COALESCE(pi.summa, 0))::FLOAT AS summa_prixod,
-                (COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa_rasxod
+                (COALESCE(r.summa, 0) - COALESCE(ri.summa, 0))::FLOAT AS summa_rasxod,
+                (COALESCE(r.iznos_summa, 0) - COALESCE(ri.iznos_summa, 0))::FLOAT AS iznos_rasxod,
+                (COALESCE(p.iznos_summa, 0) + COALESCE(pi.iznos_summa, 0))::FLOAT AS iznos_prixod,
+                (COALESCE(p.iznos_summa, 0) + COALESCE(pi.iznos_summa, 0) - COALESCE(r.iznos_summa, 0) - COALESCE(ri.iznos_summa, 0))::FLOAT AS iznos_summa
             FROM
                 prixod p,
                 prixod_internal pi,
