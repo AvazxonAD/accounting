@@ -49,7 +49,7 @@ exports.SaldoSchema = class {
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(99999),
         search: Joi.string().trim(),
-        responsible: Joi.string().trim().valid('true', 'false').default('true'),
+        type: Joi.string().trim().valid('responsible', 'group', 'product').default('responsible'),
         to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
       })
     }).options({ stripUnknown: true })

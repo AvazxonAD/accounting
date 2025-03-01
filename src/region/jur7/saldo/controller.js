@@ -19,8 +19,8 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, responsible, search, page, limit } = req.query;
-    const data = { responsibles: [], products: [], total: 0 };
+    const { kimning_buynida, to, type, search, page, limit, group_id } = req.query;
+    const data = { responsibles: [], groups: [], products: [], total: 0 };
 
     const offset = (page - 1) * limit;
 
@@ -31,18 +31,37 @@ exports.Controller = class {
       }
     }
 
-    if (responsible === 'true') {
-      let { data: responsibles } = await ResponsibleService.get({ region_id, offset: 0, limit: 99999, id: kimning_buynida });
-
-      if (kimning_buynida) {
-        responsibles = responsibles.filter(item => item.id === kimning_buynida);
-      }
-
-      data.responsibles = await SaldoService.getByResponsibles({ region_id, to, responsibles, search, offset, limit });
-    } else {
+    // product
+    if (type === 'product') {
       const _data = await SaldoService.getByProduct({ region_id, responsible_id: kimning_buynida, to, search, offset, limit });
       data.products = _data.data;
       data.total = _data.total;
+    } 
+
+    // group
+    else if (type === 'group') {
+      let { data: groups, total } = await GroupService.get({ offset, limit });
+
+      if (group_id) {
+        groups = groups.filter(item => item.id === group_id);
+        total = 1;
+      }
+
+      data.groups = await SaldoService.getByGroup({ region_id, to, groups, search, offset, limit })
+      data.total = total;
+    } 
+    
+    // responsible
+    else {
+      let { data: responsibles, total } = await ResponsibleService.get({ region_id, offset, limit, id: kimning_buynida });
+
+      if (kimning_buynida) {
+        responsibles = responsibles.filter(item => item.id === kimning_buynida);
+        total = 1;
+      }
+
+      data.responsibles = await SaldoService.getByResponsibles({ region_id, to, responsibles, search, offset, limit });
+      data.total = total;
     }
 
     const pageCount = Math.ceil(data.total / limit);
