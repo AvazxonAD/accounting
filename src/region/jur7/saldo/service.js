@@ -166,6 +166,9 @@ exports.SaldoService = class {
                         data.region_id,
                         product.doc_data?.id,
                         product.iznos,
+                        0,
+                        'DADA',
+                        'DADA',
                         tashkentTime(),
                         tashkentTime()
                     ], client);

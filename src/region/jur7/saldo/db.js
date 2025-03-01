@@ -341,10 +341,13 @@ exports.SaldoDB = class {
                 region_id,
                 prixod_id,
                 iznos,
+                iznos_summa,
+                iznos_schet,
+                iznos_sub_schet,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *
         `;
 
         const result = await client.query(query, params)
