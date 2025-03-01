@@ -1,6 +1,7 @@
 {
     "notFound": "{{data}} topilmadi!",
     "success": "{{data}} muvaffaqiyatli",
+    "readFileSuccess": "File muvaffaqiyatli oqib olindi",
     "jur7Block": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",
     "saldoAlreadyExists": "Saldo allaqachon import qilingan! Malumotlarni tozalab qaytadan urining",
     "kolError": "Tovar soni noto'g'ri kiritildi!",

@@ -1,8 +1,29 @@
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs').promises;
+const xlsx = require('xlsx');
 
 exports.HelperFunctions = class {
+    static async readFile(filePath) {
+        const workbook = xlsx.readFile(filePath);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const excel_data = xlsx.utils.sheet_to_json(sheet).map((row, index) => {
+            const newRow = {};
+            for (const key in row) {
+                if (Object.prototype.hasOwnProperty.call(row, key)) {
+                    newRow[key] = row[key];
+                }
+            }
+
+            return newRow;
+        });
+
+        const result = excel_data.filter((item, index) => index >= 3);
+
+        return result;
+    }
+
     static checkYearMonth(array) {
         const year = array[0].year;
         const month = array[0].month;

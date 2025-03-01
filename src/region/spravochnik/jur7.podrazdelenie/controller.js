@@ -21,7 +21,7 @@ exports.Controller = class {
 
         const data = await PrixodJur7Service.readFile({ filePath });
 
-        const { error, value } = PrixodSchema.import(req.i18n).validate(data);
+        const { error, value } = PrixodJur7Schema.import(req.i18n).validate(data);
         if (error) {
             return res.error(error.details[0].message, 400);
         }
