@@ -38,7 +38,7 @@ exports.AktService = class {
             worksheet.pageSetup.margins.bottom = 0;
             worksheet.mergeCells(`A1`, `H1`);
             const title = worksheet.getCell(`A1`);
-            title.value = `Журнал-ордер № 3 Счет: ${schet.schet}`;
+            title.value = `Мемориал ордер № 3 Счет: ${schet.schet}`;
             worksheet.mergeCells('A2', 'H2');
             const title2 = worksheet.getCell(`A2`);
             title2.value = `Подлежит записи в главную книгу`;

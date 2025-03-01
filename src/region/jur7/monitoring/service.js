@@ -44,7 +44,7 @@ exports.Jur7MonitoringService = class {
         const fileName = `cap_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('organization prixod rasxod');
         worksheet.mergeCells(`A1`, 'D1');
-        worksheet.getCell('A1').value = 'Журнал-ордер N_7';
+        worksheet.getCell('A1').value = 'Мемориал ордер N_7';
         worksheet.mergeCells(`A2`, 'D2');
         worksheet.getCell('A2').value = `${HelperFunctions.returnStringDate(new Date(data.from))} дан   ${HelperFunctions.returnStringDate(new Date(data.to))} гача`;
         worksheet.mergeCells(`A3`, 'D3');
@@ -183,16 +183,16 @@ exports.Jur7MonitoringService = class {
         const fileName = `cap_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('jur_7 cap');
         worksheet.mergeCells(`A1`, 'D1');
-        worksheet.getCell('A1').value = 'Журнал-ордер N_7';
+        worksheet.getCell('A1').value = 'Мемориал ордер N_7';
 
         worksheet.mergeCells(`A2`, 'D2');
         worksheet.getCell('A2').value = `${HelperFunctions.returnStringDate(new Date(data.from))} дан   ${HelperFunctions.returnStringDate(new Date(data.to))} гача`;
 
         worksheet.mergeCells(`A3`, 'B3');
-        worksheet.getCell('A3').value = `Шапка для Журнал- Ордера №7 (дебет)`;
+        worksheet.getCell('A3').value = `Шапка для Мемориал ордер №7 (дебет)`;
 
         worksheet.mergeCells(`C3`, 'D3');
-        worksheet.getCell('C3').value = 'Шапка для Журнал- Ордера №7 (кредит)';
+        worksheet.getCell('C3').value = 'Шапка для Мемориал ордер №7 (кредит)';
 
         worksheet.getCell(`A4`).value = `Дебет счет`;
         worksheet.getCell('B4').value = 'Сумма';
