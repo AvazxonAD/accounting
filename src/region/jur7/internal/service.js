@@ -46,7 +46,7 @@ exports.Jur7RsxodService = class {
                 tashkentTime()
             ], client);
 
-            await this.createChild({ ...data, docId: doc.id, client });
+            await this.createChild({ ...data, docId: doc.id, client, doc: doc });
 
             const year = new Date(data.doc_date).getFullYear();
             const month = new Date(data.doc_date).getMonth() + 1;
@@ -92,6 +92,31 @@ exports.Jur7RsxodService = class {
                 tashkentTime(),
                 tashkentTime()
             );
+
+            const month = new Date(data.doc.doc_date).getMonth() + 1;
+            const year = new Date(data.doc.doc_date).getFullYear();
+
+            await SaldoDB.create([
+                data.user_id,
+                child.naimenovanie_tovarov_jur7_id,
+                0,
+                0,
+                0,
+                month,
+                year,
+                `${year}-${month}-01`,
+                data.doc.doc_date,
+                data.doc.doc_num,
+                data.kimga_id,
+                data.region_id,
+                data.docId,
+                child.iznos,
+                0,
+                child.iznos_schet,
+                child.iznos_sub_schet,
+                tashkentTime(),
+                tashkentTime()
+            ], data.client);
         }
 
         const _values = returnParamsValues(create_childs, 18);
@@ -103,7 +128,7 @@ exports.Jur7RsxodService = class {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
         const result = await db.transaction(async client => {
-            await RasxodDB.update([
+            const doc = await RasxodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.j_o_num,
@@ -120,7 +145,7 @@ exports.Jur7RsxodService = class {
 
             await RasxodDB.deleteRasxodChild([data.id], client)
 
-            await this.createChild({ ...data, docId: data.id, client })
+            await this.createChild({ ...data, docId: data.id, client, doc: doc })
 
             let year, month;
 

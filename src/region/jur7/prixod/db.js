@@ -282,28 +282,30 @@ exports.PrixodDB = class {
     static async deletePrixodChild(documentPrixodId, productIds, client) {
 
         const query1 = `
-                UPDATE document_prixod_jur7_child 
-                SET isdeleted = true 
-                WHERE document_prixod_jur7_id = $1 AND isdeleted = false
-            `;
-        await client.query(query1, [documentPrixodId]);
+            UPDATE document_prixod_jur7_child 
+            SET isdeleted = true 
+            WHERE document_prixod_jur7_id = $1 AND isdeleted = false
+        `;
 
         const query2 = `
-                UPDATE iznos_tovar_jur7 
-                SET isdeleted = true 
-                WHERE naimenovanie_tovarov_jur7_id = ANY($1)
-            `;
-        const query3 = `
-                UPDATE saldo_naimenovanie_jur7 
-                SET isdeleted = true 
-                WHERE naimenovanie_tovarov_jur7_id = ANY($1)
-            `;
-        const query4 = `
-                UPDATE naimenovanie_tovarov_jur7 
-                SET isdeleted = true 
-                WHERE id = ANY($1)
-            `;
+            UPDATE iznos_tovar_jur7 
+            SET isdeleted = true 
+            WHERE naimenovanie_tovarov_jur7_id = ANY($1)
+        `;
 
+        const query3 = `
+            UPDATE saldo_naimenovanie_jur7 
+            SET isdeleted = true 
+            WHERE naimenovanie_tovarov_jur7_id = ANY($1)
+        `;
+
+        const query4 = `
+            UPDATE naimenovanie_tovarov_jur7 
+            SET isdeleted = true 
+            WHERE id = ANY($1)
+        `;
+
+        await client.query(query1, [documentPrixodId]);
         await client.query(query2, [productIds]);
         await client.query(query3, [productIds]);
         await client.query(query4, [productIds]);

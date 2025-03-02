@@ -43,7 +43,6 @@ exports.Controller = class {
       }
 
       const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
-
       if (!data[0]) {
         return res.error(req.i18n.t('kolError'), 400);
       } else if (!data[0].products[0] || data[0].products[0].to.kol < child.kol) {

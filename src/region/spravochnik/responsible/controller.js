@@ -109,7 +109,7 @@ exports.Controller = class {
         const { spravochnik_podrazdelenie_jur7_id, fio } = req.body;
         const id = req.params.id
 
-        const responsible = await ResponsibleDB.getById([region_id, id])
+        const responsible = await ResponsibleDB.getById([id], region_id)
         if (!responsible) {
             return res.error(req.i18n.t('responsibleNotFound'), 404);
         }
@@ -133,7 +133,7 @@ exports.Controller = class {
         const region_id = req.user.region_id
         const id = req.params.id
 
-        const responsible = await ResponsibleDB.getById([region_id, id])
+        const responsible = await ResponsibleDB.getById([id], region_id)
         if (!responsible) {
             return res.error(req.i18n.t('responsibleNotFound'), 404);
         }

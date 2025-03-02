@@ -345,7 +345,7 @@ exports.PrixodJur7Service = class {
                     iznos_summa,
                     year,
                     month,
-                    `${year}-${month}-01`,
+                    data.doc.doc_date,
                     data.budjet_id,
                     child.old_iznos > product_sena ? product_sena : child.old_iznos,
                     data.region_id,
@@ -411,7 +411,7 @@ exports.PrixodJur7Service = class {
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
-            await SaldoDB.deleteByPrixodId([data.id], client);
+            // await SaldoDB.deleteByPrixodId([data.id], client);
 
             const childs = await this.createProduct({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 

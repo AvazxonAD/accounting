@@ -16,7 +16,7 @@ exports.SaldoDB = class {
 
         const result = await client.query(query, params);
 
-        return result[0];
+        return result.rows[0];
     }
 
     static async getSaldoDate(params, client) {
@@ -156,6 +156,7 @@ exports.SaldoDB = class {
                 s.summa::FLOAT,
                 s.kol::FLOAT,
                 s.naimenovanie_tovarov_jur7_id::INTEGER,
+                s.region_id::INTEGER, 
                 s.kimning_buynida AS responsible_id,
                 row_to_json(n) AS product,
                 n.name,
@@ -167,8 +168,15 @@ exports.SaldoDB = class {
                     'doc_id', s.prixod_id
                 ) AS prixod_data,
                 row_to_json(g) AS group,
-                s.region_id::INTEGER, 
-                row_to_json(jsh) AS responsible
+                row_to_json(jsh) AS responsible,
+                JSON_BUILD_OBJECT(
+                    'kol', s.kol,
+                    'sena', s.sena,
+                    'summa', s.summa,
+                    'iznos_summa', s.iznos_summa,
+                    'iznos_schet', s.iznos_schet,
+                    'iznos_sub_schet', s.iznos_sub_schet
+                ) AS from
             FROM saldo_naimenovanie_jur7 s 
             JOIN users AS u ON u.id = s.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -214,11 +222,12 @@ exports.SaldoDB = class {
         return data[0];
     }
 
-    static async getKolAndSumma(params, start = null, end = null, responsible_id = null) {
+    static async getKolAndSumma(params, start = null, end = null, responsible_id = null, prixod_id = null) {
         let start_filter = ``;
         let end_filter = ``;
         let between_filter = ``;
         let responsible_filter = ``;
+        let prixod_filter = ``;
 
         if (start && end) {
             params.push(start, end);
@@ -229,6 +238,11 @@ exports.SaldoDB = class {
         } else if (end) {
             params.push(end);
             end_filter = `AND d.doc_date <= $${params.length}`;
+        }
+
+        if (prixod_id) {
+            params.push(prixod_id);
+            prixod_filter = `AND d.id = $${params.length}`;
         }
 
         if (responsible_id) {
@@ -248,6 +262,7 @@ exports.SaldoDB = class {
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
+                    ${prixod_filter}
                     ${start_filter}
                     ${end_filter}
                     ${between_filter}
@@ -264,6 +279,7 @@ exports.SaldoDB = class {
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
+                    ${prixod_filter}
                     ${start_filter}
                     ${end_filter}
                     ${between_filter}
@@ -365,7 +381,7 @@ exports.SaldoDB = class {
     static async getProductPrixod(params) {
         const query = `--sql
             SELECT
-                d.id, 
+                d.id,
                 TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
                 d.doc_num, 
                 'prixod' AS type

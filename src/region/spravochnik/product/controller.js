@@ -39,7 +39,7 @@ exports.Controller = class {
             tashkentTime(),
             tashkentTime()
         ]);
-        
+
         return res.status(201).json({
             message: "Create naimenovanie successfully",
             data: result
@@ -144,7 +144,7 @@ exports.Controller = class {
     static async getProductKol(req, res) {
         const { kimdan_id, search } = req.query;
         const region_id = req.user.region_id;
-        const responsible = await ResponsibleDB.getById([region_id, kimdan_id])
+        const responsible = await ResponsibleDB.getById([kimdan_id], region_id)
         if (!responsible) {
             return res.status(404).json({
                 message: "responsible not found"
