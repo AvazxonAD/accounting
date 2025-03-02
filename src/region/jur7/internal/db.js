@@ -20,7 +20,7 @@ exports.RasxodDB = class {
                 updated_at
             ) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-            RETURNING id
+            RETURNING *
         `
         const result = await client.query(query, params)
         return result.rows[0];
@@ -160,7 +160,7 @@ exports.RasxodDB = class {
         return result[0];
     }
 
-    static async update(params) {
+    static async update(params, client) {
         const query = `--sql
             UPDATE document_vnutr_peremesh_jur7 SET 
               doc_num = $1,
@@ -175,17 +175,42 @@ exports.RasxodDB = class {
               kimdan_name = $10,  
               updated_at = $11
             WHERE id = $12
+            RETURNING * 
         `;
-        await db.query(query, params);
+
+        const result = await client.query(query, params);
+
+        return result.rows[0];
     }
 
     static async delete(params, client) {
-        await client.query(`UPDATE document_vnutr_peremesh_jur7_child SET isdeleted = true WHERE document_vnutr_peremesh_jur7_id = $1`, params);
-        await client.query(`UPDATE document_vnutr_peremesh_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
+        await client.query(`
+            UPDATE document_vnutr_peremesh_jur7_child 
+            SET isdeleted = true 
+            WHERE document_vnutr_peremesh_jur7_id = $1
+        `, params);
+
+        await client.query(`
+            UPDATE document_vnutr_peremesh_jur7 
+            SET isdeleted = true 
+            WHERE id = $1
+        `, params);
     }
 
     static async deleteRasxodChild(params, client) {
-        const query = `DELETE FROM document_vnutr_peremesh_jur7_child WHERE document_vnutr_peremesh_jur7_id = $1 AND isdeleted = false`
-        await client.query(query, params);
+        const query1 = `
+            UPDATE saldo_naimenovanie_jur7 
+            SET isdeleted = true 
+            WHERE prixod_id = $1
+        `;
+
+        const query2 = `
+            UPDATE document_vnutr_peremesh_jur7_child 
+            SET isdeleted = true 
+            WHERE document_vnutr_peremesh_jur7_id = $1
+        `;
+
+        await client.query(query1, params);
+        await client.query(query2, params);
     }
 }

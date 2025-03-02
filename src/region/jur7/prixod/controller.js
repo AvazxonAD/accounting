@@ -117,7 +117,7 @@ exports.Controller = class {
 
     const result = await PrixodJur7Service.create({ ...req.body, user_id, main_schet_id, budjet_id, childs, region_id });
 
-    return res.success(req.i18n.t('createSuccess'), 200, null, result);
+    return res.success(req.i18n.t('createSuccess'), 200, result.dates, result.doc);
   }
 
   static async get(req, res) {
