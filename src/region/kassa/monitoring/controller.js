@@ -68,6 +68,7 @@ exports.Controller = class {
     static async daily(req, res) {
         const { from, to, main_schet_id } = req.query;
         const region_id = req.user.region_id;
+        const region = await RegionService.getById({ id: region_id });
 
         const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
         if (!main_schet) {
@@ -76,7 +77,7 @@ exports.Controller = class {
 
         const data = await KassaMonitoringService.daily({ region_id, main_schet_id, from, to });
 
-        const { fileName, filePath } = await KassaMonitoringService.dailyExcel({ ...data, from, to, main_schet, region_id });
+        const { fileName, filePath } = await KassaMonitoringService.dailyExcel({ ...data, region, from, to, main_schet, region_id });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
