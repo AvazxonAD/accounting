@@ -114,6 +114,7 @@ exports.Jur7RsxodService = class {
                 0,
                 child.iznos_schet,
                 child.iznos_sub_schet,
+                0,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);

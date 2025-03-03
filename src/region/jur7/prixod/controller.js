@@ -11,6 +11,15 @@ const { HelperFunctions } = require('@helper/functions');
 const { PrixodJur7Schema } = require('./schema')
 
 exports.Controller = class {
+  static async templateImport(req, res) {
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile('prixod.xlsx', req.i18n);
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    return res.send(fileRes);
+  }
+
   static async readFile(req, res) {
     const filePath = req.file.path;
 
@@ -30,7 +39,9 @@ exports.Controller = class {
 
       item.group = await GroupService.getById({ id: item.group_jur7_id });
 
-      if ((!item.iznos && item.eski_iznos_summa) || item.iznos && item.group.iznos_foiz) {
+      item.iznos = item.group.iznos_foiz > 0 ? true : false;
+
+      if (!item.iznos && item.eski_iznos_summa) {
         return res.error(req.i18n.t('IznosSummaError'), 400, item);
       }
 

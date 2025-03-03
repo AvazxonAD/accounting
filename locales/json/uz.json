@@ -42,7 +42,7 @@
     "gaznaExists": "Ushbu gazna raqami avval kiritilgan!",
     "differentSaldoDate": "Yil va oy maydoni bir xil bolishi kerak!",
     "pageNotFound": "Sahifa topilmadi!",
-    "saldoNotFound": "Saldo not found!",
+    "saldoNotFound": "Saldo topilmadi!",
     "productDelete": "Ushbu document qoldiqda mavjud emas!",
     "importSuccess": "Malumot muvaffaqiyatli import qilindi",
     "conflictAccountNumber": "Hisob raqam yoki gazna raqamni tanlashinggiz kerak !",
