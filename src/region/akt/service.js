@@ -10,8 +10,8 @@ exports.AktService = class {
     static async getSchets(data) {
         const result = await AktDB.getSchets([data.region_id, data.main_schet_id, data.from, data.to]);
 
-        for(let item of result){
-            
+        for (let item of result) {
+
         }
 
         return result;
@@ -39,9 +39,26 @@ exports.AktService = class {
             worksheet.mergeCells(`A1`, `H1`);
             const title = worksheet.getCell(`A1`);
             title.value = `Мемориал ордер № 3 Счет: ${schet.schet}`;
+
+            worksheet.mergeCells('I1', 'N1');
+            const region = worksheet.getCell(`I1`);
+            Object.assign(region, {
+                value: data.region.name,
+                font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                alignment: { vertical: 'middle', horizontal: "center" },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            })
+
             worksheet.mergeCells('A2', 'H2');
             const title2 = worksheet.getCell(`A2`);
             title2.value = `Подлежит записи в главную книгу`;
+
             worksheet.mergeCells(`A3`, `C3`);
             const title3_1 = worksheet.getCell('A3');
             title3_1.value = 'Дебет';

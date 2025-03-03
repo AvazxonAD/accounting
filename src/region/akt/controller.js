@@ -9,6 +9,7 @@ const { SostavService } = require('../spravochnik/sostav/service');
 const { TypeOperatsiiService } = require('../spravochnik/type.operatsii/service');
 const { GaznaService } = require('@gazna/service');
 const { AccountNumberService } = require('@account_number/service');
+const { RegionService } = require('@region/service');
 
 exports.Controller = class {
     static async create(req, res) {
@@ -290,6 +291,8 @@ exports.Controller = class {
 
     static async cap(req, res) {
         const region_id = req.user.region_id;
+        const region = await RegionService.getById({ id: region_id });
+
         const { from, to, main_schet_id } = req.query
 
         const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
@@ -299,7 +302,7 @@ exports.Controller = class {
 
         const schets = await AktService.getSchets({ region_id, main_schet_id, from, to })
 
-        const { fileName, filePath } = await AktService.capExcel({ ...req.query, region_id, schets });
+        const { fileName, filePath } = await AktService.capExcel({ ...req.query, region_id, schets, region });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);

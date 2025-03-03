@@ -7,7 +7,7 @@ const { mkdir, constants, access } = require('fs').promises;
 exports.BankMonitoringService = class {
     static async get(data) {
         const result = await BankMonitoringDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
-        
+
         let page_prixod_sum = 0;
         let page_rasxod_sum = 0;
         for (let item of result.data) {
@@ -26,7 +26,7 @@ exports.BankMonitoringService = class {
             total_count: result.total_count,
             page_prixod_sum,
             page_rasxod_sum,
-            prixod_sum: result.prixod_sum, 
+            prixod_sum: result.prixod_sum,
             rasxod_sum: result.rasxod_sum,
             total_sum: result.prixod_sum - result.rasxod_sum,
             page_total_sum: page_prixod_sum - page_rasxod_sum
@@ -41,7 +41,7 @@ exports.BankMonitoringService = class {
 
         let prixod_sum = 0
         let rasxod_sum = 0
-        
+
         schets.forEach(item => {
             prixod_sum += item.summa.prixod_sum
             rasxod_sum += item.summa.rasxod_sum
@@ -60,6 +60,7 @@ exports.BankMonitoringService = class {
         const workbook = new ExcelJS.Workbook();
         const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('Hisobot');
+
         worksheet.mergeCells('A1', 'G1');
         const titleCell = worksheet.getCell('A1');
         Object.assign(titleCell, {
@@ -67,6 +68,22 @@ exports.BankMonitoringService = class {
             font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: 'center' },
         });
+
+        worksheet.mergeCells('H1', 'L1');
+        const region = worksheet.getCell(`H1`);
+        Object.assign(region, {
+            value: data.region.name,
+            font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+            alignment: { vertical: 'middle', horizontal: "center" },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        })
+
         worksheet.getRow(1).height = 30;
         worksheet.getColumn(1).width = 5
         worksheet.getColumn(2).width = 7
