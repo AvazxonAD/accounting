@@ -1,5 +1,6 @@
 const { BankMonitoringService } = require('./service');
 const { MainSchetService } = require('@main_schet/service');
+const { RegionService } = require('@region/service');
 
 exports.Controller = class {
     static async get(req, res) {
@@ -34,7 +35,7 @@ exports.Controller = class {
             summa_to: summa_to.summa,
             page_prixod_sum,
             page_rasxod_sum,
-            total_sum, 
+            total_sum,
             page_total_sum,
             summa_from_object: summa_from,
             summa_to_object: summa_to
@@ -46,6 +47,7 @@ exports.Controller = class {
     static async cap(req, res) {
         const { from, to, main_schet_id, excel } = req.query;
         const region_id = req.user.region_id;
+        const region = await RegionService.getById({ id: region_id });
 
         const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
         if (!main_schet) {
@@ -55,7 +57,7 @@ exports.Controller = class {
         const data = await BankMonitoringService.cap({ region_id, main_schet_id, from, to });
 
         if (excel === 'true') {
-            const { fileName, filePath } = await BankMonitoringService.capExcel({ ...data, main_schet, from, to });
+            const { fileName, filePath } = await BankMonitoringService.capExcel({ ...data, main_schet, from, to, region });
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);

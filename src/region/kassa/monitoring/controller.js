@@ -1,5 +1,6 @@
 const { KassaMonitoringService } = require('./service');
 const { MainSchetService } = require('@main_schet/service');
+const { RegionService } = require('@region/service');
 
 exports.Controller = class {
     static async get(req, res) {
@@ -12,9 +13,9 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const { 
-            total_count, data, summa_from, summa_to, 
-            prixod_sum, rasxod_sum, page_prixod_sum, 
+        const {
+            total_count, data, summa_from, summa_to,
+            prixod_sum, rasxod_sum, page_prixod_sum,
             page_rasxod_sum, page_total_sum,
         } = await KassaMonitoringService.get({ ...req.query, region_id, offset, limit });
 
@@ -32,7 +33,7 @@ exports.Controller = class {
             summa_to_object: summa_to,
             summa_from: summa_from.summa,
             summa_to: summa_to.summa,
-            page_prixod_sum, 
+            page_prixod_sum,
             page_rasxod_sum,
             page_total_sum
         };
@@ -43,6 +44,7 @@ exports.Controller = class {
     static async cap(req, res) {
         const { from, to, main_schet_id, excel } = req.query;
         const region_id = req.user.region_id;
+        const region = await RegionService.getById({ id: region_id });
 
         const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
         if (!main_schet) {
@@ -51,7 +53,7 @@ exports.Controller = class {
 
         const data = await KassaMonitoringService.cap({ region_id, main_schet_id, from, to });
 
-        const { fileName, filePath } = await KassaMonitoringService.capExcel({ ...data, main_schet, from, to });
+        const { fileName, filePath } = await KassaMonitoringService.capExcel({ ...data, main_schet, from, to, region });
 
         if (excel === 'true') {
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

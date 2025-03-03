@@ -58,6 +58,7 @@ exports.KassaMonitoringService = class {
         const workbook = new ExcelJS.Workbook();
         const fileName = `kassa_shapka_${new Date().getTime()}.xlsx`;
         const worksheet = workbook.addWorksheet('Hisobot');
+
         worksheet.mergeCells('A1', 'G1');
         const titleCell = worksheet.getCell('A1');
         Object.assign(titleCell, {
@@ -65,6 +66,22 @@ exports.KassaMonitoringService = class {
             font: { size: 10, bold: true, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: 'center' },
         });
+
+        worksheet.mergeCells('H1', 'L1');
+        const region = worksheet.getCell(`H1`);
+        Object.assign(region, {
+            value: data.region.name,
+            font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+            alignment: { vertical: 'middle', horizontal: "center" },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        })
+
         worksheet.getRow(1).height = 30;
         worksheet.getColumn(1).width = 5
         worksheet.getColumn(2).width = 7
