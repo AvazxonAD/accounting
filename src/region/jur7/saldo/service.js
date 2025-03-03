@@ -329,8 +329,9 @@ exports.SaldoService = class {
 
                 if (doc.iznos) {
                     old_iznos = doc.eski_iznos_summa ? doc.eski_iznos_summa / doc.kol : 0;
-                    let iznos_summa = (doc.sena * (doc.iznos_foiz / 100)) + old_iznos;
+                    iznos_summa = (doc.sena * (doc.iznos_foiz / 100)) + old_iznos;
                     iznos_summa = iznos_summa >= doc.sena ? doc.sena : iznos_summa;
+                    old_iznos = old_iznos >= doc.sena ? doc.sena : old_iznos;
                 }
 
                 await SaldoDB.create([
