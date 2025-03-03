@@ -124,6 +124,11 @@ exports.Controller = class {
     }
 
     for (let doc of value) {
+      const responsible = await ResponsibleService.getById({ region_id, id: doc.responsible_id });
+      if (!responsible) {
+        return res.error(req.i18n.t('responsibleNotFound'), 404);
+      }
+
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
