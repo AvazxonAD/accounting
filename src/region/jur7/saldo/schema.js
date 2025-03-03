@@ -52,6 +52,7 @@ exports.SaldoSchema = class {
         search: Joi.string().trim(),
         type: Joi.string().trim().valid('responsible', 'group', 'product').default('responsible'),
         to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
+        iznos: Joi.string().trim()
       })
     }).options({ stripUnknown: true })
   }
@@ -70,11 +71,31 @@ exports.SaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static updateIznosSumma() {
+    return Joi.object({
+      body: Joi.object({
+        iznos_summa: Joi.number().min(1).required().integer()
+      }),
+
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required()
+      })
+    }).options({ stripUnknown: true });
+  }
+
   static check() {
     return Joi.object({
       query: Joi.object({
         year: Joi.number().min(1901).max(2099).required().integer(),
         month: Joi.number().min(1).max(12).required().integer()
+      })
+    }).options({ stripUnknown: true });
+  }
+
+  static getById() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().min(1).required().integer()
       })
     }).options({ stripUnknown: true });
   }

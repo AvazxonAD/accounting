@@ -8,6 +8,7 @@ const router = Router()
 
 router
     .get('/report', validator(Controller.getPrixodReport, PrixodJur7Schema.report()))
+    .get('/template', validator(Controller.templateImport))
     .post('/', validator(Controller.create, PrixodJur7Schema.create()))
     .post('/read', upload.single('file'), validator(Controller.readFile, PrixodJur7Schema.readFile()))
     .get('/:id', validator(Controller.getById, PrixodJur7Schema.getById()))

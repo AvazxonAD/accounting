@@ -7,9 +7,25 @@ const { SaldoSchema } = require('./schema');
 const { HelperFunctions } = require('../../../helper/functions');
 
 exports.Controller = class {
+  static async updateIznosSumma(req, res) {
+    const { id } = req.params;
+    const region_id = req.user.region_id;
+
+    const { iznos_summa } = req.body;
+
+    const check = await SaldoService.getById({ id, region_id, iznos: true });
+    if (!check) {
+      return res.error(req.i18n.t('saldoNotFound'), 404);
+    }
+
+    const response = await SaldoService.updateIznosSumma({ id, iznos_summa });
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, response);
+  }
+
   static async templateFile(req, res) {
 
-    const { fileName, fileRes } = await HelperFunctions.getTemplateFile('saldo.xlsx');
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile('saldo.xlsx');
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -19,7 +35,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, type, search, page, limit, group_id } = req.query;
+    const { kimning_buynida, to, type, search, page, limit, group_id, iznos } = req.query;
     const data = { responsibles: [], groups: [], products: [], total: 0 };
 
     const offset = (page - 1) * limit;
@@ -33,7 +49,7 @@ exports.Controller = class {
 
     // product
     if (type === 'product') {
-      const _data = await SaldoService.getByProduct({ region_id, responsible_id: kimning_buynida, to, search, offset, limit });
+      const _data = await SaldoService.getByProduct({ ...req.query, region_id, responsible_id: kimning_buynida, offset });
       data.products = _data.data;
       data.total = _data.total;
     }
@@ -47,20 +63,20 @@ exports.Controller = class {
         total = 1;
       }
 
-      data.groups = await SaldoService.getByGroup({ region_id, to, groups, search, offset, limit })
+      data.groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
       data.total = total;
     }
 
     // responsible
     else {
-      let { data: responsibles, total } = await ResponsibleService.get({ region_id, offset, limit, id: kimning_buynida });
+      let { data: responsibles, total } = await ResponsibleService.get({ ...req.query, region_id, offset, id: kimning_buynida });
 
       if (kimning_buynida) {
         responsibles = responsibles.filter(item => item.id === kimning_buynida);
         total = 1;
       }
 
-      data.responsibles = await SaldoService.getByResponsibles({ region_id, to, responsibles, search, offset, limit });
+      data.responsibles = await SaldoService.getByResponsibles({ ...req.query, region_id, responsibles, offset });
       data.total = total;
     }
 
@@ -124,13 +140,14 @@ exports.Controller = class {
 
       doc.doc_num = doc.doc_num ? doc.doc_num : 'saldo';
 
-      doc.iznos = doc.iznos === 'ha' ? true : false;
+      doc.iznos = group.iznos_foiz > 0 ? true : false
+      doc.iznos_foiz = group.iznos_foiz;
+      doc.iznos_schet = group.schet;
+      doc.iznos_sub_schet = group.provodka_subschet;
 
       if (!doc.iznos && doc.eski_iznos_summa > 0) {
-        return res.error(`${req.i18n.t('iznosSummaError')}`, 400);
+        return res.error(`${req.i18n.t('iznosSummaError')}`, 400, doc);
       }
-
-      doc.iznos_foiz = group.iznos_foiz;
     }
 
     await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id, region_id, date_saldo });
@@ -171,5 +188,12 @@ exports.Controller = class {
     return res.success(req.i18n.t('getSuccess'), 200, meta, response);
   }
 
+  static async getById(req, res) {
+    const { id } = req.params;
+    const region_id = req.user.region_id;
 
+    const response = await SaldoService.getById({ region_id, id, isdeleted: true });
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, response);
+  }
 }

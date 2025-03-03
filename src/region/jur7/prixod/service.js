@@ -327,33 +327,8 @@ exports.PrixodJur7Service = class {
                 tashkentTime()
             ], data.client);
 
-            const month_summa = (product_sena * (child.group.iznos_foiz / 100));
-
             const month = new Date(data.doc.doc_date).getMonth() + 1;
             const year = new Date(data.doc.doc_date).getFullYear();
-
-            if (child.iznos) {
-                await IznosDB.createIznos([
-                    data.user_id,
-                    child.inventar_num,
-                    child.serial_num,
-                    child.id,
-                    child.kol,
-                    product_sena,
-                    data.doc_date,
-                    data.kimga_id,
-                    iznos_summa,
-                    year,
-                    month,
-                    data.doc.doc_date,
-                    data.budjet_id,
-                    child.old_iznos > product_sena ? product_sena : child.old_iznos,
-                    data.region_id,
-                    month_summa,
-                    tashkentTime(),
-                    tashkentTime()
-                ], data.client)
-            }
 
             await SaldoDB.create([
                 data.user_id,
@@ -373,6 +348,7 @@ exports.PrixodJur7Service = class {
                 0,
                 child.iznos_schet,
                 child.iznos_sub_schet,
+                0,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);
@@ -410,8 +386,6 @@ exports.PrixodJur7Service = class {
             const productIds = await PrixodDB.getProductsByDocId([data.id], client);
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
-
-            // await SaldoDB.deleteByPrixodId([data.id], client);
 
             const childs = await this.createProduct({ childs: data.childs, user_id: data.user_id, budjet_id: data.budjet_id, client });
 
