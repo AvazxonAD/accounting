@@ -40,6 +40,8 @@ exports.Controller = class {
       item.group = await GroupService.getById({ id: item.group_jur7_id });
 
       item.iznos = item.group.iznos_foiz > 0 ? true : false;
+      item.iznos_schet = item.group.schet;
+      item.iznos_sub_schet = item.group.provodka_subschet;
 
       if (!item.iznos && item.eski_iznos_summa) {
         return res.error(req.i18n.t('IznosSummaError'), 400, item);
