@@ -283,6 +283,21 @@ exports.KassaMonitoringService = class {
             alignment: { vertical: 'middle', horizontal: 'left' }
         });
 
+        worksheet.mergeCells('H1', 'L1');
+        const region = worksheet.getCell(`H1`);
+        Object.assign(region, {
+            value: data.region.name,
+            font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+            alignment: { vertical: 'middle', horizontal: "center" },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        })
+
         worksheet.mergeCells('A2', 'G2');
         const dateCell = worksheet.getCell('A2');
         Object.assign(dateCell, {
