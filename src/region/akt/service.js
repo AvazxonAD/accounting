@@ -40,11 +40,11 @@ exports.AktService = class {
             const title = worksheet.getCell(`A1`);
             title.value = `Мемориал ордер № 3 Счет: ${schet.schet}`;
 
-            worksheet.mergeCells('I1', 'N1');
+            worksheet.mergeCells('I1', 'K1');
             const region = worksheet.getCell(`I1`);
             Object.assign(region, {
                 value: data.region.name,
-                font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+                font: { size: 10, color: { argb: 'FF000000' }, name: 'Times New Roman' },
                 alignment: { vertical: 'middle', horizontal: "center" },
                 fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
                 border: {

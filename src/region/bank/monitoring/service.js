@@ -69,11 +69,11 @@ exports.BankMonitoringService = class {
             alignment: { vertical: 'middle', horizontal: 'center' },
         });
 
-        worksheet.mergeCells('H1', 'L1');
+        worksheet.mergeCells('H1', 'K1');
         const region = worksheet.getCell(`H1`);
         Object.assign(region, {
             value: data.region.name,
-            font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+            font: { size: 10, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: "center" },
             fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
             border: {
@@ -285,11 +285,11 @@ exports.BankMonitoringService = class {
             alignment: { vertical: 'middle', horizontal: 'left' }
         });
 
-        worksheet.mergeCells('H1', 'L1');
+        worksheet.mergeCells('H1', 'K1');
         const region = worksheet.getCell(`H1`);
         Object.assign(region, {
             value: data.region.name,
-            font: { size: 12, color: { argb: 'FF000000' }, name: 'Times New Roman' },
+            font: { size: 10, color: { argb: 'FF000000' }, name: 'Times New Roman' },
             alignment: { vertical: 'middle', horizontal: "center" },
             fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } },
             border: {
