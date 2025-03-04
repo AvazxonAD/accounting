@@ -5,8 +5,8 @@ const { SaldoDB } = require('@saldo/db');
 
 exports.Jur7RsxodService = class {
     static async delete(data) {
-        await db.transaction(async (client) => {
-            await RasxodDB.delete([data.id], client)
+        const result = await db.transaction(async (client) => {
+            const doc = await RasxodDB.delete([data.id], client)
 
             const year = new Date(data.oldData.doc_date).getFullYear();
             const month = new Date(data.oldData.doc_date).getMonth() + 1;
@@ -22,7 +22,11 @@ exports.Jur7RsxodService = class {
                     tashkentTime()
                 ], client));
             }
+
+            return { doc, dates };
         })
+
+        return result;
     }
 
     static async create(data) {
@@ -63,7 +67,7 @@ exports.Jur7RsxodService = class {
                 ], client));
             }
 
-            return doc;
+            return { doc, dates };
         });
 
         return result;
@@ -103,7 +107,7 @@ exports.Jur7RsxodService = class {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
         const result = await db.transaction(async client => {
-            await RasxodDB.update([
+            const doc = await RasxodDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.j_o_num,
@@ -118,7 +122,7 @@ exports.Jur7RsxodService = class {
 
             await RasxodDB.deleteRasxodChild([data.id], client)
 
-            await this.createChild({ ...data, docId: data.id, client })
+            await this.createChild({ ...data, docId: data.id, doc, client })
 
             let year, month;
 
@@ -147,7 +151,7 @@ exports.Jur7RsxodService = class {
                 ], client));
             }
 
-            return { id: data.id };
+            return { doc, dates };
         });
 
         return result;

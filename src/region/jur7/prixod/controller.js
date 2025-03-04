@@ -268,7 +268,7 @@ exports.Controller = class {
 
     const result = await PrixodJur7Service.update({ ...req.body, budjet_id, main_schet_id, user_id, id, childs, oldData, region_id });
 
-    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
+    return res.success(req.i18n.t('updateSuccess'), 200, result.dates, result.doc);
   }
 
   static async delete(req, res) {
@@ -297,7 +297,7 @@ exports.Controller = class {
 
     const result = await PrixodJur7Service.deleteDoc({ id, region_id, oldData });
 
-    return res.success(req.i18n.t('deleteSuccess'), 200, null, result);
+    return res.success(req.i18n.t('deleteSuccess'), 200, result.dates, result.doc);
   }
 
   static async getPrixodReport(req, res) {
