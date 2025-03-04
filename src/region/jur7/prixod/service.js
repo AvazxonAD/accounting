@@ -323,6 +323,7 @@ exports.PrixodJur7Service = class {
                 iznos_summa,
                 child.iznos_schet,
                 child.iznos_sub_schet,
+                child.iznos_start,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);
@@ -330,7 +331,6 @@ exports.PrixodJur7Service = class {
             const month = new Date(data.doc.doc_date).getMonth() + 1;
             const year = new Date(data.doc.doc_date).getFullYear();
 
-            console.log(child.iznos_start)
             await SaldoDB.create([
                 data.user_id,
                 child.id,

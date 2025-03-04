@@ -45,6 +45,7 @@ exports.RasxodDB = class {
                 iznos_summa,
                 iznos_schet,
                 iznos_sub_schet,
+                iznos_start,
                 created_at,
                 updated_at
             ) 
