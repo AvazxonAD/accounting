@@ -143,6 +143,13 @@ exports.Controller = class {
         doc.doc_date = new Date();
       }
 
+      if (doc.iznos_start) {
+        const dates = doc.iznos_start.split('.');
+        doc.iznos_start = new Date(`${dates[2]}-${dates[1]}-${dates[0]}`);
+      } else {
+        doc.iznos_start = new Date();
+      }
+
       doc.doc_num = doc.doc_num ? doc.doc_num : 'saldo';
 
       doc.iznos = group.iznos_foiz > 0 ? true : false

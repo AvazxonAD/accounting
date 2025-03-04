@@ -225,6 +225,7 @@ exports.SaldoService = class {
                         product.iznos_schet,
                         product.iznos_sub_schet,
                         product.data.iznos_summa,
+                        product.iznos_start,
                         tashkentTime(),
                         tashkentTime()
                     ], client);
@@ -353,6 +354,7 @@ exports.SaldoService = class {
                     doc.iznos_schet,
                     doc.iznos_sub_schet,
                     old_iznos,
+                    doc.iznos_start,
                     tashkentTime(),
                     tashkentTime()
                 ], client);
