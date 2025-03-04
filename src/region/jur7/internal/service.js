@@ -91,6 +91,7 @@ exports.Jur7RsxodService = class {
                 child.iznos_summa,
                 child.iznos_schet,
                 child.iznos_sub_schet,
+                child.iznos_start,
                 tashkentTime(),
                 tashkentTime()
             );
@@ -123,7 +124,7 @@ exports.Jur7RsxodService = class {
             ], data.client);
         }
 
-        const _values = returnParamsValues(create_childs, 18);
+        const _values = returnParamsValues(create_childs, 19);
 
         await RasxodDB.createChild(create_childs, _values, data.client);
     }
