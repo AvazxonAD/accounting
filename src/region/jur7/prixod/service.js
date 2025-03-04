@@ -416,7 +416,7 @@ exports.PrixodJur7Service = class {
                 ], client));
             }
 
-            return { id: data.id }
+            return { doc, dates }
         });
 
         return result;
@@ -452,7 +452,7 @@ exports.PrixodJur7Service = class {
                 ], client));
             }
 
-            return docId
+            return { doc, dates }
         });
 
         return result;

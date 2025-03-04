@@ -56,7 +56,7 @@ exports.Controller = class {
 
     const result = await Jur7RsxodService.create({ ...req.body, main_schet_id, user_id, region_id });
 
-    return res.success(req.i18n.t('createSuccess'), 200, null, result);
+    return res.success(req.i18n.t('createSuccess'), 200, result.dates, result.doc);
   }
 
   static async getById(req, res) {
@@ -135,7 +135,7 @@ exports.Controller = class {
 
     const result = await Jur7RsxodService.update({ ...req.body, user_id, main_schet_id, id, oldData, region_id });
 
-    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
+    return res.success(req.i18n.t('updateSuccess'), 200, result.dates, result.doc);
   }
 
   static async delete(req, res) {
@@ -153,9 +153,9 @@ exports.Controller = class {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
 
-    await Jur7RsxodService.delete({ id, oldData: data, region_id });
+    const response = await Jur7RsxodService.delete({ id, oldData: data, region_id });
 
-    return res.error(req.i18n.t('deleteSuccess'), 200, null, { id })
+    return res.error(req.i18n.t('deleteSuccess'), 200, response.dates, response.doc);
   }
 
   static async get(req, res) {

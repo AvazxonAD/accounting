@@ -190,11 +190,14 @@ exports.RasxodDB = class {
             WHERE document_vnutr_peremesh_jur7_id = $1
         `, params);
 
-        await client.query(`
+        const data = await client.query(`
             UPDATE document_vnutr_peremesh_jur7 
             SET isdeleted = true 
             WHERE id = $1
+            RETURNING *
         `, params);
+
+        return data.rows[0];
     }
 
     static async deleteRasxodChild(params, client) {

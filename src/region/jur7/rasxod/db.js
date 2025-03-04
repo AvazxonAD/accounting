@@ -173,7 +173,10 @@ exports.RasxodDB = class {
 
     static async delete(params, client) {
         await client.query(`UPDATE document_rasxod_jur7_child SET isdeleted = true WHERE document_rasxod_jur7_id = $1`, params);
-        await client.query(`UPDATE document_rasxod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`, params);
+
+        const data = await client.query(`UPDATE document_rasxod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING *`, params);
+
+        return data.rows[0];
     }
 
     static async deleteRasxodChild(params, client) {
