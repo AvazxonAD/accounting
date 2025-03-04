@@ -93,12 +93,11 @@ exports.SaldoDB = class {
             WHERE region_id = $1
                 AND isdeleted = false
             ORDER BY year, month
-            LIMIT 1 
         `;
 
         const data = await db.query(query, params);
 
-        return data[0];
+        return data;
     }
 
     static async unblock(params) {
