@@ -69,7 +69,7 @@ exports.BankMonitoringService = class {
             alignment: { vertical: 'middle', horizontal: 'center' },
         });
 
-        worksheet.mergeCells('H1', 'K1');
+        worksheet.mergeCells('H1', 'J1');
         const region = worksheet.getCell(`H1`);
         Object.assign(region, {
             value: data.region.name,
@@ -285,7 +285,7 @@ exports.BankMonitoringService = class {
             alignment: { vertical: 'middle', horizontal: 'left' }
         });
 
-        worksheet.mergeCells('H1', 'K1');
+        worksheet.mergeCells('H1', 'J1');
         const region = worksheet.getCell(`H1`);
         Object.assign(region, {
             value: data.region.name,
