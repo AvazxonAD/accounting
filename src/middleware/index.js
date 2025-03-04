@@ -6,7 +6,7 @@ exports.Middleware = class {
 
         const block = await SaldoService.getBlock({ region_id });
 
-        if (block) {
+        if (block.length > 0) {
             return res.error(req.i18n.t('jur7Block'), 400, block);
         }
 
