@@ -143,8 +143,12 @@ exports.RasxodDB = class {
                     FROM (
                         SELECT  
                             ch.*,
+                            row_to_json(n) AS product,
+                            row_to_json(g) AS group,
                             TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
                         FROM document_vnutr_peremesh_jur7_child AS ch
+                        JOIN naimenovanie_tovarov_jur7 n ON ch.naimenovanie_tovarov_jur7_id = n.id
+                        JOIN group_jur7 g ON g.id = n.group_jur7_id
                         WHERE ch.document_vnutr_peremesh_jur7_id = d.id
                     ) AS ch
                 ) AS childs,

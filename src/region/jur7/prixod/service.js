@@ -437,7 +437,7 @@ exports.PrixodJur7Service = class {
 
             await PrixodDB.deletePrixodChild(data.id, productIds, client);
 
-            const docId = await PrixodDB.delete([data.id], client);
+            const doc = await PrixodDB.delete([data.id], client);
 
             const year = new Date(data.oldData.doc_date).getFullYear();
             const month = new Date(data.oldData.doc_date).getMonth() + 1;
