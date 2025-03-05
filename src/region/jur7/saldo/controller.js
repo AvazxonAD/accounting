@@ -64,6 +64,8 @@ exports.Controller = class {
       }
 
       data.groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
+      data.groups.sort((a, b) => b.products.length - a.products.length)
+
       data.total = total;
     }
 

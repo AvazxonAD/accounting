@@ -63,6 +63,7 @@ exports.SaldoService = class {
 
         let { data: products, total } = await SaldoDB.get([data.region_id, year, month, data.offset, data.limit], data.responsible_id, data.search, data.product_id, null, data.iznos);
         for (let product of products) {
+
             product.internal = await SaldoDB.getKolAndSumma(
                 [product.naimenovanie_tovarov_jur7_id],
                 `${year}-${month < 10 ? `0${month}` : month}-01`,
