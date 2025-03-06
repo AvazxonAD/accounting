@@ -352,7 +352,7 @@ exports.OrganizationMonitoringDB = class {
             params.push(date.date);
             date_filter = `AND d.doc_date ${date.operator} $${params.length}`;
         }
-        
+
         if (dates) {
             params.push(dates[0], dates[1]);
             date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;

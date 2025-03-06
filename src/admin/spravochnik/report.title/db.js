@@ -24,7 +24,7 @@ exports.ReportTitleDB = class {
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    rt.*, 
+                    rt.*
                 FROM report_title AS rt
                 WHERE rt.isdeleted = false ${search_filter}
                 OFFSET $1 LIMIT $2
