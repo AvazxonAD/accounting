@@ -39,7 +39,7 @@ exports.SaldoService = class {
         const year = new Date(data.to).getFullYear();
 
         for (let group of data.groups) {
-            const products = await SaldoDB.get([data.region_id, year, month, 0, 99999], null, data.search, data.product_id, group.id, data.iznos);
+            const products = await SaldoDB.get([data.region_id, year, month, 0, 99999], data.responsible_id, data.search, data.product_id, group.id, data.iznos);
             group.products = products.data;
             for (let product of group.products) {
                 product.internal = await SaldoDB.getKolAndSumma(

@@ -104,7 +104,7 @@ exports.GroupService = class {
     }
 
     static async get(data) {
-        const result = await GroupDB.get([data.offset, data.limit], data.search);
+        const result = await GroupDB.get([data.offset, data.limit], data.search, data.id);
 
         return { data: result.data || [], total: result.total }
     }

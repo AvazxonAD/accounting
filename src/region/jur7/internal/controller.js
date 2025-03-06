@@ -4,6 +4,7 @@ const { ProductService } = require('@product/service');
 const { MainSchetService } = require('@main_schet/service');
 const { Jur7RsxodService } = require('./service');
 const { SaldoService } = require('@saldo/service');
+const { GroupService } = require('@group/service');
 
 exports.Controller = class {
   static async create(req, res) {
@@ -42,7 +43,12 @@ exports.Controller = class {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
+      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: child.group_jur7_id });
+      if (!groups.length) {
+        return res.error(req.i18n.t('groupNotFound'), 404);
+      }
+
+      const data = await SaldoService.getByGroup({ responsible_id: kimdan_id, region_id, groups, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id });
       if (!data[0]) {
         return res.error(req.i18n.t('kolError'), 400);
       } else if (!data[0].products[0] || data[0].products[0].to.kol < child.kol) {
@@ -120,7 +126,12 @@ exports.Controller = class {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      const data = await SaldoService.getByResponsibles({ responsibles: [{ id: kimdan_id }], to: doc_date, region_id, product_id: child.naimenovanie_tovarov_jur7_id });
+      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: child.group_jur7_id });
+      if (!groups.length) {
+        return res.error(req.i18n.t('groupNotFound'), 404);
+      }
+
+      const data = await SaldoService.getByGroup({ responsible_id: kimdan_id, region_id, groups, to: doc_date, product_id: child.naimenovanie_tovarov_jur7_id });
 
       const kol = data[0]?.products[0] ? data[0].products[0].to.kol : 0;
 
