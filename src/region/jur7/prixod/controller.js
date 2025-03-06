@@ -8,9 +8,23 @@ const { ResponsibleService } = require('@responsible/service');
 const { GaznaService } = require('@gazna/service');
 const { AccountNumberService } = require('@account_number/service');
 const { HelperFunctions } = require('@helper/functions');
+const { CODE } = require('@helper/constants');
 const { PrixodJur7Schema } = require('./schema')
 
 exports.Controller = class {
+  static async rasxodDocs(req, res) {
+    const id = req.params.id;
+
+    const productIds = await PrixodJur7Service.getProductIds({ id });
+    const result = [];
+
+    for (let id of productIds) {
+      result.push(await PrixodJur7Service.checkPrixodDoc({ product_id: id }));
+    }
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
+  }
+
   static async templateImport(req, res) {
     const { fileName, fileRes } = await HelperFunctions.returnTemplateFile('prixod.xlsx', req.i18n);
 
@@ -211,7 +225,7 @@ exports.Controller = class {
     for (let id of productIds) {
       const check = await PrixodJur7Service.checkPrixodDoc({ product_id: id });
       if (check.length) {
-        return res.error(req.i18n.t('rasxodProductError'), 409, check);
+        return res.error(req.i18n.t('rasxodProductError'), 409, CODE.DOCS_HAVE);
       }
     }
 
@@ -291,7 +305,7 @@ exports.Controller = class {
     for (let id of productIds) {
       const check = await PrixodJur7Service.checkPrixodDoc({ product_id: id });
       if (check.length) {
-        return res.error(req.i18n.t('rasxodProductError'), 409, check);
+        return res.error(req.i18n.t('rasxodProductError'), 409, CODE.DOCS_HAVE);
       }
     }
 

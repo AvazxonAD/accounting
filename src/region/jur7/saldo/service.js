@@ -1,12 +1,17 @@
 const { SaldoDB } = require('@saldo/db');
 const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
-const { HelperFunctions } = require('@helper/functions');
 const xlsx = require('xlsx');
 const { ProductDB } = require('@product/db');
 const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
+    static async cleanData(data) {
+        await db.transaction(async client => {
+            await SaldoDB.cleanData([data.region_id], client);
+        })
+    }
+
     static async getFirstSaldoDate(data) {
         const result = await SaldoDB.getFirstSaldoDate([data.region_id]);
 
@@ -84,11 +89,10 @@ exports.SaldoService = class {
     }
 
     static async lastSaldo(data) {
-        const last_date = HelperFunctions.lastDate({ year: data.year, month: data.month });
 
-        const last_saldo = await SaldoDB.get([data.region_id, last_date.year, last_date.month, 0, 99999]);
+        const last_saldo = await SaldoDB.get([data.region_id, data.year, data.month, 0, 99999]);
 
-        return { last_saldo, last_date };
+        return last_saldo.data;
     }
 
     static async getBlock(data) {
@@ -148,7 +152,7 @@ exports.SaldoService = class {
 
         const result = await responsibles.filter(item => item.products.length !== 0);
 
-        await db.transaction(async client => {
+        const dates = await db.transaction(async client => {
             await SaldoDB.delete([data.year, data.month, data.region_id], client);
 
             for (let responsible of result) {
@@ -197,7 +201,24 @@ exports.SaldoService = class {
                     await SaldoDB.unblock([data.region_id, data.year, data.month]);
                 }
             }
-        })
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${data.year}-${data.month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
+            }
+
+
+            return dates;
+        });
+
+        return dates;
     }
 
     static async get(data) {
@@ -210,6 +231,18 @@ exports.SaldoService = class {
         await db.transaction(async client => {
             for (let id of data.ids) {
                 await SaldoDB.deleteById([id.id], client);
+            }
+
+            const check = await SaldoDB.getSaldoDate([data.region_id, `${data.year}-${data.month}-01`]);
+            let dates = [];
+            for (let date of check) {
+                dates.push(await SaldoDB.createSaldoDate([
+                    data.region_id,
+                    date.year,
+                    date.month,
+                    tashkentTime(),
+                    tashkentTime()
+                ], client));
             }
         })
     }

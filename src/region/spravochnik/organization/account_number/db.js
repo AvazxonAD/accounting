@@ -133,8 +133,8 @@ exports.AccountNumberDB = class {
         return data[0] || data.rows[0];
     }
 
-    static async delete(params, cleint) {
-        const _db = cleint || db;
+    static async delete(params, client) {
+        const _db = client || db;
 
         const query = `UPDATE organization_by_raschet_schet SET isdeleted = true WHERE id = $1 RETURNING id`;
 

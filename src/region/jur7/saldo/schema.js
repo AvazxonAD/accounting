@@ -86,11 +86,15 @@ exports.SaldoSchema = class {
 
   static delete() {
     return Joi.object({
-      body: Joi.array().items(
-        Joi.object({
-          id: Joi.number().integer().min(1).required()
-        })
-      ).min(1).required()
+      body: Joi.object({
+        ids: Joi.array().items(
+          Joi.object({
+            id: Joi.number().integer().min(1).required()
+          })
+        ).min(1).required(),
+        year: Joi.number().min(1901).max(2099).required().integer(),
+        month: Joi.number().min(1).max(12).required().integer()
+      })
     }).options({ stripUnknown: true });
   }
 

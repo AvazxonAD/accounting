@@ -130,6 +130,14 @@ exports.PrixodJur7Schema = class {
     }).options({ stripUnknown: true });
   }
 
+  static rasxodDocs() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required()
+      })
+    }).options({ stripUnknown: true });
+  }
+
   static delete() {
     return Joi.object({
       params: Joi.object({
