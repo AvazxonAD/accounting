@@ -62,6 +62,9 @@
             "@jur7_podraz/*": [
                 "region/spravochnik/jur7.podrazdelenie/*"
             ],
+            "@report_title/*": [
+                "admin/spravochnik/report.title/*"
+            ],
             "@jur7_prixod/*": [
                 "region/jur7/prixod/*"
             ],

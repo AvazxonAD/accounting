@@ -65,6 +65,7 @@
     "@kassa_monitoring": "./src/region/kassa/monitoring",
     "@region_dashboard": "./src/region/dashboard",
     "@organ_monitoring": "./src/region/organ.monitoring",
+    "@report_title": "./src/admin/spravochnik/report.title",
     "@jur7_prixod": "./src/region/jur7/prixod",
     "@public": "./public",
     "@jur7_rasxod": "./src/region/jur7/rasxod",

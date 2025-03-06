@@ -2,7 +2,7 @@ const { GaznaDB } = require('./db');
 const xlsx = require('xlsx');
 const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
-const { BankService } = require('../../../../admin/spravochnik/bank/service');
+const { BankService } = require('../../../../admin/spravochnik/report.title/service');
 const path = require('path');
 const fs = require('fs').promises;
 

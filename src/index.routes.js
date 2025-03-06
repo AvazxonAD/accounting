@@ -78,6 +78,7 @@ routes
     .use('/dashboard', protect, require('@region_dashboard/index'))
 
     // Admin
+    .use('/admin/spravochnik/report_title', protect, require('@report_title/index'))
     .use('/admin/main/book', protect, require('@admin_main_book/index'))
     .use('/admin/ox', protect, require('./admin/ox/index'))
     .use('/admin/dashboard', protect, require('./admin/dashboard/index'))
