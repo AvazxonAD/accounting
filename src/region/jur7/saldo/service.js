@@ -60,6 +60,11 @@ exports.SaldoService = class {
                 } else {
                     product.to.sena = product.to.summa;
                 }
+
+                if (product.iznos) {
+                    product.to.month_iznos = product.to.sena * (product.group.iznos_foiz / 100);
+                    product.to.eski_iznos_summa = product.eski_iznos_summa;
+                }
             }
 
             if (data.iznos) {
