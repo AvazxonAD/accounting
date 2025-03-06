@@ -2,7 +2,7 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
-    static async checkRasxod(params) {
+    static async checkDoc(params) {
         const query = `
                 SELECT 
                     d.id,
@@ -10,6 +10,18 @@ exports.SaldoDB = class {
                     d.doc_date
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+
+                UNION ALL
+
+                SELECT 
+                    d.id,
+                    d.doc_num,
+                    d.doc_date
+                FROM document_prixod_jur7 d
+                JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
@@ -442,12 +454,13 @@ exports.SaldoDB = class {
         await client.query(query, params);
     }
 
-    static async deleteById(params) {
+    static async deleteById(params, client) {
+        const _db = client || db;
         const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE id = $1`;
 
-        const data = await db.query(query, params);
+        const data = await _db.query(query, params);
 
-        return data;
+        return data.roww[0] || data[0];
     }
 
     static async create(params, client) {

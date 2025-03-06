@@ -7,18 +7,38 @@ const { SaldoSchema } = require('./schema');
 const { HelperFunctions } = require('../../../helper/functions');
 
 exports.Controller = class {
+  static async delete(req, res) {
+    const { ids } = req.body;
+    const region_id = req.user.region_id;
+
+    for (let id of ids) {
+      const check = await SaldoService.getById({ id, region_id });
+      if (!check) {
+        return res.error(req.i18n.t('saldoNotFound'), 404);
+      }
+
+      const check_doc = await SaldoService.checkDoc({ product_id: check.naimenovanie_tovarov_jur7_id });
+      if (check_doc.length) {
+        return res.error(req.i18n.t('saldoRasxodError'), 400, check_doc);
+      }
+    }
+
+    await SaldoService.delete
+    return res.success(req.i18n.t('deleteSuccess'), 200, null, response);
+  }
+
   static async deleteById(req, res) {
     const { id } = req.params;
     const region_id = req.user.region_id;
 
-    const check = await SaldoService.getById({ id, region_id, iznos: true });
+    const check = await SaldoService.getById({ id, region_id });
     if (!check) {
       return res.error(req.i18n.t('saldoNotFound'), 404);
     }
 
-    const check_rasxod = await SaldoService.checkRasxod({ product_id: check.naimenovanie_tovarov_jur7_id });
-    if (check_rasxod.length) {
-      return res.error(req.i18n.t('saldoRasxodError'), 400, check_rasxod);
+    const check_doc = await SaldoService.checkDoc({ product_id: check.naimenovanie_tovarov_jur7_id });
+    if (check_doc.length) {
+      return res.error(req.i18n.t('saldoRasxodError'), 400, check_doc);
     }
 
     const response = await SaldoService.deleteById({ id });
