@@ -74,7 +74,8 @@ exports.InternalDB = class {
                     d.opisanie, 
                     d.summa, 
                     rj.fio AS kimdan_name,
-                    row_to_json(rj2) AS kimga
+                    row_to_json(rj2) AS kimga,
+                    row_to_json(rj) AS kimdan
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
