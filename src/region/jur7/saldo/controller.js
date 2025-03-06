@@ -4,7 +4,7 @@ const { BudjetService } = require('@budjet/service');
 const { MainSchetService } = require('@main_schet/service');
 const { GroupService } = require('@group/service');
 const { SaldoSchema } = require('./schema');
-const { HelperFunctions } = require('../../../helper/functions');
+const { HelperFunctions } = require('@helper/functions');
 
 exports.Controller = class {
   static async delete(req, res) {
@@ -12,19 +12,18 @@ exports.Controller = class {
     const region_id = req.user.region_id;
 
     for (let id of ids) {
-      const check = await SaldoService.getById({ id, region_id });
+      const check = await SaldoService.getById({ id: id.id, region_id });
       if (!check) {
         return res.error(req.i18n.t('saldoNotFound'), 404);
       }
 
       const check_doc = await SaldoService.checkDoc({ product_id: check.naimenovanie_tovarov_jur7_id });
-      console.log(check_doc)
       if (check_doc.length) {
         return res.error(req.i18n.t('saldoRasxodError'), 400, check_doc);
       }
     }
 
-    await SaldoService.delete
+    await SaldoService.delete({ ids });
     return res.success(req.i18n.t('deleteSuccess'), 200, null, response);
   }
 

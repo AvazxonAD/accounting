@@ -7,7 +7,8 @@ exports.SaldoDB = class {
                 SELECT 
                     d.id,
                     d.doc_num,
-                    d.doc_date
+                    d.doc_date,
+                    'internal' AS type
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
@@ -19,7 +20,8 @@ exports.SaldoDB = class {
                 SELECT 
                     d.id,
                     d.doc_num,
-                    d.doc_date
+                    d.doc_date,
+                    'prixod' AS type
                 FROM document_prixod_jur7 d
                 JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
@@ -31,7 +33,8 @@ exports.SaldoDB = class {
                 SELECT 
                     d.id,
                     d.doc_num,
-                    d.doc_date
+                    d.doc_date,
+                    'rasxod' AS type
                 FROM document_rasxod_jur7 d
                 JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1

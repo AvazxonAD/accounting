@@ -13,10 +13,12 @@ exports.SaldoSchema = class {
     })
   }
 
-  static delete() {
+  static import() {
     return Joi.object({
-      params: Joi.object({
-        product_id: Joi.number().integer().min(1).required()
+      body: Joi.object({
+        params: Joi.object({
+          product_id: Joi.number().integer().min(1).required()
+        })
       })
     })
   }
