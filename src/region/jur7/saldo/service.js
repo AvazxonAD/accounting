@@ -191,7 +191,9 @@ exports.SaldoService = class {
 
     static async delete(data) {
         await db.transaction(async client => {
-            await SaldoDB.deleteById([data.id], client);
+            for (let id of data.ids) {
+                await SaldoDB.deleteById([id.id], client);
+            }
         })
     }
 
