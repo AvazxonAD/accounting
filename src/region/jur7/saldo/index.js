@@ -15,6 +15,7 @@ router
     .put('/iznos_summa/:id', validator(Controller.updateIznosSumma, SaldoSchema.updateIznosSumma()))
     .get('/temlate', Middleware.jur7Block, Controller.templateFile)
     .delete('/:id', Middleware.jur7Block, validator(Controller.deleteById, SaldoSchema.deleteById()))
+    .delete('/', Middleware.jur7Block, validator(Controller.delete, SaldoSchema.delete()))
     .get('/check', validator(Controller.check, SaldoSchema.check()))
     .get('/:id', validator(Controller.getById, SaldoSchema.getById()))
     .get('/', Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()));

@@ -92,6 +92,16 @@ exports.SaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static delete() {
+    return Joi.object({
+      body: Joi.array().items(
+        Joi.object({
+          id: Joi.number().integer().min(1).required()
+        })
+      ).min(1).required()
+    }).options({ stripUnknown: true });
+  }
+
   static check() {
     return Joi.object({
       query: Joi.object({

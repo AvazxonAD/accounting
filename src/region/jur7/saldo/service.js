@@ -7,8 +7,8 @@ const { ProductDB } = require('@product/db');
 const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
-    static async checkRasxod(data) {
-        const result = await SaldoDB.checkRasxod([data.product_id]);
+    static async checkDoc(data) {
+        const result = await SaldoDB.checkDoc([data.product_id]);
 
         return result;
     }
@@ -190,18 +190,9 @@ exports.SaldoService = class {
     }
 
     static async delete(data) {
-        let doc;
-
-        if (data.check_prixod) {
-            doc = await db.transaction(async client => {
-                const result = await SaldoDB.delete([data.product_id], client);
-                return result;
-            })
-        } else {
-            doc = await SaldoDB.delete([data.product_id]);
-        }
-
-        return doc;
+        await db.transaction(async client => {
+            await SaldoDB.deleteById([data.id], client);
+        })
     }
 
     static async importData(data) {
