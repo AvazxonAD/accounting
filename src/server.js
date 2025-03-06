@@ -25,7 +25,7 @@ app.use(i18next, (req, res, next) => {
 
 app.use(require('./middleware/response.metods'))
 
-app.use(router);
+app.use('/v2', router);
 
 app.use('*', (req, res) => {
   return res.error(req.i18n.t('pageNotFound'), 404);
