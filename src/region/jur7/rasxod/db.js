@@ -146,6 +146,7 @@ exports.RasxodDB = class {
                     JOIN naimenovanie_tovarov_jur7 n ON ch.naimenovanie_tovarov_jur7_id = n.id
                     JOIN group_jur7 g ON g.id = n.group_jur7_id
                     WHERE ch.document_rasxod_jur7_id = d.id
+                        AND ch.isdeleted = false
                 ) AS ch
                 ) AS childs
             FROM document_rasxod_jur7 AS d

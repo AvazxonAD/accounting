@@ -78,7 +78,8 @@ exports.SaldoService = class {
             product.internal = await SaldoDB.getKolAndSumma(
                 [product.naimenovanie_tovarov_jur7_id],
                 `${year}-${month < 10 ? `0${month}` : month}-01`,
-                data.to, 1
+                data.to,
+                product.responsible.id
             );
 
             product.to = {

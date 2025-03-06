@@ -260,6 +260,7 @@ exports.SaldoDB = class {
                     ) AS prixod_data,
                     row_to_json(g) AS group,
                     row_to_json(jsh) AS responsible,
+                    row_to_json(p) AS podraz,
                     JSON_BUILD_OBJECT(
                         'kol', s.kol,
                         'sena', s.sena,
@@ -273,6 +274,7 @@ exports.SaldoDB = class {
             JOIN regions AS r ON r.id = u.region_id
             JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
             JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
+            JOIN spravochnik_podrazdelenie_jur7 p ON p.id = jsh.spravochnik_podrazdelenie_jur7_id  
             JOIN group_jur7 g ON g.id = n.group_jur7_id  
             WHERE r.id = $1 
                 AND s.year = $2
