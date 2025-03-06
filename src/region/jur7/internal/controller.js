@@ -43,7 +43,7 @@ exports.Controller = class {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: child.group_jur7_id });
+      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: product.group.id });
       if (!groups.length) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
@@ -126,7 +126,7 @@ exports.Controller = class {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: child.group_jur7_id });
+      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: product.group.id });
       if (!groups.length) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
