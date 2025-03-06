@@ -55,7 +55,6 @@ exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
     const { kimning_buynida, page, limit, group_id } = req.query;
-    const data = { responsibles: [], groups: [], products: [], total: 0 };
 
     const offset = (page - 1) * limit;
 
@@ -73,22 +72,20 @@ exports.Controller = class {
       total = 1;
     }
 
-    data.groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
-    data.groups.sort((a, b) => b.products.length - a.products.length)
+    groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
+    groups.sort((a, b) => b.products.length - a.products.length)
 
-    data.total = total;
-
-    const pageCount = Math.ceil(data.total / limit);
+    const pageCount = Math.ceil(total / limit);
 
     const meta = {
       pageCount: pageCount,
-      count: data.total,
+      count: total,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1
     }
 
-    return res.success(req.i18n.t('getSuccess'), 200, meta, data);
+    return res.success(req.i18n.t('getSuccess'), 200, meta, groups);
   }
 
   static async import(req, res) {

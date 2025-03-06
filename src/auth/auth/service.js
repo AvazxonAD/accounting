@@ -8,15 +8,11 @@ exports.AuthService = class {
         const { login, password } = req.body
         const user = await AuthDB.getByLoginAuth([login]);
         if (!user) {
-            return res.status(403).json({
-                message: "Incorrect login or password"
-            })
+            return res.error(req.i18n.t('authError'), 403);
         }
         const matchPassword = await bcrypt.compare(password, user.password);
         if (!matchPassword) {
-            return res.status(403).json({
-                message: "Incorrect login or password"
-            })
+            return res.error(req.i18n.t('authError'), 403);
         }
         let region_id;
         const result = await AuthDB.getByIdAuth([user.id])

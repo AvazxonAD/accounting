@@ -5,6 +5,7 @@
     "jur7Block": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",
     "saldoAlreadyExists": "Saldo allaqachon import qilingan! Malumotlarni tozalab qaytadan urining",
     "kolError": "Tovar soni noto'g'ri kiritildi!",
+    "authError": "Username yoki Password xato kiritildi!",
     "lastSaldoNotFound": "Otgan oy uchun saldo topilmadi toarlarni import qiling!",
     "productIdError": "Tovar ID lari noto'g'ri!",
     "IznosSummaError": "Iznoz summasi noto'g'ri kiritildi!",
