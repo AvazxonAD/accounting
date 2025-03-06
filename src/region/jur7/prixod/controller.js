@@ -135,7 +135,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to, main_schet_id, orderType, orderBy } = req.query;
+    const { page, limit, search, from, to, main_schet_id } = req.query;
 
     const main_schet = await MainSchetService.getById({ region_id, id: main_schet_id });
     if (!main_schet) {
