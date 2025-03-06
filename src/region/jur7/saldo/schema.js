@@ -84,6 +84,14 @@ exports.SaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static deleteById() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required()
+      })
+    }).options({ stripUnknown: true });
+  }
+
   static check() {
     return Joi.object({
       query: Joi.object({

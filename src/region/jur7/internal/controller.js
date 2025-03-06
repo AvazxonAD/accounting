@@ -152,7 +152,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await Jur7RsxodService.getById({ region_id, id, main_schet_id, isdeleted: true });
+    const oldData = await Jur7RsxodService.getById({ region_id, id, main_schet_id });
     if (!oldData) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };

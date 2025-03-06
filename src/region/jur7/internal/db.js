@@ -1,6 +1,6 @@
 const { db } = require('@db/index');
 
-exports.RasxodDB = class {
+exports.InternalDB = class {
     static async create(params, client) {
         const query = `--sql
             INSERT INTO document_vnutr_peremesh_jur7 (
@@ -193,6 +193,13 @@ exports.RasxodDB = class {
             UPDATE document_vnutr_peremesh_jur7_child 
             SET isdeleted = true 
             WHERE document_vnutr_peremesh_jur7_id = $1
+        `, params);
+
+        await client.query(`
+            UPDATE saldo_naimenovanie_jur7 
+            SET isdeleted = true 
+            WHERE prixod_id = $1
+            RETURNING *
         `, params);
 
         const data = await client.query(`

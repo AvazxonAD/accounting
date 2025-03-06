@@ -2,12 +2,23 @@ const { SaldoDB } = require('@saldo/db');
 const { tashkentTime } = require('@helper/functions');
 const { db } = require('@db/index');
 const { HelperFunctions } = require('@helper/functions');
-const { IznosDB } = require('@iznos/db');
 const xlsx = require('xlsx');
 const { ProductDB } = require('@product/db');
 const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
+    static async checkRasxod(data) {
+        const result = await SaldoDB.checkRasxod([data.product_id]);
+
+        return result;
+    }
+
+    static async deleteById(data) {
+        const result = await SaldoDB.deleteById([data.id]);
+
+        return result;
+    }
+
     static async updateIznosSumma(data) {
         const result = await SaldoDB.updateIznosSumma([
             data.iznos_summa,
@@ -67,7 +78,7 @@ exports.SaldoService = class {
             product.internal = await SaldoDB.getKolAndSumma(
                 [product.naimenovanie_tovarov_jur7_id],
                 `${year}-${month < 10 ? `0${month}` : month}-01`,
-                data.to
+                data.to, 1
             );
 
             product.to = {
@@ -80,6 +91,11 @@ exports.SaldoService = class {
                 product.to.sena = product.to.summa / product.to.kol;
             } else {
                 product.to.sena = product.to.summa;
+            }
+
+            if (product.iznos) {
+                product.to.month_iznos = product.to.sena * (product.group.iznos_foiz / 100);
+                product.to.eski_iznos_summa = product.eski_iznos_summa;
             }
         }
 
