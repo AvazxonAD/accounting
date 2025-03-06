@@ -10,17 +10,7 @@ exports.SaldoSchema = class {
       file: Joi.object({
         path: Joi.string().trim().required()
       })
-    })
-  }
-
-  static import() {
-    return Joi.object({
-      body: Joi.object({
-        params: Joi.object({
-          product_id: Joi.number().integer().min(1).required()
-        })
-      })
-    })
+    }).options({ stripUnknown: true });
   }
 
   static importData(lang) {
