@@ -61,6 +61,12 @@ exports.SaldoService = class {
                     product.to.sena = product.to.summa;
                 }
             }
+
+            if (data.iznos) {
+                group.products = group.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0 && item.to.iznos_summa !== 0);
+            } else {
+                group.products = group.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
+            }
         }
 
         return data.groups;
