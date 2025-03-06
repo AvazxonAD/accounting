@@ -1,43 +1,40 @@
 const { db } = require('@db/index')
 
-exports.BankMfoDB = class {
+exports.ReportTitleDB = class {
     static async create(params) {
         const query = `--sql
-            INSERT INTO spravochnik_bank_mfo (
-                mfo, 
-                bank_name, 
+            INSERT INTO report_title (
+                name, 
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4) 
-            RETURNING id
+            VALUES ($1, $2, $3) 
+            RETURNING *
         `
         const result = await db.query(query, params)
         return result;
     }
 
-    static async getBankMfo(params, search = null) {
+    static async get(params, search = null) {
         let search_filter = ``;
         if (search) {
-            search_filter = `AND s_b_m.mfo ILIKE '%' || $${params.length + 1} || '%' OR s_b_m.bank_name ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search); 
+            search_filter = `AND name ILIKE '%' || $${params.length + 1} || '%'`;
+            params.push(search);
         }
         const query = `--sql
             WITH data AS (
                 SELECT 
-                    s_b_m.id, 
-                    s_b_m.mfo, 
-                    s_b_m.bank_name
-                FROM spravochnik_bank_mfo AS s_b_m
-                WHERE s_b_m.isdeleted = false ${search_filter}
+                    rt.*, 
+                FROM report_title AS rt
+                WHERE rt.isdeleted = false ${search_filter}
                 OFFSET $1 LIMIT $2
             )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
-                    SELECT COALESCE(COUNT(s_b_m.id), 0)::INTEGER 
-                    FROM spravochnik_bank_mfo AS s_b_m
-                    WHERE s_b_m.isdeleted = false ${search_filter}
+                    SELECT COALESCE(COUNT(rt.id), 0)::INTEGER 
+                    FROM report_title AS rt
+                    WHERE rt.isdeleted = false ${search_filter}
                 ) AS total
             FROM data
         `
@@ -45,42 +42,42 @@ exports.BankMfoDB = class {
         return result[0];
     }
 
-    static async getByIdBankMfo(params, isdeleted) {
-        let ignore = 'AND s_b_m.isdeleted = false';
+    static async getById(params, isdeleted) {
+        let ignore = 'AND rt.isdeleted = false';
         const query = `--sql
             SELECT 
-                s_b_m.id, 
-                s_b_m.mfo, 
-                s_b_m.bank_name
-            FROM spravochnik_bank_mfo AS s_b_m
-            WHERE s_b_m.id = $1 ${isdeleted ? `` : ignore}
+                rt.* 
+            FROM report_title AS rt
+            WHERE rt.id = $1 ${isdeleted ? `` : ignore}
         `
         const result = await db.query(query, params)
         return result[0]
     }
 
-    static async getByMfoName(params) {
+    static async getByName(params) {
         const query = `--sql
-            SELECT s_b_m.*
-            FROM spravochnik_bank_mfo AS s_b_m
-            WHERE s_b_m.mfo = $1 AND s_b_m.bank_name = $2 AND s_b_m.isdeleted = false
+            SELECT rt.*
+            FROM report_title AS rt
+            WHERE rt.name = $1 
+                AND rt.isdeleted = false
         `
         const result = await db.query(query, params)
         return result[0]
     }
 
-    static async updateBankMfo(params) {
+    static async update(params) {
         const query = `--sql
-            UPDATE spravochnik_bank_mfo SET mfo = $1, bank_name = $2, updated_at = $3
-            WHERE id = $4 AND isdeleted = false 
+            UPDATE report_title SET name = $1, updated_at = $2
+            WHERE id = $3 
+                AND isdeleted = false 
             RETURNING *
         `
         const result = await db.query(query, params)
         return result[0]
     }
 
-    static async deleteBankMfo(params) {
-        const query = `UPDATE spravochnik_bank_mfo SET isdeleted = true WHERE id = $1 AND isdeleted = false`
+    static async delete(params) {
+        const query = `UPDATE report_title SET isdeleted = true WHERE id = $1 AND isdeleted = false`
         await db.query(query, params)
     }
 }

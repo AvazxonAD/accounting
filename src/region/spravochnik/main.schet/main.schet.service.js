@@ -5,33 +5,18 @@ const getByIdMainSchetService = async (region_id, id, ignoreDeleted = false) => 
   try {
     let ignore = ``
     if (!ignoreDeleted) {
-      ignore = ` AND m_s.isdeleted = false`;
+      ignore = ` AND msch.isdeleted = false`;
     }
     const result = await pool.query(`
       SELECT 
-        m_s.id, 
-        m_s.account_number, 
-        m_s.spravochnik_budjet_name_id, 
-        m_s.tashkilot_nomi, 
-        m_s.tashkilot_bank, 
-        m_s.tashkilot_mfo, 
-        m_s.tashkilot_inn, 
-        m_s.account_name, 
-        m_s.jur1_schet, 
-        m_s.jur1_subschet,
-        m_s.jur2_schet, 
-        m_s.jur2_subschet,
-        m_s.jur3_schet,
-        m_s.jur3_subschet, 
-        m_s.jur4_schet,
-        m_s.jur4_subschet, 
+        msch.*,
         s_b_n.name AS budjet_name
-      FROM main_schet m_s
-      JOIN users AS u ON m_s.user_id = u.id
+      FROM main_schet msch
+      JOIN users AS u ON msch.user_id = u.id
       JOIN regions AS r ON u.region_id = r.id
-      JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = m_s.spravochnik_budjet_name_id
+      JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = msch.spravochnik_budjet_name_id
       WHERE r.id = $1 ${ignore}
-        AND m_s.id = $2`,
+        AND msch.id = $2`,
       [region_id, id]);
     if (!result.rows[0]) {
       throw new ErrorResponse(`Main schet not found`, 404);
@@ -61,9 +46,10 @@ const createMainSchetService = async (data) => {
           jur3_subschet,
           jur4_subschet,
           jur4_schet,
+          gazna_number,
           user_id
         ) 
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *
       `, [
       data.account_number,
       data.spravochnik_budjet_name_id,
@@ -80,6 +66,7 @@ const createMainSchetService = async (data) => {
       data.jur3_subschet,
       data.jur4_subschet,
       data.jur4_schet,
+      data.gazna_number,
       data.user_id,
     ]);
     return result.rows[0]
@@ -104,23 +91,7 @@ const getAllMainSchetService = async (region_id, offset, limit, search) => {
     const result = await pool.query(
       `
           WITH data AS (SELECT 
-              main_schet.id, 
-              main_schet.user_id,
-              main_schet.account_number, 
-              main_schet.spravochnik_budjet_name_id, 
-              main_schet.tashkilot_nomi, 
-              main_schet.tashkilot_bank, 
-              main_schet.tashkilot_mfo, 
-              main_schet.tashkilot_inn, 
-              main_schet.account_name, 
-              main_schet.jur1_schet, 
-              main_schet.jur1_subschet,
-              main_schet.jur2_schet, 
-              main_schet.jur2_subschet,
-              main_schet.jur3_schet,
-              main_schet.jur3_subschet, 
-              main_schet.jur4_schet,
-              main_schet.jur4_subschet, 
+              main_schet.*, 
               spravochnik_budjet_name.name AS budjet_name,
               spravochnik_budjet_name.id AS spravochnik_budjet_name_id 
             FROM main_schet
@@ -162,8 +133,9 @@ const updateMainSchetService = async (data) => {
           jur3_schet = $12, 
           jur3_subschet = $13, 
           jur4_subschet = $14, 
-          jur4_schet = $15
-          WHERE id = $16 RETURNING * 
+          jur4_schet = $15,
+          gazna_number = $16
+          WHERE id = $17 RETURNING * 
       `, [
       data.account_number,
       data.spravochnik_budjet_name_id,
@@ -180,6 +152,7 @@ const updateMainSchetService = async (data) => {
       data.jur3_subschet,
       data.jur4_subschet,
       data.jur4_schet,
+      data.gazna_number,
       data.id,
     ])
     return result.rows[0]
