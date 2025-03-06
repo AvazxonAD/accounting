@@ -2,6 +2,36 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async checkRasxod(params) {
+        const query = `
+                SELECT 
+                    d.id,
+                    d.doc_num,
+                    d.doc_date
+                FROM document_vnutr_peremesh_jur7 d
+                JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+
+                UNION ALL
+
+                SELECT 
+                    d.id,
+                    d.doc_num,
+                    d.doc_date
+                FROM document_rasxod_jur7 d
+                JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+                WHERE ch.naimenovanie_tovarov_jur7_id = $1
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
+        `;
+
+        const data = await db.query(query, params);
+
+        return data;
+    }
+
     static async updateIznosSumma(params) {
         const query = `
             UPDATE saldo_naimenovanie_jur7
@@ -404,10 +434,18 @@ exports.SaldoDB = class {
 
     static async delete(params, client) {
         const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
-        const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
+        // const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
+        // await client.query(query2, params);
 
-        await client.query(query2, params);
         await client.query(query, params);
+    }
+
+    static async deleteById(params) {
+        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE id = $1`;
+
+        const data = await db.query(query, params);
+
+        return data;
     }
 
     static async create(params, client) {

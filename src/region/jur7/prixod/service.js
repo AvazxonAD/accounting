@@ -1,6 +1,5 @@
 const { PrixodDB } = require('./db');
 const { db } = require('@db/index');
-const { IznosDB } = require('../iznos/db')
 const { tashkentTime, returnLocalDate, returnSleshDate, HelperFunctions } = require('@helper/functions');
 const fs = require('fs').promises;
 const ExcelJS = require('exceljs');

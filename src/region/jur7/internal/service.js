@@ -1,12 +1,12 @@
 const { db } = require('@db/index')
-const { RasxodDB } = require('./db');
+const { InternalDB } = require('./db');
 const { tashkentTime, returnParamsValues } = require('@helper/functions');
 const { SaldoDB } = require('@saldo/db');
 
 exports.Jur7RsxodService = class {
     static async delete(data) {
-        await db.transaction(async (client) => {
-            const doc = await RasxodDB.delete([data.id], client)
+        const result = await db.transaction(async (client) => {
+            const doc = await InternalDB.delete([data.id], client)
 
             const year = new Date(data.oldData.doc_date).getFullYear();
             const month = new Date(data.oldData.doc_date).getMonth() + 1;
@@ -24,14 +24,16 @@ exports.Jur7RsxodService = class {
             }
 
             return { dates, doc }
-        })
+        });
+
+        return result;
     }
 
     static async create(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
         const result = await db.transaction(async client => {
-            const doc = await RasxodDB.create([
+            const doc = await InternalDB.create([
                 data.user_id,
                 data.doc_num,
                 data.doc_date,
@@ -126,14 +128,14 @@ exports.Jur7RsxodService = class {
 
         const _values = returnParamsValues(create_childs, 19);
 
-        await RasxodDB.createChild(create_childs, _values, data.client);
+        await InternalDB.createChild(create_childs, _values, data.client);
     }
 
     static async update(data) {
         const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
         const result = await db.transaction(async client => {
-            const doc = await RasxodDB.update([
+            const doc = await InternalDB.update([
                 data.doc_num,
                 data.doc_date,
                 data.j_o_num,
@@ -148,7 +150,7 @@ exports.Jur7RsxodService = class {
                 data.id
             ], client);
 
-            await RasxodDB.deleteRasxodChild([data.id], client)
+            await InternalDB.deleteRasxodChild([data.id], client)
 
             await this.createChild({ ...data, docId: data.id, client, doc: doc })
 
@@ -184,12 +186,12 @@ exports.Jur7RsxodService = class {
     }
 
     static async getById(data) {
-        const result = await RasxodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted)
+        const result = await InternalDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted)
         return result;
     }
 
     static async get(data) {
-        const result = await RasxodDB.get([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
+        const result = await InternalDB.get([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
         return result;
     }
 }
