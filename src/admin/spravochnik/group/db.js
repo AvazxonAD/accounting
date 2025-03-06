@@ -21,14 +21,16 @@ exports.GroupDB = class {
             ) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id
         `;
-        
+
         const result = await _db.query(query, params);
-        
+
         return result;
     }
 
-    static async get(params, search = null) {
+    static async get(params, search = null, id = null) {
         let search_filter = ``;
+        let group_filter = ``;
+
         if (search) {
             search_filter = `AND (
                     g.name ILIKE '%' || $${params.length + 1} || '%' OR 
@@ -41,6 +43,12 @@ exports.GroupDB = class {
             `;
             params.push(search);
         }
+
+        if (id) {
+            params.push(id);
+            group_filter = `AND g.id = $${params.length}`;
+        }
+
         const query = `--sql
             WITH data AS (
                 SELECT 
@@ -59,7 +67,9 @@ exports.GroupDB = class {
                     s.smeta_number
                 FROM group_jur7 AS g
                 LEFT JOIN smeta AS s ON s.id = g.smeta_id
-                WHERE g.isdeleted = false ${search_filter}
+                WHERE g.isdeleted = false 
+                    ${search_filter}
+                    ${group_filter}
                 OFFSET $1 LIMIT $2
             )
             SELECT 
@@ -67,7 +77,9 @@ exports.GroupDB = class {
                 (
                     SELECT COALESCE(COUNT(g.id), 0)::INTEGER 
                     FROM group_jur7 AS g
-                    WHERE g.isdeleted = false ${search_filter}
+                    WHERE g.isdeleted = false 
+                        ${search_filter}
+                        ${group_filter}
                 ) AS total
             FROM data
         `;

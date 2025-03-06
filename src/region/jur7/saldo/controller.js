@@ -72,7 +72,7 @@ exports.Controller = class {
       total = 1;
     }
 
-    groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
+    groups = await SaldoService.getByGroup({ ...req.query, responsible_id: kimning_buynida, region_id, groups, offset })
     groups.sort((a, b) => b.products.length - a.products.length)
 
     const pageCount = Math.ceil(total / limit);
