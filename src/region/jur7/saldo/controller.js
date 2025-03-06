@@ -54,7 +54,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, type, page, limit, group_id } = req.query;
+    const { kimning_buynida, page, limit, group_id } = req.query;
     const data = { responsibles: [], groups: [], products: [], total: 0 };
 
     const offset = (page - 1) * limit;
@@ -66,40 +66,17 @@ exports.Controller = class {
       }
     }
 
-    // product
-    if (type === 'product') {
-      const _data = await SaldoService.getByProduct({ ...req.query, region_id, responsible_id: kimning_buynida, offset });
-      data.products = _data.data;
-      data.total = _data.total;
+    let { data: groups, total } = await GroupService.get({ offset, limit });
+
+    if (group_id) {
+      groups = groups.filter(item => item.id === group_id);
+      total = 1;
     }
 
-    // group
-    else if (type === 'group') {
-      let { data: groups, total } = await GroupService.get({ offset, limit });
+    data.groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
+    data.groups.sort((a, b) => b.products.length - a.products.length)
 
-      if (group_id) {
-        groups = groups.filter(item => item.id === group_id);
-        total = 1;
-      }
-
-      data.groups = await SaldoService.getByGroup({ ...req.query, region_id, groups, offset })
-      data.groups.sort((a, b) => b.products.length - a.products.length)
-
-      data.total = total;
-    }
-
-    // responsible
-    else {
-      let { data: responsibles, total } = await ResponsibleService.get({ ...req.query, region_id, offset, id: kimning_buynida });
-
-      if (kimning_buynida) {
-        responsibles = responsibles.filter(item => item.id === kimning_buynida);
-        total = 1;
-      }
-
-      data.responsibles = await SaldoService.getByResponsibles({ ...req.query, region_id, responsibles, offset });
-      data.total = total;
-    }
+    data.total = total;
 
     const pageCount = Math.ceil(data.total / limit);
 

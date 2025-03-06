@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
       {
-        name: "jurnal",
+        name: "jurnal-v2",
         script: "node",
         args: "-r module-alias/register src/server.js",
         watch: false,
