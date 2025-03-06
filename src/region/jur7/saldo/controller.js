@@ -54,7 +54,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { kimning_buynida, to, type, search, page, limit, group_id, iznos } = req.query;
+    const { kimning_buynida, type, page, limit, group_id } = req.query;
     const data = { responsibles: [], groups: [], products: [], total: 0 };
 
     const offset = (page - 1) * limit;
