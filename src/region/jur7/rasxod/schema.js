@@ -13,7 +13,7 @@ exports.RasxodSchema = class {
         kimdan_name: Joi.string().trim(),
         childs: Joi.array().required().items(
           Joi.object({
-            
+            group_jur7_id: Joi.number().required(),
             naimenovanie_tovarov_jur7_id: Joi.number().required(),
             kol: Joi.number().min(1).required(),
             sena: Joi.number().min(1).required(),
@@ -47,7 +47,7 @@ exports.RasxodSchema = class {
         kimdan_name: Joi.string().trim(),
         childs: Joi.array().required().items(
           Joi.object({
-            
+            group_jur7_id: Joi.number().required(),
             naimenovanie_tovarov_jur7_id: Joi.number().required(),
             kol: Joi.number().min(1).required(),
             sena: Joi.number().min(1).required(),

@@ -1,21 +1,21 @@
 const { Controller } = require("./controller");
 const { validator } = require('@helper/validator');
 const {
-    createBankSchema,
-    getBankSchema,
-    updateBankSchema,
-    getByIdBankSchema,
-    deleteBankSchema
+    createSchema,
+    getSchema,
+    updateSchema,
+    getByIdSchema,
+    deleteSchema
 } = require("./schema");
 
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(Controller.create, createBankSchema))
-    .get('/:id', validator(Controller.getByIdBankMfo, getByIdBankSchema))
-    .put('/:id', validator(Controller.updateBankMfo, updateBankSchema))
-    .delete('/:id', validator(Controller.deleteBankMfo, deleteBankSchema))
-    .get('/', validator(Controller.getBankMfo, getBankSchema));
+router.post('/', validator(Controller.create, createSchema))
+    .get('/:id', validator(Controller.getById, getByIdSchema))
+    .put('/:id', validator(Controller.update, updateSchema))
+    .delete('/:id', validator(Controller.delete, deleteSchema))
+    .get('/', validator(Controller.get, getSchema));
 
 
 module.exports = router;

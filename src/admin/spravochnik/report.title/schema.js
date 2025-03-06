@@ -1,12 +1,12 @@
 const Joi = require('joi')
 
-exports.createBankSchema = Joi.object({
+exports.createSchema = Joi.object({
   body: Joi.object({
     name: Joi.string().trim().required()
   })
 }).options({ stripUnknown: true });
 
-exports.updateBankSchema = Joi.object({
+exports.updateSchema = Joi.object({
   body: Joi.object({
     name: Joi.string().trim().required()
   }),
@@ -15,7 +15,7 @@ exports.updateBankSchema = Joi.object({
   })
 })
 
-exports.getBankSchema = Joi.object({
+exports.getSchema = Joi.object({
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).default(10),
@@ -23,13 +23,13 @@ exports.getBankSchema = Joi.object({
   })
 }).options({ stripUnknown: true });
 
-exports.getByIdBankSchema = Joi.object({
+exports.getByIdSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
   })
 }).options({ stripUnknown: true });
 
-exports.deleteBankSchema = Joi.object({
+exports.deleteSchema = Joi.object({
   params: Joi.object({
     id: Joi.number().integer().min(1).required()
   })

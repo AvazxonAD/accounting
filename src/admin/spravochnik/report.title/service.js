@@ -3,7 +3,7 @@ const { HelperFunctions } = require('@helper/functions');
 
 exports.ReportTitleService = class {
     static async getByName(data) {
-        const result = await ReportTitleDB.getByName([data.mfo, data.bank_name]);
+        const result = await ReportTitleDB.getByName([data.name]);
 
         return result;
     }
@@ -14,7 +14,7 @@ exports.ReportTitleService = class {
         return result;
     }
 
-    static async getByid(data) {
+    static async getById(data) {
         const result = await ReportTitleDB.getById([data.id], data.isdeleted);
 
         return result;
