@@ -1,16 +1,14 @@
 const Joi = require('joi')
 
 exports.createBankSchema = Joi.object({
-  body : Joi.object({
-    bank_name: Joi.string().trim().required(),
-    mfo: Joi.string().trim().required()
+  body: Joi.object({
+    name: Joi.string().trim().required()
   })
 }).options({ stripUnknown: true });
 
 exports.updateBankSchema = Joi.object({
   body: Joi.object({
-    bank_name: Joi.string().trim().required(),
-    mfo: Joi.string().trim().required()
+    name: Joi.string().trim().required()
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1).required()

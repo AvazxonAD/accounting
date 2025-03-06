@@ -116,7 +116,8 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      child.group = await GroupService.getById({ id: product.group.id });
+      console.log(child.group_jur7_id)
+      child.group = await GroupService.getById({ id: child.group_jur7_id });
       if (!child.group) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
