@@ -20,7 +20,7 @@ exports.SaldoSchema = class {
         group_jur7_id: Joi.number().required().messages({ '*': lang.t('validation.groupId') }),
         doc_date: Joi.string().trim().pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/).messages({ '*': lang.t('validation.importDocDate') }),
         iznos_start: Joi.string().trim().pattern(/^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(19|20)\d{2}$/).messages({ '*': lang.t('validation.iznosStart') }),
-        doc_num: Joi.number().required().messages({ '*': lang.t('validation.docNum') }),
+        doc_num: Joi.string().messages({ '*': lang.t('validation.docNum') }),
         name: Joi.string().trim().required().messages({ '*': lang.t('validation.productName') }),
         edin: Joi.string().trim().required().messages({ '*': lang.t('validation.edin') }),
         kol: Joi.number().min(1).required().messages({ '*': lang.t('validation.kol') }),

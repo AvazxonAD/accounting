@@ -121,6 +121,11 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { main_schet_id, budjet_id } = req.query;
 
+    const check = await SaldoService.getFirstSaldoDate({ region_id });
+    if (check) {
+      return res.error(req.i18n.t('saldoImportAlreadyExists'), 400);
+    }
+
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t('budjetNotFound'), 404);

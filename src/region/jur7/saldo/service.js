@@ -7,6 +7,12 @@ const { ProductDB } = require('@product/db');
 const { ResponsibleDB } = require('@responsible/db');
 
 exports.SaldoService = class {
+    static async getFirstSaldoDate(data) {
+        const result = await SaldoDB.getFirstSaldoDate([data.region_id]);
+
+        return result;
+    }
+
     static async checkDoc(data) {
         const result = await SaldoDB.checkDoc([data.product_id]);
 
@@ -68,7 +74,7 @@ exports.SaldoService = class {
             }
 
             if (data.iznos) {
-                group.products = group.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0 && item.to.iznos_summa !== 0);
+                group.products = group.products.filter(item => (item.to.kol !== 0 && item.to.summa !== 0) || item.to.iznos_summa !== 0);
             } else {
                 group.products = group.products.filter(item => item.to.kol !== 0 && item.to.summa !== 0);
             }
