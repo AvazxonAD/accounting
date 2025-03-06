@@ -2,6 +2,14 @@ const { db } = require('@db/index')
 
 
 exports.SaldoDB = class {
+    static async cleanData(params, client) {
+        const query1 = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE region_id = $1`;
+        const query2 = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1`;
+
+        await client.query(query1, params);
+        await client.query(query2, params);
+    }
+
     static async checkDoc(params) {
         const query = `
                 SELECT 
@@ -514,9 +522,9 @@ exports.SaldoDB = class {
         return result[0] || null;
     }
 
-    static async deleteByPrixodId(params, cleint) {
+    static async deleteByPrixodId(params, client) {
         const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1`;
 
-        await cleint.query(query, params);
+        await client.query(query, params);
     }
 }

@@ -7,6 +7,7 @@ const { Router } = require('express')
 const router = Router()
 
 router
+    .get('/docs/:id', validator(Controller.rasxodDocs, PrixodJur7Schema.rasxodDocs()))
     .get('/report', validator(Controller.getPrixodReport, PrixodJur7Schema.report()))
     .get('/template', validator(Controller.templateImport))
     .post('/', validator(Controller.create, PrixodJur7Schema.create()))

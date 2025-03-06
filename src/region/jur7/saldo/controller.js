@@ -5,10 +5,11 @@ const { MainSchetService } = require('@main_schet/service');
 const { GroupService } = require('@group/service');
 const { SaldoSchema } = require('./schema');
 const { HelperFunctions } = require('@helper/functions');
+const { CODE } = require('@helper/constants');
 
 exports.Controller = class {
   static async delete(req, res) {
-    const { ids } = req.body;
+    const { ids, year, month } = req.body;
     const region_id = req.user.region_id;
 
     for (let id of ids) {
@@ -19,11 +20,11 @@ exports.Controller = class {
 
       const check_doc = await SaldoService.checkDoc({ product_id: check.naimenovanie_tovarov_jur7_id });
       if (check_doc.length) {
-        return res.error(req.i18n.t('saldoRasxodError'), 400, check_doc);
+        return res.error(req.i18n.t('saldoRasxodError'), 400, { code: CODE.DOCS_HAVE.code, docs: check_doc });
       }
     }
 
-    await SaldoService.delete({ ids });
+    await SaldoService.delete({ ids, region_id, year, month });
     return res.success(req.i18n.t('deleteSuccess'), 200, null, response);
   }
 
@@ -195,6 +196,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, budjet_id } = req.query;
+    let { year, month } = req.body
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -206,14 +208,34 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const { last_saldo, last_date } = await SaldoService.lastSaldo({ region_id, ...req.body });
-    if (last_saldo.data.length === 0) {
-      return res.error(req.i18n.t('lastSaldoNotFound'), 404);
+
+    let last_saldo;
+    let last_date;
+    let attempt = 0;
+
+    while (attempt < 1000) {
+      last_date = HelperFunctions.lastDate({ year, month });
+
+      last_saldo = await SaldoService.lastSaldo({ region_id, year: last_date.year, month: last_date.month });
+
+      if (last_saldo.length > 0) {
+        break;
+      }
+
+      year = last_date.year;
+      month = last_date.month;
+
+      attempt++;
     }
 
-    await SaldoService.create({ region_id, user_id, ...req.body, last_saldo: last_saldo.data, last_date, budjet_id });
+    if (!last_saldo.length) {
+      await SaldoService.cleanData({ region_id });
+      return res.success(req.i18n.t('celanSaldo'), 200);
+    }
 
-    return res.success(req.i18n.t('createSuccess'), 200);
+    const dates = await SaldoService.create({ region_id, user_id, ...req.body, last_saldo, last_date, budjet_id });
+
+    return res.success(req.i18n.t('createSuccess'), 200, { code: dates.length ? CODE.SALDO_CREATE.code : CODE.OK.code, dates });
   }
 
   static async check(req, res) {
