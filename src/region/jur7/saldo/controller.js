@@ -18,6 +18,7 @@ exports.Controller = class {
       }
 
       const check_doc = await SaldoService.checkDoc({ product_id: check.naimenovanie_tovarov_jur7_id });
+      console.log(check_doc)
       if (check_doc.length) {
         return res.error(req.i18n.t('saldoRasxodError'), 400, check_doc);
       }
@@ -85,7 +86,7 @@ exports.Controller = class {
       }
     }
 
-    let { data: groups, total } = await GroupService.get({ offset, limit });
+    let { data: groups, total } = await GroupService.get({ offset: 0, limit: 99999 });
 
     if (group_id) {
       groups = groups.filter(item => item.id === group_id);
