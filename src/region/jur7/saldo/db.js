@@ -235,7 +235,7 @@ exports.SaldoDB = class {
 
         if (search) {
             params.push(search);
-            filter = `AND n.name ILIKE '%' || $${params.length} || '%'`;
+            filter = `AND (n.name ILIKE '%' || $${params.length} || '%' OR jsh.fio ILIKE '%' || $${params.length} || '%')`;
         }
 
         if (responsible_id) {
