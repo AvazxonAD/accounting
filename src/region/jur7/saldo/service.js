@@ -228,7 +228,7 @@ exports.SaldoService = class {
     }
 
     static async delete(data) {
-        await db.transaction(async client => {
+        const dates = await db.transaction(async client => {
             for (let id of data.ids) {
                 await SaldoDB.deleteById([id.id], client);
             }
@@ -244,7 +244,11 @@ exports.SaldoService = class {
                     tashkentTime()
                 ], client));
             }
+
+            return dates;
         })
+
+        return dates;
     }
 
     static async importData(data) {
