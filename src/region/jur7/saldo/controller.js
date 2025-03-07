@@ -147,7 +147,7 @@ exports.Controller = class {
     for (let item of data) {
       const { error, value } = SaldoSchema.importData(req.i18n).validate(item);
       if (error) {
-        return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item, header, });
+        return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item, header });
       }
     }
 
