@@ -5,19 +5,21 @@ const {
     getBankSchema,
     updateBankSchema,
     getByIdBankSchema,
-    deleteBankSchema
+    deleteBankSchema,
+    BankSchema
 } = require("./schema");
 
 const upload = require('@utils/protect.file')
 const { Router } = require('express')
 const router = Router()
 
-router.post('/', validator(Controller.create, createBankSchema));
-router.get('/:id', validator(Controller.getByIdBankMfo, getByIdBankSchema));
-router.put('/:id', validator(Controller.updateBankMfo, updateBankSchema));
-router.delete('/:id', validator(Controller.deleteBankMfo, deleteBankSchema));
-router.get('/', validator(Controller.getBankMfo, getBankSchema));
-router.post('/import', upload.single('file'), validator(Controller.importExcelData));
+router.post('/', validator(Controller.create, createBankSchema))
+    .get('/mfo/:mfo', validator(Controller.getByMfo, BankSchema.getByMfo()))
+    .get('/:id', validator(Controller.getByIdBankMfo, getByIdBankSchema))
+    .put('/:id', validator(Controller.updateBankMfo, updateBankSchema))
+    .delete('/:id', validator(Controller.deleteBankMfo, deleteBankSchema))
+    .get('/', validator(Controller.getBankMfo, getBankSchema))
+    .post('/import', upload.single('file'), validator(Controller.importExcelData));
 
 
 module.exports = router;

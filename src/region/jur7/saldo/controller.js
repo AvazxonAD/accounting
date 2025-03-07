@@ -24,7 +24,8 @@ exports.Controller = class {
       }
     }
 
-    await SaldoService.delete({ ids, region_id, year, month });
+    const response = await SaldoService.delete({ ids, region_id, year, month });
+
     return res.success(req.i18n.t('deleteSuccess'), 200, null, response);
   }
 

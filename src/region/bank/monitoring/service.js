@@ -55,7 +55,7 @@ exports.BankMonitoringService = class {
     }
 
     static async capExcel(data) {
-        const title = `Дневной отчет по Мемориал ордеру №2. Счет: ${data.main_schet.jur2_schet}. Ҳисоб рақами: ${data.main_schet.account_number}`;
+        const title = `Дневной отчет по ${data.report_title.name} №2. Счет: ${data.main_schet.jur2_schet}. Ҳисоб рақами: ${data.main_schet.account_number}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
         const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
@@ -271,7 +271,7 @@ exports.BankMonitoringService = class {
     }
 
     static async dailyExcel(data) {
-        const title = `Дневной отчет по Мемориал ордер №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${HelperFunctions.probelNumber(data.main_schet.account_number)}`;
+        const title = `Дневной отчет по ${data.report_title.name} №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${HelperFunctions.probelNumber(data.main_schet.account_number)}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
         const fileName = `kundalik_hisobot_bank_${new Date().getTime()}.xlsx`;

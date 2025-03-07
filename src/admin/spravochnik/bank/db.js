@@ -20,8 +20,9 @@ exports.BankMfoDB = class {
         let search_filter = ``;
         if (search) {
             search_filter = `AND s_b_m.mfo ILIKE '%' || $${params.length + 1} || '%' OR s_b_m.bank_name ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search); 
+            params.push(search);
         }
+
         const query = `--sql
             WITH data AS (
                 SELECT 
@@ -29,7 +30,9 @@ exports.BankMfoDB = class {
                     s_b_m.mfo, 
                     s_b_m.bank_name
                 FROM spravochnik_bank_mfo AS s_b_m
-                WHERE s_b_m.isdeleted = false ${search_filter}
+                WHERE s_b_m.isdeleted = false 
+                    ${search_filter}
+                ORDER BY s_b_m.created_at DESC
                 OFFSET $1 LIMIT $2
             )
             SELECT 
@@ -64,6 +67,19 @@ exports.BankMfoDB = class {
             SELECT s_b_m.*
             FROM spravochnik_bank_mfo AS s_b_m
             WHERE s_b_m.mfo = $1 AND s_b_m.bank_name = $2 AND s_b_m.isdeleted = false
+        `
+        const result = await db.query(query, params)
+        return result[0]
+    }
+
+    static async getByMfo(params) {
+        const query = `--sql
+            SELECT s_b_m.*
+            FROM spravochnik_bank_mfo AS s_b_m
+            WHERE s_b_m.mfo = $1 
+                AND s_b_m.isdeleted = false
+            ORDER BY s_b_m.created_at DESC
+            LIMIT 1
         `
         const result = await db.query(query, params)
         return result[0]
