@@ -386,7 +386,8 @@ exports.SaldoService = class {
         });
 
         const result = excel_data.filter((item, index) => index >= 3);
+        const header = excel_data.filter((item, index) => index === 2);
 
-        return result;
+        return { result, header };
     }
 }

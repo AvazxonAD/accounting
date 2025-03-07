@@ -138,11 +138,16 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const data = await SaldoService.readFile({ filePath: req.file.path });
+    const { result: data, header } = await SaldoService.readFile({ filePath: req.file.path });
+
+    if (!data.length) {
+      return res.error(req.i18n.t('emptyFile'), 400);
+    }
+
     for (let item of data) {
       const { error, value } = SaldoSchema.importData(req.i18n).validate(item);
       if (error) {
-        return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item });
+        return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item, header, });
       }
     }
 
