@@ -225,7 +225,7 @@ exports.Controller = class {
     for (let id of productIds) {
       const check = await PrixodJur7Service.checkPrixodDoc({ product_id: id });
       if (check.length) {
-        return res.error(req.i18n.t('rasxodProductError'), 409, { code: CODE.DOCS_HAVE, docs: check });
+        return res.error(req.i18n.t('rasxodProductError'), 409, { code: CODE.DOCS_HAVE.code, docs: check });
       }
     }
 
@@ -305,7 +305,7 @@ exports.Controller = class {
     for (let id of productIds) {
       const check = await PrixodJur7Service.checkPrixodDoc({ product_id: id });
       if (check.length) {
-        return res.error(req.i18n.t('rasxodProductError'), 409, { code: CODE.DOCS_HAVE, docs: check });
+        return res.error(req.i18n.t('rasxodProductError'), 409, { code: CODE.DOCS_HAVE.code, docs: check });
       }
     }
 
