@@ -1,5 +1,6 @@
 const { OrganizationSchema } = require('./schema');
 const { OrganizationService } = require('./service');
+const { BankService } = require('@bank/service');
 
 exports.Controller = class {
     static async setParentId(req, res) {
@@ -136,6 +137,15 @@ exports.Controller = class {
         const { error, value } = OrganizationSchema.importData(req.i18n).validate(data);
         if (error) {
             return res.error(error.details[0].message, 400);
+        }
+
+        for (let item of data) {
+            const bank = await BankService.getByMfo({ mfo: item.mfo });
+            if (!bank) {
+                return res.error(req.i18n.t('bankNotFound'), 404, { doc: item.mfo });
+            }
+
+            item.bank_klient = bank.name;
         }
 
         await OrganizationService.import({ data: value, user_id });

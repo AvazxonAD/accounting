@@ -1,26 +1,40 @@
 const { BankMfoDB } = require('./db');
+const { BankService } = require('./service');
 const { tashkentTime } = require('@helper/functions');
 const xlsx = require('xlsx')
 
 exports.Controller = class {
+    static async getByMfo(req, res) {
+        const { mfo } = req.params;
+
+        const result = await BankService.getByMfo({ mfo });
+
+        if (!result) {
+            return res.error(req.i18n.t('bankNotFound'), 409);
+        }
+
+        return res.success(req.i18n.t('getSuccess'), 200, null, result);
+    }
+
     static async create(req, res) {
         const { mfo, bank_name } = req.body;
-        const bankMfo = await BankMfoDB.getByMfoName([mfo, bank_name])
+
+        // const bankMfo = await BankMfoDB.getByMfoName([mfo, bank_name])
+
+        const bankMfo = await BankMfoDB.getBankMfo([mfo])
+
         if (bankMfo) {
-            return res.status(409).json({
-                message: "This data already exists"
-            });
+            return res.error(req.i18n.t('bankAlreadyExists'), 409);
         }
+
         const result = await BankMfoDB.create([
             mfo,
             bank_name,
             tashkentTime(),
             tashkentTime()
         ]);
-        return res.status(201).json({
-            message: "Create bank mfo successfully",
-            data: result
-        });
+
+        return res.success(req.i18n.t('createSuccess'), 201, null, result);
     }
 
     static async getBankMfo(req, res) {
@@ -28,6 +42,7 @@ exports.Controller = class {
         const offset = (page - 1) * limit;
         const { data, total } = await BankMfoDB.getBankMfo([offset, limit], search);
         const pageCount = Math.ceil(total / limit);
+
         const meta = {
             pageCount: pageCount,
             count: total,
@@ -35,25 +50,18 @@ exports.Controller = class {
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1
         };
-        return res.status(200).json({
-            message: "Bank mfo successfully retrieved",
-            meta,
-            data: data || []
-        });
+
+        return res.success(req.i18n.t('getSuccess'), 200, meta, data || []);
     }
 
     static async getByIdBankMfo(req, res) {
         const id = req.params.id;
         const data = await BankMfoDB.getByIdBankMfo([id], true);
         if (!data) {
-            return res.status(404).json({
-                message: "Bank mfo not found"
-            });
+            return res.error(req.i18n.t('bankNotFound'), 404);
         }
-        return res.status(200).json({
-            message: "Bank mfo successfully retrieved",
-            data
-        });
+
+        return res.success(req.i18n.t('getSuccess'), 200, null, data);
     }
 
     static async updateBankMfo(req, res) {
@@ -61,48 +69,53 @@ exports.Controller = class {
         const id = req.params.id;
         const oldBankMfo = await BankMfoDB.getByIdBankMfo([id]);
         if (!oldBankMfo) {
-            return res.status(404).json({
-                message: "Bank mfo not found"
-            });
+            return res.error(req.i18n.t('docNotFound'), 404);
         }
-        if (oldBankMfo.mfo !== mfo || oldBankMfo.bank_name !== bank_name) {
-            const bankMfo = await BankMfoDB.getByMfoName([mfo, bank_name]);
+
+        // if (oldBankMfo.mfo !== mfo || oldBankMfo.bank_name !== bank_name) {
+        //     const bankMfo = await BankMfoDB.getByMfoName([mfo, bank_name]);
+        //     if (bankMfo) {
+        //         return res.status(409).json({
+        //             message: "This data already exists"
+        //         });
+        //     }
+        // }
+
+        if (oldBankMfo.mfo !== mfo) {
+            const bankMfo = await BankMfoDB.getBankMfo([mfo]);
+
             if (bankMfo) {
-                return res.status(409).json({
-                    message: "This data already exists"
-                });
+                return res.error(req.i18n.t('bankAlreadyExists'), 409)
             }
         }
+
         const result = await BankMfoDB.updateBankMfo([
             mfo,
             bank_name,
             tashkentTime(),
             id
         ]);
-        return res.status(200).json({
-            message: 'Update successful',
-            data: result
-        });
+
+        return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }
 
     static async deleteBankMfo(req, res) {
         const id = req.params.id;
         const bankMfo = await BankMfoDB.getByIdBankMfo([id]);
         if (!bankMfo) {
-            return res.status(404).json({
-                message: "Bank mfo not found"
-            });
+            return res.error(req.i18n.t('docNotFound'), 404);
         }
+
         await BankMfoDB.deleteBankMfo([id]);
-        return res.status(200).json({
-            message: 'Delete bank mfo successfully'
-        });
+
+        return res.success(req.i18n.t('deleteSuccess'), 200)
     }
 
     static async importExcelData(req, res) {
         if (!req.file) {
             return next(new ErrorResponse("File not found", 400));
         }
+
         const filePath = req.file.path;
         const workbook = xlsx.readFile(filePath);
         const sheetName = workbook.SheetNames[0];

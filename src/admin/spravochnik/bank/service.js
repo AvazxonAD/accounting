@@ -8,6 +8,12 @@ exports.BankService = class {
         return result;
     }
 
+    static async getByMfo(data) {
+        const result = await BankMfoDB.getByMfo([data.mfo]);
+
+        return result;
+    }
+
     static async create(data) {
         const result = await BankMfoDB.create([
             data.mfo,

@@ -2,7 +2,7 @@ const { OrganizationDB } = require('./db');
 const xlsx = require('xlsx');
 const { tashkentTime, HelperFunctions } = require('@helper/functions');
 const { db } = require('@db/index');
-const { BankService } = require('@report_title/service');
+const { BankService } = require('@bank/service');
 const path = require('path');
 const fs = require('fs').promises;
 const { GaznaDB } = require('./gazna/db');
@@ -179,12 +179,12 @@ exports.OrganizationService = class {
     static async import(data) {
         await db.transaction(async client => {
             for (let item of data.data) {
-                if (item.bank_klient && item.mfo) {
-                    const bank = await BankService.getByMfoName({ bank_name: item.bank_klient, mfo: item.mfo });
-                    if (!bank) {
-                        await BankService.create({ bank_name: item.bank_klient, mfo: item.mfo });
-                    }
-                }
+                // if (item.bank_klient && item.mfo) {
+                //     const bank = await BankService.getByMfoName({ bank_name: item.bank_klient, mfo: item.mfo });
+                //     if (!bank) {
+                //         await BankService.create({ bank_name: item.bank_klient, mfo: item.mfo });
+                //     }
+                // }
                 await this.create({ ...item, user_id: data.user_id }, client);
             }
         })

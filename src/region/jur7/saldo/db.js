@@ -471,7 +471,7 @@ exports.SaldoDB = class {
 
         const data = await _db.query(query, params);
 
-        return data.roww[0] || data[0];
+        return data.rows[0] || data[0];
     }
 
     static async create(params, client) {
