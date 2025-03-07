@@ -430,19 +430,15 @@ exports.PrixodDB = class {
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
               d.opisanie, 
               d.summa, 
-              s.name AS kimga_name,
-              s.okonx AS spravochnik_organization_okonx,
-              s.bank_klient AS spravochnik_organization_bank_klient,
-              s.raschet_schet AS spravochnik_organization_raschet_schet,
-              s.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-              s.mfo AS spravochnik_organization_mfo,
-              s.inn AS spravochnik_organization_inn,
-              c.fio AS kimdan_name,
+              kd.id AS kimdan_id,
+              kd.name AS kimdan_name,
+              kg.id AS kimga_id,
+              kg.fio AS kimga_name,
               'rasxod' AS type 
             FROM document_rasxod_jur7 d
             JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
-            LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
-            JOIN spravochnik_javobgar_shaxs_jur7 c ON c.id = d.kimdan_id 
+            LEFT JOIN spravochnik_organization kd ON kd.id = d.kimga_id
+            JOIN spravochnik_javobgar_shaxs_jur7 kg ON kg.id = d.kimdan_id 
             WHERE  ch.naimenovanie_tovarov_jur7_id = $1 
                 AND d.isdeleted = false
                 AND ch.isdeleted = false
@@ -455,19 +451,15 @@ exports.PrixodDB = class {
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
               d.opisanie, 
               d.summa, 
-              s.name AS kimga_name,
-              s.okonx AS spravochnik_organization_okonx,
-              s.bank_klient AS spravochnik_organization_bank_klient,
-              s.raschet_schet AS spravochnik_organization_raschet_schet,
-              s.raschet_schet_gazna AS spravochnik_organization_raschet_schet_gazna,
-              s.mfo AS spravochnik_organization_mfo,
-              s.inn AS spravochnik_organization_inn,
-              c.fio AS kimdan_name,
+              kd.id AS kimdan_id,
+              kd.fio AS kimdan_name,
+              kg.id AS kimga_id,
+              kg.fio AS kimga_name,
               'internal' AS type
             FROM document_vnutr_peremesh_jur7 d
             JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
-            LEFT JOIN spravochnik_organization s ON s.id = d.kimga_id
-            JOIN spravochnik_javobgar_shaxs_jur7 c ON c.id = d.kimdan_id 
+            JOIN spravochnik_javobgar_shaxs_jur7 kd ON kd.id = d.kimdan_id 
+            JOIN spravochnik_javobgar_shaxs_jur7 kg ON kg.id = d.kimga_id 
             WHERE  ch.naimenovanie_tovarov_jur7_id = $1 
                 AND d.isdeleted = false
                 AND ch.isdeleted = false
