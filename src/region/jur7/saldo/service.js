@@ -378,6 +378,7 @@ exports.SaldoService = class {
             for (const key in row) {
                 if (Object.prototype.hasOwnProperty.call(row, key)) {
                     newRow[key] = row[key];
+                    newRow.index = index + 2;
                 }
             }
 

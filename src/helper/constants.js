@@ -7,5 +7,8 @@ exports.CODE = {
     },
     SALDO_CREATE: {
         code: 1002
+    },
+    EXCEL_IMPORT: {
+        code: 1003
     }
 }
