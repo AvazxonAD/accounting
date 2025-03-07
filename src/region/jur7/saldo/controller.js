@@ -20,7 +20,7 @@ exports.Controller = class {
 
       const check_doc = await SaldoService.checkDoc({ product_id: check.naimenovanie_tovarov_jur7_id });
       if (check_doc.length) {
-        return res.error(req.i18n.t('saldoRasxodError'), 400, { code: CODE.DOCS_HAVE.code, docs: check_doc });
+        return res.error(req.i18n.t('saldoRasxodError'), 400, { code: CODE.DOCS_HAVE.code, docs: check_doc, saldo_id: id });
       }
     }
 
