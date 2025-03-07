@@ -139,17 +139,19 @@ exports.Controller = class {
     }
 
     const data = await SaldoService.readFile({ filePath: req.file.path });
-    const { error, value } = SaldoSchema.importData(req.i18n).validate(data);
-    if (error) {
-      return res.error(error.details[0].message, 400);
+    for (let item of data) {
+      const { error, value } = SaldoSchema.importData(req.i18n).validate(item);
+      if (error) {
+        return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item });
+      }
     }
 
-    const date_saldo = HelperFunctions.checkYearMonth(value);
+    const date_saldo = HelperFunctions.checkYearMonth(data);
     if (!date_saldo) {
       return res.error(req.i18n.t('differentSaldoDate'), 400);
     }
 
-    for (let doc of value) {
+    for (let doc of data) {
       const responsible = await ResponsibleService.getById({ region_id, id: doc.responsible_id });
       if (!responsible) {
         return res.error(req.i18n.t('responsibleNotFound'), 404);
@@ -188,7 +190,7 @@ exports.Controller = class {
       }
     }
 
-    await SaldoService.importData({ docs: value, main_schet_id, budjet_id, user_id, region_id, date_saldo });
+    await SaldoService.importData({ docs: data, main_schet_id, budjet_id, user_id, region_id, date_saldo });
 
     return res.success(req.i18n.t('importSuccess'), 201);
   }
