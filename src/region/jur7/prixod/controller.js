@@ -37,14 +37,16 @@ exports.Controller = class {
   static async readFile(req, res) {
     const filePath = req.file.path;
 
-    const data = await HelperFunctions.readFile(filePath);
+    const { result: data, header } = await HelperFunctions.readFile(filePath);
 
-    const { error, value } = PrixodJur7Schema.import(req.i18n).validate(data);
-    if (error) {
-      return res.error(error.details[0].message, 400);
+    for (let item of data) {
+      const { error } = PrixodJur7Schema.import(req.i18n).validate(item);
+      if (error) {
+        return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item, header });
+      }
     }
 
-    for (let item of value) {
+    for (let item of data) {
       item.iznos = item.iznos === 'ha' ? true : false;
 
       item.nds_summa = item.nds_foiz ? (item.nds_foiz / 100) * item.summa : 0;
@@ -64,7 +66,7 @@ exports.Controller = class {
       item.sena = item.summa / item.kol;
     }
 
-    return res.success(req.i18n.t('readFileSuccess'), 200, null, value);
+    return res.success(req.i18n.t('readFileSuccess'), 200, null, data);
   }
 
   static async create(req, res) {

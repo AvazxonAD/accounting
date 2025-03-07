@@ -161,21 +161,19 @@ exports.PrixodJur7Schema = class {
 
 
   static import(lang) {
-    return Joi.array().items(
-      Joi.object({
-        nds_foiz: Joi.number().min(1).required().messages({ '*': lang.t('validation.ndsFoiz') }),
-        group_jur7_id: Joi.number().required().messages({ '*': lang.t('validation.groupId') }),
-        name: Joi.string().trim().required().messages({ '*': lang.t('validation.productName') }),
-        edin: Joi.string().trim().required().messages({ '*': lang.t('validation.edin') }),
-        kol: Joi.number().min(1).required().messages({ '*': lang.t('validation.kol') }),
-        summa: Joi.number().min(1).required().messages({ '*': lang.t('validation.summa') }),
-        inventar_num: Joi.any().messages({ '*': lang.t('validation.inventarNum') }),
-        serial_num: Joi.any().messages({ '*': lang.t('validation.serialNum') }),
-        iznos: Joi.any().messages({ '*': lang.t('validation.iznos') }),
-        nds_foiz: Joi.number().min(0).max(99).messages({ '*': lang.t('validation.ndsFoiz') }),
-        eski_iznos_summa: Joi.number().min(0).default(0).messages({ '*': lang.t('validation.eskiIznosSumma') })
-      })
-    ).options({ stripUnknown: true });
+    return Joi.object({
+      nds_foiz: Joi.number().min(1).required().messages({ '*': lang.t('validation.ndsFoiz') }),
+      group_jur7_id: Joi.number().required().messages({ '*': lang.t('validation.groupId') }),
+      name: Joi.string().trim().required().messages({ '*': lang.t('validation.productName') }),
+      edin: Joi.string().trim().required().messages({ '*': lang.t('validation.edin') }),
+      kol: Joi.number().min(1).required().messages({ '*': lang.t('validation.kol') }),
+      summa: Joi.number().min(1).required().messages({ '*': lang.t('validation.summa') }),
+      inventar_num: Joi.any().messages({ '*': lang.t('validation.inventarNum') }),
+      serial_num: Joi.any().messages({ '*': lang.t('validation.serialNum') }),
+      iznos: Joi.any().messages({ '*': lang.t('validation.iznos') }),
+      nds_foiz: Joi.number().min(0).max(99).messages({ '*': lang.t('validation.ndsFoiz') }),
+      eski_iznos_summa: Joi.number().min(0).default(0).messages({ '*': lang.t('validation.eskiIznosSumma') })
+    }).options({ stripUnknown: true });
   }
 
   static importSchema2() {
