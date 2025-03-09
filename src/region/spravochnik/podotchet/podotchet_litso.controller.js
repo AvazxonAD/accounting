@@ -20,7 +20,7 @@ const createPodotchetLitso = async (req, res) => {
     const data = validationResponse(podotchetLitsoValidation, req.body)
     await getByAllPodotChetService(data.name, data.rayon, region_id);
     const result = await createPodotChetService({ ...data, user_id });
-    resFunc(res, 201, result)
+    return res.success(req.i18n.t('createSuccess'), 201, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -43,7 +43,7 @@ const getPodotchetLitso = async (req, res) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result?.data || [], meta)
+    return res.success(req.i18n.t('getSuccess'), 200, meta, result?.data || []);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -54,13 +54,14 @@ const updatePodotchetLitso = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const podotchet_litso = await getByIdPodotchetService(region_id, id);  
+    const podotchet_litso = await getByIdPodotchetService(region_id, id);
     const data = validationResponse(podotchetLitsoValidation, req.body)
-    if ( podotchet_litso.name !== data.name || podotchet_litso.rayon !== data.rayon) {
+    if (podotchet_litso.name !== data.name || podotchet_litso.rayon !== data.rayon) {
       await getByAllPodotChetService(data.name, data.rayon, region_id);
     }
     const result = await updatePodotchetService({ ...data, id });
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -83,7 +84,8 @@ const deletePodotchetLitso = async (req, res) => {
 const getByIdPodotchetLitso = async (req, res) => {
   try {
     const result = await getByIdPodotchetService(req.user.region_id, req.params.id, true);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }

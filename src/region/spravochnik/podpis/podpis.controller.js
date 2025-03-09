@@ -17,9 +17,9 @@ const createpodpis = async (req, res) => {
     const user_id = req.user.id
     const region_id = req.user.region_id
     const data = validationResponse(podpisValidation, req.body)
-    await getByAllPodpisService(region_id, data.type_document, data.doljnost_name, data.fio_name )
-    const result = await createPodpisService({...data, user_id});
-    resFunc(res, 201, result)
+    await getByAllPodpisService(region_id, data.type_document, data.doljnost_name, data.fio_name)
+    const result = await createPodpisService({ ...data, user_id });
+    return res.success(req.i18n.t('createSuccess'), 201, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -53,11 +53,12 @@ const updatepodpis = async (req, res) => {
     const region_id = req.user.region_id;
     const old_data = await getByIdPodpisService(region_id, id);
     const data = validationResponse(podpisValidation, req.body);
-    if(old_data.type_docuemnt !== data.type_document || data.doljnost_name !== old_data.doljnost_name, data.fio_name !== old_data.fio_name){
-      await getByAllPodpisService(region_id, data.type_document, data.doljnost_name, data.fio_name )
+    if (old_data.type_docuemnt !== data.type_document || data.doljnost_name !== old_data.doljnost_name, data.fio_name !== old_data.fio_name) {
+      await getByAllPodpisService(region_id, data.type_document, data.doljnost_name, data.fio_name)
     }
     const result = await updatePodpisService({ ...data, id });
-    resFunc(res, 200, result);
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -70,7 +71,8 @@ const deletepodpis = async (req, res) => {
     const region_id = req.user.region_id
     await getByIdPodpisService(region_id, id);
     await deletePodpisService(id);
-    resFunc(res, 200, 'delete success true')
+    
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -80,7 +82,8 @@ const deletepodpis = async (req, res) => {
 const getByIdpodpis = async (req, res) => {
   try {
     const result = await getByIdPodpisService(req.user.region_id, req.params.id, true);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }

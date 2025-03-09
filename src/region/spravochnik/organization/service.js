@@ -207,7 +207,9 @@ exports.OrganizationService = class {
 
         const result = excel_data.filter((item, index) => index >= 3);
 
-        return result;
+        const header = excel_data.filter((item, index) => index === 3);
+
+        return { result, header };
     }
 }
 

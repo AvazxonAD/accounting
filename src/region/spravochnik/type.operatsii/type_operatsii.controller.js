@@ -24,7 +24,8 @@ const createTypeOperatsii = async (req, res) => {
     const { name, rayon } = data;
     await getByAlltypeOperatsiiService(region_id, name, rayon);
     const result = await createTypeOperatsiiService(user_id, name, rayon);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -46,7 +47,7 @@ const getTypeOperatsii = async (req, res) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result?.data || [], meta)
+    return res.success(req.i18n.t('getSuccess'), 200, meta, result?.data || []);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -58,12 +59,13 @@ const updateTypeOperatsii = async (req, res) => {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const type_operatsii = await getByIdTypeOperatsiiService(region_id, id);
-    const {name, rayon} = validationResponse(typeOperatsiiValidation, req.body);
+    const { name, rayon } = validationResponse(typeOperatsiiValidation, req.body);
     if (type_operatsii.name !== name || type_operatsii.rayon !== rayon) {
       await getByAlltypeOperatsiiService(region_id, name, rayon);
     }
     const result = await updatetypeOperatsiiService(id, name, rayon);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -76,7 +78,8 @@ const deleteTypeOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdTypeOperatsiiService(region_id, id);
     await deletetypeOperatsiiService(id);
-    resFunc(res, 200, 'delete success true')
+    
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -86,7 +89,8 @@ const deleteTypeOperatsii = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const result = await getByIdTypeOperatsiiService(req.user.region_id, req.params.id, true);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }

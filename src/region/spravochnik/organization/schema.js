@@ -24,9 +24,8 @@ exports.OrganizationSchema = class {
     }
 
     static importData(lang) {
-        return Joi.array().items({
+        return Joi.object({
             name: Joi.string().trim().required().messages({ '*': lang.t('validation.organ_name') }),
-            bank_klient: Joi.string().trim().required().messages({ '*': lang.t('validation.bank_name') }),
             mfo: Joi.string().trim().required().messages({ '*': lang.t('validation.mfo') }),
             inn: Joi.string().trim().required().messages({ '*': lang.t('validation.inn') }),
             okonx: Joi.string().trim().messages({ '*': lang.t('validation.okonx') }),
@@ -36,7 +35,7 @@ exports.OrganizationSchema = class {
             account_numbers: Joi.string()
                 .custom(value => value.split(/\s*\/\s*/).map(i => ({ raschet_schet: i })))
                 .messages({ '*': lang.t('validation.gaznas') })
-        });
+        })
     }
 
     static create() {

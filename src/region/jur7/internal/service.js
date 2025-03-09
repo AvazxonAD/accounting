@@ -3,7 +3,7 @@ const { InternalDB } = require('./db');
 const { tashkentTime, returnParamsValues } = require('@helper/functions');
 const { SaldoDB } = require('@saldo/db');
 
-exports.Jur7RsxodService = class {
+exports.Jur7InternalService = class {
     static async delete(data) {
         const result = await db.transaction(async (client) => {
             const doc = await InternalDB.delete([data.id], client)
@@ -101,6 +101,13 @@ exports.Jur7RsxodService = class {
             const month = new Date(data.doc.doc_date).getMonth() + 1;
             const year = new Date(data.doc.doc_date).getFullYear();
 
+            let month_iznos_summa = 0;
+
+            if (child.iznos) {
+                month_iznos_summa = child.sena * (child.product.group.iznos_foiz / 100);
+                month_iznos_summa = month_iznos_summa >= child.sena ? child.sena : month_iznos_summa;
+            }
+
             await SaldoDB.create([
                 data.user_id,
                 child.naimenovanie_tovarov_jur7_id,
@@ -121,6 +128,7 @@ exports.Jur7RsxodService = class {
                 child.iznos_sub_schet,
                 0,
                 child.iznos_start,
+                month_iznos_summa,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);

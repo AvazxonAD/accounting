@@ -66,7 +66,7 @@ exports.getSchema = Joi.object({
         limit: Joi.number().min(1).default(10),
         page: Joi.number().min(1).default(1),
         from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
-        search: Joi.string().trim(),
+        search: Joi.string().trim().allow(null, ''),
         to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
     })
 }).options({ stripUnknown: true });

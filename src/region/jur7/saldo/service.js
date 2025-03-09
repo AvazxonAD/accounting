@@ -31,6 +31,7 @@ exports.SaldoService = class {
     }
 
     static async updateIznosSumma(data) {
+
         const result = await SaldoDB.updateIznosSumma([
             data.iznos_summa,
             data.id
@@ -73,7 +74,7 @@ exports.SaldoService = class {
                 }
 
                 if (product.iznos) {
-                    product.to.month_iznos = product.to.sena * (product.group.iznos_foiz / 100);
+                    product.to.month_iznos = product.month_iznos_summa;
                     product.to.eski_iznos_summa = product.eski_iznos_summa;
                 }
             }
@@ -159,15 +160,18 @@ exports.SaldoService = class {
                 for (let product of responsible.products) {
                     let sena = 0;
                     let iznos_summa = 0;
+
                     if (product.data.kol !== 0) {
                         sena = product.data.summa / product.data.kol;
                     } else {
                         sena = product.data.summa;
                     }
 
+                    let month_iznos_summa = sena * (product.group.iznos_foiz / 100);
                     if (product.data.kol !== 0) {
-                        iznos_summa = sena * (product.group.iznos_foiz / 100) + product.data.iznos_summa;
+                        iznos_summa = month_iznos_summa + product.data.iznos_summa;
                         if (sena !== 0) {
+                            month_iznos_summa = month_iznos_summa >= sena ? sena : month_iznos_summa;
                             iznos_summa = iznos_summa >= sena ? sena : iznos_summa;
                         }
                     } else {
@@ -194,6 +198,7 @@ exports.SaldoService = class {
                         product.iznos_sub_schet,
                         product.data.iznos_summa,
                         product.iznos_start,
+                        month_iznos_summa,
                         tashkentTime(),
                         tashkentTime()
                     ], client);
@@ -321,12 +326,15 @@ exports.SaldoService = class {
             for (let doc of saldo_create) {
                 let old_iznos = 0;
                 let iznos_summa = 0;
+                let month_iznos_summa = 0;
 
                 if (doc.iznos) {
+                    month_iznos_summa = doc.sena * (doc.iznos_foiz / 100);
                     old_iznos = doc.eski_iznos_summa ? doc.eski_iznos_summa / doc.kol : 0;
-                    iznos_summa = (doc.sena * (doc.iznos_foiz / 100)) + old_iznos;
+                    iznos_summa = month_iznos_summa + old_iznos;
                     iznos_summa = iznos_summa >= doc.sena ? doc.sena : iznos_summa;
                     old_iznos = old_iznos >= doc.sena ? doc.sena : old_iznos;
+                    month_iznos_summa = month_iznos_summa >= doc.sena ? doc.sena : month_iznos_summa;
                 }
 
                 await SaldoDB.create([
@@ -349,6 +357,7 @@ exports.SaldoService = class {
                     doc.iznos_sub_schet,
                     old_iznos,
                     doc.iznos_start,
+                    month_iznos_summa,
                     tashkentTime(),
                     tashkentTime()
                 ], client);

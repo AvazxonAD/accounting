@@ -23,7 +23,8 @@ const createPodrazdelenie = async (req, res, next) => {
     const data = validationResponse(podrazdelenieValidation, req.body)
     await getByAllPodrazdelenieService(region_id, data.name, data.rayon);
     const result = await createPodrazdelenieService(user_id, data.name, data.rayon);
-    resFunc(res, 201, result)
+
+    return res.success(req.i18n.t('createSuccess'), 201, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -45,7 +46,7 @@ const getPodrazdelenie = async (req, res) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result?.data || [], meta)
+    return res.success(req.i18n.t('getSuccess'), 200, meta, result?.data || []);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -66,7 +67,8 @@ const updatePodrazdelenie = async (req, res, next) => {
       await getByAllPodrazdelenieService(region_id, name, rayon);
     }
     const result = await updatePodrazlanieService(id, name, rayon);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -79,7 +81,8 @@ const deletePodrazdelenie = async (req, res, next) => {
     const id = req.params.id;
     await getByIdPodrazlanieService(region_id, id);
     await deletePodrazlanieService(id);
-    resFunc(res, 200, 'delete success true')
+
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -91,7 +94,8 @@ const getByIdPodrazdelenie = async (req, res, next) => {
     const user_id = req.user.region_id;
     const id = req.params.id;
     const data = await getByIdPodrazlanieService(user_id, id, true);
-    resFunc(res, 200, data)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   } catch (error) {
     errorCatch(error, res)
   }

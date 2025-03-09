@@ -17,7 +17,7 @@ const createBudjet = async (req, res) => {
     const { name } = validationResponse(budjetValidation, req.body)
     await getByNameBudjetService(name);
     const result = await createBudjetService(name);
-    resFunc(res, 201, result)
+    return res.success(req.i18n.t('createSuccess'), 201, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -27,7 +27,8 @@ const createBudjet = async (req, res) => {
 const getBudjet = async (req, res) => {
   try {
     const result = await getBudjetService();
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -40,10 +41,11 @@ const updateBudjet = async (req, res) => {
     const oldBudjet = await getByIdBudjetService(req.params.id);
     const { name } = validationResponse(budjetValidation, req.body)
     if (oldBudjet.name !== name) {
-      await getByNameBudjetService(name);      
+      await getByNameBudjetService(name);
     }
     const result = await updateBudjetService(name, id);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -55,7 +57,8 @@ const deleteBudjet = async (req, res) => {
     const id = req.params.id;
     await getByIdBudjetService(id);
     await deleteBudjetService(id);
-    resFunc(res, 200, 'delete success true')
+    
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -65,7 +68,8 @@ const deleteBudjet = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const result = await getByIdBudjetService(req.params.id, true);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }

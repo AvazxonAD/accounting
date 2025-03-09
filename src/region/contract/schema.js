@@ -79,7 +79,7 @@ exports.ContractSchema = class {
                 budjet_id: Joi.number().min(1).required(),
                 organ_id: Joi.number().min(1),
                 pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
-                search: Joi.string().trim(),
+                search: Joi.string().trim().allow(null, ''),
                 contract_id: Joi.number().min(1).integer()
             })
         })

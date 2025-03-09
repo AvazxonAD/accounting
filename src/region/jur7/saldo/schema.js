@@ -40,7 +40,7 @@ exports.SaldoSchema = class {
         group_id: Joi.number().integer().min(1),
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(99999),
-        search: Joi.string().trim(),
+        search: Joi.string().trim().allow(null, ''),
         type: Joi.string().trim().valid('responsible', 'group', 'product').default('responsible'),
         to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
         iznos: Joi.string().trim()
@@ -65,7 +65,7 @@ exports.SaldoSchema = class {
   static updateIznosSumma() {
     return Joi.object({
       body: Joi.object({
-        iznos_summa: Joi.number().min(1).required().integer()
+        iznos_summa: Joi.number().min(1).required()
       }),
 
       params: Joi.object({

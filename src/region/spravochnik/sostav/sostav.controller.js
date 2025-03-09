@@ -20,10 +20,11 @@ const createSostav = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const {name, rayon} = validationResponse(sostavValidation, req.body)
+    const { name, rayon } = validationResponse(sostavValidation, req.body)
     await getByAllSostavService(region_id, name, rayon);
     const result = await createSostavService(user_id, name, rayon);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -33,7 +34,7 @@ const createSostav = async (req, res) => {
 const getSostav = async (req, res) => {
   try {
     const region_id = req.user.region_id;
-    const {limit, page, search} = validationResponse(queryValidation, req.query)
+    const { limit, page, search } = validationResponse(queryValidation, req.query)
     const offset = (page - 1) * limit;
     const result = await getSostavService(region_id, offset, limit, search);
     const total = result.total_count
@@ -45,7 +46,7 @@ const getSostav = async (req, res) => {
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     }
-    resFunc(res, 200, result?.data || [], meta)
+    return res.success(req.i18n.t('getSuccess'), 200, meta, result?.data || []);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -57,12 +58,13 @@ const updateSostav = async (req, res) => {
     const region_id = req.user.region_id;
     const id = req.params.id;
     let sostav = await getByIdSostavService(region_id, id);
-    const { name, rayon} = validationResponse(sostavValidation, req.body)
+    const { name, rayon } = validationResponse(sostavValidation, req.body)
     if (sostav.name !== name || sostav.rayon !== rayon) {
       await getByAllSostavService(region_id, name, rayon);
     }
     const result = await updateSostavService(id, name, rayon);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -75,7 +77,8 @@ const deleteSostav = async (req, res) => {
     const id = req.params.id;
     await getByIdSostavService(region_id, id);
     await deleteSostavService(id);
-    resFunc(res, 200, 'delete success true')
+
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -85,7 +88,8 @@ const deleteSostav = async (req, res) => {
 const getById = async (req, res) => {
   try {
     const data = await getByIdSostavService(req.user.region_id, req.params.id, true);
-    resFunc(res, 200, data)
+    
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -133,7 +137,7 @@ const importToExcel = async (req, res) => {
       [rowData.name, rowData.rayon, req.user.region_id],
     );
     if (!result.rows[0]) {
-        new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500)
+      new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500)
     }
   }
 
