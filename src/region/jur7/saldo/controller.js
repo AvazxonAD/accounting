@@ -59,7 +59,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('saldoNotFound'), 404);
     }
 
-    const response = await SaldoService.updateIznosSumma({ id, iznos_summa });
+    const response = await SaldoService.updateIznosSumma({ id, iznos_summa, doc: check });
 
     return res.success(req.i18n.t('updateSuccess'), 200, null, response);
   }

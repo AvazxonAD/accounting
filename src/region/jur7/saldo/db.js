@@ -58,7 +58,9 @@ exports.SaldoDB = class {
     static async updateIznosSumma(params) {
         const query = `
             UPDATE saldo_naimenovanie_jur7
-            SET iznos_summa = $1 
+            SET 
+                eski_iznos_summa = $1,
+                iznos_summa = $1 + month_iznos_summa
             WHERE id = $2
                 AND isdeleted = false
                 AND iznos = true
@@ -496,10 +498,11 @@ exports.SaldoDB = class {
                 iznos_sub_schet,
                 eski_iznos_summa,
                 iznos_start,
+                month_iznos_summa,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *
         `;
 
         const result = await client.query(query, params)

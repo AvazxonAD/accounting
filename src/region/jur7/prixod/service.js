@@ -330,6 +330,13 @@ exports.PrixodJur7Service = class {
             const month = new Date(data.doc.doc_date).getMonth() + 1;
             const year = new Date(data.doc.doc_date).getFullYear();
 
+            let month_iznos_summa = 0;
+
+            if (child.iznos) {
+                month_iznos_summa = child.sena * (child.group.iznos_foiz / 100);
+                month_iznos_summa = month_iznos_summa >= child.sena ? child.sena : month_iznos_summa;
+            }
+
             await SaldoDB.create([
                 data.user_id,
                 child.id,
@@ -350,6 +357,7 @@ exports.PrixodJur7Service = class {
                 child.iznos_sub_schet,
                 0,
                 child.iznos_start,
+                month_iznos_summa,
                 tashkentTime(),
                 tashkentTime()
             ], data.client);

@@ -132,23 +132,29 @@ exports.Controller = class {
         const filePath = req.file.path;
         const user_id = req.user.id;
 
-        const data = await OrganizationService.readFile({ filePath });
+        const { result: data, header } = await OrganizationService.readFile({ filePath });
 
-        const { error, value } = OrganizationSchema.importData(req.i18n).validate(data);
-        if (error) {
-            return res.error(error.details[0].message, 400);
-        }
+        const validation_data = [];
 
         for (let item of data) {
+            const { error, value } = OrganizationSchema.importData(req.i18n).validate(item);
+            if (error) {
+                return res.error(error.details[0].message, 400, { code: CODE.EXCEL_IMPORT.code, doc: item, header });
+            }
+
+            validation_data.push(value);
+        }
+
+        for (let item of validation_data) {
             const bank = await BankService.getByMfo({ mfo: item.mfo });
             if (!bank) {
                 return res.error(req.i18n.t('bankNotFound'), 404, { doc: item.mfo });
             }
 
-            item.bank_klient = bank.name;
+            item.bank_klient = bank.bank_name;
         }
 
-        await OrganizationService.import({ data: value, user_id });
+        await OrganizationService.import({ data: validation_data, user_id });
 
         return res.success(req.i18n.t('importSuccess'), 201);
     }

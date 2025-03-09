@@ -25,7 +25,7 @@ exports.getSchema = Joi.object({
     query: Joi.object({
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().min(1).integer().default(10),
-        search: Joi.string().trim(),
+        search: Joi.string().trim().allow(null, ''),
         budjet_id: Joi.number().min(1).integer(),
         group_number: Joi.string().trim()
     })

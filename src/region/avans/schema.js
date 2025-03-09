@@ -59,7 +59,7 @@ exports.AktSchema = class {
                 main_schet_id: Joi.number().required().min(1).integer(),
                 limit: Joi.number().min(1).default(10),
                 page: Joi.number().min(1).default(1),
-                search: Joi.string().trim(),
+                search: Joi.string().trim().allow(null, ''),
                 from: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required(),
                 to: Joi.string().trim().pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/).required()
             })

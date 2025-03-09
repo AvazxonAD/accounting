@@ -32,7 +32,7 @@ const schetOperatsiiValidation = Joi.object({
 }).options({ stripUnknown: true });
 
 const schetOperatsiiQueryValidation = Joi.object({
-  search: Joi.string().trim(),
+  search: Joi.string().trim().allow(null, ''),
   limit: Joi.number().min(1).default(9999),
   page: Joi.number().min(1).default(1)
 }).options({ stripUnknown: true });
@@ -203,7 +203,7 @@ const kassaValidation = Joi.object({
 const queryValidation = Joi.object({
   page: Joi.number().min(1).default(1),
   limit: Joi.number().min(1).default(9999),
-  search: Joi.string().trim(),
+  search: Joi.string().trim().allow(null, ''),
   budjet_id: Joi.number(),
   type: Joi.string().trim()
 }).options({ stripUnknown: true });
@@ -292,7 +292,7 @@ const ShartnomaqueryValidation = Joi.object({
   budjet_id: Joi.number().min(1),
   organization: Joi.number().min(1),
   pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
-  search: Joi.string().trim(),
+  search: Joi.string().trim().allow(null, ''),
   contract_id: Joi.number().min(1).integer()
 }).options({ stripUnknown: true });
 
@@ -384,7 +384,7 @@ const operatsiiQueryValidation = Joi.object({
   limit: Joi.number().min(1).default(9999),
   budjet_id: Joi.number().min(1).integer(),
   type_schet: Joi.string().trim(),
-  search: Joi.string().trim(),
+  search: Joi.string().trim().allow(null, ''),
   meta_search: Joi.string().trim(),
   schet: Joi.string().trim(),
   sub_schet: Joi.string().trim().custom((value) => {

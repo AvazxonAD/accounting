@@ -23,7 +23,8 @@ const create = async (req, res) => {
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
     await getByAccountNumberMainSchetService(region_id, data.account_number)
     const result = await createMainSchetService({ ...data, user_id });
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -61,7 +62,8 @@ const update = async (req, res) => {
     }
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
     const result = await updateMainSchetService({ ...data, id, });
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -75,7 +77,8 @@ const deleteValue = async (req, res) => {
     await getByIdMainSchetService(region_id, id);
     await checkMainSchetService(id)
     await deleteMainSchetService(id);
-    resFunc(res, 200, 'delete success true')
+    
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -85,7 +88,8 @@ const deleteValue = async (req, res) => {
 const getElementById = async (req, res) => {
   try {
     const data = await getByIdMainSchetService(req.user.region_id, req.params.id, true);
-    resFunc(res, 200, data)
+    
+    return res.success(req.i18n.t('getSuccess'), 200, null, data);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -97,7 +101,8 @@ const getByBudjetIdMainSchet = async (req, res) => {
     const region_id = req.query.region_id;
     const budjet_id = req.query.budjet_id;
     const result = await getByBudjetIdMainSchetService(budjet_id, region_id);
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }

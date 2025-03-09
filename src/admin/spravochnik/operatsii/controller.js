@@ -48,7 +48,8 @@ const Controller = class {
 const getSchet = async (req, res) => {
   try {
     const result = await getSchetService()
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -75,7 +76,8 @@ const createOperatsii = async (req, res) => {
     }
 
     const result = await createOperatsiiService({ ...data });
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('createSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -128,7 +130,8 @@ const updateOperatsii = async (req, res) => {
     }
 
     const result = await updateOperatsiiService({ ...data, id });
-    resFunc(res, 200, result)
+
+    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -140,7 +143,8 @@ const deleteOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
     await deleteOperatsiiService(id);
-    return resFunc(res, 200, 'delete success true')
+    return 
+    return res.success(req.i18n.t('deleteSuccess'), 200);
   } catch (error) {
     errorCatch(error, res)
   }
@@ -150,7 +154,8 @@ const deleteOperatsii = async (req, res) => {
 const getByIdOperatsii = async (req, res) => {
   try {
     const result = await getByIdOperatsiiService(req.params.id, null, true);
-    return resFunc(res, 200, result);
+    
+    return res.success(req.i18n.t('getSuccess'), 200, null, result);
   } catch (error) {
     errorCatch(error, res)
   }

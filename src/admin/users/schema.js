@@ -36,7 +36,7 @@ exports.getByIdSchema = Joi.object({
 
 exports.getSchema = Joi.object({
     query: Joi.object({
-        search: Joi.string().trim(),
+        search: Joi.string().trim().allow(null, ''),
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(10)
     })

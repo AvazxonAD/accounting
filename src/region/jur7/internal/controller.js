@@ -2,7 +2,7 @@ const { checkTovarId } = require('@helper/functions');
 const { ResponsibleService } = require('@responsible/service');
 const { ProductService } = require('@product/service');
 const { MainSchetService } = require('@main_schet/service');
-const { Jur7RsxodService } = require('./service');
+const { Jur7InternalService } = require('./service');
 const { SaldoService } = require('@saldo/service');
 const { GroupService } = require('@group/service');
 
@@ -34,16 +34,16 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
-      if (!product) {
+      child.product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
+      if (!child.product) {
         return res.error(req.i18n.t('productNotFound'), 404);
       }
 
-      if ((!child.iznos && child.iznos_summa) || (child.iznos && !product.group.iznos_foiz) || (child.sena < child.iznos_summa)) {
+      if ((!child.iznos && child.iznos_summa) || (child.iznos && !child.product.group.iznos_foiz) || (child.sena < child.iznos_summa)) {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: product.group.id });
+      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: child.product.group.id });
       if (!groups.length) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
@@ -64,7 +64,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('productIdError'), 400);
     }
 
-    const result = await Jur7RsxodService.create({ ...req.body, main_schet_id, user_id, region_id });
+    const result = await Jur7InternalService.create({ ...req.body, main_schet_id, user_id, region_id });
 
     return res.success(req.i18n.t('createSuccess'), 200, result.dates, result.doc);
   }
@@ -79,7 +79,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const data = await Jur7RsxodService.getById({ region_id, id, main_schet_id, isdeleted: true });
+    const data = await Jur7InternalService.getById({ region_id, id, main_schet_id, isdeleted: true });
     if (!data) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
@@ -99,7 +99,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await Jur7RsxodService.getById({ region_id, id, main_schet_id, isdeleted: true });
+    const oldData = await Jur7InternalService.getById({ region_id, id, main_schet_id, isdeleted: true });
     if (!oldData) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
@@ -115,18 +115,18 @@ exports.Controller = class {
     }
 
     for (let child of childs) {
-      const product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
-      if (!product) {
+      child.product = await ProductService.getById({ region_id, id: child.naimenovanie_tovarov_jur7_id });
+      if (!child.product) {
         return res.error(req.i18n.t('productNotFound'));
       }
 
       const old_kol = oldData.childs.find(item => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id).kol || 0;
 
-      if ((!child.iznos && child.iznos_summa) || (child.iznos && !product.group.iznos_foiz) || (child.sena < child.iznos_summa)) {
+      if ((!child.iznos && child.iznos_summa) || (child.iznos && !child.product.group.iznos_foiz) || (child.sena < child.iznos_summa)) {
         return res.error(req.i18n.t('IznosSummaError'), 400, child);
       }
 
-      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: product.group.id });
+      const { data: groups } = await GroupService.get({ offset: 0, limit: 1, id: child.product.group.id });
       if (!groups.length) {
         return res.error(req.i18n.t('groupNotFound'), 404);
       }
@@ -148,7 +148,7 @@ exports.Controller = class {
       return res.error(req.i18n.t('productIdError'), 400);
     }
 
-    const result = await Jur7RsxodService.update({ ...req.body, user_id, main_schet_id, id, oldData, region_id });
+    const result = await Jur7InternalService.update({ ...req.body, user_id, main_schet_id, id, oldData, region_id });
 
     return res.success(req.i18n.t('updateSuccess'), 200, result.dates, result.doc);
   }
@@ -163,12 +163,12 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await Jur7RsxodService.getById({ region_id, id, main_schet_id });
+    const oldData = await Jur7InternalService.getById({ region_id, id, main_schet_id });
     if (!oldData) {
       return res.error(req.i18n.t('docNotFound'), 404);
     };
 
-    const result = await Jur7RsxodService.delete({ id, region_id, oldData });
+    const result = await Jur7InternalService.delete({ id, region_id, oldData });
 
     return res.error(req.i18n.t('deleteSuccess'), 200, result.dates, result.doc);
   }
@@ -182,7 +182,7 @@ exports.Controller = class {
     }
     const offset = (page - 1) * limit;
 
-    const { data, total } = await Jur7RsxodService.get({ region_id, from, to, main_schet_id, offset, limit, search });
+    const { data, total } = await Jur7InternalService.get({ region_id, from, to, main_schet_id, offset, limit, search });
 
     const pageCount = Math.ceil(total / limit);
 
