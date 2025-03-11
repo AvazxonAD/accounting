@@ -1,10 +1,11 @@
 const { checkSchetsEquality } = require('@helper/functions');
 const { MainSchetService } = require('@main_schet/service');
+const { PodotchetService } = require('@podotchet/service');
 const { OperatsiiService } = require('@operatsii/service')
 const { PodrazdelenieService } = require('@podraz/service')
 const { SostavService } = require('@sostav/service')
 const { TypeOperatsiiService } = require('@type_operatsii/service');
-const { OrganSaldoService } = require('./service');
+const { PodotchetSaldoService } = require('./service');
 const { OrganizationService } = require('@organization/service');
 const { ContractService } = require('@contract/service');
 const { GaznaService } = require('@gazna/service');
@@ -18,11 +19,7 @@ exports.Controller = class {
 
         const {
             childs,
-            organ_id,
-            contract_id,
-            organ_account_number_id,
-            organ_gazna_number_id,
-            contract_grafik_id,
+            podotchet_id,
             prixod,
             rasxod
         } = req.body;
@@ -36,41 +33,9 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const organization = await OrganizationService.getById({ region_id, id: organ_id });
-        if (!organization) {
-            return res.error(req.i18n.t('organizationNotFound'), 404);
-        }
-
-        if (!contract_id && contract_grafik_id) {
-            return res.error(req.i18n.t('contractNotFound'), 404);
-        }
-
-        if (contract_id) {
-            const contract = await ContractService.getById({ region_id, id: contract_id, organ_id });
-            if (!contract) {
-                return res.error(req.i18n.t('contractNotFound'), 404);
-            }
-
-            if (contract_grafik_id) {
-                const grafik = contract.grafiks.find(item => item.id === contract_grafik_id);
-                if (!grafik) {
-                    return res.error(req.i18n.t('grafikNotFound'), 404);
-                }
-            }
-        }
-
-        if (organ_account_number_id) {
-            const account_number = await AccountNumberService.getById({ organ_id: organ_id, id: organ_account_number_id });
-            if (!account_number) {
-                return res.error(req.i18n.t('account_number_not_found'), 404);
-            }
-        }
-
-        if (organ_gazna_number_id) {
-            const gazna = await GaznaService.getById({ organ_id: organ_id, id: organ_gazna_number_id });
-            if (!gazna) {
-                return res.error(req.i18n.t('gazna_not_found'), 404);
-            }
+        const podotchet = await PodotchetService.getById({id: podotchet_id, region_id});
+        if(!podotchet){
+            return res.error(req.i18n.t('podotchetNotFound'), 404);
         }
 
         const operatsiis = [];
@@ -108,7 +73,7 @@ exports.Controller = class {
             res.error(req.i18n.t('schetDifferentError'), 400)
         }
 
-        const result = await OrganSaldoService.create({ ...req.body, main_schet_id, user_id })
+        const result = await PodotchetSaldoService.create({ ...req.body, main_schet_id, user_id })
 
         return res.success(req.i18n.t('createSucccess'), 201, null, result);
     }
@@ -133,7 +98,7 @@ exports.Controller = class {
             page_rasxod_summa,
             from_summa,
             to_summa
-        } = await OrganSaldoService.get({ search, region_id, main_schet_id, from, to, offset, limit });
+        } = await PodotchetSaldoService.get({ search, region_id, main_schet_id, from, to, offset, limit });
 
         const pageCount = Math.ceil(total_count / limit);
 
@@ -165,7 +130,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const result = await OrganSaldoService.getById({ region_id, main_schet_id, id, isdeleted: true });
+        const result = await PodotchetSaldoService.getById({ region_id, main_schet_id, id, isdeleted: true });
         if (!result) {
             return res.error(req.i18n.t('docNotFound'), 404);
         }
@@ -181,18 +146,19 @@ exports.Controller = class {
 
         const {
             childs,
-            organ_id,
-            contract_id,
-            organ_account_number_id,
-            organ_gazna_number_id,
-            contract_grafik_id,
+            podotchet_id,
             prixod,
             rasxod
         } = req.body;
 
-        const old_data = await OrganSaldoService.getById({ region_id, main_schet_id, id, isdeleted: true });
+        const old_data = await PodotchetSaldoService.getById({ region_id, main_schet_id, id, isdeleted: true });
         if (!old_data) {
             return res.error(req.i18n.t('docNotFound'), 404);
+        }
+        
+        const podotchet = await PodotchetService.getById({id: podotchet_id, region_id});
+        if(!podotchet){
+            return res.error(req.i18n.t('podotchetNotFound'), 404);
         }
 
         if ((prixod && rasxod) || (!prixod && !rasxod)) {
@@ -204,43 +170,6 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const organization = await OrganizationService.getById({ region_id, id: organ_id });
-        if (!organization) {
-            return res.error(req.i18n.t('organizationNotFound'), 404);
-        }
-
-        if (!contract_id && contract_grafik_id) {
-            return res.error(req.i18n.t('contractNotFound'), 404);
-        }
-
-        if (contract_id) {
-            const contract = await ContractService.getById({ region_id, id: contract_id, organ_id });
-            if (!contract) {
-                return res.error(req.i18n.t('contractNotFound'), 404);
-            }
-
-            if (contract_grafik_id) {
-                const grafik = contract.grafiks.find(item => item.id === contract_grafik_id);
-                if (!grafik) {
-                    return res.error(req.i18n.t('grafikNotFound'), 404);
-                }
-            }
-        }
-
-        if (organ_account_number_id) {
-            const account_number = await AccountNumberService.getById({ organ_id: organ_id, id: organ_account_number_id });
-            if (!account_number) {
-                return res.error(req.i18n.t('account_number_not_found'), 404);
-            }
-        }
-
-        if (organ_gazna_number_id) {
-            const gazna = await GaznaService.getById({ organ_id: organ_id, id: organ_gazna_number_id });
-            if (!gazna) {
-                return res.error(req.i18n.t('gazna_not_found'), 404);
-            }
-        }
-
         const operatsiis = [];
         for (let child of childs) {
             if(child.id){
@@ -249,7 +178,7 @@ exports.Controller = class {
                     return res.error(req.i18n.t('validationError'), 400)
                 }
             }
-            
+
             const operatsii = await OperatsiiService.getById({ type: "general", id: child.operatsii_id });
             if (!operatsii) {
                 return res.error(req.i18n.t('operatsiiNotFound'), 404)
@@ -283,7 +212,7 @@ exports.Controller = class {
             res.error(req.i18n.t('schetDifferentError'), 400)
         }
 
-        const result = await OrganSaldoService.update({ ...req.body, main_schet_id, user_id, id, old_data });
+        const result = await PodotchetSaldoService.update({ ...req.body, main_schet_id, user_id, id, old_data });
 
         return res.success(req.i18n.t('updateSuccess'), 200, null, result);
     }
@@ -298,12 +227,12 @@ exports.Controller = class {
             return res.error(req.i18n.t('mainSchetNotFound'), 400)
         }
 
-        const doc = await OrganSaldoService.getById({ region_id, main_schet_id, id });
+        const doc = await PodotchetSaldoService.getById({ region_id, main_schet_id, id });
         if (!doc) {
             return res.error(req.i18n.t('docNotFound'), 404);
         }
 
-        const result = await OrganSaldoService.delete({ id });
+        const result = await PodotchetSaldoService.delete({ id });
 
         return res.success(req.i18n.t('getSuccess'), 200, null, result);
     }

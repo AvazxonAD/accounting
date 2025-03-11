@@ -1,13 +1,13 @@
 const { db } = require('@db/index');
-const { OrganSaldoDB } = require('./db');
+const { PodotchetSaldoDB } = require('./db');
 const { HelperFunctions } = require('@helper/functions');
 
-exports.OrganSaldoService = class {
+exports.PodotchetSaldoService = class {
     static async create(data) {
         const summa = HelperFunctions.saldoSumma(data);
 
         const result = await db.transaction(async client => {
-            const doc = await OrganSaldoDB.create([
+            const doc = await PodotchetSaldoDB.create([
                 data.doc_num,
                 data.doc_date,
                 summa.prixod_summa,
@@ -15,13 +15,9 @@ exports.OrganSaldoService = class {
                 summa.rasxod_summa,
                 data.rasxod,
                 data.opisanie,
-                data.organ_id,
-                data.contract_id,
+                data.podotchet_id,
                 data.main_schet_id,
                 data.user_id,
-                data.organ_account_number_id,
-                data.organ_gazna_number_id,
-                data.contract_grafik_id,
                 new Date()
             ], client)
 
@@ -52,12 +48,12 @@ exports.OrganSaldoService = class {
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 9 });
 
         if(create_childs.length) {
-            await OrganSaldoDB.createChild(create_childs, _values, data.client);
+            await PodotchetSaldoDB.createChild(create_childs, _values, data.client);
         }
     }
 
     static async get(data) {
-        const result = await OrganSaldoDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
+        const result = await PodotchetSaldoDB.get([data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit], data.search);
 
         let page_prixod_summa = 0;
         let page_rasxod_summa = 0;
@@ -73,7 +69,7 @@ exports.OrganSaldoService = class {
     }
 
     static async getById(data) {
-        const result = await OrganSaldoDB.getById([data.region_id, data.main_schet_id, data.id], data.isdeleted);
+        const result = await PodotchetSaldoDB.getById([data.region_id, data.main_schet_id, data.id], data.isdeleted);
 
         return result;
     }
@@ -82,7 +78,7 @@ exports.OrganSaldoService = class {
         const summa = HelperFunctions.saldoSumma(data);
 
         const result = await db.transaction(async client => {
-            const doc = await OrganSaldoDB.update([
+            const doc = await PodotchetSaldoDB.update([
                 data.doc_num,
                 data.doc_date,
                 summa.prixod_summa,
@@ -90,11 +86,7 @@ exports.OrganSaldoService = class {
                 summa.rasxod_summa,
                 data.rasxod,
                 data.opisanie,
-                data.organ_id,
-                data.contract_id,
-                data.organ_account_number_id,
-                data.organ_gazna_number_id,
-                data.contract_grafik_id,
+                data.podotchet_id,
                 new Date(),
                 data.id
             ], client);
@@ -104,7 +96,7 @@ exports.OrganSaldoService = class {
             for (let child of data.old_data.childs) {
                 const check = data.childs.find(item => item.id === child.id);
                 if (!check) {
-                    await OrganSaldoDB.deleteChild([child.id], client);
+                    await PodotchetSaldoDB.deleteChild([child.id], client);
                 }
             }
 
@@ -112,7 +104,7 @@ exports.OrganSaldoService = class {
                 if (!child.id) {
                     create_childs.push(child);
                 } else {
-                    await OrganSaldoDB.updateChild([
+                    await PodotchetSaldoDB.updateChild([
                         child.operatsii_id,
                         child.summa,
                         child.podraz_id,
@@ -136,7 +128,7 @@ exports.OrganSaldoService = class {
 
     static async delete(data) {
         const result = await db.transaction(async client => {
-            const doc = await OrganSaldoDB.delete([data.id], client);
+            const doc = await PodotchetSaldoDB.delete([data.id], client);
 
             return doc;
         });
