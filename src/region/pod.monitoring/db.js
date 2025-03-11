@@ -82,7 +82,73 @@ exports.PodotchetMonitoringDB = class {
                 ${podotchet_filter}
                 ${search_filter}
                 AND p.id IS NOT NULL
+
+            UNION ALL
             
+            SELECT 
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS    doc_date,
+                0::FLOAT AS                             prixod_sum,
+                ch.summa::FLOAT AS                      rasxod_sum,
+                d.opisanie,
+                d.podotchet_id,
+                p.name AS                               podotchet_name,
+                p.rayon AS                              podotchet_rayon,
+                u.login,
+                u.fio,
+                u.id AS user_id,
+                op.schet AS provodki_schet,
+                op.sub_schet AS provodki_sub_schet,
+                'podotchet_saldo_rasxod' AS type
+            FROM podotchet_saldo_child ch
+            JOIN podotchet_saldo AS d ON ch.parent_id = d.id
+            JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id 
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+            WHERE r.id = $1 
+                AND d.rasxod = true
+                AND d.main_schet_id = $2 
+                AND d.isdeleted = false   
+                AND d.doc_date BETWEEN $3 AND $4
+                AND op.schet = $5
+                ${podotchet_filter}
+                ${search_filter}
+            
+            UNION ALL
+        
+            SELECT 
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS    doc_date,
+                ch.summa::FLOAT AS                      prixod_sum,
+                0::FLOAT AS                             rasxod_sum,
+                d.opisanie,
+                d.podotchet_id,
+                p.name AS                               podotchet_name,
+                p.rayon AS                              podotchet_rayon,
+                u.login,
+                u.fio,
+                u.id AS user_id,
+                op.schet AS provodki_schet,
+                op.sub_schet AS provodki_sub_schet,
+                'podotchet_saldo_prixod' AS type
+            FROM podotchet_saldo_child ch
+            JOIN podotchet_saldo AS d ON ch.parent_id = d.id
+            JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id 
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+            WHERE r.id = $1 
+                AND d.prixod = true
+                AND d.main_schet_id = $2 
+                AND d.isdeleted = false   
+                AND d.doc_date BETWEEN $3 AND $4
+                AND op.schet = $5
+                ${podotchet_filter}
+                ${search_filter}
+
             UNION ALL 
         
             SELECT 
@@ -256,6 +322,51 @@ exports.PodotchetMonitoringDB = class {
                         ${operatsii_filter}
                         ${search_filter}
                 ),
+
+                podotchet_saldo_prixod AS (
+                    SELECT 
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                    FROM podotchet_saldo_child ch
+                    JOIN podotchet_saldo AS d ON ch.parent_id = d.id
+                    JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+                    JOIN main_schet AS m ON m.id = d.main_schet_id
+                    WHERE r.id = $1  
+                        AND d.prixod = true
+                        AND d.isdeleted = false 
+                        ${date_filter}
+                        ${podotchet_filter}
+                        AND p.id IS NOT NULL
+                        ${main_schet_filter}
+                        ${budjet_filter}
+                        ${operatsii_filter}
+                        ${search_filter}
+                ),
+
+                podotchet_saldo_rasxod AS (
+                    SELECT 
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                    FROM podotchet_saldo_child ch
+                    JOIN podotchet_saldo AS d ON ch.parent_id = d.id
+                    JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+                    JOIN main_schet AS m ON m.id = d.main_schet_id
+                    WHERE r.id = $1  
+                        AND d.rasxod = true
+                        AND d.isdeleted = false 
+                        ${date_filter}
+                        ${podotchet_filter}
+                        AND p.id IS NOT NULL
+                        ${main_schet_filter}
+                        ${budjet_filter}
+                        ${operatsii_filter}
+                        ${search_filter}
+                ),
+
                 bank_prixod AS (
                     SELECT 
                         COALESCE(SUM(ch.summa), 0)::FLOAT AS rasxod_sum
@@ -337,20 +448,24 @@ exports.PodotchetMonitoringDB = class {
                         ${search_filter}
                 )
             SELECT 
-                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum) AS prixod_sum,
-                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS rasxod_sum,
+                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum + podotchet_saldo_prixod.summa) AS prixod_sum,
+                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum + podotchet_saldo_rasxod.summa) AS rasxod_sum,
                 bank_rasxod.prixod_sum AS bank_rasxod_sum,
+                podotchet_saldo_rasxod.summa AS podotchet_saldo_rasxod_sum,
+                podotchet_saldo_prixod.summa AS podotchet_saldo_prixod_sum,
                 kassa_rasxod.prixod_sum AS kassa_rasxod_sum,
                 bank_prixod.rasxod_sum AS bank_prixod_sum,
                 kassa_prixod.rasxod_sum AS kassa_prixod_sum,
                 avans_otchet.rasxod_sum AS avans_otchet_sum,
-                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum) - 
-                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS summa
+                (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum + podotchet_saldo_prixod.summa) - 
+                (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum + podotchet_saldo_rasxod.summa) AS summa
             FROM bank_rasxod
             CROSS JOIN bank_prixod
             CROSS JOIN kassa_prixod
             CROSS JOIN kassa_rasxod
             CROSS JOIN avans_otchet
+            CROSS JOIN podotchet_saldo_rasxod
+            CROSS JOIN podotchet_saldo_prixod
         `;
         const result = await db.query(query, params);
         return result[0];
@@ -381,6 +496,25 @@ exports.PodotchetMonitoringDB = class {
                         ${podotchet_filter}
                         AND p.id IS NOT NULL
                 ),
+
+                podotchet_saldo AS (
+                    SELECT 
+                        COUNT(ch.id)::INT AS doc_count
+                    FROM podotchet_saldo_child ch
+                    JOIN podotchet_saldo AS d ON ch.parent_id = d.id
+                    JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false 
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND op.schet = $5
+                        ${podotchet_filter}
+                        AND p.id IS NOT NULL
+                ),
+
                 bank_prixod AS (
                     SELECT 
                         COUNT(ch.id)::INT AS doc_count
@@ -453,12 +587,14 @@ exports.PodotchetMonitoringDB = class {
             SELECT 
                 (bank_rasxod.doc_count + kassa_rasxod.doc_count + 
                  bank_prixod.doc_count + kassa_prixod.doc_count + 
-                 avans_otchet.doc_count) AS total_docs
+                 avans_otchet.doc_count + podotchet_saldo.doc_count
+                ) AS total_docs
             FROM bank_rasxod
             CROSS JOIN bank_prixod
             CROSS JOIN kassa_prixod
             CROSS JOIN kassa_rasxod
             CROSS JOIN avans_otchet
+            CROSS JOIN podotchet_saldo
         `;
         const result = await db.query(query, params);
         return result[0].total_docs;

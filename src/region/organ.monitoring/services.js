@@ -103,7 +103,7 @@ exports.OrganizationmonitoringService = class {
                     schet.summa += doc.summa;
                 }
             }
-            // Corrected filter
+
             schet.docs = result.filter(item => item.schet === schet.schet);
         }
 

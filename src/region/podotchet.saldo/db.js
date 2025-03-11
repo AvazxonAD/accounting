@@ -1,9 +1,9 @@
 const { db } = require('@db/index')
 
-exports.OrganSaldoDB = class {
+exports.PodotchetSaldoDB = class {
     static async create(params, client) {
         const query = `
-            INSERT INTO organ_saldo (
+            INSERT INTO podotchet_saldo (
                 doc_num, 
                 doc_date, 
                 prixod_summa,
@@ -11,16 +11,12 @@ exports.OrganSaldoDB = class {
                 rasxod_summa,
                 rasxod,
                 opisanie, 
-                organ_id,
-                contract_id,
+                podotchet_id,
                 main_schet_id,
                 user_id,
-                organ_account_number_id,
-                organ_gazna_number_id,
-                contract_grafik_id,
                 created_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING id
         `;
 
@@ -31,7 +27,7 @@ exports.OrganSaldoDB = class {
 
     static async createChild(params, _values, client) {
         const query = `
-            INSERT INTO organ_saldo_child (
+            INSERT INTO podotchet_saldo_child (
                 operatsii_id,
                 summa,
                 podraz_id,
@@ -64,30 +60,28 @@ exports.OrganSaldoDB = class {
             WITH data AS (
                 SELECT 
                     d.*,
-                    d.id::BIGINT,
+                    d.id,
                     d.prixod_summa::FLOAT,
                     d.rasxod_summa::FLOAT,
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS            doc_date, 
-                    so.name AS                                      organ_name,
-                    so.bank_klient AS                               organ_bank_name,
-                    so.mfo AS                                       organ_bank_mfo,
-                    so.inn AS                                       organ_inn,
+                    sp.name AS                                      podotchet_name,
+                    sp.rayon AS                                     podotchet_rayon,
                     (
                         SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 so.schet AS provodki_schet,
                                 so.sub_schet AS provodki_sub_schet
-                            FROM organ_saldo_child AS ch
+                            FROM podotchet_saldo_child AS ch
                             JOIN spravochnik_operatsii AS so ON so.id = ch.operatsii_id
                             WHERE  ch.parent_id = d.id 
                                 and ch.isdeleted = false
                         ) AS ch
-                    ) AS provodki_array 
-                FROM organ_saldo AS d
+                    ) AS                                            provodki_array 
+                FROM podotchet_saldo AS d
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.podotchet_id  
                 WHERE d.main_schet_id = $2 
                     AND r.id = $1 
                     AND d.isdeleted = false 
@@ -101,10 +95,10 @@ exports.OrganSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0)
-                        FROM organ_saldo d
+                        FROM podotchet_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        JOIN spravochnik_organization AS so ON so.id = d.podotchet_id 
                         WHERE d.main_schet_id = $2 
                             AND d.isdeleted = false 
                             AND regions.id = $1 
@@ -115,10 +109,10 @@ exports.OrganSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
+                        FROM podotchet_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        JOIN spravochnik_organization AS so ON so.id = d.podotchet_id 
                         WHERE d.main_schet_id = $2 
                             AND d.isdeleted = false 
                             AND regions.id = $1 
@@ -129,10 +123,10 @@ exports.OrganSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
+                        FROM podotchet_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        JOIN spravochnik_organization AS so ON so.id = d.podotchet_id 
                         WHERE d.main_schet_id = $2 
                             AND d.isdeleted = false 
                             AND regions.id = $1 
@@ -143,10 +137,10 @@ exports.OrganSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
+                        FROM podotchet_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        JOIN spravochnik_organization AS so ON so.id = d.podotchet_id 
                         WHERE d.main_schet_id = $2 
                             AND d.isdeleted = false 
                             AND regions.id = $1 
@@ -156,10 +150,10 @@ exports.OrganSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(COUNT(d.id), 0)
-                        FROM organ_saldo d
+                        FROM podotchet_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        JOIN spravochnik_organization AS so ON so.id = d.podotchet_id 
                         WHERE regions.id = $1 
                             AND d.main_schet_id = $2 
                             AND d.isdeleted = false 
@@ -187,12 +181,12 @@ exports.OrganSaldoDB = class {
                     FROM (
                         SELECT 
                             ch.*
-                        FROM organ_saldo_child AS ch
+                        FROM podotchet_saldo_child AS       ch
                         WHERE ch.parent_id = d.id 
                             AND isdeleted = false
                     ) AS ch
-                ) AS childs 
-            FROM organ_saldo AS d
+                ) AS                                        childs 
+            FROM podotchet_saldo AS d
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
             WHERE r.id = $1 
@@ -208,7 +202,7 @@ exports.OrganSaldoDB = class {
 
     static async update(params, client) {
         const query = `
-            UPDATE organ_saldo SET 
+            UPDATE podotchet_saldo SET 
                 doc_num = $1, 
                 doc_date = $2, 
                 prixod_summa = $3,
@@ -216,13 +210,9 @@ exports.OrganSaldoDB = class {
                 rasxod_summa = $5,
                 rasxod = $6,
                 opisanie = $7, 
-                organ_id = $8, 
-                contract_id = $9,
-                organ_account_number_id = $10,
-                organ_gazna_number_id = $11,
-                contract_grafik_id = $12,
-                updated_at = $13
-            WHERE id = $14
+                podotchet_id = $8,
+                updated_at = $9
+            WHERE id = $10
             RETURNING id
         `;
 
@@ -232,12 +222,12 @@ exports.OrganSaldoDB = class {
     }
 
     static async deleteChild(params, client) {
-        await client.query(`UPDATE organ_saldo_child SET isdeleted = true WHERE id = $1`, params);
+        await client.query(`UPDATE podotchet_saldo_child SET isdeleted = true WHERE id = $1`, params);
     }
 
     static async updateChild(params, client) {
         const query = `
-            UPDATE organ_saldo_child 
+            UPDATE podotchet_saldo_child 
             SET 
                 operatsii_id = $1,
                 summa = $2,
@@ -254,9 +244,9 @@ exports.OrganSaldoDB = class {
     }
 
     static async delete(params, client) {
-        await client.query(`UPDATE organ_saldo_child SET isdeleted = true WHERE parent_id = $1`, params);
+        await client.query(`UPDATE podotchet_saldo_child SET isdeleted = true WHERE parent_id = $1`, params);
 
-        const result = await client.query(`UPDATE organ_saldo SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+        const result = await client.query(`UPDATE podotchet_saldo SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
         return result.rows[0];
     }
