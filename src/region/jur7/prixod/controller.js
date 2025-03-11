@@ -217,8 +217,8 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await PrixodJur7Service.getById({ region_id, id, main_schet_id, isdeleted: true });
-    if (!oldData) {
+    const old_data = await PrixodJur7Service.getById({ region_id, id, main_schet_id, isdeleted: true });
+    if (!old_data) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
@@ -282,7 +282,7 @@ exports.Controller = class {
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
-    const result = await PrixodJur7Service.update({ ...req.body, budjet_id, main_schet_id, user_id, id, childs, oldData, region_id });
+    const result = await PrixodJur7Service.update({ ...req.body, budjet_id, main_schet_id, user_id, id, childs, old_data, region_id });
 
     return res.success(req.i18n.t('updateSuccess'), 200, result.dates, result.doc);
   }
@@ -297,8 +297,8 @@ exports.Controller = class {
       return res.error(req.i18n.t('mainSchetNotFound'), 404);
     }
 
-    const oldData = await PrixodJur7Service.getById({ region_id, id, main_schet_id });
-    if (!oldData) {
+    const old_data = await PrixodJur7Service.getById({ region_id, id, main_schet_id });
+    if (!old_data) {
       return res.error(req.i18n.t('docNotFound'), 404);
     }
 
@@ -311,7 +311,7 @@ exports.Controller = class {
       }
     }
 
-    const result = await PrixodJur7Service.deleteDoc({ id, region_id, oldData });
+    const result = await PrixodJur7Service.deleteDoc({ id, region_id, old_data });
 
     return res.success(req.i18n.t('deleteSuccess'), 200, result.dates, result.doc);
   }

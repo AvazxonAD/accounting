@@ -10,20 +10,26 @@ exports.AuthService = class {
         if (!user) {
             return res.error(req.i18n.t('authError'), 403);
         }
+
         const matchPassword = await bcrypt.compare(password, user.password);
         if (!matchPassword) {
             return res.error(req.i18n.t('authError'), 403);
         }
+
         let region_id;
         const result = await AuthDB.getByIdAuth([user.id])
+
         if (result.role_name === 'region-admin' || result.role_name === 'super-admin') {
             region_id = null
         } else {
             region_id = result.region_id
         }
+
         result.access_object = await AccessDB.getByRoleIdAccess([result.role_id], region_id)
+
         delete result.password;
         const token = generateToken(result);
+
         return res.status(200).json({
             message: "login sucessfully",
             data: { result, token }

@@ -76,7 +76,8 @@ routes
     .use('/features', protect, require('@features/index'))
     // Dashboard
     .use('/dashboard', protect, require('@region_dashboard/index'))
-
+    // Organ saldo 
+    .use('/organ/saldo', protect, require('@organ_saldo/index'))
     // Admin
     .use('/admin/spravochnik/report_title', protect, require('@report_title/index'))
     .use('/admin/main/book', protect, require('@admin_main_book/index'))

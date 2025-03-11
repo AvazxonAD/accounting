@@ -122,6 +122,7 @@ exports.BankRasxodDB = class {
                         FROM bank_rasxod_child AS ch
                         JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                         WHERE  ch.id_bank_rasxod = d.id 
+                            AND ch.isdeleted = false
                     ) AS ch
                 ) AS provodki_array
                 FROM bank_rasxod AS d

@@ -135,6 +135,17 @@ exports.HelperFunctions = class {
         return summa;
     }
 
+    static saldoSumma(data) {
+        let summa = { prixod_summa: 0, rasxod_summa: 0 };
+        if (data.prixod) {
+            summa.prixod_summa = data.childs.reduce((acc, item) => acc += item.summa, 0);
+        } else if (data.rasxod) {
+            summa.rasxod_summa = data.childs.reduce((acc, item) => acc += item.summa, 0);
+        }
+
+        return summa;
+    }
+
     static paramsValues(data) {
         const index_max = data.params.length;
         let values = '('

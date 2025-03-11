@@ -77,7 +77,8 @@ exports.KassaPrixodDB = class {
                                 s_o.sub_schet AS provodki_sub_schet
                             FROM kassa_prixod_child AS ch
                             JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
-                            WHERE  ch.kassa_prixod_id = d.id 
+                            WHERE  ch.kassa_prixod_id = d.id
+                                AND ch.isdeleted = false
                         ) AS ch
                     ) AS provodki_array
                 FROM kassa_prixod AS d

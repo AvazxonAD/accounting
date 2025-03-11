@@ -65,6 +65,9 @@
             "@report_title/*": [
                 "admin/spravochnik/report.title/*"
             ],
+            "@organ_saldo/*": [
+                "region/organ.saldo/*"
+            ],
             "@jur7_prixod/*": [
                 "region/jur7/prixod/*"
             ],
