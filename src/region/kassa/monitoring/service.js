@@ -53,7 +53,7 @@ exports.KassaMonitoringService = class {
     }
 
     static async capExcel(data) {
-        const title = `Дневной отчет по Мемориал ордеру №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${returnStringSumma(data.main_schet.account_number)}`;
+        const title = `Дневной отчет по ${data.report_title.name} №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${returnStringSumma(data.main_schet.account_number)}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
         const fileName = `kassa_shapka_${new Date().getTime()}.xlsx`;
@@ -269,7 +269,7 @@ exports.KassaMonitoringService = class {
     }
 
     static async dailyExcel(data) {
-        const title = `Дневной отчет по Мемориал ордер №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${HelperFunctions.probelNumber(data.main_schet.account_number)}`;
+        const title = `Дневной отчет по ${data.report_title.name} №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${HelperFunctions.probelNumber(data.main_schet.account_number)}`;
         const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
         const workbook = new ExcelJS.Workbook();
         const fileName = `kundalik_hisobot_kassa_${new Date().getTime()}.xlsx`;
