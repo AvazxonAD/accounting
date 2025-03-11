@@ -28,7 +28,7 @@ exports.Controller = class {
             rasxod
         } = req.body;
 
-        if (prixod && rasxod) {
+        if ((prixod && rasxod) || (!prixod && !rasxod)) {
             return res.error(req.i18n.t('validationError'), 400);
         }
 
@@ -182,7 +182,7 @@ exports.Controller = class {
             return res.error(req.i18n.t('docNotFound'), 404);
         }
 
-        if (prixod && rasxod) {
+        if ((prixod && rasxod) || (!prixod && !rasxod)) {
             return res.error(req.i18n.t('validationError'), 400);
         }
 
