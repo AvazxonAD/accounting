@@ -8,8 +8,8 @@ exports.Jur7RsxodService = class {
         const result = await db.transaction(async (client) => {
             const doc = await RasxodDB.delete([data.id], client)
 
-            const year = new Date(data.oldData.doc_date).getFullYear();
-            const month = new Date(data.oldData.doc_date).getMonth() + 1;
+            const year = new Date(data.old_data.doc_date).getFullYear();
+            const month = new Date(data.old_data.doc_date).getMonth() + 1;
 
             const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
             let dates = [];
@@ -126,12 +126,12 @@ exports.Jur7RsxodService = class {
 
             let year, month;
 
-            if (new Date(data.oldData.doc_date) > new Date(data.doc_date)) {
+            if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
                 year = new Date(data.doc_date).getFullYear();
                 month = new Date(data.doc_date).getMonth() + 1;
-            } else if (new Date(data.doc_date) > new Date(data.oldData.doc_date)) {
-                year = new Date(data.oldData.doc_date).getFullYear();
-                month = new Date(data.oldData.doc_date).getMonth() + 1;
+            } else if (new Date(data.doc_date) > new Date(data.old_data.doc_date)) {
+                year = new Date(data.old_data.doc_date).getFullYear();
+                month = new Date(data.old_data.doc_date).getMonth() + 1;
             } else {
                 year = new Date(data.doc_date).getFullYear();
                 month = new Date(data.doc_date).getMonth() + 1;

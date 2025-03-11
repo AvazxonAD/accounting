@@ -67,6 +67,7 @@
     "@organ_monitoring": "./src/region/organ.monitoring",
     "@report_title": "./src/admin/spravochnik/report.title",
     "@jur7_prixod": "./src/region/jur7/prixod",
+    "@organ_saldo": "./src/region/organ.saldo",
     "@public": "./public",
     "@jur7_rasxod": "./src/region/jur7/rasxod",
     "@jur7_internal": "./src/region/jur7/internal",

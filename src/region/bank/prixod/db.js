@@ -88,7 +88,8 @@ exports.BankPrixodDB = class {
                                 so.sub_schet AS provodki_sub_schet
                             FROM bank_prixod_child AS ch
                             JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
-                            WHERE  ch.id_bank_prixod = d.id 
+                            WHERE  ch.id_bank_prixod = d.id
+                                AND ch.isdeleted = false
                         ) AS ch
                     ) AS provodki_array 
                 FROM bank_prixod AS d

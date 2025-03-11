@@ -146,7 +146,7 @@ exports.Controller = class {
     }
 
 
-    const result = await ContractService.update({ ...req.body, budjet_id, summa, user_id, id, oldData: doc });
+    const result = await ContractService.update({ ...req.body, budjet_id, summa, user_id, id, old_data: doc });
 
     return res.success(req.i18n.t('updateSuccess'), 200, null, result);
 

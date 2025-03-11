@@ -10,7 +10,7 @@ exports.Controller = class {
 
         const result = await ReportTitleService.create({ name });
 
-        return res.success(req.i18n.t('creareSuccess'), 201, null, result);
+        return res.success(req.i18n.t('createSuccess'), 201, null, result);
     }
 
     static async get(req, res) {

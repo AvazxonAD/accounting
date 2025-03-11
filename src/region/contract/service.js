@@ -103,7 +103,7 @@ exports.ContractService = class {
             ], client);
             const create_grafiks = [];
 
-            for (let grafik of data.oldData.grafiks) {
+            for (let grafik of data.old_data.grafiks) {
                 const check = data.grafiks.find(item => item.id === grafik.id);
                 if (!check) {
                     await ContractDB.deleteGrafik([contract.id, grafik.id], client);
