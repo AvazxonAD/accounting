@@ -51,7 +51,9 @@ exports.OrganSaldoService = class {
 
         const _values = HelperFunctions.paramsValues({ params: create_childs, column_count: 9 });
 
-        await OrganSaldoDB.createChild(create_childs, _values, data.client);
+        if(create_childs.length) {
+            await OrganSaldoDB.createChild(create_childs, _values, data.client);
+        }
     }
 
     static async get(data) {
@@ -63,6 +65,9 @@ exports.OrganSaldoService = class {
             page_prixod_summa += item.prixod_summa;
             page_rasxod_summa += item.rasxod_summa;
         });
+
+
+
 
         return { ...result, page_prixod_summa, page_rasxod_summa };
     }

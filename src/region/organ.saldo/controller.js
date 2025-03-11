@@ -125,7 +125,16 @@ exports.Controller = class {
 
         const offset = (page - 1) * limit;
 
-        const { data, total_count, summa, page_summa } = await OrganSaldoService.get({ search, region_id, main_schet_id, from, to, offset, limit });
+        const { 
+            data, 
+            total_count, 
+            prixod_summa, 
+            rasxod_summa, 
+            page_prixod_summa, 
+            page_rasxod_summa,
+            from_summa,
+            to_summa
+        } = await OrganSaldoService.get({ search, region_id, main_schet_id, from, to, offset, limit });
 
         const pageCount = Math.ceil(total_count / limit);
 
@@ -135,8 +144,13 @@ exports.Controller = class {
             currentPage: page,
             nextPage: page >= pageCount ? null : page + 1,
             backPage: page === 1 ? null : page - 1,
-            summa,
-            page_summa
+            prixod_summa, 
+            rasxod_summa,
+            summa : prixod_summa - rasxod_summa, 
+            page_prixod_summa, 
+            page_rasxod_summa,
+            from_summa,
+            to_summa
         };
 
         return res.success(req.i18n.t('getSuccess'), 200, meta, data);

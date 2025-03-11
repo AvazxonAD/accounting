@@ -111,6 +111,35 @@ exports.OrganSaldoDB = class {
                             AND doc_date BETWEEN $3 AND $4
                             ${search_filter}
                     )::FLOAT AS prixod_summa,
+
+                    (
+                        SELECT 
+                            COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
+                        FROM organ_saldo d
+                        JOIN users ON d.user_id = users.id
+                        JOIN regions ON users.region_id = regions.id
+                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        WHERE d.main_schet_id = $2 
+                            AND d.isdeleted = false 
+                            AND regions.id = $1 
+                            AND doc_date < $3
+                            ${search_filter}
+                    )::FLOAT AS from_summa,
+
+                    (
+                        SELECT 
+                            COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
+                        FROM organ_saldo d
+                        JOIN users ON d.user_id = users.id
+                        JOIN regions ON users.region_id = regions.id
+                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
+                        WHERE d.main_schet_id = $2 
+                            AND d.isdeleted = false 
+                            AND regions.id = $1 
+                            AND doc_date <= $4
+                            ${search_filter}
+                    )::FLOAT AS to_summa,
+
                     (
                         SELECT 
                             COALESCE(SUM(d.rasxod_summa), 0)
