@@ -76,7 +76,6 @@ exports.OrganSaldoService = class {
     static async update(data) {
         const summa = HelperFunctions.saldoSumma(data);
 
-        console.log(summa.rasxod_summa)
         const result = await db.transaction(async client => {
             const doc = await OrganSaldoDB.update([
                 data.doc_num,
