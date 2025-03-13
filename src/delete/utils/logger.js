@@ -1,13 +1,13 @@
-const winston = require('winston');
-const path = require('path');
+const winston = require("winston");
+const path = require("path");
 
-const logDir = path.join(__dirname, '../../../logs');
+const logDir = path.join(__dirname, "../../../logs");
 
 const createLogger = (filename) => {
   return winston.createLogger({
-    level: 'info',
+    level: "info",
     format: winston.format.combine(
-      winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+      winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
       winston.format.printf(({ timestamp, level, message, ...meta }) => {
         const logMessage = `${timestamp} ${message}`;
         if (meta.type && meta.id && meta.user_id) {
@@ -22,19 +22,19 @@ const createLogger = (filename) => {
   });
 };
 
-const getLogger = createLogger('get.log');
-const postLogger = createLogger('post.log');
-const putLogger = createLogger('put.log');
-const deleteLogger = createLogger('delete.log');
+const getLogger = createLogger("get.log");
+const postLogger = createLogger("post.log");
+const putLogger = createLogger("put.log");
+const deleteLogger = createLogger("delete.log");
 
 const logRequest = (type_log, type, role, id, user_id) => {
   const meta = { role, id, user_id };
 
-  if (type_log === 'get') {
+  if (type_log === "get") {
     getLogger.info(type, meta);
-  } else if (type_log === 'put') {
+  } else if (type_log === "put") {
     putLogger.info(type, meta);
-  } else if (type_log === 'post') {
+  } else if (type_log === "post") {
     postLogger.info(type, meta);
   } else {
     deleteLogger.info(type, meta);
