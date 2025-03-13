@@ -1,2 +1,0 @@
-ALTER TABLE document_vnutr_peremesh_jur7_child
-DROP COLUMN eski_iznos_summa;
