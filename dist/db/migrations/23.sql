@@ -1,0 +1,1 @@
+ALTER TABLE document_prixod_jur7 ALTER COLUMN kimdan_id DROP NOT NULL;

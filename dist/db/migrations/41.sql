@@ -1,0 +1,1 @@
+ALTER TABLE document_prixod_jur7 ADD COLUMN  shartnoma_grafik_id BIGINT REFERENCES shartnoma_grafik(id);
