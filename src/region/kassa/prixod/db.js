@@ -1,8 +1,8 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.KassaPrixodDB = class {
-    static async create(params, client) {
-        const query = `
+  static async create(params, client) {
+    const query = `
             INSERT INTO kassa_prixod(
                 doc_num, 
                 doc_date, 
@@ -19,13 +19,13 @@ exports.KassaPrixodDB = class {
             RETURNING id
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0]
-    }
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `
+  static async createChild(params, _values, client) {
+    const query = `
             INSERT INTO kassa_prixod_child (
               spravochnik_operatsii_id,
               summa,
@@ -41,23 +41,23 @@ exports.KassaPrixodDB = class {
           VALUES ${_values}
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async get(params, search) {
-        let search_filter = ``;
-        
-        if (search) {
-            params.push(search);
-            search_filter = `AND (
+  static async get(params, search) {
+    let search_filter = ``;
+
+    if (search) {
+      params.push(search);
+      search_filter = `AND (
                 d.doc_num = $${params.length} OR 
                 p.name ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `
+    const query = `
             WITH data AS (
                 SELECT 
                     d.id, 
@@ -85,7 +85,8 @@ exports.KassaPrixodDB = class {
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
-                WHERE r.id = $1 
+                JOIN 
+                WHERE r.id = $1
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $3 AND $4 
@@ -125,13 +126,13 @@ exports.KassaPrixodDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getById(params, isdeleted) {
-        const query = `
+  static async getById(params, isdeleted) {
+    const query = `
             SELECT 
                 d.*,
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
@@ -158,16 +159,17 @@ exports.KassaPrixodDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
+                ${!isdeleted ? "AND d.isdeleted = false" : ""}
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async update(params, client) {
-        const result = await client.query(`
+  static async update(params, client) {
+    const result = await client.query(
+      `
             UPDATE kassa_prixod SET 
                 doc_num = $1, 
                 doc_date = $2, 
@@ -177,20 +179,31 @@ exports.KassaPrixodDB = class {
                 updated_at = $6,
                 main_zarplata_id = $8
             WHERE id = $7 RETURNING id 
-        `, params);
+        `,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deleteChild(params, client) {
-        await client.query(`DELETE FROM kassa_prixod_child  WHERE kassa_prixod_id = $1`, params);
-    }
+  static async deleteChild(params, client) {
+    await client.query(
+      `DELETE FROM kassa_prixod_child  WHERE kassa_prixod_id = $1`,
+      params
+    );
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE kassa_prixod_child SET isdeleted = true WHERE kassa_prixod_id = $1`, params);
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE kassa_prixod_child SET isdeleted = true WHERE kassa_prixod_id = $1`,
+      params
+    );
 
-        const result = await client.query(`UPDATE kassa_prixod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+    const result = await client.query(
+      `UPDATE kassa_prixod SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
-        return result.rows[0];
-    }
-}
+    return result.rows[0];
+  }
+};
