@@ -1,1 +1,0 @@
-ALTER TABLE saldo_naimenovanie_jur7 ADD COLUMN iznos_summa_bir_oylik DECIMAL DEFAULT 0;

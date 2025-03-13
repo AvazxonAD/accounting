@@ -1,1 +1,0 @@
-ALTER TABLE iznos_tovar_jur7 RENAME COLUMN  kimni_buynida TO kimning_buynida;

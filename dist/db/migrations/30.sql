@@ -1,2 +1,0 @@
-ALTER TABLE bank_rasxod ADD COLUMN organization_by_raschet_schet_id BIGINT REFERENCES organization_by_raschet_schet(id);
-ALTER TABLE bank_rasxod ADD COLUMN organization_by_raschet_schet_gazna_id BIGINT REFERENCES organization_by_raschet_schet_gazna(id);
