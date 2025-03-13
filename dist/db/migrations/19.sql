@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS main_book_doc_child;
+DROP TABLE IF EXISTS main_book_doc_parent;
+DROP TABLE IF EXISTS main_book_end_child;
+DROP TABLE IF EXISTS main_book_end_parent;
+DROP TABLE IF EXISTS ox_child;
+DROP TABLE IF EXISTS ox_parent;
+DROP TABLE IF EXISTS real_cost_doc_child;
+DROP TABLE IF EXISTS real_cost_doc_child;
+DROP TABLE IF EXISTS real_cost_end_child;
+DROP TABLE IF EXISTS real_cost_end_child;

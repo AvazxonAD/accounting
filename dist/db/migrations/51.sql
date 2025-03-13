@@ -1,0 +1,1 @@
+ALTER TABLE naimenovanie_tovarov_jur7 ADD COLUMN iznos BOOLEAN DEFAULT false;

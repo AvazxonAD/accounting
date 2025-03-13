@@ -1,0 +1,1 @@
+ALTER TABLE iznos_tovar_jur7 ADD COLUMN month_summa DECIMAL;

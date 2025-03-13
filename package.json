@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "format": "prettier --write \"src/**/*.js\"",
     "sort-imports": "sort-imports 'src/**/*.js'",
+    "build": "babel src -d dist && cp -r src/db/migrations dist/db",
     "lint": "eslint . --fix"
   },
   "keywords": [],
@@ -21,6 +22,9 @@
     "sort-imports": "^1.1.0"
   },
   "dependencies": {
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
     "bcrypt": "^5.1.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

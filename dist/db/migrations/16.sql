@@ -1,0 +1,1 @@
+ALTER TABLE group_jur7 DROP COLUMN kimni_buynida;
