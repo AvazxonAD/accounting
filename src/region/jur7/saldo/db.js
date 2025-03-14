@@ -48,6 +48,7 @@ exports.SaldoDB = class {
                 g.id AS                                     group_id,
                 g.name AS                                   group_name,
                 g.group_number,
+                g.provodka_debet,
                 jsh.id AS                                   responsible_id,
                 jsh.fio,
                 s.iznos,
