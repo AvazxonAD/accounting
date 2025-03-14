@@ -43,6 +43,8 @@ exports.SaldoDB = class {
                 n.id AS                                     product_id,
                 n.name,
                 n.edin,
+                n.inventar_num,
+                n.serial_num,
                 g.id AS                                     group_id,
                 g.name AS                                   group_name,
                 jsh.id AS                                   responsible_id,
