@@ -68,7 +68,8 @@ exports.KassaPrixodDB = class {
                     d.id_podotchet_litso,
                     p.name AS spravochnik_podotchet_litso_name,
                     p.rayon AS spravochnik_podotchet_litso_rayon,
-                    d.main_zarplata_id,
+                    mp.id AS main_zarplata_id,
+                    mp.fio AS zarplata_fio,
                     (
                         SELECT JSON_AGG(row_to_json(ch))
                         FROM (
@@ -85,7 +86,7 @@ exports.KassaPrixodDB = class {
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
-                JOIN 
+                LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
                 WHERE r.id = $1
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
@@ -138,6 +139,8 @@ exports.KassaPrixodDB = class {
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                 p.name AS spravochnik_podotchet_litso_name,
                 p.rayon AS spravochnik_podotchet_litso_rayon,
+                mp.id AS main_zarplata_id,
+                mp.fio AS zarplata_fio,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -156,6 +159,7 @@ exports.KassaPrixodDB = class {
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+            LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3
