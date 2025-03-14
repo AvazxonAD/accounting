@@ -1,17 +1,117 @@
-const { db } = require('@db/index')
-
+const { db } = require("@db/index");
 
 exports.SaldoDB = class {
-    static async cleanData(params, client) {
-        const query1 = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE region_id = $1`;
-        const query2 = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1`;
+  static async getByProduct(params, filter) {
+    let conditions = [];
 
-        await client.query(query1, params);
-        await client.query(query2, params);
+    if (filter.iznos) {
+      conditions.push(`s.iznos = true`);
     }
 
-    static async checkDoc(params) {
-        const query = `
+    if (filter.group_id) {
+      params.push(filter.group_id);
+      conditions.push(`g.id = $${params.length}`);
+    }
+
+    if (filter.responsible_id) {
+      params.push(filter.responsible_id);
+      conditions.push(`jsh.id = $${params.length}`);
+    }
+
+    if (filter.search) {
+      params.push(filter.search);
+      conditions.push(
+        `(n.name ILIKE '%' || $${params.length} || '%' OR jsh.fio ILIKE '%' || $${params.length} || '%')`
+      );
+    }
+
+    if (filter.product_id) {
+      params.push(filter.product_id);
+      conditions.push(`n.id = $${params.length}`);
+    }
+
+    const whereClouse = conditions.length
+      ? `AND ${conditions.join(" AND ")}`
+      : "";
+
+    const query = `
+        WITH data AS (
+            SELECT  
+                s.id::INTEGER,
+                s.eski_iznos_summa::FLOAT,
+                s.region_id::INTEGER, 
+                n.id AS                                     product_id,
+                n.name,
+                n.edin,
+                g.id AS                                     group_id,
+                g.name AS                                   group_name,
+                jsh.id AS                                   responsible_id,
+                jsh.fio,
+                s.iznos,
+                s.eski_iznos_summa,
+                s.month_iznos_summa,
+                s.iznos_start,
+                s.iznos_schet,
+                s.iznos_sub_schet,
+                s.debet_schet,
+                s.debet_sub_schet,
+                JSON_BUILD_OBJECT(
+                    'docNum', s.doc_num,
+                    'docDate', s.doc_date,
+                    'docId', s.prixod_id
+                ) AS                                        "prixodData",
+                JSON_BUILD_OBJECT(
+                    'sena', s.sena::FLOAT,
+                    'summa', s.summa::FLOAT,
+                    'iznos_summa', s.iznos_summa::FLOAT,
+                    'kol', s.kol::FLOAT
+                ) AS                                        from
+            FROM saldo_naimenovanie_jur7 s 
+            JOIN users AS u ON u.id = s.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
+            JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
+            JOIN group_jur7 g ON g.id = n.group_jur7_id  
+            WHERE r.id = $1
+              AND s.month = $2
+              AND s.year = $3
+              AND s.isdeleted = false
+              ${whereClouse}
+            OFFSET $4 LIMIT $5
+        )
+        SELECT
+            COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
+            (
+                SELECT
+                    COALESCE(COUNT(s.id), 0)::INTEGER
+                FROM saldo_naimenovanie_jur7 s 
+                JOIN users AS u ON u.id = s.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
+                JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
+                JOIN group_jur7 g ON g.id = n.group_jur7_id  
+                WHERE r.id = $1
+                    AND s.isdeleted = false
+                    ${whereClouse}
+            ) AS                                            total
+        FROM data
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async cleanData(params, client) {
+    const query1 = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE region_id = $1`;
+    const query2 = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1`;
+
+    await client.query(query1, params);
+    await client.query(query2, params);
+  }
+
+  static async checkDoc(params) {
+    const query = `
                 SELECT 
                     d.id,
                     d.doc_num,
@@ -50,13 +150,13 @@ exports.SaldoDB = class {
                     AND ch.isdeleted = false
         `;
 
-        const data = await db.query(query, params);
+    const data = await db.query(query, params);
 
-        return data;
-    }
+    return data;
+  }
 
-    static async updateIznosSumma(params) {
-        const query = `
+  static async updateIznosSumma(params) {
+    const query = `
             UPDATE saldo_naimenovanie_jur7
             SET 
                 eski_iznos_summa = $1,
@@ -67,13 +167,13 @@ exports.SaldoDB = class {
             RETURNING *
         `;
 
-        const data = await db.query(query, params);
+    const data = await db.query(query, params);
 
-        return data[0];
-    }
+    return data[0];
+  }
 
-    static async createSaldoDate(params, client) {
-        const query = `
+  static async createSaldoDate(params, client) {
+    const query = `
             INSERT INTO saldo_date(
                 region_id, 
                 year, 
@@ -84,14 +184,14 @@ exports.SaldoDB = class {
             VALUES($1, $2, $3, $4, $5) RETURNING *
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async getSaldoDate(params, client) {
-        const _db = client || db;
-        const query = `
+  static async getSaldoDate(params, client) {
+    const _db = client || db;
+    const query = `
             SELECT 
                 DISTINCT year, month
             FROM saldo_naimenovanie_jur7 
@@ -101,15 +201,15 @@ exports.SaldoDB = class {
             ORDER BY year, month
         `;
 
-        const data = await _db.query(query, params);
+    const data = await _db.query(query, params);
 
-        const response = client ? data.rows : data;
+    const response = client ? data.rows : data;
 
-        return response;
-    }
+    return response;
+  }
 
-    static async getFirstSaldoDate(params) {
-        const query = `
+  static async getFirstSaldoDate(params) {
+    const query = `
            SELECT 
                 DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
             FROM saldo_naimenovanie_jur7 
@@ -119,13 +219,13 @@ exports.SaldoDB = class {
             LIMIT 1
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getEndSaldoDate(params) {
-        const query = `
+  static async getEndSaldoDate(params) {
+    const query = `
            SELECT 
                 DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
             FROM saldo_naimenovanie_jur7 
@@ -135,13 +235,13 @@ exports.SaldoDB = class {
             LIMIT 1
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getBlock(params) {
-        const query = `
+  static async getBlock(params) {
+    const query = `
             SELECT 
                 DISTINCT year, month
             FROM saldo_date 
@@ -150,32 +250,32 @@ exports.SaldoDB = class {
             ORDER BY year, month
         `;
 
-        const data = await db.query(query, params);
+    const data = await db.query(query, params);
 
-        return data;
+    return data;
+  }
+
+  static async unblock(params) {
+    const query = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1 AND year = $2 AND month = $3`;
+
+    await db.query(query, params);
+  }
+
+  static async check(params, year = null, month = null) {
+    let year_filter = ``;
+    let month_filter = ``;
+
+    if (year) {
+      params.push(year);
+      year_filter = `AND year = $${params.length}`;
     }
 
-    static async unblock(params) {
-        const query = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1 AND year = $2 AND month = $3`;
-
-        await db.query(query, params);
+    if (month) {
+      params.push(month);
+      month_filter = `AND month = $${params.length}`;
     }
 
-    static async check(params, year = null, month = null) {
-        let year_filter = ``;
-        let month_filter = ``;
-
-        if (year) {
-            params.push(year)
-            year_filter = `AND year = $${params.length}`
-        }
-
-        if (month) {
-            params.push(month)
-            month_filter = `AND month = $${params.length}`;
-        }
-
-        const query = `
+    const query = `
             SELECT
                 *
             FROM saldo_naimenovanie_jur7 
@@ -185,13 +285,13 @@ exports.SaldoDB = class {
                 ${month_filter}  
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async getById(params, isdeleted = null, iznos = null) {
-        const query = `
+  static async getById(params, isdeleted = null, iznos = null) {
+    const query = `
             SELECT 
                 s.*, 
                 s.id::INTEGER,
@@ -222,47 +322,54 @@ exports.SaldoDB = class {
             JOIN group_jur7 g ON g.id = n.group_jur7_id  
             WHERE r.id = $1 
                 AND s.id = $2
-                ${!isdeleted ? 'AND s.isdeleted = false' : ''}
-                ${!iznos ? '' : 'AND s.iznos = true'}
+                ${!isdeleted ? "AND s.isdeleted = false" : ""}
+                ${!iznos ? "" : "AND s.iznos = true"}
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
+    return result[0];
+  }
+
+  static async get(
+    params,
+    responsible_id = null,
+    search = null,
+    product_id = null,
+    group_id = null,
+    iznos = null
+  ) {
+    let responsible_filter = ``;
+    let filter = ``;
+    let product_filter = ``;
+    let group_filter = ``;
+    let iznos_filer = ``;
+
+    if (product_id) {
+      params.push(product_id);
+      product_filter = `AND n.id = $${params.length}`;
     }
 
-    static async get(params, responsible_id = null, search = null, product_id = null, group_id = null, iznos = null) {
-        let responsible_filter = ``;
-        let filter = ``;
-        let product_filter = ``;
-        let group_filter = ``;
-        let iznos_filer = ``;
+    if (search) {
+      params.push(search);
+      filter = `AND (n.name ILIKE '%' || $${params.length} || '%' OR jsh.fio ILIKE '%' || $${params.length} || '%')`;
+    }
 
-        if (product_id) {
-            params.push(product_id);
-            product_filter = `AND n.id = $${params.length}`;
-        }
+    if (responsible_id) {
+      params.push(responsible_id);
+      responsible_filter = `AND kimning_buynida = $${params.length}`;
+    }
 
-        if (search) {
-            params.push(search);
-            filter = `AND (n.name ILIKE '%' || $${params.length} || '%' OR jsh.fio ILIKE '%' || $${params.length} || '%')`;
-        }
+    if (group_id) {
+      params.push(group_id);
+      group_filter = `AND g.id = $${params.length}`;
+    }
 
-        if (responsible_id) {
-            params.push(responsible_id)
-            responsible_filter = `AND kimning_buynida = $${params.length}`;
-        }
+    if (iznos === "true") {
+      iznos_filer = `AND s.iznos = true`;
+    }
 
-        if (group_id) {
-            params.push(group_id);
-            group_filter = `AND g.id = $${params.length}`;
-        }
-
-        if (iznos === 'true') {
-            iznos_filer = `AND s.iznos = true`;
-        }
-
-        const query = `
+    const query = `
             WITH data AS (
                 SELECT 
                     s.*, 
@@ -336,41 +443,46 @@ exports.SaldoDB = class {
             FROM data
         `;
 
+    const data = await db.query(query, params);
 
-        const data = await db.query(query, params);
+    return data[0];
+  }
 
-        return data[0];
+  static async getKolAndSumma(
+    params,
+    start = null,
+    end = null,
+    responsible_id = null,
+    prixod_id = null
+  ) {
+    let start_filter = ``;
+    let end_filter = ``;
+    let between_filter = ``;
+    let responsible_filter = ``;
+    let prixod_filter = ``;
+
+    if (start && end) {
+      params.push(start, end);
+      between_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    } else if (start) {
+      params.push(start);
+      start_filter = `AND d.doc_date < $${params.length}`;
+    } else if (end) {
+      params.push(end);
+      end_filter = `AND d.doc_date <= $${params.length}`;
     }
 
-    static async getKolAndSumma(params, start = null, end = null, responsible_id = null, prixod_id = null) {
-        let start_filter = ``;
-        let end_filter = ``;
-        let between_filter = ``;
-        let responsible_filter = ``;
-        let prixod_filter = ``;
+    if (prixod_id) {
+      params.push(prixod_id);
+      prixod_filter = `AND d.id = $${params.length}`;
+    }
 
-        if (start && end) {
-            params.push(start, end);
-            between_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
-        } else if (start) {
-            params.push(start);
-            start_filter = `AND d.doc_date < $${params.length}`;
-        } else if (end) {
-            params.push(end);
-            end_filter = `AND d.doc_date <= $${params.length}`;
-        }
+    if (responsible_id) {
+      params.push(responsible_id);
+      responsible_filter = `AND jsh.id = $${params.length}`;
+    }
 
-        if (prixod_id) {
-            params.push(prixod_id);
-            prixod_filter = `AND d.id = $${params.length}`;
-        }
-
-        if (responsible_id) {
-            params.push(responsible_id);
-            responsible_filter = `AND jsh.id = $${params.length}`;
-        }
-
-        const query = `--sql
+    const query = `--sql
             WITH prixod AS (
                 SELECT
                     COALESCE(SUM(ch.kol), 0)::FLOAT AS kol,
@@ -454,30 +566,30 @@ exports.SaldoDB = class {
                 rasxod_internal ri
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async delete(params, client) {
-        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
-        // const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
-        // await client.query(query2, params);
+  static async delete(params, client) {
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
+    // const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
+    // await client.query(query2, params);
 
-        await client.query(query, params);
-    }
+    await client.query(query, params);
+  }
 
-    static async deleteById(params, client) {
-        const _db = client || db;
-        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE id = $1`;
+  static async deleteById(params, client) {
+    const _db = client || db;
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE id = $1`;
 
-        const data = await _db.query(query, params);
+    const data = await _db.query(query, params);
 
-        return data.rows[0] || data[0];
-    }
+    return data.rows[0] || data[0];
+  }
 
-    static async create(params, client) {
-        const query = `--sql
+  static async create(params, client) {
+    const query = `--sql
             INSERT INTO saldo_naimenovanie_jur7 (
                 user_id,
                 naimenovanie_tovarov_jur7_id,
@@ -499,19 +611,21 @@ exports.SaldoDB = class {
                 eski_iznos_summa,
                 iznos_start,
                 month_iznos_summa,
+                debet_schet,
+                debet_sub_schet,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *
         `;
 
-        const result = await client.query(query, params)
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async getProductPrixod(params) {
-        const query = `--sql
+  static async getProductPrixod(params) {
+    const query = `--sql
             SELECT
                 d.id,
                 TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS doc_date,
@@ -521,13 +635,13 @@ exports.SaldoDB = class {
             JOIN document_prixod_jur7 d ON ch.document_prixod_jur7_id = d.id
             WHERE ch.naimenovanie_tovarov_jur7_id = $1 
         `;
-        const result = await db.query(query, params);
-        return result[0] || null;
-    }
+    const result = await db.query(query, params);
+    return result[0] || null;
+  }
 
-    static async deleteByPrixodId(params, client) {
-        const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1`;
+  static async deleteByPrixodId(params, client) {
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1`;
 
-        await client.query(query, params);
-    }
-}
+    await client.query(query, params);
+  }
+};
