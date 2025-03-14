@@ -58,6 +58,8 @@ exports.SaldoDB = class {
                 s.iznos_sub_schet,
                 s.debet_schet,
                 s.debet_sub_schet,
+                s.kredit_schet,
+                s.kredit_sub_schet,
                 JSON_BUILD_OBJECT(
                     'docNum', s.doc_num,
                     'docDate', s.doc_date,
@@ -618,10 +620,12 @@ exports.SaldoDB = class {
                 month_iznos_summa,
                 debet_schet,
                 debet_sub_schet,
+                kredit_schet,
+                kredit_sub_schet,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *
         `;
 
     const result = await client.query(query, params);
