@@ -1,8 +1,8 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.KassaRasxodDB = class {
-    static async create(params, client) {
-        const query = `
+  static async create(params, client) {
+    const query = `
             INSERT INTO kassa_rasxod(
                 doc_num, 
                 doc_date, 
@@ -19,13 +19,13 @@ exports.KassaRasxodDB = class {
             RETURNING id
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0]
-    }
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `
+  static async createChild(params, _values, client) {
+    const query = `
             INSERT INTO kassa_rasxod_child (
               spravochnik_operatsii_id,
               summa,
@@ -41,23 +41,23 @@ exports.KassaRasxodDB = class {
           VALUES ${_values}
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async get(params, search) {
-        let search_filter = ``;
-        
-        if (search) {
-            params.push(search);
-            search_filter = `AND (
+  static async get(params, search) {
+    let search_filter = ``;
+
+    if (search) {
+      params.push(search);
+      search_filter = `AND (
                 d.doc_num = $${params.length} OR 
                 p.name ILIKE '%' || $${params.length} || '%'
             )`;
-        }
-        
-        const query = `
+    }
+
+    const query = `
                 WITH data AS (
                     SELECT 
                         d.id, 
@@ -69,22 +69,25 @@ exports.KassaRasxodDB = class {
                         p.name AS spravochnik_podotchet_litso_name,
                         p.rayon AS spravochnik_podotchet_litso_rayon,
                         d.main_zarplata_id,
+                        mp.id AS main_zarplata_id,
+                        mp.fio AS zarplata_fio,
                         (
-                            SELECT JSON_AGG(row_to_json(k_p_ch))
+                            SELECT JSON_AGG(row_to_json(ch))
                             FROM (
                                 SELECT 
                                     s_o.schet AS provodki_schet,
                                     s_o.sub_schet AS provodki_sub_schet
-                                FROM kassa_rasxod_child AS k_p_ch
-                                JOIN spravochnik_operatsii AS s_o ON s_o.id = k_p_ch.spravochnik_operatsii_id
-                                WHERE  k_p_ch.kassa_rasxod_id = d.id 
+                                FROM kassa_rasxod_child AS ch
+                                JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                                WHERE  ch.kassa_rasxod_id = d.id 
                                     AND ch.isdeleted = false
-                            ) AS k_p_ch
+                            ) AS ch
                         ) AS provodki_array
                     FROM kassa_rasxod AS d
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
                     LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+                    LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
@@ -122,13 +125,13 @@ exports.KassaRasxodDB = class {
                 FROM data
             `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getById(params, isdeleted) {
-        const query = `
+  static async getById(params, isdeleted) {
+    const query = `
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -139,41 +142,45 @@ exports.KassaRasxodDB = class {
                 p.name AS spravochnik_podotchet_litso_name,
                 p.rayon AS spravochnik_podotchet_litso_rayon,
                 d.main_zarplata_id,
+                mp.id AS main_zarplata_id,
+                mp.fio AS zarplata_fio,
                 (
-                    SELECT JSON_AGG(row_to_json(k_p_ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT  
-                            k_p_ch.id,
-                            k_p_ch.spravochnik_operatsii_id,
-                            k_p_ch.summa,
-                            k_p_ch.id_spravochnik_podrazdelenie,
-                            k_p_ch.id_spravochnik_sostav,
-                            k_p_ch.id_spravochnik_type_operatsii
-                        FROM kassa_rasxod_child AS k_p_ch 
+                            ch.id,
+                            ch.spravochnik_operatsii_id,
+                            ch.summa,
+                            ch.id_spravochnik_podrazdelenie,
+                            ch.id_spravochnik_sostav,
+                            ch.id_spravochnik_type_operatsii
+                        FROM kassa_rasxod_child AS ch 
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1 
-                        AND k_p_ch.main_schet_id = $2 
-                        AND k_p_ch.kassa_rasxod_id = d.id
-                    ) AS k_p_ch
+                        AND ch.main_schet_id = $2 
+                        AND ch.kassa_rasxod_id = d.id
+                    ) AS ch
                 ) AS childs
             FROM kassa_rasxod AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
-            WHERE r.id = $1 
+            LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
+            WHERE r.id = $1
                 AND d.main_schet_id = $2 
                 AND d.id = $3
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
+                ${!isdeleted ? "AND d.isdeleted = false" : ""}
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async update(params, client) {
-        const result = await client.query(`
+  static async update(params, client) {
+    const result = await client.query(
+      `
             UPDATE kassa_rasxod SET 
                 doc_num = $1, 
                 doc_date = $2, 
@@ -183,20 +190,31 @@ exports.KassaRasxodDB = class {
                 updated_at = $6,
                 main_zarplata_id = $8
             WHERE id = $7 RETURNING id 
-        `, params);
+        `,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deleteChild(params, client) {
-        await client.query(`DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`, params);
-    }
+  static async deleteChild(params, client) {
+    await client.query(
+      `DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`,
+      params
+    );
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`, params);
-        
-        const result = await client.query(`UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
-        
-        return result.rows[0];
-    }
-}
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`,
+      params
+    );
+
+    const result = await client.query(
+      `UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
+
+    return result.rows[0];
+  }
+};
