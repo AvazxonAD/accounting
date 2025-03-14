@@ -111,6 +111,7 @@ exports.Controller = class {
       pageCount: pageCount,
       count: total,
       currentPage: page,
+      limit,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
     };
