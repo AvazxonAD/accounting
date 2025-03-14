@@ -290,8 +290,8 @@ exports.Controller = class {
       item.name = String(item.name);
       item.group_jur7_id = Number(item.group_jur7_id);
       item.edin = String(item.edin);
-      item.inventar_num = String(item.inventar_num);
-      item.serial_num = String(item.serial_num);
+      item.inventar_num = item.inventar_num ? String(item.inventar_num) : null;
+      item.serial_num = item.serial_num ? String(item.serial_num) : null;
       item.month = Number(item.month);
       item.year = Number(item.year);
       item.kol = Number(item.kol);
@@ -388,9 +388,6 @@ exports.Controller = class {
     let last_saldo;
     let last_date;
     let last_attempt = 0;
-    let next_attempt = 0;
-    let next_saldo;
-    let next_date;
 
     while (last_attempt < 1000) {
       last_date = HelperFunctions.lastDate({ year, month });
@@ -412,31 +409,8 @@ exports.Controller = class {
     }
 
     if (!last_saldo.length) {
-      while (next_attempt < 1000) {
-        next_date = HelperFunctions.nextDate({ year, month });
-
-        next_saldo = await SaldoService.getSaldoCheck({
-          region_id,
-          year: next_date.year,
-          month: next_date.month,
-        });
-
-        if (next_saldo.length > 0) {
-          break;
-        }
-
-        year = next_date.year;
-        month = next_date.month;
-
-        next_attempt++;
-      }
-    }
-
-    if (!last_saldo.length && !next_saldo.length) {
-      await SaldoService.cleanData({ region_id });
-      return res.success(req.i18n.t("celanSaldo"), 200);
-    } else if (!last_saldo.length && next_saldo.length) {
-      return res.error(req.i18n.t("nextSaldoExists"), 400);
+      // await SaldoService.cleanData({ region_id });
+      return res.success(req.i18n.t("lastSaldoNotFound"), 200);
     }
 
     const dates = await SaldoService.create({
