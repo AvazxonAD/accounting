@@ -61,6 +61,8 @@ exports.SaldoDB = class {
                 s.debet_sub_schet,
                 s.kredit_schet,
                 s.kredit_sub_schet,
+                s.year,
+                s.month,
                 JSON_BUILD_OBJECT(
                     'docNum', s.doc_num,
                     'docDate', s.doc_date,
