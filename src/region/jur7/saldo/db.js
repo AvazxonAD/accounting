@@ -91,9 +91,11 @@ exports.SaldoDB = class {
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
                 JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
-                JOIN group_jur7 g ON g.id = n.group_jur7_id  
+                JOIN group_jur7 g ON g.id = n.group_jur7_id    
                 WHERE r.id = $1
-                    AND s.isdeleted = false
+                  AND s.month = $2
+                  AND s.year = $3
+                  AND s.isdeleted = false
                     ${whereClouse}
             ) AS                                            total
         FROM data

@@ -24,7 +24,7 @@ router
   .get(
     "/report/responsible",
     Middleware.jur7Block,
-    validator(Controller.reportByResponsible, SaldoSchema.getByProduct())
+    validator(Controller.reportByResponsible, SaldoSchema.reportByResponsible())
   )
   .delete(
     "/",
