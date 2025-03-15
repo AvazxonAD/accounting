@@ -392,6 +392,12 @@ exports.SaldoService = class {
     return result;
   }
 
+  static async getFirstSaldoDocs(data) {
+    const result = await SaldoDB.getFirstSaldoDocs([data.region_id]);
+
+    return result;
+  }
+
   static async checkDoc(data) {
     const result = await SaldoDB.checkDoc([data.product_id]);
 

@@ -223,6 +223,26 @@ exports.SaldoDB = class {
     return response;
   }
 
+  static async getFirstSaldoDocs(params) {
+    const query = `
+           SELECT
+              DISTINCT
+                s.year,
+                s.month,
+                m.id AS         main_schet_id,
+                m.account_number
+            FROM saldo_naimenovanie_jur7 s
+            LEFT JOIN main_schet m ON m.id = s.main_schet_id 
+            WHERE s.region_id = $1
+                AND s.isdeleted = false
+            LIMIT 1
+        `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async getFirstSaldoDate(params) {
     const query = `
            SELECT 
