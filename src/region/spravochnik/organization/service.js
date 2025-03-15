@@ -51,7 +51,7 @@ exports.OrganizationService = class {
   }
 
   static async create(data) {
-    const result = await db.transaction(async (client) => {
+    const execute = async (client) => {
       const organ = await OrganizationDB.create(
         [
           data.name,
@@ -69,34 +69,35 @@ exports.OrganizationService = class {
         client
       );
 
-      for (let gazna of data.gaznas) {
-        await GaznaDB.create(
-          [
-            organ.id,
-            gazna.raschet_schet_gazna,
-            HelperFunctions.tashkentTime(),
-            HelperFunctions.tashkentTime(),
-          ],
-          client
-        );
-      }
+      const createEntries = async (items, db, key) => {
+        if (items) {
+          for (let item of items) {
+            await db.create(
+              [
+                organ.id,
+                item[key],
+                HelperFunctions.tashkentTime(),
+                HelperFunctions.tashkentTime(),
+              ],
+              client
+            );
+          }
+        }
+      };
 
-      for (let acccount_number of data.account_numbers) {
-        await AccountNumberDB.create(
-          [
-            organ.id,
-            acccount_number.raschet_schet,
-            HelperFunctions.tashkentTime(),
-            HelperFunctions.tashkentTime(),
-          ],
-          client
-        );
-      }
+      await createEntries(data.gaznas, GaznaDB, "raschet_schet_gazna");
+      await createEntries(
+        data.account_numbers,
+        AccountNumberDB,
+        "raschet_schet"
+      );
 
       return organ;
-    });
+    };
 
-    return result;
+    return data.client
+      ? await execute(data.client)
+      : await db.transaction(execute);
   }
 
   static async get(data) {
@@ -230,13 +231,7 @@ exports.OrganizationService = class {
   static async import(data) {
     await db.transaction(async (client) => {
       for (let item of data.data) {
-        // if (item.bank_klient && item.mfo) {
-        //     const bank = await BankService.getByMfoName({ bank_name: item.bank_klient, mfo: item.mfo });
-        //     if (!bank) {
-        //         await BankService.create({ bank_name: item.bank_klient, mfo: item.mfo });
-        //     }
-        // }
-        await this.create({ ...item, user_id: data.user_id }, client);
+        await this.create({ ...item, user_id: data.user_id, client });
       }
     });
   }

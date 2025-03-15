@@ -169,6 +169,15 @@ exports.Controller = class {
     const validation_data = [];
 
     for (let item of data) {
+      item.inn = item.inn ? String(item.inn) : null;
+      item.name = item.name ? String(item.name) : null;
+      item.okonx = item.okonx ? String(item.okonx) : null;
+      item.mfo = item.mfo ? String(item.mfo) : null;
+      item.account_numbers = item.account_numbers
+        ? String(item.account_numbers)
+        : null;
+      item.gaznas = item.gaznas ? String(item.gaznas) : null;
+
       const { error, value } = OrganizationSchema.importData(req.i18n).validate(
         item
       );
