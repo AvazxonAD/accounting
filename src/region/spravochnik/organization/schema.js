@@ -1,119 +1,144 @@
-const Joi = require('joi')
-
+const Joi = require("joi");
 
 exports.OrganizationSchema = class {
-    static setParentId() {
-        return Joi.object({
-            body: Joi.object({
-                parent_id: Joi.number().integer().min(1).required(),
-                organization_ids: Joi.array().items(
-                    Joi.object({
-                        id: Joi.number().integer().min(1).required()
-                    })
-                )
-            })
-        }).options({ stripUnknown: true });
-    }
+  static setParentId() {
+    return Joi.object({
+      body: Joi.object({
+        parent_id: Joi.number().integer().min(1).required(),
+        organization_ids: Joi.array().items(
+          Joi.object({
+            id: Joi.number().integer().min(1).required(),
+          })
+        ),
+      }),
+    }).options({ stripUnknown: true });
+  }
 
-    static import() {
-        return Joi.object({
-            file: Joi.object({
-                path: Joi.string().trim().required()
-            })
-        })
-    }
+  static import() {
+    return Joi.object({
+      file: Joi.object({
+        path: Joi.string().trim().required(),
+      }),
+    });
+  }
 
-    static importData(lang) {
-        return Joi.object({
-            name: Joi.string().trim().required().messages({ '*': lang.t('validation.organ_name') }),
-            mfo: Joi.string().trim().required().messages({ '*': lang.t('validation.mfo') }),
-            inn: Joi.string().trim().required().messages({ '*': lang.t('validation.inn') }),
-            okonx: Joi.string().trim().messages({ '*': lang.t('validation.okonx') }),
-            gaznas: Joi.string()
-                .custom(value => value.split(/\s*\/\s*/).map(i => ({ raschet_schet_gazna: i })))
-                .messages({ '*': lang.t('validation.gaznas') }),
-            account_numbers: Joi.string()
-                .custom(value => value.split(/\s*\/\s*/).map(i => ({ raschet_schet: i })))
-                .messages({ '*': lang.t('validation.gaznas') })
-        })
-    }
+  static importData(lang) {
+    return Joi.object({
+      name: Joi.string()
+        .trim()
+        .required()
+        .messages({ "*": lang.t("validation.organ_name") }),
+      mfo: Joi.string()
+        .trim()
+        .required()
+        .messages({ "*": lang.t("validation.mfo") }),
+      inn: Joi.string()
+        .trim()
+        .required()
+        .messages({ "*": lang.t("validation.inn") }),
+      okonx: Joi.string()
+        .trim()
+        .messages({ "*": lang.t("validation.okonx") })
+        .allow(null, ""),
+      gaznas: Joi.string()
+        .custom((value) =>
+          value.split(/\s*\/\s*/).map((i) => ({ raschet_schet_gazna: i }))
+        )
+        .messages({ "*": lang.t("validation.gaznas") })
+        .allow(null, ""),
+      account_numbers: Joi.string()
+        .allow(null, "")
+        .custom((value) =>
+          value.split(/\s*\/\s*/).map((i) => ({ raschet_schet: i }))
+        )
+        .messages({ "*": lang.t("validation.gaznas") }),
+    });
+  }
 
-    static create() {
-        return Joi.object({
-            body: Joi.object({
-                name: Joi.string().trim().required(),
-                bank_klient: Joi.string().trim().required(),
-                mfo: Joi.string().trim().required(),
-                inn: Joi.string().trim().required(),
-                okonx: Joi.string().trim(),
-                parent_id: Joi.number().min(1).allow(null),
-                gaznas: Joi.array().items(
-                    Joi.object({
-                        raschet_schet_gazna: Joi.string().trim().required()
-                    })
-                ).empty(),
-                account_numbers: Joi.array().items(
-                    Joi.object({
-                        raschet_schet: Joi.string().trim().required()
-                    })
-                ).empty()
+  static create() {
+    return Joi.object({
+      body: Joi.object({
+        name: Joi.string().trim().required(),
+        bank_klient: Joi.string().trim().required(),
+        mfo: Joi.string().trim().required(),
+        inn: Joi.string().trim().required(),
+        okonx: Joi.string().trim(),
+        parent_id: Joi.number().min(1).allow(null),
+        gaznas: Joi.array()
+          .items(
+            Joi.object({
+              raschet_schet_gazna: Joi.string().trim().required(),
             })
-        }).options({ stripUnknown: true });
-    }
+          )
+          .empty(),
+        account_numbers: Joi.array()
+          .items(
+            Joi.object({
+              raschet_schet: Joi.string().trim().required(),
+            })
+          )
+          .empty(),
+      }),
+    }).options({ stripUnknown: true });
+  }
 
-    static update() {
-        return Joi.object({
-            body: Joi.object({
-                name: Joi.string().trim().required(),
-                bank_klient: Joi.string().trim().required(),
-                mfo: Joi.string().trim().required(),
-                inn: Joi.string().trim().required(),
-                okonx: Joi.string().trim(),
-                parent_id: Joi.number().min(1).allow(null),
-                gaznas: Joi.array().items(
-                    Joi.object({
-                        id: Joi.number().integer().min(1),
-                        raschet_schet_gazna: Joi.string().trim().required()
-                    })
-                ).empty(),
-                account_numbers: Joi.array().items(
-                    Joi.object({
-                        id: Joi.number().integer().min(1),
-                        raschet_schet: Joi.string().trim().required()
-                    })
-                ).empty()
-            }),
-            params: Joi.object({
-                id: Joi.number().integer().min(1).required()
+  static update() {
+    return Joi.object({
+      body: Joi.object({
+        name: Joi.string().trim().required(),
+        bank_klient: Joi.string().trim().required(),
+        mfo: Joi.string().trim().required(),
+        inn: Joi.string().trim().required(),
+        okonx: Joi.string().trim(),
+        parent_id: Joi.number().min(1).allow(null),
+        gaznas: Joi.array()
+          .items(
+            Joi.object({
+              id: Joi.number().integer().min(1),
+              raschet_schet_gazna: Joi.string().trim().required(),
             })
-        }).options({ stripUnknown: true });
-    }
+          )
+          .empty(),
+        account_numbers: Joi.array()
+          .items(
+            Joi.object({
+              id: Joi.number().integer().min(1),
+              raschet_schet: Joi.string().trim().required(),
+            })
+          )
+          .empty(),
+      }),
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
 
-    static delette() {
-        return Joi.object({
-            params: Joi.object({
-                id: Joi.number().integer().min(1).required()
-            })
-        });
-    }
+  static delette() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required(),
+      }),
+    });
+  }
 
-    static getById() {
-        return Joi.object({
-            params: Joi.object({
-                id: Joi.number().integer().min(1).required()
-            })
-        });
-    }
+  static getById() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required(),
+      }),
+    });
+  }
 
-    static get() {
-        return Joi.object({
-            query: Joi.object({
-                page: Joi.number().min(1).default(1),
-                limit: Joi.number().min(1).default(10),
-                search: Joi.string(),
-                parent: Joi.string().valid('false', 'true'),
-                parent_id: Joi.number().min(1).integer()
-            })
-        }).options({ stripUnknown: true });
-    }
-}
+  static get() {
+    return Joi.object({
+      query: Joi.object({
+        page: Joi.number().min(1).default(1),
+        limit: Joi.number().min(1).default(10),
+        search: Joi.string(),
+        parent: Joi.string().valid("false", "true"),
+        parent_id: Joi.number().min(1).integer(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+};
