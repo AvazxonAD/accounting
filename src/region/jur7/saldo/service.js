@@ -1,56 +1,307 @@
 const { SaldoDB } = require("@saldo/db");
-const { tashkentTime } = require("@helper/functions");
+const { tashkentTime, returnStringDate } = require("@helper/functions");
 const { db } = require("@db/index");
 const xlsx = require("xlsx");
 const { ProductDB } = require("@product/db");
 const { ResponsibleDB } = require("@responsible/db");
+const ExcelJS = require("exceljs");
+const path = require("path");
+const fs = require("fs").promises;
 
 exports.SaldoService = class {
   static async reportByResponsibleExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("material obarotka");
 
-    worksheet.columns = [
-      { key: "id", width: 10 },
-      { key: "name", width: 40 },
-      { key: "schet", width: 30 },
-      { key: "iznos_foiz", width: 30 },
-      { key: "provodka_debet", width: 30 },
-      { key: "provodka_kredit", width: 30 },
-      { key: "provodka_subschet", width: 30 },
-      { key: "group_number", width: 30 },
-      { key: "roman_numeral", width: 30 },
-      { key: "pod_group", width: 30 },
+    worksheet.mergeCells("I1", "K1");
+    worksheet.getCell("I1").value = "“ТАСДИҚЛАЙМАН”";
+    worksheet.mergeCells("H2", "K2");
+    worksheet.getCell("H2").value = data.region.name;
+
+    worksheet.getCell("H3").value = "бошлиғи";
+
+    worksheet.mergeCells("H4", "K4");
+    worksheet.getCell("H4").value = "";
+
+    worksheet.mergeCells("A5", "C5");
+    worksheet.getCell("A5").value =
+      `Материалний отчёт за ${returnStringDate(new Date(data.to))}`;
+
+    worksheet.getCell("A6").value = "Наименования претмета";
+
+    worksheet.getCell("B6").value = "Ед.изм";
+
+    worksheet.mergeCells("C6", "D6");
+    worksheet.getCell("C6").value = `OCTATOK на нач.`;
+
+    worksheet.mergeCells("E6", "H6");
+    worksheet.getCell("E6").value = `ОБОРОТ`;
+
+    worksheet.mergeCells("I6", "J6");
+    worksheet.getCell("I6").value = `OCTATOK на кон.`;
+
+    worksheet.getCell("K6").value = `Дата Прихода`;
+
+    if (data.iznos === "true") {
+      worksheet.mergeCells("L6", "P6");
+      worksheet.getCell("L6").value = `OCTATOK на кон.`;
+
+      worksheet.getCell("L7").value = `Салдо изн`;
+
+      worksheet.getCell("M7").value = `Приход`;
+
+      worksheet.getCell("N7").value = `тек из`;
+
+      worksheet.getCell("O7").value = `Расход`;
+
+      worksheet.getCell("P7").value = `Салдо изн`;
+    }
+
+    worksheet.getCell("C7").value = `Кол`;
+
+    worksheet.getCell("D7").value = `Остаток`;
+
+    worksheet.getCell("E7").value = `Кол`;
+
+    worksheet.getCell("F7").value = `Приход`;
+
+    worksheet.getCell("G7").value = `Кол`;
+
+    worksheet.getCell("H7").value = `Расход`;
+
+    worksheet.getCell("I7").value = `Кол`;
+
+    worksheet.getCell("J7").value = `Остаток`;
+
+    const columns = [
+      { key: "name", width: 50 },
+      { key: "edin", width: 10 },
+      { key: "from_kol", width: 10 },
+      { key: "from_summa", width: 20 },
+      { key: "internal_kol_prixod", width: 10 },
+      { key: "internal_summa_prixod", width: 20 },
+      { key: "internal_kol_rasxod", width: 10 },
+      { key: "internal_summa_rasxod", width: 20 },
+      { key: "to_kol", width: 10 },
+      { key: "to_summa", width: 20 },
+      { key: "prixod_date", width: 15 },
     ];
 
-    data.forEach((item) => {
-      worksheet.addRow({
-        id: item.id,
-        name: item.name,
-        schet: item.schet,
-        iznos_foiz: item.iznos_foiz,
-        provodka_debet: item.provodka_debet,
-        provodka_kredit: item.provodka_kredit,
-        provodka_subschet: item.provodka_subschet,
-        group_number: item.group_number,
-        roman_numeral: item.roman_numeral,
-        pod_group: item.pod_group,
-      });
-    });
+    if (data.iznos === "true") {
+      columns.push(
+        { key: "from_iznos_summa", width: 20 },
+        { key: "iznos_prixod", width: 20 },
+        { key: "month_iznos_summa", width: 20 },
+        { key: "iznos_rasxod", width: 20 },
+        { key: "to_iznos_summa", width: 20 }
+      );
+    }
 
-    worksheet.eachRow((row, rowNumber) => {
-      let bold = false;
-      if (rowNumber === 1) {
-        worksheet.getRow(rowNumber).height = 30;
-        bold = true;
+    worksheet.columns = columns;
+
+    const all_itogo = {
+      from_kol: 0,
+      from_summa: 0,
+      internal_kol_prixod: 0,
+      internal_summa_prixod: 0,
+      internal_kol_rasxod: 0,
+      internal_summa_rasxod: 0,
+      to_kol: 0,
+      to_summa: 0,
+      from_iznos_summa: 0,
+      iznos_prixod: 0,
+      month_iznos_summa: 0,
+      iznos_rasxod: 0,
+      to_iznos_summa: 0,
+    };
+
+    for (let responsible of data.products) {
+      worksheet.addRow({
+        name: `${responsible.fio}     Cчет    ${responsible.debet_schet}`,
+      });
+
+      worksheet.addRow({});
+
+      const itogo = {
+        from_kol: 0,
+        from_summa: 0,
+        internal_kol_prixod: 0,
+        internal_summa_prixod: 0,
+        internal_kol_rasxod: 0,
+        internal_summa_rasxod: 0,
+        to_kol: 0,
+        to_summa: 0,
+        from_iznos_summa: 0,
+        iznos_prixod: 0,
+        month_iznos_summa: 0,
+        iznos_rasxod: 0,
+        to_iznos_summa: 0,
+      };
+
+      responsible.products.forEach((item) => {
+        if (data.iznos === "true") {
+          worksheet.addRow({
+            name: item.name,
+            edin: item.edin,
+            from_kol: item.from.kol,
+            from_summa: item.from.summa,
+            internal_kol_prixod: item.internal.kol_prixod,
+            internal_summa_prixod: item.internal.summa_prixod,
+            internal_kol_rasxod: item.internal.kol_rasxod,
+            internal_summa_rasxod: item.internal.summa_rasxod,
+            to_kol: item.to.kol,
+            to_summa: item.to.summa,
+            prixod_date: item.prixodData.docDate,
+            from_iznos_summa: item.from.iznos_summa,
+            iznos_prixod: item.internal.iznos_prixod,
+            month_iznos_summa: item.month_iznos_summa,
+            iznos_rasxod: item.internal.iznos_rasxod,
+            to_iznos_summa: item.to.iznos_summa,
+          });
+        } else {
+          worksheet.addRow({
+            name: item.name,
+            edin: item.edin,
+            from_kol: item.from.kol,
+            from_summa: item.from.summa,
+            internal_kol_prixod: item.internal.kol_prixod,
+            internal_summa_prixod: item.internal.summa_prixod,
+            internal_kol_rasxod: item.internal.kol_rasxod,
+            internal_summa_rasxod: item.internal.summa_rasxod,
+            to_kol: item.to.kol,
+            to_summa: item.to.summa,
+            prixod_date: item.prixodData.docDate,
+          });
+        }
+
+        itogo.from_kol += item.from.kol;
+        itogo.from_summa += item.from.summa;
+        itogo.internal_kol_prixod += item.internal.kol_prixod;
+        itogo.internal_summa_prixod += item.internal.summa_prixod;
+        itogo.internal_kol_rasxod += item.internal.kol_rasxod;
+        itogo.internal_summa_rasxod += item.internal.summa_rasxod;
+        itogo.to_kol += item.to.kol;
+        itogo.to_summa += item.to.summa;
+        itogo.from_iznos_summa += item.from.iznos_summa;
+        itogo.iznos_prixod += item.internal.iznos_prixod;
+        itogo.month_iznos_summa += item.month_iznos_summa;
+        itogo.iznos_rasxod += item.internal.iznos_rasxod;
+        itogo.to_iznos_summa += item.to.iznos_summa;
+      });
+
+      if (data.iznos === "true") {
+        worksheet.addRow({
+          name: "Итого",
+          from_kol: itogo.from_kol,
+          from_summa: itogo.from_summa,
+          internal_kol_prixod: itogo.internal_kol_prixod,
+          internal_summa_prixod: itogo.internal_summa_prixod,
+          internal_kol_rasxod: itogo.internal_kol_rasxod,
+          internal_summa_rasxod: itogo.internal_summa_rasxod,
+          to_kol: itogo.to_kol,
+          to_summa: itogo.to_summa,
+          from_iznos_summa: itogo.from_iznos_summa,
+          iznos_prixod: itogo.iznos_prixod,
+          month_iznos_summa: itogo.month_iznos_summa,
+          iznos_rasxod: itogo.iznos_rasxod,
+          to_iznos_summa: itogo.to_iznos_summa,
+        });
+      } else {
+        worksheet.addRow({
+          name: "Итого",
+          from_kol: itogo.from_kol,
+          from_summa: itogo.from_summa,
+          internal_kol_prixod: itogo.internal_kol_prixod,
+          internal_summa_prixod: itogo.internal_summa_prixod,
+          internal_kol_rasxod: itogo.internal_kol_rasxod,
+          internal_summa_rasxod: itogo.internal_summa_rasxod,
+          to_kol: itogo.to_kol,
+          to_summa: itogo.to_summa,
+        });
       }
 
-      row.eachCell((cell) => {
+      all_itogo.from_kol += itogo.from_kol;
+      all_itogo.from_summa += itogo.from_summa;
+      all_itogo.internal_kol_prixod += itogo.internal_kol_prixod;
+      all_itogo.internal_summa_prixod += itogo.internal_summa_prixod;
+      all_itogo.internal_kol_rasxod += itogo.internal_kol_rasxod;
+      all_itogo.internal_summa_rasxod += itogo.internal_summa_rasxod;
+      all_itogo.to_kol += itogo.to_kol;
+      all_itogo.to_summa += itogo.to_summa;
+      all_itogo.from_iznos_summa += itogo.from_iznos_summa;
+      all_itogo.iznos_prixod += itogo.iznos_prixod;
+      all_itogo.month_iznos_summa += itogo.month_iznos_summa;
+      all_itogo.iznos_rasxod += itogo.iznos_rasxod;
+      all_itogo.to_iznos_summa += itogo.to_iznos_summa;
+    }
+
+    if (data.iznos === "true") {
+      worksheet.addRow({
+        name: "Итого",
+        from_kol: all_itogo.from_kol,
+        from_summa: all_itogo.from_summa,
+        internal_kol_prixod: all_itogo.internal_kol_prixod,
+        internal_summa_prixod: all_itogo.internal_summa_prixod,
+        internal_kol_rasxod: all_itogo.internal_kol_rasxod,
+        internal_summa_rasxod: all_itogo.internal_summa_rasxod,
+        to_kol: all_itogo.to_kol,
+        to_summa: all_itogo.to_summa,
+        from_iznos_summa: all_itogo.from_iznos_summa,
+        iznos_prixod: all_itogo.iznos_prixod,
+        month_iznos_summa: all_itogo.month_iznos_summa,
+        iznos_rasxod: all_itogo.iznos_rasxod,
+        to_iznos_summa: all_itogo.to_iznos_summa,
+      });
+    } else {
+      worksheet.addRow({
+        name: "Итого",
+        from_kol: all_itogo.from_kol,
+        from_summa: all_itogo.from_summa,
+        internal_kol_prixod: all_itogo.internal_kol_prixod,
+        internal_summa_prixod: all_itogo.internal_summa_prixod,
+        internal_kol_rasxod: all_itogo.internal_kol_rasxod,
+        internal_summa_rasxod: all_itogo.internal_summa_rasxod,
+        to_kol: all_itogo.to_kol,
+        to_summa: all_itogo.to_summa,
+      });
+    }
+
+    worksheet.eachRow((row, row_number) => {
+      let bold = false;
+      let horizontal = "center";
+
+      if (row_number < 7) {
+        worksheet.getRow(row_number).height = 40;
+        bold = true;
+      } else {
+        worksheet.getRow(row_number).height = 25;
+      }
+
+      row.eachCell((cell, column) => {
+        if (column > 2 && column !== 11 && row_number > 8) {
+          horizontal = "right";
+        } else if (column === 1 && row_number > 8) {
+          horizontal = "left";
+        } else {
+          horizontal = "center";
+        }
+
+        if (column === 1 && row_number > 7) {
+          const check_array = cell.value.split(" ");
+          const check = check_array.find(
+            (item) => item === "Cчет" || item === "Итого"
+          );
+          if (check) {
+            bold = true;
+          }
+        }
+
         Object.assign(cell, {
+          numFmt: "#,##0.00",
           font: { size: 13, name: "Times New Roman", bold },
           alignment: {
             vertical: "middle",
-            horizontal: "center",
+            horizontal,
             wrapText: true,
           },
           fill: {
@@ -68,21 +319,21 @@ exports.SaldoService = class {
       });
     });
 
-    const folderPath = path.join(__dirname, `../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../public/exports`);
 
     try {
-      await fs.access(folderPath, fs.constants.W_OK);
+      await fs.access(folder_path, fs.constants.W_OK);
     } catch (error) {
-      await fs.mkdir(folderPath);
+      await fs.mkdir(folder_path);
     }
 
-    const fileName = `groups.${new Date().getTime()}.xlsx`;
+    const file_name = `material_oborotka.${new Date().getTime()}.xlsx`;
 
-    const filePath = `${folderPath}/${fileName}`;
+    const file_path = `${folder_path}/${file_name}`;
 
-    await workbook.xlsx.writeFile(filePath);
+    await workbook.xlsx.writeFile(file_path);
 
-    return { fileName, filePath };
+    return { file_name, file_path };
   }
 
   static async getByProduct(data) {
