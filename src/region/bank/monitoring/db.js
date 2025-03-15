@@ -1,17 +1,17 @@
-const { db } = require('@db/index');
+const { db } = require("@db/index");
 
 exports.BankMonitoringDB = class {
-    static async get(params, search = null) {
-        let search_filter = ``;
-        if (search) {
-            params.push(search);
-            search_filter = ` AND (
+  static async get(params, search = null) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `
+    const query = `
             WITH data AS (
                 SELECT 
                     d.id,
@@ -174,13 +174,13 @@ exports.BankMonitoringDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    };
+    return result[0];
+  }
 
-    static async daily(params) {
-        const query = `
+  static async daily(params) {
+    const query = `
             SELECT 
                 s_o.schet,
                 JSON_AGG(
@@ -236,13 +236,13 @@ exports.BankMonitoringDB = class {
             GROUP BY s_o.schet
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async dailySumma(params, operator) {
-        const query = `
+  static async dailySumma(params, operator) {
+    const query = `
             WITH prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0) AS summa
@@ -278,22 +278,22 @@ exports.BankMonitoringDB = class {
             FROM prixod, rasxod
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0].summa;
-    }
+    return result[0].summa;
+  }
 
-    static async getSumma(params, operator, search) {
-        let search_filter = ``;
-        if (search) {
-            params.push(search);
-            search_filter = ` AND (
+  static async getSumma(params, operator, search) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `
+    const query = `
             WITH prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
@@ -331,13 +331,13 @@ exports.BankMonitoringDB = class {
             FROM prixod, rasxod;
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getSchets(params) {
-        const query = `
+  static async getSchets(params) {
+    const query = `
             SELECT 
                 DISTINCT schet 
             FROM (
@@ -370,13 +370,13 @@ exports.BankMonitoringDB = class {
                     AND ch.isdeleted = false
             )
         `;
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async getSummaSchet(params) {
-        const query = `
+  static async getSummaSchet(params) {
+    const query = `
             WITH prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
@@ -414,8 +414,58 @@ exports.BankMonitoringDB = class {
             CROSS JOIN prixod;
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
-}
+    return result[0];
+  }
+
+  static async capData(params) {
+    const query = `
+            WITH
+                prixod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        COALESCE(SUM(ch.summa), 0) AS summa
+                    FROM bank_prixod_child ch
+                    JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                    GROUP BY op.schet,
+                        op.sub_schet
+                ),
+                rasxod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        COALESCE(SUM(ch.summa), 0) AS summa
+                    FROM bank_rasxod_child ch
+                    JOIN bank_rasxod AS d ON d.id = ch.id_bank_rasxod
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                    GROUP BY op.schet,
+                        op.sub_schet
+                )
+            SELECT
+                COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON) AS prixod, 
+                COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON) AS rasxod
+            FROM prixod, rasxod
+        `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+};
