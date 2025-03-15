@@ -57,41 +57,32 @@ exports.BankMonitoringService = class {
   }
 
   static async cap(data) {
-    const schets = await BankMonitoringDB.getSchets([
-      data.region_id,
+    const result = await BankMonitoringDB.capData([
       data.main_schet_id,
       data.from,
       data.to,
+      data.region_id,
     ]);
-    for (let schet of schets) {
-      schet.summa = await BankMonitoringDB.getSummaSchet([
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        schet.schet,
-      ]);
-    }
 
-    let prixod_sum = 0;
-    let rasxod_sum = 0;
+    result.prixod = result.prixod.reduce((acc, item) => {
+      if (!acc[item.schet]) {
+        acc[item.schet] = { summa: 0, items: [] };
+      }
+      acc[item.schet].summa += item.summa;
+      acc[item.schet].items.push(item);
+      return acc;
+    }, {});
 
-    schets.forEach((item) => {
-      prixod_sum += item.summa.prixod_sum;
-      rasxod_sum += item.summa.rasxod_sum;
-    });
+    result.rasxod = result.rasxod.reduce((acc, item) => {
+      if (!acc[item.schet]) {
+        acc[item.schet] = { summa: 0, items: [] };
+      }
+      acc[item.schet].summa += item.summa;
+      acc[item.schet].items.push(item);
+      return acc;
+    }, {});
 
-    const balance_from = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from],
-      "<"
-    );
-
-    const balance_to = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.to],
-      "<="
-    );
-
-    return { balance_from, balance_to, prixod_sum, rasxod_sum, data: schets };
+    return result;
   }
 
   static async capExcel(data) {
