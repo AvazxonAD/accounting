@@ -339,9 +339,19 @@ exports.Controller = class {
       item.eski_iznos_summa = Number(item.eski_iznos_summa.replace(/,/g, ""));
       item.doc_num = String(item.doc_num);
 
-      item.doc_date = item.doc_date
-        ? new Date(String(item.doc_date))
-        : new Date();
+      if (item.doc_date) {
+        const dates = item.doc_date.split("");
+        const check = dates.find((item) => item === "/");
+        if (!check) {
+          const dates = item.doc_date.split(".");
+          item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+        } else {
+          const dates = item.doc_date.split("/");
+          item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+        }
+      } else {
+        item.doc_date = new Date();
+      }
 
       const { error, value } = SaldoSchema.importData(req.i18n).validate(item);
       if (error) {

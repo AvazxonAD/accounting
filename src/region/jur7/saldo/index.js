@@ -37,7 +37,6 @@ router
     validator(Controller.updateIznosSumma, SaldoSchema.updateIznosSumma())
   )
   .get("/temlate", Middleware.jur7Block, Controller.templateFile)
-  // .delete('/:id', Middleware.jur7Block, validator(Controller.deleteById, SaldoSchema.deleteById()))
   .get("/check", validator(Controller.check, SaldoSchema.check()))
   .get("/:id", validator(Controller.getById, SaldoSchema.getById()))
   .get("/", Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()));
