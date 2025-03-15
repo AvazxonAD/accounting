@@ -182,7 +182,7 @@ exports.Controller = class {
           (item) =>
             item.naimenovanie_tovarov_jur7_id ===
             child.naimenovanie_tovarov_jur7_id
-        ).kol || 0;
+        )?.kol || 0;
 
       if (
         (!child.iznos && child.iznos_summa) ||

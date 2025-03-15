@@ -89,6 +89,7 @@ exports.Controller = class {
       group_id,
       to,
       iznos,
+      rasxod,
     } = req.query;
 
     const offset = (page - 1) * limit;
@@ -127,6 +128,7 @@ exports.Controller = class {
       responsible_id,
       search,
       product_id,
+      rasxod,
     });
 
     const pageCount = Math.ceil(total / limit);
