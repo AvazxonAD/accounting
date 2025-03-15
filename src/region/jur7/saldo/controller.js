@@ -296,9 +296,12 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { main_schet_id, budjet_id } = req.query;
 
-    const check = await SaldoService.getFirstSaldoDate({ region_id });
+    const check = await SaldoService.getFirstSaldoDocs({ region_id });
     if (check) {
-      return res.error(req.i18n.t("saldoImportAlreadyExists"), 400);
+      return res.error(req.i18n.t("saldoImportAlreadyExists"), 400, {
+        code: CODE.DOCS_HAVE.code,
+        docs: check,
+      });
     }
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -446,7 +449,6 @@ exports.Controller = class {
     }
 
     if (!last_saldo.length) {
-      // await SaldoService.cleanData({ region_id });
       return res.success(req.i18n.t("lastSaldoNotFound"), 200);
     }
 
