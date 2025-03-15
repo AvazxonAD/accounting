@@ -220,15 +220,15 @@ exports.PrixodJur7Service = class {
     worksheet.getColumn(7).width = 20;
     worksheet.getColumn(8).width = 27;
 
-    const folderPath = path.join(__dirname, `../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../public/exports`);
     try {
-      await fs.access(folderPath, fs.constants.W_OK);
+      await fs.access(folder_path, fs.constants.W_OK);
     } catch (error) {
-      await fs.mkdir(folderPath);
+      await fs.mkdir(folder_path);
     }
 
     const fileName = `jur7_prixod_${new Date().getTime()}.xlsx`;
-    const filePath = `${folderPath}/${fileName}`;
+    const filePath = `${folder_path}/${fileName}`;
 
     await Workbook.xlsx.writeFile(filePath);
 

@@ -7,11 +7,14 @@ const { SaldoSchema } = require("./schema");
 const { HelperFunctions } = require("@helper/functions");
 const { CODE } = require("@helper/constants");
 const { ProductService } = require("@product/service");
+const { RegionService } = require("@region/service");
 
 exports.Controller = class {
   static async reportByResponsible(req, res) {
     const region_id = req.user.region_id;
-    const { responsible_id, iznos, to, group_id } = req.query;
+    const { responsible_id, iznos, to, group_id, excel } = req.query;
+
+    const region = await RegionService.getById({ id: region_id });
     if (responsible_id) {
       const responsible = await ResponsibleService.getById({
         region_id,
@@ -22,7 +25,7 @@ exports.Controller = class {
       }
     }
 
-    const { data: products, total } = await SaldoService.getByProduct({
+    const { data: products } = await SaldoService.getByProduct({
       region_id,
       to,
       offset: 0,
@@ -33,13 +36,14 @@ exports.Controller = class {
     });
 
     const groupedProducts = products.reduce((acc, book) => {
-      const { debet_schet, debet_sub_schet, ...saldoInfo } = book;
-      const key = `${debet_schet}_${debet_sub_schet}`;
+      const { debet_schet, debet_sub_schet, fio, ...saldoInfo } = book;
+      const key = `${debet_schet}_${debet_sub_schet}_${fio}`;
 
       if (!acc[key]) {
         acc[key] = {
           debet_schet,
           debet_sub_schet,
+          fio,
           products: [],
         };
       }
@@ -50,6 +54,26 @@ exports.Controller = class {
     }, {});
 
     const result = Object.values(groupedProducts);
+
+    if (excel === "true") {
+      const { file_name, file_path } =
+        await SaldoService.reportByResponsibleExcel({
+          region,
+          to,
+          products: result,
+          iznos,
+        });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${file_name}"`
+      );
+      return res.download(file_path);
+    }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }

@@ -52,9 +52,9 @@ exports.HelperFunctions = class {
   }
 
   static async returnTemplateFile(fileName, lang) {
-    const folderPath = path.join(__dirname, `../../public/template`);
+    const folder_path = path.join(__dirname, `../../public/template`);
 
-    const filePath = path.join(folderPath, fileName);
+    const filePath = path.join(folder_path, fileName);
 
     try {
       await fs.access(filePath, fs.constants.R_OK);
