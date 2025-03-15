@@ -77,6 +77,7 @@ exports.SaldoSchema = class {
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(99999),
         search: Joi.string().trim().allow(null, ""),
+        main_schet_id: Joi.number().integer().min(1).required(),
         type: Joi.string()
           .trim()
           .valid("responsible", "group", "product")
@@ -99,6 +100,7 @@ exports.SaldoSchema = class {
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(99999),
         search: Joi.string().trim().allow(null, ""),
+        main_schet_id: Joi.number().integer().min(1).required(),
         rasxod: Joi.boolean().default(false),
         to: Joi.string()
           .trim()
@@ -114,6 +116,7 @@ exports.SaldoSchema = class {
       query: Joi.object({
         responsible_id: Joi.number().integer().min(1),
         group_id: Joi.number().integer().min(1),
+        main_schet_id: Joi.number().integer().min(1).required(),
         to: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -172,6 +175,9 @@ exports.SaldoSchema = class {
         year: Joi.number().min(1901).max(2099).required().integer(),
         month: Joi.number().min(1).max(12).required().integer(),
       }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+      }),
     }).options({ stripUnknown: true });
   }
 
@@ -180,6 +186,7 @@ exports.SaldoSchema = class {
       query: Joi.object({
         year: Joi.number().min(1901).max(2099).required().integer(),
         month: Joi.number().min(1).max(12).required().integer(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -188,6 +195,9 @@ exports.SaldoSchema = class {
     return Joi.object({
       params: Joi.object({
         id: Joi.number().min(1).required().integer(),
+      }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
