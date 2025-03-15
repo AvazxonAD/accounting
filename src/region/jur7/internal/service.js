@@ -154,6 +154,7 @@ exports.Jur7InternalService = class {
           child.debet_sub_schet,
           child.kredit_schet,
           child.kredit_sub_schet,
+          data.main_schet_id,
           tashkentTime(),
           tashkentTime(),
         ],

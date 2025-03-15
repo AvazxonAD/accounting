@@ -1,8 +1,8 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.PrixodDB = class {
-    static async getByProductId(params) {
-        const query = `
+  static async getByProductId(params) {
+    const query = `
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -25,13 +25,13 @@ exports.PrixodDB = class {
                 AND ch.naimenovanie_tovarov_jur7_id = $1
         `;
 
-        const data = await db.query(query, params);
+    const data = await db.query(query, params);
 
-        return data[0];
-    }
+    return data[0];
+  }
 
-    static async createProduct(params, client) {
-        const query = `--sql
+  static async createProduct(params, client) {
+    const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
                 spravochnik_budjet_name_id, 
@@ -49,13 +49,13 @@ exports.PrixodDB = class {
             
             RETURNING *
         `;
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async create(params, client) {
-        const query = `--sql
+  static async create(params, client) {
+    const query = `--sql
             INSERT INTO document_prixod_jur7 (
                 user_id,
                 doc_num,
@@ -79,13 +79,13 @@ exports.PrixodDB = class {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async createChild(params, client) {
-        const query = `--sql
+  static async createChild(params, client) {
+    const query = `--sql
             INSERT INTO document_prixod_jur7_child (
                 naimenovanie_tovarov_jur7_id,
                 kol,
@@ -113,22 +113,22 @@ exports.PrixodDB = class {
             ) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
         `;
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
+    const result = await client.query(query, params);
+    return result.rows[0];
+  }
 
-    static async get(params, search) {
-        let search_filter = ``
-        if (search) {
-            params.push(search);
-            search_filter = `AND (
+  static async get(params, search) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = `AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%' OR
                 rj.fio  ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `--sql
+    const query = `--sql
         WITH data AS (
             SELECT 
               d.id, 
@@ -162,7 +162,8 @@ exports.PrixodDB = class {
             JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimga_id 
             WHERE r.id = $1 
               AND d.isdeleted = false 
-              AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
+              AND d.doc_date BETWEEN $2 AND $3
+              ${search_filter}
               AND d.main_schet_id = $4
             ORDER BY d.doc_date
             OFFSET $5 LIMIT $6
@@ -198,13 +199,16 @@ exports.PrixodDB = class {
             
           FROM data
         `;
-        const result = await db.query(query, params)
-        return result[0];
-    }
+    console.log(params);
 
-    static async getById(params, isdeleted) {
-        let ignore = 'AND d.isdeleted = false';
-        const query = `--sql
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getById(params, isdeleted) {
+    let ignore = "AND d.isdeleted = false";
+    const query = `--sql
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -246,12 +250,12 @@ exports.PrixodDB = class {
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async update(params) {
-        const query = `--sql
+  static async update(params) {
+    const query = `--sql
             UPDATE document_prixod_jur7 SET 
               doc_num = $1,
               doc_date = $2,
@@ -272,52 +276,57 @@ exports.PrixodDB = class {
             RETURNING * 
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
-        const result = await client.query(`UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`, params);
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`,
+      params
+    );
+    const result = await client.query(
+      `UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deletePrixodChild(documentPrixodId, productIds, client) {
-
-        const query1 = `
+  static async deletePrixodChild(documentPrixodId, productIds, client) {
+    const query1 = `
             UPDATE document_prixod_jur7_child 
             SET isdeleted = true 
             WHERE document_prixod_jur7_id = $1 AND isdeleted = false
         `;
 
-        const query2 = `
+    const query2 = `
             UPDATE iznos_tovar_jur7 
             SET isdeleted = true 
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
         `;
 
-        const query3 = `
+    const query3 = `
             UPDATE saldo_naimenovanie_jur7 
             SET isdeleted = true 
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
         `;
 
-        const query4 = `
+    const query4 = `
             UPDATE naimenovanie_tovarov_jur7 
             SET isdeleted = true 
             WHERE id = ANY($1)
         `;
 
-        await client.query(query1, [documentPrixodId]);
-        await client.query(query2, [productIds]);
-        await client.query(query3, [productIds]);
-        await client.query(query4, [productIds]);
-    }
+    await client.query(query1, [documentPrixodId]);
+    await client.query(query2, [productIds]);
+    await client.query(query3, [productIds]);
+    await client.query(query4, [productIds]);
+  }
 
-    static async prixodReport(params) {
-        const query = `--sql
+  static async prixodReport(params) {
+    const query = `--sql
             SELECT 
               d.id, 
               d.doc_num,
@@ -339,12 +348,12 @@ exports.PrixodDB = class {
               AND d.main_schet_id = $4
             ORDER BY d.doc_date
         `;
-        const result = await db.query(query, params)
-        return result;
-    }
+    const result = await db.query(query, params);
+    return result;
+  }
 
-    static async getByProductIdPrixod(params) {
-        const query = `--sql
+  static async getByProductIdPrixod(params) {
+    const query = `--sql
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -381,12 +390,12 @@ exports.PrixodDB = class {
                 AND d.isdeleted = false 
                 AND d_j_ch.naimenovanie_tovarov_jur7_id = $3
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async prixodReportChild(params) {
-        const query = `--sql
+  static async prixodReportChild(params) {
+    const query = `--sql
             SELECT  
                 d_j_ch.id,
                 n_t.name AS product_name,
@@ -401,29 +410,29 @@ exports.PrixodDB = class {
             JOIN naimenovanie_tovarov_jur7 AS n_t ON n_t.id = d_j_ch.naimenovanie_tovarov_jur7_id
             WHERE d_j_ch.document_prixod_jur7_id = $1 AND d_j_ch.isdeleted = false
         `;
-        const result = await db.query(query, params);
-        return result;
-    }
+    const result = await db.query(query, params);
+    return result;
+  }
 
-    static async getProductsByDocId(params, client) {
-        const query = `
+  static async getProductsByDocId(params, client) {
+    const query = `
             SELECT  
                 ch.naimenovanie_tovarov_jur7_id  product_id
             FROM document_prixod_jur7_child ch
             WHERE ch.document_prixod_jur7_id = $1 AND ch.isdeleted = false 
         `;
 
-        const _db = client || db;
+    const _db = client || db;
 
-        const result = await _db.query(query, params);
+    const result = await _db.query(query, params);
 
-        const data = client ? result.rows : result;
+    const data = client ? result.rows : result;
 
-        return data.map(row => row.product_id);
-    }
+    return data.map((row) => row.product_id);
+  }
 
-    static async checkPrixodDoc(params) {
-        const query = `
+  static async checkPrixodDoc(params) {
+    const query = `
             SELECT 
               d.id, 
               d.doc_num,
@@ -465,7 +474,7 @@ exports.PrixodDB = class {
                 AND ch.isdeleted = false
         `;
 
-        const result = await db.query(query, params);
-        return result;
-    }
-}
+    const result = await db.query(query, params);
+    return result;
+  }
+};

@@ -90,7 +90,16 @@ exports.Controller = class {
       to,
       iznos,
       rasxod,
+      main_schet_id,
     } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
 
     const offset = (page - 1) * limit;
 
@@ -129,6 +138,7 @@ exports.Controller = class {
       search,
       product_id,
       rasxod,
+      main_schet_id,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -447,6 +457,7 @@ exports.Controller = class {
       last_saldo,
       last_date,
       budjet_id,
+      main_schet_id,
     });
 
     return res.success(req.i18n.t("createSuccess"), 200, {
