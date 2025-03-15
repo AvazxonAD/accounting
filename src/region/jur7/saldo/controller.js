@@ -374,12 +374,18 @@ exports.Controller = class {
         id: doc.responsible_id,
       });
       if (!responsible) {
-        return res.error(req.i18n.t("responsibleNotFound"), 404);
+        return res.error(
+          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
+          404
+        );
       }
 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
-        return res.error(req.i18n.t("groupNotFound"), 404);
+        return res.error(
+          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
+          404
+        );
       }
 
       doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
@@ -400,7 +406,11 @@ exports.Controller = class {
       doc.group = group;
 
       if (!doc.iznos && doc.eski_iznos_summa > 0) {
-        return res.error(`${req.i18n.t("iznosSummaError")}`, 400, doc);
+        return res.error(
+          `${req.i18n.t("iznosSummaError")} ${doc.eski_iznos_summa}`,
+          400,
+          doc
+        );
       }
     }
 

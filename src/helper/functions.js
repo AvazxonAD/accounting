@@ -32,7 +32,7 @@ exports.HelperFunctions = class {
 
     for (let item of array) {
       if (item.year !== year || item.month !== month) {
-        return false;
+        return;
       }
     }
 
