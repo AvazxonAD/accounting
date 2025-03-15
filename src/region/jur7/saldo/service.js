@@ -372,6 +372,10 @@ exports.SaldoService = class {
       }
     }
 
+    if (data.rasxod) {
+      result.data = result.data.filter((item) => item.to.kol !== 0);
+    }
+
     return result;
   }
 

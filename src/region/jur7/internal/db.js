@@ -1,8 +1,8 @@
-const { db } = require('@db/index');
+const { db } = require("@db/index");
 
 exports.InternalDB = class {
-    static async create(params, client) {
-        const query = `--sql
+  static async create(params, client) {
+    const query = `--sql
             INSERT INTO document_vnutr_peremesh_jur7 (
                 user_id,
                 doc_num,
@@ -21,13 +21,13 @@ exports.InternalDB = class {
             ) 
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING *
-        `
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
+        `;
+    const result = await client.query(query, params);
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `--sql
+  static async createChild(params, _values, client) {
+    const query = `--sql
             INSERT INTO document_vnutr_peremesh_jur7_child (
                 naimenovanie_tovarov_jur7_id,
                 kol,
@@ -52,20 +52,20 @@ exports.InternalDB = class {
             VALUES ${_values}
         `;
 
-        await client.query(query, params);
-    }
+    await client.query(query, params);
+  }
 
-    static async get(params, search) {
-        let search_filter = ``
-        if (search) {
-            params.push(search);
-            search_filter = `AND (
+  static async get(params, search) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = `AND (
                 d.doc_num = $${params.length} OR 
                 rj2.fio ILIKE '%' || $${params.length} || '%' OR
                 rj.fio  ILIKE '%' || $${params.length} || '%'
             )`;
-        }
-        const query = `--sql
+    }
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id, 
@@ -121,13 +121,13 @@ exports.InternalDB = class {
                 )::INTEGER AS total
             FROM data
         `;
-        const result = await db.query(query, params)
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async getById(params, isdeleted) {
-        let ignore = 'AND d.isdeleted = false';
-        const query = `--sql
+  static async getById(params, isdeleted) {
+    let ignore = "AND d.isdeleted = false";
+    const query = `--sql
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -163,12 +163,12 @@ exports.InternalDB = class {
             JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
             WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async update(params, client) {
-        const query = `--sql
+  static async update(params, client) {
+    const query = `--sql
             UPDATE document_vnutr_peremesh_jur7 SET 
               doc_num = $1,
               doc_date = $2,
@@ -185,49 +185,58 @@ exports.InternalDB = class {
             RETURNING * 
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async delete(params, client) {
-        await client.query(`
+  static async delete(params, client) {
+    await client.query(
+      `
             UPDATE document_vnutr_peremesh_jur7_child 
             SET isdeleted = true 
             WHERE document_vnutr_peremesh_jur7_id = $1
-        `, params);
+        `,
+      params
+    );
 
-        await client.query(`
+    await client.query(
+      `
             UPDATE saldo_naimenovanie_jur7 
             SET isdeleted = true 
             WHERE prixod_id = $1
             RETURNING *
-        `, params);
+        `,
+      params
+    );
 
-        const data = await client.query(`
+    const data = await client.query(
+      `
             UPDATE document_vnutr_peremesh_jur7 
             SET isdeleted = true 
             WHERE id = $1
             RETURNING *
-        `, params);
+        `,
+      params
+    );
 
-        return data.rows[0];
-    }
+    return data.rows[0];
+  }
 
-    static async deleteRasxodChild(params, client) {
-        const query1 = `
+  static async deleteRasxodChild(params, client) {
+    const query1 = `
             UPDATE saldo_naimenovanie_jur7 
             SET isdeleted = true 
             WHERE prixod_id = $1
         `;
 
-        const query2 = `
+    const query2 = `
             UPDATE document_vnutr_peremesh_jur7_child 
             SET isdeleted = true 
             WHERE document_vnutr_peremesh_jur7_id = $1
         `;
 
-        await client.query(query1, params);
-        await client.query(query2, params);
-    }
-}
+    await client.query(query1, params);
+    await client.query(query2, params);
+  }
+};
