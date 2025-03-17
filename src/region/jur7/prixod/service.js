@@ -370,10 +370,10 @@ exports.PrixodJur7Service = class {
       child.old_iznos =
         child.old_iznos > product_sena ? product_sena : child.old_iznos;
 
-      let iznos_summa =
-        product_sena * (child.group.iznos_foiz / 100) + child.old_iznos;
+      // let iznos_summa =
+      //   product_sena * (child.group.iznos_foiz / 100) + child.old_iznos;
 
-      iznos_summa = iznos_summa >= product_sena ? product_sena : iznos_summa;
+      // let iznos_summa = iznos_summa >= product_sena ? product_sena : iznos_summa;
 
       await PrixodDB.createChild(
         [
@@ -394,7 +394,7 @@ exports.PrixodJur7Service = class {
           data.main_schet_id,
           child.old_iznos,
           child.iznos,
-          iznos_summa,
+          child.old_iznos,
           child.iznos_schet,
           child.iznos_sub_schet,
           child.iznos_start,
@@ -410,9 +410,9 @@ exports.PrixodJur7Service = class {
       let month_iznos_summa = 0;
 
       if (child.iznos) {
-        month_iznos_summa = child.sena * (child.group.iznos_foiz / 100);
-        month_iznos_summa =
-          month_iznos_summa >= child.sena ? child.sena : month_iznos_summa;
+        // month_iznos_summa = child.sena * (child.group.iznos_foiz / 100);
+        // month_iznos_summa =
+        //   month_iznos_summa >= child.sena ? child.sena : month_iznos_summa;
       }
 
       await SaldoDB.create(
@@ -461,6 +461,7 @@ exports.PrixodJur7Service = class {
       (acc, child) => acc + child.kol * child.sena,
       0
     );
+
     const result = await db.transaction(async (client) => {
       const doc = await PrixodDB.update(
         [
@@ -514,6 +515,7 @@ exports.PrixodJur7Service = class {
         data.region_id,
         `${year}-${month}-01`,
       ]);
+
       let dates = [];
       for (let date of check) {
         dates.push(

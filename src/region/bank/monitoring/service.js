@@ -82,154 +82,258 @@ exports.BankMonitoringService = class {
       return acc;
     }, {});
 
+    let rasxodSumma = 0;
+    let prixodSumma = 0;
+
+    for (let rasxod in result.rasxod) {
+      result.rasxod[rasxod].prixod = result.prixod[rasxod] || {};
+
+      rasxodSumma += result.rasxod[rasxod].summa;
+    }
+
+    for (let prixod in result.prixod) {
+      prixodSumma += result.prixod[prixod].summa;
+    }
+
+    result.rasxod.summa = rasxodSumma;
+    result.prixod.summa = prixodSumma;
+
     return result;
   }
 
   static async capExcel(data) {
-    const title = `Дневной отчет по ${data.report_title.name} №2. Счет: ${data.main_schet.jur2_schet}. Ҳисоб рақами: ${data.main_schet.account_number}`;
-    const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
     const workbook = new ExcelJS.Workbook();
-    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
     const worksheet = workbook.addWorksheet("Hisobot");
 
+    // main section
     worksheet.mergeCells("A1", "G1");
-    const titleCell = worksheet.getCell("A1");
-    Object.assign(titleCell, {
-      value: title,
-      font: {
-        size: 10,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "center" },
+    worksheet.getCell("A1").value =
+      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+
+    worksheet.mergeCells("A2", "C2");
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  2`;
+
+    worksheet.mergeCells("D2", "G2");
+    worksheet.getCell("D2").value = data.budjet.name;
+
+    worksheet.mergeCells("A3", "G3");
+    worksheet.getCell("A3").value =
+      `БАНК ХИСОБОТИ Счёт-№ ${data.main_schet.jur2_schet}`;
+
+    worksheet.mergeCells("A4", "G4");
+    worksheet.getCell("A4").value =
+      `от ${returnStringDate(new Date(data.from))} до ${returnStringDate(new Date(data.to))}`;
+
+    worksheet.getRow(6).values = ["Дебет", "Кредит", "Сумма"];
+
+    worksheet.columns = [
+      { key: "prixod", width: 20 },
+      { key: "rasxod", width: 20 },
+      { key: "summa", width: 20 },
+    ];
+
+    let column = 7;
+
+    // prixod
+    for (let prixod in data.prixod) {
+      if (prixod !== "summa" && data.prixod[prixod].summa !== 0) {
+        worksheet.addRow({
+          prixod: data.main_schet.jur2_schet,
+          rasxod: prixod,
+          summa: data.prixod[prixod].summa,
+        });
+        column++;
+      }
+    }
+
+    worksheet.mergeCells(`A${column}`, `B${column}`);
+    const prixod = worksheet.getCell(`A${column}`);
+    prixod.value = `Жами ДБ:`;
+    prixod.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
     });
 
-    worksheet.mergeCells("H1", "J1");
-    const region = worksheet.getCell(`H1`);
-    Object.assign(region, {
-      value: data.region.name,
-      font: { size: 10, color: { argb: "FF000000" }, name: "Times New Roman" },
-      alignment: { vertical: "middle", horizontal: "center" },
-      fill: {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFFFFFF" },
-      },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      },
+    worksheet.getCell(`C${column}`).value = data.prixod.summa;
+    column++;
+
+    // rasxod main
+    for (let rasxod in data.rasxod) {
+      if (rasxod !== "summa" && data.rasxod[rasxod].summa !== 0) {
+        worksheet.addRow({
+          prixod: rasxod,
+          rasxod: data.main_schet.jur2_schet,
+          summa: data.rasxod[rasxod].summa,
+        });
+        column++;
+      }
+    }
+
+    // itogo
+    worksheet.mergeCells(`A${column}`, `B${column}`);
+    const itogoCellTitle = worksheet.getCell(`A${column}`);
+    itogoCellTitle.value = `Жами КТ:`;
+    itogoCellTitle.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
     });
 
-    worksheet.getRow(1).height = 30;
-    worksheet.getColumn(1).width = 5;
-    worksheet.getColumn(2).width = 7;
-    worksheet.getColumn(3).width = 27;
-    worksheet.getColumn(4).width = 27;
+    worksheet.getCell(`C${column}`).value = data.rasxod.summa;
+    column++;
 
-    worksheet.mergeCells("A2", "D2");
-    const dateCell = worksheet.getCell("A2");
-    Object.assign(dateCell, {
-      value: dateBetween,
-      font: {
-        size: 12,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "center" },
+    worksheet.mergeCells(`A${column}`, `B${column}`);
+    const internalCellTitle = worksheet.getCell(`A${column}`);
+    internalCellTitle.value = `ЖАМИ оборот:`;
+    internalCellTitle.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
     });
-    worksheet.getRow(2).height = 25;
-    worksheet.mergeCells("A4", "D4");
-    const balanceFromCell = worksheet.getCell("A4");
-    const balance_from = `Остаток к началу дня: ${returnStringSumma(data.balance_from.summa)}`;
-    Object.assign(balanceFromCell, {
-      value: balance_from,
-      font: {
-        size: 12,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "left" },
-    });
-    worksheet.mergeCells("A5:B5");
-    const headerCell = worksheet.getCell("A5");
-    Object.assign(headerCell, {
-      value: "Счет",
-      font: { bold: true, size: 12, name: "Times New Roman" },
-      alignment: { vertical: "middle", horizontal: "center" },
-      fill: {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFFFFFF" },
-      },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      },
-    });
-    worksheet.getCell("C5").value = "Приход";
-    worksheet.getCell("D5").value = "Расход";
-    [worksheet.getCell("C5"), worksheet.getCell("D5")].forEach((cell) => {
-      Object.assign(cell, {
-        font: { bold: true, size: 12, name: "Times New Roman" },
-        alignment: { vertical: "middle", horizontal: "center" },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFFFFFF" },
-        },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        },
+
+    worksheet.getCell(`C${column}`).value =
+      data.prixod.summa - data.rasxod.summa;
+    column += 2;
+
+    // deep rasxod
+    for (let rasxod in data.rasxod) {
+      if (rasxod !== "summa" && data.rasxod[rasxod].summa !== 0) {
+        // rasxod
+        worksheet.mergeCells(`A${column}`, `C${column}`);
+        const titleCelll = worksheet.getCell(`A${column}`);
+        titleCelll.value = `${rasxod}-счёт суммаси расшифровкаси`;
+        titleCelll.note = JSON.stringify({
+          bold: true,
+          horizontal: "center",
+        });
+        column++;
+
+        worksheet.getRow(column).values = ["Модда", "Статьяси", "Сумма"];
+        column++;
+
+        for (let item of data.rasxod[rasxod].items) {
+          worksheet.addRow({
+            prixod: item.schet,
+            rasxod: item.sub_schet,
+            summa: item.summa,
+          });
+          column++;
+        }
+
+        worksheet.mergeCells(`A${column}`, `B${column}`);
+        const prixodTitleCell = worksheet.getCell(`A${column}`);
+        prixodTitleCell.value = `Дебет буйича жами:`;
+        prixodTitleCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "left",
+        });
+
+        worksheet.getCell(`C${column}`).value = data.rasxod[rasxod].summa;
+        column += 2;
+
+        // prixod
+        worksheet.getRow(column).values = ["Модда", "Статьяси", "Сумма"];
+        column++;
+
+        if (data.rasxod[rasxod].prixod.items) {
+          for (let item of data.rasxod[rasxod].prixod.items) {
+            worksheet.addRow({
+              prixod: item.schet,
+              rasxod: item.sub_schet,
+              summa: item.summa,
+            });
+            column++;
+          }
+
+          worksheet.mergeCells(`A${column}`, `B${column}`);
+          const rasxodTitleCell = worksheet.getCell(`A${column}`);
+          rasxodTitleCell.value = `Кредит буйича жами:`;
+          rasxodTitleCell.note = JSON.stringify({
+            bold: true,
+            horizontal: "left",
+          });
+
+          worksheet.getCell(`C${column}`).value =
+            data.rasxod[rasxod].prixod.summa;
+          column += 2;
+        }
+      }
+    }
+
+    for (let podpis of data.podpis) {
+      worksheet.mergeCells(`A${column}`, `B${column}`);
+      const positionCell = worksheet.getCell(`A${column}`);
+      positionCell.value = podpis.position;
+      positionCell.note = JSON.stringify({
+        horizontal: "left",
       });
-    });
-    worksheet.getRow(5).height = 30;
-    let row_number = 5;
-    for (let item of data.data) {
-      worksheet.mergeCells(`A${row_number + 1}:B${row_number + 1}`);
-      const schet = worksheet.getCell(`A${row_number + 1}`);
-      Object.assign(schet, {
-        value: item.schet,
-        font: { name: "Times New Roman" },
-        alignment: { vertical: "middle", horizontal: "center" },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFFFFFF" },
-        },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        },
+
+      worksheet.mergeCells(`D${column}`, `G${column}`);
+      const fioCell = worksheet.getCell(`D${column}`);
+      fioCell.value = podpis.fio;
+      fioCell.note = JSON.stringify({
+        horizontal: "left",
       });
-      const prixod_sum = worksheet.getCell(`C${row_number + 1}`);
-      prixod_sum.value = item.summa.prixod_sum;
-      prixod_sum.numFmt = "#,##0.00";
-      const rasxod_sum = worksheet.getCell(`D${row_number + 1}`);
-      rasxod_sum.value = item.summa.rasxod_sum;
-      rasxod_sum.numFmt = "#,##0.00";
-      const array = [prixod_sum, rasxod_sum];
-      array.forEach((cell) => {
+      column += 4;
+    }
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let height = 20;
+      let argb = "FFFFFFFF";
+
+      if (rowNumber === 1) {
+        height = 50;
+      }
+
+      if (rowNumber > 1 && rowNumber < 4) {
+        height = 30;
+      }
+
+      if (rowNumber < 7) {
+        bold = true;
+      }
+
+      worksheet.getRow(rowNumber).height = height;
+
+      row.eachCell((cell, column) => {
+        const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if (column === 3 && rowNumber > 6 && !cellData.horizontal) {
+          horizontal = "right";
+        }
+
+        if (cellData.bold) {
+          bold = true;
+        }
+
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        }
+
+        if (
+          cell.value === "Модда" ||
+          cell.value === "Статьяси" ||
+          cell.value === "Сумма"
+        ) {
+          horizontal = "center";
+          bold = true;
+        }
+
         Object.assign(cell, {
-          font: { name: "Times New Roman", size: 12 },
-          alignment: { vertical: "middle", horizontal: "right" },
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
           fill: {
             type: "pattern",
             pattern: "solid",
-            fgColor: { argb: "FFFFFFFF" },
+            fgColor: { argb },
           },
+
           border: {
             top: { style: "thin" },
             left: { style: "thin" },
@@ -237,85 +341,15 @@ exports.BankMonitoringService = class {
             right: { style: "thin" },
           },
         });
-      });
-      row_number++;
-    }
-    worksheet.mergeCells(`A${row_number + 1}:B${row_number + 1}`);
-    const summa = worksheet.getCell(`A${row_number + 1}`);
-    summa.value = "Всего";
-    Object.assign(summa, {
-      font: { bold: true, size: 12, name: "Times New Roman" },
-      alignment: { vertical: "middle", horizontal: "center" },
-      fill: {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFFFFFF" },
-      },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      },
-    });
-    const all_prixod_summa = worksheet.getCell(`C${row_number + 1}`);
-    all_prixod_summa.value = data.prixod_sum;
-    all_prixod_summa.numFmt = "#,##0.00";
-    const all_rasxod_summa = worksheet.getCell(`D${row_number + 1}`);
-    all_rasxod_summa.value = data.rasxod_sum;
-    all_rasxod_summa.numFmt = "#,##0.00";
-    const summa_array = [all_prixod_summa, all_rasxod_summa];
-    summa_array.forEach((cell) => {
-      Object.assign(cell, {
-        font: { bold: true, size: 12, name: "Times New Roman" },
-        alignment: { vertical: "middle", horizontal: "right" },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFFFFFF" },
-        },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        },
-      });
-    });
-    row_number++;
-    worksheet.mergeCells(`A${row_number + 1}`, `D${row_number + 1}`);
-    const balanceToCell = worksheet.getCell("A" + (row_number + 1));
-    balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to.summa)}`;
-    Object.assign(balanceToCell, {
-      font: {
-        size: 12,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "left" },
-    });
-    row_number++;
-    worksheet.mergeCells(`A${row_number + 2}`, `C${row_number + 2}`);
-    const signature = worksheet.getCell(`A${row_number + 2}`);
-    signature.value = "Главный бухгалтер ___________________________";
-    worksheet.mergeCells(`A${row_number + 3}`, `C${row_number + 3}`);
-    const signature2 = worksheet.getCell(`A${row_number + 3}`);
-    signature2.value = "Бухгалтер    __________________________________";
-    worksheet.mergeCells(`A${row_number + 4}`, `C${row_number + 4}`);
-    const signature3 = worksheet.getCell(`A${row_number + 4}`);
-    signature3.value = `Получил кассир  ______________________________`;
-    const signature_array = [signature, signature2, signature3];
-    signature_array.forEach((row) => {
-      Object.assign(row, {
-        font: { bold: true, size: 12, name: "Times New Roman" },
-        alignment: { vertical: "bottom", horizontal: "left" },
-      });
-    });
-    worksheet.getRow(row_number + 2).height = 30;
-    worksheet.getRow(row_number + 3).height = 30;
-    worksheet.getRow(row_number + 4).height = 30;
 
+        // clean note
+        if (cell.note) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
     const folder_path = path.join(__dirname, "../../../../public/exports");
 
     try {

@@ -1,5 +1,9 @@
 const { SaldoDB } = require("@saldo/db");
-const { tashkentTime, returnStringDate } = require("@helper/functions");
+const {
+  tashkentTime,
+  returnStringDate,
+  HelperFunctions,
+} = require("@helper/functions");
 const { db } = require("@db/index");
 const xlsx = require("xlsx");
 const { ProductDB } = require("@product/db");
@@ -536,6 +540,8 @@ exports.SaldoService = class {
 
         product.data.kol = product.data.kol + product.kol;
         product.data.summa = product.data.summa + product.summa;
+        product.data.iznos_summa =
+          product.data.iznos_summa + product.iznos_summa;
 
         if (product.data.kol !== 0) {
           product.data.sena = product.data.summa / product.data.kol;
@@ -570,23 +576,42 @@ exports.SaldoService = class {
         for (let product of responsible.products) {
           let sena = 0;
           let iznos_summa = 0;
+          let last_iznos_summa = 0;
+          let month_iznos_summa = 0;
 
-          if (product.data.kol !== 0) {
-            sena = product.data.summa / product.data.kol;
-          } else {
-            sena = product.data.summa;
-          }
+          const nextDate = HelperFunctions.nextDate({
+            year: new Date(product.doc_data.doc_date).getFullYear(),
+            month: new Date(product.doc_data.doc_date).getMonth() + 1,
+          });
 
-          let month_iznos_summa = sena * (product.group.iznos_foiz / 100);
-          if (product.data.kol !== 0) {
-            iznos_summa = month_iznos_summa + product.data.iznos_summa;
-            if (sena !== 0) {
-              month_iznos_summa =
-                month_iznos_summa >= sena ? sena : month_iznos_summa;
-              iznos_summa = iznos_summa >= sena ? sena : iznos_summa;
+          if (
+            new Date(`${data.year}-${data.month}-01`) >
+            new Date(`${nextDate.year}-${nextDate.month}-01`)
+          ) {
+            if (product.data.kol !== 0) {
+              sena = product.data.summa / product.data.kol;
+            } else {
+              sena = product.data.summa;
             }
+
+            month_iznos_summa = sena * (product.group.iznos_foiz / 100);
+
+            if (product.data.kol !== 0) {
+              iznos_summa = month_iznos_summa + product.data.iznos_summa;
+              if (sena !== 0) {
+                month_iznos_summa =
+                  month_iznos_summa >= sena ? sena : month_iznos_summa;
+                iznos_summa = iznos_summa >= sena ? sena : iznos_summa;
+              }
+            } else {
+              iznos_summa = product.data.iznos_summa;
+            }
+
+            last_iznos_summa =
+              product.data.iznos_summa + product.eski_iznos_summa;
           } else {
             iznos_summa = product.data.iznos_summa;
+            last_iznos_summa = 0;
           }
 
           await SaldoDB.create(
@@ -608,7 +633,7 @@ exports.SaldoService = class {
               iznos_summa,
               product.iznos_schet,
               product.iznos_sub_schet,
-              product.data.iznos_summa,
+              last_iznos_summa,
               product.iznos_start,
               month_iznos_summa,
               product.debet_schet,
@@ -776,11 +801,9 @@ exports.SaldoService = class {
         if (doc.iznos) {
           month_iznos_summa = doc.sena * (doc.iznos_foiz / 100);
           old_iznos = doc.eski_iznos_summa ? doc.eski_iznos_summa / doc.kol : 0;
-          iznos_summa = month_iznos_summa + old_iznos;
-          iznos_summa = iznos_summa >= doc.sena ? doc.sena : iznos_summa;
+          // iznos_summa = month_iznos_summa + old_iznos;
+          // iznos_summa = iznos_summa >= doc.sena ? doc.sena : iznos_summa;
           old_iznos = old_iznos >= doc.sena ? doc.sena : old_iznos;
-          month_iznos_summa =
-            month_iznos_summa >= doc.sena ? doc.sena : month_iznos_summa;
         }
 
         await SaldoDB.create(
