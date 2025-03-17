@@ -69,9 +69,9 @@ exports.Controller = class {
       item.iznos_schet = item.group.schet;
       item.iznos_sub_schet = item.group.provodka_subschet;
 
-      if (!item.iznos && item.eski_iznos_summa) {
-        return res.error(req.i18n.t("IznosSummaError"), 400, item);
-      }
+      // if (!item.iznos && item.eski_iznos_summa) {
+      //   return res.error(req.i18n.t("IznosSummaError"), 400, item);
+      // }
 
       item.sena = item.summa / item.kol;
     }
@@ -167,12 +167,12 @@ exports.Controller = class {
         return res.error(req.i18n.t("groupNotFound"), 404);
       }
 
-      if (
-        (!child.iznos && child.eski_iznos_summa) ||
-        (child.iznos && !child.group.iznos_foiz)
-      ) {
-        return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      }
+      // if (
+      //   (!child.iznos && child.eski_iznos_summa) ||
+      //   (child.iznos && !child.group.iznos_foiz)
+      // ) {
+      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
+      // }
 
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
@@ -367,12 +367,12 @@ exports.Controller = class {
         return res.error(req.i18n.t("groupNotFound"), 404);
       }
 
-      if (
-        (!child.iznos && child.eski_iznos_summa) ||
-        (child.iznos && !child.group.iznos_foiz)
-      ) {
-        return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      }
+      // if (
+      //   (!child.iznos && child.eski_iznos_summa) ||
+      //   (child.iznos && !child.group.iznos_foiz)
+      // ) {
+      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
+      // }
 
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }

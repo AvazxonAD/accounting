@@ -335,29 +335,29 @@ exports.Controller = class {
       item.month = Number(item.month);
       item.year = Number(item.year);
       item.kol = Number(item.kol);
-      // item.summa = Number(item.summa.replace(/,/g, ""));
-      // item.eski_iznos_summa = Number(item.eski_iznos_summa.replace(/,/g, ""));
+      item.summa = Number(item.summa);
+      item.eski_iznos_summa = Number(item.eski_iznos_summa);
       item.doc_num = String(item.doc_num);
 
       if (item.doc_date) {
-        function excelSerialToDate(serial) {
-          const utc_days = Math.floor(serial - 25569); // Excel boshlanish sanasi (1970-01-01)
-          const utc_value = utc_days * 86400; // Sekundlar
-          return new Date(utc_value * 1000); // Date obyektiga o'giramiz
-        }
+        const dates = item.doc_date.split("");
+        const checkSlesh = dates.find((item) => item === "/");
+        const checkDotNet = dates.find((item) => item === ".");
+        if (checkDotNet) {
+          const dates = item.doc_date.split(".");
+          item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+        } else if (checkSlesh) {
+          const dates = item.doc_date.split("/");
+          item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
+        } else {
+          function excelSerialToDate(serial) {
+            const utc_days = Math.floor(serial - 25569);
+            const utc_value = utc_days * 86400;
+            return new Date(utc_value * 1000);
+          }
 
-        item.doc_date = excelSerialToDate(item.doc_date);
-        // const dates = item.doc_date.split("");
-        // const check = dates.find((item) => item === "/");
-        // if (!check) {
-        //   const dates = item.doc_date.split(".");
-        //   item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
-        // } else {
-        //   console.log(item.doc_date);
-        //   const dates = item.doc_date.split("/");
-        //   console.log(dates);
-        //   item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
-        // }
+          item.doc_date = excelSerialToDate(item.doc_date);
+        }
       } else {
         item.doc_date = new Date();
       }
@@ -414,13 +414,13 @@ exports.Controller = class {
       doc.iznos_sub_schet = group.provodka_subschet;
       doc.group = group;
 
-      if (!doc.iznos && doc.eski_iznos_summa > 0) {
-        return res.error(
-          `${req.i18n.t("iznosSummaError")} ${doc.eski_iznos_summa}`,
-          400,
-          doc
-        );
-      }
+      // if (!doc.iznos && doc.eski_iznos_summa > 0) {
+      //   return res.error(
+      //     `${req.i18n.t("IznosSummaError")} ${doc.eski_iznos_summa}`,
+      //     400,
+      //     doc
+      //   );
+      // }
     }
 
     await SaldoService.importData({

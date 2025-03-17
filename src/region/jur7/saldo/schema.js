@@ -41,7 +41,7 @@ exports.SaldoSchema = class {
         .required()
         .messages({ "*": lang.t("validation.edin") }),
       kol: Joi.number()
-        .min(1)
+        .greater(0)
         .required()
         .messages({ "*": lang.t("validation.kol") }),
       summa: Joi.number()
