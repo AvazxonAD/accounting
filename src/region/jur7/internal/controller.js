@@ -55,13 +55,13 @@ exports.Controller = class {
         return res.error(req.i18n.t("productNotFound"), 404);
       }
 
-      if (
-        (!child.iznos && child.iznos_summa) ||
-        (child.iznos && !child.product.group.iznos_foiz) ||
-        child.sena < child.iznos_summa
-      ) {
-        return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      }
+      // if (
+      //   (!child.iznos && child.iznos_summa) ||
+      //   (child.iznos && !child.product.group.iznos_foiz) ||
+      //   child.sena < child.iznos_summa
+      // ) {
+      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
+      // }
 
       const { data } = await SaldoService.getByProduct({
         region_id,
@@ -184,13 +184,13 @@ exports.Controller = class {
             child.naimenovanie_tovarov_jur7_id
         )?.kol || 0;
 
-      if (
-        (!child.iznos && child.iznos_summa) ||
-        (child.iznos && !child.product.group.iznos_foiz) ||
-        child.sena < child.iznos_summa
-      ) {
-        return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      }
+      // if (
+      //   (!child.iznos && child.iznos_summa) ||
+      //   (child.iznos && !child.product.group.iznos_foiz) ||
+      //   child.sena < child.iznos_summa
+      // ) {
+      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
+      // }
 
       const { data } = await SaldoService.getByProduct({
         region_id,
