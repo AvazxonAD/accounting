@@ -837,6 +837,7 @@ exports.SaldoService = class {
             doc.group.provodka_kredit,
             doc.group.provodka_subschet,
             data.main_schet_id,
+            data.budjet_id,
             tashkentTime(),
             tashkentTime(),
           ],
