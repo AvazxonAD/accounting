@@ -725,7 +725,11 @@ exports.SaldoService = class {
     await db.transaction(async (client) => {
       const saldo_create = [];
       for (let doc of data.docs) {
-        doc.sena = doc.summa / doc.kol;
+        if (doc.summa !== 0) {
+          doc.sena = doc.summa / doc.kol;
+        } else {
+          doc.sena = 0;
+        }
 
         if (doc.iznos) {
           for (let i = 1; i <= doc.kol; i++) {
