@@ -5,6 +5,7 @@ const {
   HelperFunctions,
   returnSleshDate,
 } = require("@helper/functions");
+const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { mkdir, constants, access } = require("fs").promises;
@@ -124,12 +125,24 @@ exports.BankMonitoringService = class {
     worksheet.getCell("A4").value =
       `от ${returnStringDate(new Date(data.from))} до ${returnStringDate(new Date(data.to))}`;
 
-    worksheet.getRow(6).values = ["Дебет", "Кредит", "Сумма"];
+    worksheet.getRow(6).values = [
+      "Дебет",
+      "Кредит",
+      "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
+    ];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
       { key: "rasxod", width: 20 },
       { key: "summa", width: 20 },
+      { key: "ignore", width: 20 },
+      { key: "r_prixod", width: 20 },
+      { key: "r_rasxod", width: 20 },
+      { key: "r_summa", width: 20 },
     ];
 
     let column = 7;
@@ -193,86 +206,123 @@ exports.BankMonitoringService = class {
       data.prixod.summa - data.rasxod.summa;
     column += 2;
 
+    let rasxod_column = 7;
     // deep rasxod
     for (let rasxod in data.rasxod) {
-      if (rasxod !== "summa" && data.rasxod[rasxod].summa !== 0) {
+      if (
+        rasxod !== "summa" &&
+        data.rasxod[rasxod].summa !== 0 &&
+        rasxod === REPORT_RASXOD_SCHET
+      ) {
         // rasxod
-        worksheet.mergeCells(`A${column}`, `C${column}`);
-        const titleCelll = worksheet.getCell(`A${column}`);
+        worksheet.mergeCells(`E5`, `G5`);
+        const titleCelll = worksheet.getCell(`E5`);
         titleCelll.value = `${rasxod}-счёт суммаси расшифровкаси`;
         titleCelll.note = JSON.stringify({
           bold: true,
           horizontal: "center",
         });
-        column++;
-
-        worksheet.getRow(column).values = ["Модда", "Статьяси", "Сумма"];
-        column++;
 
         for (let item of data.rasxod[rasxod].items) {
-          worksheet.addRow({
-            prixod: item.schet,
-            rasxod: item.sub_schet,
-            summa: item.summa,
+          const r_prixodCell = worksheet.getCell(`E${rasxod_column}`);
+          r_prixodCell.value = item.schet;
+          r_prixodCell.note = JSON.stringify({
+            horizontal: "center",
           });
-          column++;
+
+          const r_rasxodCell = worksheet.getCell(`F${rasxod_column}`);
+          r_rasxodCell.value = item.sub_schet;
+          r_rasxodCell.note = JSON.stringify({
+            horizontal: "center",
+          });
+
+          const r_summaCell = worksheet.getCell(`G${rasxod_column}`);
+          r_summaCell.value = item.summa;
+          r_summaCell.note = JSON.stringify({
+            horizontal: "right",
+          });
+
+          rasxod_column++;
         }
 
-        worksheet.mergeCells(`A${column}`, `B${column}`);
-        const prixodTitleCell = worksheet.getCell(`A${column}`);
+        worksheet.mergeCells(`E${rasxod_column}`, `F${rasxod_column}`);
+        const prixodTitleCell = worksheet.getCell(`E${rasxod_column}`);
         prixodTitleCell.value = `Дебет буйича жами:`;
         prixodTitleCell.note = JSON.stringify({
           bold: true,
           horizontal: "left",
         });
 
-        worksheet.getCell(`C${column}`).value = data.rasxod[rasxod].summa;
-        column += 2;
+        worksheet.getCell(`G${column}`).value = data.rasxod[rasxod].summa;
+        rasxod_column += 2;
 
-        // prixod
-        worksheet.getRow(column).values = ["Модда", "Статьяси", "Сумма"];
-        column++;
+        // prixod;
+        const column1 = worksheet.getCell(`E${rasxod_column}`);
+        column1.value = "Модда";
+        column1.note = JSON.stringify({
+          bold: true,
+        });
+
+        const column2 = worksheet.getCell(`F${rasxod_column}`);
+        column2.value = "Статьяси";
+        column2.note = JSON.stringify({
+          bold: true,
+        });
+
+        const column3 = worksheet.getCell(`G${rasxod_column}`);
+        column3.value = "Сумма";
+        column3.note = JSON.stringify({
+          bold: true,
+        });
+        rasxod_column++;
 
         if (data.rasxod[rasxod].prixod.items) {
           for (let item of data.rasxod[rasxod].prixod.items) {
-            worksheet.addRow({
-              prixod: item.schet,
-              rasxod: item.sub_schet,
-              summa: item.summa,
+            const column1 = worksheet.getCell(`E${rasxod_column}`);
+            column1.value = item.schet;
+
+            const column2 = worksheet.getCell(`F${rasxod_column}`);
+            column2.value = item.sub_schet;
+
+            const column3 = worksheet.getCell(`G${rasxod_column}`);
+            column3.value = item.summa;
+            column3.note = JSON.stringify({
+              horizontal: "right",
             });
-            column++;
+            rasxod_column++;
           }
-
-          worksheet.mergeCells(`A${column}`, `B${column}`);
-          const rasxodTitleCell = worksheet.getCell(`A${column}`);
-          rasxodTitleCell.value = `Кредит буйича жами:`;
-          rasxodTitleCell.note = JSON.stringify({
-            bold: true,
-            horizontal: "left",
-          });
-
-          worksheet.getCell(`C${column}`).value =
-            data.rasxod[rasxod].prixod.summa;
-          column += 2;
         }
+
+        worksheet.mergeCells(`E${rasxod_column}`, `F${rasxod_column}`);
+        const rasxodTitleCell = worksheet.getCell(`E${rasxod_column}`);
+        rasxodTitleCell.value = `Кредит буйича жами:`;
+        rasxodTitleCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "left",
+        });
+
+        worksheet.getCell(`G${rasxod_column}`).value =
+          data.rasxod[rasxod].prixod.summa || 0;
       }
     }
 
+    let podpis_column = rasxod_column > column ? rasxod_column : column;
     for (let podpis of data.podpis) {
-      worksheet.mergeCells(`A${column}`, `B${column}`);
-      const positionCell = worksheet.getCell(`A${column}`);
+      worksheet.mergeCells(`A${podpis_column}`, `B${podpis_column}`);
+      const positionCell = worksheet.getCell(`A${podpis_column}`);
       positionCell.value = podpis.position;
       positionCell.note = JSON.stringify({
         horizontal: "left",
       });
 
-      worksheet.mergeCells(`D${column}`, `G${column}`);
-      const fioCell = worksheet.getCell(`D${column}`);
+      worksheet.mergeCells(`D${podpis_column}`, `F${podpis_column}`);
+      const fioCell = worksheet.getCell(`D${podpis_column}`);
       fioCell.value = podpis.fio;
       fioCell.note = JSON.stringify({
         horizontal: "left",
+        height: 30,
       });
-      column += 4;
+      podpis_column += 4;
     }
 
     // css
@@ -318,6 +368,10 @@ exports.BankMonitoringService = class {
         ) {
           horizontal = "center";
           bold = true;
+        }
+
+        if (cellData.height) {
+          worksheet.getRow(rowNumber).height = cellData.height;
         }
 
         Object.assign(cell, {
