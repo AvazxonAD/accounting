@@ -129,19 +129,25 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error("Main shcet not found", 404);
     }
-    const { data, itogo_rasxod } = await OrganizationmonitoringService.cap({
+
+    const budjet = await BudjetService.getById({ id: query.budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const data = await OrganizationmonitoringService.cap({
       ...query,
       region_id,
     });
+
     if (query.excel === "true") {
       const filePath = await OrganizationmonitoringService.capExcel({
-        organ_name: main_schet.tashkilot_nomi,
-        operatsii: query.operatsii,
-        organizations: data,
+        main_schet,
+        budjet,
         to: query.to,
         from: query.from,
         budjet_name: main_schet.budjet_name,
-        itogo_rasxod,
+        data,
       });
 
       return res.download(filePath, (err) => {
@@ -150,6 +156,7 @@ exports.Controller = class {
         }
       });
     }
+
     return res.success(req.i18n.t("getSuccess"), 200, { itogo_rasxod }, data);
   }
 
