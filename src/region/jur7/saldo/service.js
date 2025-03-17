@@ -868,12 +868,14 @@ exports.SaldoService = class {
     const sheet = workbook.Sheets[sheetName];
 
     const excel_data = xlsx.utils
-      .sheet_to_json(sheet, { raw: false })
+      .sheet_to_json(sheet, { raw: true })
       .map((row, index) => {
         const newRow = {};
         for (const key in row) {
           if (Object.prototype.hasOwnProperty.call(row, key)) {
-            newRow[key] = row[key];
+            const value = row[key];
+            newRow[key] = value;
+
             newRow.index = index + 2;
           }
         }
