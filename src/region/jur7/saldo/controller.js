@@ -441,6 +441,7 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
+
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -469,7 +470,7 @@ exports.Controller = class {
     }
 
     if (!last_saldo.length) {
-      return res.success(req.i18n.t("lastSaldoNotFound"), 200);
+      return res.success(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
     const dates = await SaldoService.create({

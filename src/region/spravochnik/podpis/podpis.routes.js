@@ -3,15 +3,15 @@ const router = Router();
 const {
   getByIdpodpis,
   createpodpis,
-  getpodpis,
+  get,
   deletepodpis,
-  updatepodpis
+  updatepodpis,
 } = require("./podpis.controller");
 
-router.post("/",  createpodpis);
-router.get("/",  getpodpis);
-router.put("/:id",  updatepodpis);
-router.delete("/:id",  deletepodpis);
-router.get("/:id",  getByIdpodpis);
+router.post("/", createpodpis);
+router.get("/", get);
+router.put("/:id", updatepodpis);
+router.delete("/:id", deletepodpis);
+router.get("/:id", getByIdpodpis);
 
 module.exports = router;

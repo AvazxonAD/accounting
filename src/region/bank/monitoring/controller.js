@@ -2,6 +2,8 @@ const { BankMonitoringService } = require("./service");
 const { MainSchetService } = require("@main_schet/service");
 const { RegionService } = require("@region/service");
 const { ReportTitleService } = require("@report_title/service");
+const { BudjetService } = require("@budjet/service");
+const { PodpisService } = require(`@podpis/service`);
 
 exports.Controller = class {
   static async get(req, res) {
@@ -63,7 +65,8 @@ exports.Controller = class {
   }
 
   static async cap(req, res) {
-    const { from, to, main_schet_id, excel, report_title_id } = req.query;
+    const { from, to, main_schet_id, excel, report_title_id, budjet_id } =
+      req.query;
     const region_id = req.user.region_id;
     const region = await RegionService.getById({ id: region_id });
 
@@ -74,12 +77,19 @@ exports.Controller = class {
       return res.error(req.i18n.t("reportTitleNotFound"), 404);
     }
 
+    const podpis = await PodpisService.get({ region_id, type: "cap" });
+
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 400);
     }
 
     const data = await BankMonitoringService.cap({
@@ -97,6 +107,8 @@ exports.Controller = class {
         from,
         to,
         region,
+        budjet,
+        podpis,
       });
 
       res.setHeader(

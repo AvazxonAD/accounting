@@ -1,127 +1,48 @@
 {
-    "compilerOptions": {
-        "baseUrl": "./src",
-        "paths": {
-            "@budjet/*": [
-                "admin/spravochnik/budjet/*"
-            ],
-            "@role/*": [
-                "admin/spravochnik/role/*"
-            ],
-            "@smeta/*": [
-                "admin/smeta/*"
-            ],
-            "@smeta_grafik/*": [
-                "region/smeta.grafik/*"
-            ],
-            "@main_book_schet/*": [
-                "admin/spravochnik/main.book.schet/*"
-            ],
-            "@group/*": [
-                "admin/spravochnik/group/*"
-            ],
-            "@admin_saldo/*": [
-                "admin/saldo/*"
-            ],
-            "@admin_main_book/*": [
-                "admin/main.book/*"
-            ],
-            "@admin_dashboard/*": [
-                "admin/dashboard/*"
-            ],
-            "@unit/*": [
-                "admin/spravochnik/unit/*"
-            ],
-            "@log/*": [
-                "admin/log/*"
-            ],
-            "@pereotsenka/*": [
-                "admin/spravochnik/pereotsenka/*"
-            ],
-            "@bank/*": [
-                "admin/spravochnik/bank/*"
-            ],
-            "@operatsii/*": [
-                "admin/spravochnik/operatsii/*"
-            ],
-            "@auth/*": [
-                "auth/auth/*"
-            ],
-            "@user/*": [
-                "auth/user/*"
-            ],
-            "@admin_users/*": [
-                "admin/users/*"
-            ],
-            "@main_schet/*": [
-                "region/spravochnik/main.schet/*"
-            ],
-            "@podraz/*": [
-                "region/spravochnik/podrazdelenie/*"
-            ],
-            "@jur7_podraz/*": [
-                "region/spravochnik/jur7.podrazdelenie/*"
-            ],
-            "@report_title/*": [
-                "admin/spravochnik/report.title/*"
-            ],
-            "@organ_saldo/*": [
-                "region/organ.saldo/*"
-            ],
-            "@podotchet_saldo/*": [
-                "region/podotchet.saldo/*"
-            ],
-            "@jur7_prixod/*": [
-                "region/jur7/prixod/*"
-            ],
-            "@saldo/*": [
-                "region/jur7/saldo/*"
-            ],
-            "@organization/*": [
-                "region/spravochnik/organization/*"
-            ],
-            "@responsible/*": [
-                "region/spravochnik/responsible/*"
-            ],
-            "@product/*": [
-                "region/spravochnik/product/*"
-            ],
-            "@gazna/*": [
-                "region/spravochnik/organization/gazna/*"
-            ],
-            "@account_number/*": [
-                "region/spravochnik/organization/account_number/*"
-            ],
-            "@features/*": [
-                "region/features/*"
-            ],
-            "@contract/*": [
-                "region/contract/*"
-            ],
-            "@region/*": [
-                "admin/spravochnik/region/*"
-            ],
-            "@middleware/*": [
-                "middleware/*"
-            ],
-            "@utils/*": [
-                "delete/utils/*"
-            ],
-            "@helper/*": [
-                "helper/*"
-            ],
-            "@db/*": [
-                "db/*"
-            ],
-            "@config/*": [
-                "delete/config/*"
-            ],
-            "@public/*": [
-                "../public/*"
-            ]
-        }
-    },
-    "include": [
-        "src"
-    ]
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@budjet/*": ["admin/spravochnik/budjet/*"],
+      "@role/*": ["admin/spravochnik/role/*"],
+      "@smeta/*": ["admin/smeta/*"],
+      "@smeta_grafik/*": ["region/smeta.grafik/*"],
+      "@main_book_schet/*": ["admin/spravochnik/main.book.schet/*"],
+      "@group/*": ["admin/spravochnik/group/*"],
+      "@admin_saldo/*": ["admin/saldo/*"],
+      "@admin_main_book/*": ["admin/main.book/*"],
+      "@admin_dashboard/*": ["admin/dashboard/*"],
+      "@unit/*": ["admin/spravochnik/unit/*"],
+      "@log/*": ["admin/log/*"],
+      "@pereotsenka/*": ["admin/spravochnik/pereotsenka/*"],
+      "@bank/*": ["admin/spravochnik/bank/*"],
+      "@operatsii/*": ["admin/spravochnik/operatsii/*"],
+      "@auth/*": ["auth/auth/*"],
+      "@user/*": ["auth/user/*"],
+      "@admin_users/*": ["admin/users/*"],
+      "@main_schet/*": ["region/spravochnik/main.schet/*"],
+      "@podpis/*": ["region/spravochnik/podpis/*"],
+      "@podraz/*": ["region/spravochnik/podrazdelenie/*"],
+      "@jur7_podraz/*": ["region/spravochnik/jur7.podrazdelenie/*"],
+      "@report_title/*": ["admin/spravochnik/report.title/*"],
+      "@organ_saldo/*": ["region/organ.saldo/*"],
+      "@podotchet_saldo/*": ["region/podotchet.saldo/*"],
+      "@jur7_prixod/*": ["region/jur7/prixod/*"],
+      "@saldo/*": ["region/jur7/saldo/*"],
+      "@organization/*": ["region/spravochnik/organization/*"],
+      "@responsible/*": ["region/spravochnik/responsible/*"],
+      "@product/*": ["region/spravochnik/product/*"],
+      "@gazna/*": ["region/spravochnik/organization/gazna/*"],
+      "@account_number/*": ["region/spravochnik/organization/account_number/*"],
+      "@features/*": ["region/features/*"],
+      "@contract/*": ["region/contract/*"],
+      "@region/*": ["admin/spravochnik/region/*"],
+      "@middleware/*": ["middleware/*"],
+      "@utils/*": ["delete/utils/*"],
+      "@helper/*": ["helper/*"],
+      "@db/*": ["db/*"],
+      "@config/*": ["delete/config/*"],
+      "@public/*": ["../public/*"]
+    }
+  },
+  "include": ["src"]
 }

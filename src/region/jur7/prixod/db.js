@@ -199,7 +199,6 @@ exports.PrixodDB = class {
             
           FROM data
         `;
-    console.log(params);
 
     const result = await db.query(query, params);
 
