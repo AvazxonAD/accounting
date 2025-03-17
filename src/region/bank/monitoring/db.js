@@ -459,9 +459,8 @@ exports.BankMonitoringDB = class {
                         op.sub_schet
                 )
             SELECT
-                COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON) AS prixod, 
-                COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON) AS rasxod
-            FROM prixod, rasxod
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON) FROM prixod) AS prixod,
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON) FROM rasxod) AS rasxod;
         `;
 
     const result = await db.query(query, params);
