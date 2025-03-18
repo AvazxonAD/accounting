@@ -7,6 +7,10 @@ const { RegionDB } = require("@region/db");
 const { MainSchetDB } = require("@main_schet/db");
 const { OrganizationDB } = require("@organization/db");
 const { OrganizationMonitoringDB } = require("./db");
+const { RegionService } = require("@region/service");
+const { ReportTitleService } = require(`@report_title/service`);
+const { PodpisService } = require(`@podpis/service`);
+const { REPORT_TYPE } = require("@helper/constants");
 
 exports.Controller = class {
   static async monitoring(req, res) {
@@ -77,10 +81,12 @@ exports.Controller = class {
   static async prixodRasxod(req, res) {
     const region_id = req.user.region_id;
     const { query } = req;
+
     const budjet = await BudjetService.getById({ id: query.budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
+
     const main_schet = await MainSchetService.getById({
       region_id,
       id: query.main_schet_id,
@@ -88,6 +94,12 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error("main shcet not found", 404);
     }
+
+    const report_title = await ReportTitleService.getById({ id: report_title });
+    if (!report_title) {
+      return res.error(req.i18n.t(`reportTitleNotFound`), 404);
+    }
+
     const { data: organizations } = await OrganizationService.get({
       region_id,
       offset: 0,
@@ -97,6 +109,7 @@ exports.Controller = class {
       query,
       organizations
     );
+
     if (query.excel === "true") {
       const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
         organ_name: main_schet.tashkilot_nomi,
@@ -130,9 +143,18 @@ exports.Controller = class {
       return res.error("Main shcet not found", 404);
     }
 
+    const region = await RegionService.getById({ id: region_id });
+
     const budjet = await BudjetService.getById({ id: query.budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const report_title = await ReportTitleService.getById({
+      id: query.report_title_id,
+    });
+    if (!report_title) {
+      return res.error(req.i18n.t(`reportTitleNotFound`), 404);
     }
 
     const data = await OrganizationmonitoringService.cap({
@@ -140,15 +162,24 @@ exports.Controller = class {
       region_id,
     });
 
+    const podpis = await PodpisService.get({
+      region_id,
+      type: REPORT_TYPE.cap,
+    });
+
     if (query.excel === "true") {
-      const filePath = await OrganizationmonitoringService.capExcel({
-        main_schet,
-        budjet,
-        to: query.to,
-        from: query.from,
-        budjet_name: main_schet.budjet_name,
-        data,
-      });
+      const { filePath, fileName } =
+        await OrganizationmonitoringService.capExcel({
+          main_schet,
+          budjet,
+          to: query.to,
+          from: query.from,
+          budjet_name: main_schet.budjet_name,
+          ...data,
+          region,
+          report_title,
+          podpis,
+        });
 
       return res.download(filePath, (err) => {
         if (err) {
@@ -157,7 +188,7 @@ exports.Controller = class {
       });
     }
 
-    return res.success(req.i18n.t("getSuccess"), 200, { itogo_rasxod }, data);
+    return res.success(req.i18n.t("getSuccess"), 200, data);
   }
 
   static async consolidated(req, res) {

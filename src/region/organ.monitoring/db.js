@@ -712,7 +712,9 @@ exports.OrganizationMonitoringDB = class {
             WITH
                 kursatilgan_hizmatlar AS (
                     SELECT
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM kursatilgan_hizmatlar_jur152_child AS ch
                     JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
@@ -729,7 +731,9 @@ exports.OrganizationMonitoringDB = class {
                 ),
                 bajarilgan_ishlar AS (
                     SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM bajarilgan_ishlar_jur3_child AS ch
                     JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
@@ -746,7 +750,9 @@ exports.OrganizationMonitoringDB = class {
                 ),
                 bank_rasxod AS (
                     SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM bank_rasxod_child ch
                     JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
@@ -764,7 +770,9 @@ exports.OrganizationMonitoringDB = class {
                 
                 organ_saldo_rasxod AS (
                     SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM organ_saldo_child ch
                     JOIN organ_saldo AS d ON ch.parent_id = d.id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
@@ -782,7 +790,9 @@ exports.OrganizationMonitoringDB = class {
 
                 organ_saldo_prixod AS (
                     SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM organ_saldo_child ch
                     JOIN organ_saldo AS d ON ch.parent_id = d.id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
@@ -800,7 +810,9 @@ exports.OrganizationMonitoringDB = class {
                 
                 bank_prixod AS (
                     SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM bank_prixod_child AS ch
                     JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
@@ -817,7 +829,9 @@ exports.OrganizationMonitoringDB = class {
                 ),
                 jur7_prixod AS (
                     SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        op.schet,
+                        op.sub_schet
                     FROM document_prixod_jur7_child ch
                     JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
                     JOIN users AS u ON u.id = d.user_id

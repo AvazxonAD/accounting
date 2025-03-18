@@ -65,7 +65,7 @@ exports.BankMonitoringService = class {
       data.region_id,
     ]);
 
-    result.prixod = result.prixod.reduce((acc, item) => {
+    result.prixods = result.prixods.reduce((acc, item) => {
       if (!acc[item.schet]) {
         acc[item.schet] = { summa: 0, items: [] };
       }
@@ -74,7 +74,7 @@ exports.BankMonitoringService = class {
       return acc;
     }, {});
 
-    result.rasxod = result.rasxod.reduce((acc, item) => {
+    result.rasxods = result.rasxods.reduce((acc, item) => {
       if (!acc[item.schet]) {
         acc[item.schet] = { summa: 0, items: [] };
       }
@@ -86,18 +86,18 @@ exports.BankMonitoringService = class {
     let rasxodSumma = 0;
     let prixodSumma = 0;
 
-    for (let rasxod in result.rasxod) {
-      result.rasxod[rasxod].prixod = result.prixod[rasxod] || {};
+    for (let rasxod in result.rasxods) {
+      result.rasxods[rasxod].prixod = result.prixods[rasxod] || {};
 
-      rasxodSumma += result.rasxod[rasxod].summa;
+      rasxodSumma += result.rasxods[rasxod].summa;
     }
 
-    for (let prixod in result.prixod) {
-      prixodSumma += result.prixod[prixod].summa;
+    for (let prixod in result.prixods) {
+      prixodSumma += result.prixods[prixod].summa;
     }
 
-    result.rasxod.summa = rasxodSumma;
-    result.prixod.summa = prixodSumma;
+    result.rasxods.summa = rasxodSumma;
+    result.prixods.summa = prixodSumma;
 
     return result;
   }
@@ -148,12 +148,12 @@ exports.BankMonitoringService = class {
     let column = 7;
 
     // prixod
-    for (let prixod in data.prixod) {
-      if (prixod !== "summa" && data.prixod[prixod].summa !== 0) {
+    for (let prixod in data.prixods) {
+      if (prixod !== "summa" && data.prixods[prixod].summa !== 0) {
         worksheet.addRow({
           prixod: data.main_schet.jur2_schet,
           rasxod: prixod,
-          summa: data.prixod[prixod].summa,
+          summa: data.prixods[prixod].summa,
         });
         column++;
       }
@@ -167,16 +167,16 @@ exports.BankMonitoringService = class {
       horizontal: "left",
     });
 
-    worksheet.getCell(`C${column}`).value = data.prixod.summa;
+    worksheet.getCell(`C${column}`).value = data.prixods.summa;
     column++;
 
     // rasxod main
-    for (let rasxod in data.rasxod) {
-      if (rasxod !== "summa" && data.rasxod[rasxod].summa !== 0) {
+    for (let rasxod in data.rasxods) {
+      if (rasxod !== "summa" && data.rasxods[rasxod].summa !== 0) {
         worksheet.addRow({
           prixod: rasxod,
           rasxod: data.main_schet.jur2_schet,
-          summa: data.rasxod[rasxod].summa,
+          summa: data.rasxods[rasxod].summa,
         });
         column++;
       }
@@ -191,7 +191,7 @@ exports.BankMonitoringService = class {
       horizontal: "left",
     });
 
-    worksheet.getCell(`C${column}`).value = data.rasxod.summa;
+    worksheet.getCell(`C${column}`).value = data.rasxods.summa;
     column++;
 
     worksheet.mergeCells(`A${column}`, `B${column}`);
@@ -203,15 +203,15 @@ exports.BankMonitoringService = class {
     });
 
     worksheet.getCell(`C${column}`).value =
-      data.prixod.summa - data.rasxod.summa;
+      data.prixods.summa - data.rasxods.summa;
     column += 2;
 
     let rasxod_column = 7;
     // deep rasxod
-    for (let rasxod in data.rasxod) {
+    for (let rasxod in data.rasxods) {
       if (
         rasxod !== "summa" &&
-        data.rasxod[rasxod].summa !== 0 &&
+        data.rasxods[rasxod].summa !== 0 &&
         rasxod === REPORT_RASXOD_SCHET
       ) {
         // rasxod
@@ -223,7 +223,7 @@ exports.BankMonitoringService = class {
           horizontal: "center",
         });
 
-        for (let item of data.rasxod[rasxod].items) {
+        for (let item of data.rasxods[rasxod].items) {
           const r_prixodCell = worksheet.getCell(`E${rasxod_column}`);
           r_prixodCell.value = item.schet;
           r_prixodCell.note = JSON.stringify({
@@ -253,7 +253,12 @@ exports.BankMonitoringService = class {
           horizontal: "left",
         });
 
-        worksheet.getCell(`G${column}`).value = data.rasxod[rasxod].summa;
+        const rasxodCell = worksheet.getCell(`G${rasxod_column}`);
+        rasxodCell.value = data.rasxods[rasxod].summa;
+        rasxodCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "right",
+        });
         rasxod_column += 2;
 
         // prixod;
@@ -276,13 +281,19 @@ exports.BankMonitoringService = class {
         });
         rasxod_column++;
 
-        if (data.rasxod[rasxod].prixod.items) {
-          for (let item of data.rasxod[rasxod].prixod.items) {
+        if (data.rasxods[rasxod].prixod.items) {
+          for (let item of data.rasxods[rasxod].prixod.items) {
             const column1 = worksheet.getCell(`E${rasxod_column}`);
             column1.value = item.schet;
+            column1.note = JSON.stringify({
+              horizontal: "center",
+            });
 
             const column2 = worksheet.getCell(`F${rasxod_column}`);
             column2.value = item.sub_schet;
+            column2.note = JSON.stringify({
+              horizontal: "center",
+            });
 
             const column3 = worksheet.getCell(`G${rasxod_column}`);
             column3.value = item.summa;
@@ -301,8 +312,12 @@ exports.BankMonitoringService = class {
           horizontal: "left",
         });
 
-        worksheet.getCell(`G${rasxod_column}`).value =
-          data.rasxod[rasxod].prixod.summa || 0;
+        const prixodCell = worksheet.getCell(`G${rasxod_column}`);
+        prixodCell.value = data.rasxods[rasxod].prixod.summa || 0;
+        prixodCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "right",
+        });
       }
     }
 

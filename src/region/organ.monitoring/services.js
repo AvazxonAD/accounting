@@ -4,6 +4,7 @@ const { OrganizationDB } = require("@organization/db");
 const { RegionDB } = require("@region/db");
 const { ContractDB } = require("@contract/db");
 const { PodpisDB } = require("../spravochnik/podpis/db");
+const { mkdir, access, constants } = require(`fs`).promises;
 const {
   returnStringDate,
   returnStringSumma,
@@ -151,14 +152,14 @@ exports.OrganizationmonitoringService = class {
       `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value = `${data.report_title.name}  №  2`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  3`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
 
     worksheet.mergeCells("A3", "G3");
     worksheet.getCell("A3").value =
-      `БАНК ХИСОБОТИ Счёт-№ ${data.main_schet.jur2_schet}`;
+      `ОБ ОРГАНИЗАТИОН Счёт-№ ${data.main_schet.jur3_schet}`;
 
     worksheet.mergeCells("A4", "G4");
     worksheet.getCell("A4").value =
@@ -187,12 +188,12 @@ exports.OrganizationmonitoringService = class {
     let column = 7;
 
     // prixod
-    for (let prixod in data.prixod) {
-      if (prixod !== "summa" && data.prixod[prixod].summa !== 0) {
+    for (let prixod in data.prixods) {
+      if (prixod !== "summa" && data.prixods[prixod].summa !== 0) {
         worksheet.addRow({
-          prixod: data.main_schet.jur2_schet,
+          prixod: data.main_schet.jur3_schet,
           rasxod: prixod,
-          summa: data.prixod[prixod].summa,
+          summa: data.prixods[prixod].summa,
         });
         column++;
       }
@@ -206,16 +207,16 @@ exports.OrganizationmonitoringService = class {
       horizontal: "left",
     });
 
-    worksheet.getCell(`C${column}`).value = data.prixod.summa;
+    worksheet.getCell(`C${column}`).value = data.prixods.summa;
     column++;
 
     // rasxod main
-    for (let rasxod in data.rasxod) {
-      if (rasxod !== "summa" && data.rasxod[rasxod].summa !== 0) {
+    for (let rasxod in data.rasxods) {
+      if (rasxod !== "summa" && data.rasxods[rasxod].summa !== 0) {
         worksheet.addRow({
           prixod: rasxod,
-          rasxod: data.main_schet.jur2_schet,
-          summa: data.rasxod[rasxod].summa,
+          rasxod: data.main_schet.jur3_schet,
+          summa: data.rasxods[rasxod].summa,
         });
         column++;
       }
@@ -230,7 +231,7 @@ exports.OrganizationmonitoringService = class {
       horizontal: "left",
     });
 
-    worksheet.getCell(`C${column}`).value = data.rasxod.summa;
+    worksheet.getCell(`C${column}`).value = data.rasxods.summa;
     column++;
 
     worksheet.mergeCells(`A${column}`, `B${column}`);
@@ -242,15 +243,15 @@ exports.OrganizationmonitoringService = class {
     });
 
     worksheet.getCell(`C${column}`).value =
-      data.prixod.summa - data.rasxod.summa;
+      data.prixods.summa - data.rasxods.summa;
     column += 2;
 
     let rasxod_column = 7;
     // deep rasxod
-    for (let rasxod in data.rasxod) {
+    for (let rasxod in data.rasxods) {
       if (
         rasxod !== "summa" &&
-        data.rasxod[rasxod].summa !== 0 &&
+        data.rasxods[rasxod].summa !== 0 &&
         rasxod === REPORT_RASXOD_SCHET
       ) {
         // rasxod
@@ -262,7 +263,7 @@ exports.OrganizationmonitoringService = class {
           horizontal: "center",
         });
 
-        for (let item of data.rasxod[rasxod].items) {
+        for (let item of data.rasxods[rasxod].items) {
           const r_prixodCell = worksheet.getCell(`E${rasxod_column}`);
           r_prixodCell.value = item.schet;
           r_prixodCell.note = JSON.stringify({
@@ -292,7 +293,12 @@ exports.OrganizationmonitoringService = class {
           horizontal: "left",
         });
 
-        worksheet.getCell(`G${column}`).value = data.rasxod[rasxod].summa;
+        const rasxodCell = worksheet.getCell(`G${rasxod_column}`);
+        rasxodCell.value = data.rasxods[rasxod].summa;
+        rasxodCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "right",
+        });
         rasxod_column += 2;
 
         // prixod;
@@ -315,13 +321,19 @@ exports.OrganizationmonitoringService = class {
         });
         rasxod_column++;
 
-        if (data.rasxod[rasxod].prixod.items) {
-          for (let item of data.rasxod[rasxod].prixod.items) {
+        if (data.rasxods[rasxod].prixod.items) {
+          for (let item of data.rasxods[rasxod].prixod.items) {
             const column1 = worksheet.getCell(`E${rasxod_column}`);
             column1.value = item.schet;
+            column1.note = JSON.stringify({
+              horizontal: "center",
+            });
 
             const column2 = worksheet.getCell(`F${rasxod_column}`);
             column2.value = item.sub_schet;
+            column2.note = JSON.stringify({
+              horizontal: "center",
+            });
 
             const column3 = worksheet.getCell(`G${rasxod_column}`);
             column3.value = item.summa;
@@ -340,8 +352,12 @@ exports.OrganizationmonitoringService = class {
           horizontal: "left",
         });
 
-        worksheet.getCell(`G${rasxod_column}`).value =
-          data.rasxod[rasxod].prixod.summa || 0;
+        const prixodCell = worksheet.getCell(`G${rasxod_column}`);
+        prixodCell.value = data.rasxods[rasxod].prixod.summa || 0;
+        prixodCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "right",
+        });
       }
     }
 
@@ -442,8 +458,8 @@ exports.OrganizationmonitoringService = class {
       });
     });
 
-    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../public/exports");
+    const fileName = `Ob_organization_shapka_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../../public/exports");
 
     try {
       await access(folder_path, constants.W_OK);
