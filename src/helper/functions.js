@@ -24,7 +24,7 @@ exports.HelperFunctions = class {
     worksheet.getCell(`A2`).value =
       `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))} `;
 
-    worksheet.mergeCells(`A4`, `G4`);
+    worksheet.mergeCells(`A4`, `E4`);
     const summa_from = worksheet.getCell(`A4`);
     summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
     summa_from.note = JSON.stringify({
@@ -99,6 +99,34 @@ exports.HelperFunctions = class {
     itogoRasxodCell.note = JSON.stringify({
       bold: true,
     });
+    column += 2;
+
+    worksheet.mergeCells(`A${column}`, `E${column}`);
+    const summa_to = worksheet.getCell(`A${column}`);
+    summa_to.value = `Остаток к консу ${data.title} дня : ${data.summa_to.summa}`;
+    summa_to.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+    column += 2;
+
+    for (let podpis of data.podpis) {
+      worksheet.mergeCells(`A${column}`, `B${column}`);
+      const positionCell = worksheet.getCell(`A${column}`);
+      positionCell.value = podpis.position;
+      positionCell.note = JSON.stringify({
+        horizontal: "left",
+      });
+
+      worksheet.mergeCells(`D${column}`, `F${column}`);
+      const fioCell = worksheet.getCell(`D${column}`);
+      fioCell.value = podpis.fio;
+      fioCell.note = JSON.stringify({
+        horizontal: "left",
+        height: 30,
+      });
+      column += 4;
+    }
 
     // css
     worksheet.eachRow((row, rowNumber) => {
