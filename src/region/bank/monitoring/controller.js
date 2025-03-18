@@ -70,16 +70,6 @@ exports.Controller = class {
     const { from, to, main_schet_id, excel, report_title_id, budjet_id } =
       req.query;
     const region_id = req.user.region_id;
-    const region = await RegionService.getById({ id: region_id });
-
-    const report_title = await ReportTitleService.getById({
-      id: report_title_id,
-    });
-    if (!report_title) {
-      return res.error(req.i18n.t("reportTitleNotFound"), 404);
-    }
-
-    const podpis = await PodpisService.get({ region_id, type: "cap" });
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -87,11 +77,6 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 400);
     }
 
     const data = await BankMonitoringService.cap({
@@ -102,7 +87,23 @@ exports.Controller = class {
     });
 
     if (excel === "true") {
-      const { fileName, filePath } = await BankMonitoringService.capExcel({
+      const region = await RegionService.getById({ id: region_id });
+
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 400);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
+
+      const { fileName, filePath } = await HelperFunctions.capExcel({
         ...data,
         main_schet,
         report_title,
@@ -111,6 +112,10 @@ exports.Controller = class {
         region,
         budjet,
         podpis,
+        title: "БАНК ХИСОБОТИ",
+        file_name: "bank",
+        schet: main_schet.jur2_schet,
+        order: 2,
       });
 
       res.setHeader(
@@ -128,7 +133,8 @@ exports.Controller = class {
   }
 
   static async daysReport(req, res) {
-    const { from, to, main_schet_id, report_title_id, excel } = req.query;
+    const { from, to, main_schet_id, report_title_id, excel, budjet_id } =
+      req.query;
     const region_id = req.user.region_id;
 
     const main_schet = await MainSchetService.getById({
@@ -147,6 +153,11 @@ exports.Controller = class {
     });
 
     if (excel) {
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+
       const report_title = await ReportTitleService.getById({
         id: report_title_id,
       });
@@ -170,9 +181,12 @@ exports.Controller = class {
         main_schet,
         report_title,
         region_id,
-        title: "Банк",
+        title: "Банк кунлик ҳисоботи",
         file_name: "bank",
         podpis,
+        budjet,
+        schet: main_schet.jur2_schet,
+        order: 2,
       });
 
       res.setHeader(

@@ -4,6 +4,8 @@ const { RegionService } = require("@region/service");
 const { ReportTitleService } = require("@report_title/service");
 const { PodpisService } = require(`@podpis/service`);
 const { BudjetService } = require(`@budjet/service`);
+const { HelperFunctions } = require("@helper/functions");
+const { REPORT_TYPE } = require("@helper/constants");
 
 exports.Controller = class {
   static async get(req, res) {
@@ -94,7 +96,7 @@ exports.Controller = class {
     });
 
     if (excel === "true") {
-      const { fileName, filePath } = await KassaMonitoringService.capExcel({
+      const { fileName, filePath } = await HelperFunctions.capExcel({
         ...data,
         main_schet,
         report_title,
@@ -103,6 +105,10 @@ exports.Controller = class {
         region,
         budjet,
         podpis,
+        title: "КАССА ХИСОБОТИ",
+        file_name: "kassa",
+        schet: main_schet.jur1_schet,
+        order: 1,
       });
 
       res.setHeader(
@@ -120,16 +126,10 @@ exports.Controller = class {
   }
 
   static async daysReport(req, res) {
-    const { from, to, main_schet_id, report_title_id } = req.query;
+    const { from, to, main_schet_id, budjet_id, report_title_id, excel } =
+      req.query;
     const region_id = req.user.region_id;
     const region = await RegionService.getById({ id: region_id });
-
-    const report_title = await ReportTitleService.getById({
-      id: report_title_id,
-    });
-    if (!report_title) {
-      return res.error(req.i18n.t("reportTitleNotFound"), 404);
-    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -146,22 +146,55 @@ exports.Controller = class {
       to,
     });
 
-    const { fileName, filePath } = await KassaMonitoringService.dailyExcel({
-      ...data,
-      region,
-      from,
-      to,
-      main_schet,
-      region_id,
-      report_title,
-    });
+    if (excel) {
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t(req.i18n.t("budjetNotFound")), 404);
+      }
 
-    return res.sendFile(filePath);
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.days_report,
+      });
+
+      const { fileName, filePath } =
+        await HelperFunctions.daysReportPodotchetExcel({
+          ...data,
+          from,
+          region,
+          to,
+          main_schet,
+          report_title,
+          region_id,
+          title: "Касса кунлик ҳисоботи",
+          file_name: "kassa",
+          podpis,
+          budjet,
+          schet: main_schet.jur1_schet,
+          order: 1,
+        });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 };
