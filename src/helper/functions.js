@@ -17,52 +17,80 @@ exports.HelperFunctions = class {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Hisobot");
 
-    worksheet.mergeCells(`A1`, `G1`);
-    worksheet.getCell(`A1`).value = `${data.title} книга`;
+    worksheet.mergeCells("A1", "G1");
+    worksheet.getCell("A1").value =
+      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
-    worksheet.mergeCells(`A2`, `G2`);
-    worksheet.getCell(`A2`).value =
-      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))} `;
+    worksheet.mergeCells("A2", "C2");
+    worksheet.getCell("A2").value =
+      `${data.report_title.name}  №  ${data.order}`;
 
-    worksheet.mergeCells(`A4`, `E4`);
-    const summa_from = worksheet.getCell(`A4`);
+    worksheet.mergeCells("D2", "G2");
+    worksheet.getCell("D2").value = data.budjet.name;
+
+    worksheet.mergeCells("A3", "G3");
+    worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
+
+    worksheet.mergeCells("A4", "G4");
+    worksheet.getCell("A4").value =
+      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+
+    worksheet.mergeCells(`A6`, `E6`);
+    const summa_from = worksheet.getCell(`A6`);
     summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
     summa_from.note = JSON.stringify({
       bold: true,
       horizontal: "left",
     });
 
-    worksheet.getRow(6).values = [
+    worksheet.getRow(8).values = [
       "Номер документ",
-      "Номер документ",
-      "описание ",
-      "Счет",
-      "Субсчет",
+      "Номер санаси",
+      "Организатион",
+      "ИНН",
+      "Хисоб рақам",
       "Приход",
       "Расход",
+      "Счет",
+      "Субсчет",
+      "Договор номер",
+      "Договор санаси",
+      "Договор описание",
     ];
 
     worksheet.columns = [
       { key: "doc_num", width: 20 },
       { key: "doc_date", width: 20 },
-      { key: "comment", width: 20 },
+      { key: "organ", width: 40 },
+      { key: "inn", width: 20 },
+      { key: "account_number", width: 30 },
+      { key: "prixod", width: 30 },
+      { key: "rasxod", width: 30 },
       { key: "schet", width: 20 },
       { key: "sub_schet", width: 20 },
-      { key: "prixod", width: 40 },
-      { key: "rasxod", width: 40 },
+      { key: "contract_doc_num", width: 20 },
+      { key: "contract_doc_date", width: 20 },
+      { key: "comment", width: 60 },
     ];
 
-    let column = 7;
+    let column = 8;
 
     for (let doc of data.prixods) {
       worksheet.addRow({
         doc_num: doc.doc_num,
         doc_date: this.returnLocalDate(new Date(doc.doc_date)),
-        comment: doc.opisanie,
-        schet: doc.schet,
-        sub_schet: doc.sub_schet,
+        organ: doc.name,
+        inn: doc.inn,
+        account_number: doc.account_number || "",
         prixod: doc.summa,
         rasxod: 0,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        contract_doc_num: doc.contract_doc_num || "",
+        contract_doc_date: doc.contract_doc_date
+          ? this.returnLocalDate(new Date(doc.contract_doc_date))
+          : "",
+        comment: doc.comment || "",
       });
       column++;
     }
@@ -70,16 +98,24 @@ exports.HelperFunctions = class {
     for (let doc of data.rasxods) {
       worksheet.addRow({
         doc_num: doc.doc_num,
-        doc_date: doc.doc_date,
-        comment: doc.opisanie,
-        schet: doc.schet,
-        sub_schet: doc.sub_schet,
+        doc_date: this.returnLocalDate(new Date(doc.doc_date)),
+        organ: doc.name,
+        inn: doc.inn,
+        account_number: doc.account_number || "",
         prixod: 0,
         rasxod: doc.summa,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        contract_doc_num: doc.contract_doc_num || "",
+        contract_doc_date: doc.contract_doc_date
+          ? this.returnLocalDate(new Date(doc.contract_doc_date))
+          : "",
+        comment: doc.comment || "",
       });
       column++;
     }
 
+    column++;
     worksheet.mergeCells(`A${column}`, `E${column}`);
     const itogoTitleCell = worksheet.getCell(`A${column}`);
     itogoTitleCell.value = `ВСЕГО`;
@@ -118,8 +154,8 @@ exports.HelperFunctions = class {
         horizontal: "left",
       });
 
-      worksheet.mergeCells(`D${column}`, `F${column}`);
-      const fioCell = worksheet.getCell(`D${column}`);
+      worksheet.mergeCells(`C${column}`, `D${column}`);
+      const fioCell = worksheet.getCell(`C${column}`);
       fioCell.value = podpis.fio;
       fioCell.note = JSON.stringify({
         horizontal: "left",
@@ -139,12 +175,16 @@ exports.HelperFunctions = class {
         height = 50;
       }
 
-      if (rowNumber > 1 && rowNumber < 4) {
+      if (rowNumber > 1 && rowNumber < 9) {
         height = 30;
       }
 
-      if (rowNumber < 7) {
+      if (rowNumber < 9) {
         bold = true;
+      }
+
+      if (rowNumber === 4) {
+        horizontal = "left";
       }
 
       worksheet.getRow(rowNumber).height = height;
@@ -152,8 +192,244 @@ exports.HelperFunctions = class {
       row.eachCell((cell, column) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
-        if (column > 5 && rowNumber > 6 && !cellData.horizontal) {
+        if (
+          (column === 6 || column === 7) &&
+          rowNumber > 8 &&
+          !cellData.horizontal
+        ) {
           horizontal = "right";
+        } else if (column > 7 && rowNumber > 8) {
+          horizontal = "center";
+        }
+
+        if (cellData.bold) {
+          bold = true;
+        }
+
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        }
+
+        if (cellData.height) {
+          worksheet.getRow(rowNumber).height = cellData.height;
+        }
+
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb },
+          },
+
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+
+        // clean note
+        if (cell.note) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const fileName = `${data.file_name}_days_report_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../public/exports");
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
+  static async daysReportPodotchetExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Hisobot");
+
+    worksheet.mergeCells("A1", "G1");
+    worksheet.getCell("A1").value =
+      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+
+    worksheet.mergeCells("A2", "C2");
+    worksheet.getCell("A2").value =
+      `${data.report_title.name}  №  ${data.order}`;
+
+    worksheet.mergeCells("D2", "G2");
+    worksheet.getCell("D2").value = data.budjet.name;
+
+    worksheet.mergeCells("A3", "G3");
+    worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
+
+    worksheet.mergeCells("A4", "G4");
+    worksheet.getCell("A4").value =
+      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+
+    worksheet.mergeCells(`A6`, `D6`);
+    const summa_from = worksheet.getCell(`A6`);
+    summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
+    summa_from.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    worksheet.getRow(8).values = [
+      "Номер документ",
+      "Номер санаси",
+      "ФИО",
+      "Раён",
+      "Приход",
+      "Расход",
+      "Счет",
+      "Субсчет",
+      "Описание",
+    ];
+
+    worksheet.columns = [
+      { key: "doc_num", width: 20 },
+      { key: "doc_date", width: 20 },
+      { key: "fio", width: 40 },
+      { key: "rayon", width: 20 },
+      { key: "prixod", width: 30 },
+      { key: "rasxod", width: 30 },
+      { key: "schet", width: 20 },
+      { key: "sub_schet", width: 20 },
+      { key: "comment", width: 60 },
+    ];
+
+    let column = 8;
+
+    for (let doc of data.prixods) {
+      worksheet.addRow({
+        doc_num: doc.doc_num,
+        doc_date: this.returnLocalDate(new Date(doc.doc_date)),
+        fio: doc.fio,
+        rayon: doc.rayon,
+        prixod: doc.summa,
+        rasxod: 0,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        comment: doc.comment || "",
+      });
+      column++;
+    }
+
+    for (let doc of data.rasxods) {
+      worksheet.addRow({
+        doc_num: doc.doc_num,
+        doc_date: this.returnLocalDate(new Date(doc.doc_date)),
+        fio: doc.fio,
+        rayon: doc.rayon,
+        prixod: 0,
+        rasxod: doc.summa,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        comment: doc.comment || "",
+      });
+      column++;
+    }
+
+    column++;
+    worksheet.mergeCells(`A${column}`, `D${column}`);
+    const itogoTitleCell = worksheet.getCell(`A${column}`);
+    itogoTitleCell.value = `ВСЕГО`;
+    itogoTitleCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    const itogoPrixodCell = worksheet.getCell(`E${column}`);
+    itogoPrixodCell.value = data.summa_from.summa;
+    itogoPrixodCell.note = JSON.stringify({
+      bold: true,
+    });
+
+    const itogoRasxodCell = worksheet.getCell(`F${column}`);
+    itogoRasxodCell.value = data.summa_to.summa;
+    itogoRasxodCell.note = JSON.stringify({
+      bold: true,
+    });
+    column += 2;
+
+    worksheet.mergeCells(`A${column}`, `D${column}`);
+    const summa_to = worksheet.getCell(`A${column}`);
+    summa_to.value = `Остаток к консу ${data.title} дня : ${data.summa_to.summa}`;
+    summa_to.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+    column += 2;
+
+    for (let podpis of data.podpis) {
+      worksheet.mergeCells(`A${column}`, `B${column}`);
+      const positionCell = worksheet.getCell(`A${column}`);
+      positionCell.value = podpis.position;
+      positionCell.note = JSON.stringify({
+        horizontal: "left",
+      });
+
+      worksheet.mergeCells(`C${column}`, `D${column}`);
+      const fioCell = worksheet.getCell(`C${column}`);
+      fioCell.value = podpis.fio;
+      fioCell.note = JSON.stringify({
+        horizontal: "left",
+        height: 30,
+      });
+      column += 4;
+    }
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let height = 25;
+      let argb = "FFFFFFFF";
+
+      if (rowNumber === 1) {
+        height = 50;
+      }
+
+      if (rowNumber > 1 && rowNumber < 9) {
+        height = 30;
+      }
+
+      if (rowNumber < 9) {
+        bold = true;
+      }
+
+      if (rowNumber === 4) {
+        horizontal = "left";
+      }
+
+      worksheet.getRow(rowNumber).height = height;
+
+      row.eachCell((cell, column) => {
+        const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if (
+          (column === 5 || column === 6) &&
+          rowNumber > 8 &&
+          !cellData.horizontal
+        ) {
+          horizontal = "right";
+        } else if (column > 6 && rowNumber > 8) {
+          horizontal = "center";
         }
 
         if (cellData.bold) {
@@ -236,7 +512,10 @@ exports.HelperFunctions = class {
     worksheet.getCell("A4").value =
       `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
-    worksheet.getRow(6).values = [
+    worksheet.mergeCells("A6", "C6");
+    worksheet.getCell("A6").value = `Бош китобга тушадиган ёзувлар`;
+
+    worksheet.getRow(7).values = [
       "Дебет",
       "Кредит",
       "Сумма",
@@ -256,7 +535,7 @@ exports.HelperFunctions = class {
       { key: "r_summa", width: 20 },
     ];
 
-    let column = 7;
+    let column = 8;
 
     // prixod
     for (let prixod in data.prixods) {
@@ -317,7 +596,7 @@ exports.HelperFunctions = class {
       data.prixods.summa - data.rasxods.summa;
     column += 2;
 
-    let rasxod_column = 7;
+    let rasxod_column = 8;
     // deep rasxod
     for (let rasxod in data.rasxods) {
       if (
@@ -326,8 +605,8 @@ exports.HelperFunctions = class {
         rasxod === REPORT_RASXOD_SCHET
       ) {
         // rasxod
-        worksheet.mergeCells(`E5`, `G5`);
-        const titleCelll = worksheet.getCell(`E5`);
+        worksheet.mergeCells(`E6`, `G6`);
+        const titleCelll = worksheet.getCell(`E6`);
         titleCelll.value = `${rasxod}-счёт суммаси расшифровкаси`;
         titleCelll.note = JSON.stringify({
           bold: true,
@@ -466,7 +745,7 @@ exports.HelperFunctions = class {
         height = 30;
       }
 
-      if (rowNumber < 7) {
+      if (rowNumber < 8) {
         bold = true;
       }
 

@@ -291,12 +291,20 @@ exports.BankMonitoringDB = class {
                         ch.summa::FLOAT,
                         d.doc_num,
                         d.doc_date,
-                        d.opisanie
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        c.opisanie AS                   comment
                     FROM bank_prixod_child ch
                     JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_organization so ON so.id = d.id_spravochnik_organization
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
                     WHERE d.isdeleted = false
                         AND ch.isdeleted = false
                         AND d.main_schet_id = $1
@@ -310,12 +318,20 @@ exports.BankMonitoringDB = class {
                         ch.summa::FLOAT,
                         d.doc_num,
                         d.doc_date,
-                        d.opisanie
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        c.opisanie AS                   comment
                     FROM bank_rasxod_child ch
                     JOIN bank_rasxod AS d ON d.id = ch.id_bank_rasxod
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_organization so ON so.id = d.id_spravochnik_organization
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
                     WHERE d.isdeleted = false
                         AND ch.isdeleted = false
                         AND d.main_schet_id = $1

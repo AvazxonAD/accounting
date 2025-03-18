@@ -261,189 +261,54 @@ exports.KassaMonitoringDB = class {
 
   static async daysReport(params) {
     const query = `
-            SELECT 
-                op.schet,
-                JSON_AGG(
-                    json_build_object(
-                        'doc_num', d.doc_num, 
-                        'doc_date', d.doc_date,
-                        'spravochnik_podotchet_litso_name', s_p_l.name,
-                        'opisanie', d.opisanie,
-                        'schet', op.schet,
-                        'prixod_sum', ch.summa,
-                        'rasxod_sum', 0
-                    )
-                ) AS docs,
-                COALESCE(SUM(ch.summa), 0) AS prixod_sum,
-                0 AS rasxod_sum
-            FROM spravochnik_operatsii AS op
-            JOIN kassa_prixod_child AS ch ON ch.spravochnik_operatsii_id = op.id
-            JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
-            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON d.id_podotchet_litso = s_p_l.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id 
-            WHERE r.id = $4 
-                AND d.doc_date BETWEEN $2 AND $3 
-                AND d.main_schet_id = $1 
-                AND d.isdeleted = false
-                AND ch.isdeleted = false
-
-            GROUP BY op.schet
-            
-            UNION ALL 
-            
-            SELECT 
-                op.schet,
-                JSON_AGG(
-                    json_build_object(
-                        'doc_num', d.doc_num, 
-                        'doc_date', d.doc_date,
-                        'spravochnik_podotchet_litso_name', s_p_l.name,
-                        'opisanie', d.opisanie,
-                        'schet', op.schet,
-                        'prixod_sum', 0,
-                        'rasxod_sum', ch.summa
-                    )
-                ) AS docs,
-                0 AS prixod_sum,
-                COALESCE(SUM(ch.summa), 0) AS rasxod_sum
-            FROM spravochnik_operatsii AS op
-            JOIN kassa_rasxod_child AS ch ON ch.spravochnik_operatsii_id = op.id
-            JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
-            LEFT JOIN spravochnik_podotchet_litso AS s_p_l ON d.id_podotchet_litso = s_p_l.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id 
-            WHERE r.id = $4 
-                AND d.doc_date BETWEEN $2 AND $3 
-                AND d.main_schet_id = $1 
-                AND d.isdeleted = false
-                AND ch.isdeleted = false
-            GROUP BY op.schet
-        `;
-
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
-  static async dailySumma(params, operator) {
-    const query = `
-            WITH prixod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0) AS summa
-                FROM spravochnik_operatsii AS op
-                JOIN kassa_prixod_child AS ch ON ch.spravochnik_operatsii_id = op.id
-                JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id 
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date ${operator} $3 
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-            ), 
-            rasxod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0) AS summa
-                FROM spravochnik_operatsii AS op
-                JOIN kassa_rasxod_child AS ch ON ch.spravochnik_operatsii_id = op.id
-                JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date ${operator} $3 
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-            )
-            SELECT 
-                prixod.summa AS prixod_summa,
-                rasxod.summa AS rasxod_summa,
-                (prixod.summa - rasxod.summa) AS summa
-            FROM prixod, rasxod
-        `;
-
-    const result = await db.query(query, params);
-
-    return result[0].summa;
-  }
-
-  static async getSchets(params) {
-    const query = `
-            SELECT 
-                DISTINCT schet 
-            FROM (
-                SELECT 
-                    op.schet
-                FROM kassa_prixod d
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN kassa_prixod_child AS ch ON d.id = ch.kassa_prixod_id 
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4 
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-                
-                UNION ALL
-            
-                SELECT 
-                    op.schet
-                FROM kassa_rasxod d
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN kassa_rasxod_child AS ch ON d.id = ch.kassa_rasxod_id 
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4 
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-            )
-        `;
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
-  static async getSummaSchet(params) {
-    const query = `
-            WITH prixod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
-                FROM kassa_prixod d
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN kassa_prixod_child AS ch ON d.id = ch.kassa_prixod_id 
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4
-                    AND d.isdeleted = false
-                    AND op.schet = $5
-                    AND ch.isdeleted = false
-            ), 
-            rasxod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa 
-                FROM kassa_rasxod d
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN kassa_rasxod_child AS ch ON d.id = ch.kassa_rasxod_id 
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4 
-                    AND d.isdeleted = false
-                    AND op.schet = $5
-                    AND ch.isdeleted = false
-            )
-            SELECT 
-                rasxod.summa AS rasxod_sum,
-                prixod.summa AS prixod_sum
-            FROM rasxod
-            CROSS JOIN prixod;
+            WITH
+                prixod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS                      fio,
+                        so.rayon,
+                        d.opisanie AS                   comment
+                    FROM kassa_prixod_child ch
+                    JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_podotchet_litso so ON so.id = d.id_podotchet_litso
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                ),
+                rasxod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS                      fio,
+                        so.rayon,
+                        d.opisanie AS                   comment
+                    FROM kassa_rasxod_child ch
+                    JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_podotchet_litso so ON so.id = d.id_podotchet_litso
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                )
+            SELECT
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON) FROM prixod) AS prixods,
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON) FROM rasxod) AS rasxods;
         `;
 
     const result = await db.query(query, params);

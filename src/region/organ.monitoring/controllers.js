@@ -11,6 +11,7 @@ const { RegionService } = require("@region/service");
 const { ReportTitleService } = require(`@report_title/service`);
 const { PodpisService } = require(`@podpis/service`);
 const { REPORT_TYPE } = require("@helper/constants");
+const { HelperFunctions } = require("@helper/functions");
 
 exports.Controller = class {
   static async monitoring(req, res) {
@@ -134,58 +135,66 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const { query } = req;
+    const { from, main_schet_id, budjet_id, report_title_id, excel, to } =
+      req.query;
+
     const main_schet = await MainSchetService.getById({
       region_id,
-      id: query.main_schet_id,
+      id: main_schet_id,
     });
     if (!main_schet) {
       return res.error("Main shcet not found", 404);
     }
 
-    const region = await RegionService.getById({ id: region_id });
-
-    const budjet = await BudjetService.getById({ id: query.budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const report_title = await ReportTitleService.getById({
-      id: query.report_title_id,
-    });
-    if (!report_title) {
-      return res.error(req.i18n.t(`reportTitleNotFound`), 404);
-    }
-
     const data = await OrganizationmonitoringService.cap({
-      ...query,
+      ...req.query,
       region_id,
     });
 
-    const podpis = await PodpisService.get({
-      region_id,
-      type: REPORT_TYPE.cap,
-    });
+    if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
 
-    if (query.excel === "true") {
-      const { filePath, fileName } =
-        await OrganizationmonitoringService.capExcel({
-          main_schet,
-          budjet,
-          to: query.to,
-          from: query.from,
-          budjet_name: main_schet.budjet_name,
-          ...data,
-          region,
-          report_title,
-          podpis,
-        });
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
 
-      return res.download(filePath, (err) => {
-        if (err) {
-          res.error(err.message, err.statusCode);
-        }
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
       });
+      if (!report_title) {
+        return res.error(req.i18n.t(`reportTitleNotFound`), 404);
+      }
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.cap,
+      });
+
+      const { filePath, fileName } = await HelperFunctions.capExcel({
+        ...data,
+        main_schet,
+        report_title,
+        from,
+        to,
+        region,
+        budjet,
+        podpis,
+        title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
+        file_name: "organization",
+        schet: main_schet.jur3_schet,
+        order: 3,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      return res.sendFile(filePath);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, data);
