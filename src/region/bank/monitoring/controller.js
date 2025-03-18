@@ -4,6 +4,7 @@ const { RegionService } = require("@region/service");
 const { ReportTitleService } = require("@report_title/service");
 const { BudjetService } = require("@budjet/service");
 const { PodpisService } = require(`@podpis/service`);
+const { HelperFunctions } = require(`@helper/functions`);
 
 exports.Controller = class {
   static async get(req, res) {
@@ -125,8 +126,8 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, req.query, data);
   }
 
-  static async daily(req, res) {
-    const { from, to, main_schet_id, report_title_id } = req.query;
+  static async daysReport(req, res) {
+    const { from, to, main_schet_id, report_title_id, excel } = req.query;
     const region_id = req.user.region_id;
     const region = await RegionService.getById({ id: region_id });
 
@@ -145,29 +146,37 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const data = await BankMonitoringService.daily({
+    const data = await BankMonitoringService.daysReport({
       region_id,
       main_schet_id,
       from,
       to,
     });
 
-    const { fileName, filePath } = await BankMonitoringService.dailyExcel({
-      ...data,
-      from,
-      region,
-      to,
-      main_schet,
-      report_title,
-      region_id,
-    });
+    if (excel) {
+      const { fileName, filePath } = await HelperFunctions.daysReportExcel({
+        ...data,
+        from,
+        region,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        type: "Банк",
+      });
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
 
-    return res.sendFile(filePath);
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 };

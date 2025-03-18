@@ -259,7 +259,7 @@ exports.KassaMonitoringDB = class {
     return result[0];
   }
 
-  static async daily(params) {
+  static async daysReport(params) {
     const query = `
             SELECT 
                 op.schet,
