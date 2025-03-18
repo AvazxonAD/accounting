@@ -5,6 +5,7 @@ const { ReportTitleService } = require("@report_title/service");
 const { BudjetService } = require("@budjet/service");
 const { PodpisService } = require(`@podpis/service`);
 const { HelperFunctions } = require(`@helper/functions`);
+const { REPORT_TYPE } = require("@helper/constants");
 
 exports.Controller = class {
   static async get(req, res) {
@@ -129,14 +130,6 @@ exports.Controller = class {
   static async daysReport(req, res) {
     const { from, to, main_schet_id, report_title_id, excel } = req.query;
     const region_id = req.user.region_id;
-    const region = await RegionService.getById({ id: region_id });
-
-    const report_title = await ReportTitleService.getById({
-      id: report_title_id,
-    });
-    if (!report_title) {
-      return res.error(req.i18n.t("reportTitleNotFound"), 404);
-    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -154,6 +147,20 @@ exports.Controller = class {
     });
 
     if (excel) {
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.days_report,
+      });
+
       const { fileName, filePath } = await HelperFunctions.daysReportExcel({
         ...data,
         from,
@@ -165,6 +172,7 @@ exports.Controller = class {
         region_id,
         title: "Банк",
         file_name: "bank",
+        podpis,
       });
 
       res.setHeader(

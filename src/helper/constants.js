@@ -17,4 +17,5 @@ exports.REPORT_RASXOD_SCHET = "231";
 
 exports.REPORT_TYPE = {
   cap: "cap",
+  days_report: "daysReport",
 };
