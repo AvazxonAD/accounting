@@ -6,6 +6,13 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static returnLocalDate(date) {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
+    return `${day}.${month}.${year}`;
+  }
+
   static async daysReportExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Hisobot");
@@ -17,35 +24,87 @@ exports.HelperFunctions = class {
     worksheet.getCell(`A2`).value =
       `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))} `;
 
-    worksheet.mergeCells(`A3`, `G3`);
-    worksheet.getCell(`A3`).value =
-      `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
+    worksheet.mergeCells(`A4`, `G4`);
+    const summa_from = worksheet.getCell(`A4`);
+    summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
+    summa_from.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
 
-    worksheet.getRow(5).values = [
+    worksheet.getRow(6).values = [
       "Номер документ",
       "Номер документ",
       "описание ",
       "Счет",
       "Субсчет",
-      "Кредит",
-      "Сумма",
+      "Приход",
+      "Расход",
     ];
 
     worksheet.columns = [
-      { key: "prixod", width: 20 },
-      { key: "rasxod", width: 20 },
-      { key: "summa", width: 20 },
-      { key: "ignore", width: 20 },
-      { key: "r_prixod", width: 20 },
-      { key: "r_rasxod", width: 20 },
-      { key: "r_summa", width: 20 },
+      { key: "doc_num", width: 20 },
+      { key: "doc_date", width: 20 },
+      { key: "comment", width: 20 },
+      { key: "schet", width: 20 },
+      { key: "sub_schet", width: 20 },
+      { key: "prixod", width: 40 },
+      { key: "rasxod", width: 40 },
     ];
+
+    let column = 7;
+
+    for (let doc of data.prixods) {
+      worksheet.addRow({
+        doc_num: doc.doc_num,
+        doc_date: this.returnLocalDate(new Date(doc.doc_date)),
+        comment: doc.opisanie,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        prixod: doc.summa,
+        rasxod: 0,
+      });
+      column++;
+    }
+
+    for (let doc of data.rasxods) {
+      worksheet.addRow({
+        doc_num: doc.doc_num,
+        doc_date: doc.doc_date,
+        comment: doc.opisanie,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        prixod: 0,
+        rasxod: doc.summa,
+      });
+      column++;
+    }
+
+    worksheet.mergeCells(`A${column}`, `E${column}`);
+    const itogoTitleCell = worksheet.getCell(`A${column}`);
+    itogoTitleCell.value = `ВСЕГО`;
+    itogoTitleCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    const itogoPrixodCell = worksheet.getCell(`F${column}`);
+    itogoPrixodCell.value = data.summa_from.summa;
+    itogoPrixodCell.note = JSON.stringify({
+      bold: true,
+    });
+
+    const itogoRasxodCell = worksheet.getCell(`G${column}`);
+    itogoRasxodCell.value = data.summa_to.summa;
+    itogoRasxodCell.note = JSON.stringify({
+      bold: true,
+    });
 
     // css
     worksheet.eachRow((row, rowNumber) => {
       let bold = false;
       let horizontal = "center";
-      let height = 20;
+      let height = 25;
       let argb = "FFFFFFFF";
 
       if (rowNumber === 1) {
@@ -65,7 +124,7 @@ exports.HelperFunctions = class {
       row.eachCell((cell, column) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
-        if (column === 3 && rowNumber > 6 && !cellData.horizontal) {
+        if (column > 5 && rowNumber > 6 && !cellData.horizontal) {
           horizontal = "right";
         }
 
@@ -75,15 +134,6 @@ exports.HelperFunctions = class {
 
         if (cellData.horizontal) {
           horizontal = cellData.horizontal;
-        }
-
-        if (
-          cell.value === "Модда" ||
-          cell.value === "Статьяси" ||
-          cell.value === "Сумма"
-        ) {
-          horizontal = "center";
-          bold = true;
         }
 
         if (cellData.height) {

@@ -1,34 +1,34 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.BankRasxodDB = class {
-    static async payment(params, client) {
-        let extraQuery = '';
-        if (params[0]) {
-            extraQuery = `summa = tulanmagan_summa`;
-        } else {
-            extraQuery = `summa = 0`;
-        }
+  static async payment(params, client) {
+    let extraQuery = "";
+    if (params[0]) {
+      extraQuery = `summa = tulanmagan_summa`;
+    } else {
+      extraQuery = `summa = 0`;
+    }
 
-        const queryParent = `--sql
+    const queryParent = `--sql
             UPDATE bank_rasxod 
             SET tulangan_tulanmagan = $1, ${extraQuery}
             WHERE id = $2 
-                AND isdeleted = false RETURNING id`
+                AND isdeleted = false RETURNING id`;
 
-        const queryChild = `--sql
+    const queryChild = `--sql
             UPDATE bank_rasxod_child 
             SET tulangan_tulanmagan = $1, ${extraQuery}
             WHERE id_bank_rasxod = $2 AND isdeleted = false;
         `;
 
-        await client.query(queryChild, params);
-        const result = await client.query(queryParent, params);
+    await client.query(queryChild, params);
+    const result = await client.query(queryParent, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async create(params, client) {
-        const query = `
+  static async create(params, client) {
+    const query = `
              INSERT INTO bank_rasxod(
                 doc_num, 
                 doc_date, 
@@ -50,13 +50,13 @@ exports.BankRasxodDB = class {
             RETURNING id
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0]
-    }
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `
+  static async createChild(params, _values, client) {
+    const query = `
             INSERT INTO bank_rasxod_child (
                spravochnik_operatsii_id,
                 tulanmagan_summa,
@@ -74,22 +74,22 @@ exports.BankRasxodDB = class {
           VALUES ${_values}
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async get(params, search = null) {
-        let search_filter = ``;
-        if (search) {
-            params.push(search);
-            search_filter = ` AND (
+  static async get(params, search = null) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `
+    const query = `
             WITH data AS (
                 SELECT 
                 d.id,
@@ -168,13 +168,13 @@ exports.BankRasxodDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getById(params, isdeleted) {
-        const query = `
+  static async getById(params, isdeleted) {
+    const query = `
             SELECT 
                 d.id,
                 d.doc_num, 
@@ -221,16 +221,17 @@ exports.BankRasxodDB = class {
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
             WHERE d.main_schet_id = $1 AND r.id = $2 AND d.id = $3
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
+                ${!isdeleted ? "AND d.isdeleted = false" : ""}
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async update(params, client) {
-        const result = await client.query(`
+  static async update(params, client) {
+    const result = await client.query(
+      `
             UPDATE bank_rasxod SET 
                 doc_num = $1, 
                 doc_date = $2, 
@@ -247,25 +248,36 @@ exports.BankRasxodDB = class {
                 updated_at = $12,
                 tulangan_tulanmagan = false
             WHERE id = $13 RETURNING id 
-        `, params);
+        `,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deleteChild(params, client) {
-        await client.query(`DELETE FROM bank_rasxod_child  WHERE id_bank_rasxod = $1`, params);
-    }
+  static async deleteChild(params, client) {
+    await client.query(
+      `DELETE FROM bank_rasxod_child  WHERE id_bank_rasxod = $1`,
+      params
+    );
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE bank_rasxod_child SET isdeleted = true WHERE id_bank_rasxod = $1`, params);
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE bank_rasxod_child SET isdeleted = true WHERE id_bank_rasxod = $1`,
+      params
+    );
 
-        const result = await client.query(`UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+    const result = await client.query(
+      `UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async fio(params) {
-        const query = `
+  static async fio(params) {
+    const query = `
             SELECT 
               b.rukovoditel,
               b.glav_buxgalter
@@ -275,12 +287,13 @@ exports.BankRasxodDB = class {
             WHERE r.id = $1 
               AND b.main_schet_id = $2 
               AND b.glav_buxgalter IS NOT NULL 
+              AND b.rukovoditel IS NOT NULL
               AND b.created_at IS NOT NULL
             ORDER BY b.created_at DESC
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result;
-    }
-}
+    return result;
+  }
+};
