@@ -11,7 +11,7 @@ exports.HelperFunctions = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells(`A1`, `G1`);
-    worksheet.getCell(`A1`).value = `${data.type} книга`;
+    worksheet.getCell(`A1`).value = `${data.title} книга`;
 
     worksheet.mergeCells(`A2`, `G2`);
     worksheet.getCell(`A2`).value =
@@ -19,14 +19,14 @@ exports.HelperFunctions = class {
 
     worksheet.mergeCells(`A3`, `G3`);
     worksheet.getCell(`A3`).value =
-      `Остаток к началу ${data.type} дня : ${data.summa_from.summa}`;
+      `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
 
-    worksheet.getRow(6).values = [
-      "Дебет",
-      "Кредит",
-      "Сумма",
-      "",
-      "Дебет",
+    worksheet.getRow(5).values = [
+      "Номер документ",
+      "Номер документ",
+      "описание ",
+      "Счет",
+      "Субсчет",
       "Кредит",
       "Сумма",
     ];
@@ -119,13 +119,13 @@ exports.HelperFunctions = class {
       });
     });
 
-    const fileName = `bank_shapka_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../public/exports");
+    const fileName = `${data.file_name}_days_report_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../public/exports");
 
     try {
-      await access(folder_path, constants.W_OK);
+      await fs.access(folder_path, fs.constants.W_OK);
     } catch (error) {
-      await mkdir(folder_path);
+      await fs.mkdir(folder_path);
     }
 
     const filePath = `${folder_path}/${fileName}`;
