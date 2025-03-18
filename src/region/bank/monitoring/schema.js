@@ -39,10 +39,11 @@ exports.KassaRasxodSchema = class {
     }).options({ stripUnknown: true });
   }
 
-  static daily() {
+  static daysReport() {
     return Joi.object({
       query: Joi.object({
         report_title_id: Joi.number().integer().required().min(1),
+        excel: Joi.boolean().default(false),
         main_schet_id: Joi.number().integer().required().min(1),
         from: Joi.string()
           .trim()

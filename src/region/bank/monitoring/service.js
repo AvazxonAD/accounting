@@ -434,266 +434,38 @@ exports.BankMonitoringService = class {
     return { fileName, filePath };
   }
 
-  static async daily(data) {
-    const result = await BankMonitoringDB.daily([
+  static async daysReport(data) {
+    const result = await BankMonitoringDB.daysReport([
       data.main_schet_id,
       data.from,
       data.to,
       data.region_id,
     ]);
 
-    const balance_from = await BankMonitoringDB.dailySumma(
+    const summa_from = await BankMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, data.from],
       "<"
     );
 
-    const balance_to = await BankMonitoringDB.dailySumma(
+    const summa_to = await BankMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, data.to],
       "<="
     );
 
-    let prixod_summa = 0;
-    let rasxod_summa = 0;
+    let rasxodSumma = 0;
+    let prixodSumma = 0;
 
-    for (let item of result) {
-      prixod_summa += item.prixod_sum;
-      rasxod_summa += item.rasxod_sum;
+    for (let rasxod of result.rasxods) {
+      rasxodSumma += rasxod.summa;
     }
 
-    return {
-      data: result,
-      balance_from,
-      balance_to,
-      prixod_summa,
-      rasxod_summa,
-    };
-  }
-
-  static async dailyExcel(data) {
-    const title = `Дневной отчет по ${data.report_title.name} №1. Счет: ${data.main_schet.jur1_schet}. Ҳисоб рақами: ${HelperFunctions.probelNumber(data.main_schet.account_number)}`;
-    const dateBetween = `За период с ${returnStringDate(new Date(data.from))} по ${returnStringDate(new Date(data.to))}`;
-    const workbook = new ExcelJS.Workbook();
-    const fileName = `kundalik_hisobot_bank_${new Date().getTime()}.xlsx`;
-    const worksheet = workbook.addWorksheet("Hisobot");
-
-    worksheet.mergeCells("A1", "G1");
-    const titleCell = worksheet.getCell("A1");
-    Object.assign(titleCell, {
-      value: title,
-      font: {
-        size: 10,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "left" },
-    });
-
-    worksheet.mergeCells("H1", "J1");
-    const region = worksheet.getCell(`H1`);
-    Object.assign(region, {
-      value: data.region.name,
-      font: { size: 10, color: { argb: "FF000000" }, name: "Times New Roman" },
-      alignment: { vertical: "middle", horizontal: "center" },
-      fill: {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFFFFFF" },
-      },
-      border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      },
-    });
-
-    worksheet.mergeCells("A2", "G2");
-    const dateCell = worksheet.getCell("A2");
-    Object.assign(dateCell, {
-      value: dateBetween,
-      font: {
-        size: 11,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "left" },
-    });
-
-    worksheet.mergeCells("A4", "G4");
-    const balanceFromCell = worksheet.getCell("A4");
-    balanceFromCell.value = `Остаток к началу дня: ${returnStringSumma(data.balance_from)}`;
-    Object.assign(balanceFromCell, {
-      font: {
-        size: 11,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "left" },
-    });
-
-    const doc_num = worksheet.getCell("A5");
-    const date = worksheet.getCell("B5");
-    const comment = worksheet.getCell("C5");
-    const schet = worksheet.getCell("D5");
-    const prixod = worksheet.getCell("E5");
-    const rasxod = worksheet.getCell("F5");
-    date.value = `Дата`;
-    comment.value = "Разъяснительный текст";
-    doc_num.value = `№ док`;
-    schet.value = `Счет`;
-    prixod.value = "Приход";
-    rasxod.value = "Расход";
-    const headers = [date, comment, doc_num, schet, prixod, rasxod];
-    headers.forEach((item) => {
-      Object.assign(item, {
-        font: { bold: true, size: 10, name: "Times New Roman" },
-        alignment: { vertical: "middle", horizontal: "center", wrapText: true },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFFFFFF" },
-        },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        },
-      });
-    });
-    let row_number = 5;
-    for (let object of data.data) {
-      object.docs.forEach((item) => {
-        const doc_num = worksheet.getCell(`A${row_number + 1}`);
-        const date = worksheet.getCell(`B${row_number + 1}`);
-        const comment = worksheet.getCell(`C${row_number + 1}`);
-        const schet = worksheet.getCell(`D${row_number + 1}`);
-        const rasxod = worksheet.getCell(`F${row_number + 1}`);
-        const prixod = worksheet.getCell(`E${row_number + 1}`);
-        date.value = returnSleshDate(new Date(item.doc_date));
-        comment.value = item.opisanie;
-        doc_num.value = item.doc_num;
-        schet.value = item.schet;
-        prixod.value = item.prixod_sum;
-        prixod.numFmt = "#,##0.00";
-        rasxod.value = item.rasxod_sum;
-        rasxod.numFmt = "#,##0.00";
-        const array = [doc_num, date, comment, schet, rasxod, prixod];
-        array.forEach((item, index) => {
-          const alignment = { vertical: "middle" };
-          if (index === 2) {
-            alignment.horizontal = "left";
-            alignment.wrapText = true;
-          } else if (index === 4 || index === 5) {
-            alignment.horizontal = "right";
-          } else {
-            alignment.horizontal = "center";
-          }
-          Object.assign(item, {
-            alignment,
-            font: { name: "Times New Roman" },
-            fill: {
-              type: "pattern",
-              pattern: "solid",
-              fgColor: { argb: "FFFFFFFF" },
-            },
-            border: {
-              top: { style: "thin" },
-              left: { style: "thin" },
-              bottom: { style: "thin" },
-              right: { style: "thin" },
-            },
-          });
-        });
-        row_number++;
-      });
-      worksheet.mergeCells(`A${row_number + 1}`, `D${row_number + 1}`);
-      const schet = worksheet.getCell(`A${row_number + 1}`);
-      schet.value = `Итого по счету ${object.schet}`;
-      const prixod_sum = worksheet.getCell(`E${row_number + 1}`);
-      prixod_sum.value = object.prixod_sum;
-      prixod_sum.numFmt = "#,##0.00";
-      const rasxod_sum = worksheet.getCell(`F${row_number + 1}`);
-      rasxod_sum.value = object.rasxod_sum;
-      rasxod_sum.numFmt = "#,##0.00";
-      const array = [schet, prixod_sum, rasxod_sum];
-      array.forEach((item, index) => {
-        let horizontal = `right`;
-        if (index === 0) {
-          horizontal = `left`;
-        }
-        Object.assign(item, {
-          alignment: { vertical: "middle", horizontal },
-          font: { name: "Times New Roman", bold: true, size: 9 },
-        });
-      });
-      row_number++;
-    }
-    const itogo_prixod = worksheet.getCell(`E${row_number + 1}`);
-    itogo_prixod.value = data.prixod_sum;
-    const itogo_rasxod = worksheet.getCell(`F${row_number + 1}`);
-    itogo_rasxod.value = data.rasxod_sum;
-    const itogo_array = [itogo_prixod, itogo_rasxod];
-    itogo_array.forEach((item) => {
-      Object.assign(item, {
-        numFmt: "#,##0.00",
-        font: {
-          size: 9,
-          bold: true,
-          color: { argb: "FF000000" },
-          name: "Times New Roman",
-        },
-        alignment: { vertical: "middle", horizontal: "right" },
-        fill: {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFFFFFF" },
-        },
-        border: {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        },
-      });
-    });
-    worksheet.mergeCells(`A${row_number + 2}`, `H${row_number + 2}`);
-    const balanceToCell = worksheet.getCell(`A${row_number + 2}`);
-    balanceToCell.value = `Остаток концу дня: ${returnStringSumma(data.balance_to)}`;
-    Object.assign(balanceToCell, {
-      font: {
-        size: 11,
-        bold: true,
-        color: { argb: "FF000000" },
-        name: "Times New Roman",
-      },
-      alignment: { vertical: "middle", horizontal: "left" },
-    });
-    worksheet.getColumn(2).width = 10;
-    worksheet.getColumn(3).width = 12;
-    worksheet.getColumn(4).width = 10;
-    worksheet.getColumn(5).width = 18;
-    worksheet.getColumn(6).width = 18;
-    worksheet.getColumn(7).width = 9;
-    worksheet.getRow(1).height = 25;
-    worksheet.getRow(2).height = 20;
-    worksheet.getRow(5).height = 25;
-
-    const folder_path = path.join(__dirname, "../../../../public/exports");
-
-    try {
-      await access(folder_path, constants.W_OK);
-    } catch (error) {
-      await mkdir(folder_path);
+    for (let prixod of result.prixods) {
+      prixodSumma += prixod.summa;
     }
 
-    const filePath = `${folder_path}/${fileName}`;
+    result.rasxodSumma = rasxodSumma;
+    result.prixodSumma = prixodSumma;
 
-    await workbook.xlsx.writeFile(filePath);
-
-    return { fileName, filePath };
+    return { ...result, summa_from, summa_to };
   }
 };

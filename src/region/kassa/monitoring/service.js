@@ -431,8 +431,8 @@ exports.KassaMonitoringService = class {
     return { fileName, filePath };
   }
 
-  static async daily(data) {
-    const result = await KassaMonitoringDB.daily([
+  static async daysReport(data) {
+    const result = await KassaMonitoringDB.daysReport([
       data.main_schet_id,
       data.from,
       data.to,

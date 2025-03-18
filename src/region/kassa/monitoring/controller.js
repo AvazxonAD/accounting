@@ -119,7 +119,7 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, req.query, data);
   }
 
-  static async daily(req, res) {
+  static async daysReport(req, res) {
     const { from, to, main_schet_id, report_title_id } = req.query;
     const region_id = req.user.region_id;
     const region = await RegionService.getById({ id: region_id });
@@ -139,7 +139,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const data = await KassaMonitoringService.daily({
+    const data = await KassaMonitoringService.daysReport({
       region_id,
       main_schet_id,
       from,
