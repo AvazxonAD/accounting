@@ -1,21 +1,21 @@
-const { db } = require('@db/index');
+const { db } = require("@db/index");
 
 exports.DashboardDB = class {
-    static async getBudjet(params, budjet_id, main_schet_id) {
-        let main_schet_filter = '';
-        let budjet_filter = ``;
+  static async getBudjet(params, budjet_id, main_schet_id) {
+    let main_schet_filter = "";
+    let budjet_filter = ``;
 
-        if (main_schet_id) {
-            params.push(main_schet_id);
-            main_schet_filter = `AND m.id = $${params.length}`;
-        }
+    if (main_schet_id) {
+      params.push(main_schet_id);
+      main_schet_filter = `AND m.id = $${params.length}`;
+    }
 
-        if (budjet_id) {
-            params.push(budjet_id);
-            budjet_filter = `AND b.id = $${params.length}`;
-        }
+    if (budjet_id) {
+      params.push(budjet_id);
+      budjet_filter = `AND b.id = $${params.length}`;
+    }
 
-        const query = `
+    const query = `
             SELECT
                 b.*,
                 COALESCE(
@@ -35,13 +35,13 @@ exports.DashboardDB = class {
                 ${budjet_filter}
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async kassa(params) {
-        const query = `
+  static async kassa(params) {
+    const query = `
             SELECT 
                 COALESCE(SUM(p.summa), 0)::FLOAT AS prixod_sum,
                 COALESCE(SUM(r.summa), 0)::FLOAT AS rasxod_sum,
@@ -52,13 +52,13 @@ exports.DashboardDB = class {
             WHERE p.main_schet_id = $1 AND p.doc_date <= $2
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async bank(params) {
-        const query = `
+  static async bank(params) {
+    const query = `
             SELECT
                 COALESCE(SUM(p.summa), 0)::FLOAT AS prixod_sum,
                 COALESCE(SUM(r.summa), 0)::FLOAT AS rasxod_sum,
@@ -73,14 +73,13 @@ exports.DashboardDB = class {
                 AND p.doc_date <= $2
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-
-    static async podotchet(params) {
-        const query = `
+  static async podotchet(params) {
+    const query = `
             WITH 
                 bank_rasxod AS (
                     SELECT 
@@ -176,8 +175,8 @@ exports.DashboardDB = class {
             CROSS JOIN avans_otchet
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
-}
+    return result[0];
+  }
+};

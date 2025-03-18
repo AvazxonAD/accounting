@@ -158,11 +158,13 @@ exports.Controller = class {
         ...data,
         from,
         region,
+        from,
         to,
         main_schet,
         report_title,
         region_id,
-        type: "Банк",
+        title: "Банк",
+        file_name: "bank",
       });
 
       res.setHeader(
