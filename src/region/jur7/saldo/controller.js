@@ -168,6 +168,7 @@ exports.Controller = class {
       const check_doc = await SaldoService.checkDoc({
         product_id: check.naimenovanie_tovarov_jur7_id,
       });
+
       if (check_doc.length) {
         return res.error(req.i18n.t("saldoRasxodError"), 400, {
           code: CODE.DOCS_HAVE.code,
@@ -340,14 +341,14 @@ exports.Controller = class {
       item.doc_num = String(item.doc_num);
 
       if (item.doc_date) {
-        const dates = item.doc_date.split("");
+        const dates = String(item.doc_date).split("");
         const checkSlesh = dates.find((item) => item === "/");
         const checkDotNet = dates.find((item) => item === ".");
         if (checkDotNet) {
-          const dates = item.doc_date.split(".");
+          const dates = String(item.doc_date).split(".");
           item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
         } else if (checkSlesh) {
-          const dates = item.doc_date.split("/");
+          const dates = String(item.doc_date).split("/");
           item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
         } else {
           function excelSerialToDate(serial) {
