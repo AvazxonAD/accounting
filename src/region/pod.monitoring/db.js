@@ -627,6 +627,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND op.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -646,6 +647,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND op.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -665,6 +667,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND op.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -684,6 +687,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND op.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -702,6 +706,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND op.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -720,6 +725,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND op.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -732,12 +738,14 @@ exports.PodotchetMonitoringDB = class {
                 JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = d.spravochnik_operatsii_own_id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 WHERE d.isdeleted = false
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
+                    AND own.schet = $5
                 GROUP BY op.schet,
                     op.sub_schet
             )

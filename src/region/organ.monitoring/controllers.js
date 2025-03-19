@@ -96,10 +96,12 @@ exports.Controller = class {
       return res.error("main shcet not found", 404);
     }
 
-    const report_title = await ReportTitleService.getById({ id: report_title });
-    if (!report_title) {
-      return res.error(req.i18n.t(`reportTitleNotFound`), 404);
-    }
+    // const report_title = await ReportTitleService.getById({
+    //   id: query.report_title,
+    // });
+    // if (!report_title) {
+    //   return res.error(req.i18n.t(`reportTitleNotFound`), 404);
+    // }
 
     const { data: organizations } = await OrganizationService.get({
       region_id,
@@ -135,8 +137,15 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const { from, main_schet_id, budjet_id, report_title_id, excel, to } =
-      req.query;
+    const {
+      from,
+      main_schet_id,
+      budjet_id,
+      report_title_id,
+      excel,
+      to,
+      operatsii,
+    } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -182,7 +191,7 @@ exports.Controller = class {
         podpis,
         title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
         file_name: "organization",
-        schet: main_schet.jur3_schet,
+        schet: operatsii,
         order: 3,
       });
 

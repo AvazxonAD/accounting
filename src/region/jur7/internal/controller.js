@@ -11,6 +11,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query;
     const { doc_date, kimdan_id, childs, kimga_id } = req.body;
 
     const main_schet = await MainSchetService.getById({

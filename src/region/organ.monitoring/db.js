@@ -717,6 +717,7 @@ exports.OrganizationMonitoringDB = class {
                         op.sub_schet
                     FROM kursatilgan_hizmatlar_jur152_child AS ch
                     JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
+                    JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                     JOIN users AS u ON d.user_id = u.id
                     JOIN regions AS r ON r.id = u.region_id
@@ -726,6 +727,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND own.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 ),
@@ -736,6 +738,7 @@ exports.OrganizationMonitoringDB = class {
                         op.sub_schet
                     FROM bajarilgan_ishlar_jur3_child AS ch
                     JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+                    JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                     JOIN users AS u ON d.user_id = u.id
                     JOIN regions AS r ON r.id = u.region_id
@@ -745,6 +748,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND own.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 ),
@@ -764,6 +768,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND op.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 ),
@@ -784,6 +789,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND op.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 ),
@@ -804,6 +810,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND op.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 ),
@@ -824,6 +831,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND op.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 ),
@@ -843,6 +851,7 @@ exports.OrganizationMonitoringDB = class {
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
                         AND r.id = $4
+                        AND op.schet = $5
                     GROUP BY op.schet,
                         op.sub_schet
                 )

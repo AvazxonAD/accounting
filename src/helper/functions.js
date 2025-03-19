@@ -55,7 +55,7 @@ exports.HelperFunctions = class {
       "Субсчет",
       "Договор номер",
       "Договор санаси",
-      "Договор описание",
+      "описание",
     ];
 
     worksheet.columns = [

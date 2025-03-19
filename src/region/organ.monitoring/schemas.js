@@ -61,12 +61,12 @@ exports.capSchema = Joi.object({
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       .required(),
-    // operatsii: Joi.string().trim().required(),
     excel: Joi.string()
       .trim()
       .pattern(/^(true|false)$/)
       .allow("", null),
     main_schet_id: Joi.number().integer().min(1).required(),
+    operatsii: Joi.string().trim().required(),
     report_title_id: Joi.number().integer().min(1).required(),
     budjet_id: Joi.number().integer().min(1).required(),
   }),
