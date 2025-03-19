@@ -1,4 +1,3 @@
-clean material oborot
     delete from document_prixod_jur7_child;
     delete from document_prixod_jur7;
     delete from document_rasxod_jur7_child;

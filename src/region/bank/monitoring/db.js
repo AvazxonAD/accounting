@@ -296,7 +296,7 @@ exports.BankMonitoringDB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        c.opisanie AS                   comment
+                        d.opisanie AS                   comment
                     FROM bank_prixod_child ch
                     JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod
                     JOIN users AS u ON u.id = d.user_id
@@ -323,7 +323,7 @@ exports.BankMonitoringDB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        c.opisanie AS                   comment
+                        d.opisanie AS                   comment
                     FROM bank_rasxod_child ch
                     JOIN bank_rasxod AS d ON d.id = ch.id_bank_rasxod
                     JOIN users AS u ON u.id = d.user_id

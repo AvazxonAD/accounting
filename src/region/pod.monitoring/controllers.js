@@ -557,8 +557,15 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const { report_title_id, main_schet_id, excel, budjet_id, from, to } =
-      req.query;
+    const {
+      report_title_id,
+      main_schet_id,
+      excel,
+      budjet_id,
+      operatsii,
+      from,
+      to,
+    } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -601,7 +608,7 @@ exports.Controller = class {
         podpis,
         title: "Podotchet Monitoring",
         file_name: "podotchet",
-        schet: main_schet.jur4_schet,
+        schet: operatsii,
         order: 4,
       });
 

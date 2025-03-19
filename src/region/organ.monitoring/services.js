@@ -103,6 +103,7 @@ exports.OrganizationmonitoringService = class {
       data.from,
       data.to,
       data.region_id,
+      data.operatsii,
     ]);
 
     result.prixods = result.prixods.reduce((acc, item) => {
