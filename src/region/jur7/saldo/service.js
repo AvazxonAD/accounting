@@ -641,6 +641,7 @@ exports.SaldoService = class {
               product.kredit_schet,
               product.kredit_sub_schet,
               data.main_schet_id,
+              data.budjet_id,
               tashkentTime(),
               tashkentTime(),
             ],
@@ -690,6 +691,7 @@ exports.SaldoService = class {
   }
 
   static async delete(data) {
+    console.log(data.ids.length);
     const dates = await db.transaction(async (client) => {
       for (let id of data.ids) {
         await SaldoDB.deleteById([id.id], client);
@@ -699,7 +701,9 @@ exports.SaldoService = class {
         data.region_id,
         `${data.year}-${data.month}-01`,
       ]);
+
       let dates = [];
+
       for (let date of check) {
         dates.push(
           await SaldoDB.createSaldoDate(

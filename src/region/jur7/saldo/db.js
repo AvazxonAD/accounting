@@ -466,8 +466,8 @@ exports.SaldoDB = class {
                     JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
                     JOIN group_jur7 g ON g.id = n.group_jur7_id
                     WHERE r.id = $1
-                        AND s.year = $2 
-                        AND s.month = $3 
+                        AND s.year = $2
+                        AND s.month = $3
                         AND s.isdeleted = false
                         ${responsible_filter} 
                         ${filter}
