@@ -78,7 +78,7 @@ exports.MainBookSchema = class {
         budjet_id: Joi.number().min(1).integer().required(),
         limit: Joi.number().min(1).integer().default(10),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static getData() {
@@ -88,7 +88,7 @@ exports.MainBookSchema = class {
         month: Joi.number().min(1).integer().max(12).required(),
         year: Joi.number().min(1901).integer().max(2099).required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static getById() {
@@ -96,7 +96,7 @@ exports.MainBookSchema = class {
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static delete() {
@@ -104,6 +104,6 @@ exports.MainBookSchema = class {
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 };
