@@ -134,9 +134,98 @@ exports.Controller = class {
   }
 
   static async getData(req, res) {
+    const { year, month, budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const types = await MainBookService.getMainBookType({});
+
     const schets = await OperatsiiService.getUniqueSchets({});
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, schets);
+    for (let type of types) {
+      if (type.id === 0) {
+        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs.forEach((element) => {
+          element.prixod = 0;
+          element.rasxod = 0;
+        });
+      }
+
+      if (type.id === 1) {
+        type.sub_childs = await MainBookService.getJur1Data({
+          schets,
+          budjet_id,
+          year,
+          month,
+        });
+      }
+
+      if (type.id === 2) {
+        type.sub_childs = await MainBookService.getJur2Data({
+          schets,
+          budjet_id,
+          year,
+          month,
+        });
+      }
+
+      if (type.id === 3) {
+        type.sub_childs = await MainBookService.getJur3Data({
+          schets,
+          budjet_id,
+          year,
+          month,
+        });
+      }
+
+      if (type.id === 4) {
+        type.sub_childs = await MainBookService.getJur3Data({
+          schets,
+          budjet_id,
+          year,
+          month,
+        });
+      }
+
+      if (type.id === 5) {
+        type.sub_childs = await MainBookService.getJur3Data({
+          schets,
+          budjet_id,
+          year,
+          month,
+        });
+      }
+
+      if (type.id === 7) {
+        type.sub_childs = await MainBookService.getJur3Data({
+          schets,
+          budjet_id,
+          year,
+          month,
+        });
+      }
+
+      if (type.id === 9) {
+        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs.forEach((element) => {
+          element.prixod = 0;
+          element.rasxod = 0;
+        });
+      }
+
+      if (type.id === 10) {
+        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs.forEach((element) => {
+          element.prixod = 0;
+          element.rasxod = 0;
+        });
+      }
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, types);
   }
 
   static async update(req, res) {

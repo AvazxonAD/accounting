@@ -9,7 +9,7 @@ router
   .post("/", validator(Controller.create, MainBookSchema.create()))
   .get("/", validator(Controller.get, MainBookSchema.get()))
   .get("/type", validator(Controller.getMainBookType))
-  .get("/data", validator(Controller.getData))
+  .get("/data", validator(Controller.getData, MainBookSchema.getData()))
   .put("/:id", validator(Controller.update, MainBookSchema.update()))
   .delete("/:id", validator(Controller.delete, MainBookSchema.delete()))
   .get("/:id", validator(Controller.getById, MainBookSchema.getById()));

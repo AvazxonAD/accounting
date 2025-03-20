@@ -81,6 +81,16 @@ exports.MainBookSchema = class {
     });
   }
 
+  static getData() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+        month: Joi.number().min(1).integer().max(12).required(),
+        year: Joi.number().min(1901).integer().max(2099).required(),
+      }),
+    });
+  }
+
   static getById() {
     return Joi.object({
       params: Joi.object({
