@@ -5,7 +5,9 @@ const { MAIN_BOOK_TYPE } = require(`@helper/constants`);
 
 exports.Controller = class {
   static async getMainBookType(req, res) {
-    return res.success(req.i18n.t("getSuccess"), 200, null, MAIN_BOOK_TYPE);
+    const result = await MainBookService.getMainBookType();
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 
   static async create(req, res) {
