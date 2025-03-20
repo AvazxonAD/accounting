@@ -1,6 +1,18 @@
 const { db } = require("@db/index");
 
 exports.MainBookDB = class {
+  static async delete(params, client) {
+    const query = `UPDATE main_book SET isdeleted = true WHERE id = $1`;
+
+    await client.query(query, params);
+  }
+
+  static async deleteChildByParentId(params, client) {
+    const query = `UPDATE main_book_child SET isdeleted = true WHERE parent_id = $1`;
+
+    await client.query(query, params);
+  }
+
   static async create(params, client) {
     const query = `
       INSERT INTO main_book (
@@ -184,6 +196,7 @@ exports.MainBookDB = class {
   static async getByIdChild(params) {
     const query = `
       SELECT
+        DISTINCT ON (t.id, t.name, t.sort_order)
         t.id AS             type_id,
         t.name AS           type_name,
         (

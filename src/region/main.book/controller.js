@@ -1,9 +1,30 @@
 const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
 const { OperatsiiService } = require("@operatsii/service");
-const { MAIN_BOOK_TYPE } = require(`@helper/constants`);
 
 exports.Controller = class {
+  static async delete(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
+
+    const data = await MainBookService.getById({
+      region_id,
+      id,
+    });
+
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (data.status === 3) {
+      return res.error(req.i18n.t("mainBookStatus"), 409);
+    }
+
+    await MainBookService.delete({ id });
+
+    return res.success(req.i18n.t("deleteSuccess"), 200);
+  }
+
   static async getMainBookType(req, res) {
     const result = await MainBookService.getMainBookType();
 
@@ -112,6 +133,10 @@ exports.Controller = class {
 
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (old_data.status === 3) {
+      return res.error(req.i18n.t("mainBookStatus"), 409);
     }
 
     for (let child of childs) {
