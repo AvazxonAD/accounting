@@ -4,93 +4,119 @@ const {
   updateOperatsiiService,
   deleteOperatsiiService,
   getByIdOperatsiiService,
-  getSchetService
+  getSchetService,
 } = require("./operatsii.service");
 
 const pool = require("@config/db");
 const ErrorResponse = require("@utils/errorResponse");
 const xlsx = require("xlsx");
-const { operatsiiValidation, operatsiiQueryValidation, } = require("@utils/validation");;
+const {
+  operatsiiValidation,
+  operatsiiQueryValidation,
+} = require("@utils/validation");
 const { SmetaDB } = require("@smeta/db");
-const { errorCatch } = require('@utils/errorCatch')
+const { errorCatch } = require("@utils/errorCatch");
 const { resFunc } = require("@utils/resFunc");
 const { validationResponse } = require("@utils/response-for-validation");
-const { OperatsiiService } = require('./service');
-const { BudjetService } = require('@budjet/service');
-const { HelperFunctions } = require('../../../helper/functions');
+const { OperatsiiService } = require("./service");
+const { BudjetService } = require("@budjet/service");
+const { HelperFunctions } = require("../../../helper/functions");
 
 const Controller = class {
-  static async uniqueSchets(req, res) {
+  static async getUniqueSchets(req, res) {
     const { type_schet, budjet_id } = req.query;
     if (budjet_id) {
-      const budjet = await BudjetService.getById({ id: budjet_id })
+      const budjet = await BudjetService.getById({ id: budjet_id });
       if (!budjet) {
-        return res.error(req.i18n.t('budjetNotFound'), 404);
+        return res.error(req.i18n.t("budjetNotFound"), 404);
       }
     }
 
-    const result = await OperatsiiService.uniqueSchets({ type_schet, budjet_id });
+    const result = await OperatsiiService.getUniqueSchets({
+      type_schet,
+      budjet_id,
+    });
 
-    return res.success(req.i18n.t('getSuccess'), 200, null, result);
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 
   static async templateFile(req, res) {
     const { fileName, fileRes } = await OperatsiiService.templateFile();
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
   }
-}
-
+};
 
 const getSchet = async (req, res) => {
   try {
-    const result = await getSchetService()
+    const result = await getSchetService();
 
-    return res.success(req.i18n.t('getSuccess'), 200, null, result);
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
   } catch (error) {
-    errorCatch(error, res)
+    errorCatch(error, res);
   }
-}
+};
 
 // createOperatsii
 const createOperatsii = async (req, res) => {
   try {
-    const data = validationResponse(operatsiiValidation, req.body)
+    const data = validationResponse(operatsiiValidation, req.body);
     if (data.smeta_id) {
       const smeta = await SmetaDB.getById([data.smeta_id]);
       if (!smeta) {
         return res.status(404).json({
-          message: "smeta not found"
-        })
-      };
+          message: "smeta not found",
+        });
+      }
     }
 
     if (data.budjet_id) {
-      const budjet = await BudjetService.getById({ id: data.budjet_id })
+      const budjet = await BudjetService.getById({ id: data.budjet_id });
       if (!budjet) {
-        return res.error(req.i18n.t('budjetNotFound'), 404);
+        return res.error(req.i18n.t("budjetNotFound"), 404);
       }
     }
 
     const result = await createOperatsiiService({ ...data });
 
-    return res.success(req.i18n.t('createSuccess'), 200, null, result);
+    return res.success(req.i18n.t("createSuccess"), 200, null, result);
   } catch (error) {
-    errorCatch(error, res)
+    errorCatch(error, res);
   }
-}
+};
 
 // get all
 const getOperatsii = async (req, res) => {
   try {
-    const { page, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id } = validationResponse(operatsiiQueryValidation, req.query)
+    const {
+      page,
+      limit,
+      type_schet,
+      search,
+      meta_search,
+      schet,
+      sub_schet,
+      budjet_id,
+    } = validationResponse(operatsiiQueryValidation, req.query);
     const offset = (page - 1) * limit;
-    const { result, total } = await getAllOperatsiiService(offset, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id);
+    const { result, total } = await getAllOperatsiiService(
+      offset,
+      limit,
+      type_schet,
+      search,
+      meta_search,
+      schet,
+      sub_schet,
+      budjet_id
+    );
 
-    const pageCount = Math.ceil(total / limit)
+    const pageCount = Math.ceil(total / limit);
 
     const meta = {
       pageCount,
@@ -98,44 +124,43 @@ const getOperatsii = async (req, res) => {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-    }
+    };
 
-
-    resFunc(res, 200, result, meta)
+    resFunc(res, 200, result, meta);
   } catch (error) {
-    return errorCatch(error, res)
+    return errorCatch(error, res);
   }
-}
+};
 
 // updateOperatsii
 const updateOperatsii = async (req, res) => {
   try {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
-    const data = validationResponse(operatsiiValidation, req.body)
+    const data = validationResponse(operatsiiValidation, req.body);
     if (data.smeta_id) {
       const smeta = await SmetaDB.getById([data.smeta_id]);
       if (!smeta) {
         return res.status(404).json({
-          message: "smeta not found"
-        })
-      };
+          message: "smeta not found",
+        });
+      }
     }
 
     if (data.budjet_id) {
-      const budjet = await BudjetService.getById({ id: data.budjet_id })
+      const budjet = await BudjetService.getById({ id: data.budjet_id });
       if (!budjet) {
-        return res.error(req.i18n.t('budjetNotFound'), 404);
+        return res.error(req.i18n.t("budjetNotFound"), 404);
       }
     }
 
     const result = await updateOperatsiiService({ ...data, id });
 
-    return res.success(req.i18n.t('updateSuccess'), 200, null, result);
+    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   } catch (error) {
-    errorCatch(error, res)
+    errorCatch(error, res);
   }
-}
+};
 
 // delete value
 const deleteOperatsii = async (req, res) => {
@@ -143,23 +168,23 @@ const deleteOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
     await deleteOperatsiiService(id);
-    return 
-    return res.success(req.i18n.t('deleteSuccess'), 200);
+    return;
+    return res.success(req.i18n.t("deleteSuccess"), 200);
   } catch (error) {
-    errorCatch(error, res)
+    errorCatch(error, res);
   }
-}
+};
 
 // get element by id
 const getByIdOperatsii = async (req, res) => {
   try {
     const result = await getByIdOperatsiiService(req.params.id, null, true);
-    
-    return res.success(req.i18n.t('getSuccess'), 200, null, result);
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
   } catch (error) {
-    errorCatch(error, res)
+    errorCatch(error, res);
   }
-}
+};
 
 // import to excel
 const importToExcel = async (req, res) => {
@@ -186,7 +211,7 @@ const importToExcel = async (req, res) => {
     const test = await pool.query(
       `SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false
         `,
-      [rowData.name, rowData.type_schet],
+      [rowData.name, rowData.type_schet]
     );
     if (test.rows.length > 0) {
       return next(new ErrorResponse("Ushbu malumot avval kiritilgan", 409));
@@ -200,11 +225,11 @@ const importToExcel = async (req, res) => {
             ) VALUES($1, $2, $3, $4) 
             RETURNING *
         `,
-      [rowData.name, rowData.schet, rowData.sub_schet, rowData.type_schet],
+      [rowData.name, rowData.schet, rowData.sub_schet, rowData.type_schet]
     );
     if (!result.rows[0]) {
       return next(
-        new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500),
+        new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500)
       );
     }
   }
@@ -213,7 +238,7 @@ const importToExcel = async (req, res) => {
     success: true,
     data: "Muvaffaqiyatli kiritildi",
   });
-}
+};
 
 module.exports = {
   getByIdOperatsii,
@@ -223,5 +248,5 @@ module.exports = {
   updateOperatsii,
   importToExcel,
   getSchet,
-  Controller
+  Controller,
 };
