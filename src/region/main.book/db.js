@@ -118,8 +118,9 @@ exports.MainBookDB = class {
         JOIN regions r ON r.id = u.region_id
         WHERE d.isdeleted = false
           AND r.id = $1
+          AND d.budjet_id = $2
           ${where_clause}
-        OFFSET $2 LIMIT $3 
+        OFFSET $3 LIMIT $4 
       )
       SELECT
         COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
@@ -131,6 +132,7 @@ exports.MainBookDB = class {
           JOIN regions r ON r.id = u.region_id
           WHERE d.isdeleted = false
             AND r.id = $1
+            AND d.budjet_id = $2
             ${where_clause}
         )::INTEGER AS total
       FROM data
@@ -194,7 +196,7 @@ exports.MainBookDB = class {
       JOIN main_book_type t ON t.id = ch.type_id
       WHERE ch.isdeleted = false
         AND parent_id = $1
-      ORDER BY t.id
+      ORDER BY t.sort_order
     `;
 
     const result = await db.query(query, params);

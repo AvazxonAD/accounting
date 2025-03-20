@@ -15,7 +15,7 @@ exports.MainBookSchema = class {
             Joi.object({
               type_id: Joi.number()
                 .integer()
-                .valid(1, 2, 3, 4, 5, 7)
+                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
                 .required(),
               sub_childs: Joi.array()
                 .items(
@@ -45,7 +45,7 @@ exports.MainBookSchema = class {
             Joi.object({
               type_id: Joi.number()
                 .integer()
-                .valid(1, 2, 3, 4, 5, 7)
+                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
                 .required(),
               sub_childs: Joi.array()
                 .items(
@@ -75,6 +75,7 @@ exports.MainBookSchema = class {
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
         year: Joi.number().min(1).integer().min(19001).max(2099),
+        budjet_id: Joi.number().min(1).integer().required(),
         limit: Joi.number().min(1).integer().default(10),
       }),
     });

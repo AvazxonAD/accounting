@@ -49,7 +49,7 @@ exports.MainBookService = class {
 
   static async get(data) {
     const result = await MainBookDB.get(
-      [data.region_id, data.offset, data.limit],
+      [data.region_id, data.budjet_id, data.offset, data.limit],
       data.year,
       data.month
     );
