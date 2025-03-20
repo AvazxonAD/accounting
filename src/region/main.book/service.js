@@ -86,30 +86,72 @@ exports.MainBookService = class {
   }
 
   static async getJur1Data(data) {
-    for (let schet of data.schets) {
-      schet.prixod = await MainBookDB.getJur1Prixod([schet.schet]);
+    const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
-      schet.rasxod = await MainBookDB.getJur1Rasxod([schet.schet]);
+    for (let schet of data.schets) {
+      schet.prixod = await MainBookDB.getJur1Prixod([
+        schet.schet,
+        data.region_id,
+        data.budjet_id,
+        date[0],
+        date[1],
+      ]);
+
+      schet.rasxod = await MainBookDB.getJur1Rasxod([
+        schet.schet,
+        data.region_id,
+        data.budjet_id,
+        date[0],
+        date[1],
+      ]);
     }
 
     return data.schets;
   }
 
   static async getJur2Data(data) {
-    for (let schet of data.schets) {
-      schet.prixod = await MainBookDB.getJur2Prixod([schet.schet]);
+    const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
-      schet.rasxod = await MainBookDB.getJur2Rasxod([schet.schet]);
+    for (let schet of data.schets) {
+      schet.prixod = await MainBookDB.getJur2Prixod([
+        schet.schet,
+        data.region_id,
+        data.budjet_id,
+        date[0],
+        date[1],
+      ]);
+
+      schet.rasxod = await MainBookDB.getJur2Rasxod([
+        schet.schet,
+        data.region_id,
+        data.budjet_id,
+        date[0],
+        date[1],
+      ]);
     }
 
     return data.schets;
   }
 
   static async getJur3Data(data) {
-    for (let schet of data.schets) {
-      schet.prixod = await MainBookDB.getJur3Prixod([schet.schet]);
+    const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
-      schet.rasxod = await MainBookDB.getJur3Rasxod([schet.schet]);
+    for (let schet of data.schets) {
+      schet.prixod = await MainBookDB.getJur3Prixod([
+        schet.schet,
+        data.region_id,
+        data.budjet_id,
+        date[0],
+        date[1],
+      ]);
+
+      schet.rasxod = await MainBookDB.getJur3Rasxod([
+        schet.schet,
+        data.region_id,
+        data.budjet_id,
+        date[0],
+        date[1],
+      ]);
     }
 
     return data.schets;

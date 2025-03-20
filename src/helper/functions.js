@@ -999,8 +999,13 @@ exports.HelperFunctions = class {
   }
 
   static getMonthStartEnd(year, month) {
+    if (!year || !month || month < 1 || month > 12) {
+      throw new Error(`Yil yoki oy noto‘g‘ri kiritilgan! => ${year} ${month}`);
+    }
+
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
+
     return [startDate, endDate];
   }
 
