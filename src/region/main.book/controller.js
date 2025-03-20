@@ -10,6 +10,7 @@ exports.Controller = class {
 
   static async create(req, res) {
     const user_id = req.user.id;
+    const region_id = req.user.region_id;
     const { budjet_id } = req.query;
     const { year, month } = req.body;
 
@@ -21,11 +22,15 @@ exports.Controller = class {
     const check = await MainBookService.get({
       offset: 0,
       limit: 1,
+      region_id,
+      budjet_id,
       year,
       month,
     });
-    if (check.count) {
-      return res.error(req.i18n("docExists"), 409);
+    console.log(check.total);
+
+    if (check.total) {
+      return res.error(req.i18n.t("docExists"), 409, { year, month });
     }
 
     const result = await MainBookService.create({
@@ -39,14 +44,20 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, year } = req.query;
+    const { page, limit, year, budjet_id } = req.query;
 
     const offset = (page - 1) * limit;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const { data, total } = await MainBookService.get({
       region_id,
       offset,
       limit,
+      budjet_id,
       year,
     });
 
