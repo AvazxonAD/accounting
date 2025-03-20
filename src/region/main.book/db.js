@@ -79,6 +79,14 @@ exports.MainBookDB = class {
     await client.query(query, params);
   }
 
+  static async getMainBookType(params) {
+    const query = `SELECT * FROM main_book_type ORDER BY sort_order`;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async get(params, year = null, month = null) {
     const conditions = [];
 

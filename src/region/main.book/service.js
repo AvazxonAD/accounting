@@ -2,6 +2,12 @@ const { db } = require("@db/index");
 const { MainBookDB } = require("./db");
 
 exports.MainBookService = class {
+  static async getMainBookType(data) {
+    const result = await MainBookDB.getMainBookType([]);
+
+    return result;
+  }
+
   static async create(data) {
     const result = await db.transaction(async (client) => {
       const doc = await MainBookDB.create(
