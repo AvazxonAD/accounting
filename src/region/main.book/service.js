@@ -21,7 +21,7 @@ exports.MainBookService = class {
       const doc = await MainBookDB.create(
         [
           1,
-          data.acsept_time,
+          data.accept_time,
           new Date(),
           data.user_id,
           data.year,

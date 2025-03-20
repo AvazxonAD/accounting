@@ -1,51 +1,35 @@
-const { ReportMainBookDB } = require('./db');
-const { typeDocuments } = require('@helper/data');
-const { MainBookSchetDB } = require('@main_book_schet/db');
-const { tashkentTime } = require('@helper/functions')
+const { db } = require("@db/index");
+const { MainBookDB } = require("./db");
 
-exports.ReportService = class {
-    static async getReport(data) {
-        const result = await ReportMainBookDB.getReport([], data.year, data.month);
-        for (let doc of result) {
-            const times = await ReportMainBookDB.getReportTime([doc.region_id, doc.budjet_id, doc.year, doc.month]);
-            doc.document_yaratilgan_vaqt = times.document_yaratilgan_vaqt;
-            doc.document_qabul_qilingan_vaqt = times.document_qabul_qilingan_vaqt;
-        }
-        return result;
+exports.MainBookService = class {
+  static async get(data) {
+    const result = await MainBookDB.get(
+      [data.offset, data.limit],
+      data.year,
+      data.budjet_id
+    );
+
+    return result;
+  }
+
+  static async getById(data) {
+    const result = await MainBookDB.getById([data.id]);
+
+    if (result) {
+      result.childs = await MainBookDB.getByIdChild([data.id]);
     }
 
-    static async getByIdReport(data) {
-        const report = await ReportMainBookDB.getByIdReport([data.region_id, data.budjet_id, data.year, data.month]);
-        if (report) {
-            report.types = typeDocuments.map(item => ({ ...item }));
-            const { data: schets } = await MainBookSchetDB.getMainBookSchet([0, 99999]);
-            for (let type of report.types) {
-                type.schets = schets.map(item => ({ ...item }));
-                for (let schet of type.schets) {
-                    schet.summa = await ReportMainBookDB.getSchetSummaBySchetId([
-                        data.region_id,
-                        data.year,
-                        data.month,
-                        data.budjet_id,
-                        schet.id,
-                        type.type
-                    ]);
-                }
-            }
-        }
-        return report;
-    }
+    return result;
+  }
 
-    static async updateReport(data) {
-        const result = await ReportMainBookDB.updateReport([
-            data.region_id,
-            data.year,
-            data.month,
-            data.budjet_id,
-            data.user_id_qabul_qilgan,
-            tashkentTime(),
-            data.status
-        ])
-        return result;
-    }
-}
+  static async update(data) {
+    const result = await MainBookDB.update([
+      data.status,
+      new Date(),
+      data.user_id,
+      data.id,
+    ]);
+
+    return result;
+  }
+};
