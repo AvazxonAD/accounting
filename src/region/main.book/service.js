@@ -1,5 +1,6 @@
 const { db } = require("@db/index");
 const { MainBookDB } = require("./db");
+const { HelperFunctions } = require(`@helper/functions`);
 
 exports.MainBookService = class {
   static async delete(data) {
@@ -85,9 +86,33 @@ exports.MainBookService = class {
   }
 
   static async getJur1Data(data) {
-    const query = `
-      SELECT 
-    `;
+    for (let schet of data.schets) {
+      schet.prixod = await MainBookDB.getJur1Prixod([schet.schet]);
+
+      schet.rasxod = await MainBookDB.getJur1Rasxod([schet.schet]);
+    }
+
+    return data.schets;
+  }
+
+  static async getJur2Data(data) {
+    for (let schet of data.schets) {
+      schet.prixod = await MainBookDB.getJur2Prixod([schet.schet]);
+
+      schet.rasxod = await MainBookDB.getJur2Rasxod([schet.schet]);
+    }
+
+    return data.schets;
+  }
+
+  static async getJur3Data(data) {
+    for (let schet of data.schets) {
+      schet.prixod = await MainBookDB.getJur3Prixod([schet.schet]);
+
+      schet.rasxod = await MainBookDB.getJur3Rasxod([schet.schet]);
+    }
+
+    return data.schets;
   }
 
   static async update(data) {
@@ -135,7 +160,6 @@ exports.MainBookService = class {
             );
 
             if (index > 0) {
-              console.log(create_childs, index);
               create_childs[index].sub_childs.push(sub_child);
             } else {
               create_childs.push({
