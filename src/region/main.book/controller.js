@@ -135,6 +135,7 @@ exports.Controller = class {
 
   static async getData(req, res) {
     const { year, month, budjet_id } = req.query;
+    const region_id = req.user.region_id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -160,6 +161,7 @@ exports.Controller = class {
           budjet_id,
           year,
           month,
+          region_id,
         });
       }
 
@@ -169,6 +171,7 @@ exports.Controller = class {
           budjet_id,
           year,
           month,
+          region_id,
         });
       }
 
@@ -178,6 +181,7 @@ exports.Controller = class {
           budjet_id,
           year,
           month,
+          region_id,
         });
       }
 
@@ -187,6 +191,7 @@ exports.Controller = class {
           budjet_id,
           year,
           month,
+          region_id,
         });
       }
 
@@ -196,6 +201,7 @@ exports.Controller = class {
           budjet_id,
           year,
           month,
+          region_id,
         });
       }
 
@@ -205,6 +211,7 @@ exports.Controller = class {
           budjet_id,
           year,
           month,
+          region_id,
         });
       }
 
