@@ -32,7 +32,7 @@ exports.MainBookSchema = class {
           .min(1)
           .required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static update() {
@@ -67,7 +67,7 @@ exports.MainBookSchema = class {
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static get() {
@@ -82,6 +82,14 @@ exports.MainBookSchema = class {
   }
 
   static getById() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
+      }),
+    });
+  }
+
+  static delete() {
     return Joi.object({
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),

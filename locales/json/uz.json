@@ -28,6 +28,7 @@
   "responsibleExists": "{{data}} ushbu javobgar shaxs avval kiritilgan!",
   "contractNotFound": "Shartnoma topilmadi!",
   "groupNotFound": "Guruh topilmadi!",
+  "mainBookStatus": "Hujjat qabul qilingan uni ochira olmaysiz!",
   "smetaNotFound": "Smeta topilmadi!",
   "docExists": "Ushbu hujjat avval kiritilgan!",
   "createSuccess": "Muvaffaqiyatli kiritildi",

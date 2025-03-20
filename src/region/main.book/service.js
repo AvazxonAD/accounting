@@ -2,6 +2,14 @@ const { db } = require("@db/index");
 const { MainBookDB } = require("./db");
 
 exports.MainBookService = class {
+  static async delete(data) {
+    await db.transaction(async (client) => {
+      await MainBookDB.delete([data.id], client);
+
+      await MainBookDB.deleteChildByParentId([data.id], client);
+    });
+  }
+
   static async getMainBookType(data) {
     const result = await MainBookDB.getMainBookType([]);
 
