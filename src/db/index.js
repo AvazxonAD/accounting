@@ -78,22 +78,38 @@ class Db {
                 "file_name" VARCHAR NOT NULL UNIQUE
             );
         `);
+
+    const folder_path_archive = path.join(__dirname, "./migrations_archive");
     const folder_path = path.join(__dirname, "./migrations");
+
+    const files_archive = fs.readdirSync(folder_path_archive);
     const files = fs.readdirSync(folder_path);
-    const sqlFiles = files.filter((file) => file.endsWith(".sql"));
+
+    const sql_files_archive = files_archive.filter((file) =>
+      file.endsWith(".sql")
+    );
+
+    const sql_files = files.filter((file) => file.endsWith(".sql"));
+
+    const all_files = sql_files.concat(sql_files_archive);
+
     const versions = await db.query(`SELECT * FROM migrations ORDER BY id`);
-    if (sqlFiles.length === 0) {
+
+    if (all_files.length === 0) {
       throw new Error("No .sql files found in the directory");
     }
-    const sortedFiles = sqlFiles.sort((a, b) => {
+
+    const sortedFiles = all_files.sort((a, b) => {
       const numA = parseInt(a.split(".")[0], 10);
       const numB = parseInt(b.split(".")[0], 10);
       return numA - numB;
     });
+
     for (let file of sortedFiles) {
       const version = versions.find((item) => item.file_name === file);
       if (!version) {
         const client = await dbPool.connect();
+
         try {
           await client.query("BEGIN");
           await client.query(`INSERT INTO migrations(file_name) VALUES($1)`, [
@@ -111,6 +127,7 @@ class Db {
         }
       }
     }
+
     return { db, dbPool };
   }
 }

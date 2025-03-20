@@ -1,15 +1,31 @@
 const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
 const { OperatsiiService } = require("@operatsii/service");
+const { MAIN_BOOK_TYPE } = require(`@helper/constants`);
 
 exports.Controller = class {
+  static async getMainBookType(req, res) {
+    return res.success(req.i18n.t("getSuccess"), 200, null, MAIN_BOOK_TYPE);
+  }
+
   static async create(req, res) {
-    const { budjet_id } = req.query;
     const user_id = req.user.id;
+    const { budjet_id } = req.query;
+    const { year, month } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const check = await MainBookService.get({
+      offset: 0,
+      limit: 1,
+      year,
+      month,
+    });
+    if (check.count) {
+      return res.error(req.i18n("docExists"), 409);
     }
 
     const result = await MainBookService.create({
@@ -23,7 +39,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit } = req.query;
+    const { page, limit, year } = req.query;
 
     const offset = (page - 1) * limit;
 
@@ -31,6 +47,7 @@ exports.Controller = class {
       region_id,
       offset,
       limit,
+      year,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -67,5 +84,46 @@ exports.Controller = class {
     const schets = await OperatsiiService.getUniqueSchets({});
 
     return res.success(req.i18n.t("getSuccess"), 200, null, schets);
+  }
+
+  static async update(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
+    const { childs } = req.body;
+    const user_id = req.user.id;
+
+    const old_data = await MainBookService.getById({
+      region_id,
+      id,
+    });
+
+    if (!old_data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    for (let child of childs) {
+      for (let sub_child of child.sub_childs) {
+        if (sub_child.id) {
+          const check = old_data.childs.find((item) => {
+            return item.sub_childs.find(
+              (element) => element.id === sub_child.id
+            );
+          });
+
+          if (!check) {
+            return res.error(req.i18n.t("docNotFound"), 404);
+          }
+        }
+      }
+    }
+
+    const result = await MainBookService.update({
+      ...req.body,
+      old_data,
+      id,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   }
 };
