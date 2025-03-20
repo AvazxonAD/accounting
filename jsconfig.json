@@ -10,6 +10,7 @@
       "@group/*": ["admin/spravochnik/group/*"],
       "@admin_saldo/*": ["admin/saldo/*"],
       "@admin_main_book/*": ["admin/main.book/*"],
+      "@main_book/*": ["region/main.book/*"],
       "@admin_dashboard/*": ["admin/dashboard/*"],
       "@unit/*": ["admin/spravochnik/unit/*"],
       "@log/*": ["admin/log/*"],
