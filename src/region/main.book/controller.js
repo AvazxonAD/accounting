@@ -271,7 +271,8 @@ exports.Controller = class {
     }
 
     const internal_child = old_data.childs.find((item) => item.type_id === 9);
-    for (let sub_child of internal_child.sub_childs) {
+
+    for (let sub_child of internal_child?.sub_childs) {
       sub_child.prixod = 0;
       sub_child.rasxod = 0;
     }
