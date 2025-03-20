@@ -1,45 +1,153 @@
-const { ReportService } = require('./service')
-const { BudjetService } = require('@budjet/service');
-
+const { BudjetService } = require("@budjet/service");
+const { MainBookService } = require("./service");
+const { OperatsiiService } = require("@operatsii/service");
 
 exports.Controller = class {
-  static async getReport(req, res) {
-    const data = await ReportService.getReport({});
-    return res.success(req.i18n.t('getSuccess'), 200, null, data);
-  }
+  static async delete(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
 
-  static async getByIdReport(req, res) {
-    const { budjet_id, year, month, region_id } = req.query;
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t('budjetNotFound'), 404);
-    }
-    const doc = await ReportService.getByIdReport({ region_id, year, month, budjet_id })
-    if (!doc) {
-      return res.error(req.i18n.t('docNotFound'), 404);
-    }
-    return res.success(req.i18n.t('getSuccess'), 200, null, doc);
-  }
-
-  static async updateReport(req, res) {
-    const { budjet_id, year, month, region_id } = req.query;
-    const user_id = req.user.id;
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t('budjetNotFound'), 404);
-    }
-    const doc = await ReportService.getByIdReport({ region_id, year, month, budjet_id })
-    if (!doc) {
-      return res.error(req.i18n.t('docNotFound'), 404);
-    }
-    const result = await ReportService.updateReport({
+    const data = await MainBookService.getById({
       region_id,
+      id,
+    });
+
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (data.status === 3) {
+      return res.error(req.i18n.t("mainBookStatus"), 409);
+    }
+
+    await MainBookService.delete({ id });
+
+    return res.success(req.i18n.t("deleteSuccess"), 200);
+  }
+
+  static async getMainBookType(req, res) {
+    const result = await MainBookService.getMainBookType();
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
+
+  static async create(req, res) {
+    const user_id = req.user.id;
+    const region_id = req.user.region_id;
+    const { budjet_id } = req.query;
+    const { year, month, childs } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const check = await MainBookService.get({
+      offset: 0,
+      limit: 1,
+      region_id,
+      budjet_id,
       year,
       month,
+    });
+
+    if (check.total) {
+      return res.error(req.i18n.t("docExists"), 409, { year, month });
+    }
+
+    const internal_child = { type_id: 9, sub_childs: [] };
+
+    for (let child of childs) {
+      if (child.type_id !== 0 && child.type_id !== 9 && child.type_id !== 10) {
+        for (let sub_child of child.sub_childs) {
+          const index = internal_child.sub_childs.findIndex(
+            (item) => item.schet === sub_child.schet
+          );
+
+          if (index !== -1) {
+            internal_child.sub_childs[index].prixod += sub_child.prixod;
+            internal_child.sub_childs[index].rasxod += sub_child.rasxod;
+          } else {
+            internal_child.sub_childs.push(sub_child);
+          }
+        }
+      }
+    }
+    childs.push(internal_child);
+
+    const result = await MainBookService.create({
       budjet_id,
-      user_id_qabul_qilgan: user_id,
-      status: req.body.status
-    })
-    return res.success('Update successfullly', 200, null, result);
+      ...req.body,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("createSuccess"), 200, null, result);
   }
-}
+
+  static async get(req, res) {
+    const { page, limit, year, budjet_id } = req.query;
+
+    const offset = (page - 1) * limit;
+
+    if (budjet_id) {
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+    }
+
+    const { data, total } = await MainBookService.get({
+      offset,
+      limit,
+      budjet_id,
+      year,
+    });
+
+    const pageCount = Math.ceil(total / limit);
+
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    };
+
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
+  static async getById(req, res) {
+    const { id } = req.params;
+
+    const data = await MainBookService.getById({ id });
+
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
+  }
+
+  static async update(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    const old_data = await MainBookService.getById({
+      region_id,
+      id,
+    });
+
+    if (!old_data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const result = await MainBookService.update({
+      ...req.body,
+      id,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+  }
+};

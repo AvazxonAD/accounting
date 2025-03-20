@@ -1,168 +1,143 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
-exports.ReportMainBookDB = class {
+exports.MainBookDB = class {
+  static async update(params, client) {
+    const query = `
+      UPDATE main_book
+        SET
+          status = $1,
+          accept_time = $2,
+          accept_user_id = $3
+      WHERE id = $4
+      RETURNING id 
+    `;
 
-    static async getReport(params, year, month) {
-        let year_filter = ``;
-        let month_filter = ``;
-        if (year) {
-            year_filter = `AND d.year = $${params.length + 1}`;
-            params.push(year)
-        }
-        if (month) {
-            month_filter = `AND d.month = $${params.length + 1}`;
-            params.push(month)
-        }
-        const query = `--sql
-            SELECT 
-                DISTINCT 
-                    d.month,
-                    d.year,
-                    b.id AS budjet_id,
-                    b.name AS budjet_name,
-                    d.user_id,
-                    u.login AS user_login,
-                    d.user_id_qabul_qilgan,
-                    ua.login AS user_login_qabul_qilgan,
-                    d.status,
-                    r.id AS region_id,
-                    r.name AS region_name
-            FROM zakonchit_glavniy_kniga AS d
-            JOIN users AS u ON u.id = d.user_id
-            LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-            WHERE d.isdeleted = false 
-                ${year_filter} ${month_filter}
-        `;
-        const result = await db.query(query, params)
-        return result;
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async get(params, year = null, budjet_id = null) {
+    const conditions = [];
+
+    if (year) {
+      params.push(year);
+      conditions.push(`AND d.year = $${params.length}`);
     }
 
-
-    static async getReportTime(params) {
-        const query = `--sql
-            SELECT 
-                d.document_yaratilgan_vaqt,
-                d.document_qabul_qilingan_vaqt
-            FROM zakonchit_glavniy_kniga AS d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 
-                AND d.budjet_id = $2 
-                AND d.year = $3
-                AND d.month = $4
-                AND d.isdeleted = false
-            ORDER BY d.id DESC 
-            LIMIT 1
-        `;
-        const result = await db.query(query, params)
-        return result[0];
+    if (budjet_id) {
+      params.push(budjet_id);
+      conditions.push(`d.budjet_id = $${params.length}`);
     }
 
+    const where_clause = conditions.length ? conditions.join(" AND ") : "";
 
-    static async getByIdReport(params) {
-        const query = `--sql
-            SELECT 
-                DISTINCT 
-                    d.month,
-                    d.year,
-                    b.id AS budjet_id,
-                    b.name AS budjet_name,
-                    d.user_id,
-                    u.login AS user_login,
-                    d.user_id_qabul_qilgan,
-                    ua.login AS user_login_qabul_qilgan,
-                    d.status,
-                (
-                    SELECT 
-                        d.document_yaratilgan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.year = $3 
-                        AND d.month = $4
-                        AND d.isdeleted = false 
-                    ORDER BY d.document_yaratilgan_vaqt DESC
-                    LIMIT 1
-                ) AS document_yaratilgan_vaqt,
-                (
-                    SELECT 
-                        d.document_qabul_qilingan_vaqt
-                    FROM zakonchit_glavniy_kniga AS d
-                    JOIN users AS u ON u.id = d.user_id
-                    LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-                    WHERE r.id = $1 
-                        AND b.id = $2
-                        AND d.year = $3 
-                        AND d.month = $4
-                        AND d.isdeleted = false 
-                    ORDER BY d.document_qabul_qilingan_vaqt DESC
-                    LIMIT 1
-                ) AS document_qabul_qilingan_vaqt
-            FROM zakonchit_glavniy_kniga AS d
-            JOIN users AS u ON u.id = d.user_id
-            LEFT JOIN  users AS ua ON ua.id = d.user_id_qabul_qilgan
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-            WHERE r.id = $1 
-                AND b.id = $2
-                AND d.isdeleted = false 
-                AND d.year = $3 
-                AND d.month = $4
-        `;
-        const result = await db.query(query, params)
-        return result[0];
-    }
+    const query = `
+      WITH data AS (
+        SELECT
+          d.id,
+          d.status,
+          d.accept_time,
+          d.send_time,
+          d.user_id,
+          u.fio,
+          u.login,
+          d.year,
+          d.month,
+          d.budjet_id,
+          b.name AS                 budjet_name,
+          d.accept_user_id,
+          ua.fio AS                 accept_user_fio,
+          ua.login AS               accept_user_login,
+          r.name AS                 region_name
+        FROM main_book d
+        JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
+        JOIN users u ON u.id = d.user_id
+        LEFT JOIN users ua ON ua.id = d.accept_user_id
+        JOIN regions r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          ${where_clause}
+        OFFSET $1 LIMIT $2 
+      )
+      SELECT
+        COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
+        (
+          SELECT
+            COALESCE(COUNT(d.id), 0)
+          FROM main_book d
+          JOIN users u ON u.id = d.user_id
+          JOIN regions r ON r.id = u.region_id
+          WHERE d.isdeleted = false
+            ${where_clause}
+        )::INTEGER AS total
+      FROM data
+    `;
 
-    static async getSchetSummaBySchetId(params) {
-        const query = `--sql
-            SELECT 
-                d.debet_sum::FLOAT,
-                d.kredit_sum::FLOAT
-            FROM zakonchit_glavniy_kniga d
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_budjet_name AS b ON b.id = d.budjet_id
-            WHERE r.id = $1 
-                AND d.year = $2 
-                AND d.month = $3 
-                AND d.budjet_id = $4
-                AND d.spravochnik_main_book_schet_id = $5
-                AND d.type_document = $6
-                AND d.isdeleted = false
-        `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
 
-    static async updateReport(params) {
-        const query = `--sql
-            UPDATE zakonchit_glavniy_kniga 
-            SET  
-                user_id_qabul_qilgan = $5,
-                document_qabul_qilingan_vaqt = $6,
-                status = $7
-            WHERE EXISTS (
-                SELECT 1
-                FROM users AS u
-                JOIN regions AS r ON r.id = u.region_id
-                WHERE u.id = zakonchit_glavniy_kniga.user_id
-                    AND r.id = $1
-                    AND zakonchit_glavniy_kniga.year = $2
-                    AND zakonchit_glavniy_kniga.month = $3
-                    AND zakonchit_glavniy_kniga.budjet_id = $4
-                    AND zakonchit_glavniy_kniga.isdeleted = false
+    return result[0];
+  }
+
+  static async getById(params) {
+    const query = `
+      SELECT
+        d.id,
+        d.status,
+        d.accept_time,
+        d.send_time,
+        d.user_id,
+        d.year,
+        d.month,
+        d.budjet_id,
+        b.name AS                 budjet_name,
+        d.accept_user_id,
+        ua.fio AS                 accept_user_fio,
+        ua.login AS               accept_user_login,
+        r.name AS                 region_name
+      FROM main_book d
+      JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
+      JOIN users u ON u.id = d.user_id
+      LEFT JOIN users ua ON ua.id = d.accept_user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE d.id = $1
+        AND d.isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getByIdChild(params) {
+    const query = `
+      SELECT
+        DISTINCT ON (t.id, t.name, t.sort_order)
+        t.id AS             type_id,
+        t.name AS           type_name,
+        (
+          SELECT
+            JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', subch.id,
+                'schet', subch.schet,
+                'prixod', subch.prixod,
+                'rasxod', subch.rasxod
+              )
             )
-            RETURNING *
-        `;
-        const result = await db.query(query, params);
-        return result;
-    }
-}
+          FROM main_book_child subch
+          WHERE subch.isdeleted = false
+            AND subch.type_id = t.id
+            AND subch.parent_id = $1
+        ) AS sub_childs
+      FROM main_book_child ch
+      JOIN main_book_type t ON t.id = ch.type_id
+      WHERE ch.isdeleted = false
+        AND parent_id = $1
+      ORDER BY t.sort_order
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+};

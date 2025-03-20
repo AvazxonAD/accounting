@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS main_book(
     id SERIAL PRIMARY KEY,
     status INTEGER NOT NULL,
-    acsept_time TIMESTAMPTZ,
+    accept_time TIMESTAMPTZ,
     send_time TIMESTAMPTZ,
     user_id INTEGER REFERENCES users(id) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,

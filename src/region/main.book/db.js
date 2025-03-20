@@ -17,7 +17,7 @@ exports.MainBookDB = class {
     const query = `
       INSERT INTO main_book (
           status,
-          acsept_time,
+          accept_time,
           send_time,
           user_id,
           year,
@@ -119,7 +119,7 @@ exports.MainBookDB = class {
         SELECT
           d.id,
           d.status,
-          d.acsept_time,
+          d.accept_time,
           d.send_time,
           d.user_id,
           u.fio,
@@ -168,7 +168,7 @@ exports.MainBookDB = class {
       SELECT
         d.id,
         d.status,
-        d.acsept_time,
+        d.accept_time,
         d.send_time,
         d.user_id,
         d.year,
