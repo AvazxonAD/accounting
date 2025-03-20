@@ -10,18 +10,62 @@ exports.MainBookSchema = class {
       body: Joi.object({
         month: Joi.number().integer().required().min(1).max(12).required(),
         year: Joi.number().integer().required().min(1901).required(),
-        childs: Joi.array().items(
-          Joi.object({
-            type: Joi.string().required(),
-            sub_childs: Joi.array().items(
-              Joi.object({
-                schet: Joi.string(),
-                prixod: Joi.number().min(0).required(),
-                rasxod: Joi.number().min(0).required(),
-              })
-            ),
-          })
-        ),
+        childs: Joi.array()
+          .items(
+            Joi.object({
+              type_id: Joi.number()
+                .integer()
+                .valid(1, 2, 3, 4, 5, 7)
+                .required(),
+              sub_childs: Joi.array()
+                .items(
+                  Joi.object({
+                    schet: Joi.string().required(),
+                    prixod: Joi.number().min(0).required(),
+                    rasxod: Joi.number().min(0).required(),
+                  })
+                )
+                .min(1)
+                .required(),
+            })
+          )
+          .min(1)
+          .required(),
+      }),
+    });
+  }
+
+  static update() {
+    return Joi.object({
+      body: Joi.object({
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        childs: Joi.array()
+          .items(
+            Joi.object({
+              type_id: Joi.number()
+                .integer()
+                .valid(1, 2, 3, 4, 5, 7)
+                .required(),
+              sub_childs: Joi.array()
+                .items(
+                  Joi.object({
+                    id: Joi.number().integer().allow(null),
+                    schet: Joi.string().required(),
+                    prixod: Joi.number().min(0).required(),
+                    rasxod: Joi.number().min(0).required(),
+                  })
+                )
+                .min(1)
+                .required(),
+            })
+          )
+          .min(1)
+          .required(),
+      }),
+
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
       }),
     });
   }
@@ -30,6 +74,7 @@ exports.MainBookSchema = class {
     return Joi.object({
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
+        year: Joi.number().min(1).integer().min(19001).max(2099),
         limit: Joi.number().min(1).integer().default(10),
       }),
     });
