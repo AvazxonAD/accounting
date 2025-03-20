@@ -381,7 +381,9 @@ exports.MainBookDB = class {
         )
 
       SELECT
-        ( kursatilgan_hizmatlar.summa + bank_rasxod.summa + organ_saldo_prixod.summa ) AS summa
+        ( SELECT summa FROM kursatilgan_hizmatlar) +
+        ( SELECT summa FROM bank_rasxod ) +
+        ( SELECT summa FROM organ_saldo_prixod ) AS summa 
     `;
 
     const result = await db.query(query, params);
@@ -415,7 +417,7 @@ exports.MainBookDB = class {
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
             FROM organ_saldo_child ch
             JOIN organ_saldo AS d ON ch.parent_id = d.id
-            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
             JOIN main_schet m ON m.id = d.main_schet_id
             JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
             JOIN users AS u ON d.user_id = u.id
@@ -451,7 +453,7 @@ exports.MainBookDB = class {
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
             FROM document_prixod_jur7_child ch
             JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
-            JOIN spravochnik_operatsii AS op ON op.id = ch.kredit_schet
+            JOIN spravochnik_operatsii AS op ON op.schet = ch.kredit_schet
             JOIN main_schet m ON m.id = d.main_schet_id
             JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
             JOIN users AS u ON d.user_id = u.id
@@ -465,7 +467,10 @@ exports.MainBookDB = class {
         )
 
       SELECT
-        (bajarilgan_ishlar.summa + organ_saldo_rasxod.summa + bank_prixod.summa + jur7_prixod.summa) AS summa 
+        ( SELECT summa FROM bajarilgan_ishlar ) +
+        ( SELECT summa FROM organ_saldo_rasxod ) +
+        ( SELECT summa FROM bank_prixod ) +
+        ( SELECT summa FROM jur7_prixod ) AS summa
     `;
 
     const result = await db.query(query, params);
