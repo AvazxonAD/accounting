@@ -211,7 +211,8 @@ exports.MainBookDB = class {
             )
           FROM main_book_child subch
           WHERE subch.isdeleted = false
-            AND subch.type_id = t.id         
+            AND subch.type_id = t.id
+            AND subch.parent_id = $1
         ) AS sub_childs
       FROM main_book_child ch
       JOIN main_book_type t ON t.id = ch.type_id
