@@ -10,10 +10,7 @@ exports.MainSchetService = class {
   }
 
   static async get(data) {
-    const result = await MainSchetDB.getByIdMainSchet([
-      data.region_id,
-      data.id,
-    ]);
+    const result = await MainSchetDB.get([data.region_id, data.id]);
     return result;
   }
 };
