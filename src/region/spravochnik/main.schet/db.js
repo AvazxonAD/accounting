@@ -32,7 +32,7 @@ exports.MainSchetDB = class {
     return result[0];
   }
 
-  static async getAllMainSchetService(params, search) {
+  static async get(params, search) {
     const conditions = [];
 
     if (search) {
@@ -42,7 +42,8 @@ exports.MainSchetDB = class {
         main_schet.tashkilot_inn ILIKE '%' || $${params.length} || '%' OR
         main_schet.account_name ILIKE '%' || $${params.length} || '%' OR
         main_schet.account_number ILIKE '%' || $${params.length} || '%' 
-        )`);
+        )
+    `);
     }
 
     const where = conditions.length ? conditions.join(" AND ") : "";
@@ -59,17 +60,17 @@ exports.MainSchetDB = class {
             ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
         WHERE main_schet.isdeleted = false AND regions.id = $1 ${where} OFFSET $2 LIMIT $3)
         SELECT 
-        COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
-        (
-            SELECT 
-                COALESCE(COUNT(m .id), 0)::INTEGER
-            FROM main_schet m 
-            JOIN users u ON m.user_id = u.id
-            JOIN regions r ON u.region_id = r.id
-            WHERE m.isdeleted = false
-                ${where}
-                AND r.id = $1
-        )::INTEGER AS total_count
+            COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
+            (
+                SELECT 
+                    COALESCE(COUNT(m .id), 0)::INTEGER
+                FROM main_schet m 
+                JOIN users u ON m.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                WHERE m.isdeleted = false
+                    ${where}
+                    AND r.id = $1
+            )::INTEGER AS total_count
         FROM data
     `;
     const result = await pool.query(query, params);
