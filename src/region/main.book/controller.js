@@ -1,6 +1,7 @@
 const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
 const { OperatsiiService } = require("@operatsii/service");
+const { MainSchetService } = require("@main_schet/service");
 
 exports.Controller = class {
   static async delete(req, res) {
@@ -141,6 +142,8 @@ exports.Controller = class {
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
+
+    const main_schets = await MainSchetService.get();
 
     const types = await MainBookService.getMainBookType({});
 
