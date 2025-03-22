@@ -274,7 +274,13 @@ exports.MainBookDB = class {
     }
 
     if (date.from && !date.to) {
-      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
     }
 
     const query = `--sql
@@ -290,7 +296,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND r.id = $1
         AND d.main_schet_id = $2
-        AND d.doc_date BETWEEN $3 AND $4
+        ${date_filter}
       GROUP BY op.schet
     `;
 
@@ -299,7 +305,24 @@ exports.MainBookDB = class {
     return result;
   }
 
-  static async getJur2Rasxod(params) {
+  static async getJur2Rasxod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
     const query = `--sql
       SELECT
         COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
@@ -313,7 +336,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND r.id = $1
         AND d.main_schet_id = $2
-        AND d.doc_date BETWEEN $3 AND $4
+        ${date_filter}
       GROUP BY op.schet
     `;
 
@@ -322,7 +345,24 @@ exports.MainBookDB = class {
     return result;
   }
 
-  static async getJur3Rasxod(params) {
+  static async getJur3Rasxod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
     const query = `--sql
       WITH
         bajarilgan_ishlar AS (
@@ -339,7 +379,7 @@ exports.MainBookDB = class {
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
-              AND d.doc_date BETWEEN $3 AND $4
+              ${date_filter}
             GROUP BY op.schet
         ),
         
@@ -357,7 +397,7 @@ exports.MainBookDB = class {
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
-              AND d.doc_date BETWEEN $3 AND $4
+              ${date_filter}
             GROUP BY op.schet
         ),
         
@@ -375,7 +415,7 @@ exports.MainBookDB = class {
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
-              AND d.doc_date BETWEEN $3 AND $4
+              ${date_filter}
             GROUP BY op.schet
         ),
 
@@ -393,7 +433,7 @@ exports.MainBookDB = class {
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
-              AND d.doc_date BETWEEN $3 AND $4
+              ${date_filter}
             GROUP BY op.schet
         )
 
@@ -417,7 +457,24 @@ exports.MainBookDB = class {
     return result;
   }
 
-  static async getJur4Rasxod(params) {
+  static async getJur4Rasxod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
     const query = `--sql
       WITH
         podotchet_saldo_rasxod AS (
@@ -434,7 +491,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
-            AND d.doc_date BETWEEN $3 AND $4
+            ${date_filter}
           GROUP BY op.schet
         ),
         
@@ -452,7 +509,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
-            AND d.doc_date BETWEEN $3 AND $4
+            ${date_filter}
           GROUP BY op.schet
         ),
         
@@ -471,7 +528,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
-            AND d.doc_date BETWEEN $3 AND $4
+            ${date_filter}
           GROUP BY op.schet
         ),
 
@@ -489,7 +546,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
-            AND d.doc_date BETWEEN $3 AND $4
+            ${date_filter}
           GROUP BY op.schet
         )
 
