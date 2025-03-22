@@ -51,6 +51,7 @@
     "@main_book_schet": "./src/admin/spravochnik/main.book.schet",
     "@group": "./src/admin/spravochnik/group",
     "@admin_main_book": "./src/admin/main.book",
+    "@video_module": "./src/admin/spravochnik/video.module",
     "@main_book": "./src/region/main.book",
     "@admin_dashboard": "./src/admin/dashboard",
     "@unit": "./src/admin/spravochnik/unit",
