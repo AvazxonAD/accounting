@@ -2,7 +2,6 @@ const { OrganizationDB } = require("./db");
 const xlsx = require("xlsx");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
 const { db } = require("@db/index");
-const { BankService } = require("@bank/service");
 const path = require("path");
 const fs = require("fs").promises;
 const { GaznaDB } = require("./gazna/db");
