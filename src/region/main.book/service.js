@@ -231,7 +231,7 @@ exports.MainBookService = class {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
       const rasxod_data = await MainBookDB.getJur3Rasxod(
-        [data.region_id, main_schet.id],
+        [data.region_id, main_schet.id, main_schet.jur3_schet],
         { from: data.from, to: data.to },
         data.operator
       );
@@ -258,7 +258,7 @@ exports.MainBookService = class {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
       const rasxod_data = await MainBookDB.getJur4Rasxod(
-        [data.region_id, main_schet.id],
+        [data.region_id, main_schet.id, main_schet.jur4_schet],
         { from: data.from, to: data.to },
         data.operator
       );

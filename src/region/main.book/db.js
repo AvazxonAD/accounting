@@ -373,12 +373,14 @@ exports.MainBookDB = class {
             FROM bajarilgan_ishlar_jur3_child AS ch
             JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
+              AND own.schet = $3
               ${date_filter}
             GROUP BY op.schet
         ),
@@ -397,6 +399,7 @@ exports.MainBookDB = class {
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
+              AND op.schet = $3
               ${date_filter}
             GROUP BY op.schet
         ),
@@ -415,6 +418,7 @@ exports.MainBookDB = class {
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
+              AND op.schet = $3
               ${date_filter}
             GROUP BY op.schet
         ),
@@ -422,19 +426,19 @@ exports.MainBookDB = class {
         jur7_prixod AS (
             SELECT 
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
-                op.schet,
+                ch.kredit_schet AS schet,
                 'jur7_prixod' AS                                type
             FROM document_prixod_jur7_child ch
             JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
-            JOIN spravochnik_operatsii AS op ON op.schet = ch.kredit_schet
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
+              AND d.j_o_num = $3
               ${date_filter}
-            GROUP BY op.schet
+            GROUP BY ch.kredit_schet
         )
 
         SELECT schet, summa, type FROM bajarilgan_ishlar
@@ -491,6 +495,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
+            AND op.schet = $3
             ${date_filter}
           GROUP BY op.schet
         ),
@@ -509,6 +514,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
+            AND op.schet = $3
             ${date_filter}
           GROUP BY op.schet
         ),
@@ -528,6 +534,7 @@ exports.MainBookDB = class {
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
+            AND op.schet = $3
             ${date_filter}
           GROUP BY op.schet
         ),
@@ -542,10 +549,12 @@ exports.MainBookDB = class {
           JOIN users u ON d.user_id = u.id
           JOIN regions r ON u.region_id = r.id
           JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+          JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
           WHERE d.isdeleted = false
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
+            AND own.schet = $3
             ${date_filter}
           GROUP BY op.schet
         )

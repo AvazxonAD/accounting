@@ -9,8 +9,8 @@ exports.FeaturesService = class {
     else if (data.page === "avans") return "avans_otchetlar_jur4";
     else if (data.page === "akt") return "bajarilgan_ishlar_jur3";
     else if (data.page === "jur7_prixod") return "document_prixod_jur7";
-    else if (data.page === "organ/saldo") return "organ_saldo";
-    else if (data.page === "podotchet/saldo") return "podotchet_saldo";
+    else if (data.page === "organ_saldo") return "organ_saldo";
+    else if (data.page === "podotchet_saldo") return "podotchet_saldo";
     else if (data.page === "jur7_rasxod") return "document_rasxod_jur7";
     else if (data.page === "jur7_internal")
       return "document_vnutr_peremesh_jur7";
