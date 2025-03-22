@@ -126,6 +126,16 @@ exports.Controller = class {
       isdeleted: true,
     });
 
+    for (let type of data.childs) {
+      type.prixod = 0;
+      type.rasxod = 0;
+
+      for (let child of type.sub_childs) {
+        type.prixod += child.prixod;
+        type.rasxod += child.rasxod;
+      }
+    }
+
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
@@ -173,6 +183,9 @@ exports.Controller = class {
     for (let type of types) {
       // from
       if (type.id === 0) {
+        type.prixod = 0;
+        type.rasxod = 0;
+
         type.sub_childs = await MainBookService.getFromOrToData({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
@@ -180,6 +193,11 @@ exports.Controller = class {
           region_id,
           main_schets: main_schets,
         });
+
+        for (let child of type.sub_childs) {
+          type.prixod += child.prixod;
+          type.rasxod += child.rasxod;
+        }
       }
 
       // jurnal 1
@@ -268,6 +286,14 @@ exports.Controller = class {
           types[index].sub_childs[child_index].prixod += child.prixod;
           types[index].sub_childs[child_index].rasxod += child.rasxod;
         }
+      }
+
+      type.prixod = 0;
+      type.rasxod = 0;
+
+      for (let child of type.sub_childs) {
+        type.prixod += child.prixod;
+        type.rasxod += child.rasxod;
       }
     }
 
