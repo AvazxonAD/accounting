@@ -610,7 +610,7 @@ exports.PodotchetMonitoringDB = class {
   }
 
   static async capData(params) {
-    const query = `
+    const query = `--sql
         WITH 
             bank_rasxod AS (
                 SELECT 

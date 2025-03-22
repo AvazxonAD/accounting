@@ -143,95 +143,118 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const main_schets = await MainSchetService.get();
+    const main_schets = await MainBookService.getMainSchets({
+      region_id,
+      budjet_id,
+    });
 
     const types = await MainBookService.getMainBookType({});
 
-    const schets = await OperatsiiService.getUniqueSchets({});
+    const schets = await MainBookService.getUniqueSchets({});
+    const set_schets = new Set(schets.map((item) => item.schet));
+
+    for (let main_schet of main_schets) {
+      [
+        main_schet.jur1_schet,
+        main_schet.jur2_schet,
+        main_schet.jur3_schet,
+        main_schet.jur4_schet,
+        main_schet.jur5_schet,
+        main_schet.jur7_schet,
+      ].forEach((schet) => {
+        if (schet && !set_schets.has(schet)) {
+          set_schets.add(schet);
+          schets.push({ schet, prixod: 0, rasxod: 0 });
+        }
+      });
+    }
 
     for (let type of types) {
+      // from
       if (type.id === 0) {
         type.sub_childs = JSON.parse(JSON.stringify(schets));
-        type.sub_childs.forEach((element) => {
-          element.prixod = 0;
-          element.rasxod = 0;
-        });
       }
 
+      // jurnal 1
       if (type.id === 1) {
         type.sub_childs = await MainBookService.getJur1Data({
-          schets,
+          schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
           year,
           month,
           region_id,
+          main_schets: main_schets,
         });
       }
 
+      // jurnal 2
       if (type.id === 2) {
         type.sub_childs = await MainBookService.getJur2Data({
-          schets,
+          schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
           year,
           month,
           region_id,
+          main_schets: main_schets,
         });
       }
 
+      // jurnal 3
       if (type.id === 3) {
         type.sub_childs = await MainBookService.getJur3Data({
-          schets,
+          schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
           year,
           month,
           region_id,
+          main_schets: main_schets,
         });
       }
 
+      // jurnal 4
       if (type.id === 4) {
-        type.sub_childs = await MainBookService.getJur3Data({
-          schets,
+        type.sub_childs = await MainBookService.getJur4Data({
+          schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
           year,
           month,
           region_id,
+          main_schets: main_schets,
         });
       }
 
+      // jurnal 5
       if (type.id === 5) {
-        type.sub_childs = await MainBookService.getJur3Data({
-          schets,
-          budjet_id,
-          year,
-          month,
-          region_id,
-        });
+        type.sub_childs = JSON.parse(JSON.stringify(schets));
       }
 
+      // jurnal 7
       if (type.id === 7) {
-        type.sub_childs = await MainBookService.getJur3Data({
-          schets,
-          budjet_id,
-          year,
-          month,
-          region_id,
-        });
+        type.sub_childs = JSON.parse(JSON.stringify(schets));
       }
 
+      // jurnal 9
       if (type.id === 9) {
         type.sub_childs = JSON.parse(JSON.stringify(schets));
-        type.sub_childs.forEach((element) => {
-          element.prixod = 0;
-          element.rasxod = 0;
-        });
       }
 
+      // jurnal 10
       if (type.id === 10) {
         type.sub_childs = JSON.parse(JSON.stringify(schets));
-        type.sub_childs.forEach((element) => {
-          element.prixod = 0;
-          element.rasxod = 0;
-        });
+      }
+    }
+
+    const index = types.findIndex((item) => item.id === 9);
+    for (let type of types) {
+      if (type.id !== 9 && type.id !== 0 && type.id !== 10) {
+        for (let child of type.sub_childs) {
+          const child_index = types[index].sub_childs.findIndex(
+            (item) => item.schet === child.schet
+          );
+
+          types[index].sub_childs[child_index].prixod += child.prixod;
+          types[index].sub_childs[child_index].rasxod += child.rasxod;
+        }
       }
     }
 
