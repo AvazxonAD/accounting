@@ -3,6 +3,21 @@ const { MainBookDB } = require("./db");
 const { HelperFunctions } = require(`@helper/functions`);
 
 exports.MainBookService = class {
+  static async getUniqueSchets(data) {
+    const result = await MainBookDB.getUniqueSchets([]);
+
+    return result;
+  }
+
+  static async getMainSchets(data) {
+    const result = await MainBookDB.getMainSchets([
+      data.region_id,
+      data.budjet_id,
+    ]);
+
+    return result;
+  }
+
   static async delete(data) {
     await db.transaction(async (client) => {
       await MainBookDB.delete([data.id], client);
@@ -88,22 +103,27 @@ exports.MainBookService = class {
   static async getJur1Data(data) {
     const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
-    for (let schet of data.schets) {
-      schet.prixod = await MainBookDB.getJur1Prixod([
-        schet.schet,
-        data.region_id,
-        data.budjet_id,
-        date[0],
-        date[1],
-      ]);
+    for (let main_schet of data.main_schets) {
+      let rasxod = 0;
+      const rasxod_data = await MainBookDB.getJur1Rasxod(
+        [data.region_id, main_schet.id],
+        { from: date[0], to: date[1] }
+      );
 
-      schet.rasxod = await MainBookDB.getJur1Rasxod([
-        schet.schet,
-        data.region_id,
-        data.budjet_id,
-        date[0],
-        date[1],
-      ]);
+      for (let schet of rasxod_data) {
+        const index = data.schets.findIndex(
+          (item) => item.schet === schet.schet
+        );
+
+        data.schets[index].prixod += schet.summa;
+        rasxod += schet.summa;
+      }
+
+      // rasxod
+      const index = data.schets.findIndex(
+        (item) => item.schet === main_schet.jur1_schet
+      );
+      data.schets[index].rasxod += rasxod;
     }
 
     return data.schets;
@@ -112,22 +132,28 @@ exports.MainBookService = class {
   static async getJur2Data(data) {
     const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
-    for (let schet of data.schets) {
-      schet.prixod = await MainBookDB.getJur2Prixod([
-        schet.schet,
+    for (let main_schet of data.main_schets) {
+      let rasxod = 0;
+      const rasxod_data = await MainBookDB.getJur2Rasxod([
         data.region_id,
-        data.budjet_id,
+        main_schet.id,
         date[0],
         date[1],
       ]);
 
-      schet.rasxod = await MainBookDB.getJur2Rasxod([
-        schet.schet,
-        data.region_id,
-        data.budjet_id,
-        date[0],
-        date[1],
-      ]);
+      for (let schet of rasxod_data) {
+        const index = data.schets.findIndex(
+          (item) => item.schet === schet.schet
+        );
+
+        data.schets[index].prixod += schet.summa;
+        rasxod += schet.summa;
+      }
+
+      const index = data.schets.findIndex(
+        (item) => item.schet === main_schet.jur2_schet
+      );
+      data.schets[index].rasxod += rasxod;
     }
 
     return data.schets;
@@ -136,26 +162,64 @@ exports.MainBookService = class {
   static async getJur3Data(data) {
     const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
-    for (let schet of data.schets) {
-      schet.prixod = await MainBookDB.getJur3Prixod([
-        schet.schet,
+    for (let main_schet of data.main_schets) {
+      let rasxod = 0;
+      const rasxod_data = await MainBookDB.getJur3Rasxod([
         data.region_id,
-        data.budjet_id,
+        main_schet.id,
         date[0],
         date[1],
       ]);
 
-      schet.rasxod = await MainBookDB.getJur3Rasxod([
-        schet.schet,
-        data.region_id,
-        data.budjet_id,
-        date[0],
-        date[1],
-      ]);
+      for (let schet of rasxod_data) {
+        const index = data.schets.findIndex(
+          (item) => item.schet === schet.schet
+        );
+
+        data.schets[index].prixod += schet.summa;
+        rasxod += schet.summa;
+      }
+
+      const index = data.schets.findIndex(
+        (item) => item.schet === main_schet.jur3_schet
+      );
+      data.schets[index].rasxod += rasxod;
     }
 
     return data.schets;
   }
+
+  static async getJur4Data(data) {
+    const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
+
+    for (let main_schet of data.main_schets) {
+      let rasxod = 0;
+      const rasxod_data = await MainBookDB.getJur4Rasxod([
+        data.region_id,
+        main_schet.id,
+        date[0],
+        date[1],
+      ]);
+
+      for (let schet of rasxod_data) {
+        const index = data.schets.findIndex(
+          (item) => item.schet === schet.schet
+        );
+
+        data.schets[index].prixod += schet.summa;
+        rasxod += schet.summa;
+      }
+
+      const index = data.schets.findIndex(
+        (item) => item.schet === main_schet.jur4_schet
+      );
+      data.schets[index].rasxod += rasxod;
+    }
+
+    return data.schets;
+  }
+
+  static async getFromData(data) {}
 
   static async update(data) {
     const result = await db.transaction(async (client) => {

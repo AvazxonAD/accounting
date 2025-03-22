@@ -134,13 +134,13 @@ exports.OperatsiiDB = class {
     }
 
     const query = `
-            SELECT 
-                DISTINCT schet
-            FROM spravochnik_operatsii 
-            WHERE isdeleted = false
-                ${type_schet_filter}
-                ${budjet_filter}
-        `;
+      SELECT 
+          DISTINCT schet
+      FROM spravochnik_operatsii 
+      WHERE isdeleted = false
+          ${type_schet_filter}
+          ${budjet_filter}
+    `;
 
     const result = await db.query(query, params);
 

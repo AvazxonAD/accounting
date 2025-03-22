@@ -48,17 +48,22 @@ exports.MainSchetDB = class {
 
     const where = conditions.length ? conditions.join(" AND ") : "";
 
-    const query = `
-        WITH data AS (SELECT 
-            main_schet.*, 
-            spravochnik_budjet_name.name AS budjet_name,
-            spravochnik_budjet_name.id AS spravochnik_budjet_name_id 
-        FROM main_schet
-        JOIN users ON main_schet.user_id = users.id
-        JOIN regions ON users.region_id = regions.id
-        JOIN spravochnik_budjet_name 
-            ON spravochnik_budjet_name.id = main_schet.spravochnik_budjet_name_id
-        WHERE main_schet.isdeleted = false AND regions.id = $1 ${where} OFFSET $2 LIMIT $3)
+    const query = `--sql
+        WITH data AS (
+          SELECT
+            m.*, 
+            b.name AS                               budjet_name,
+            b.id AS                                 spravochnik_budjet_name_id 
+          FROM main_schet m
+          JOIN users u ON m.user_id = u.id
+          JOIN regions r ON u.region_id = r.id
+          JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
+          WHERE m.isdeleted = false
+            AND r.id = $1
+            AND b.id = $2
+            ${where} 
+          OFFSET $3 LIMIT $4
+        )
         SELECT 
             COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
             (
@@ -67,17 +72,17 @@ exports.MainSchetDB = class {
                 FROM main_schet m 
                 JOIN users u ON m.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
+                JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
                 WHERE m.isdeleted = false
                     ${where}
                     AND r.id = $1
+                    AND b.id = $2
             )::INTEGER AS total_count
         FROM data
     `;
-    const result = await pool.query(query, params);
 
-    return {
-      result: result.rows[0]?.data || [],
-      total: result.rows[0]?.total_count || 0,
-    };
+    const result = await db.query(query, params);
+
+    return result[0];
   }
 };
