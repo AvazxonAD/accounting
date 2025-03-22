@@ -125,6 +125,16 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    for (let type of data.childs) {
+      type.prixod = 0;
+      type.rasxod = 0;
+
+      for (let child of type.sub_childs) {
+        type.prixod += child.prixod;
+        type.rasxod += child.rasxod;
+      }
+    }
+
     return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 
