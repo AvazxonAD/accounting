@@ -1,7 +1,6 @@
 const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
-const { OperatsiiService } = require("@operatsii/service");
-const { MainSchetService } = require("@main_schet/service");
+const { HelperFunctions } = require(`@helper/functions`);
 
 exports.Controller = class {
   static async delete(req, res) {
@@ -169,10 +168,18 @@ exports.Controller = class {
       });
     }
 
+    const date = HelperFunctions.getMonthStartEnd(year, month);
+
     for (let type of types) {
       // from
       if (type.id === 0) {
-        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs = await MainBookService.getFromOrToData({
+          schets: JSON.parse(JSON.stringify(schets)),
+          budjet_id,
+          from: date[0],
+          region_id,
+          main_schets: main_schets,
+        });
       }
 
       // jurnal 1
@@ -180,8 +187,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur1Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          year,
-          month,
+          from: date[0],
+          to: date[1],
           region_id,
           main_schets: main_schets,
         });
@@ -192,8 +199,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur2Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          year,
-          month,
+          from: date[0],
+          to: date[1],
           region_id,
           main_schets: main_schets,
         });
@@ -204,8 +211,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur3Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          year,
-          month,
+          from: date[0],
+          to: date[1],
           region_id,
           main_schets: main_schets,
         });
@@ -216,8 +223,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur4Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          year,
-          month,
+          from: date[0],
+          to: date[1],
           region_id,
           main_schets: main_schets,
         });
@@ -240,7 +247,13 @@ exports.Controller = class {
 
       // jurnal 10
       if (type.id === 10) {
-        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs = await MainBookService.getFromOrToData({
+          schets: JSON.parse(JSON.stringify(schets)),
+          budjet_id,
+          to: date[1],
+          region_id,
+          main_schets: main_schets,
+        });
       }
     }
 
