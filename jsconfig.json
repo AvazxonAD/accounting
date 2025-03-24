@@ -21,6 +21,7 @@
       "@auth/*": ["auth/auth/*"],
       "@user/*": ["auth/user/*"],
       "@admin_users/*": ["admin/users/*"],
+      "@video/*": ["admin/video/*"],
       "@main_schet/*": ["region/spravochnik/main.schet/*"],
       "@podpis/*": ["region/spravochnik/podpis/*"],
       "@podraz/*": ["region/spravochnik/podrazdelenie/*"],

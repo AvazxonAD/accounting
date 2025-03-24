@@ -8,6 +8,7 @@ exports.VideoService = class {
       data.file,
       data.module_id,
       data.status,
+      data.sort_order,
       HelperFunctions.tashkentTime(),
       HelperFunctions.tashkentTime(),
     ]);
@@ -21,6 +22,7 @@ exports.VideoService = class {
       data.file,
       data.module_id,
       data.status,
+      data.sort_order,
       HelperFunctions.tashkentTime(),
       data.id,
     ]);
@@ -29,7 +31,11 @@ exports.VideoService = class {
   }
 
   static async get(data) {
-    const result = await VideoDB.get([data.offset, data.limit]);
+    const result = await VideoDB.get(
+      [data.offset, data.limit],
+      data.search,
+      data.status
+    );
 
     return result;
   }

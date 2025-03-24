@@ -10,7 +10,7 @@ const {
   getById,
 } = require("./sostav.controller");
 
-const upload = require("@utils/protect.file");
+const { uploadExcel } = require("@utils/protect.file");
 
 router.post("/", createSostav);
 router.get("/", getSostav);

@@ -9,7 +9,7 @@ const {
   BankSchema,
 } = require("./schema");
 
-const upload = require("@utils/protect.file");
+const { uploadExcel } = require("@utils/protect.file");
 const { Router } = require("express");
 const router = Router();
 
@@ -21,7 +21,7 @@ router
   .get("/", validator(Controller.getBankMfo, getBankSchema))
   .post(
     "/import",
-    upload.single("file"),
+    uploadExcel.single("file"),
     validator(Controller.importExcelData)
   );
 

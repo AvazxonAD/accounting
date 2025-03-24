@@ -106,6 +106,7 @@
     "@contract": "./src/region/contract",
     "@account_number": "./src/region/spravochnik/organization/account_number",
     "@podraz": "./src/region/spravochnik/podrazdelenie",
+    "@video": "./src/admin/video",
     "@responsible": "./src/region/spravochnik/responsible",
     "@product": "./src/region/spravochnik/product",
     "@jur7_podraz": "./src/region/spravochnik/jur7.podrazdelenie",

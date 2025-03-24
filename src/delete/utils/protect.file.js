@@ -6,16 +6,8 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     cb(
       null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname),
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
     );
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 100000000 },
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
   },
 });
 
@@ -24,7 +16,7 @@ function checkFileType(file, cb) {
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype =
     /application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|application\/vnd\.ms-excel/.test(
-      file.mimetype,
+      file.mimetype
     );
 
   if (mimetype && extname) {
@@ -34,4 +26,10 @@ function checkFileType(file, cb) {
   }
 }
 
-module.exports = upload;
+exports.uploadExcel = multer({
+  storage,
+  limits: { fileSize: 100000000 },
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  },
+});

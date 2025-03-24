@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const router = Router();
 
-const upload = require("@utils/protect.file");
+const { uploadExcel } = require("@utils/protect.file");
 
 const { protect } = require("@middleware/auth");
 const {

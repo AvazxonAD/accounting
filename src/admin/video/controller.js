@@ -1,21 +1,29 @@
 const { VideoService } = require("./service");
+const { VideoModuleService } = require("@video_module/service");
 
 exports.Controller = class {
   static async create(req, res) {
-    const { name } = req.body;
+    const { module_id } = req.body;
 
-    const check = await VideoService.getByName({ name });
-    if (check) {
-      return res.error(req.i18n.t("docExists"), 409);
+    if (!req.file) {
+      return res.error(req.i18n.t("fileError"), 400);
     }
 
-    const result = await VideoService.create({ name });
+    const module = await VideoModuleService.getById({ id: module_id });
+    if (!module) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const result = await VideoService.create({
+      ...req.body,
+      file: req.file.filename,
+    });
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
   }
 
   static async get(req, res) {
-    const { page, limit, search } = req.query;
+    const { page, limit, search, status } = req.query;
 
     const offset = (page - 1) * limit;
 
@@ -23,6 +31,7 @@ exports.Controller = class {
       offset,
       limit,
       search,
+      status,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -50,22 +59,20 @@ exports.Controller = class {
   }
 
   static async update(req, res) {
-    const { name } = req.body;
+    const { module_id } = req.body;
     const id = req.params.id;
+
     const old_data = await VideoService.getById({ id });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    if (old_data.name !== name) {
-      const check = await VideoService.getByName({ name });
-
-      if (check) {
-        return res.error(req.i18n.t("docExists"), 409);
-      }
+    const module = await VideoModuleService.getById({ id: module_id });
+    if (!module) {
+      return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await VideoService.update({ name, id });
+    const result = await VideoService.update({ ...req.body, id });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   }
