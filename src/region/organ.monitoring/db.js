@@ -708,7 +708,7 @@ exports.OrganizationMonitoringDB = class {
   }
 
   static async capData(params) {
-    const query = `
+    const query = `--sql
             WITH
                 kursatilgan_hizmatlar AS (
                     SELECT
@@ -785,6 +785,7 @@ exports.OrganizationMonitoringDB = class {
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN spravochnik_organization AS so ON so.id = d.organ_id
                     WHERE d.isdeleted = false
+                        AND d.rasxod = true
                         AND ch.isdeleted = false
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
@@ -806,6 +807,7 @@ exports.OrganizationMonitoringDB = class {
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN spravochnik_organization AS so ON so.id = d.organ_id
                     WHERE d.isdeleted = false
+                        AND d.prixod = true
                         AND ch.isdeleted = false
                         AND d.main_schet_id = $1
                         AND d.doc_date BETWEEN $2 AND $3
