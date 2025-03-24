@@ -10,7 +10,7 @@ const {
   getById,
 } = require("./type_operatsii.controller");
 
-const upload = require("@utils/protect.file");
+const { uploadExcel } = require("@utils/protect.file");
 
 router.post("/", createTypeOperatsii);
 router.get("/", getTypeOperatsii);

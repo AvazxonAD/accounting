@@ -8,10 +8,11 @@ exports.VideoDB = class {
             file,
             module_id,
             status,
+            sort_order,
             created_at, 
             updated_at
         ) 
-        VALUES ($1, $2, $3, $4, $5, $6) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
         RETURNING id
     `;
 
@@ -25,14 +26,14 @@ exports.VideoDB = class {
 
     if (search) {
       params.push(search);
-      conditions.push(`AND d.name ILIKE '%' || $${params.length + 1}`);
+      conditions.push(`d.name ILIKE '%' || $${params.length + 1}`);
     }
 
     if (status) {
-      conditions.push(`d.status = true`);
+      conditions.push(`d.status = ${status}`);
     }
 
-    const where = conditions.length ? conditions.join(` AND `) : "";
+    const where = conditions.length ? `AND ${conditions.join(` AND `)}` : "";
 
     const query = `--sql
         WITH data AS (
@@ -41,7 +42,7 @@ exports.VideoDB = class {
             FROM video AS d
             WHERE d.isdeleted = false 
                 ${where}
-            ORDER BY d.created_at DESC
+            ORDER BY d.sort_order DESC
             OFFSET $1 LIMIT $2
         )
         SELECT 
@@ -83,8 +84,9 @@ exports.VideoDB = class {
             file = $2,
             module_id = $3,
             status = $4,
-            updated_at = $5
-        WHERE id = $6
+            sort_order = $5,
+            updated_at = $6
+        WHERE id = $7
         RETURNING *
     `;
 
