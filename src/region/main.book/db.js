@@ -305,6 +305,46 @@ exports.MainBookDB = class {
     return result;
   }
 
+  static async getJur1Prixod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    const query = `--sql
+      SELECT
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
+        op.schet
+      FROM kassa_prixod d
+      JOIN kassa_prixod_child ch ON ch.kassa_prixod_id = d.id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.main_schet_id = $2
+        ${date_filter}
+      GROUP BY op.schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getJur2Rasxod(params, date, operator = null) {
     let date_filter = ``;
 
@@ -329,6 +369,46 @@ exports.MainBookDB = class {
         op.schet
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON ch.id_bank_rasxod = d.id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.main_schet_id = $2
+        ${date_filter}
+      GROUP BY op.schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur2Prixod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    const query = `--sql
+      SELECT
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
+        op.schet
+      FROM bank_prixod d
+      JOIN bank_prixod_child ch ON ch.id_bank_prixod = d.id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -396,6 +476,7 @@ exports.MainBookDB = class {
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
+              AND d.rasxod = true
               AND ch.isdeleted = false
               AND r.id = $1
               AND d.main_schet_id = $2
@@ -461,6 +542,101 @@ exports.MainBookDB = class {
     return result;
   }
 
+  static async getJur3Prixod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    const query = `--sql
+      WITH
+        kursatilgan_hizmatlar AS (
+            SELECT 
+              COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
+              op.schet,
+              'show_service' AS                             type
+            FROM kursatilgan_hizmatlar_jur152_child AS ch
+            JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
+            JOIN users AS u ON d.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND ch.isdeleted = false
+              AND r.id = $1
+              AND d.main_schet_id = $2
+              AND own.schet = $3
+              ${date_filter}
+            GROUP BY op.schet
+        ),
+        
+        organ_saldo_prixod AS (
+            SELECT 
+              COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
+              op.schet,
+              'organ_saldo_prixod' AS                         type
+            FROM organ_saldo_child ch
+            JOIN organ_saldo AS d ON ch.parent_id = d.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+            JOIN users AS u ON d.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND d.prixod = true
+              AND ch.isdeleted = false
+              AND r.id = $1
+              AND d.main_schet_id = $2
+              AND op.schet = $3
+              ${date_filter}
+            GROUP BY op.schet
+        ),
+        
+        bank_rasxod AS (
+            SELECT 
+                COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
+                op.schet,
+                'bank_rasxod' AS                                type
+            FROM bank_rasxod_child ch
+            JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN users AS u ON d.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND ch.isdeleted = false
+              AND r.id = $1
+              AND d.main_schet_id = $2
+              AND op.schet = $3
+              ${date_filter}
+            GROUP BY op.schet
+        )
+
+        SELECT schet, summa, type FROM kursatilgan_hizmatlar
+        
+        UNION ALL
+          
+        SELECT schet, summa, type FROM bank_rasxod
+        
+        UNION ALL
+        
+        SELECT schet, summa, type FROM organ_saldo_prixod
+      `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getJur4Rasxod(params, date, operator = null) {
     let date_filter = ``;
 
@@ -492,6 +668,7 @@ exports.MainBookDB = class {
           JOIN regions r ON u.region_id = r.id
           JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
           WHERE d.isdeleted = false
+            AND d.rasxod = true
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
@@ -573,6 +750,101 @@ exports.MainBookDB = class {
         
         SELECT schet, summa, type FROM avans_otchet
       `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur4Prixod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    const query = `--sql
+      WITH
+        podotchet_saldo_prixod AS (
+          SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa,
+            op.schet,
+            'podotchet_saldo_prixod' AS                 type 
+          FROM podotchet_saldo_child ch
+          JOIN podotchet_saldo AS d ON ch.parent_id = d.id
+          JOIN users u ON d.user_id = u.id
+          JOIN regions r ON u.region_id = r.id
+          JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
+          WHERE d.isdeleted = false
+            AND d.prixod = true
+            AND ch.isdeleted = false
+            AND r.id = $1
+            AND d.main_schet_id = $2
+            AND op.schet = $3
+            ${date_filter}
+          GROUP BY op.schet
+        ),
+        
+        kassa_rasxod AS (
+          SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa,
+            op.schet,
+            'kassa_rasxod' AS                           type
+          FROM kassa_rasxod_child ch
+          JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+          JOIN users u ON d.user_id = u.id
+          JOIN regions r ON u.region_id = r.id
+          JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+          WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND r.id = $1
+            AND d.main_schet_id = $2
+            AND op.schet = $3
+            ${date_filter}
+          GROUP BY op.schet
+        ),
+        
+        bank_rasxod AS (
+          SELECT 
+              COALESCE(SUM(ch.summa), 0)::FLOAT AS      summa,
+              op.schet,
+              'bank_rasxod' AS                          type
+          FROM bank_rasxod_child ch
+          JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
+          JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+          JOIN main_schet m ON m.id = d.main_schet_id
+          JOIN users AS u ON d.user_id = u.id
+          JOIN regions AS r ON r.id = u.region_id
+          WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND r.id = $1
+            AND d.main_schet_id = $2
+            AND op.schet = $3
+            ${date_filter}
+          GROUP BY op.schet
+        )
+
+        SELECT schet, summa, type FROM bank_rasxod
+        
+        UNION ALL
+          
+        SELECT schet, summa, type FROM kassa_rasxod
+        
+        UNION ALL
+        
+        SELECT schet, summa, type FROM podotchet_saldo_prixod
+    `;
 
     const result = await db.query(query, params);
 

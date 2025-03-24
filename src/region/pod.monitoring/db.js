@@ -643,6 +643,7 @@ exports.PodotchetMonitoringDB = class {
                 JOIN regions r ON u.region_id = r.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
                 WHERE d.isdeleted = false
+                    AND d.prixod = true
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
@@ -663,6 +664,7 @@ exports.PodotchetMonitoringDB = class {
                 JOIN regions r ON u.region_id = r.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
                 WHERE d.isdeleted = false
+                    AND d.rasxod = true
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $1
                     AND d.doc_date BETWEEN $2 AND $3
