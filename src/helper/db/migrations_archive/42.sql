@@ -1,0 +1,11 @@
+ALTER TABLE bank_prixod ADD COLUMN organization_by_raschet_schet_id BIGINT REFERENCES organization_by_raschet_schet(id);
+ALTER TABLE bank_prixod ADD COLUMN organization_by_raschet_schet_gazna_id BIGINT REFERENCES organization_by_raschet_schet_gazna(id);
+
+ALTER TABLE bajarilgan_ishlar_jur3 ADD COLUMN organization_by_raschet_schet_id BIGINT REFERENCES organization_by_raschet_schet(id);
+ALTER TABLE bajarilgan_ishlar_jur3 ADD COLUMN organization_by_raschet_schet_gazna_id BIGINT REFERENCES organization_by_raschet_schet_gazna(id);
+
+ALTER TABLE kursatilgan_hizmatlar_jur152 ADD COLUMN organization_by_raschet_schet_id BIGINT REFERENCES organization_by_raschet_schet(id);
+ALTER TABLE kursatilgan_hizmatlar_jur152 ADD COLUMN organization_by_raschet_schet_gazna_id BIGINT REFERENCES organization_by_raschet_schet_gazna(id);
+
+ALTER TABLE document_prixod_jur7 ADD COLUMN organization_by_raschet_schet_id BIGINT REFERENCES organization_by_raschet_schet(id);
+ALTER TABLE document_prixod_jur7 ADD COLUMN organization_by_raschet_schet_gazna_id BIGINT REFERENCES organization_by_raschet_schet_gazna(id);

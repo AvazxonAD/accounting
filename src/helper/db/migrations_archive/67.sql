@@ -1,0 +1,1 @@
+ALTER TABLE document_rasxod_jur7_child ADD COLUMN iznos BOOLEAN DEFAULT false;

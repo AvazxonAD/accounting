@@ -1,0 +1,1 @@
+ALTER TABLE bank_rasxod ALTER COLUMN opisanie TYPE VARCHAR(1000);
