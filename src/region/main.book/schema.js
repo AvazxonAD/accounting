@@ -96,6 +96,10 @@ exports.MainBookSchema = class {
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
       }),
+
+      query: Joi.object({
+        excel: Joi.string().valid("true", "false"),
+      }),
     }).options({ stripUnknown: true });
   }
 

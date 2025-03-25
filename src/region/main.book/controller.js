@@ -118,6 +118,7 @@ exports.Controller = class {
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
+    const { excel } = req.query;
     const { id } = req.params;
 
     const data = await MainBookService.getById({
@@ -138,6 +139,21 @@ exports.Controller = class {
 
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (excel === "true") {
+      const { file_path, file_name } = await MainBookService.getByIdExcel(data);
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${file_name}"`
+      );
+
+      return res.sendFile(file_path);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, data);
@@ -178,6 +194,10 @@ exports.Controller = class {
       });
     }
 
+    const jur3AndJur4Schets = main_schets
+      .map((item) => [item.jur3_schet, item.jur4_schet])
+      .flat();
+
     const date = HelperFunctions.getMonthStartEnd(year, month);
 
     for (let type of types) {
@@ -192,6 +212,7 @@ exports.Controller = class {
           from: date[0],
           region_id,
           main_schets: main_schets,
+          jur3AndJur4Schets,
         });
 
         for (let child of type.sub_childs) {
@@ -271,6 +292,7 @@ exports.Controller = class {
           to: date[1],
           region_id,
           main_schets: main_schets,
+          jur3AndJur4Schets,
         });
       }
     }
