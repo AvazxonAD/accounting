@@ -684,7 +684,7 @@ exports.PodotchetMonitoringDB = class {
             bank_prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    op.schet,
+                    m.jur2_schet AS schet,
                     op.sub_schet,
                     'bank_prixod' AS type
                 FROM bank_prixod_child ch
@@ -699,7 +699,7 @@ exports.PodotchetMonitoringDB = class {
                     AND r.id = $4
                     AND op.schet = $5
                     AND ch.id_spravochnik_podotchet_litso IS NOT NULL
-                GROUP BY op.schet,
+                GROUP BY m.jur2_schet,
                     op.sub_schet
             ),
             kassa_prixod AS (
