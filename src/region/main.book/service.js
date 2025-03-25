@@ -415,18 +415,18 @@ exports.MainBookService = class {
         continue;
       }
 
-      // const summa = schet.prixod - schet.rasxod;
+      const summa = schet.prixod - schet.rasxod;
 
-      // if (summa > 0) {
-      //   schet.prixod = summa;
-      //   schet.rasxod = 0;
-      // } else if (summa < 0) {
-      //   schet.rasxod = Math.abs(summa);
-      //   schet.prixod = 0;
-      // } else {
-      //   schet.prixod = 0;
-      //   schet.rasxod = 0;
-      // }
+      if (summa > 0) {
+        schet.prixod = summa;
+        schet.rasxod = 0;
+      } else if (summa < 0) {
+        schet.rasxod = Math.abs(summa);
+        schet.prixod = 0;
+      } else {
+        schet.prixod = 0;
+        schet.rasxod = 0;
+      }
     }
 
     return data.schets;
@@ -434,7 +434,7 @@ exports.MainBookService = class {
 
   static async getByIdExcel(data) {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("responsibles");
+    const worksheet = workbook.addWorksheet("main book");
 
     worksheet.columns = [
       { header: "ID", key: "id", width: 10 },
