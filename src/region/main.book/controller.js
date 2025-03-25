@@ -203,6 +203,7 @@ exports.Controller = class {
     for (let type of types) {
       // from
       if (type.id === 0) {
+        console.log("from");
         type.prixod = 0;
         type.rasxod = 0;
 

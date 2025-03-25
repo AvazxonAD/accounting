@@ -487,6 +487,10 @@ exports.SaldoService = class {
   }
 
   static async getSaldoCheck(data) {
+    if (data.month === 12 && data.year === 2024) {
+      console.log(data);
+    }
+
     const last_saldo = await SaldoDB.get([
       data.region_id,
       data.year,
@@ -691,16 +695,15 @@ exports.SaldoService = class {
   }
 
   static async delete(data) {
-    console.log(data.ids.length);
     const dates = await db.transaction(async (client) => {
       for (let id of data.ids) {
         await SaldoDB.deleteById([id.id], client);
       }
 
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${data.year}-${data.month}-01`,
-      ]);
+      const check = await SaldoDB.getSaldoDate(
+        [data.region_id, `${data.year}-${data.month}-01`],
+        client
+      );
 
       let dates = [];
 
