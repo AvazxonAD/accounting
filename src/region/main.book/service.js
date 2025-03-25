@@ -1,6 +1,7 @@
 const { db } = require("@db/index");
 const { MainBookDB } = require("./db");
 const { HelperFunctions } = require(`@helper/functions`);
+const { shartnomaGarfikValidation } = require("../../delete/utils/validation");
 
 exports.MainBookService = class {
   static async getUniqueSchets(data) {
@@ -405,8 +406,20 @@ exports.MainBookService = class {
     });
 
     for (let schet of data.schets) {
-      console.log(schet);
+      const summa = schet.prixod - schet.rasxod;
+
+      if (summa > 0) {
+        schet.prixod = summa;
+        schet.rasxod = 0;
+      } else if (summa < 0) {
+        schet.rasxod = Math.abs(summa);
+        schet.prixod = 0;
+      } else {
+        schet.prixod = 0;
+        schet.rasxod = 0;
+      }
     }
+
     return data.schets;
   }
 };
