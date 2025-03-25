@@ -488,11 +488,12 @@ exports.MainBookDB = class {
         bank_prixod AS (
             SELECT 
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
-                op.schet,
+                m.jur2_schet AS                                 schet,
                 'bank_prixod' AS                                type
             FROM bank_prixod_child AS ch
             JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN main_schet m ON m.id = d.main_schet_id
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
@@ -501,7 +502,7 @@ exports.MainBookDB = class {
               AND d.main_schet_id = $2
               AND op.schet = $3
               ${date_filter}
-            GROUP BY op.schet
+            GROUP BY m.jur2_schet
         ),
 
         jur7_prixod AS (
@@ -605,11 +606,12 @@ exports.MainBookDB = class {
         bank_rasxod AS (
             SELECT 
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
-                op.schet,
+                m.jur2_schet AS                                 schet,
                 'bank_rasxod' AS                                type
             FROM bank_rasxod_child ch
             JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN main_schet m ON m.id = d.main_schet_id
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
@@ -618,7 +620,7 @@ exports.MainBookDB = class {
               AND d.main_schet_id = $2
               AND op.schet = $3
               ${date_filter}
-            GROUP BY op.schet
+            GROUP BY m.jur2_schet
         )
 
         SELECT schet, summa, type FROM kursatilgan_hizmatlar
@@ -680,26 +682,27 @@ exports.MainBookDB = class {
         kassa_prixod AS (
           SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa,
-            op.schet,
+            m.jur1_schet AS                             schet,
             'kassa_prixod' AS                           type
           FROM kassa_prixod_child ch
           JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
           JOIN users u ON d.user_id = u.id
           JOIN regions r ON u.region_id = r.id
           JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+          JOIN main_schet m ON m.id = d.main_schet_id
           WHERE d.isdeleted = false
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
             AND op.schet = $3
             ${date_filter}
-          GROUP BY op.schet
+          GROUP BY m.jur1_schet
         ),
         
         bank_prixod AS (
           SELECT 
               COALESCE(SUM(ch.summa), 0)::FLOAT AS      summa,
-              op.schet,
+              m.jur2_schet AS                           schet,
               'bank_prixod' AS                          type
           FROM bank_prixod_child AS ch
           JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
@@ -713,7 +716,7 @@ exports.MainBookDB = class {
             AND d.main_schet_id = $2
             AND op.schet = $3
             ${date_filter}
-          GROUP BY op.schet
+          GROUP BY m.jur2_schet
         ),
 
         avans_otchet AS (
@@ -799,20 +802,21 @@ exports.MainBookDB = class {
         kassa_rasxod AS (
           SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa,
-            op.schet,
+            m.jur1_schet AS                             schet,
             'kassa_rasxod' AS                           type
           FROM kassa_rasxod_child ch
           JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
           JOIN users u ON d.user_id = u.id
           JOIN regions r ON u.region_id = r.id
           JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+          JOIN main_schet m ON m.id = d.main_schet_id
           WHERE d.isdeleted = false
             AND ch.isdeleted = false
             AND r.id = $1
             AND d.main_schet_id = $2
             AND op.schet = $3
             ${date_filter}
-          GROUP BY op.schet
+          GROUP BY m.jur1_schet
         ),
         
         bank_rasxod AS (
