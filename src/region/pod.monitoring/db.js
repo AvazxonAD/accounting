@@ -692,6 +692,7 @@ exports.PodotchetMonitoringDB = class {
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN main_schet m ON m.id = d.main_schet_id
                 WHERE d.isdeleted = false
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $1
@@ -702,6 +703,7 @@ exports.PodotchetMonitoringDB = class {
                 GROUP BY m.jur2_schet,
                     op.sub_schet
             ),
+
             kassa_prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
@@ -723,6 +725,7 @@ exports.PodotchetMonitoringDB = class {
                 GROUP BY op.schet,
                     op.sub_schet
             ),
+
             kassa_rasxod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
@@ -744,6 +747,7 @@ exports.PodotchetMonitoringDB = class {
                 GROUP BY op.schet,
                     op.sub_schet
             ),
+
             avans_otchet AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
