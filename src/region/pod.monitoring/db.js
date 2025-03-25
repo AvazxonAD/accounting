@@ -251,7 +251,9 @@ exports.PodotchetMonitoringDB = class {
             ORDER BY doc_date 
             OFFSET $6 LIMIT $7
         `;
+
     const result = await db.query(query, params);
+
     return result;
   }
 
@@ -616,7 +618,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     m.jur2_schet AS schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'bank_rasxod' AS type
                 FROM bank_rasxod_child ch
                 JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id 
                 JOIN users u ON d.user_id = u.id
@@ -637,7 +640,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     op.schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'podotchet_saldo' AS type
                 FROM podotchet_saldo_child ch
                 JOIN podotchet_saldo AS d ON ch.parent_id = d.id
                 JOIN users u ON d.user_id = u.id
@@ -658,7 +662,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     op.schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'podotchet_saldo' AS type
                 FROM podotchet_saldo_child ch
                 JOIN podotchet_saldo AS d ON ch.parent_id = d.id
                 JOIN users u ON d.user_id = u.id
@@ -679,7 +684,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     op.schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'bank_prixod' AS type
                 FROM bank_prixod_child ch
                 JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
                 JOIN users u ON d.user_id = u.id
@@ -698,7 +704,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     op.schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'kassa_prixod' AS type
                 FROM kassa_prixod_child ch
                 JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
                 JOIN users u ON d.user_id = u.id
@@ -717,7 +724,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     op.schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'kassa_rasxod' AS type
                 FROM kassa_rasxod_child ch
                 JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
                 JOIN users u ON d.user_id = u.id
@@ -736,7 +744,8 @@ exports.PodotchetMonitoringDB = class {
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                     op.schet,
-                    op.sub_schet
+                    op.sub_schet,
+                    'avans_otchetlar_jur4' AS type
                 FROM avans_otchetlar_jur4_child ch
                 JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
                 JOIN users u ON d.user_id = u.id
