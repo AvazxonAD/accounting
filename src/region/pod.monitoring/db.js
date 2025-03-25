@@ -632,6 +632,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
                     AND op.schet = $5
+                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
                 GROUP BY m.jur2_schet,
                     op.sub_schet
             ),
@@ -697,6 +698,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
                     AND op.schet = $5
+                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -717,6 +719,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
                     AND op.schet = $5
+                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
                 GROUP BY op.schet,
                     op.sub_schet
             ),
@@ -737,6 +740,7 @@ exports.PodotchetMonitoringDB = class {
                     AND d.doc_date BETWEEN $2 AND $3
                     AND r.id = $4
                     AND op.schet = $5
+                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
                 GROUP BY op.schet,
                     op.sub_schet
             ),
