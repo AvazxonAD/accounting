@@ -707,7 +707,7 @@ exports.PodotchetMonitoringDB = class {
             kassa_prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    m.jur1_schet AS schet,,
+                    m.jur1_schet AS schet,
                     op.sub_schet,
                     'kassa_prixod' AS type
                 FROM kassa_prixod_child ch
