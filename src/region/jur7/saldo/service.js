@@ -487,10 +487,6 @@ exports.SaldoService = class {
   }
 
   static async getSaldoCheck(data) {
-    if (data.month === 12 && data.year === 2024) {
-      console.log(data);
-    }
-
     const last_saldo = await SaldoDB.get([
       data.region_id,
       data.year,
@@ -522,6 +518,10 @@ exports.SaldoService = class {
     const end = await SaldoDB.getEndSaldoDate([data.region_id]);
 
     return { result, meta: { first, end } };
+  }
+
+  static async unblock(data) {
+    await SaldoDB.unblock([data.region_id, data.year, data.month]);
   }
 
   static async create(data) {
@@ -574,7 +574,11 @@ exports.SaldoService = class {
     );
 
     const dates = await db.transaction(async (client) => {
-      await SaldoDB.delete([data.year, data.month, data.region_id], client);
+      await SaldoDB.delete(
+        [data.year, data.month, data.region_id],
+        client,
+        "saldo"
+      );
 
       for (let responsible of result) {
         for (let product of responsible.products) {
@@ -646,6 +650,7 @@ exports.SaldoService = class {
               product.kredit_sub_schet,
               data.main_schet_id,
               data.budjet_id,
+              "saldo",
               tashkentTime(),
               tashkentTime(),
             ],
@@ -692,6 +697,14 @@ exports.SaldoService = class {
     ]);
 
     return result;
+  }
+
+  static async deleteByYearMonth(data) {
+    await SaldoDB.delete(
+      [data.year, data.month, data.region_id],
+      null,
+      data.type
+    );
   }
 
   static async delete(data) {
@@ -845,6 +858,7 @@ exports.SaldoService = class {
             doc.group.provodka_subschet,
             data.main_schet_id,
             data.budjet_id,
+            "import",
             tashkentTime(),
             tashkentTime(),
           ],

@@ -420,7 +420,6 @@ exports.MainBookDB = class {
       GROUP BY op.schet
     `;
 
-    console.log(query, params);
     const result = await db.query(query, params);
 
     return result;

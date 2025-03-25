@@ -440,7 +440,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, budjet_id } = req.query;
-    let { year, month } = req.body;
+    let { year, month } = JSON.parse(JSON.stringify(req.body));
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -480,6 +480,29 @@ exports.Controller = class {
     }
 
     if (!last_saldo.length) {
+      const check = await SaldoService.check({
+        region_id,
+        month: req.body.month,
+        year: req.body.year,
+      });
+
+      if (check.result.length) {
+        await SaldoService.deleteByYearMonth({
+          region_id,
+          month: req.body.month,
+          year: req.body.year,
+          type: "saldo",
+        });
+
+        await SaldoService.unblock({
+          region_id,
+          month: req.body.month,
+          year: req.body.year,
+        });
+
+        return res.success(req.i18n.t("createSuccess"), 200);
+      }
+
       return res.success(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
