@@ -707,7 +707,7 @@ exports.PodotchetMonitoringDB = class {
             kassa_prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    op.schet,
+                    m.jur1_schet AS schet,,
                     op.sub_schet,
                     'kassa_prixod' AS type
                 FROM kassa_prixod_child ch
@@ -715,6 +715,7 @@ exports.PodotchetMonitoringDB = class {
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN main_schet m ON m.id = d.main_schet_id
                 WHERE d.isdeleted = false
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $1
@@ -722,14 +723,14 @@ exports.PodotchetMonitoringDB = class {
                     AND r.id = $4
                     AND op.schet = $5
                     AND d.id_podotchet_litso IS NOT NULL
-                GROUP BY op.schet,
+                GROUP BY m.jur1_schet,
                     op.sub_schet
             ),
 
             kassa_rasxod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    op.schet,
+                    m.jur1_schet,
                     op.sub_schet,
                     'kassa_rasxod' AS type
                 FROM kassa_rasxod_child ch
@@ -737,6 +738,7 @@ exports.PodotchetMonitoringDB = class {
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN main_schet m ON m.id = d.main_schet_id
                 WHERE d.isdeleted = false
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $1
@@ -744,7 +746,7 @@ exports.PodotchetMonitoringDB = class {
                     AND r.id = $4
                     AND op.schet = $5
                     AND d.id_podotchet_litso IS NOT NULL
-                GROUP BY op.schet,
+                GROUP BY m.jur1_schet,
                     op.sub_schet
             ),
 
