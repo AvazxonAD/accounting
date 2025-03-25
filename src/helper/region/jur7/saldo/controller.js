@@ -480,7 +480,30 @@ exports.Controller = class {
     }
 
     if (!last_saldo.length) {
-      return res.success(req.i18n.t("lastSaldoNotFound"), 400);
+      const check = await SaldoService.check({
+        region_id,
+        month: req.body.month,
+        year: req.body.year,
+      });
+
+      if (check.length) {
+        await SaldoService.deleteByYearMonth({
+          region_id,
+          month: req.body.month,
+          year: req.body.year,
+          type: "saldo",
+        });
+
+        await SaldoService.unblock({
+          region_id,
+          month: req.body.month,
+          year: req.body.year,
+        });
+
+        return res.success(req.i18n.t("createSuccess"), 200);
+      }
+
+      return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
     const dates = await SaldoService.create({

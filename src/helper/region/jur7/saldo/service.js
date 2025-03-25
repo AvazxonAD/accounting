@@ -642,6 +642,7 @@ exports.SaldoService = class {
               product.kredit_sub_schet,
               data.main_schet_id,
               data.budjet_id,
+              "saldo",
               tashkentTime(),
               tashkentTime(),
             ],
@@ -690,8 +691,19 @@ exports.SaldoService = class {
     return result;
   }
 
+  static async deleteByYearMonth(data) {
+    await SaldoDB.delete(
+      [data.year, data.month, data.region_id],
+      null,
+      data.type
+    );
+  }
+
+  static async unblock(data) {
+    await SaldoDB.unblock([data.region_id, data.year, data.month]);
+  }
+
   static async delete(data) {
-    console.log(data.ids.length);
     const dates = await db.transaction(async (client) => {
       for (let id of data.ids) {
         await SaldoDB.deleteById([id.id], client);
@@ -842,6 +854,7 @@ exports.SaldoService = class {
             doc.group.provodka_subschet,
             data.main_schet_id,
             data.budjet_id,
+            "import",
             tashkentTime(),
             tashkentTime(),
           ],

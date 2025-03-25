@@ -615,12 +615,20 @@ exports.SaldoDB = class {
     return result[0];
   }
 
-  static async delete(params, client) {
-    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
+  static async delete(params, client, type = null) {
+    const _db = client || db;
+
+    let type_filter = ``;
+
+    if (type) {
+      type_filter = `AND type = '${type}'`;
+    }
+
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3 ${type_filter}`;
     // const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
     // await client.query(query2, params);
 
-    await client.query(query, params);
+    await _db.query(query, params);
   }
 
   static async deleteById(params, client) {
@@ -661,10 +669,11 @@ exports.SaldoDB = class {
                 kredit_sub_schet,
                 main_schet_id,
                 budjet_id,
+                type,
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29) RETURNING *
         `;
 
     const result = await client.query(query, params);
