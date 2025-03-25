@@ -16,15 +16,36 @@ const {
 const { resFunc } = require("@utils/resFunc");
 const { validationResponse } = require("@utils/response-for-validation");
 const { errorCatch } = require("@utils/errorCatch");
+const { MainSchetService } = require("./service");
+const { JURNAL_SCHETS } = require(`@helper/constants`);
 
 // create
 const create = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
+
     const data = validationResponse(mainSchetValidator, req.body);
+
+    for (let column_name of JURNAL_SCHETS) {
+      const check = await MainSchetService.checkSchet({
+        budjet_id: data.spravochnik_budjet_name_id,
+        region_id,
+        column: data[column_name],
+        column_name,
+      });
+
+      if (check) {
+        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+          schet: check[column_name],
+        });
+      }
+    }
+
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
+
     await getByAccountNumberMainSchetService(region_id, data.account_number);
+
     const result = await createMainSchetService({ ...data, user_id });
 
     return res.success(req.i18n.t("createSuccess"), 200, null, result);
@@ -66,12 +87,34 @@ const update = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const testMain_schet = await getByIdMainSchetService(region_id, id);
+
+    const old_data = await getByIdMainSchetService(region_id, id);
+
     const data = validationResponse(mainSchetValidator, req.body);
-    if (data.account_number !== testMain_schet.account_number) {
+
+    for (let column_name of JURNAL_SCHETS) {
+      if (old_data[column_name] !== data[column_name]) {
+        const check = await MainSchetService.checkSchet({
+          budjet_id: data.spravochnik_budjet_name_id,
+          region_id,
+          column: data[column_name],
+          column_name,
+        });
+
+        if (check) {
+          return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+            schet: check[column_name],
+          });
+        }
+      }
+    }
+
+    if (data.account_number !== old_data.account_number) {
       await getByAccountNumberMainSchetService(region_id, data.account_number);
     }
+
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
+
     const result = await updateMainSchetService({ ...data, id });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);

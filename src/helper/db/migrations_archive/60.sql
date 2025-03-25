@@ -1,1 +1,0 @@
-ALTER TABLE naimenovanie_tovarov_jur7 ALTER COLUMN name TYPE VARCHAR(10000);

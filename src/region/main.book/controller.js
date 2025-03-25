@@ -200,6 +200,9 @@ exports.Controller = class {
 
     const date = HelperFunctions.getMonthStartEnd(year, month);
 
+    const from = `${date[0].getFullYear()}-${String(date[0].getMonth() + 1).padStart(2, "0")}-${String(date[0].getDate()).padStart(2, "0")}`;
+    const to = `${date[1].getFullYear()}-${String(date[1].getMonth() + 1).padStart(2, "0")}-${String(date[1].getDate()).padStart(2, "0")}`;
+
     for (let type of types) {
       // from
       if (type.id === 0) {
@@ -209,7 +212,7 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getFromOrToData({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          from: date[0],
+          from,
           region_id,
           main_schets: main_schets,
           jur3AndJur4Schets,
@@ -226,8 +229,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur1Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          from: date[0],
-          to: date[1],
+          from,
+          to,
           region_id,
           main_schets: main_schets,
         });
@@ -238,8 +241,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur2Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          from: date[0],
-          to: date[1],
+          from,
+          to,
           region_id,
           main_schets: main_schets,
         });
@@ -250,8 +253,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur3Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          from: date[0],
-          to: date[1],
+          from,
+          to,
           region_id,
           main_schets: main_schets,
         });
@@ -262,8 +265,8 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getJur4Data({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          from: date[0],
-          to: date[1],
+          from,
+          to,
           region_id,
           main_schets: main_schets,
         });
@@ -289,7 +292,7 @@ exports.Controller = class {
         type.sub_childs = await MainBookService.getFromOrToData({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
-          to: date[1],
+          to,
           region_id,
           main_schets: main_schets,
           jur3AndJur4Schets,

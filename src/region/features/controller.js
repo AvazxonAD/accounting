@@ -1,4 +1,5 @@
 const { FeaturesService } = require("./service");
+const { BudjetService } = require(`@budjet/service`);
 
 exports.Controller = class {
   static async getDocNum(req, res) {
@@ -19,5 +20,19 @@ exports.Controller = class {
     });
 
     return res.success(req.i18n.t("getSuccess"), 200, null, doc_num);
+  }
+
+  static async checkSchets(req, res) {
+    const region_id = req.user.region_id;
+    const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const result = await FeaturesService.checkSchets({ region_id, budjet_id });
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 };

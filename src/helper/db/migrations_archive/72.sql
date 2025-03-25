@@ -1,1 +1,0 @@
-ALTER TABLE main_schet ADD COLUMN gazna_number VARCHAR;

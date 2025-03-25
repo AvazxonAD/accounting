@@ -1,1 +1,0 @@
-ALTER TABLE shartnoma_grafik ADD COLUMN smeta_id BIGINT REFERENCES smeta(id);

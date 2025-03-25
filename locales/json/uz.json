@@ -4,6 +4,7 @@
   "bankAlreadyExists": "Bank avval kiritilgan!",
   "success": "{{data}} muvaffaqiyatli",
   "readFileSuccess": "File muvaffaqiyatli oqib olindi",
+  "accountNumberSchetExists": "Ushbu bujetda ushbu xisob raqam allaqachon kiritilgan!",
   "jur7Block": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",
   "saldoAlreadyExists": "Saldo allaqachon import qilingan! Malumotlarni tozalab qaytadan urining",
   "kolError": "Tovar soni noto'g'ri kiritildi!",

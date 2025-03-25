@@ -1,1 +1,0 @@
-ALTER TABLE document_prixod_jur7_child ADD COLUMN eski_iznos_summa DECIMAL DEFAULT 0;

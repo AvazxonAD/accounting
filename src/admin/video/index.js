@@ -14,6 +14,7 @@ router
     validator(Controller.create, VideoSchema.create())
   )
   .get("/:id", validator(Controller.getById, VideoSchema.getById()))
+  .get("/watch/:id", validator(Controller.getWatch, VideoSchema.getWatch()))
   .put(
     "/:id",
     uploadVideo.single("file"),

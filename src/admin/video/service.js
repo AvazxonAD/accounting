@@ -34,7 +34,8 @@ exports.VideoService = class {
     const result = await VideoDB.get(
       [data.offset, data.limit],
       data.search,
-      data.status
+      data.status,
+      data.module_id
     );
 
     return result;

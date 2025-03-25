@@ -1,5 +1,7 @@
+const path = require("path");
 const { VideoService } = require("./service");
 const { VideoModuleService } = require("@video_module/service");
+const fs = require("fs");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -23,7 +25,7 @@ exports.Controller = class {
   }
 
   static async get(req, res) {
-    const { page, limit, search, status } = req.query;
+    const { page, limit, search, status, module_id } = req.query;
 
     const offset = (page - 1) * limit;
 
@@ -32,7 +34,15 @@ exports.Controller = class {
       limit,
       search,
       status,
+      module_id,
     });
+
+    if (module_id) {
+      const module = await VideoModuleService.getById({ id: module_id });
+      if (!module) {
+        return res.error(req.i18n.t("docNotFound"), 404);
+      }
+    }
 
     const pageCount = Math.ceil(total / limit);
 
@@ -58,6 +68,61 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 
+  static async getWatch(req, res) {
+    const id = req.params.id;
+
+    const data = await VideoService.getById({ id }, true);
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const videoPath = path.join(
+      __dirname,
+      `../../../public/uploads/videos/${data.file}`
+    );
+
+    const stat = fs.statSync(videoPath);
+
+    const fileSize = stat.size;
+
+    const range = req.headers.range;
+
+    if (range) {
+      const parts = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = end - start + 1;
+
+      const fileStream = fs.createReadStream(videoPath, { start, end });
+
+      res.writeHead(206, {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": chunkSize,
+        "Content-Type": "video/mp4",
+      });
+
+      fileStream.pipe(res);
+    } else {
+      // Agar Range header bo‘lmasa, faqat 2MB ni jo‘natamiz
+      const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
+      const start = 0;
+      const end = Math.min(CHUNK_SIZE - 1, fileSize - 1);
+      const chunkSize = end - start + 1;
+
+      const fileStream = fs.createReadStream(videoPath, { start, end });
+
+      res.writeHead(206, {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": chunkSize,
+        "Content-Type": "video/mp4",
+      });
+
+      fileStream.pipe(res);
+    }
+  }
+
   static async update(req, res) {
     const { module_id } = req.body;
     const id = req.params.id;
@@ -72,7 +137,11 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await VideoService.update({ ...req.body, id });
+    const result = await VideoService.update({
+      ...req.body,
+      id,
+      file: req.file.filename,
+    });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   }

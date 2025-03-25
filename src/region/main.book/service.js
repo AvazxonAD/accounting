@@ -415,18 +415,18 @@ exports.MainBookService = class {
         continue;
       }
 
-      const summa = schet.prixod - schet.rasxod;
+      // const summa = schet.prixod - schet.rasxod;
 
-      if (summa > 0) {
-        schet.prixod = summa;
-        schet.rasxod = 0;
-      } else if (summa < 0) {
-        schet.rasxod = Math.abs(summa);
-        schet.prixod = 0;
-      } else {
-        schet.prixod = 0;
-        schet.rasxod = 0;
-      }
+      // if (summa > 0) {
+      //   schet.prixod = summa;
+      //   schet.rasxod = 0;
+      // } else if (summa < 0) {
+      //   schet.rasxod = Math.abs(summa);
+      //   schet.prixod = 0;
+      // } else {
+      //   schet.prixod = 0;
+      //   schet.rasxod = 0;
+      // }
     }
 
     return data.schets;

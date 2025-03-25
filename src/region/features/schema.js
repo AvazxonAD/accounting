@@ -14,4 +14,12 @@ exports.FeaturesSchema = class {
       }),
     }).options({ stripUnknown: true });
   }
+
+  static checkSchets() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().integer().min(1).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
 };

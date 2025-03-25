@@ -32,6 +32,7 @@ exports.VideoSchema = class {
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(10),
+        module_id: Joi.number().min(1).integer(),
         search: Joi.string().trim(),
         status: Joi.string().valid("true", "false"),
       }),
@@ -39,6 +40,14 @@ exports.VideoSchema = class {
   }
 
   static getById() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getWatch() {
     return Joi.object({
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),

@@ -1,1 +1,0 @@
-ALTER TABLE spravochnik_bank_mfo ALTER COLUMN mfo SET NOT NULL;
