@@ -131,9 +131,12 @@ exports.SaldoDB = class {
                     d.id,
                     d.doc_num,
                     d.doc_date,
+                    d.main_schet_id,
+                    m.account_number,
                     'internal' AS type
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+                JOIN main_schet m ON m.id = d.main_schet_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
@@ -144,9 +147,12 @@ exports.SaldoDB = class {
                     d.id,
                     d.doc_num,
                     d.doc_date,
+                    d.main_schet_id,
+                    m.account_number,
                     'prixod' AS type
                 FROM document_prixod_jur7 d
                 JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+                JOIN main_schet m ON m.id = d.main_schet_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
@@ -157,9 +163,12 @@ exports.SaldoDB = class {
                     d.id,
                     d.doc_num,
                     d.doc_date,
+                    d.main_schet_id,
+                    m.account_number,
                     'rasxod' AS type
                 FROM document_rasxod_jur7 d
                 JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+                JOIN main_schet m ON m.id = d.main_schet_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
