@@ -170,6 +170,10 @@ exports.Controller = class {
       page_rasxod_summa,
       from_summa,
       to_summa,
+      from_summa_prixod,
+      from_summa_rasxod,
+      to_summa_prixod,
+      to_summa_rasxod,
     } = await OrganSaldoService.get({
       search,
       region_id,
@@ -188,13 +192,18 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      prixod_summa,
-      rasxod_summa,
-      summa: prixod_summa - rasxod_summa,
+      internal_prixod_summa: prixod_summa,
+      internal_rasxod_summa: rasxod_summa,
+      internal_summa: prixod_summa - rasxod_summa,
       page_prixod_summa,
       page_rasxod_summa,
+      page_summa: page_prixod_summa - page_rasxod_summa,
       from_summa,
       to_summa,
+      from_summa_prixod,
+      from_summa_rasxod,
+      to_summa_prixod,
+      to_summa_rasxod,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
