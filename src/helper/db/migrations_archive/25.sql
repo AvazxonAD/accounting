@@ -1,0 +1,1 @@
+ALTER TABLE spravochnik_bank_mfo ALTER COLUMN mfo DROP NOT NULL;

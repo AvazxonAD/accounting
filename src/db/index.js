@@ -105,6 +105,7 @@ class Db {
       return numA - numB;
     });
 
+    let filePath;
     for (let file of sortedFiles) {
       const version = versions.find((item) => item.file_name === file);
       if (!version) {
@@ -115,13 +116,22 @@ class Db {
           await client.query(`INSERT INTO migrations(file_name) VALUES($1)`, [
             file,
           ]);
-          const filePath = `${folder_path}/${file}`;
+
+          try {
+            filePath = `${folder_path_archive}/${file}`;
+            await fs.promises.access(filePath, fs.promises.constants.R_OK);
+          } catch (error) {
+            filePath = `${folder_path}/${file}`;
+          }
+
           const sqlQuery = await fs.promises.readFile(filePath, "utf-8");
+
           await client.query(sqlQuery);
+
           await client.query("COMMIT");
         } catch (error) {
           await client.query("ROLLBACK");
-          throw new Error(`${file} ${error}`);
+          throw new Error(`${file} ${error} filePath: ${filePath}`);
         } finally {
           client.release();
         }

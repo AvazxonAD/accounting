@@ -1,0 +1,7 @@
+
+
+CREATE INDEX idx_saldo_naimenovanie_jur7_user_id ON saldo_naimenovanie_jur7 (user_id);
+CREATE INDEX idx_saldo_naimenovanie_jur7_naimenovanie_tovarov_jur7_id ON saldo_naimenovanie_jur7 (naimenovanie_tovarov_jur7_id);
+CREATE INDEX idx_saldo_naimenovanie_jur7_kimning_buynida ON saldo_naimenovanie_jur7 (kimning_buynida);
+CREATE INDEX idx_saldo_naimenovanie_jur7_year_month ON saldo_naimenovanie_jur7 (year, month);
+CREATE INDEX idx_saldo_naimenovanie_jur7_isdeleted ON saldo_naimenovanie_jur7 (isdeleted);
