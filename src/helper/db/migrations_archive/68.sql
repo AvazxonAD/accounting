@@ -1,1 +1,0 @@
-ALTER TABLE saldo_naimenovanie_jur7 ADD COLUMN eski_iznos_summa DECIMAL;

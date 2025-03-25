@@ -1,1 +1,0 @@
-ALTER TABLE saldo_naimenovanie_jur7 ALTER COLUMN prixod_id DROP NOT NULL;

@@ -19,3 +19,12 @@ exports.REPORT_TYPE = {
   cap: "cap",
   days_report: "daysReport",
 };
+
+exports.JURNAL_SCHETS = [
+  "jur1_schet",
+  "jur2_schet",
+  "jur3_schet",
+  "jur4_schet",
+  "jur5_schet",
+  "jur7_schet",
+];

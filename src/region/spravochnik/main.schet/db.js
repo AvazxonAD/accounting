@@ -1,5 +1,23 @@
 const { db } = require("@db/index");
 exports.MainSchetDB = class {
+  static async checkSchet(params, column_name) {
+    const query = `--sql
+      SELECT
+        m.*
+      FROM main_schet m
+      JOIN users u ON u.id = m.user_id 
+      JOIN regions r ON r.id = u.region_id
+      WHERE m.isdeleted = false
+        AND m.spravochnik_budjet_name_id = $1
+        AND r.id = $2
+        AND m.${column_name} = $3
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async getByIdMainSchet(params, isdeleted = null) {
     const ignore = `AND m_s.isdeleted = false`;
     const query = `--sql

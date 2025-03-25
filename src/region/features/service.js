@@ -1,4 +1,5 @@
 const { FeaturesDB } = require("./db");
+const { JURNAL_SCHETS } = require(`@helper/constants`);
 
 exports.FeaturesService = class {
   static getTableName(data) {
@@ -26,6 +27,22 @@ exports.FeaturesService = class {
       data.main_schet_id,
     ]);
     result.doc_num = Number(result.doc_num) + 1;
+    return result;
+  }
+
+  static async checkSchets(data) {
+    const result = [];
+    for (let schet of JURNAL_SCHETS) {
+      const check = await FeaturesDB.checkSchets(
+        [data.region_id, data.budjet_id],
+        schet
+      );
+
+      if (check) {
+        result.push(check);
+      }
+    }
+
     return result;
   }
 };

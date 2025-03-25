@@ -21,7 +21,7 @@ exports.VideoDB = class {
     return result;
   }
 
-  static async get(params, search = null, status = null) {
+  static async get(params, search = null, status = null, module_id = null) {
     const conditions = [];
 
     if (search) {
@@ -31,6 +31,11 @@ exports.VideoDB = class {
 
     if (status) {
       conditions.push(`d.status = ${status}`);
+    }
+
+    if (module_id) {
+      params.push(module_id);
+      conditions.push(`d.module_id = $${params.length}`);
     }
 
     const where = conditions.length ? `AND ${conditions.join(` AND `)}` : "";

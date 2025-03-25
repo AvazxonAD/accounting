@@ -19,4 +19,13 @@ exports.MainSchetService = class {
 
     return result;
   }
+
+  static async checkSchet(data) {
+    const result = await MainSchetDB.checkSchet(
+      [data.budjet_id, data.region_id, data.column],
+      data.column_name
+    );
+
+    return result;
+  }
 };
