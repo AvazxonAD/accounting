@@ -818,7 +818,7 @@ exports.MainBookDB = class {
         bank_rasxod AS (
           SELECT 
               COALESCE(SUM(ch.summa), 0)::FLOAT AS      summa,
-              op.schet,
+              m.jur2_schet AS                           schet,
               'bank_rasxod' AS                          type
           FROM bank_rasxod_child ch
           JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
@@ -832,7 +832,7 @@ exports.MainBookDB = class {
             AND d.main_schet_id = $2
             AND op.schet = $3
             ${date_filter}
-          GROUP BY op.schet
+          GROUP BY m.jur2_schet
         )
 
         SELECT schet, summa, type FROM bank_rasxod
