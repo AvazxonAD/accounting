@@ -11,10 +11,10 @@ exports.Jur7InternalService = class {
       const year = new Date(data.old_data.doc_date).getFullYear();
       const month = new Date(data.old_data.doc_date).getMonth() + 1;
 
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${month}-01`,
-      ]);
+      const check = await SaldoDB.getSaldoDate(
+        [data.region_id, `${year}-${month}-01`],
+        client
+      );
       let dates = [];
       for (let date of check) {
         dates.push(
@@ -66,10 +66,10 @@ exports.Jur7InternalService = class {
       const year = new Date(data.doc_date).getFullYear();
       const month = new Date(data.doc_date).getMonth() + 1;
 
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${month}-01`,
-      ]);
+      const check = await SaldoDB.getSaldoDate(
+        [data.region_id, `${year}-${month}-01`],
+        client
+      );
       let dates = [];
       for (let date of check) {
         dates.push(
@@ -207,10 +207,10 @@ exports.Jur7InternalService = class {
         month = new Date(data.doc_date).getMonth() + 1;
       }
 
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${month}-01`,
-      ]);
+      const check = await SaldoDB.getSaldoDate(
+        [data.region_id, `${year}-${month}-01`],
+        client
+      );
       let dates = [];
       for (let date of check) {
         dates.push(
