@@ -220,13 +220,14 @@ exports.Controller = class {
         type.prixod = 0;
         type.rasxod = 0;
 
-        type.sub_childs = await MainBookService.getFromOrToData({
+        type.sub_childs = await MainBookService.getFromData({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
           from,
           region_id,
           main_schets: main_schets,
           jur3AndJur4Schets,
+          operator: "<",
         });
 
         for (let child of type.sub_childs) {
@@ -300,13 +301,14 @@ exports.Controller = class {
 
       // jurnal 10
       if (type.id === 10) {
-        type.sub_childs = await MainBookService.getFromOrToData({
+        type.sub_childs = await MainBookService.getToData({
           schets: JSON.parse(JSON.stringify(schets)),
           budjet_id,
           to,
           region_id,
           main_schets: main_schets,
           jur3AndJur4Schets,
+          operator: "<=",
         });
       }
     }
