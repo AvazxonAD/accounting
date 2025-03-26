@@ -168,7 +168,6 @@ const deleteOperatsii = async (req, res) => {
     const id = req.params.id;
     await getByIdOperatsiiService(id, null);
     await deleteOperatsiiService(id);
-    return;
     return res.success(req.i18n.t("deleteSuccess"), 200);
   } catch (error) {
     errorCatch(error, res);
