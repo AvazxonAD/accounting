@@ -100,7 +100,7 @@ exports.SaldoSchema = class {
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(99999),
         search: Joi.string().trim().allow(null, ""),
-        main_schet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1),
         rasxod: Joi.boolean().default(false),
         to: Joi.string()
           .trim()
