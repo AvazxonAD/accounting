@@ -178,26 +178,22 @@ exports.MainBookService = class {
   static async getJur1Data(data) {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
+
       const rasxod_data = await MainBookDB.getJur1Rasxod(
         [data.region_id, main_schet.id],
         { from: data.from, to: data.to },
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur1Prixod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "rasxod_saldo") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -206,18 +202,6 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     return data.schets;
@@ -226,7 +210,6 @@ exports.MainBookService = class {
   static async getJur2Data(data) {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur2Rasxod(
         [data.region_id, main_schet.id],
@@ -234,19 +217,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur2Prixod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "rasxod_saldo") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -255,18 +234,6 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     return data.schets;
@@ -275,7 +242,6 @@ exports.MainBookService = class {
   static async getJur3Data(data) {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur3Rasxod(
         [data.region_id, main_schet.id, main_schet.jur3_schet],
@@ -283,19 +249,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur3Prixod(
-        [data.region_id, main_schet.id, main_schet.jur3_schet],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "organ_saldo_rasxod") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -304,18 +266,6 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     return data.schets;
@@ -324,15 +274,8 @@ exports.MainBookService = class {
   static async getJur4Data(data) {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur4Rasxod(
-        [data.region_id, main_schet.id, main_schet.jur4_schet],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      const prixod_data = await MainBookDB.getJur4Prixod(
         [data.region_id, main_schet.id, main_schet.jur4_schet],
         { from: data.from, to: data.to },
         data.operator
@@ -342,29 +285,20 @@ exports.MainBookService = class {
         (item) => item.schet === main_schet.jur4_schet
       );
 
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        console.log(schet);
+        if (schet.type !== "podotchet_saldo_rasxod") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     return data.schets;
@@ -374,7 +308,6 @@ exports.MainBookService = class {
     // jur1
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur1Rasxod(
         [data.region_id, main_schet.id],
@@ -382,19 +315,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur1Prixod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "rasxod_saldo") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -403,24 +332,11 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     // jur2
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur2Rasxod(
         [data.region_id, main_schet.id],
@@ -428,19 +344,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur2Prixod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "rasxod_saldo") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -449,24 +361,11 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     // jur3
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur3Rasxod(
         [data.region_id, main_schet.id, main_schet.jur3_schet],
@@ -474,19 +373,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur3Prixod(
-        [data.region_id, main_schet.id, main_schet.jur3_schet],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "organ_saldo_rasxod") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -495,32 +390,13 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     // jur4
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur4Rasxod(
-        [data.region_id, main_schet.id, main_schet.jur4_schet],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      const prixod_data = await MainBookDB.getJur4Prixod(
         [data.region_id, main_schet.id, main_schet.jur4_schet],
         { from: data.from, to: data.to },
         data.operator
@@ -530,29 +406,19 @@ exports.MainBookService = class {
         (item) => item.schet === main_schet.jur4_schet
       );
 
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "podotchet_saldo_rasxod") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     for (let schet of data.schets) {
@@ -582,26 +448,22 @@ exports.MainBookService = class {
     // jur1
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
+
       const rasxod_data = await MainBookDB.getJur1Rasxod(
         [data.region_id, main_schet.id],
         { from: data.from, to: data.to },
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur1Prixod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "rasxod_saldo") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -610,24 +472,11 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     // jur2
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur2Rasxod(
         [data.region_id, main_schet.id],
@@ -635,19 +484,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur2Prixod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "rasxod_saldo") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -656,24 +501,11 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     // jur3
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur3Rasxod(
         [data.region_id, main_schet.id, main_schet.jur3_schet],
@@ -681,19 +513,15 @@ exports.MainBookService = class {
         data.operator
       );
 
-      const prixod_data = await MainBookDB.getJur3Prixod(
-        [data.region_id, main_schet.id, main_schet.jur3_schet],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "organ_saldo_rasxod") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
@@ -702,32 +530,13 @@ exports.MainBookService = class {
       );
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     // jur4
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
-      let prixod = 0;
 
       const rasxod_data = await MainBookDB.getJur4Rasxod(
-        [data.region_id, main_schet.id, main_schet.jur4_schet],
-        { from: data.from, to: data.to },
-        data.operator
-      );
-
-      const prixod_data = await MainBookDB.getJur4Prixod(
         [data.region_id, main_schet.id, main_schet.jur4_schet],
         { from: data.from, to: data.to },
         data.operator
@@ -737,29 +546,19 @@ exports.MainBookService = class {
         (item) => item.schet === main_schet.jur4_schet
       );
 
-      // rasxod
       for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
+        if (schet.type !== "podotchet_saldo_rasxod") {
+          const index = data.schets.findIndex(
+            (item) => item.schet === schet.schet
+          );
 
-        data.schets[index].prixod += schet.summa;
+          data.schets[index].prixod += schet.summa;
+        }
+
         rasxod += schet.summa;
       }
 
       data.schets[index].rasxod += rasxod;
-
-      // prixod
-      for (let schet of prixod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        data.schets[index].rasxod += schet.summa;
-        prixod += schet.summa;
-      }
-
-      data.schets[index].prixod += prixod;
     }
 
     for (let schet of data.schets) {

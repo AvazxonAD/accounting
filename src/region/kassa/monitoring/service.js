@@ -22,12 +22,14 @@ exports.KassaMonitoringService = class {
 
     const summa_from = await KassaMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, data.from],
-      "<"
+      "<",
+      data.search
     );
 
     const summa_to = await KassaMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, data.to],
-      "<="
+      "<=",
+      data.search
     );
 
     return {

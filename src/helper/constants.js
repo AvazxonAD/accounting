@@ -25,6 +25,4 @@ exports.JURNAL_SCHETS = [
   "jur2_schet",
   "jur3_schet",
   "jur4_schet",
-  "jur5_schet",
-  "jur7_schet",
 ];
