@@ -1,9 +1,9 @@
 const { db } = require("@db/index");
 
-exports.BankSaldoDB = class {
+exports.KassaSaldoDB = class {
   static async create(params, client) {
     const query = `
-            INSERT INTO bank_saldo (
+            INSERT INTO kassa_saldo (
                 doc_num, 
                 doc_date, 
                 prixod_summa,
@@ -26,7 +26,7 @@ exports.BankSaldoDB = class {
 
   static async createChild(params, _values, client) {
     const query = `
-            INSERT INTO bank_saldo_child (
+            INSERT INTO kassa_saldo_child (
                 operatsii_id,
                 summa,
                 podraz_id,
@@ -66,13 +66,13 @@ exports.BankSaldoDB = class {
                             SELECT 
                                 so.schet AS provodki_schet,
                                 so.sub_schet AS provodki_sub_schet
-                            FROM bank_saldo_child AS ch
+                            FROM kassa_saldo_child AS ch
                             JOIN spravochnik_operatsii AS so ON so.id = ch.operatsii_id
                             WHERE  ch.parent_id = d.id 
                                 and ch.isdeleted = false
                         ) AS ch
                     ) AS provodki_array 
-                FROM bank_saldo AS d
+                FROM kassa_saldo AS d
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
                 WHERE d.main_schet_id = $2 
@@ -88,7 +88,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -101,7 +101,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -114,7 +114,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -127,7 +127,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -140,7 +140,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -153,7 +153,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.prixod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -166,7 +166,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -179,7 +179,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE d.main_schet_id = $2 
@@ -191,7 +191,7 @@ exports.BankSaldoDB = class {
                     (
                         SELECT 
                             COALESCE(COUNT(d.id), 0)
-                        FROM bank_saldo d
+                        FROM kassa_saldo d
                         JOIN users ON d.user_id = users.id
                         JOIN regions ON users.region_id = regions.id
                         WHERE regions.id = $1 
@@ -221,12 +221,12 @@ exports.BankSaldoDB = class {
                     FROM (
                         SELECT 
                             ch.*
-                        FROM bank_saldo_child AS ch
+                        FROM kassa_saldo_child AS ch
                         WHERE ch.parent_id = d.id 
                             AND isdeleted = false
                     ) AS ch
                 ) AS childs 
-            FROM bank_saldo AS d
+            FROM kassa_saldo AS d
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
             WHERE r.id = $1 
@@ -242,7 +242,7 @@ exports.BankSaldoDB = class {
 
   static async update(params, client) {
     const query = `
-            UPDATE bank_saldo SET 
+            UPDATE kassa_saldo SET 
                 doc_num = $1, 
                 doc_date = $2, 
                 prixod_summa = $3,
@@ -262,14 +262,14 @@ exports.BankSaldoDB = class {
 
   static async deleteChild(params, client) {
     await client.query(
-      `UPDATE bank_saldo_child SET isdeleted = true WHERE id = $1`,
+      `UPDATE kassa_saldo_child SET isdeleted = true WHERE id = $1`,
       params
     );
   }
 
   static async updateChild(params, client) {
     const query = `
-            UPDATE bank_saldo_child 
+            UPDATE kassa_saldo_child 
             SET 
                 operatsii_id = $1,
                 summa = $2,
@@ -287,12 +287,12 @@ exports.BankSaldoDB = class {
 
   static async delete(params, client) {
     await client.query(
-      `UPDATE bank_saldo_child SET isdeleted = true WHERE parent_id = $1`,
+      `UPDATE kassa_saldo_child SET isdeleted = true WHERE parent_id = $1`,
       params
     );
 
     const result = await client.query(
-      `UPDATE bank_saldo SET isdeleted = true WHERE id = $1 RETURNING id`,
+      `UPDATE kassa_saldo SET isdeleted = true WHERE id = $1 RETURNING id`,
       params
     );
 

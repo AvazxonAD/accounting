@@ -17,6 +17,8 @@
       "@log/*": ["admin/log/*"],
       "@pereotsenka/*": ["admin/spravochnik/pereotsenka/*"],
       "@bank/*": ["admin/spravochnik/bank/*"],
+      "@bank_saldo/*": ["region/bank/saldo/*"],
+      "@kassa_saldo/*": ["region/kassa/saldo/*"],
       "@operatsii/*": ["admin/spravochnik/operatsii/*"],
       "@auth/*": ["auth/auth/*"],
       "@user/*": ["auth/user/*"],

@@ -68,6 +68,8 @@
     "@features": "./src/region/features",
     "@region": "./src/admin/spravochnik/region",
     "@bank_monitoring": "./src/region/bank/monitoring",
+    "@bank_saldo": "./src/region/bank/saldo",
+    "@kassa_saldo": "./src/region/kassa/saldo",
     "@kassa_monitoring": "./src/region/kassa/monitoring",
     "@region_dashboard": "./src/region/dashboard",
     "@organ_monitoring": "./src/region/organ.monitoring",

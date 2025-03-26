@@ -1,13 +1,13 @@
 const { db } = require("@db/index");
-const { BankSaldoDB } = require("./db");
+const { KassaSaldoDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
-exports.BankSaldoService = class {
+exports.KassaSaldoService = class {
   static async create(data) {
     const summa = HelperFunctions.saldoSumma(data);
 
     const result = await db.transaction(async (client) => {
-      const doc = await BankSaldoDB.create(
+      const doc = await KassaSaldoDB.create(
         [
           data.doc_num,
           data.doc_date,
@@ -59,12 +59,12 @@ exports.BankSaldoService = class {
     });
 
     if (create_childs.length) {
-      await BankSaldoDB.createChild(create_childs, _values, data.client);
+      await KassaSaldoDB.createChild(create_childs, _values, data.client);
     }
   }
 
   static async get(data) {
-    const result = await BankSaldoDB.get(
+    const result = await KassaSaldoDB.get(
       [
         data.region_id,
         data.main_schet_id,
@@ -87,7 +87,7 @@ exports.BankSaldoService = class {
   }
 
   static async getById(data) {
-    const result = await BankSaldoDB.getById(
+    const result = await KassaSaldoDB.getById(
       [data.region_id, data.main_schet_id, data.id],
       data.isdeleted
     );
@@ -99,7 +99,7 @@ exports.BankSaldoService = class {
     const summa = HelperFunctions.saldoSumma(data);
 
     const result = await db.transaction(async (client) => {
-      const doc = await BankSaldoDB.update(
+      const doc = await KassaSaldoDB.update(
         [
           data.doc_num,
           data.doc_date,
@@ -119,7 +119,7 @@ exports.BankSaldoService = class {
       for (let child of data.old_data.childs) {
         const check = data.childs.find((item) => item.id === child.id);
         if (!check) {
-          await BankSaldoDB.deleteChild([child.id], client);
+          await KassaSaldoDB.deleteChild([child.id], client);
         }
       }
 
@@ -127,7 +127,7 @@ exports.BankSaldoService = class {
         if (!child.id) {
           create_childs.push(child);
         } else {
-          await BankSaldoDB.updateChild(
+          await KassaSaldoDB.updateChild(
             [
               child.operatsii_id,
               child.summa,
@@ -160,7 +160,7 @@ exports.BankSaldoService = class {
 
   static async delete(data) {
     const result = await db.transaction(async (client) => {
-      const doc = await BankSaldoDB.delete([data.id], client);
+      const doc = await KassaSaldoDB.delete([data.id], client);
 
       return doc;
     });
