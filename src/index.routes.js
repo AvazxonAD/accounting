@@ -10,11 +10,13 @@ routes
   // Bank monitoring
   .use("/bank/monitoring", protect, require("@bank_monitoring/index"))
   .use("/bank/income", protect, require("@bank_prixod/index"))
+  .use("/bank/saldo", protect, require("@bank_saldo/index"))
   .use("/bank/expense", protect, require("@bank_rasxod/index"))
 
   // Kassa monitoring
   .use("/kassa/monitoring", protect, require("@kassa_monitoring/index"))
   .use("/kassa/income", protect, require("@kassa_prixod/index"))
+  .use("/kassa/saldo", protect, require("@kassa_saldo/index"))
   .use("/kassa/expense", protect, require("@kassa_rasxod/index"))
 
   // Auth routes

@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.BankSaldoSchema = class {
+exports.KassaSaldoSchema = class {
   static create() {
     return Joi.object({
       body: Joi.object({

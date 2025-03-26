@@ -4,11 +4,7 @@ const { OperatsiiService } = require("@operatsii/service");
 const { PodrazdelenieService } = require("@podraz/service");
 const { SostavService } = require("@sostav/service");
 const { TypeOperatsiiService } = require("@type_operatsii/service");
-const { OrganSaldoService } = require("./service");
-const { OrganizationService } = require("@organization/service");
-const { ContractService } = require("@contract/service");
-const { GaznaService } = require("@gazna/service");
-const { AccountNumberService } = require("@account_number/service");
+const { KassaSaldoService } = require("./service");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -16,16 +12,7 @@ exports.Controller = class {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
 
-    const {
-      childs,
-      organ_id,
-      contract_id,
-      organ_account_number_id,
-      organ_gazna_number_id,
-      contract_grafik_id,
-      prixod,
-      rasxod,
-    } = req.body;
+    const { childs, prixod, rasxod } = req.body;
 
     if ((prixod && rasxod) || (!prixod && !rasxod)) {
       return res.error(req.i18n.t("validationError"), 400);
@@ -37,58 +24,6 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    const organization = await OrganizationService.getById({
-      region_id,
-      id: organ_id,
-    });
-    if (!organization) {
-      return res.error(req.i18n.t("organizationNotFound"), 404);
-    }
-
-    if (!contract_id && contract_grafik_id) {
-      return res.error(req.i18n.t("contractNotFound"), 404);
-    }
-
-    if (contract_id) {
-      const contract = await ContractService.getById({
-        region_id,
-        id: contract_id,
-        organ_id,
-      });
-      if (!contract) {
-        return res.error(req.i18n.t("contractNotFound"), 404);
-      }
-
-      if (contract_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === contract_grafik_id
-        );
-        if (!grafik) {
-          return res.error(req.i18n.t("grafikNotFound"), 404);
-        }
-      }
-    }
-
-    if (organ_account_number_id) {
-      const account_number = await AccountNumberService.getById({
-        organ_id: organ_id,
-        id: organ_account_number_id,
-      });
-      if (!account_number) {
-        return res.error(req.i18n.t("account_number_not_found"), 404);
-      }
-    }
-
-    if (organ_gazna_number_id) {
-      const gazna = await GaznaService.getById({
-        organ_id: organ_id,
-        id: organ_gazna_number_id,
-      });
-      if (!gazna) {
-        return res.error(req.i18n.t("gazna_not_found"), 404);
-      }
     }
 
     const operatsiis = [];
@@ -138,7 +73,7 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
-    const result = await OrganSaldoService.create({
+    const result = await KassaSaldoService.create({
       ...req.body,
       main_schet_id,
       user_id,
@@ -174,7 +109,7 @@ exports.Controller = class {
       from_summa_rasxod,
       to_summa_prixod,
       to_summa_rasxod,
-    } = await OrganSaldoService.get({
+    } = await KassaSaldoService.get({
       search,
       region_id,
       main_schet_id,
@@ -222,7 +157,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const result = await OrganSaldoService.getById({
+    const result = await KassaSaldoService.getById({
       region_id,
       main_schet_id,
       id,
@@ -241,18 +176,9 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const {
-      childs,
-      organ_id,
-      contract_id,
-      organ_account_number_id,
-      organ_gazna_number_id,
-      contract_grafik_id,
-      prixod,
-      rasxod,
-    } = req.body;
+    const { childs, prixod, rasxod } = req.body;
 
-    const old_data = await OrganSaldoService.getById({
+    const old_data = await KassaSaldoService.getById({
       region_id,
       main_schet_id,
       id,
@@ -272,58 +198,6 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    const organization = await OrganizationService.getById({
-      region_id,
-      id: organ_id,
-    });
-    if (!organization) {
-      return res.error(req.i18n.t("organizationNotFound"), 404);
-    }
-
-    if (!contract_id && contract_grafik_id) {
-      return res.error(req.i18n.t("contractNotFound"), 404);
-    }
-
-    if (contract_id) {
-      const contract = await ContractService.getById({
-        region_id,
-        id: contract_id,
-        organ_id,
-      });
-      if (!contract) {
-        return res.error(req.i18n.t("contractNotFound"), 404);
-      }
-
-      if (contract_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === contract_grafik_id
-        );
-        if (!grafik) {
-          return res.error(req.i18n.t("grafikNotFound"), 404);
-        }
-      }
-    }
-
-    if (organ_account_number_id) {
-      const account_number = await AccountNumberService.getById({
-        organ_id: organ_id,
-        id: organ_account_number_id,
-      });
-      if (!account_number) {
-        return res.error(req.i18n.t("account_number_not_found"), 404);
-      }
-    }
-
-    if (organ_gazna_number_id) {
-      const gazna = await GaznaService.getById({
-        organ_id: organ_id,
-        id: organ_gazna_number_id,
-      });
-      if (!gazna) {
-        return res.error(req.i18n.t("gazna_not_found"), 404);
-      }
     }
 
     const operatsiis = [];
@@ -380,7 +254,7 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
-    const result = await OrganSaldoService.update({
+    const result = await KassaSaldoService.update({
       ...req.body,
       main_schet_id,
       user_id,
@@ -404,7 +278,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const doc = await OrganSaldoService.getById({
+    const doc = await KassaSaldoService.getById({
       region_id,
       main_schet_id,
       id,
@@ -413,7 +287,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await OrganSaldoService.delete({ id });
+    const result = await KassaSaldoService.delete({ id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
   }

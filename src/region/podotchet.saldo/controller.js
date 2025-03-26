@@ -306,6 +306,6 @@ exports.Controller = class {
 
     const result = await PodotchetSaldoService.delete({ id });
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+    return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
   }
 };
