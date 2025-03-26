@@ -3,6 +3,7 @@ const { MainBookDB } = require("./db");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
+const { HelperFunctions } = require(`@helper/functions`);
 
 exports.MainBookService = class {
   static async getUniqueSchets(data) {
@@ -445,7 +446,7 @@ exports.MainBookService = class {
 
     worksheet.mergeCells(`A1`, "T1");
     worksheet.getCell(`A1`).value =
-      `${data.budjet_name} ${String(data.month).padStart(2, "0")}-${data.year}`;
+      `${data.budjet_name} ${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
 
     worksheet.mergeCells(`A2`, "A3");
     worksheet.getCell(`A3`).value = `№`;
@@ -530,44 +531,126 @@ exports.MainBookService = class {
       { key: "to_rasxod", width: 14 },
     ];
 
+    let column = 4;
     for (let i = 0; i < data.childs.length; i++) {
       const child = data.childs[i];
 
-      for (let i = 0; i < child.sub_childs.length; i++) {
-        const sub_child = child.sub_childs[i];
-
-        worksheet.addRow({
-          order: i + 1,
-          schet: sub_child.account_number || "",
-          from_prixod: sub_child.from_prixod || 0,
-          from_rasxod: sub_child.from_rasxod || 0,
-          jur1_prixod: sub_child.jur1_prixod || 0,
-          jur1_rasxod: sub_child.jur1_rasxod || 0,
-          jur2_prixod: sub_child.jur2_prixod || 0,
-          jur2_rasxod: sub_child.jur2_rasxod || 0,
-          jur3_prixod: sub_child.jur3_prixod || 0,
-          jur3_rasxod: sub_child.jur3_rasxod || 0,
-          jur4_prixod: sub_child.jur4_prixod || 0,
-          jur4_rasxod: sub_child.jur4_rasxod || 0,
-          jur5_prixod: sub_child.jur5_prixod || 0,
-          jur5_rasxod: sub_child.jur5_rasxod || 0,
-          jur7_prixod: sub_child.jur7_prixod || 0,
-          jur7_rasxod: sub_child.jur7_rasxod || 0,
-          internal_prixod: sub_child.internal_prixod || 0,
-          internal_rasxod: sub_child.internal_rasxod || 0,
-          to_prixod: sub_child.to_prixod || 0,
-          to_rasxod: sub_child.to_rasxod || 0,
+      if (child.type_id === 0) {
+        child.sub_childs.forEach((item, index) => {
+          worksheet.getCell(`A${column}`).value = `${index + 1}`;
+          worksheet.getCell(`B${column}`).value = item.schet;
+          worksheet.getCell(`C${column}`).value = item.prixod;
+          worksheet.getCell(`D${column}`).value = item.rasxod;
+          column++;
         });
+
+        worksheet.getCell(`C${column}`).value = child.prixod;
+        worksheet.getCell(`D${column}`).value = child.rasxod;
+      } else if (child.type_id === 1) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`E${column}`).value = item.prixod;
+          worksheet.getCell(`F${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`E${column}`).value = child.prixod;
+        worksheet.getCell(`F${column}`).value = child.rasxod;
+      } else if (child.type_id === 2) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`G${column}`).value = item.prixod;
+          worksheet.getCell(`H${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`G${column}`).value = child.prixod;
+        worksheet.getCell(`H${column}`).value = child.rasxod;
+      } else if (child.type_id === 3) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`I${column}`).value = item.prixod;
+          worksheet.getCell(`J${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`I${column}`).value = child.prixod;
+        worksheet.getCell(`J${column}`).value = child.rasxod;
+      } else if (child.type_id === 4) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`K${column}`).value = item.prixod;
+          worksheet.getCell(`L${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`K${column}`).value = child.prixod;
+        worksheet.getCell(`L${column}`).value = child.rasxod;
+      } else if (child.type_id === 5) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`M${column}`).value = item.prixod;
+          worksheet.getCell(`N${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`M${column}`).value = child.prixod;
+        worksheet.getCell(`N${column}`).value = child.rasxod;
+      } else if (child.type_id === 7) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`O${column}`).value = item.prixod;
+          worksheet.getCell(`P${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`O${column}`).value = child.prixod;
+        worksheet.getCell(`P${column}`).value = child.rasxod;
+      } else if (child.type_id === 9) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`Q${column}`).value = item.prixod;
+          worksheet.getCell(`R${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`Q${column}`).value = child.prixod;
+        worksheet.getCell(`R${column}`).value = child.rasxod;
+      } else if (child.type_id === 10) {
+        column = 4;
+        child.sub_childs.forEach((item) => {
+          worksheet.getCell(`S${column}`).value = item.prixod;
+          worksheet.getCell(`T${column}`).value = item.rasxod;
+          column++;
+        });
+        worksheet.getCell(`S${column}`).value = child.prixod;
+        worksheet.getCell(`T${column}`).value = child.rasxod;
       }
     }
+
+    const end_column = column;
+    worksheet.mergeCells(`A${column}`, `B${column}`);
+    worksheet.getCell(`A${column}`).value = `Итого`;
 
     worksheet.eachRow((row, rowNumber) => {
       let bold = false;
       let horizontal = "center";
+      let size = 13;
 
-      row.eachCell((cell) => {
+      if (rowNumber > 3) {
+        size = 8;
+      }
+
+      if (end_column === rowNumber || rowNumber < 3) {
+        bold = true;
+      }
+
+      row.eachCell((cell, column) => {
+        if (column > 2 && rowNumber > 3) {
+          cell.numFmt = "# ##0 ##0.00";
+
+          horizontal = "right";
+        }
+
+        if (column === 2 && rowNumber > 3) {
+          horizontal = "left";
+        }
+
         Object.assign(cell, {
-          font: { size: 13, name: "Times New Roman", bold },
+          font: { size, name: "Times New Roman", bold },
           alignment: {
             vertical: "middle",
             horizontal,
@@ -596,7 +679,7 @@ exports.MainBookService = class {
       await fs.promises.mkdir(folder_path);
     }
 
-    const file_name = `groups.${new Date().getTime()}.xlsx`;
+    const file_name = `main_book.${new Date().getTime()}.xlsx`;
 
     const file_path = `${folder_path}/${file_name}`;
 

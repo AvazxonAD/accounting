@@ -128,6 +128,10 @@ exports.Controller = class {
       isdeleted: true,
     });
 
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
     for (let type of data.childs) {
       type.prixod = 0;
       type.rasxod = 0;
@@ -136,10 +140,6 @@ exports.Controller = class {
         type.prixod += child.prixod;
         type.rasxod += child.rasxod;
       }
-    }
-
-    if (!data) {
-      return res.error(req.i18n.t("docNotFound"), 404);
     }
 
     if (excel === "true") {

@@ -1046,6 +1046,10 @@ exports.HelperFunctions = class {
     month = getMonth(month);
     return `${year} ${day}-${month}`;
   }
+
+  static returnStringYearMonth(data) {
+    return `${data.year}-йил ${this.returnMonth(data.month)}`;
+  }
 };
 
 exports.tashkentTime = () => {
