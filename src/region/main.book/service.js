@@ -1,7 +1,8 @@
 const { db } = require("@db/index");
 const { MainBookDB } = require("./db");
-const { HelperFunctions } = require(`@helper/functions`);
-const { shartnomaGarfikValidation } = require("../../delete/utils/validation");
+const ExcelJS = require("exceljs");
+const fs = require("fs");
+const path = require("path");
 
 exports.MainBookService = class {
   static async getUniqueSchets(data) {
@@ -436,47 +437,140 @@ exports.MainBookService = class {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("main book");
 
+    const title = data.report_title.name
+      .split(" ")
+      .filter((word) => word.length)
+      .map((word) => word[0])
+      .join(".");
+
+    worksheet.mergeCells(`A1`, "T1");
+    worksheet.getCell(`A1`).value =
+      `${data.budjet_name} ${String(data.month).padStart(2, "0")}-${data.year}`;
+
+    worksheet.mergeCells(`A2`, "A3");
+    worksheet.getCell(`A3`).value = `№`;
+
+    worksheet.mergeCells(`B2`, "B3");
+    worksheet.getCell(`B2`).value = `Счет`;
+
+    worksheet.mergeCells(`C2`, "D2");
+    worksheet.getCell(`C2`).value = "Бош.";
+
+    worksheet.mergeCells(`E2`, "F2");
+    worksheet.getCell(`E2`).value = `${title}.1`;
+
+    worksheet.mergeCells(`G2`, "H2");
+    worksheet.getCell(`G2`).value = `${title}.2`;
+
+    worksheet.mergeCells(`I2`, "J2");
+    worksheet.getCell(`I2`).value = `${title}.3`;
+
+    worksheet.mergeCells(`K2`, "L2");
+    worksheet.getCell(`K2`).value = `${title}.4`;
+
+    worksheet.mergeCells(`M2`, "N2");
+    worksheet.getCell(`M2`).value = `${title}.5`;
+
+    worksheet.mergeCells(`O2`, "P2");
+    worksheet.getCell(`O2`).value = `${title}.7`;
+
+    worksheet.mergeCells(`Q2`, "R2");
+    worksheet.getCell(`Q2`).value = `Ички`;
+
+    worksheet.mergeCells(`S2`, "T2");
+    worksheet.getCell(`S2`).value = `Як.`;
+
+    worksheet.getCell("C3").value = "Дебет";
+    worksheet.getCell("D3").value = "Кредит";
+
+    worksheet.getCell("E3").value = "Дебет";
+    worksheet.getCell("F3").value = "Кредит";
+
+    worksheet.getCell("G3").value = "Дебет";
+    worksheet.getCell("H3").value = "Кредит";
+
+    worksheet.getCell("I3").value = "Дебет";
+    worksheet.getCell("J3").value = "Кредит";
+
+    worksheet.getCell("K3").value = "Дебет";
+    worksheet.getCell("L3").value = "Кредит";
+
+    worksheet.getCell("M3").value = "Дебет";
+    worksheet.getCell("N3").value = "Кредит";
+
+    worksheet.getCell("O3").value = "Дебет";
+    worksheet.getCell("P3").value = "Кредит";
+
+    worksheet.getCell("Q3").value = "Дебет";
+    worksheet.getCell("R3").value = "Кредит";
+
+    worksheet.getCell("S3").value = "Дебет";
+    worksheet.getCell("T3").value = "Кредит";
+
     worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
-      { header: "Nomi", key: "name", width: 40 },
-      { header: "Schet", key: "schet", width: 30 },
-      { header: "Iznos foiz", key: "iznos_foiz", width: 30 },
-      { header: "Debet", key: "provodka_debet", width: 30 },
-      { header: "Kredit", key: "provodka_kredit", width: 30 },
-      { header: "Subschet", key: "provodka_subschet", width: 30 },
-      { header: "Gruh raqami", key: "group_number", width: 30 },
-      { header: "Rim raqami", key: "roman_numeral", width: 30 },
-      { header: "Asosiy guruh", key: "pod_group", width: 30 },
+      { key: "order", width: 5 },
+      { key: "schet", width: 10 },
+      { key: "from_prixod", width: 14 },
+      { key: "from_rasxod", width: 14 },
+      { key: "jur1_prixod", width: 14 },
+      { key: "jur1_rasxod", width: 14 },
+      { key: "jur2_prixod", width: 14 },
+      { key: "jur2_rasxod", width: 14 },
+      { key: "jur3_prixod", width: 14 },
+      { key: "jur3_rasxod", width: 14 },
+      { key: "jur4_prixod", width: 14 },
+      { key: "jur4_rasxod", width: 14 },
+      { key: "jur5_prixod", width: 14 },
+      { key: "jur5_rasxod", width: 14 },
+      { key: "jur7_prixod", width: 14 },
+      { key: "jur7_rasxod", width: 14 },
+      { key: "internal_prixod", width: 14 },
+      { key: "internal_rasxod", width: 14 },
+      { key: "to_prixod", width: 14 },
+      { key: "to_rasxod", width: 14 },
     ];
 
-    data.forEach((item) => {
-      worksheet.addRow({
-        id: item.id,
-        name: item.name,
-        schet: item.schet,
-        iznos_foiz: item.iznos_foiz,
-        provodka_debet: item.provodka_debet,
-        provodka_kredit: item.provodka_kredit,
-        provodka_subschet: item.provodka_subschet,
-        group_number: item.group_number,
-        roman_numeral: item.roman_numeral,
-        pod_group: item.pod_group,
-      });
-    });
+    for (let i = 0; i < data.childs.length; i++) {
+      const child = data.childs[i];
+
+      for (let i = 0; i < child.sub_childs.length; i++) {
+        const sub_child = child.sub_childs[i];
+
+        worksheet.addRow({
+          order: i + 1,
+          schet: sub_child.account_number || "",
+          from_prixod: sub_child.from_prixod || 0,
+          from_rasxod: sub_child.from_rasxod || 0,
+          jur1_prixod: sub_child.jur1_prixod || 0,
+          jur1_rasxod: sub_child.jur1_rasxod || 0,
+          jur2_prixod: sub_child.jur2_prixod || 0,
+          jur2_rasxod: sub_child.jur2_rasxod || 0,
+          jur3_prixod: sub_child.jur3_prixod || 0,
+          jur3_rasxod: sub_child.jur3_rasxod || 0,
+          jur4_prixod: sub_child.jur4_prixod || 0,
+          jur4_rasxod: sub_child.jur4_rasxod || 0,
+          jur5_prixod: sub_child.jur5_prixod || 0,
+          jur5_rasxod: sub_child.jur5_rasxod || 0,
+          jur7_prixod: sub_child.jur7_prixod || 0,
+          jur7_rasxod: sub_child.jur7_rasxod || 0,
+          internal_prixod: sub_child.internal_prixod || 0,
+          internal_rasxod: sub_child.internal_rasxod || 0,
+          to_prixod: sub_child.to_prixod || 0,
+          to_rasxod: sub_child.to_rasxod || 0,
+        });
+      }
+    }
 
     worksheet.eachRow((row, rowNumber) => {
       let bold = false;
-      if (rowNumber === 1) {
-        worksheet.getRow(rowNumber).height = 30;
-        bold = true;
-      }
+      let horizontal = "center";
 
       row.eachCell((cell) => {
         Object.assign(cell, {
           font: { size: 13, name: "Times New Roman", bold },
           alignment: {
             vertical: "middle",
-            horizontal: "center",
+            horizontal,
             wrapText: true,
           },
           fill: {
@@ -494,20 +588,20 @@ exports.MainBookService = class {
       });
     });
 
-    const folder_path = path.join(__dirname, `../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../public/exports`);
 
     try {
-      await fs.access(folder_path, fs.constants.W_OK);
+      await fs.promises.access(folder_path, fs.promises.constants.W_OK);
     } catch (error) {
-      await fs.mkdir(folder_path);
+      await fs.promises.mkdir(folder_path);
     }
 
-    const fileName = `groups.${new Date().getTime()}.xlsx`;
+    const file_name = `groups.${new Date().getTime()}.xlsx`;
 
-    const filePath = `${folder_path}/${fileName}`;
+    const file_path = `${folder_path}/${file_name}`;
 
-    await workbook.xlsx.writeFile(filePath);
+    await workbook.xlsx.writeFile(file_path);
 
-    return { fileName, filePath };
+    return { file_name, file_path };
   }
 };

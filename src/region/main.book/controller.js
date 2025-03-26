@@ -1,6 +1,7 @@
 const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
 const { HelperFunctions } = require(`@helper/functions`);
+const { ReportTitleService } = require(`@report_title/service`);
 
 exports.Controller = class {
   static async delete(req, res) {
@@ -118,7 +119,7 @@ exports.Controller = class {
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
-    const { excel } = req.query;
+    const { excel, report_title_id } = req.query;
     const { id } = req.params;
 
     const data = await MainBookService.getById({
@@ -142,7 +143,17 @@ exports.Controller = class {
     }
 
     if (excel === "true") {
-      const { file_path, file_name } = await MainBookService.getByIdExcel(data);
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const { file_path, file_name } = await MainBookService.getByIdExcel({
+        ...data,
+        report_title,
+      });
 
       res.setHeader(
         "Content-Type",
