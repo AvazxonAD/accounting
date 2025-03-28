@@ -709,185 +709,29 @@ exports.OrganizationMonitoringDB = class {
 
   static async capData(params) {
     const query = `--sql
-            WITH
-                kursatilgan_hizmatlar AS (
-                    SELECT
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM kursatilgan_hizmatlar_jur152_child AS ch
-                    JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
-                    JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
-                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                    JOIN users AS u ON d.user_id = u.id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-                    WHERE d.isdeleted = false
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND own.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                ),
-                bajarilgan_ishlar AS (
-                    SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM bajarilgan_ishlar_jur3_child AS ch
-                    JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-                    JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
-                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                    JOIN users AS u ON d.user_id = u.id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-                    WHERE d.isdeleted = false
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND own.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                ),
-                bank_rasxod AS (
-                    SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM bank_rasxod_child ch
-                    JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
-                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                    JOIN users AS u ON u.id = d.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-                    WHERE d.isdeleted = false
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND op.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                ),
-                
-                organ_saldo_rasxod AS (
-                    SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM organ_saldo_child ch
-                    JOIN organ_saldo AS d ON ch.parent_id = d.id
-                    JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                    JOIN users AS u ON u.id = d.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.organ_id
-                    WHERE d.isdeleted = false
-                        AND d.rasxod = true
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND op.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                ),
-
-                organ_saldo_prixod AS (
-                    SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM organ_saldo_child ch
-                    JOIN organ_saldo AS d ON ch.parent_id = d.id
-                    JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                    JOIN users AS u ON u.id = d.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.organ_id
-                    WHERE d.isdeleted = false
-                        AND d.prixod = true
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND op.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                ),
-                
-                bank_prixod AS (
-                    SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM bank_prixod_child AS ch
-                    JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
-                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                    JOIN users AS u ON u.id = d.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-                    WHERE d.isdeleted = false
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND op.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                ),
-                jur7_prixod AS (
-                    SELECT 
-                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                        op.schet,
-                        op.sub_schet
-                    FROM document_prixod_jur7_child ch
-                    JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
-                    JOIN users AS u ON u.id = d.user_id
-                    JOIN regions AS r ON r.id = u.region_id
-                    JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
-                    JOIN spravochnik_operatsii op ON op.schet = ch.kredit_schet
-                    WHERE d.isdeleted = false
-                        AND ch.isdeleted = false
-                        AND d.main_schet_id = $1
-                        AND d.doc_date BETWEEN $2 AND $3
-                        AND r.id = $4
-                        AND op.schet = $5
-                    GROUP BY op.schet,
-                        op.sub_schet
-                )
-            SELECT 
-                JSON_BUILD_OBJECT(
-                    'prixods', (
-                        SELECT COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON)
-                        FROM (
-                            SELECT * FROM kursatilgan_hizmatlar
-                            UNION ALL
-                            SELECT * FROM bank_rasxod
-                            UNION ALL
-                            SELECT * FROM organ_saldo_prixod
-                        ) prixod
-                    ),
-
-                    'rasxods', (
-                        SELECT COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON)
-                        FROM (
-                            SELECT * FROM bajarilgan_ishlar
-                            UNION ALL
-                            SELECT * FROM bank_prixod
-                            UNION ALL
-                            SELECT * FROM jur7_prixod
-                            UNION ALL
-                            SELECT * FROM organ_saldo_rasxod
-                        ) rasxod
-                    )
-                ) AS result;
-        `;
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            op.schet,
+            op.sub_schet
+        FROM bajarilgan_ishlar_jur3_child AS ch
+        JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+        JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+        GROUP BY op.schet,
+            op.sub_schet
+      `;
 
     const result = await db.query(query, params);
 
-    return result[0].result;
+    return result;
   }
 
   static async getSummaConsolidated(params, operator, contract) {

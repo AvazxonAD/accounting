@@ -97,7 +97,7 @@ exports.Controller = class {
 
     if (excel === "true") {
       const { fileName, filePath } = await HelperFunctions.capExcel({
-        ...data,
+        rasxods: data,
         main_schet,
         report_title,
         from,

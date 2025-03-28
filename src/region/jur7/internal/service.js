@@ -13,7 +13,7 @@ exports.Jur7InternalService = class {
 
       const check = await SaldoDB.getSaldoDate([
         data.region_id,
-        `${year}-${month}-01`,
+        `${year}-${String(month).padStart(2, "0")}-01`,
       ]);
       let dates = [];
       for (let date of check) {
@@ -68,7 +68,7 @@ exports.Jur7InternalService = class {
 
       const check = await SaldoDB.getSaldoDate([
         data.region_id,
-        `${year}-${month}-01`,
+        `${year}-${String(month).padStart(2, "0")}-01`,
       ]);
       let dates = [];
       for (let date of check) {
@@ -137,7 +137,7 @@ exports.Jur7InternalService = class {
           0,
           month,
           year,
-          `${year}-${month}-01`,
+          `${year}-${String(month).padStart(2, "0")}-01`,
           data.doc.doc_date,
           data.doc.doc_num,
           data.kimga_id,
@@ -210,7 +210,7 @@ exports.Jur7InternalService = class {
 
       const check = await SaldoDB.getSaldoDate([
         data.region_id,
-        `${year}-${month}-01`,
+        `${year}-${String(month).padStart(2, "0")}-01`,
       ]);
       let dates = [];
       for (let date of check) {

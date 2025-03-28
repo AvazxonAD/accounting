@@ -312,12 +312,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const { result: data, header } = await SaldoService.readFile({
@@ -449,13 +451,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     let last_saldo;

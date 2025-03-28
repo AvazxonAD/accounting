@@ -59,6 +59,7 @@
   "importSuccess": "Malumot muvaffaqiyatli import qilindi",
   "conflictAccountNumber": "Hisob raqam yoki gazna raqamni tanlashinggiz kerak !",
   "notLogged": "Siz tizimga kirmagansiz!",
+  "login": "Siz tizimga muvaffaqiyatli kirdinggiz",
   "tokenError": "Token noto'g'ri yuborildi yoki token muddati tugagan!",
   "validation": {
     "groupId": "Gruppa id raqami raqam turida bo'lishi zarur!",

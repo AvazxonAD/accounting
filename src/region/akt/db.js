@@ -1,17 +1,17 @@
-const { db } = require('@db/index');
+const { db } = require("@db/index");
 
 exports.AktDB = class {
-    static async get(params, search = null) {
-        let search_filter = ``;
-        if (search) {
-            params.push(search);
-            search_filter = `AND (
+  static async get(params, search = null) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = `AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `--sql
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id, 
@@ -97,13 +97,17 @@ exports.AktDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return { data: result[0].data || [], total: result[0].total, summa: result[0].summa };
-    }
+    return {
+      data: result[0].data || [],
+      total: result[0].total,
+      summa: result[0].summa,
+    };
+  }
 
-    static async create(params, client) {
-        const query = `--sql 
+  static async create(params, client) {
+    const query = `--sql 
             INSERT INTO bajarilgan_ishlar_jur3(
                 doc_num, 
                 doc_date, 
@@ -123,12 +127,12 @@ exports.AktDB = class {
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
             RETURNING id
         `;
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
+    const result = await client.query(query, params);
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `--sql
+  static async createChild(params, _values, client) {
+    const query = `--sql
             INSERT INTO bajarilgan_ishlar_jur3_child(
                 spravochnik_operatsii_id,
                 summa,
@@ -150,13 +154,13 @@ exports.AktDB = class {
             VALUES ${_values}
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows;
-    }
+    return result.rows;
+  }
 
-    static async getById(params, isdeleted) {
-        const query = `--sql
+  static async getById(params, isdeleted) {
+    const query = `--sql
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -219,14 +223,14 @@ exports.AktDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3 
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}   
+                ${!isdeleted ? "AND d.isdeleted = false" : ""}   
         `;
-        const data = await db.query(query, params);
-        return data[0];
-    }
+    const data = await db.query(query, params);
+    return data[0];
+  }
 
-    static async update(params, client) {
-        const query = `--sql
+  static async update(params, client) {
+    const query = `--sql
             UPDATE bajarilgan_ishlar_jur3
             SET 
                 doc_num = $1, 
@@ -242,25 +246,31 @@ exports.AktDB = class {
                 updated_at = $11
             WHERE id = $12 RETURNING id
         `;
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deleteChild(params, client) {
-        const query = `DELETE FROM bajarilgan_ishlar_jur3_child WHERE bajarilgan_ishlar_jur3_id = $1`
-        await client.query(query, params)
-    }
+  static async deleteChild(params, client) {
+    const query = `DELETE FROM bajarilgan_ishlar_jur3_child WHERE bajarilgan_ishlar_jur3_id = $1`;
+    await client.query(query, params);
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true WHERE bajarilgan_ishlar_jur3_id = $1`, params);
-        const result = await client.query(`UPDATE bajarilgan_ishlar_jur3 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE bajarilgan_ishlar_jur3_child SET isdeleted = true WHERE bajarilgan_ishlar_jur3_id = $1`,
+      params
+    );
+    const result = await client.query(
+      `UPDATE bajarilgan_ishlar_jur3 SET  isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async getSchets(params) {
-        const query = `--sql
+  static async getSchets(params) {
+    const query = `--sql
             SELECT DISTINCT so.schet 
             FROM bajarilgan_ishlar_jur3 AS d
             JOIN spravochnik_operatsii AS so  ON d.spravochnik_operatsii_own_id = so.id
@@ -268,19 +278,18 @@ exports.AktDB = class {
             JOIN regions AS r ON r.id = u.region_id
             WHERE  r.id = $1 AND d.isdeleted = false
         `;
-        const data = await db.query(query, params)
-        return data;
-    }
+    const data = await db.query(query, params);
+    return data;
+  }
 
-    static async cap(params) {
-        const query = `
+  static async cap(params) {
+    const query = `--sql
             SELECT 
                 so.schet, 
                 s.smeta_number, 
                 COALESCE(SUM(ch.summa::FLOAT), 0) AS summa
             FROM bajarilgan_ishlar_jur3 AS d 
             JOIN bajarilgan_ishlar_jur3_child AS ch ON ch.bajarilgan_ishlar_jur3_id = d.id
-            JOIN spravochnik_operatsii AS s_own ON s_own.id = d.spravochnik_operatsii_own_id
             JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -293,12 +302,12 @@ exports.AktDB = class {
 
             GROUP BY so.schet, s.smeta_number
         `;
-        const data = await db.query(query, params);
-        return data;
-    }
+    const data = await db.query(query, params);
+    return data;
+  }
 
-    static async getSchets(params) {
-        const query = `
+  static async getSchets(params) {
+    const query = `
             SELECT DISTINCT so.schet 
             FROM bajarilgan_ishlar_jur3 AS d
             JOIN spravochnik_operatsii AS so  ON d.spravochnik_operatsii_own_id = so.id
@@ -310,9 +319,8 @@ exports.AktDB = class {
                 AND d.doc_date BETWEEN $3 AND $4
         `;
 
-        const schets = await db.query(query, params)
+    const schets = await db.query(query, params);
 
-        return schets;
-    }
-
-}
+    return schets;
+  }
+};

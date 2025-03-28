@@ -333,8 +333,9 @@ exports.PrixodJur7Service = class {
 
       const check = await SaldoDB.getSaldoDate([
         data.region_id,
-        `${year}-${month}-01`,
+        `${year}-${String(month).padStart(2, "0")}-01`,
       ]);
+
       let dates = [];
       for (let date of check) {
         dates.push(
@@ -424,7 +425,7 @@ exports.PrixodJur7Service = class {
           0,
           month,
           year,
-          `${year}-${month}-01`,
+          `${year}-${String(month).padStart(2, "0")}-01`,
           data.doc.doc_date,
           data.doc.doc_num,
           data.kimga_id,
@@ -515,7 +516,7 @@ exports.PrixodJur7Service = class {
 
       const check = await SaldoDB.getSaldoDate([
         data.region_id,
-        `${year}-${month}-01`,
+        `${year}-${String(month).padStart(2, "0")}-01`,
       ]);
 
       let dates = [];
@@ -558,7 +559,7 @@ exports.PrixodJur7Service = class {
       const month = new Date(data.old_data.doc_date).getMonth() + 1;
 
       const check = await SaldoDB.getSaldoDate(
-        [data.region_id, `${year}-${month}-01`],
+        [data.region_id, `${year}-${String(month).padStart(2, "0")}-01`],
         client
       );
       let dates = [];

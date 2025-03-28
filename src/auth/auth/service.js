@@ -36,10 +36,7 @@ exports.AuthService = class {
     delete result.password;
     const token = generateToken(result);
 
-    return res.status(200).json({
-      message: "login sucessfully",
-      data: { result, token },
-    });
+    return res.success(req.i18n.t("login"), 200, null, { result, token });
   }
 
   static async updateAuth(req, res) {

@@ -66,7 +66,6 @@ exports.capSchema = Joi.object({
       .pattern(/^(true|false)$/)
       .allow("", null),
     main_schet_id: Joi.number().integer().min(1).required(),
-    operatsii: Joi.string().trim().required(),
     report_title_id: Joi.number().integer().min(1).required(),
     budjet_id: Joi.number().integer().min(1).required(),
   }),

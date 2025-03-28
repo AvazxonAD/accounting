@@ -8,3 +8,10 @@
     delete from saldo_naimenovanie_jur7;
     delete from iznos_tovar_jur7;
     delete from naimenovanie_tovarov_jur7;
+
+drop table main_zarplata;
+
+create table main_zarplata (
+    id serial PRIMARY key,
+    fio varchar
+);

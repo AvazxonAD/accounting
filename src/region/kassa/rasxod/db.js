@@ -99,7 +99,8 @@ exports.KassaRasxodDB = class {
                 SELECT 
                     COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                     (
-                        SELECT COALESCE(SUM(d.summa), 0)
+                        SELECT 
+                          COALESCE(SUM(d.summa), 0)
                         FROM kassa_rasxod AS d
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id  
@@ -111,7 +112,8 @@ exports.KassaRasxodDB = class {
                             ${search_filter}
                     )::FLOAT AS summa,
                     (
-                        SELECT COALESCE(COUNT(d.id), 0)
+                        SELECT 
+                          COALESCE(COUNT(d.id), 0)
                         FROM kassa_rasxod AS d
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id  

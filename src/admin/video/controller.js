@@ -1,7 +1,7 @@
 const path = require("path");
+const fs = require("fs");
 const { VideoService } = require("./service");
 const { VideoModuleService } = require("@video_module/service");
-const fs = require("fs");
 
 exports.Controller = class {
   static async create(req, res) {

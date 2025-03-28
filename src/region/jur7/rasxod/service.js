@@ -1,169 +1,212 @@
-const { db } = require('@db/index')
-const { RasxodDB } = require('./db');
-const { tashkentTime, returnParamsValues } = require('@helper/functions');
-const { SaldoDB } = require('@saldo/db');
+const { db } = require("@db/index");
+const { RasxodDB } = require("./db");
+const { tashkentTime, returnParamsValues } = require("@helper/functions");
+const { SaldoDB } = require("@saldo/db");
 
 exports.Jur7RsxodService = class {
-    static async delete(data) {
-        const result = await db.transaction(async (client) => {
-            const doc = await RasxodDB.delete([data.id], client)
+  static async delete(data) {
+    const result = await db.transaction(async (client) => {
+      const doc = await RasxodDB.delete([data.id], client);
 
-            const year = new Date(data.old_data.doc_date).getFullYear();
-            const month = new Date(data.old_data.doc_date).getMonth() + 1;
+      const year = new Date(data.old_data.doc_date).getFullYear();
+      const month = new Date(data.old_data.doc_date).getMonth() + 1;
 
-            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
-            let dates = [];
-            for (let date of check) {
-                dates.push(await SaldoDB.createSaldoDate([
-                    data.region_id,
-                    date.year,
-                    date.month,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client));
-            }
+      const check = await SaldoDB.getSaldoDate([
+        data.region_id,
+        `${year}-${String(month).padStart(2, "0")}-01`,
+      ]);
+      let dates = [];
+      for (let date of check) {
+        dates.push(
+          await SaldoDB.createSaldoDate(
+            [
+              data.region_id,
+              date.year,
+              date.month,
+              tashkentTime(),
+              tashkentTime(),
+            ],
+            client
+          )
+        );
+      }
 
-            return { doc, dates };
-        })
+      return { doc, dates };
+    });
 
-        return result;
+    return result;
+  }
+
+  static async create(data) {
+    const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
+    const result = await db.transaction(async (client) => {
+      const doc = await RasxodDB.create(
+        [
+          data.user_id,
+          data.doc_num,
+          data.doc_date,
+          data.j_o_num,
+          data.opisanie,
+          data.doverennost,
+          summa,
+          data.kimdan_id,
+          data.kimdan_name,
+          data.kimga_id,
+          data.kimga_name,
+          data.id_shartnomalar_organization,
+          data.main_schet_id,
+          tashkentTime(),
+          tashkentTime(),
+        ],
+        client
+      );
+
+      await this.createChild({ ...data, docId: doc.id, client });
+
+      const year = new Date(data.doc_date).getFullYear();
+      const month = new Date(data.doc_date).getMonth() + 1;
+
+      const check = await SaldoDB.getSaldoDate([
+        data.region_id,
+        `${year}-${String(month).padStart(2, "0")}-01`,
+      ]);
+      let dates = [];
+      for (let date of check) {
+        dates.push(
+          await SaldoDB.createSaldoDate(
+            [
+              data.region_id,
+              date.year,
+              date.month,
+              tashkentTime(),
+              tashkentTime(),
+            ],
+            client
+          )
+        );
+      }
+
+      return { doc, dates };
+    });
+
+    return result;
+  }
+
+  static async createChild(data) {
+    const create_childs = [];
+    for (let child of data.childs) {
+      create_childs.push(
+        child.naimenovanie_tovarov_jur7_id,
+        child.kol,
+        child.sena,
+        child.summa,
+        child.debet_schet,
+        child.debet_sub_schet,
+        child.kredit_schet,
+        child.kredit_sub_schet,
+        child.data_pereotsenka,
+        data.user_id,
+        data.docId,
+        data.main_schet_id,
+        child.iznos,
+        child.iznos_summa,
+        child.iznos_schet,
+        child.iznos_sub_schet,
+        tashkentTime(),
+        tashkentTime()
+      );
     }
 
-    static async create(data) {
-        const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
-        const result = await db.transaction(async client => {
-            const doc = await RasxodDB.create([
-                data.user_id,
-                data.doc_num,
-                data.doc_date,
-                data.j_o_num,
-                data.opisanie,
-                data.doverennost,
-                summa,
-                data.kimdan_id,
-                data.kimdan_name,
-                data.kimga_id,
-                data.kimga_name,
-                data.id_shartnomalar_organization,
-                data.main_schet_id,
-                tashkentTime(),
-                tashkentTime()
-            ], client);
+    const _values = returnParamsValues(create_childs, 18);
 
-            await this.createChild({ ...data, docId: doc.id, client });
+    await RasxodDB.createChild(create_childs, _values, data.client);
+  }
 
-            const year = new Date(data.doc_date).getFullYear();
-            const month = new Date(data.doc_date).getMonth() + 1;
+  static async update(data) {
+    const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
 
-            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
-            let dates = [];
-            for (let date of check) {
-                dates.push(await SaldoDB.createSaldoDate([
-                    data.region_id,
-                    date.year,
-                    date.month,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client));
-            }
+    const result = await db.transaction(async (client) => {
+      const doc = await RasxodDB.update(
+        [
+          data.doc_num,
+          data.doc_date,
+          data.j_o_num,
+          data.opisanie,
+          data.doverennost,
+          summa,
+          data.kimdan_id,
+          data.kimdan_name,
+          tashkentTime(),
+          data.id,
+        ],
+        client
+      );
 
-            return { doc, dates };
-        });
+      await RasxodDB.deleteRasxodChild([data.id], client);
 
-        return result;
-    }
+      await this.createChild({ ...data, docId: data.id, doc, client });
 
-    static async createChild(data) {
-        const create_childs = [];
-        for (let child of data.childs) {
-            create_childs.push(
-                child.naimenovanie_tovarov_jur7_id,
-                child.kol,
-                child.sena,
-                child.summa,
-                child.debet_schet,
-                child.debet_sub_schet,
-                child.kredit_schet,
-                child.kredit_sub_schet,
-                child.data_pereotsenka,
-                data.user_id,
-                data.docId,
-                data.main_schet_id,
-                child.iznos,
-                child.iznos_summa,
-                child.iznos_schet,
-                child.iznos_sub_schet,
-                tashkentTime(),
-                tashkentTime()
-            );
-        }
+      let year, month;
 
-        const _values = returnParamsValues(create_childs, 18);
+      if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
+        year = new Date(data.doc_date).getFullYear();
+        month = new Date(data.doc_date).getMonth() + 1;
+      } else if (new Date(data.doc_date) > new Date(data.old_data.doc_date)) {
+        year = new Date(data.old_data.doc_date).getFullYear();
+        month = new Date(data.old_data.doc_date).getMonth() + 1;
+      } else {
+        year = new Date(data.doc_date).getFullYear();
+        month = new Date(data.doc_date).getMonth() + 1;
+      }
 
-        await RasxodDB.createChild(create_childs, _values, data.client);
-    }
+      const check = await SaldoDB.getSaldoDate([
+        data.region_id,
+        `${year}-${String(month).padStart(2, "0")}-01`,
+      ]);
 
-    static async update(data) {
-        const summa = data.childs.reduce((acc, child) => acc + child.summa, 0);
+      let dates = [];
 
-        const result = await db.transaction(async client => {
-            const doc = await RasxodDB.update([
-                data.doc_num,
-                data.doc_date,
-                data.j_o_num,
-                data.opisanie,
-                data.doverennost,
-                summa,
-                data.kimdan_id,
-                data.kimdan_name,
-                tashkentTime(),
-                data.id
-            ], client);
+      for (let date of check) {
+        dates.push(
+          await SaldoDB.createSaldoDate(
+            [
+              data.region_id,
+              date.year,
+              date.month,
+              tashkentTime(),
+              tashkentTime(),
+            ],
+            client
+          )
+        );
+      }
 
-            await RasxodDB.deleteRasxodChild([data.id], client)
+      return { doc, dates };
+    });
 
-            await this.createChild({ ...data, docId: data.id, doc, client })
+    return result;
+  }
 
-            let year, month;
+  static async getById(data) {
+    const result = await RasxodDB.getById(
+      [data.region_id, data.id, data.main_schet_id],
+      data.isdeleted
+    );
+    return result;
+  }
 
-            if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
-                year = new Date(data.doc_date).getFullYear();
-                month = new Date(data.doc_date).getMonth() + 1;
-            } else if (new Date(data.doc_date) > new Date(data.old_data.doc_date)) {
-                year = new Date(data.old_data.doc_date).getFullYear();
-                month = new Date(data.old_data.doc_date).getMonth() + 1;
-            } else {
-                year = new Date(data.doc_date).getFullYear();
-                month = new Date(data.doc_date).getMonth() + 1;
-            }
-
-            const check = await SaldoDB.getSaldoDate([data.region_id, `${year}-${month}-01`]);
-
-            let dates = [];
-
-            for (let date of check) {
-                dates.push(await SaldoDB.createSaldoDate([
-                    data.region_id,
-                    date.year,
-                    date.month,
-                    tashkentTime(),
-                    tashkentTime()
-                ], client));
-            }
-
-            return { doc, dates };
-        });
-
-        return result;
-    }
-
-    static async getById(data) {
-        const result = await RasxodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted)
-        return result;
-    }
-
-    static async get(data) {
-        const result = await RasxodDB.get([data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit], data.search);
-        return result;
-    }
-}
+  static async get(data) {
+    const result = await RasxodDB.get(
+      [
+        data.region_id,
+        data.from,
+        data.to,
+        data.main_schet_id,
+        data.offset,
+        data.limit,
+      ],
+      data.search
+    );
+    return result;
+  }
+};

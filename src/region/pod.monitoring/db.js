@@ -613,196 +613,28 @@ exports.PodotchetMonitoringDB = class {
 
   static async capData(params) {
     const query = `--sql
-        WITH 
-            bank_rasxod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    m.jur2_schet AS schet,
-                    op.sub_schet,
-                    'bank_rasxod' AS type
-                FROM bank_rasxod_child ch
-                JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id 
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                JOIN main_schet m ON m.id = d.main_schet_id
-                WHERE d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND op.schet = $5
-                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
-                GROUP BY m.jur2_schet,
-                    op.sub_schet
-            ),
-
-            podotchet_saldo_prixod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    op.schet,
-                    op.sub_schet,
-                    'podotchet_saldo' AS type
-                FROM podotchet_saldo_child ch
-                JOIN podotchet_saldo AS d ON ch.parent_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                WHERE d.isdeleted = false
-                    AND d.prixod = true
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND op.schet = $5
-                GROUP BY op.schet,
-                    op.sub_schet
-            ),
-
-            podotchet_saldo_rasxod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    op.schet,
-                    op.sub_schet,
-                    'podotchet_saldo' AS type
-                FROM podotchet_saldo_child ch
-                JOIN podotchet_saldo AS d ON ch.parent_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                WHERE d.isdeleted = false
-                    AND d.rasxod = true
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND op.schet = $5
-                GROUP BY op.schet,
-                    op.sub_schet
-            ),
-
-            bank_prixod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    m.jur2_schet AS schet,
-                    op.sub_schet,
-                    'bank_prixod' AS type
-                FROM bank_prixod_child ch
-                JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                JOIN main_schet m ON m.id = d.main_schet_id
-                WHERE d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND op.schet = $5
-                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
-                GROUP BY m.jur2_schet,
-                    op.sub_schet
-            ),
-
-            kassa_prixod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    m.jur1_schet AS schet,
-                    op.sub_schet,
-                    'kassa_prixod' AS type
-                FROM kassa_prixod_child ch
-                JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                JOIN main_schet m ON m.id = d.main_schet_id
-                WHERE d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND op.schet = $5
-                    AND d.id_podotchet_litso IS NOT NULL
-                GROUP BY m.jur1_schet,
-                    op.sub_schet
-            ),
-
-            kassa_rasxod AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    m.jur1_schet,
-                    op.sub_schet,
-                    'kassa_rasxod' AS type
-                FROM kassa_rasxod_child ch
-                JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                JOIN main_schet m ON m.id = d.main_schet_id
-                WHERE d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND op.schet = $5
-                    AND d.id_podotchet_litso IS NOT NULL
-                GROUP BY m.jur1_schet,
-                    op.sub_schet
-            ),
-
-            avans_otchet AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                    op.schet,
-                    op.sub_schet,
-                    'avans_otchetlar_jur4' AS type
-                FROM avans_otchetlar_jur4_child ch
-                JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
-                WHERE d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $1
-                    AND d.doc_date BETWEEN $2 AND $3
-                    AND r.id = $4
-                    AND own.schet = $5
-                    AND d.spravochnik_podotchet_litso_id IS NOT NULL
-                GROUP BY op.schet,
-                    op.sub_schet
-            )
-
-            SELECT 
-                JSON_BUILD_OBJECT(
-                    'prixods', (
-                        SELECT COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON)
-                        FROM (
-                            SELECT * FROM bank_rasxod
-                            UNION ALL
-                            SELECT * FROM kassa_rasxod
-                            UNION ALL
-                            SELECT * FROM podotchet_saldo_prixod
-                        ) prixod
-                    ),
-
-                    'rasxods', (
-                        SELECT COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON)
-                        FROM (
-                            SELECT * FROM bank_prixod
-                            UNION ALL
-                            SELECT * FROM kassa_prixod
-                            UNION ALL
-                            SELECT * FROM avans_otchet
-                            UNION ALL
-                            SELECT * FROM podotchet_saldo_rasxod
-                        ) rasxod
-                    )
-                ) AS result
-        `;
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            op.schet,
+            op.sub_schet
+        FROM avans_otchetlar_jur4_child ch
+        JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
+        JOIN users u ON d.user_id = u.id
+        JOIN regions r ON u.region_id = r.id
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND d.spravochnik_podotchet_litso_id IS NOT NULL
+        GROUP BY op.schet,
+            op.sub_schet
+    `;
 
     const result = await db.query(query, params);
 
-    return result[0].result;
+    return result;
   }
 };

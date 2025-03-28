@@ -83,6 +83,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, budjet_id } = req.query;
+
     const {
       kimdan_id,
       kimga_id,
@@ -98,12 +99,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const organization = await OrganizationService.getById({
@@ -167,13 +170,6 @@ exports.Controller = class {
         return res.error(req.i18n.t("groupNotFound"), 404);
       }
 
-      // if (
-      //   (!child.iznos && child.eski_iznos_summa) ||
-      //   (child.iznos && !child.group.iznos_foiz)
-      // ) {
-      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      // }
-
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
@@ -198,12 +194,14 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id } = req.query;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const offset = (page - 1) * limit;
@@ -235,12 +233,14 @@ exports.Controller = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const data = await PrixodJur7Service.getById({
@@ -276,12 +276,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const old_data = await PrixodJur7Service.getById({
@@ -367,13 +369,6 @@ exports.Controller = class {
         return res.error(req.i18n.t("groupNotFound"), 404);
       }
 
-      // if (
-      //   (!child.iznos && child.eski_iznos_summa) ||
-      //   (child.iznos && !child.group.iznos_foiz)
-      // ) {
-      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      // }
-
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
@@ -401,12 +396,14 @@ exports.Controller = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const old_data = await PrixodJur7Service.getById({
@@ -448,12 +445,14 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { from, to, main_schet_id } = req.query;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const { fileName, filePath } = await PrixodJur7Service.prixodReport({

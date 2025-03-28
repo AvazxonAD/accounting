@@ -13,12 +13,14 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const responsible = await ResponsibleService.getById({
@@ -46,14 +48,6 @@ exports.Controller = class {
       if (!product) {
         return res.error(req.i18n.t("productNotFound"), 404);
       }
-
-      // if (
-      //   (!child.iznos && child.iznos_summa) ||
-      //   (child.iznos && !product.group.iznos_foiz) ||
-      //   child.sena < child.iznos_summa
-      // ) {
-      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      // }
 
       const { data } = await SaldoService.getByProduct({
         region_id,
@@ -97,12 +91,14 @@ exports.Controller = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const data = await Jur7RsxodService.getById({
@@ -125,12 +121,14 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const old_data = await Jur7RsxodService.getById({
@@ -174,14 +172,6 @@ exports.Controller = class {
             item.naimenovanie_tovarov_jur7_id ===
             child.naimenovanie_tovarov_jur7_id
         )?.kol || 0;
-
-      // if (
-      //   (!child.iznos && child.iznos_summa) ||
-      //   (child.iznos && !product.group.iznos_foiz) ||
-      //   child.sena < child.iznos_summa
-      // ) {
-      //   return res.error(req.i18n.t("IznosSummaError"), 400, child);
-      // }
 
       const { data } = await SaldoService.getByProduct({
         region_id,
@@ -229,12 +219,14 @@ exports.Controller = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const data = await Jur7RsxodService.getById({
@@ -263,13 +255,17 @@ exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id } = req.query;
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
+
     const offset = (page - 1) * limit;
 
     const { data, total } = await Jur7RsxodService.get({

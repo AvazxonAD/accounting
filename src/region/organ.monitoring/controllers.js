@@ -181,7 +181,7 @@ exports.Controller = class {
       });
 
       const { filePath, fileName } = await HelperFunctions.capExcel({
-        ...data,
+        rasxods: data,
         main_schet,
         report_title,
         from,
@@ -191,7 +191,7 @@ exports.Controller = class {
         podpis,
         title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
         file_name: "organization",
-        schet: operatsii,
+        schet: main_schet.jur3_schet,
         order: 3,
       });
 

@@ -839,8 +839,8 @@ exports.SaldoService = class {
             doc.summa,
             month,
             year,
-            `${year}-${month}-01`,
-            doc?.doc_date || `${year}-${month}-01`,
+            `${year}-${String(month).padStart(2, "0")}-01`,
+            doc?.doc_date || `${year}-${String(month).padStart(2, "0")}-01`,
             doc?.doc_num || "saldo",
             doc.responsible_id,
             data.region_id,
@@ -867,7 +867,7 @@ exports.SaldoService = class {
       }
 
       const next_saldo = await SaldoDB.getSaldoDate(
-        [data.region_id, `${year}-${month}-01`],
+        [data.region_id, `${year}-${String(month).padStart(2, "0")}-01`],
         client
       );
 

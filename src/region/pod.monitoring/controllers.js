@@ -598,7 +598,7 @@ exports.Controller = class {
       const podpis = await PodpisService.get({ region_id, type: "cap" });
 
       const { filePath, fileName } = await HelperFunctions.capExcel({
-        ...data,
+        rasxods: data,
         main_schet,
         report_title,
         from,
@@ -608,7 +608,7 @@ exports.Controller = class {
         podpis,
         title: "Podotchet Monitoring",
         file_name: "podotchet",
-        schet: operatsii,
+        schet: main_schet.jur4_schet,
         order: 4,
       });
 

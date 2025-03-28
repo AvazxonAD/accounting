@@ -4,22 +4,22 @@ const { ProductService } = require("@product/service");
 const { MainSchetService } = require("@main_schet/service");
 const { Jur7InternalService } = require("./service");
 const { SaldoService } = require("@saldo/service");
-const { GroupService } = require("@group/service");
 
 exports.Controller = class {
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
-    const budjet_id = req.query;
     const { doc_date, kimdan_id, childs, kimga_id } = req.body;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const responsible = await ResponsibleService.getById({
@@ -106,12 +106,14 @@ exports.Controller = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const data = await Jur7InternalService.getById({
@@ -134,12 +136,14 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const old_data = await Jur7InternalService.getById({
@@ -239,12 +243,14 @@ exports.Controller = class {
     const id = req.params.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
 
     const old_data = await Jur7InternalService.getById({
@@ -273,13 +279,17 @@ exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, main_schet_id } = req.query;
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+
+    if (main_schet_id) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+      if (!main_schet) {
+        return res.error(req.i18n.t("mainSchetNotFound"), 404);
+      }
     }
+
     const offset = (page - 1) * limit;
 
     const { data, total } = await Jur7InternalService.get({

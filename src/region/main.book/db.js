@@ -284,48 +284,20 @@ exports.MainBookDB = class {
     }
 
     const query = `--sql
-      WITH rasxod AS (
-        SELECT
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
-          op.schet,
-          'rasxod' AS                                      type
-        FROM kassa_rasxod d
-        JOIN kassa_rasxod_child ch ON ch.kassa_rasxod_id = d.id
-        JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        WHERE d.isdeleted = false
-          AND ch.isdeleted = false
-          AND r.id = $1
-          AND d.main_schet_id = $2
-          ${date_filter}
-        GROUP BY op.schet
-      ),
-
-      rasxod_saldo AS (
-        SELECT
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
-          op.schet,
-          'rasxod_saldo' AS                                 type
-        FROM kassa_saldo d
-        JOIN kassa_saldo_child ch ON ch.parent_id = d.id
-        JOIN spravochnik_operatsii op ON op.id = ch.operatsii_id
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        WHERE d.isdeleted = false
-          AND ch.isdeleted = false
-          AND d.rasxod = true
-          AND r.id = $1
-          AND d.main_schet_id = $2
-          ${date_filter}
-        GROUP BY op.schet
-      )
-
-      SELECT schet, summa, type FROM rasxod
-        
-      UNION ALL
-          
-      SELECT schet, summa, type FROM rasxod_saldo
+      SELECT
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
+        op.schet
+      FROM kassa_rasxod d
+      JOIN kassa_rasxod_child ch ON ch.kassa_rasxod_id = d.id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.main_schet_id = $2
+        ${date_filter}
+      GROUP BY op.schet
     `;
 
     const result = await db.query(query, params);
@@ -352,48 +324,20 @@ exports.MainBookDB = class {
     }
 
     const query = `--sql
-      WITH rasxod AS (
-        SELECT
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
-          op.schet,
-          'rasxod' AS                                       type
-        FROM bank_rasxod d
-        JOIN bank_rasxod_child ch ON ch.id_bank_rasxod = d.id
-        JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        WHERE d.isdeleted = false
-          AND ch.isdeleted = false
-          AND r.id = $1
-          AND d.main_schet_id = $2
-          ${date_filter}
-        GROUP BY op.schet
-      ),
-
-      rasxod_saldo AS (
-        SELECT
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
-          op.schet,
-          'rasxod_saldo' AS                                 type
-        FROM bank_saldo d
-        JOIN bank_saldo_child ch ON ch.parent_id = d.id
-        JOIN spravochnik_operatsii op ON op.id = ch.operatsii_id
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        WHERE d.isdeleted = false
-          AND ch.isdeleted = false
-          AND d.rasxod = true
-          AND r.id = $1
-          AND d.main_schet_id = $2
-          ${date_filter}
-        GROUP BY op.schet
-      )
-
-      SELECT schet, summa, type FROM rasxod
-        
-      UNION ALL
-          
-      SELECT schet, summa, type FROM rasxod_saldo
+      SELECT
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
+        op.schet
+      FROM bank_rasxod d
+      JOIN bank_rasxod_child ch ON ch.id_bank_rasxod = d.id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.main_schet_id = $2
+        ${date_filter}
+      GROUP BY op.schet
     `;
 
     const result = await db.query(query, params);
@@ -420,99 +364,21 @@ exports.MainBookDB = class {
     }
 
     const query = `--sql
-      WITH
-        bajarilgan_ishlar AS (
-            SELECT 
-                COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
-                op.schet,
-                'akt' AS                                      type
-            FROM bajarilgan_ishlar_jur3_child AS ch
-            JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-            JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
-            JOIN users AS u ON d.user_id = u.id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE d.isdeleted = false
-              AND ch.isdeleted = false
-              AND r.id = $1
-              AND d.main_schet_id = $2
-              AND own.schet = $3
-              ${date_filter}
-            GROUP BY op.schet
-        ),
-        
-        organ_saldo_rasxod AS (
-            SELECT 
-                COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
-                op.schet,
-                'organ_saldo_rasxod' AS                         type
-            FROM organ_saldo_child ch
-            JOIN organ_saldo AS d ON ch.parent_id = d.id
-            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-            JOIN users AS u ON d.user_id = u.id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE d.isdeleted = false
-              AND d.rasxod = true
-              AND ch.isdeleted = false
-              AND r.id = $1
-              AND d.main_schet_id = $2
-              AND op.schet = $3
-              ${date_filter}
-            GROUP BY op.schet
-        ),
-        
-        bank_prixod AS (
-            SELECT 
-                COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
-                m.jur2_schet AS                                 schet,
-                'bank_prixod' AS                                type
-            FROM bank_prixod_child AS ch
-            JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
-            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-            JOIN main_schet m ON m.id = d.main_schet_id
-            JOIN users AS u ON d.user_id = u.id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE d.isdeleted = false
-              AND ch.isdeleted = false
-              AND r.id = $1
-              AND d.main_schet_id = $2
-              AND op.schet = $3
-              ${date_filter}
-            GROUP BY m.jur2_schet
-        ),
-
-        jur7_prixod AS (
-            SELECT 
-                COALESCE(SUM(ch.summa), 0)::FLOAT AS            summa,
-                ch.kredit_schet AS schet,
-                'jur7_prixod' AS                                type
-            FROM document_prixod_jur7_child ch
-            JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
-            JOIN users AS u ON d.user_id = u.id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE d.isdeleted = false
-              AND ch.isdeleted = false
-              AND r.id = $1
-              AND d.main_schet_id = $2
-              AND d.j_o_num = $3
-              ${date_filter}
-            GROUP BY ch.kredit_schet
-        )
-
-        SELECT schet, summa, type FROM bajarilgan_ishlar
-        
-        UNION ALL
-          
-        SELECT schet, summa, type FROM organ_saldo_rasxod
-        
-        UNION ALL
-        
-        SELECT schet, summa, type FROM bank_prixod
-        
-        UNION ALL
-        
-        SELECT schet, summa, type FROM jur7_prixod
-      `;
+      SELECT 
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
+          op.schet
+      FROM bajarilgan_ishlar_jur3_child AS ch
+      JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.main_schet_id = $2
+        ${date_filter}
+      GROUP BY op.schet  
+    `;
 
     const result = await db.query(query, params);
 
@@ -538,101 +404,21 @@ exports.MainBookDB = class {
     }
 
     const query = `--sql
-      WITH
-        podotchet_saldo_rasxod AS (
-          SELECT 
-            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa,
-            op.schet,
-            'podotchet_saldo_rasxod' AS                 type
-          FROM podotchet_saldo_child ch
-          JOIN podotchet_saldo AS d ON ch.parent_id = d.id
-          JOIN users u ON d.user_id = u.id
-          JOIN regions r ON u.region_id = r.id
-          JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-          WHERE d.isdeleted = false
-            AND d.rasxod = true
-            AND ch.isdeleted = false
-            AND r.id = $1
-            AND d.main_schet_id = $2
-            AND op.schet = $3
-            ${date_filter}
-          GROUP BY op.schet
-        ),
-        
-        kassa_prixod AS (
-          SELECT 
-            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa,
-            m.jur1_schet AS                             schet,
-            'kassa_prixod' AS                           type
-          FROM kassa_prixod_child ch
-          JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
-          JOIN users u ON d.user_id = u.id
-          JOIN regions r ON u.region_id = r.id
-          JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-          JOIN main_schet m ON m.id = d.main_schet_id
-          WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND r.id = $1
-            AND d.main_schet_id = $2
-            AND op.schet = $3
-            ${date_filter}
-          GROUP BY m.jur1_schet
-        ),
-        
-        bank_prixod AS (
-          SELECT 
-              COALESCE(SUM(ch.summa), 0)::FLOAT AS      summa,
-              m.jur2_schet AS                           schet,
-              'bank_prixod' AS                          type
-          FROM bank_prixod_child AS ch
-          JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
-          JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-          JOIN main_schet m ON m.id = d.main_schet_id
-          JOIN users AS u ON d.user_id = u.id
-          JOIN regions AS r ON r.id = u.region_id
-          WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND r.id = $1
-            AND d.main_schet_id = $2
-            AND op.schet = $3
-            ${date_filter}
-          GROUP BY m.jur2_schet
-        ),
-
-        avans_otchet AS (
-          SELECT 
-            COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
-            op.schet,
-            'avans_otchet' AS                             type
-          FROM avans_otchetlar_jur4_child ch
-          JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
-          JOIN users u ON d.user_id = u.id
-          JOIN regions r ON u.region_id = r.id
-          JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-          JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
-          WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND r.id = $1
-            AND d.main_schet_id = $2
-            AND own.schet = $3
-            ${date_filter}
-          GROUP BY op.schet
-        )
-
-        SELECT schet, summa, type FROM podotchet_saldo_rasxod
-        
-        UNION ALL
-          
-        SELECT schet, summa, type FROM kassa_prixod
-        
-        UNION ALL
-        
-        SELECT schet, summa, type FROM bank_prixod
-        
-        UNION ALL
-        
-        SELECT schet, summa, type FROM avans_otchet
-      `;
+      SELECT 
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
+        op.schet
+      FROM avans_otchetlar_jur4_child ch
+      JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
+      JOIN users u ON d.user_id = u.id
+      JOIN regions r ON u.region_id = r.id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.main_schet_id = $2
+        ${date_filter}
+      GROUP BY op.schet
+    `;
 
     const result = await db.query(query, params);
 
