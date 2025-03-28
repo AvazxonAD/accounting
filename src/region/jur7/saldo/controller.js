@@ -1,7 +1,6 @@
 const { SaldoService } = require("./service");
 const { ResponsibleService } = require("@responsible/service");
 const { BudjetService } = require("@budjet/service");
-const { MainSchetService } = require("@main_schet/service");
 const { GroupService } = require("@group/service");
 const { SaldoSchema } = require("./schema");
 const { HelperFunctions } = require("@helper/functions");
@@ -93,7 +92,7 @@ exports.Controller = class {
       budjet_id,
     } = req.query;
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -302,7 +301,7 @@ exports.Controller = class {
       });
     }
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -431,7 +430,7 @@ exports.Controller = class {
     const { budjet_id } = req.query;
     let { year, month } = JSON.parse(JSON.stringify(req.body));
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }

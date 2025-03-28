@@ -1,7 +1,6 @@
 const { ContractService } = require("@contract/service");
 const { GroupService } = require("@group/service");
 const { PrixodJur7Service } = require("./service");
-const { MainSchetService } = require("@main_schet/service");
 const { OrganizationService } = require("@organization/service");
 const { BudjetService } = require("@budjet/service");
 const { ResponsibleService } = require("@responsible/service");

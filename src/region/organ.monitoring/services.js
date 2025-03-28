@@ -235,7 +235,7 @@ exports.OrganizationmonitoringService = class {
       if (
         rasxod !== "summa" &&
         data.rasxods[rasxod].summa !== 0 &&
-        rasxod === REPORT_RASXOD_SCHET
+        rasxod === REPORT_RASXOD_SCHET[0]
       ) {
         // rasxod
         worksheet.mergeCells(`E5`, `G5`);

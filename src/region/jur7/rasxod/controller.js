@@ -1,10 +1,9 @@
 const { checkTovarId } = require("@helper/functions");
 const { ResponsibleService } = require("@responsible/service");
 const { ProductService } = require("@product/service");
-const { MainSchetService } = require("@main_schet/service");
 const { Jur7RsxodService } = require("./service");
 const { SaldoService } = require("@saldo/service");
-const { GroupService } = require("@group/service");
+const { BudjetService } = require("@budjet/service");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -13,7 +12,7 @@ exports.Controller = class {
     const budjet_id = req.query.budjet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -86,7 +85,7 @@ exports.Controller = class {
     const id = req.params.id;
     const budjet_id = req.query.budjet_id;
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -111,7 +110,7 @@ exports.Controller = class {
     const budjet_id = req.query.budjet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -204,7 +203,7 @@ exports.Controller = class {
     const id = req.params.id;
     const budjet_id = req.query.budjet_id;
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -236,7 +235,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { page, limit, search, from, to, budjet_id } = req.query;
 
-    const budjet = await MainSchetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }

@@ -6,7 +6,7 @@ exports.Jur7MonitoringDB = class {
         SELECT 
             ch.debet_schet,
             ch.kredit_schet,
-            ch.kredit_sub_schet,
+            ch.debet_sub_schet,
             COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
         FROM document_rasxod_jur7_child ch
         JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
@@ -15,16 +15,18 @@ exports.Jur7MonitoringDB = class {
         WHERE r.id = $1 
             AND d.isdeleted = false 
             AND d.doc_date BETWEEN $2 AND $3
+            AND d.budjet_id = $4
+            AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet,
-            ch.kredit_sub_schet
+            ch.debet_sub_schet
 
         UNION ALL 
 
         SELECT 
             ch.debet_schet,
             ch.kredit_schet,
-            ch.kredit_sub_schet,
+            ch.debet_sub_schet,
             COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
         FROM document_vnutr_peremesh_jur7_child ch
         JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
@@ -33,9 +35,11 @@ exports.Jur7MonitoringDB = class {
         WHERE r.id = $1 
             AND d.isdeleted = false 
             AND d.doc_date BETWEEN $2 AND $3
+            AND d.budjet_id = $4
+            AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet,
-            ch.kredit_sub_schet
+            ch.debet_sub_schet
     `;
 
     const result = await db.query(query, params);
@@ -132,50 +136,5 @@ exports.Jur7MonitoringDB = class {
 
     const result = await db.query(query, params);
     return result[0];
-  }
-
-  static async getSchetsForCap(params) {
-    const query = `--sql
-        SELECT DISTINCT debet_schet, kredit_schet 
-        FROM (
-            SELECT ch.debet_schet, ch.kredit_schet
-            FROM document_rasxod_jur7 d
-            JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
-            JOIN users AS u ON u.id = d.user_id 
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN main_schet AS m ON m.id = d.budjet_id
-            WHERE m.spravochnik_budjet_name_id = $1
-                AND r.id = $2
-                AND d.doc_date BETWEEN $3 AND $4
-
-            UNION ALL
-
-            SELECT ch.debet_schet, ch.kredit_schet
-            FROM document_vnutr_peremesh_jur7 d
-            JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
-            JOIN users AS u ON u.id = d.user_id 
-            JOIN regions AS r ON r.id = u.region_id
-            JOIN main_schet AS m ON m.id = d.budjet_id
-            WHERE m.spravochnik_budjet_name_id = $1
-                AND r.id = $2
-                AND d.doc_date BETWEEN $3 AND $4
-
-            UNION ALL 
-
-            SELECT g.provodka_debet AS debet_schet, g.provodka_kredit AS kredit_schet
-            FROM iznos_tovar_jur7 i
-            JOIN naimenovanie_tovarov_jur7 p ON i.naimenovanie_tovarov_jur7_id = p.id
-            JOIN group_jur7 AS g ON g.id = p.group_jur7_id
-            JOIN users AS u ON u.id = i.user_id 
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE i.budjet_id = $1
-                AND r.id = $2
-                AND i.full_date BETWEEN $3 AND $4
-        ); 
-    `;
-
-    const result = await db.query(query, params);
-
-    return result;
   }
 };

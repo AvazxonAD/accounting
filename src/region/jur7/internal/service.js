@@ -155,7 +155,6 @@ exports.Jur7InternalService = class {
           child.kredit_schet,
           child.kredit_sub_schet,
           data.budjet_id,
-          data.budjet_id,
           "prixod",
           tashkentTime(),
           tashkentTime(),

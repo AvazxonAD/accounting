@@ -15,6 +15,7 @@ exports.Schema = class {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().integer().min(1).required(),
+        report_title_id: Joi.number().integer().min(1).required(),
         month: Joi.number().integer().min(1).required().max(12),
         year: Joi.number().integer().min(1901).required(),
         excel: Joi.string().trim().valid("true", "false"),

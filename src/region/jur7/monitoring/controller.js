@@ -1,9 +1,10 @@
 const { ResponsibleService } = require("@responsible/service");
-const { MainSchetService } = require("@main_schet/service");
 const { RegionService } = require("@region/service");
 const { BudjetService } = require("@budjet/service");
 const { Jur7MonitoringService } = require("./service");
-const { ProductService } = require("@product/service");
+const { HelperFunctions } = require("@helper/functions");
+const { ReportTitleService } = require("@report_title/service");
+const { PodpisService } = require("@podpis/service");
 
 exports.Controller = class {
   static async materialReport(req, res) {
@@ -56,7 +57,7 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, year, month, excel } = req.query;
+    const { budjet_id, year, month, excel, report_title_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -67,13 +68,38 @@ exports.Controller = class {
       region_id,
       year,
       month,
+      budjet_id,
     });
 
+    const date = HelperFunctions.getMonthStartEnd(year, month);
+
     if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
+
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 400);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
       const { fileName, filePath } = await Jur7MonitoringService.capExcel({
-        ...data,
-        from,
-        to,
+        rasxods: data,
+        report_title,
+        from: date[0],
+        to: date[1],
+        region,
+        budjet,
+        podpis,
+        title: "МАТЕРИАЛ ОМБОРИ ХИСОБОТИ",
+        file_name: "material",
+        order: 7,
       });
       res.setHeader(
         "Content-Type",
