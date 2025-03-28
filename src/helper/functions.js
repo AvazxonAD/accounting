@@ -520,8 +520,8 @@ exports.HelperFunctions = class {
       "Кредит",
       "Сумма",
       "",
-      "Дебет",
-      "Кредит",
+      "Счет",
+      "Субсчет",
       "Сумма",
     ];
 
@@ -561,7 +561,7 @@ exports.HelperFunctions = class {
     worksheet.getCell(`C${column}`).value = data.rasxods.summa;
     column++;
 
-    let rasxod_column = 7;
+    let rasxod_column = 8;
     // deep rasxod
     for (let rasxod in data.rasxods) {
       if (
@@ -669,6 +669,13 @@ exports.HelperFunctions = class {
 
         if (cellData.bold) {
           bold = true;
+        } else if (
+          !cellData.bold &&
+          rowNumber > 7 &&
+          column > 3 &&
+          cell.value !== "Кредит буйича жами:"
+        ) {
+          bold = false;
         }
 
         if (cellData.horizontal) {
