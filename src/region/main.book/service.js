@@ -597,10 +597,10 @@ exports.MainBookService = class {
     }
 
     for (let schet of data.schets) {
-      const check = data.jur3AndJur4Schets.find((item) => item === schet.schet);
-      if (check) {
-        continue;
-      }
+      // const check = data.jur3AndJur4Schets.find((item) => item === schet.schet);
+      // if (check) {
+      //   continue;
+      // }
 
       const summa = schet.prixod - schet.rasxod;
 
