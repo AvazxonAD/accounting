@@ -291,7 +291,13 @@ exports.Controller = class {
 
       // jurnal 7
       if (type.id === 7) {
-        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs = await MainBookService.getJur7Data({
+          schets: JSON.parse(JSON.stringify(schets)),
+          budjet_id,
+          from,
+          to,
+          region_id,
+        });
       }
 
       // jurnal 9

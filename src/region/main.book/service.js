@@ -295,6 +295,28 @@ exports.MainBookService = class {
     return data.schets;
   }
 
+  static async getJur7Data(data) {
+    const rasxod_data = await MainBookDB.getJur7Rasxod(
+      [data.region_id, data.budjet_id],
+      { from: data.from, to: data.to },
+      data.operator
+    );
+
+    for (let schet of rasxod_data) {
+      const debet = data.schets.find(
+        (item) => item.schet === schet.debet_schet
+      );
+      debet.prixod += schet.summa;
+
+      const kredit = data.schets.find(
+        (item) => item.schet === schet.kredit_schet
+      );
+      kredit.rasxod += schet.summa;
+    }
+
+    return data.schets;
+  }
+
   static async getFromData(data) {
     // jur1
     for (let main_schet of data.main_schets) {
@@ -402,6 +424,25 @@ exports.MainBookService = class {
       }
 
       data.schets[index].rasxod += rasxod;
+    }
+
+    // jur7
+    const rasxod_data = await MainBookDB.getJur7Rasxod(
+      [data.region_id, data.budjet_id],
+      { from: data.from, to: data.to },
+      data.operator
+    );
+
+    for (let schet of rasxod_data) {
+      const debet = data.schets.find(
+        (item) => item.schet === schet.debet_schet
+      );
+      debet.prixod += schet.summa;
+
+      const kredit = data.schets.find(
+        (item) => item.schet === schet.kredit_schet
+      );
+      kredit.rasxod += schet.summa;
     }
 
     for (let schet of data.schets) {
@@ -534,6 +575,25 @@ exports.MainBookService = class {
       }
 
       data.schets[index].rasxod += rasxod;
+    }
+
+    // jur7
+    const rasxod_data = await MainBookDB.getJur7Rasxod(
+      [data.region_id, data.budjet_id],
+      { from: data.from, to: data.to },
+      data.operator
+    );
+
+    for (let schet of rasxod_data) {
+      const debet = data.schets.find(
+        (item) => item.schet === schet.debet_schet
+      );
+      debet.prixod += schet.summa;
+
+      const kredit = data.schets.find(
+        (item) => item.schet === schet.kredit_schet
+      );
+      kredit.rasxod += schet.summa;
     }
 
     for (let schet of data.schets) {

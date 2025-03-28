@@ -355,13 +355,13 @@ exports.HelperFunctions = class {
     });
 
     const itogoPrixodCell = worksheet.getCell(`E${column}`);
-    itogoPrixodCell.value = data.summa_from.summa;
+    itogoPrixodCell.value = data.prixodSumma;
     itogoPrixodCell.note = JSON.stringify({
       bold: true,
     });
 
     const itogoRasxodCell = worksheet.getCell(`F${column}`);
-    itogoRasxodCell.value = data.summa_to.summa;
+    itogoRasxodCell.value = data.rasxodSumma;
     itogoRasxodCell.note = JSON.stringify({
       bold: true,
     });

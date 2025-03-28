@@ -424,4 +424,63 @@ exports.MainBookDB = class {
 
     return result;
   }
+
+  static async getJur7Rasxod(params, date, operator = null) {
+    let date_filter = ``;
+
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    const query = `--sql
+      SELECT 
+            ch.debet_schet,
+            ch.kredit_schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+        FROM document_rasxod_jur7_child ch
+        JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND r.id = $1
+          AND d.budjet_id = $2
+          ${date_filter}
+        GROUP BY ch.debet_schet,
+            ch.kredit_schet
+
+        UNION ALL 
+
+        SELECT 
+            ch.debet_schet,
+            ch.kredit_schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+        FROM document_vnutr_peremesh_jur7_child ch
+        JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND r.id = $1
+          AND d.budjet_id = $2
+          ${date_filter}
+        GROUP BY ch.debet_schet,
+            ch.kredit_schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
 };
