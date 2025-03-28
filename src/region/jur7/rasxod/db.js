@@ -16,7 +16,7 @@ exports.RasxodDB = class {
                 kimga_id,
                 kimga_name,
                 id_shartnomalar_organization,
-                main_schet_id,
+                budjet_id,
                 created_at,
                 updated_at
             ) 
@@ -41,7 +41,7 @@ exports.RasxodDB = class {
                 data_pereotsenka,
                 user_id,
                 document_rasxod_jur7_id,
-                main_schet_id,
+                budjet_id,
                 iznos,
                 iznos_summa,
                 iznos_schet,
@@ -82,7 +82,7 @@ exports.RasxodDB = class {
                 WHERE r.id = $1 
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
-                    AND d.main_schet_id = $4
+                    AND d.budjet_id = $4
                 ORDER BY d.doc_date
                 OFFSET $5 LIMIT $6
             )
@@ -99,7 +99,7 @@ exports.RasxodDB = class {
                     WHERE r.id = $1 
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
-                        AND d.main_schet_id = $4
+                        AND d.budjet_id = $4
                 )::FLOAT AS summa,
                 (
                     SELECT 
@@ -112,7 +112,7 @@ exports.RasxodDB = class {
                     WHERE r.id = $1 
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $2 AND $3 ${search_filter}
-                        AND d.main_schet_id = $4
+                        AND d.budjet_id = $4
                 )::INTEGER AS total
             FROM data
         `;
@@ -152,7 +152,7 @@ exports.RasxodDB = class {
             FROM document_rasxod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
+            WHERE r.id = $1 AND d.id = $2 AND d.budjet_id = $3 ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);
     return result[0];

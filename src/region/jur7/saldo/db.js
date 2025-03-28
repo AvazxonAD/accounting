@@ -30,9 +30,9 @@ exports.SaldoDB = class {
       conditions.push(`n.id = $${params.length}`);
     }
 
-    if (filter.main_schet_id) {
-      params.push(filter.main_schet_id);
-      conditions.push(`s.main_schet_id = $${params.length}`);
+    if (filter.budjet_id) {
+      params.push(filter.budjet_id);
+      conditions.push(`s.budjet_id = $${params.length}`);
     }
 
     const whereClouse = conditions.length
@@ -131,12 +131,12 @@ exports.SaldoDB = class {
                     d.id,
                     d.doc_num,
                     d.doc_date,
-                    d.main_schet_id,
+                    d.budjet_id,
                     m.account_number,
                     'internal' AS type
                 FROM document_vnutr_peremesh_jur7 d
                 JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
-                JOIN main_schet m ON m.id = d.main_schet_id
+                JOIN main_schet m ON m.id = d.budjet_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
@@ -147,12 +147,12 @@ exports.SaldoDB = class {
                     d.id,
                     d.doc_num,
                     d.doc_date,
-                    d.main_schet_id,
+                    d.budjet_id,
                     m.account_number,
                     'prixod' AS type
                 FROM document_prixod_jur7 d
                 JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
-                JOIN main_schet m ON m.id = d.main_schet_id
+                JOIN main_schet m ON m.id = d.budjet_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
@@ -163,12 +163,12 @@ exports.SaldoDB = class {
                     d.id,
                     d.doc_num,
                     d.doc_date,
-                    d.main_schet_id,
+                    d.budjet_id,
                     m.account_number,
                     'rasxod' AS type
                 FROM document_rasxod_jur7 d
                 JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
-                JOIN main_schet m ON m.id = d.main_schet_id
+                JOIN main_schet m ON m.id = d.budjet_id
                 WHERE ch.naimenovanie_tovarov_jur7_id = $1
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
@@ -238,10 +238,10 @@ exports.SaldoDB = class {
               DISTINCT
                 s.year,
                 s.month,
-                m.id AS         main_schet_id,
+                m.id AS         budjet_id,
                 m.account_number
             FROM saldo_naimenovanie_jur7 s
-            LEFT JOIN main_schet m ON m.id = s.main_schet_id 
+            LEFT JOIN main_schet m ON m.id = s.budjet_id 
             WHERE s.region_id = $1
                 AND s.isdeleted = false
             LIMIT 1
@@ -667,7 +667,7 @@ exports.SaldoDB = class {
                 debet_sub_schet,
                 kredit_schet,
                 kredit_sub_schet,
-                main_schet_id,
+                budjet_id,
                 budjet_id,
                 type,
                 created_at,

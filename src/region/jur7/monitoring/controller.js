@@ -10,12 +10,9 @@ exports.Controller = class {
     const { month, year, main_schet_id } = req.query;
     const region_id = req.user.region_id;
 
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const region = await RegionService.getById({ id: region_id });

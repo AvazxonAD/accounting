@@ -90,17 +90,12 @@ exports.Controller = class {
       to,
       iznos,
       rasxod,
-      main_schet_id,
+      budjet_id,
     } = req.query;
 
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
+    const budjet = await MainSchetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const offset = (page - 1) * limit;
@@ -140,7 +135,7 @@ exports.Controller = class {
       search,
       product_id,
       rasxod,
-      main_schet_id,
+      budjet_id,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -297,7 +292,7 @@ exports.Controller = class {
 
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { main_schet_id, budjet_id } = req.query;
+    const { budjet_id } = req.query;
 
     const check = await SaldoService.getFirstSaldoDocs({ region_id });
     if (check) {
@@ -307,19 +302,9 @@ exports.Controller = class {
       });
     }
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await MainSchetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
     }
 
     const { result: data, header } = await SaldoService.readFile({
@@ -430,7 +415,7 @@ exports.Controller = class {
 
     await SaldoService.importData({
       docs: data,
-      main_schet_id,
+      budjet_id,
       budjet_id,
       user_id,
       region_id,
@@ -443,22 +428,12 @@ exports.Controller = class {
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const { main_schet_id, budjet_id } = req.query;
+    const { budjet_id } = req.query;
     let { year, month } = JSON.parse(JSON.stringify(req.body));
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await MainSchetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
     }
 
     let last_saldo;
@@ -518,7 +493,7 @@ exports.Controller = class {
       last_saldo,
       last_date,
       budjet_id,
-      main_schet_id,
+      budjet_id,
     });
 
     return res.success(req.i18n.t("createSuccess"), 200, {

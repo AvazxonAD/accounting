@@ -25,7 +25,7 @@ exports.Jur7MonitoringService = class {
       for (let schet of responsible.schets) {
         schet.products = await Jur7MonitoringDB.getBySchetProducts([
           data.region_id,
-          data.main_schet_id,
+          data.budjet_id,
           schet.schet,
           responsible.id,
         ]);
@@ -39,19 +39,19 @@ exports.Jur7MonitoringService = class {
         schet.summa_to = 0;
         for (let product of schet.products) {
           product.summa_from = await Jur7MonitoringDB.getSummaReport(
-            [data.main_schet_id, schet.schet, dates[0]],
+            [data.budjet_id, schet.schet, dates[0]],
             "<",
             responsible.id,
             product.id
           );
           product.internal = await Jur7MonitoringDB.getSummaReport(
-            [data.main_schet_id, schet.schet, dates[0], dates[1]],
+            [data.budjet_id, schet.schet, dates[0], dates[1]],
             null,
             responsible.id,
             product.id
           );
           product.summa_to = await Jur7MonitoringDB.getSummaReport(
-            [data.main_schet_id, schet.schet, dates[1]],
+            [data.budjet_id, schet.schet, dates[1]],
             "<=",
             responsible.id,
             product.id
@@ -251,23 +251,23 @@ exports.Jur7MonitoringService = class {
     const result = await Jur7MonitoringDB.getSchets([
       data.year,
       data.month,
-      data.main_schet_id,
+      data.budjet_id,
     ]);
     const dates = HelperFunctions.getMonthStartEnd(data.year, data.month);
 
     for (let schet of result) {
       schet.summa_from = await Jur7MonitoringDB.getSummaReport(
-        [data.main_schet_id, schet.schet, dates[0]],
+        [data.budjet_id, schet.schet, dates[0]],
         "<"
       );
       schet.internal = await Jur7MonitoringDB.getSummaReport([
-        data.main_schet_id,
+        data.budjet_id,
         schet.schet,
         dates[0],
         dates[1],
       ]);
       schet.summa_to = await Jur7MonitoringDB.getSummaReport(
-        [data.main_schet_id, schet.schet, dates[1]],
+        [data.budjet_id, schet.schet, dates[1]],
         "<="
       );
     }

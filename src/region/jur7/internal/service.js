@@ -54,7 +54,7 @@ exports.Jur7InternalService = class {
           data.kimdan_name,
           data.kimga_id,
           data.kimga_name,
-          data.main_schet_id,
+          data.budjet_id,
           tashkentTime(),
           tashkentTime(),
         ],
@@ -107,7 +107,7 @@ exports.Jur7InternalService = class {
         child.data_pereotsenka,
         data.user_id,
         data.docId,
-        data.main_schet_id,
+        data.budjet_id,
         child.iznos,
         child.iznos_summa,
         child.iznos_schet,
@@ -154,7 +154,7 @@ exports.Jur7InternalService = class {
           child.debet_sub_schet,
           child.kredit_schet,
           child.kredit_sub_schet,
-          data.main_schet_id,
+          data.budjet_id,
           data.budjet_id,
           "prixod",
           tashkentTime(),
@@ -236,7 +236,7 @@ exports.Jur7InternalService = class {
 
   static async getById(data) {
     const result = await InternalDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
+      [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
     return result;
@@ -248,7 +248,7 @@ exports.Jur7InternalService = class {
         data.region_id,
         data.from,
         data.to,
-        data.main_schet_id,
+        data.budjet_id,
         data.offset,
         data.limit,
       ],

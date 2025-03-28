@@ -352,7 +352,7 @@ exports.SaldoService = class {
         iznos: data.iznos,
         search: data.search,
         product_id: data.product_id,
-        main_schet_id: data.main_schet_id,
+        budjet_id: data.budjet_id,
       }
     );
 
@@ -648,7 +648,7 @@ exports.SaldoService = class {
               product.debet_sub_schet,
               product.kredit_schet,
               product.kredit_sub_schet,
-              data.main_schet_id,
+              data.budjet_id,
               data.budjet_id,
               "saldo",
               tashkentTime(),
@@ -856,7 +856,7 @@ exports.SaldoService = class {
             doc.group.provodka_subschet,
             doc.group.provodka_kredit,
             doc.group.provodka_subschet,
-            data.main_schet_id,
+            data.budjet_id,
             data.budjet_id,
             "import",
             tashkentTime(),

@@ -4,7 +4,6 @@ const {
   tashkentTime,
   returnLocalDate,
   returnSleshDate,
-  HelperFunctions,
 } = require("@helper/functions");
 const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
@@ -23,7 +22,7 @@ exports.PrixodJur7Service = class {
       data.region_id,
       data.from,
       data.to,
-      data.main_schet_id,
+      data.budjet_id,
     ]);
     await Promise.all(
       result.map(async (item) => {
@@ -310,7 +309,7 @@ exports.PrixodJur7Service = class {
           data.kimga_id,
           data.kimga_name,
           data.id_shartnomalar_organization,
-          data.main_schet_id,
+          data.budjet_id,
           data.shartnoma_grafik_id,
           data.organization_by_raschet_schet_id,
           data.organization_by_raschet_schet_gazna_id,
@@ -371,11 +370,6 @@ exports.PrixodJur7Service = class {
       child.old_iznos =
         child.old_iznos > product_sena ? product_sena : child.old_iznos;
 
-      // let iznos_summa =
-      //   product_sena * (child.group.iznos_foiz / 100) + child.old_iznos;
-
-      // let iznos_summa = iznos_summa >= product_sena ? product_sena : iznos_summa;
-
       await PrixodDB.createChild(
         [
           child.id,
@@ -392,7 +386,7 @@ exports.PrixodJur7Service = class {
           child.data_pereotsenka,
           data.user_id,
           data.docId,
-          data.main_schet_id,
+          data.budjet_id,
           child.old_iznos,
           child.iznos,
           child.old_iznos,
@@ -409,12 +403,6 @@ exports.PrixodJur7Service = class {
       const year = new Date(data.doc.doc_date).getFullYear();
 
       let month_iznos_summa = 0;
-
-      if (child.iznos) {
-        // month_iznos_summa = child.sena * (child.group.iznos_foiz / 100);
-        // month_iznos_summa =
-        //   month_iznos_summa >= child.sena ? child.sena : month_iznos_summa;
-      }
 
       await SaldoDB.create(
         [
@@ -442,7 +430,7 @@ exports.PrixodJur7Service = class {
           child.debet_sub_schet,
           child.kredit_schet,
           child.kredit_sub_schet,
-          data.main_schet_id,
+          data.budjet_id,
           data.budjet_id,
           "prixod",
           tashkentTime(),
@@ -590,7 +578,7 @@ exports.PrixodJur7Service = class {
         data.region_id,
         data.from,
         data.to,
-        data.main_schet_id,
+        data.budjet_id,
         data.offset,
         data.limit,
       ],
@@ -602,7 +590,7 @@ exports.PrixodJur7Service = class {
 
   static async getById(data) {
     const result = await PrixodDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
+      [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
 

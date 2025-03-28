@@ -10,17 +10,12 @@ exports.Controller = class {
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query.budjet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
+    const budjet = await MainSchetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const responsible = await ResponsibleService.getById({
@@ -73,7 +68,7 @@ exports.Controller = class {
 
     const result = await Jur7RsxodService.create({
       ...req.body,
-      main_schet_id,
+      budjet_id,
       user_id,
       region_id,
     });
@@ -89,22 +84,17 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query.budjet_id;
 
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
+    const budjet = await MainSchetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const data = await Jur7RsxodService.getById({
       region_id,
       id,
-      main_schet_id,
+      budjet_id,
       isdeleted: true,
     });
     if (!data) {
@@ -118,23 +108,18 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query.budjet_id;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
+    const budjet = await MainSchetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const old_data = await Jur7RsxodService.getById({
       region_id,
       id,
-      main_schet_id,
+      budjet_id,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -200,7 +185,7 @@ exports.Controller = class {
     const result = await Jur7RsxodService.update({
       ...req.body,
       user_id,
-      main_schet_id,
+      budjet_id,
       id,
       old_data,
       region_id,
@@ -217,22 +202,17 @@ exports.Controller = class {
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const main_schet_id = req.query.main_schet_id;
+    const budjet_id = req.query.budjet_id;
 
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
+    const budjet = await MainSchetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const data = await Jur7RsxodService.getById({
       region_id,
       id,
-      main_schet_id,
+      budjet_id,
     });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -254,16 +234,11 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to, main_schet_id } = req.query;
+    const { page, limit, search, from, to, budjet_id } = req.query;
 
-    if (main_schet_id) {
-      const main_schet = await MainSchetService.getById({
-        region_id,
-        id: main_schet_id,
-      });
-      if (!main_schet) {
-        return res.error(req.i18n.t("mainSchetNotFound"), 404);
-      }
+    const budjet = await MainSchetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const offset = (page - 1) * limit;
@@ -272,7 +247,7 @@ exports.Controller = class {
       region_id,
       from,
       to,
-      main_schet_id,
+      budjet_id,
       offset,
       limit,
       search,

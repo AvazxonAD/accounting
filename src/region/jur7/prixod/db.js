@@ -69,7 +69,7 @@ exports.PrixodDB = class {
                 kimga_id,
                 kimga_name,
                 id_shartnomalar_organization,
-                main_schet_id,
+                budjet_id,
                 shartnoma_grafik_id,
                 organization_by_raschet_schet_id,
                 organization_by_raschet_schet_gazna_id,
@@ -101,7 +101,7 @@ exports.PrixodDB = class {
                 data_pereotsenka,
                 user_id,
                 document_prixod_jur7_id,
-                main_schet_id,
+                budjet_id,
                 eski_iznos_summa,
                 iznos,
                 iznos_summa,
@@ -142,7 +142,7 @@ exports.PrixodDB = class {
                 WHERE ch.isdeleted = false  
                     AND ch.document_prixod_jur7_id = d.id
               ) AS summa,
-              d.main_schet_id, 
+              d.budjet_id, 
               so.name AS kimdan_name,
               so.okonx AS spravochnik_organization_okonx,
               so.bank_klient AS spravochnik_organization_bank_klient,
@@ -164,7 +164,7 @@ exports.PrixodDB = class {
               AND d.isdeleted = false 
               AND d.doc_date BETWEEN $2 AND $3
               ${search_filter}
-              AND d.main_schet_id = $4
+              AND d.budjet_id = $4
             ORDER BY d.doc_date
             OFFSET $5 LIMIT $6
           )
@@ -181,7 +181,7 @@ exports.PrixodDB = class {
               WHERE r.id = $1 
                 AND d.doc_date BETWEEN $2 AND $3 
                 AND d.isdeleted = false ${search_filter}
-                AND d.main_schet_id = $4
+                AND d.budjet_id = $4
             )::FLOAT AS summa,
 
             (
@@ -194,7 +194,7 @@ exports.PrixodDB = class {
               WHERE r.id = $1 
                 AND d.doc_date BETWEEN $2 AND $3 
                 AND d.isdeleted = false ${search_filter}
-                AND d.main_schet_id = $4
+                AND d.budjet_id = $4
             )::INTEGER AS total
             
           FROM data
@@ -247,7 +247,7 @@ exports.PrixodDB = class {
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
+            WHERE r.id = $1 AND d.id = $2 AND d.budjet_id = $3 ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);
     return result[0];
@@ -332,7 +332,7 @@ exports.PrixodDB = class {
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
               d.opisanie, 
               d.summa::FLOAT,
-              d.main_schet_id, 
+              d.budjet_id, 
               so.name AS organization,
               sh_o.doc_date AS c_doc_date,
               sh_o.doc_num AS c_doc_num
@@ -344,7 +344,7 @@ exports.PrixodDB = class {
             WHERE r.id = $1 
               AND d.isdeleted = false 
               AND d.doc_date BETWEEN $2 AND $3
-              AND d.main_schet_id = $4
+              AND d.budjet_id = $4
             ORDER BY d.doc_date
         `;
     const result = await db.query(query, params);
@@ -385,7 +385,7 @@ exports.PrixodDB = class {
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 
-                AND d.main_schet_id = $2 
+                AND d.budjet_id = $2 
                 AND d.isdeleted = false 
                 AND d_j_ch.naimenovanie_tovarov_jur7_id = $3
         `;

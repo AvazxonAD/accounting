@@ -15,7 +15,7 @@ exports.InternalDB = class {
                 kimdan_name,
                 kimga_id,
                 kimga_name,
-                main_schet_id,
+                budjet_id,
                 created_at,
                 updated_at
             ) 
@@ -40,7 +40,7 @@ exports.InternalDB = class {
                 data_pereotsenka,
                 user_id,
                 document_vnutr_peremesh_jur7_id,
-                main_schet_id,
+                budjet_id,
                 iznos,
                 iznos_summa,
                 iznos_schet,
@@ -85,7 +85,7 @@ exports.InternalDB = class {
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $2 AND $3 
                     ${search_filter}
-                    AND d.main_schet_id = $4
+                    AND d.budjet_id = $4
                 ORDER BY d.doc_date
                 OFFSET $5 LIMIT $6
             )
@@ -103,7 +103,7 @@ exports.InternalDB = class {
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $2 AND $3 
                         ${search_filter}
-                        AND d.main_schet_id = $4
+                        AND d.budjet_id = $4
                 )::FLOAT AS summa,
                 (
                     SELECT 
@@ -117,7 +117,7 @@ exports.InternalDB = class {
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $2 AND $3 
                         ${search_filter}
-                        AND d.main_schet_id = $4
+                        AND d.budjet_id = $4
                 )::INTEGER AS total
             FROM data
         `;
@@ -161,7 +161,10 @@ exports.InternalDB = class {
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
             JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
-            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
+            WHERE r.id = $1
+              AND d.id = $2
+              AND d.budjet_id = $3
+              ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);
     return result[0];
@@ -192,16 +195,16 @@ exports.InternalDB = class {
 
   static async delete(params, client) {
     await client.query(
-      `
-            UPDATE document_vnutr_peremesh_jur7_child 
-            SET isdeleted = true 
-            WHERE document_vnutr_peremesh_jur7_id = $1
-        `,
+      `--sql
+      UPDATE document_vnutr_peremesh_jur7_child 
+      SET isdeleted = true 
+      WHERE document_vnutr_peremesh_jur7_id = $1
+    `,
       params
     );
 
     await client.query(
-      `
+      `--sql
             UPDATE saldo_naimenovanie_jur7 
             SET isdeleted = true 
             WHERE prixod_id = $1
@@ -211,7 +214,7 @@ exports.InternalDB = class {
     );
 
     const data = await client.query(
-      `
+      `--sql
             UPDATE document_vnutr_peremesh_jur7 
             SET isdeleted = true 
             WHERE id = $1
@@ -224,13 +227,13 @@ exports.InternalDB = class {
   }
 
   static async deleteRasxodChild(params, client) {
-    const query1 = `
+    const query1 = `--sql
             UPDATE saldo_naimenovanie_jur7 
             SET isdeleted = true 
             WHERE prixod_id = $1
         `;
 
-    const query2 = `
+    const query2 = `--sql
             UPDATE document_vnutr_peremesh_jur7_child 
             SET isdeleted = true 
             WHERE document_vnutr_peremesh_jur7_id = $1
