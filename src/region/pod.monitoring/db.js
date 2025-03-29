@@ -237,13 +237,11 @@ exports.PodotchetMonitoringDB = class {
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 
             JOIN users u ON d.user_id = u.id
             JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS op ON op.id = d.spravochnik_operatsii_own_id
             JOIN spravochnik_operatsii AS s_p ON s_p.id = ch.spravochnik_operatsii_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.isdeleted = false  
                 AND d.doc_date BETWEEN $3 AND $4
-                AND op.schet = $5
                 ${podotchet_filter}
                 ${search_filter}
                 AND p.id IS NOT NULL
@@ -446,7 +444,6 @@ exports.PodotchetMonitoringDB = class {
                     JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS op ON op.id = d.spravochnik_operatsii_own_id
                     JOIN main_schet AS m ON m.id = d.main_schet_id
                     WHERE r.id = $1  
                         AND d.isdeleted = false 
@@ -585,7 +582,6 @@ exports.PodotchetMonitoringDB = class {
                     JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS op ON op.id = d.spravochnik_operatsii_own_id
                     JOIN spravochnik_operatsii AS s_p ON s_p.id = ch.spravochnik_operatsii_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
@@ -622,7 +618,6 @@ exports.PodotchetMonitoringDB = class {
         JOIN users u ON d.user_id = u.id
         JOIN regions r ON u.region_id = r.id
         JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-        JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
             AND d.main_schet_id = $1

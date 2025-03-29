@@ -23,9 +23,11 @@ exports.Controller = class {
       region_id,
       id: query.main_schet_id,
     });
+
     if (!main_schet) {
       return res.error("main shcet not found", 404);
     }
+
     if (organ_id) {
       const organization = await OrganizationService.getById({
         region_id,
@@ -54,6 +56,7 @@ exports.Controller = class {
       offset,
       region_id,
       organ_id,
+      operatsii: main_schet.jur3_schet,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -96,13 +99,6 @@ exports.Controller = class {
       return res.error("main shcet not found", 404);
     }
 
-    // const report_title = await ReportTitleService.getById({
-    //   id: query.report_title,
-    // });
-    // if (!report_title) {
-    //   return res.error(req.i18n.t(`reportTitleNotFound`), 404);
-    // }
-
     const { data: organizations } = await OrganizationService.get({
       region_id,
       offset: 0,
@@ -116,7 +112,7 @@ exports.Controller = class {
     if (query.excel === "true") {
       const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
         organ_name: main_schet.tashkilot_nomi,
-        operatsii: query.operatsii,
+        operatsii: main_schet.jur3_schet,
         organizations: data.organizations,
         to: query.to,
       });
@@ -137,15 +133,8 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const {
-      from,
-      main_schet_id,
-      budjet_id,
-      report_title_id,
-      excel,
-      to,
-      operatsii,
-    } = req.query;
+    const { from, main_schet_id, budjet_id, report_title_id, excel, to } =
+      req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -251,7 +240,7 @@ exports.Controller = class {
       from: query.from,
       to: query.to,
       main_schet_id: query.main_schet_id,
-      operatsii: query.schet,
+      operatsii: main_schet.jur3_schet,
       contract: query.contract === "true" ? true : false,
     });
     if (query.excel === "true") {
@@ -261,14 +250,14 @@ exports.Controller = class {
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
-          operatsii: query.schet,
+          operatsii: main_schet.jur3_schet,
         });
       } else {
         file = await OrganizationmonitoringService.consolidatedExcel({
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
-          operatsii: query.schet,
+          operatsii: main_schet.jur3_schet,
         });
       }
       res.setHeader(

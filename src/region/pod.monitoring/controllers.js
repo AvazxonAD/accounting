@@ -14,16 +14,8 @@ const { PodpisService } = require("@podpis/service");
 
 exports.Controller = class {
   static async getMonitoring(req, res) {
-    const {
-      limit,
-      page,
-      main_schet_id,
-      from,
-      to,
-      operatsii,
-      podotchet_id,
-      search,
-    } = req.query;
+    const { limit, page, main_schet_id, from, to, podotchet_id, search } =
+      req.query;
     const region_id = req.user.region_id;
     const offset = (page - 1) * limit;
     if (podotchet_id) {
@@ -44,10 +36,19 @@ exports.Controller = class {
       });
     }
     const data = await PodotchetMonitoringDB.getMonitoring(
-      [region_id, main_schet_id, from, to, operatsii, offset, limit],
+      [
+        region_id,
+        main_schet_id,
+        from,
+        to,
+        main_schet.jur4_schet,
+        offset,
+        limit,
+      ],
       podotchet_id,
       search
     );
+
     const summa_from = await PodotchetMonitoringDB.getSummaMonitoring(
       [region_id],
       { date: from, operator: "<" },
@@ -55,9 +56,10 @@ exports.Controller = class {
       podotchet_id,
       main_schet_id,
       null,
-      operatsii,
+      main_schet.jur4_schet,
       search
     );
+
     const summa_to = await PodotchetMonitoringDB.getSummaMonitoring(
       [region_id],
       { date: to, operator: "<=" },
@@ -65,9 +67,10 @@ exports.Controller = class {
       podotchet_id,
       main_schet_id,
       null,
-      operatsii,
+      main_schet.jur4_schet,
       search
     );
+
     const summa = await PodotchetMonitoringDB.getSummaMonitoring(
       [region_id],
       null,
@@ -75,11 +78,12 @@ exports.Controller = class {
       podotchet_id,
       main_schet_id,
       null,
-      operatsii,
+      main_schet.jur4_schet,
       search
     );
+
     const total = await PodotchetMonitoringDB.getTotalMonitoring(
-      [region_id, main_schet_id, from, to, operatsii],
+      [region_id, main_schet_id, from, to, main_schet.jur4_schet],
       podotchet_id,
       search
     );
@@ -274,7 +278,7 @@ exports.Controller = class {
 
   static async getByIdPodotchetToExcel(req, res) {
     const podotchet_id = req.params.id;
-    const { main_schet_id, from, to, operatsii } = req.query;
+    const { main_schet_id, from, to } = req.query;
     const region_id = req.user.region_id;
     const podotchet = await PodotchetDB.getById([region_id, podotchet_id]);
     if (!podotchet) {
@@ -292,9 +296,10 @@ exports.Controller = class {
       });
     }
     const data = await PodotchetMonitoringDB.getMonitoring(
-      [region_id, main_schet_id, from, to, operatsii, 0, 99999],
+      [region_id, main_schet_id, from, to, main_schet.jur4_schet, 0, 99999],
       podotchet_id
     );
+
     const summa_from_object = await PodotchetMonitoringDB.getSummaMonitoring(
       [region_id],
       { operator: "<=", date: from },
@@ -302,7 +307,7 @@ exports.Controller = class {
       podotchet_id,
       main_schet_id,
       null,
-      operatsii
+      main_schet.jur4_schet
     );
     const summa_to_object = await PodotchetMonitoringDB.getSummaMonitoring(
       [region_id],
@@ -311,7 +316,7 @@ exports.Controller = class {
       podotchet_id,
       main_schet_id,
       null,
-      operatsii
+      main_schet.jur4_schet
     );
 
     const summa_from = summa_from_object.summa;
@@ -340,10 +345,10 @@ exports.Controller = class {
     opisanieCell.value = "Разъяснительный текст";
     worksheet.mergeCells(`D2`, "F2");
     const schetDebitCell = worksheet.getCell(`D2`);
-    schetDebitCell.value = `Дебет ${operatsii} / Кредит  разных   счетов`;
+    schetDebitCell.value = `Дебет ${main_schet.jur4_schet} / Кредит  разных   счетов`;
     worksheet.mergeCells(`G2`, "I2");
     const schetKriditCell = worksheet.getCell(`G2`);
-    schetKriditCell.value = `Кредит ${operatsii}  /  Дебет разных счетов`;
+    schetKriditCell.value = `Кредит ${main_schet.jur4_schet}  /  Дебет разных счетов`;
     const schetCell = worksheet.getCell(`D3`);
     schetCell.value = `счет`;
     const subSchetCell = worksheet.getCell(`E3`);
@@ -557,15 +562,8 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const {
-      report_title_id,
-      main_schet_id,
-      excel,
-      budjet_id,
-      operatsii,
-      from,
-      to,
-    } = req.query;
+    const { report_title_id, main_schet_id, excel, budjet_id, from, to } =
+      req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,

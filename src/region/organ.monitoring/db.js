@@ -167,12 +167,10 @@ exports.OrganizationMonitoringDB = class {
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-            JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE d.isdeleted = false 
                 AND r.id = $1
                 AND d.main_schet_id = $2
-                AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 AND ch.isdeleted = false
                 ${organ_filter}
@@ -207,12 +205,10 @@ exports.OrganizationMonitoringDB = class {
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-            JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE d.isdeleted = false 
                 AND r.id = $1
                 AND d.main_schet_id = $2
-                AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 AND ch.isdeleted = false
                 ${organ_filter}
@@ -344,14 +340,12 @@ exports.OrganizationMonitoringDB = class {
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
                 FROM bajarilgan_ishlar_jur3_child AS ch
                 JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false 
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
@@ -361,14 +355,12 @@ exports.OrganizationMonitoringDB = class {
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
                 FROM kursatilgan_hizmatlar_jur152_child AS ch
                 JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false 
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
@@ -477,14 +469,12 @@ exports.OrganizationMonitoringDB = class {
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM kursatilgan_hizmatlar_jur152_child AS ch
                 JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    AND own.schet = $3
                     ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
@@ -494,14 +484,12 @@ exports.OrganizationMonitoringDB = class {
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bajarilgan_ishlar_jur3_child AS ch
                 JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    AND own.schet = $3
                     ${date_filter}
                     AND ch.isdeleted = false
                     ${organ_filter}
@@ -631,10 +619,8 @@ exports.OrganizationMonitoringDB = class {
                     SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                     FROM kursatilgan_hizmatlar_jur152_child AS ch
                     JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
-                    JOIN spravochnik_operatsii AS op ON op.id = d.spravochnik_operatsii_own_id
                     JOIN main_schet AS m_sch ON  m_sch.id = d.main_schet_id
                     WHERE d.isdeleted = false
-                      AND op.schet = $1
                       AND d.doc_date <= $2
                       AND d.id_spravochnik_organization = $3
                       AND m_sch.spravochnik_budjet_name_id = $4
@@ -644,10 +630,8 @@ exports.OrganizationMonitoringDB = class {
                     FROM bajarilgan_ishlar_jur3_child AS ch
                     JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
                     JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-                    JOIN spravochnik_operatsii AS op ON op.id = d.spravochnik_operatsii_own_id
                     JOIN main_schet AS m_sch ON  m_sch.id = d.main_schet_id
                     WHERE d.isdeleted = false
-                      AND op.schet = $1
                       AND d.doc_date <= $2
                       AND d.id_spravochnik_organization = $3
                       AND m_sch.spravochnik_budjet_name_id = $4
@@ -715,7 +699,6 @@ exports.OrganizationMonitoringDB = class {
             op.sub_schet
         FROM bajarilgan_ishlar_jur3_child AS ch
         JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-        JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
         JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON r.id = u.region_id
@@ -747,13 +730,11 @@ exports.OrganizationMonitoringDB = class {
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bajarilgan_ishlar_jur3_child AS ch
                 JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    AND own.schet = $3
                     AND d.doc_date ${operator} $4
                     AND d.id_spravochnik_organization = $5
                     ${contract ? sqlFilter("d.shartnomalar_organization_id", index_contract) : ""}
@@ -852,14 +833,12 @@ exports.OrganizationMonitoringDB = class {
                 op.schet
             FROM bajarilgan_ishlar_jur3_child AS ch
             JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-            JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             WHERE d.isdeleted = false
                 AND r.id = $1
                 AND d.main_schet_id = $2
-                AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 AND d.id_spravochnik_organization = $6
                 ${contract ? sqlFilter("d.shartnomalar_organization_id", index_contract) : ""}
@@ -932,17 +911,16 @@ exports.OrganizationMonitoringDB = class {
                 SELECT op.schet
                 FROM bajarilgan_ishlar_jur3_child AS ch
                 JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
-                JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     ${contract ? "AND d.shartnomalar_organization_id IS NOT NULL" : ""}
-                UNION
+                UNION 
+                
                 SELECT ch.debet_schet AS schet
                 FROM document_prixod_jur7_child ch
                 JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id

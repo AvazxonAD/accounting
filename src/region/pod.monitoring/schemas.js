@@ -14,7 +14,6 @@ exports.monitoringSchema = Joi.object({
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       .required(),
     search: Joi.string().trim().allow(null, ""),
-    operatsii: Joi.string().trim().required(),
     podotchet_id: Joi.number().min(1).integer(),
   }),
   params: Joi.object({
@@ -61,7 +60,6 @@ exports.getByIdPodotchetToExcelSchema = Joi.object({
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       .required(),
-    operatsii: Joi.string().trim().required(),
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1),
