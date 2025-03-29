@@ -33,7 +33,6 @@ exports.AktDB = class {
                     d.shartnomalar_organization_id,
                     sh_o.doc_num AS shartnomalar_organization_doc_num,
                     TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
-                    d.spravochnik_operatsii_own_id,
                     (
                         SELECT JSON_AGG(row_to_json(ch))
                         FROM (
@@ -117,14 +116,13 @@ exports.AktDB = class {
                 shartnomalar_organization_id, 
                 main_schet_id,
                 user_id,
-                spravochnik_operatsii_own_id,
                 organization_by_raschet_schet_id,
                 organization_by_raschet_schet_gazna_id,
                 shartnoma_grafik_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
             RETURNING id
         `;
     const result = await client.query(query, params);
@@ -142,7 +140,6 @@ exports.AktDB = class {
                 main_schet_id,
                 bajarilgan_ishlar_jur3_id,
                 user_id,
-                spravochnik_operatsii_own_id,
                 kol,
                 sena,
                 nds_foiz,
@@ -181,7 +178,6 @@ exports.AktDB = class {
                 d.shartnomalar_organization_id,
                 sh_o.doc_num AS shartnomalar_organization_doc_num,
                 TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
-                d.spravochnik_operatsii_own_id,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -239,12 +235,11 @@ exports.AktDB = class {
                 summa = $4, 
                 id_spravochnik_organization = $5, 
                 shartnomalar_organization_id = $6, 
-                spravochnik_operatsii_own_id = $7,
-                organization_by_raschet_schet_id = $8,
-                organization_by_raschet_schet_gazna_id = $9,
-                shartnoma_grafik_id = $10,
-                updated_at = $11
-            WHERE id = $12 RETURNING id
+                organization_by_raschet_schet_id = $7,
+                organization_by_raschet_schet_gazna_id = $8,
+                shartnoma_grafik_id = $9,
+                updated_at = $10
+            WHERE id = $11 RETURNING id
         `;
     const result = await client.query(query, params);
 
@@ -267,19 +262,6 @@ exports.AktDB = class {
     );
 
     return result.rows[0];
-  }
-
-  static async getSchets(params) {
-    const query = `--sql
-            SELECT DISTINCT so.schet 
-            FROM bajarilgan_ishlar_jur3 AS d
-            JOIN spravochnik_operatsii AS so  ON d.spravochnik_operatsii_own_id = so.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id
-            WHERE  r.id = $1 AND d.isdeleted = false
-        `;
-    const data = await db.query(query, params);
-    return data;
   }
 
   static async cap(params) {
@@ -307,10 +289,12 @@ exports.AktDB = class {
   }
 
   static async getSchets(params) {
-    const query = `
-            SELECT DISTINCT so.schet 
+    const query = `--sql
+            SELECT
+                DISTINCT so.schet
             FROM bajarilgan_ishlar_jur3 AS d
-            JOIN spravochnik_operatsii AS so  ON d.spravochnik_operatsii_own_id = so.id
+            JOIN bajarilgan_ishlar_jur3_child ch ON ch.bajarilgan_ishlar_jur3_id = d.id
+            JOIN spravochnik_operatsii AS so  ON ch.spravochnik_operatsii_id = so.id
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE  r.id = $1 

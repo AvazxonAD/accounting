@@ -306,12 +306,18 @@ exports.MainBookService = class {
       const debet = data.schets.find(
         (item) => item.schet === schet.debet_schet
       );
-      debet.prixod += schet.summa;
+
+      if (debet) {
+        debet.prixod += schet.summa;
+      }
 
       const kredit = data.schets.find(
         (item) => item.schet === schet.kredit_schet
       );
-      kredit.rasxod += schet.summa;
+
+      if (kredit) {
+        kredit.rasxod += schet.summa;
+      }
     }
 
     return data.schets;
@@ -437,12 +443,18 @@ exports.MainBookService = class {
       const debet = data.schets.find(
         (item) => item.schet === schet.debet_schet
       );
-      debet.prixod += schet.summa;
+
+      if (debet) {
+        debet.prixod += schet.summa;
+      }
 
       const kredit = data.schets.find(
         (item) => item.schet === schet.kredit_schet
       );
-      kredit.rasxod += schet.summa;
+
+      if (kredit) {
+        kredit.rasxod += schet.summa;
+      }
     }
 
     for (let schet of data.schets) {
@@ -588,12 +600,18 @@ exports.MainBookService = class {
       const debet = data.schets.find(
         (item) => item.schet === schet.debet_schet
       );
-      debet.prixod += schet.summa;
+
+      if (debet) {
+        debet.prixod += schet.summa;
+      }
 
       const kredit = data.schets.find(
         (item) => item.schet === schet.kredit_schet
       );
-      kredit.rasxod += schet.summa;
+
+      if (kredit) {
+        kredit.rasxod += schet.summa;
+      }
     }
 
     for (let schet of data.schets) {

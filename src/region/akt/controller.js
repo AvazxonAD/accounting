@@ -20,7 +20,6 @@ exports.Controller = class {
     const {
       id_spravochnik_organization,
       shartnomalar_organization_id,
-      spravochnik_operatsii_own_id,
       childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
@@ -38,14 +37,6 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
-
-    // const operatsii = await OperatsiiService.getById({
-    //   id: spravochnik_operatsii_own_id,
-    //   type: "general",
-    // });
-    // if (!operatsii) {
-    //   return res.error(req.i18n.t("operatsiiNotFound"), 404);
-    // }
 
     const organization = await OrganizationService.getById({
       region_id,
@@ -216,7 +207,6 @@ exports.Controller = class {
     const {
       id_spravochnik_organization,
       shartnomalar_organization_id,
-      spravochnik_operatsii_own_id,
       childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
@@ -240,14 +230,6 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
-
-    // const operatsii = await OperatsiiService.getById({
-    //   id: spravochnik_operatsii_own_id,
-    //   type: "general",
-    // });
-    // if (!operatsii) {
-    //   return res.error(req.i18n.t("operatsiiNotFound"), 404);
-    // }
 
     const organization = await OrganizationService.getById({
       region_id,

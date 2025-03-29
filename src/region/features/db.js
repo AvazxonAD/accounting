@@ -26,7 +26,11 @@ exports.FeaturesDB = class {
 
     const data = await _db.query(query, params);
 
-    return data.rows.length ? data.rows[0] : data[0] ? data[0] : { doc_num: 0 };
+    return data?.rows?.length
+      ? data.rows[0]
+      : data[0]
+        ? data[0]
+        : { doc_num: 0 };
   }
 
   static async checkSchets(params, column_name) {

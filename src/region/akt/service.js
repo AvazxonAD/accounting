@@ -227,7 +227,6 @@ exports.AktService = class {
           data.shartnomalar_organization_id,
           data.main_schet_id,
           data.user_id,
-          data.spravochnik_operatsii_own_id,
           data.organization_by_raschet_schet_id,
           data.organization_by_raschet_schet_gazna_id,
           data.shartnoma_grafik_id,
@@ -261,7 +260,6 @@ exports.AktService = class {
         data.main_schet_id,
         data.docId,
         data.user_id,
-        data.spravochnik_operatsii_own_id,
         item.kol,
         item.sena,
         item.nds_foiz,
@@ -274,7 +272,7 @@ exports.AktService = class {
 
     const _values = HelperFunctions.paramsValues({
       params: create_childs,
-      column_count: 16,
+      column_count: 15,
     });
 
     await AktDB.createChild(create_childs, _values, client);
@@ -301,7 +299,6 @@ exports.AktService = class {
           summa,
           data.id_spravochnik_organization,
           data.shartnomalar_organization_id,
-          data.spravochnik_operatsii_own_id,
           data.organization_by_raschet_schet_id,
           data.organization_by_raschet_schet_gazna_id,
           data.shartnoma_grafik_id,
