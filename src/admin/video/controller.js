@@ -104,8 +104,7 @@ exports.Controller = class {
 
       fileStream.pipe(res);
     } else {
-      // Agar Range header bo‘lmasa, faqat 2MB ni jo‘natamiz
-      const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
+      const CHUNK_SIZE = 2 * 1024 * 1024;
       const start = 0;
       const end = Math.min(CHUNK_SIZE - 1, fileSize - 1);
       const chunkSize = end - start + 1;

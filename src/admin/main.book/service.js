@@ -6,7 +6,8 @@ exports.MainBookService = class {
     const result = await MainBookDB.get(
       [data.offset, data.limit],
       data.year,
-      data.budjet_id
+      data.budjet_id,
+      data.month
     );
 
     return result;

@@ -74,7 +74,7 @@ exports.MainBookSchema = class {
     return Joi.object({
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
-        year: Joi.number().min(1).integer().min(19001).max(2099),
+        year: Joi.number().min(1).integer().min(1901).max(2099),
         budjet_id: Joi.number().min(1).integer().required(),
         limit: Joi.number().min(1).integer().default(10),
       }),

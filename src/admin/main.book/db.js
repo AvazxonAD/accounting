@@ -17,7 +17,7 @@ exports.MainBookDB = class {
     return result[0];
   }
 
-  static async get(params, year = null, budjet_id = null) {
+  static async get(params, year = null, budjet_id = null, month = null) {
     const conditions = [];
 
     if (year) {
@@ -28,6 +28,11 @@ exports.MainBookDB = class {
     if (budjet_id) {
       params.push(budjet_id);
       conditions.push(`d.budjet_id = $${params.length}`);
+    }
+
+    if (month) {
+      params.push(month);
+      conditions.push(`d.month = $${params.length}`);
     }
 
     const where_clause = conditions.length ? conditions.join(" AND ") : "";

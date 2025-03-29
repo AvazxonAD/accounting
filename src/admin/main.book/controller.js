@@ -85,7 +85,7 @@ exports.Controller = class {
   }
 
   static async get(req, res) {
-    const { page, limit, year, budjet_id } = req.query;
+    const { page, limit, year, budjet_id, month } = req.query;
 
     const offset = (page - 1) * limit;
 
@@ -101,6 +101,7 @@ exports.Controller = class {
       limit,
       budjet_id,
       year,
+      month,
     });
 
     const pageCount = Math.ceil(total / limit);
