@@ -452,7 +452,6 @@ exports.PodotchetMonitoringDB = class {
                         AND p.id IS NOT NULL
                         ${main_schet_filter}
                         ${budjet_filter}
-                        ${operatsii_filter}
                         ${search_filter}
                 )
             SELECT 
@@ -475,6 +474,7 @@ exports.PodotchetMonitoringDB = class {
             CROSS JOIN podotchet_saldo_rasxod
             CROSS JOIN podotchet_saldo_prixod
         `;
+    console.log(query);
     const result = await db.query(query, params);
     return result[0];
   }
