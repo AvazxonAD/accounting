@@ -1,17 +1,17 @@
-const { db } = require('@db/index');
+const { db } = require("@db/index");
 
 exports.AvansDB = class {
-    static async get(params, search = null) {
-        let search_filter = ``;
-        if (search) {
-            params.push(search);
-            search_filter = ` AND (
+  static async get(params, search = null) {
+    let search_filter = ``;
+    if (search) {
+      params.push(search);
+      search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
                 sp.name ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `--sql
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id, 
@@ -22,7 +22,6 @@ exports.AvansDB = class {
                     d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,  
                     sp.name AS spravochnik_podotchet_litso_name,
                     sp.rayon AS spravochnik_podotchet_litso_rayon,
-                    d.spravochnik_operatsii_own_id,
                     (
                         SELECT JSON_AGG(row_to_json(a_j_ch))
                         FROM (
@@ -75,13 +74,17 @@ exports.AvansDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return { data: result[0].data || [], summa: result[0].summa, total_count: result[0].total_count };
-    }
+    return {
+      data: result[0].data || [],
+      summa: result[0].summa,
+      total_count: result[0].total_count,
+    };
+  }
 
-    static async create(params, client) {
-        const query = `--sql 
+  static async create(params, client) {
+    const query = `--sql 
             INSERT INTO avans_otchetlar_jur4(
                 doc_num, 
                 doc_date,
@@ -90,19 +93,18 @@ exports.AvansDB = class {
                 spravochnik_podotchet_litso_id, 
                 main_schet_id, 
                 user_id,
-                spravochnik_operatsii_own_id,
                 created_at, 
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING id
         `;
-        const result = await client.query(query, params)
-        return result.rows[0];
-    }
+    const result = await client.query(query, params);
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `--sql
+  static async createChild(params, _values, client) {
+    const query = `--sql
             INSERT INTO avans_otchetlar_jur4_child(
                 spravochnik_operatsii_id,
                 summa,
@@ -112,18 +114,17 @@ exports.AvansDB = class {
                 main_schet_id,
                 avans_otchetlar_jur4_id,
                 user_id,
-                spravochnik_operatsii_own_id,
                 created_at,
                 updated_at
             )
             VALUES ${_values}
         `;
 
-        await client.query(query, params);
-    }
+    await client.query(query, params);
+  }
 
-    static async getById(params, isdeleted) {
-        const query = `--sql
+  static async getById(params, isdeleted) {
+    const query = `--sql
             SELECT 
                 d.id, 
                 d.doc_num, 
@@ -133,7 +134,6 @@ exports.AvansDB = class {
                 d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,
                 sp.name AS spravochnik_podotchet_litso_name,
                 sp.rayon AS spravochnik_podotchet_litso_rayon,
-                d.spravochnik_operatsii_own_id,
                 (
                     SELECT JSON_AGG(row_to_json(a_o_j_4_child))
                     FROM (
@@ -163,38 +163,43 @@ exports.AvansDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}   
+                ${!isdeleted ? "AND d.isdeleted = false" : ""}   
         `;
-        const data = await db.query(query, params);
-        return data[0];
-    }
+    const data = await db.query(query, params);
+    return data[0];
+  }
 
-    static async update(params, client) {
-        const query = `--sql
+  static async update(params, client) {
+    const query = `--sql
             UPDATE avans_otchetlar_jur4 SET 
                 doc_num = $1, 
                 doc_date = $2, 
                 opisanie = $3,
                 summa = $4,
                 spravochnik_podotchet_litso_id = $5, 
-                spravochnik_operatsii_own_id = $6,
-                updated_at = $7
-            WHERE id = $8 RETURNING id
+                updated_at = $6
+            WHERE id = $7 RETURNING id
         `;
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deleteChild(params, client) {
-        const query = `DELETE FROM avans_otchetlar_jur4_child WHERE avans_otchetlar_jur4_id = $1`
-        await client.query(query, params)
-    }
+  static async deleteChild(params, client) {
+    const query = `DELETE FROM avans_otchetlar_jur4_child WHERE avans_otchetlar_jur4_id = $1`;
+    await client.query(query, params);
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, params);
-        const result = await client.query(`UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`,
+      params
+    );
+    const result = await client.query(
+      `UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
-        return result.rows[0];
-    }
-}
+    return result.rows[0];
+  }
+};

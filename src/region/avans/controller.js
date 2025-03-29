@@ -13,11 +13,7 @@ const {
 
 exports.Controller = class {
   static async create(req, res) {
-    const {
-      spravochnik_podotchet_litso_id,
-      spravochnik_operatsii_own_id,
-      childs,
-    } = req.body;
+    const { spravochnik_podotchet_litso_id, childs } = req.body;
 
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -30,14 +26,6 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
-
-    // const operatsii = await OperatsiiService.getById({
-    //   id: spravochnik_operatsii_own_id,
-    //   type: "general",
-    // });
-    // if (!operatsii) {
-    //   return res.error(req.i18n.t("operatsiiNotFound"), 404);
-    // }
 
     const podotchet = await PodotchetService.getById({
       id: spravochnik_podotchet_litso_id,
@@ -165,11 +153,7 @@ exports.Controller = class {
   }
 
   static async update(req, res) {
-    const {
-      spravochnik_podotchet_litso_id,
-      spravochnik_operatsii_own_id,
-      childs,
-    } = req.body;
+    const { spravochnik_podotchet_litso_id, childs } = req.body;
 
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -180,14 +164,6 @@ exports.Controller = class {
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
-
-    // const operatsii = await OperatsiiService.getById({
-    //   id: spravochnik_operatsii_own_id,
-    //   type: "general",
-    // });
-    // if (!operatsii) {
-    //   return res.error(req.i18n.t("operatsiiNotFound"), 404);
-    // }
 
     const podotchet = await PodotchetService.getById({
       id: spravochnik_podotchet_litso_id,
