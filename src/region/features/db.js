@@ -1,7 +1,9 @@
 const { db } = require("@db/index");
 
 exports.FeaturesDB = class {
-  static async getDocNum(tableName, params) {
+  static async getDocNum(tableName, params, client) {
+    const _db = client || db;
+
     const main_schet_filter =
       tableName !== "shartnomalar_organization"
         ? "AND d.main_schet_id = $2"
@@ -22,9 +24,9 @@ exports.FeaturesDB = class {
             LIMIT 1
         `;
 
-    const data = await db.query(query, params);
+    const data = await _db.query(query, params);
 
-    return data[0] || { doc_num: 0 };
+    return data.rows.length ? data.rows[0] : data[0] ? data[0] : { doc_num: 0 };
   }
 
   static async checkSchets(params, column_name) {

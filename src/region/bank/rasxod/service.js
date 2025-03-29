@@ -1,8 +1,53 @@
 const { db } = require("@db/index");
 const { BankRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
+const { FeaturesService } = require(`@features/service`);
 
 exports.BankRasxodService = class {
+  static async import(data) {
+    await db.transaction(async (client) => {
+      for (let item of data.docs) {
+        const summa = HelperFunctions.summaDoc(item.childs);
+
+        const doc_num_object = await FeaturesService.getDocNum({
+          tableName: "bank_rasxod",
+          region_id: data.region_id,
+          main_schet_id: data.main_schet_id,
+          client,
+        });
+
+        const doc = await BankRasxodDB.create(
+          [
+            doc_num_object.doc_num,
+            new Date(),
+            summa,
+            item.opisanie,
+            item.idSpravochnikOrganization,
+            null,
+            data.main_schet_id,
+            data.user_id,
+            null,
+            null,
+            item.organizationByRaschetSchetId,
+            item.organizationByRaschetSchetGaznaId,
+            null,
+            tashkentTime(),
+            tashkentTime(),
+          ],
+          client
+        );
+
+        await this.createChild({
+          childs: item.childs,
+          client,
+          docId: doc.id,
+          user_id: data.user_id,
+          main_schet_id: data.main_schet_id,
+        });
+      }
+    });
+  }
+
   static async payment(data) {
     const result = await db.transaction(async (client) => {
       const doc = await BankRasxodDB.payment([data.status, data.id], client);

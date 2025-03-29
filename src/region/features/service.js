@@ -22,11 +22,14 @@ exports.FeaturesService = class {
   }
 
   static async getDocNum(data) {
-    const result = await FeaturesDB.getDocNum(data.tableName, [
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const result = await FeaturesDB.getDocNum(
+      data.tableName,
+      [data.region_id, data.main_schet_id],
+      data.client
+    );
+
     result.doc_num = Number(result.doc_num) + 1;
+
     return result;
   }
 

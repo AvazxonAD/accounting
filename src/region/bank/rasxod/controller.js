@@ -14,8 +14,19 @@ const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
+const { FeaturesService } = require("@features/service");
 
 exports.Controller = class {
+  static async import(req, res) {
+    const { docs } = req.body;
+    const { region_id, id: user_id } = req.user;
+    const { main_schet_id } = req.query;
+
+    await BankRasxodService.import({ docs, user_id, main_schet_id, region_id });
+
+    return res.success(req.i18n.t("createSuccess"), 200);
+  }
+
   static async payment(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
