@@ -19,7 +19,6 @@ exports.Controller = class {
       opisanie,
       id_spravochnik_organization,
       shartnomalar_organization_id,
-      spravochnik_operatsii_own_id,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
@@ -36,14 +35,6 @@ exports.Controller = class {
     ]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
-
-    const operatsii = await OperatsiiDB.getById(
-      [spravochnik_operatsii_own_id],
-      "general"
-    );
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
     }
 
     const organization = await OrganizationDB.getById([
@@ -153,7 +144,6 @@ exports.Controller = class {
       doc = await ShowServiceDB.createShowService(
         [
           user_id,
-          spravochnik_operatsii_own_id,
           doc_num,
           doc_date,
           summa,
@@ -181,7 +171,6 @@ exports.Controller = class {
         item.updated_at = tashkentTime();
         item.main_schet_id = main_schet_id;
         item.user_id = user_id;
-        item.spravochnik_operatsii_own_id = spravochnik_operatsii_own_id;
         item.kursatilgan_hizmatlar_jur152_id = doc.id;
         return item;
       });
@@ -261,7 +250,6 @@ exports.Controller = class {
       opisanie,
       id_spravochnik_organization,
       shartnomalar_organization_id,
-      spravochnik_operatsii_own_id,
       childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
@@ -288,14 +276,6 @@ exports.Controller = class {
     ]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
-
-    const operatsii = await OperatsiiDB.getById(
-      [spravochnik_operatsii_own_id],
-      "general"
-    );
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
     }
 
     const organization = await OrganizationDB.getById([
@@ -410,7 +390,6 @@ exports.Controller = class {
           summa,
           id_spravochnik_organization,
           shartnomalar_organization_id,
-          spravochnik_operatsii_own_id,
           tashkentTime(),
           organization_by_raschet_schet_id,
           organization_by_raschet_schet_gazna_id,
@@ -432,7 +411,6 @@ exports.Controller = class {
         item.updated_at = tashkentTime();
         item.main_schet_id = main_schet_id;
         item.user_id = user_id;
-        item.spravochnik_operatsii_own_id = spravochnik_operatsii_own_id;
         item.kursatilgan_hizmatlar_jur152_id = doc.id;
         return item;
       });

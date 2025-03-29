@@ -2,7 +2,6 @@ const Joi = require("joi");
 
 exports.createSchema = Joi.object({
   body: Joi.object({
-    spravochnik_operatsii_own_id: Joi.number().min(1).integer(),
     doc_num: Joi.string().trim(),
     doc_date: Joi.string()
       .trim()
@@ -44,7 +43,6 @@ exports.createSchema = Joi.object({
 
 exports.updateSchema = Joi.object({
   body: Joi.object({
-    spravochnik_operatsii_own_id: Joi.number().min(1).integer(),
     doc_num: Joi.string().trim(),
     doc_date: Joi.string()
       .trim()

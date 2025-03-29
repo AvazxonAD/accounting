@@ -1,10 +1,10 @@
-const { db } = require('@db/index');
-const { returnParamsValues, designParams } = require('@helper/functions')
+const { db } = require("@db/index");
+const { returnParamsValues, designParams } = require("@helper/functions");
 
 exports.ShowServiceDB = class {
-    static async getByIdShowService(params, isdeleted) {
-        const ignore = 'AND d.isdeleted = false'
-        const query = `--sql
+  static async getByIdShowService(params, isdeleted) {
+    const ignore = "AND d.isdeleted = false";
+    const query = `--sql
             SELECT 
                 d.id,
                 d.doc_num,
@@ -14,7 +14,6 @@ exports.ShowServiceDB = class {
                 d.shartnomalar_organization_id,
                 d.summa::FLOAT,
                 d.opisanie,
-                d.spravochnik_operatsii_own_id,
                 (
                     SELECT JSON_AGG(row_to_json(k_h_j_ch))
                     FROM (
@@ -43,19 +42,18 @@ exports.ShowServiceDB = class {
             FROM kursatilgan_hizmatlar_jur152 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
-            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${!isdeleted ? ignore : ''}
+            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${!isdeleted ? ignore : ""}
         `;
 
-        const result = await db.query(query, params);
-        
-        return result[0];
-    }
+    const result = await db.query(query, params);
 
-    static async createShowService(params, client) {
-        const query = `--sql
+    return result[0];
+  }
+
+  static async createShowService(params, client) {
+    const query = `--sql
             INSERT INTO kursatilgan_hizmatlar_jur152(
                 user_id,
-                spravochnik_operatsii_own_id,
                 doc_num,
                 doc_date,
                 summa,
@@ -69,41 +67,39 @@ exports.ShowServiceDB = class {
                 created_at,
                 updated_at
             )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING *
         `;
-        const result = await client.query(query, params);
-        return result.rows[0];
-    }
+    const result = await client.query(query, params);
+    return result.rows[0];
+  }
 
-    static async createShowServiceChild(params, client) {
-        const design_params = [
-            "user_id",
-            "spravochnik_operatsii_id",
-            "spravochnik_operatsii_own_id",
-            "summa",
-            "id_spravochnik_podrazdelenie",
-            "id_spravochnik_sostav",
-            "id_spravochnik_type_operatsii",
-            "kursatilgan_hizmatlar_jur152_id",
-            "main_schet_id",
-            "kol",
-            "sena",
-            "nds_foiz",
-            "nds_summa",
-            "summa_s_nds",
-            "created_at",
-            "updated_at"
-        ];
+  static async createShowServiceChild(params, client) {
+    const design_params = [
+      "user_id",
+      "spravochnik_operatsii_id",
+      "summa",
+      "id_spravochnik_podrazdelenie",
+      "id_spravochnik_sostav",
+      "id_spravochnik_type_operatsii",
+      "kursatilgan_hizmatlar_jur152_id",
+      "main_schet_id",
+      "kol",
+      "sena",
+      "nds_foiz",
+      "nds_summa",
+      "summa_s_nds",
+      "created_at",
+      "updated_at",
+    ];
 
-        const _params = designParams(params, design_params);
-        const _values = returnParamsValues(_params, 16);
-        
-        const query = `--sql
+    const _params = designParams(params, design_params);
+    const _values = returnParamsValues(_params, 15);
+
+    const query = `--sql
             INSERT INTO kursatilgan_hizmatlar_jur152_child(
                 user_id,
                 spravochnik_operatsii_id,
-                spravochnik_operatsii_own_id,
                 summa,
                 id_spravochnik_podrazdelenie,
                 id_spravochnik_sostav,
@@ -119,22 +115,22 @@ exports.ShowServiceDB = class {
                 updated_at
             ) VALUES ${_values} RETURNING *
         `;
-        const result = await client.query(query, _params)
-        return result.rows;
-    }
-    static async getShowService(params, search) {
-        let search_filter = ``;
+    const result = await client.query(query, _params);
+    return result.rows;
+  }
+  static async getShowService(params, search) {
+    let search_filter = ``;
 
-        if (search) {
-            params.push(search);
-            search_filter = `AND (
+    if (search) {
+      params.push(search);
+      search_filter = `AND (
                 d.doc_num = $${params.length} OR 
                 so.name ILIKE '%' || $${params.length} || '%' OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `--sql
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id,
@@ -150,7 +146,6 @@ exports.ShowServiceDB = class {
                     sho.doc_date AS shartnomalar_organization_doc_date,
                     d.summa::FLOAT,
                     d.opisanie,
-                    d.spravochnik_operatsii_own_id,
                     (
                         SELECT JSON_AGG(row_to_json(k_h_j_ch))
                         FROM (
@@ -206,13 +201,13 @@ exports.ShowServiceDB = class {
             )::FLOAT AS summa
             FROM data
         `;
-        const result = await db.query(query, params);
-        
-        return result[0];
-    }
+    const result = await db.query(query, params);
 
-    static async updateShowService(params, client) {
-        const query = `
+    return result[0];
+  }
+
+  static async updateShowService(params, client) {
+    const query = `
             UPDATE kursatilgan_hizmatlar_jur152
             SET 
                 doc_num = $1, 
@@ -221,28 +216,33 @@ exports.ShowServiceDB = class {
                 summa = $4, 
                 id_spravochnik_organization = $5, 
                 shartnomalar_organization_id = $6, 
-                spravochnik_operatsii_own_id = $7,
-                updated_at = $8,
-                organization_by_raschet_schet_id = $9,
-                organization_by_raschet_schet_gazna_id = $10,
-                shartnoma_grafik_id = $11
-            WHERE id = $12
+                updated_at = $7,
+                organization_by_raschet_schet_id = $8,
+                organization_by_raschet_schet_gazna_id = $9,
+                shartnoma_grafik_id = $10
+            WHERE id = $11
             RETURNING *
         `;
-        const result = await client.query(query, params);
-        return result.rows[0];
-    }
+    const result = await client.query(query, params);
+    return result.rows[0];
+  }
 
-    static async deleteShowServiceChild(params, client) {
-        const query = `DELETE FROM kursatilgan_hizmatlar_jur152_child WHERE kursatilgan_hizmatlar_jur152_id = $1`;
-        await client.query(query, params);
-    }
+  static async deleteShowServiceChild(params, client) {
+    const query = `DELETE FROM kursatilgan_hizmatlar_jur152_child WHERE kursatilgan_hizmatlar_jur152_id = $1`;
+    await client.query(query, params);
+  }
 
-    static async deleteShowService(params, client) {
-        await client.query(`UPDATE kursatilgan_hizmatlar_jur152_child SET isdeleted = true WHERE kursatilgan_hizmatlar_jur152_id = $1`, params);
-        
-        const result = await client.query(`UPDATE kursatilgan_hizmatlar_jur152 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
-        
-        return result;
-    }
-}
+  static async deleteShowService(params, client) {
+    await client.query(
+      `UPDATE kursatilgan_hizmatlar_jur152_child SET isdeleted = true WHERE kursatilgan_hizmatlar_jur152_id = $1`,
+      params
+    );
+
+    const result = await client.query(
+      `UPDATE kursatilgan_hizmatlar_jur152 SET  isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
+
+    return result;
+  }
+};
