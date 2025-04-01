@@ -10,7 +10,17 @@ const { REPORT_TYPE } = require("@helper/constants");
 exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, main_schet_id, from, to, search } = req.query;
+    const {
+      page,
+      limit,
+      main_schet_id,
+      from,
+      to,
+      search,
+      order_by,
+      order_type,
+    } = req.query;
+
     const offset = (page - 1) * limit;
 
     const main_schet = await MainSchetService.getById({
@@ -40,6 +50,8 @@ exports.Controller = class {
       from,
       to,
       search,
+      order_by,
+      order_type,
     });
 
     const pageCount = Math.ceil(total_count / limit);

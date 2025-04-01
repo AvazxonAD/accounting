@@ -158,6 +158,15 @@ exports.PrixodJur7Schema = class {
           .trim()
           .default("doc_num")
           .valid("doc_num", "doc_date"),
+        order_by: Joi.string()
+          .trim()
+          .default("doc_date")
+          .valid("doc_num", "doc_date", "id"),
+        order_type: Joi.string()
+          .trim()
+          .allow(null, "")
+          .default("DESC")
+          .valid("ASC", "DESC"),
       }),
     }).options({ stripUnknown: true });
   }

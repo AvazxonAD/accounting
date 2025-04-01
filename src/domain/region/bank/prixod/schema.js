@@ -59,7 +59,11 @@ exports.BankPrixodSchema = class {
           .trim()
           .default("doc_date")
           .valid("doc_num", "doc_date", "id"),
-        order_type: Joi.string().trim().allow(null, ""),
+        order_type: Joi.string()
+          .trim()
+          .allow(null, "")
+          .default("DESC")
+          .valid("ASC", "DESC"),
         page: Joi.number().min(1).default(1),
         from: Joi.string()
           .trim()

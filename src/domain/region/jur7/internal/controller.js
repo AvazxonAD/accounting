@@ -242,7 +242,8 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to, budjet_id } = req.query;
+    const { page, limit, search, from, to, budjet_id, order_by, order_type } =
+      req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -259,6 +260,8 @@ exports.Controller = class {
       offset,
       limit,
       search,
+      order_by,
+      order_type,
     });
 
     const pageCount = Math.ceil(total / limit);

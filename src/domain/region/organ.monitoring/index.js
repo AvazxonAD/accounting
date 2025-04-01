@@ -7,7 +7,7 @@ const {
   capSchema,
   consolidatedSchema,
   OrganMonitoringSchema,
-} = require("./schemas");
+} = require("./schema");
 
 const { Router } = require("express");
 const router = Router();

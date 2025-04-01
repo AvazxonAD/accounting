@@ -202,7 +202,9 @@ exports.AktService = class {
         data.offset,
         data.limit,
       ],
-      data.search
+      data.search,
+      data.order_by,
+      data.order_type
     );
 
     let page_summa = 0;

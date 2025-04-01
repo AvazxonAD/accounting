@@ -2,9 +2,16 @@ const { db } = require("@db/index");
 const { sqlFilter } = require("@helper/functions");
 
 exports.OrganizationMonitoringDB = class {
-  static async monitoring(params, organ_id, search) {
+  static async monitoring(
+    params,
+    organ_id,
+    search = null,
+    order_by,
+    order_type
+  ) {
     let organ_filter = "";
     let search_filter = ``;
+    let order = ``;
 
     if (organ_id) {
       params.push(organ_id);
@@ -18,6 +25,14 @@ exports.OrganizationMonitoringDB = class {
                 so.name ILIKE '%' || $${params.length} || '%' OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
+    }
+
+    if (order_by === "doc_num") {
+      order = `ORDER BY 
+        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
+        d.doc_num ${order_type}`;
+    } else {
+      order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
     const query = `--sql

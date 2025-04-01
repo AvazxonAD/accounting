@@ -1,8 +1,8 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.BankPrixodDB = class {
-    static async create(params, client) {
-        const query = `
+  static async create(params, client) {
+    const query = `
             INSERT INTO bank_prixod(
                 doc_num, 
                 doc_date, 
@@ -21,13 +21,13 @@ exports.BankPrixodDB = class {
             RETURNING id
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0]
-    }
+    return result.rows[0];
+  }
 
-    static async createChild(params, _values, client) {
-        const query = `
+  static async createChild(params, _values, client) {
+    const query = `
             INSERT INTO bank_prixod_child (
                 spravochnik_operatsii_id,
                 summa,
@@ -43,22 +43,31 @@ exports.BankPrixodDB = class {
           VALUES ${_values}
         `;
 
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result;
-    }
+    return result;
+  }
 
-    static async get(params, search = null) {
-        let search_filter = ``;
-        if (search) {
-            params.push(search);
-            search_filter = ` AND (
+  static async get(params, search = null, order_by, order_type) {
+    let search_filter = ``;
+    let order = ``;
+    if (search) {
+      params.push(search);
+      search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
-        }
+    }
 
-        const query = `
+    if (order_by === "doc_num") {
+      order = `ORDER BY 
+        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
+        d.doc_num ${order_type}`;
+    } else {
+      order = `ORDER BY d.${order_by} ${order_type}`;
+    }
+
+    const query = `
             WITH data AS (
                 SELECT 
                     d.id,
@@ -101,7 +110,7 @@ exports.BankPrixodDB = class {
                     AND d.isdeleted = false 
                     AND doc_date BETWEEN $3 AND $4 
                     ${search_filter}
-                ORDER BY d.doc_date 
+                ${order}
                 OFFSET $5 LIMIT $6
             )
                 SELECT 
@@ -135,13 +144,13 @@ exports.BankPrixodDB = class {
                 FROM data
             `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getById(params, isdeleted) {
-        const query = `
+  static async getById(params, isdeleted) {
+    const query = `
             SELECT 
                 d.id,
                 d.doc_num, 
@@ -187,16 +196,17 @@ exports.BankPrixodDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3
-                ${!isdeleted ? 'AND d.isdeleted = false' : ''}
+                ${!isdeleted ? "AND d.isdeleted = false" : ""}
         `;
 
-        const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async update(params, client) {
-        const result = await client.query(`
+  static async update(params, client) {
+    const result = await client.query(
+      `
             UPDATE bank_prixod SET 
                 doc_num = $1, 
                 doc_date = $2, 
@@ -209,20 +219,31 @@ exports.BankPrixodDB = class {
                 organization_by_raschet_schet_gazna_id = $9,
                 shartnoma_grafik_id = $10
             WHERE id = $11 RETURNING id
-        `, params);
+        `,
+      params
+    );
 
-        return result.rows[0];
-    }
+    return result.rows[0];
+  }
 
-    static async deleteChild(params, client) {
-        await client.query(`DELETE FROM bank_prixod_child  WHERE id_bank_prixod = $1`, params);
-    }
+  static async deleteChild(params, client) {
+    await client.query(
+      `DELETE FROM bank_prixod_child  WHERE id_bank_prixod = $1`,
+      params
+    );
+  }
 
-    static async delete(params, client) {
-        await client.query(`UPDATE bank_prixod_child SET isdeleted = true WHERE id_bank_prixod = $1`, params);
+  static async delete(params, client) {
+    await client.query(
+      `UPDATE bank_prixod_child SET isdeleted = true WHERE id_bank_prixod = $1`,
+      params
+    );
 
-        const result = await client.query(`UPDATE bank_prixod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+    const result = await client.query(
+      `UPDATE bank_prixod SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
-        return result.rows[0];
-    }
-}
+    return result.rows[0];
+  }
+};

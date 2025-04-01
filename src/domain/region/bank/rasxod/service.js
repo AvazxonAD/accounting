@@ -111,7 +111,7 @@ exports.BankRasxodService = class {
     const create_childs = [];
     for (let child of data.childs) {
       create_childs.push(
-        child.spravochnik_operatsii_id,
+        child.spravochnikOperatsiiId,
         child.summa,
         child.id_spravochnik_podrazdelenie,
         child.id_spravochnik_sostav,
@@ -144,7 +144,9 @@ exports.BankRasxodService = class {
         data.offset,
         data.limit,
       ],
-      data.search
+      data.search,
+      data.order_by,
+      data.order_type
     );
 
     let page_summa = 0;

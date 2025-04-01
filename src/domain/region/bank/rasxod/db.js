@@ -79,14 +79,23 @@ exports.BankRasxodDB = class {
     return result;
   }
 
-  static async get(params, search = null) {
+  static async get(params, search = null, order_by, order_type) {
     let search_filter = ``;
+    let order = ``;
     if (search) {
       params.push(search);
       search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
+    }
+
+    if (order_by === "doc_num") {
+      order = `ORDER BY 
+        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
+        d.doc_num ${order_type}`;
+    } else {
+      order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
     const query = `
@@ -209,7 +218,7 @@ exports.BankRasxodDB = class {
                             s_p_l.name AS spravochnik_podotchet_litso_name,
                             ch.tulanmagan_summa::FLOAT
                         FROM bank_rasxod_child AS ch
-                        JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
+                        LEFT JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii

@@ -1,14 +1,24 @@
 const { db } = require("@db/index");
 
 exports.BankMonitoringDB = class {
-  static async get(params, search = null) {
+  static async get(params, search = null, order_by, order_type) {
     let search_filter = ``;
+    let order = ``;
+
     if (search) {
       params.push(search);
       search_filter = ` AND d.doc_num = $${params.length}`;
     }
 
-    const query = `
+    // if (order_by === "doc_num") {
+    //   order = `ORDER BY CAST(combined_doc_num AS INTEGER) ${order_type}`;
+    // }
+    // else {
+    //   order = `ORDER BY combined_${order_by} ${order_type}`;
+    // }
+    order = `ORDER BY combined_${order_by} ${order_type}`;
+
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id,
@@ -30,7 +40,9 @@ exports.BankMonitoringDB = class {
                     so2.doc_num AS shartnomalar_doc_num,
                     TO_CHAR(so2.doc_date, 'YYYY-MM-DD') AS shartnomalar_doc_date,
                     d.opisanie,
-                    d.doc_date AS combined_date,
+                    d.doc_date AS                                                   combined_doc_date,
+                    d.id AS                                                         combined_id,
+                    d.doc_num AS                                                    combined_doc_num,
                     u.login,
                     u.fio,
                     u.id AS user_id,
@@ -73,7 +85,9 @@ exports.BankMonitoringDB = class {
                     null AS                                             shartnomalar_doc_num,
                     null AS                                             shartnomalar_doc_date,
                     d.opisanie,
-                    d.doc_date AS                                       combined_date,
+                    d.doc_date AS                                                       combined_doc_date,
+                    d.id AS                                                             combined_id,
+                    d.doc_num AS                                                        combined_doc_num,
                     u.login,
                     u.fio,
                     u.id AS                                             user_id,
@@ -115,7 +129,9 @@ exports.BankMonitoringDB = class {
                     null AS                                             shartnomalar_doc_num,
                     null AS                                             shartnomalar_doc_date,
                     d.opisanie,
-                    d.doc_date AS                                       combined_date,
+                    d.doc_date AS                                                       combined_doc_date,
+                    d.id AS                                                             combined_id,
+                    d.doc_num AS                                                        combined_doc_num,
                     u.login,
                     u.fio,
                     u.id AS                                             user_id,
@@ -162,7 +178,9 @@ exports.BankMonitoringDB = class {
                     so2.doc_num AS shartnomalar_doc_num,
                     TO_CHAR(so2.doc_date, 'YYYY-MM-DD') AS shartnomalar_doc_date,
                     d.opisanie,
-                    d.doc_date AS combined_date,
+                    d.doc_date AS                                                   combined_doc_date,
+                    d.id AS                                                         combined_id,
+                    d.doc_num AS                                                    combined_doc_num,
                     u.login,
                     u.fio,
                     u.id AS user_id,
@@ -189,7 +207,7 @@ exports.BankMonitoringDB = class {
                     AND d.doc_date BETWEEN $3 AND $4
                     ${search_filter}
                     
-                ORDER BY combined_date
+                ${order}
                 OFFSET $5 LIMIT $6
             )
             SELECT 
@@ -297,7 +315,9 @@ exports.BankMonitoringDB = class {
                             AND d.rasxod = true
                     ) 
                 )::FLOAT AS rasxod_sum,
+
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data
+
             FROM data
         `;
 

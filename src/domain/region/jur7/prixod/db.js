@@ -117,8 +117,10 @@ exports.PrixodDB = class {
     return result.rows[0];
   }
 
-  static async get(params, search) {
+  static async get(params, search = null, order_by, order_type) {
     let search_filter = ``;
+    let order = ``;
+
     if (search) {
       params.push(search);
       search_filter = `AND (
@@ -126,6 +128,14 @@ exports.PrixodDB = class {
                 so.inn ILIKE '%' || $${params.length} || '%' OR
                 rj.fio  ILIKE '%' || $${params.length} || '%'
             )`;
+    }
+
+    if (order_by === "doc_num") {
+      order = `ORDER BY 
+        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
+        d.doc_num ${order_type}`;
+    } else {
+      order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
     const query = `--sql
@@ -165,7 +175,8 @@ exports.PrixodDB = class {
               AND d.doc_date BETWEEN $2 AND $3
               ${search_filter}
               AND d.budjet_id = $4
-            ORDER BY d.doc_date
+            
+            ${order}
             OFFSET $5 LIMIT $6
           )
           SELECT 

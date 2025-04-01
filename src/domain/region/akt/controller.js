@@ -149,7 +149,16 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, from, to, main_schet_id, search } = req.query;
+    const {
+      page,
+      limit,
+      from,
+      to,
+      main_schet_id,
+      search,
+      order_by,
+      order_type,
+    } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -168,6 +177,8 @@ exports.Controller = class {
       offset,
       limit,
       search,
+      order_by,
+      order_type,
     });
 
     const pageCount = Math.ceil(total / limit);

@@ -474,7 +474,7 @@ exports.PodotchetMonitoringDB = class {
             CROSS JOIN podotchet_saldo_rasxod
             CROSS JOIN podotchet_saldo_prixod
         `;
-    console.log(query);
+
     const result = await db.query(query, params);
     return result[0];
   }

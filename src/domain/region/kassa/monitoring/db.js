@@ -1,13 +1,16 @@
 const { db } = require("@db/index");
 
 exports.KassaMonitoringDB = class {
-  static async get(params, search) {
+  static async get(params, search = null, order_by, order_type) {
     let search_filter = "";
+    let order = ``;
 
     if (search) {
       params.push(search);
       search_filter = `AND d.doc_num = $${params.length}`;
     }
+
+    order = `ORDER BY combined_${order_by} ${order_type}`;
 
     const query = `
             WITH data AS (
@@ -26,7 +29,9 @@ exports.KassaMonitoringDB = class {
                     d.id_podotchet_litso,
                     p.name AS spravochnik_podotchet_litso_name,
                     d.opisanie,
-                    d.doc_date AS combined_date,
+                    d.doc_date AS combined_doc_date,
+                    d.id AS                                                             combined_id,
+                    d.doc_num AS                                                        combined_doc_num, 
                     u.login,
                     u.fio,
                     u.id AS user_id,
@@ -69,7 +74,9 @@ exports.KassaMonitoringDB = class {
                     d.id_podotchet_litso,
                     p.name,
                     d.opisanie,
-                    d.doc_date AS combined_date,
+                    d.doc_date AS combined_doc_date,
+                    d.id AS                                                             combined_id,
+                    d.doc_num AS                                                        combined_doc_num, 
                     u.login,
                     u.fio,
                     u.id AS user_id,
@@ -106,7 +113,9 @@ exports.KassaMonitoringDB = class {
                     null AS                                     id_podotchet_litso,
                     null AS                                     name,
                     d.opisanie,
-                    d.doc_date AS                               combined_date,
+                    d.doc_date AS                                                       combined_doc_date,
+                    d.id AS                                                             combined_id,
+                    d.doc_num AS                                                        combined_doc_num, 
                     u.login,
                     u.fio,
                     u.id AS user_id,
@@ -137,13 +146,15 @@ exports.KassaMonitoringDB = class {
                 SELECT 
                     d.id, 
                     d.doc_num,
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS        doc_date,
-                    d.prixod_summa AS                           prixod_sum,
-                    0::FLOAT AS                                 rasxod_sum,
-                    null AS                                     id_podotchet_litso,
-                    null AS                                     name,
+                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                                doc_date,
+                    d.prixod_summa AS                                                   prixod_sum,
+                    0::FLOAT AS                                                         rasxod_sum,
+                    null AS                                                             id_podotchet_litso,
+                    null AS                                                             name,
                     d.opisanie,
-                    d.doc_date AS                               combined_date,
+                    d.doc_date AS                                                       combined_doc_date,
+                    d.id AS                                                             combined_id,
+                    d.doc_num AS                                                        combined_doc_num,
                     u.login,
                     u.fio,
                     u.id AS user_id,
@@ -169,8 +180,8 @@ exports.KassaMonitoringDB = class {
                   AND d.isdeleted = false
                   ${search_filter}
                 
-                ORDER BY combined_date
-                OFFSET $5 LIMIT $6
+                ${order}
+                OFFSET $5 LIMIT $6 
             ) 
 
             SELECT 

@@ -15,7 +15,9 @@ exports.KassaMonitoringService = class {
         data.offset,
         data.limit,
       ],
-      data.search
+      data.search,
+      data.order_by,
+      data.order_type
     );
     let page_prixod_sum = 0;
     let page_rasxod_sum = 0;

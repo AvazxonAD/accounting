@@ -50,6 +50,15 @@ exports.KassaRasxodSchema = class {
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
           .required(),
+        order_by: Joi.string()
+          .trim()
+          .default("doc_date")
+          .valid("doc_num", "doc_date", "id"),
+        order_type: Joi.string()
+          .trim()
+          .allow(null, "")
+          .default("DESC")
+          .valid("ASC", "DESC"),
       }),
     }).options({ stripUnknown: true });
   }

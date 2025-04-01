@@ -28,7 +28,9 @@ exports.OrganizationmonitoringService = class {
         data.limit,
       ],
       data.organ_id,
-      data.search
+      data.search,
+      data.order_by,
+      data.order_type
     );
 
     const summa_from = await OrganizationMonitoringDB.getSumma(
