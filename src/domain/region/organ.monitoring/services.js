@@ -9,6 +9,7 @@ const {
   returnStringDate,
   returnStringSumma,
   returnExcelColumn,
+  HelperFunctions,
 } = require("@helper/functions");
 const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const ExcelJS = require("exceljs");
@@ -79,6 +80,21 @@ exports.OrganizationmonitoringService = class {
       prixod_sum: summa.prixod_sum,
       rasxod_sum: summa.rasxod_sum,
     };
+  }
+
+  static async prixodReport(data) {
+    const docs = await OrganizationMonitoringDB.prixodReport(
+      [data.region_id, data.main_schet_id, data.from, data.to],
+      data.organ_id,
+      data.search
+    );
+
+    let prixod_summa = 0;
+    for (let item of docs) {
+      prixod_summa += item.summa;
+    }
+
+    return { docs, prixod_summa };
   }
 
   static async prixodRasxod(data, organizations) {
@@ -804,6 +820,202 @@ exports.OrganizationmonitoringService = class {
     );
     await workbook.xlsx.writeFile(filePath);
     return { filePath, fileName };
+  }
+
+  static async prixodReportExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Hisobot");
+
+    worksheet.mergeCells("A1", "G1");
+    worksheet.getCell("A1").value =
+      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+
+    worksheet.mergeCells("A2", "C2");
+    worksheet.getCell("A2").value =
+      `${data.report_title.name}  №  ${data.order}`;
+
+    worksheet.mergeCells("D2", "G2");
+    worksheet.getCell("D2").value = data.budjet.name;
+
+    worksheet.mergeCells("A3", "G3");
+    worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
+
+    worksheet.mergeCells("A4", "G4");
+    worksheet.getCell("A4").value =
+      `от ${HelperFunctions.returnStringDate(new Date(data.from))} до ${HelperFunctions.returnStringDate(new Date(data.to))}`;
+
+    worksheet.getRow(8).values = [
+      "Номер документ",
+      "Номер санаси",
+      "Организатион",
+      "ИНН",
+      "Хисоб рақам",
+      "Приход",
+      "Счет",
+      "Субсчет",
+      "Договор номер",
+      "Договор санаси",
+      "описание",
+    ];
+
+    worksheet.columns = [
+      { key: "doc_num", width: 20 },
+      { key: "doc_date", width: 20 },
+      { key: "organ", width: 40 },
+      { key: "inn", width: 20 },
+      { key: "account_number", width: 30 },
+      { key: "prixod", width: 30 },
+      { key: "schet", width: 20 },
+      { key: "sub_schet", width: 20 },
+      { key: "contract_doc_num", width: 20 },
+      { key: "contract_doc_date", width: 20 },
+      { key: "comment", width: 60 },
+    ];
+
+    let column = 8;
+
+    for (let doc of data.docs) {
+      worksheet.addRow({
+        doc_num: doc.doc_num,
+        doc_date: HelperFunctions.returnLocalDate(new Date(doc.doc_date)),
+        organ: doc.name,
+        inn: doc.inn,
+        account_number: doc.account_number || "",
+        prixod: doc.summa,
+        schet: doc.schet,
+        sub_schet: doc.sub_schet,
+        contract_doc_num: doc.contract_doc_num || "",
+        contract_doc_date: doc.contract_doc_date
+          ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date))
+          : "",
+        comment: doc.comment || "",
+      });
+      column++;
+    }
+
+    column++;
+    worksheet.mergeCells(`A${column}`, `E${column}`);
+    const itogoTitleCell = worksheet.getCell(`A${column}`);
+    itogoTitleCell.value = `ВСЕГО`;
+    itogoTitleCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    const itogoPrixodCell = worksheet.getCell(`F${column}`);
+    itogoPrixodCell.value = data.prixod_summa;
+    itogoPrixodCell.note = JSON.stringify({
+      bold: true,
+    });
+    column += 2;
+
+    for (let podpis of data.podpis) {
+      worksheet.mergeCells(`A${column}`, `B${column}`);
+      const positionCell = worksheet.getCell(`A${column}`);
+      positionCell.value = podpis.position;
+      positionCell.note = JSON.stringify({
+        horizontal: "left",
+      });
+
+      worksheet.mergeCells(`C${column}`, `D${column}`);
+      const fioCell = worksheet.getCell(`C${column}`);
+      fioCell.value = podpis.fio;
+      fioCell.note = JSON.stringify({
+        horizontal: "left",
+        height: 30,
+      });
+      column += 4;
+    }
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let height = 25;
+      let argb = "FFFFFFFF";
+
+      if (rowNumber === 1) {
+        height = 50;
+      }
+
+      if (rowNumber > 1 && rowNumber < 9) {
+        height = 30;
+      }
+
+      if (rowNumber < 9) {
+        bold = true;
+      }
+
+      if (rowNumber === 4) {
+        horizontal = "left";
+      }
+
+      worksheet.getRow(rowNumber).height = height;
+
+      row.eachCell((cell, column) => {
+        const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if (column === 6 && rowNumber > 8 && !cellData.horizontal) {
+          horizontal = "right";
+        } else if (column > 6 && rowNumber > 8) {
+          horizontal = "center";
+        }
+
+        if (cellData.bold) {
+          bold = true;
+        }
+
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        }
+
+        if (cellData.height) {
+          worksheet.getRow(rowNumber).height = cellData.height;
+        }
+
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb },
+          },
+
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+
+        // clean note
+        if (cell.note) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const fileName = `${data.file_name}_prixod_report_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../../../public/exports");
+
+    try {
+      await access(folder_path, constants.W_OK);
+    } catch (error) {
+      await mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
   }
 
   static async consolidatedByContractExcel(data) {

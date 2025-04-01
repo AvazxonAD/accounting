@@ -188,6 +188,7 @@ exports.KassaMonitoringService = class {
       });
       column++;
     }
+    column += 2;
 
     worksheet.mergeCells(`A${column}`, `D${column}`);
     const itogoTitleCell = worksheet.getCell(`A${column}`);
@@ -198,7 +199,7 @@ exports.KassaMonitoringService = class {
     });
 
     const itogoPrixodCell = worksheet.getCell(`E${column}`);
-    itogoPrixodCell.value = data.prixodSumma;
+    itogoPrixodCell.value = data.prixod_summa;
     itogoPrixodCell.note = JSON.stringify({
       bold: true,
     });

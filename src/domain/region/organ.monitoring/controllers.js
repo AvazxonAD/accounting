@@ -35,7 +35,7 @@ exports.Controller = class {
         isdeleted: false,
       });
       if (!organization) {
-        res.error("Organization not found", 404);
+        res.error(req.i18n("organizationNotFound"), 404);
       }
     }
 
@@ -80,6 +80,94 @@ exports.Controller = class {
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
+  static async prixodReport(req, res) {
+    const region_id = req.user.region_id;
+    const {
+      main_schet_id,
+      organ_id,
+      excel,
+      report_title_id,
+      budjet_id,
+      from,
+      to,
+    } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error("main shcet not found", 404);
+    }
+
+    if (organ_id) {
+      const organization = await OrganizationService.getById({
+        region_id,
+        id: organ_id,
+        isdeleted: false,
+      });
+      if (!organization) {
+        res.error(req.i18n("organizationNotFound"), 404);
+      }
+    }
+
+    const data = await OrganizationmonitoringService.prixodReport({
+      ...req.query,
+      region_id,
+    });
+
+    if (excel) {
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.days_report,
+      });
+
+      const { fileName, filePath } =
+        await OrganizationmonitoringService.prixodReportExcel({
+          ...data,
+          from,
+          region,
+          to,
+          main_schet,
+          report_title,
+          region_id,
+          title: "Приход ҳисоботи",
+          file_name: "jur3",
+          podpis,
+          budjet,
+          schet: main_schet.jur3_schet,
+          order: 3,
+        });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 
   static async prixodRasxod(req, res) {
@@ -214,7 +302,7 @@ exports.Controller = class {
         id: query.organ_id,
       });
       if (!organization) {
-        return res.error("Organization not found", 404);
+        res.error(req.i18n("organizationNotFound"), 404);
       }
     }
     let data;
@@ -298,9 +386,7 @@ exports.Controller = class {
     }
     const organization = await OrganizationDB.getById([region_id, organ_id]);
     if (!organization) {
-      return res.status(404).json({
-        message: "organization not found",
-      });
+      res.error(req.i18n("organizationNotFound"), 404);
     }
     if (contract_id) {
       const contract = await ContractDB.getById(

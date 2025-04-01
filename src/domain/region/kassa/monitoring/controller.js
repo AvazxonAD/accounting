@@ -246,7 +246,7 @@ exports.Controller = class {
           main_schet,
           report_title,
           region_id,
-          title: "Касса кунлик ҳисоботи",
+          title: "Приход ҳисоботи",
           file_name: "kassa",
           podpis,
           budjet,

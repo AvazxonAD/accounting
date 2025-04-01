@@ -954,4 +954,57 @@ exports.OrganizationMonitoringDB = class {
     const result = await db.query(query, params);
     return result;
   }
+
+  static async prixodReport(params, organ_id, search) {
+    const conditions = [];
+
+    if (organ_id) {
+      params.push(organ_id);
+      conditions.push(`so.id = $${params.length}`);
+    }
+
+    if (search) {
+      params.push(search);
+      conditions.push(`AND (
+                d.doc_num = $${params.length} OR 
+                so.name ILIKE '%' || $${params.length} || '%' OR 
+                so.inn ILIKE '%' || $${params.length} || '%'
+            )`);
+    }
+
+    const where = conditions.length ? `AND ${conditions.join("AND")}` : "";
+
+    const query = `--sql
+            SELECT 
+                op.schet,
+                op.sub_schet,
+                ch.summa::FLOAT,
+                d.doc_num,
+                d.doc_date,
+                so.name,
+                so.inn,
+                oa.raschet_schet AS             account_number,
+                c.doc_num AS                    contract_doc_num,
+                c.doc_date AS                   contract_doc_date,
+                d.opisanie AS                   comment
+            FROM kursatilgan_hizmatlar_jur152_child AS ch
+            JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
+            JOIN users AS u ON d.user_id = u.id
+            JOIN regions AS r ON r.id = u.region_id
+            LEFT JOIN shartnomalar_organization AS c ON c.id = d.shartnomalar_organization_id
+            JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+            LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            WHERE d.isdeleted = false 
+                AND r.id = $1
+                AND d.main_schet_id = $2
+                AND d.doc_date BETWEEN $3 AND $4
+                AND ch.isdeleted = false
+                ${where}
+        `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
 };
