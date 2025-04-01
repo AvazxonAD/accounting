@@ -5,10 +5,11 @@ exports.VideoModuleDB = class {
     const query = `--sql
         INSERT INTO video_module (
             name,
-            created_at, 
+            status, 
+            created_at,
             updated_at
         ) 
-        VALUES ($1, $2, $3) 
+        VALUES ($1, $2, $3, $4) 
         RETURNING id
     `;
 
@@ -17,21 +18,30 @@ exports.VideoModuleDB = class {
     return result;
   }
 
-  static async get(params, search = null) {
+  static async get(params, search = null, status = null) {
     let search_filter = ``;
+    let status_filter = ``;
+
     if (search) {
       search_filter = `AND d.name ILIKE '%' || $${params.length + 1}`;
       params.push(search);
+    }
+
+    if (status) {
+      params.push(status);
+      status_filter = `AND d.status = $${params.length}`;
     }
 
     const query = `--sql
         WITH data AS (
             SELECT 
                 d.id, 
-                d.name
+                d.name,
+                d.status
             FROM video_module AS d
             WHERE d.isdeleted = false 
                 ${search_filter}
+                ${status_filter}
             ORDER BY d.created_at DESC
             OFFSET $1 LIMIT $2
         )
@@ -42,6 +52,7 @@ exports.VideoModuleDB = class {
                 FROM video_module AS d
                 WHERE d.isdeleted = false
                     ${search_filter}
+                    ${status_filter}
             ) AS total
         FROM data
     `;
@@ -56,7 +67,8 @@ exports.VideoModuleDB = class {
     const query = `--sql
         SELECT 
             d.id, 
-            d.name
+            d.name,
+            d.status
         FROM video_module AS d
         WHERE d.id = $1
             ${isdeleted ? `` : ignore}
@@ -83,8 +95,9 @@ exports.VideoModuleDB = class {
         UPDATE video_module
         SET
             name = $1,
-            updated_at = $2
-        WHERE id = $3 
+            status = $2,
+            updated_at = $3
+        WHERE id = $4
         RETURNING *
     `;
 

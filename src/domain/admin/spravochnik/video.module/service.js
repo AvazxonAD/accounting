@@ -11,6 +11,7 @@ exports.VideoModuleService = class {
   static async create(data) {
     const result = await VideoModuleDB.create([
       data.name,
+      data.status,
       HelperFunctions.tashkentTime(),
       HelperFunctions.tashkentTime(),
     ]);
@@ -21,6 +22,7 @@ exports.VideoModuleService = class {
   static async update(data) {
     const result = await VideoModuleDB.update([
       data.name,
+      data.status,
       HelperFunctions.tashkentTime(),
       data.id,
     ]);
@@ -29,13 +31,17 @@ exports.VideoModuleService = class {
   }
 
   static async get(data) {
-    const result = await VideoModuleDB.get([data.offset, data.limit]);
+    const result = await VideoModuleDB.get(
+      [data.offset, data.limit],
+      data.search,
+      data.status
+    );
 
     return result;
   }
 
   static async getById(data) {
-    const result = await VideoModuleDB.getById([data.id]);
+    const result = await VideoModuleDB.getById([data.id], data.isdeleted);
 
     return result;
   }

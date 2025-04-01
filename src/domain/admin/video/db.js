@@ -7,12 +7,11 @@ exports.VideoDB = class {
             name,
             file,
             module_id,
-            status,
             sort_order,
             created_at, 
             updated_at
         ) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        VALUES ($1, $2, $3, $4, $5, $6) 
         RETURNING id
     `;
 
@@ -21,16 +20,12 @@ exports.VideoDB = class {
     return result;
   }
 
-  static async get(params, search = null, status = null, module_id = null) {
+  static async get(params, search = null, module_id = null) {
     const conditions = [];
 
     if (search) {
       params.push(search);
       conditions.push(`d.name ILIKE '%' || $${params.length + 1}`);
-    }
-
-    if (status) {
-      conditions.push(`d.status = ${status}`);
     }
 
     if (module_id) {
@@ -88,10 +83,9 @@ exports.VideoDB = class {
             name = $1,
             file = $2,
             module_id = $3,
-            status = $4,
-            sort_order = $5,
-            updated_at = $6
-        WHERE id = $7
+            sort_order = $4,
+            updated_at = $5
+        WHERE id = $6
         RETURNING *
     `;
 

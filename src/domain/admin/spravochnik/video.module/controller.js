@@ -9,20 +9,19 @@ exports.Controller = class {
       return res.error(req.i18n.t("docExists"), 409);
     }
 
-    const result = await VideoModuleService.create({ name });
+    const result = await VideoModuleService.create({ ...req.body });
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
   }
 
   static async get(req, res) {
-    const { page, limit, search } = req.query;
+    const { page, limit } = req.query;
 
     const offset = (page - 1) * limit;
 
     const { data, total } = await VideoModuleService.get({
       offset,
-      limit,
-      search,
+      ...req.query,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -41,7 +40,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const id = req.params.id;
 
-    const data = await VideoModuleService.getById({ id }, true);
+    const data = await VideoModuleService.getById({ id, isdeleted: true });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
@@ -65,7 +64,7 @@ exports.Controller = class {
       }
     }
 
-    const result = await VideoModuleService.update({ name, id });
+    const result = await VideoModuleService.update({ ...req.body, id });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   }

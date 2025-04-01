@@ -6,7 +6,6 @@ exports.VideoSchema = class {
       body: Joi.object({
         name: Joi.string().trim().required(),
         module_id: Joi.number().integer().required().min(1),
-        status: Joi.boolean().required(),
         sort_order: Joi.number().integer().required().min(1),
       }),
     }).options({ stripUnknown: true });
@@ -17,7 +16,6 @@ exports.VideoSchema = class {
       body: Joi.object({
         name: Joi.string().trim().required(),
         module_id: Joi.number().integer().required().min(1),
-        status: Joi.boolean().required(),
         sort_order: Joi.number().integer().required().min(1),
       }),
 
@@ -34,7 +32,6 @@ exports.VideoSchema = class {
         limit: Joi.number().min(1).integer().default(10),
         module_id: Joi.number().min(1).integer(),
         search: Joi.string().trim(),
-        status: Joi.string().valid("true", "false"),
       }),
     }).options({ stripUnknown: true });
   }

@@ -7,7 +7,6 @@ exports.VideoService = class {
       data.name,
       data.file,
       data.module_id,
-      data.status,
       data.sort_order,
       HelperFunctions.tashkentTime(),
       HelperFunctions.tashkentTime(),
@@ -21,7 +20,6 @@ exports.VideoService = class {
       data.name,
       data.file,
       data.module_id,
-      data.status,
       data.sort_order,
       HelperFunctions.tashkentTime(),
       data.id,
@@ -34,7 +32,6 @@ exports.VideoService = class {
     const result = await VideoDB.get(
       [data.offset, data.limit],
       data.search,
-      data.status,
       data.module_id
     );
 

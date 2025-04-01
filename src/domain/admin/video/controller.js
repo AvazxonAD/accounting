@@ -25,7 +25,7 @@ exports.Controller = class {
   }
 
   static async get(req, res) {
-    const { page, limit, search, status, module_id } = req.query;
+    const { page, limit, search, module_id } = req.query;
 
     const offset = (page - 1) * limit;
 
@@ -33,7 +33,6 @@ exports.Controller = class {
       offset,
       limit,
       search,
-      status,
       module_id,
     });
 
@@ -78,7 +77,7 @@ exports.Controller = class {
 
     const videoPath = path.join(
       __dirname,
-      `../../../public/uploads/videos/${data.file}`
+      `../../../../public/uploads/videos/${data.file}`
     );
 
     const stat = fs.statSync(videoPath);

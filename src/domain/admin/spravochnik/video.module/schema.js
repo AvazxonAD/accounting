@@ -5,6 +5,7 @@ exports.VideoModuleSchema = class {
     return Joi.object({
       body: Joi.object({
         name: Joi.string().trim().required(),
+        status: Joi.boolean().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -13,6 +14,7 @@ exports.VideoModuleSchema = class {
     return Joi.object({
       body: Joi.object({
         name: Joi.string().trim().required(),
+        status: Joi.boolean().required(),
       }),
 
       params: Joi.object({
@@ -27,6 +29,7 @@ exports.VideoModuleSchema = class {
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(10),
         search: Joi.string().trim(),
+        status: Joi.string().valid("true", "false"),
       }),
     }).options({ stripUnknown: true });
   }
