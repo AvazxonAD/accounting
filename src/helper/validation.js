@@ -429,8 +429,6 @@ const mainSchetValidator = Joi.object({
   jur3_schet: Joi.string().trim().required(),
   jur3_subschet: Joi.string().trim(),
   jur4_schet: Joi.string().trim().required(),
-  jur5_schet: Joi.string().trim().required(),
-  jur7_schet: Joi.string().trim().required(),
   jur4_subschet: Joi.string().trim(),
   gazna_number: Joi.string().trim(),
 }).options({ stripUnknown: true });
