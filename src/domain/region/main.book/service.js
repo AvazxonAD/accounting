@@ -874,7 +874,7 @@ exports.MainBookService = class {
       });
     });
 
-    const folder_path = path.join(__dirname, `../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../public/exports`);
 
     try {
       await fs.promises.access(folder_path, fs.promises.constants.W_OK);

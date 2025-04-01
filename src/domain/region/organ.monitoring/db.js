@@ -27,19 +27,13 @@ exports.OrganizationMonitoringDB = class {
             )`;
     }
 
-    if (order_by === "doc_num") {
-      order = `ORDER BY 
-        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
-        d.doc_num ${order_type}`;
-    } else {
-      order = `ORDER BY d.${order_by} ${order_type}`;
-    }
+    order = `ORDER BY combined_${order_by} ${order_type}`;
 
     const query = `--sql
             SELECT
                 d.id,
                 d.doc_num,
-                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                    doc_date,
                 d.opisanie,
                 0::FLOAT AS summa_rasxod, 
                 ch.summa::FLOAT AS summa_prixod,
@@ -55,11 +49,14 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'bank_rasxod' AS type
+                'bank_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM bank_rasxod_child ch
             JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
             JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id 
+            JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.id_shartnomalar_organization
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
@@ -94,7 +91,10 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'organ_saldo_prixod' AS type
+                'organ_saldo_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM organ_saldo_child ch
             JOIN organ_saldo AS d ON ch.parent_id = d.id
             JOIN users AS u ON u.id = d.user_id
@@ -134,7 +134,10 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'organ_saldo_rasxod' AS type
+                'organ_saldo_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM organ_saldo_child ch
             JOIN organ_saldo AS d ON ch.parent_id = d.id
             JOIN users AS u ON u.id = d.user_id
@@ -174,7 +177,10 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'akt' AS type
+                'akt' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM bajarilgan_ishlar_jur3_child AS ch
             JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
             JOIN users AS u ON d.user_id = u.id
@@ -212,7 +218,10 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'show_service' AS type
+                'show_service' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM kursatilgan_hizmatlar_jur152_child AS ch
             JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
             JOIN users AS u ON d.user_id = u.id
@@ -250,7 +259,10 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'bank_prixod' AS type
+                'bank_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM bank_prixod_child ch
             JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
             JOIN users AS u ON u.id = d.user_id
@@ -289,7 +301,10 @@ exports.OrganizationMonitoringDB = class {
                 u.fio,
                 ch.kredit_schet AS provodki_schet, 
                 ch.kredit_sub_schet AS provodki_sub_schet,
-                'jur7_prixod' AS type
+                'jur7_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM document_prixod_jur7_child AS ch
             JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
             JOIN users AS u ON u.id = d.user_id
@@ -306,7 +321,7 @@ exports.OrganizationMonitoringDB = class {
                 ${organ_filter}
                 ${search_filter}    
             
-            ORDER BY doc_date 
+            ${order}
 
             OFFSET $6 LIMIT $7
         `;
