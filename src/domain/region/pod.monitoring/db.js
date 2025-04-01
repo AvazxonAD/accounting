@@ -1,7 +1,13 @@
 const { db } = require("@db/index");
 
 exports.PodotchetMonitoringDB = class {
-  static async getMonitoring(params, podotcbet_id, search) {
+  static async getMonitoring(
+    params,
+    podotcbet_id,
+    search,
+    order_by,
+    order_type
+  ) {
     let podotchet_filter = ``;
     let search_filter = ``;
 
@@ -17,6 +23,8 @@ exports.PodotchetMonitoringDB = class {
                 p.name ILIKE '%' || $${params.length} || '%'
             )`;
     }
+
+    order = `ORDER BY combined_${order_by} ${order_type}`;
 
     const query = `--sql
             SELECT 
@@ -34,7 +42,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 op.schet AS provodki_schet,
                 op.sub_schet AS provodki_sub_schet,
-                'bank_rasxod' AS type
+                'bank_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM bank_rasxod_child ch
             JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
             LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso 
@@ -67,7 +78,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 op.schet AS provodki_schet,
                 op.sub_schet AS provodki_sub_schet,
-                'bank_prixod' AS type
+                'bank_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM bank_prixod_child ch
             JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
             LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso 
@@ -100,7 +114,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 op.schet AS provodki_schet,
                 op.sub_schet AS provodki_sub_schet,
-                'podotchet_saldo_rasxod' AS type
+                'podotchet_saldo_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM podotchet_saldo_child ch
             JOIN podotchet_saldo AS d ON ch.parent_id = d.id
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id 
@@ -133,7 +150,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 op.schet AS provodki_schet,
                 op.sub_schet AS provodki_sub_schet,
-                'podotchet_saldo_prixod' AS type
+                'podotchet_saldo_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM podotchet_saldo_child ch
             JOIN podotchet_saldo AS d ON ch.parent_id = d.id
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.podotchet_id 
@@ -166,7 +186,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 op.schet AS provodki_schet,
                 op.sub_schet AS provodki_sub_schet,
-                'kassa_prixod' AS type
+                'kassa_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM kassa_prixod_child ch
             JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
@@ -198,7 +221,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 op.schet AS provodki_schet,
                 op.sub_schet AS provodki_sub_schet,
-                'kassa_rasxod' AS type
+                'kassa_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM kassa_rasxod_child ch
             JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
@@ -231,7 +257,10 @@ exports.PodotchetMonitoringDB = class {
                 u.id AS user_id,
                 s_p.schet AS provodki_schet,
                 s_p.sub_schet AS provodki_sub_schet,
-                'avans' AS type
+                'avans' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
             FROM avans_otchetlar_jur4_child ch
             JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 

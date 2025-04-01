@@ -14,8 +14,17 @@ const { PodpisService } = require("@podpis/service");
 
 exports.Controller = class {
   static async getMonitoring(req, res) {
-    const { limit, page, main_schet_id, from, to, podotchet_id, search } =
-      req.query;
+    const {
+      limit,
+      page,
+      main_schet_id,
+      from,
+      to,
+      order_by,
+      order_type,
+      podotchet_id,
+      search,
+    } = req.query;
     const region_id = req.user.region_id;
     const offset = (page - 1) * limit;
     if (podotchet_id) {
@@ -46,7 +55,9 @@ exports.Controller = class {
         limit,
       ],
       podotchet_id,
-      search
+      search,
+      order_by,
+      order_type
     );
 
     const summa_from = await PodotchetMonitoringDB.getSummaMonitoring(

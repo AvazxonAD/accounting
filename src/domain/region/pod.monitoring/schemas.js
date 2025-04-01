@@ -15,6 +15,15 @@ exports.monitoringSchema = Joi.object({
       .required(),
     search: Joi.string().trim().allow(null, ""),
     podotchet_id: Joi.number().min(1).integer(),
+    order_by: Joi.string()
+      .trim()
+      .default("doc_date")
+      .valid("doc_num", "doc_date", "id"),
+    order_type: Joi.string()
+      .trim()
+      .allow(null, "")
+      .default("DESC")
+      .valid("ASC", "DESC"),
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1),

@@ -44,7 +44,7 @@ const create = async (req, res) => {
 
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
 
-    await getByAccountNumberMainSchetService(region_id, data.account_number);
+    // await getByAccountNumberMainSchetService(region_id, data.account_number);
 
     const result = await createMainSchetService({ ...data, user_id });
 
@@ -109,9 +109,9 @@ const update = async (req, res) => {
       }
     }
 
-    if (data.account_number !== old_data.account_number) {
-      await getByAccountNumberMainSchetService(region_id, data.account_number);
-    }
+    // if (data.account_number !== old_data.account_number) {
+    //   await getByAccountNumberMainSchetService(region_id, data.account_number);
+    // }
 
     await getByIdBudjetService(data.spravochnik_budjet_name_id);
 

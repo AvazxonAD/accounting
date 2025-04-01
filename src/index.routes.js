@@ -124,8 +124,8 @@ routes
   .use("/real/cost/report", protect, require("@real_cost_report/index"))
 
   // Ox routes
-  .use("/ox/doc", protect, require("@ox_doc/index"))
-  .use("/ox/report", protect, require("@ox_report/index"))
+  // .use("/ox/doc", protect, require("@ox_doc/index"))
+  // .use("/ox/report", protect, require("@ox_report/index"))
 
   // Logs
   .use("/log", protect, require("@log/index"))
