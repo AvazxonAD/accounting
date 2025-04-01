@@ -144,31 +144,33 @@ routes
 
   // Admin routes
 
-  // spavochnik
   .use(
     "/admin/spravochnik/report_title",
     protect,
     require("@report_title/index")
   )
   .use(
+    "/admin/spravochnik/prixod/schets",
+    protect,
+    require("@prixod_schets/index")
+  )
+  .use(
     "/admin/spravochnik/video_module",
     protect,
     require("@video_module/index")
   )
-
-  // other routes
   .use("/admin/main/book", protect, require("@admin_main_book/index"))
 
   .use("/admin/video", protect, require("@video/index"))
 
-  .use("/admin/ox", protect, require("./admin/ox/index"))
+  // .use("/admin/ox", protect, require("@admin_ox/index"))
 
-  .use("/admin/dashboard", protect, require("./admin/dashboard/index"))
+  .use("/admin/dashboard", protect, require("@admin_dashboard/index"))
 
   .use("/admin/saldo", protect, require("@admin_saldo/index"))
 
-  .use("/admin/control", protect, require("./admin/control/index"))
+  .use("/admin/control", protect, require("@admin_control/index"));
 
-  .use("/admin/real/cost", protect, require("./admin/real.cost/index"));
+// .use("/admin/real/cost", protect, require("./admin/real.cost/index"));
 
 module.exports = routes;

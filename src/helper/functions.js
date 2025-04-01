@@ -972,6 +972,13 @@ exports.HelperFunctions = class {
   }
 };
 
+exports.errorCatch = (error, res) => {
+  console.log(error.stack.red);
+  return res.status(error?.statusCode || 500).send({
+    error: error.message || "internal server error",
+  });
+};
+
 exports.tashkentTime = () => {
   const currentUtcDate = new Date();
   const tashkentOffset = 10 * 60 * 60 * 1000;
@@ -1147,6 +1154,10 @@ exports.filterLogs = (array) => {
   return logs;
 };
 
+exports.resFunc = (res, status, data, meta) => {
+  return res.success("", status, meta, data);
+};
+
 exports.parseLogs = (logs, type) => {
   return logs
     .map((log) => {
@@ -1248,6 +1259,14 @@ exports.formatSubSchet = (str) => {
     }
   }
   return result;
+};
+
+exports.validationResponse = (func, data) => {
+  const { error, value } = func.validate(data);
+  if (error) {
+    throw new ErrorResponse(error.details[0].message, 400);
+  }
+  return value;
 };
 
 exports.checkSchetsEquality = (childs) => {

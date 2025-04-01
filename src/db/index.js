@@ -145,5 +145,5 @@ class Db {
 module.exports = {
   Db,
   db: Db.getInstance(),
-  dbPool: Db.getInstance().getPool(),
+  pool: Db.getInstance().getPool(),
 };
