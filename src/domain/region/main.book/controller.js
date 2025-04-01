@@ -183,6 +183,18 @@ exports.Controller = class {
       });
     }
 
+    schets.sort((a, b) => {
+      const numA = a.schet.split("/").map(Number);
+      const numB = b.schet.split("/").map(Number);
+
+      for (let i = 0; i < Math.max(numA.length, numB.length); i++) {
+        if ((numA[i] || 0) !== (numB[i] || 0)) {
+          return (numA[i] || 0) - (numB[i] || 0);
+        }
+      }
+      return 0;
+    });
+
     const jur3AndJur4Schets = main_schets
       .map((item) => [item.jur3_schet, item.jur4_schet])
       .flat();
@@ -327,6 +339,7 @@ exports.Controller = class {
     const { id } = req.params;
     const user_id = req.user.id;
     const { month, year } = req.body;
+    const { budjet_id } = req.query;
 
     const old_data = await MainBookService.getById({
       region_id,
