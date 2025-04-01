@@ -195,8 +195,6 @@ exports.Controller = class {
         main_schet.jur2_schet,
         main_schet.jur3_schet,
         main_schet.jur4_schet,
-        main_schet.jur5_schet,
-        main_schet.jur7_schet,
       ].forEach((schet) => {
         if (schet && !set_schets.has(schet)) {
           set_schets.add(schet);
