@@ -186,7 +186,16 @@ exports.Controller = class {
 
   static async getShowService(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, from, to, main_schet_id, search } = req.query;
+    const {
+      page,
+      limit,
+      from,
+      to,
+      main_schet_id,
+      search,
+      order_by,
+      order_type,
+    } = req.query;
 
     const main_schet = await MainSchetDB.getByIdMainSchet([
       region_id,
@@ -199,7 +208,9 @@ exports.Controller = class {
     const offset = (page - 1) * limit;
     const { data, summa, total_count } = await ShowServiceDB.getShowService(
       [region_id, from, to, main_schet_id, offset, limit],
-      search
+      search,
+      order_by,
+      order_type
     );
 
     let page_summa = 0;

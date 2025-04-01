@@ -118,8 +118,9 @@ exports.ShowServiceDB = class {
     const result = await client.query(query, _params);
     return result.rows;
   }
-  static async getShowService(params, search) {
+  static async getShowService(params, search = null, order_by, order_type) {
     let search_filter = ``;
+    let order = ``;
 
     if (search) {
       params.push(search);
@@ -128,6 +129,14 @@ exports.ShowServiceDB = class {
                 so.name ILIKE '%' || $${params.length} || '%' OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
+    }
+
+    if (order_by === "doc_num") {
+      order = `ORDER BY 
+        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
+        d.doc_num ${order_type}`;
+    } else {
+      order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
     const query = `--sql
@@ -170,7 +179,9 @@ exports.ShowServiceDB = class {
                     AND d.main_schet_id = $4 
                     AND d.isdeleted = false 
                     ${search_filter}    
-                ORDER BY d.doc_date
+                
+                ${order}
+                
                 OFFSET $5 LIMIT $6 
             )
             SELECT 

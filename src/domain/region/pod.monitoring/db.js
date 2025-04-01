@@ -10,6 +10,7 @@ exports.PodotchetMonitoringDB = class {
   ) {
     let podotchet_filter = ``;
     let search_filter = ``;
+    let order = ``;
 
     if (podotcbet_id) {
       params.push(podotcbet_id);
@@ -255,8 +256,8 @@ exports.PodotchetMonitoringDB = class {
                 u.login,
                 u.fio,
                 u.id AS user_id,
-                s_p.schet AS provodki_schet,
-                s_p.sub_schet AS provodki_sub_schet,
+                op.schet AS provodki_schet,
+                op.sub_schet AS provodki_sub_schet,
                 'avans' AS type,
                 d.doc_date AS                                                   combined_doc_date,
                 d.id AS                                                         combined_id,
@@ -266,7 +267,7 @@ exports.PodotchetMonitoringDB = class {
             JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 
             JOIN users u ON d.user_id = u.id
             JOIN regions r ON u.region_id = r.id
-            JOIN spravochnik_operatsii AS s_p ON s_p.id = ch.spravochnik_operatsii_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.isdeleted = false  
@@ -611,7 +612,7 @@ exports.PodotchetMonitoringDB = class {
                     JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
-                    JOIN spravochnik_operatsii AS s_p ON s_p.id = ch.spravochnik_operatsii_id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 

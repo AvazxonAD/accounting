@@ -93,7 +93,16 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, from, to, main_schet_id, search } = req.query;
+    const {
+      page,
+      limit,
+      from,
+      to,
+      main_schet_id,
+      search,
+      order_by,
+      order_type,
+    } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -123,6 +132,8 @@ exports.Controller = class {
       region_id,
       main_schet_id,
       from,
+      order_by,
+      order_type,
       to,
       offset,
       limit,

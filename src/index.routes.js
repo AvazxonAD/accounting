@@ -120,8 +120,8 @@ routes
   .use("/main/book", protect, require("@main_book/index"))
 
   // Real cost routes
-  .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
-  .use("/real/cost/report", protect, require("@real_cost_report/index"))
+  // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
+  // .use("/real/cost/report", protect, require("@real_cost_report/index"))
 
   // Ox routes
   // .use("/ox/doc", protect, require("@ox_doc/index"))
