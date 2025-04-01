@@ -276,7 +276,7 @@ exports.Jur7MonitoringService = class {
     });
 
     const fileName = `${data.file_name}_shapka_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../public/exports");
+    const folder_path = path.join(__dirname, "../../../../../public/exports");
 
     try {
       await access(folder_path, constants.W_OK);
@@ -506,7 +506,7 @@ exports.Jur7MonitoringService = class {
       });
     });
 
-    const folder_path = path.join(__dirname, "../../../../public/exports");
+    const folder_path = path.join(__dirname, "../../../../../public/exports");
     const fileName = `material_${new Date().getTime()}.xlsx`;
 
     try {

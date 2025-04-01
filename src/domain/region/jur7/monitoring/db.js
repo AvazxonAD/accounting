@@ -47,6 +47,51 @@ exports.Jur7MonitoringDB = class {
     return result;
   }
 
+  static async getSchets(params, responsible_id = null) {
+    let index_responsible_id = null;
+    if (responsible_id) {
+      params.push(responsible_id);
+      index_responsible_id = params.length;
+    }
+    const query = `--sql
+            SELECT schet 
+            FROM (
+                SELECT d_j_ch.debet_schet AS schet
+                FROM document_prixod_jur7 d_j
+                JOIN document_prixod_jur7_child d_j_ch ON d_j_ch.document_prixod_jur7_id = d_j.id
+                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3 
+                ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""}
+                UNION ALL
+                
+                SELECT d_j_ch.kredit_schet AS schet
+                FROM document_rasxod_jur7 d_j
+                JOIN document_rasxod_jur7_child d_j_ch ON d_j_ch.document_rasxod_jur7_id = d_j.id
+                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3
+                ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""}
+                
+                UNION ALL
+                
+                SELECT d_j_ch.kredit_schet AS schet
+                FROM document_vnutr_peremesh_jur7 d_j
+                JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
+                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3
+                ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""}
+                
+                UNION ALL
+                
+                SELECT d_j_ch.debet_schet AS schet
+                FROM document_vnutr_peremesh_jur7 d_j
+                JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
+                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3
+                ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""}
+
+            ) AS combined_schets
+            GROUP BY schet   
+        `;
+    const result = await db.query(query, params);
+    return result;
+  }
+
   static async getBySchetProducts(params) {
     const query = `--sql
         SELECT 

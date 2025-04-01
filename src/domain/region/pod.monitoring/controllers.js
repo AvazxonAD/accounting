@@ -268,7 +268,7 @@ exports.Controller = class {
 
       const filePath = path.join(
         __dirname,
-        "../../../public/exports/" + fileName
+        "../../../../public/exports/" + fileName
       );
       await workbook.xlsx.writeFile(filePath);
 

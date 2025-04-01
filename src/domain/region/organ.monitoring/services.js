@@ -460,7 +460,7 @@ exports.OrganizationmonitoringService = class {
     });
 
     const fileName = `Ob_organization_shapka_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../public/exports");
+    const folder_path = path.join(__dirname, "../../../../public/exports");
 
     try {
       await access(folder_path, constants.W_OK);
@@ -581,7 +581,7 @@ exports.OrganizationmonitoringService = class {
     worksheet.getRow(1).height = 30;
     const filePath = path.join(
       __dirname,
-      "../../../public/exports/" + fileName
+      "../../../../public/exports/" + fileName
     );
     await workbook.xlsx.writeFile(filePath);
     return filePath;
@@ -818,7 +818,7 @@ exports.OrganizationmonitoringService = class {
     });
     const filePath = path.join(
       __dirname,
-      "../../../public/exports/" + fileName
+      "../../../../public/exports/" + fileName
     );
     await workbook.xlsx.writeFile(filePath);
     return { filePath, fileName };
@@ -1167,7 +1167,7 @@ exports.OrganizationmonitoringService = class {
     });
     const filePath = path.join(
       __dirname,
-      "../../../public/exports/" + fileName
+      "../../../../public/exports/" + fileName
     );
     await workbook.xlsx.writeFile(filePath);
     return { filePath, fileName };

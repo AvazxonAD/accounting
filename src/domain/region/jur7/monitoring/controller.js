@@ -8,7 +8,7 @@ const { PodpisService } = require("@podpis/service");
 
 exports.Controller = class {
   static async materialReport(req, res) {
-    const { month, year, main_schet_id } = req.query;
+    const { month, year, main_schet_id, budjet_id } = req.query;
     const region_id = req.user.region_id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
