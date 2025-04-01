@@ -36,7 +36,7 @@ exports.Controller = class {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const { budjet_id } = req.query;
-    const { year, month, childs } = req.body;
+    const { year, month } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -55,26 +55,6 @@ exports.Controller = class {
     if (check.total) {
       return res.error(req.i18n.t("docExists"), 409, { year, month });
     }
-
-    const internal_child = { type_id: 9, sub_childs: [] };
-
-    for (let child of childs) {
-      if (child.type_id !== 0 && child.type_id !== 9 && child.type_id !== 10) {
-        for (let sub_child of child.sub_childs) {
-          const index = internal_child.sub_childs.findIndex(
-            (item) => item.schet === sub_child.schet
-          );
-
-          if (index !== -1) {
-            internal_child.sub_childs[index].prixod += sub_child.prixod;
-            internal_child.sub_childs[index].rasxod += sub_child.rasxod;
-          } else {
-            internal_child.sub_childs.push(sub_child);
-          }
-        }
-      }
-    }
-    childs.push(internal_child);
 
     const result = await MainBookService.create({
       budjet_id,
@@ -345,8 +325,8 @@ exports.Controller = class {
   static async update(req, res) {
     const region_id = req.user.region_id;
     const { id } = req.params;
-    const { childs } = req.body;
     const user_id = req.user.id;
+    const { month, year } = req.body;
 
     const old_data = await MainBookService.getById({
       region_id,
@@ -361,46 +341,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainBookStatus"), 409);
     }
 
-    for (let child of childs) {
-      for (let sub_child of child.sub_childs) {
-        if (sub_child.id) {
-          const check = old_data.childs.find((item) => {
-            return item.sub_childs.find(
-              (element) => element.id === sub_child.id
-            );
-          });
+    if (old_data.month !== month || year !== old_data.year) {
+      const check = await MainBookService.get({
+        offset: 0,
+        limit: 1,
+        region_id,
+        budjet_id,
+        year,
+        month,
+      });
 
-          if (!check) {
-            return res.error(req.i18n.t("docNotFound"), 404);
-          }
-        }
+      if (check.total) {
+        return res.error(req.i18n.t("docExists"), 409, { year, month });
       }
     }
-
-    const internal_child = old_data.childs.find((item) => item.type_id === 9);
-
-    for (let sub_child of internal_child?.sub_childs) {
-      sub_child.prixod = 0;
-      sub_child.rasxod = 0;
-    }
-
-    for (let child of childs) {
-      if (child.type_id !== 0 && child.type_id !== 9 && child.type_id !== 10) {
-        for (let sub_child of child.sub_childs) {
-          const index = internal_child.sub_childs.findIndex(
-            (item) => item.schet === sub_child.schet
-          );
-
-          if (index !== -1) {
-            internal_child.sub_childs[index].prixod += sub_child.prixod;
-            internal_child.sub_childs[index].rasxod += sub_child.rasxod;
-          } else {
-            internal_child.sub_childs.push(sub_child);
-          }
-        }
-      }
-    }
-    childs.push(internal_child);
 
     const result = await MainBookService.update({
       ...req.body,

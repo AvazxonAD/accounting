@@ -190,7 +190,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -220,7 +223,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -250,7 +256,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -284,7 +293,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -339,7 +351,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -366,7 +381,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -393,7 +411,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -424,7 +445,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -496,7 +520,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -523,7 +550,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -550,7 +580,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -581,7 +614,10 @@ exports.MainBookService = class {
           (item) => item.schet === schet.schet
         );
 
-        data.schets[index].prixod += schet.summa;
+        if (data.schets[index]) {
+          data.schets[index].prixod += schet.summa;
+        }
+        schet.summa;
 
         rasxod += schet.summa;
       }

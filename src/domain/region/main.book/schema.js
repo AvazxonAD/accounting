@@ -15,7 +15,7 @@ exports.MainBookSchema = class {
             Joi.object({
               type_id: Joi.number()
                 .integer()
-                .valid(1, 2, 3, 4, 5, 7, 0, 10)
+                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
                 .required(),
               sub_childs: Joi.array()
                 .items(
@@ -45,7 +45,7 @@ exports.MainBookSchema = class {
             Joi.object({
               type_id: Joi.number()
                 .integer()
-                .valid(1, 2, 3, 4, 5, 7, 0, 10)
+                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
                 .required(),
               sub_childs: Joi.array()
                 .items(
