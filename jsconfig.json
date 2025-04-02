@@ -29,6 +29,7 @@
       "@video/*": ["domain/admin/video/*"],
       "@main_schet/*": ["domain/region/spravochnik/main.schet/*"],
       "@podpis/*": ["domain/region/spravochnik/podpis/*"],
+      "@podotchet/*": ["domain/region/spravochnik/podotchet/*"],
       "@podraz/*": ["domain/region/spravochnik/podrazdelenie/*"],
       "@jur7_podraz/*": ["domain/region/spravochnik/jur7.podrazdelenie/*"],
       "@report_title/*": ["domain/admin/spravochnik/report.title/*"],

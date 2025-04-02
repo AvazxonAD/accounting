@@ -376,10 +376,12 @@ exports.MainBookDB = class {
     const query = `--sql
       SELECT 
           COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
-          op.schet
+          op.schet,
+          own.schet AS                                  jur3_schet
       FROM bajarilgan_ishlar_jur3_child AS ch
-      JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+      JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
       WHERE d.isdeleted = false
@@ -387,7 +389,8 @@ exports.MainBookDB = class {
         AND r.id = $1
         AND d.main_schet_id = $2
         ${date_filter}
-      GROUP BY op.schet  
+      GROUP BY op.schet,
+          own.schet  
     `;
 
     const result = await db.query(query, params);

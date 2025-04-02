@@ -1,6 +1,17 @@
 const { KassaSaldoDB } = require("./db");
 
 exports.KassaSaldoService = class {
+  static async getByMonth(data) {
+    const result = await KassaSaldoDB.getByMonth([
+      data.main_schet_id,
+      data.year,
+      data.month,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
   static async create(data) {
     const doc = await KassaSaldoDB.create([
       data.summa,

@@ -193,7 +193,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -226,7 +225,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -259,7 +257,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -296,7 +293,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -354,7 +350,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -384,7 +379,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -414,7 +408,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -448,7 +441,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -523,7 +515,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -553,7 +544,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -583,7 +573,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }
@@ -617,7 +606,6 @@ exports.MainBookService = class {
         if (data.schets[index]) {
           data.schets[index].prixod += schet.summa;
         }
-        schet.summa;
 
         rasxod += schet.summa;
       }

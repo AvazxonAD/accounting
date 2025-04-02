@@ -6,13 +6,14 @@ const { PodrazdelenieService } = require("@podraz/service");
 const { SostavService } = require("@sostav/service");
 const { TypeOperatsiiService } = require("@type_operatsii/service");
 const { KassaPrixodService } = require("./service");
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.Controller = class {
   static async create(req, res) {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { id_podotchet_litso, childs } = req.body;
+    const { id_podotchet_litso, childs, doc_date } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,

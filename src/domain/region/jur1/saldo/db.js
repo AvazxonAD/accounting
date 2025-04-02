@@ -1,6 +1,26 @@
 const { db } = require("@db/index");
 
 exports.KassaSaldoDB = class {
+  static async getByMonth(params) {
+    const query = `--sql
+      SELECT 
+            d.*,
+            d.summa::FLOAT
+        FROM kassa_saldo AS d
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        WHERE d.isdeleted = false
+          AND d.main_schet_id = $1
+          AND year = $2
+          AND month = $3
+          AND r.id = $4
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async create(params) {
     const query = `--sql
         INSERT INTO kassa_saldo (

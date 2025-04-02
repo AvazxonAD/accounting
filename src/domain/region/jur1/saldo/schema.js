@@ -19,8 +19,18 @@ exports.KassaSaldoSchema = class {
   static get() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().required().min(1),
+        budjet_id: Joi.number().required().min(1).integer(),
         year: Joi.number().integer().min(1901),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getByMonth() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().required().min(1).integer(),
+        year: Joi.number().integer().min(1901),
+        month: Joi.number().integer().required().min(1).max(12).required(),
       }),
     }).options({ stripUnknown: true });
   }
