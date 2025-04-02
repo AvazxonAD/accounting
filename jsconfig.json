@@ -12,6 +12,7 @@
       "@admin_saldo/*": ["domain/admin/saldo/*"],
       "@admin_main_book/*": ["domain/admin/main.book/*"],
       "@main_book/*": ["domain/region/main.book/*"],
+      "@prixod_book/*": ["domain/region/prixod.book/*"],
       "@admin_dashboard/*": ["domain/admin/dashboard/*"],
       "@prixod_schets/*": ["domain/admin/spravochnik/prixod.schet/*"],
       "@unit/*": ["domain/admin/spravochnik/unit/*"],

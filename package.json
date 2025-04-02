@@ -53,6 +53,7 @@
     "@admin_main_book": "./src/domain/admin/main.book",
     "@video_module": "./src/domain/admin/spravochnik/video.module",
     "@main_book": "./src/domain/region/main.book",
+    "@prixod_book": "./src/domain/region/prixod.book",
     "@admin_dashboard": "./src/domain/admin/dashboard",
     "@unit": "./src/domain/admin/spravochnik/unit",
     "@log": "./src/domain/admin/log",

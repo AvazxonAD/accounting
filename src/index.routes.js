@@ -119,6 +119,9 @@ routes
   // Main book routes
   .use("/main/book", protect, require("@main_book/index"))
 
+  // Prixod book routes
+  .use("/prixod/book", protect, require("@prixod_book/index"))
+
   // Real cost routes
   // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
   // .use("/real/cost/report", protect, require("@real_cost_report/index"))
