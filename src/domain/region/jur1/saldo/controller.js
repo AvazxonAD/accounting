@@ -1,0 +1,184 @@
+const { MainSchetService } = require("@main_schet/service");
+const { KassaSaldoService } = require("./service");
+const { BudjetService } = require(`@budjet/service`);
+
+exports.Controller = class {
+  static async create(req, res) {
+    const user_id = req.user.id;
+    const region_id = req.user.region_id;
+    const budjet_id = req.query.budjet_id;
+
+    const { year, month, main_schet_id } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const checkBySchet = await KassaSaldoService.get({
+      main_schet_id,
+      region_id,
+      budjet_id,
+    });
+    if (checkBySchet.docs.length) {
+      return res.error(req.i18n.t(`docExists`), 409);
+    }
+
+    const check = await KassaSaldoService.get({
+      year,
+      main_schet_id,
+      region_id,
+      month,
+      budjet_id,
+    });
+    if (check.docs.length) {
+      return res.error(req.i18n.t(`docExists`), 409);
+    }
+
+    const result = await KassaSaldoService.create({
+      ...req.body,
+      main_schet_id,
+      budjet_id,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("createSuccess"), 201, null, result);
+  }
+
+  static async get(req, res) {
+    const region_id = req.user.region_id;
+    const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const { docs, summa } = await KassaSaldoService.get({
+      region_id,
+      ...req.query,
+    });
+
+    return res.success(req.i18n.t("getSuccess"), 200, { summa }, docs);
+  }
+
+  static async getById(req, res) {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const result = await KassaSaldoService.getById({
+      region_id,
+      id,
+      budjet_id,
+      isdeleted: true,
+    });
+    if (!result) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
+
+  static async update(req, res) {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+    const { budjet_id } = req.query;
+    const { year, month, main_schet_id } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const old_data = await KassaSaldoService.getById({
+      region_id,
+      budjet_id,
+      id,
+    });
+    if (!old_data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    if (old_data.main_schet_id !== main_schet_id) {
+      const checkBySchet = await KassaSaldoService.get({
+        main_schet_id,
+        region_id,
+        budjet_id,
+      });
+      if (checkBySchet.docs.length) {
+        return res.error(req.i18n.t(`docExists`), 409);
+      }
+    }
+
+    if (
+      old_data.year !== year ||
+      old_data.month !== month ||
+      old_data.main_schet_id !== main_schet_id
+    ) {
+      const check = await KassaSaldoService.get({
+        year,
+        main_schet_id,
+        region_id,
+        month,
+        budjet_id: main_schet.spravochnik_budjet_name_id,
+      });
+      if (check.docs.length) {
+        return res.error(req.i18n.t(`docExists`), 409);
+      }
+    }
+
+    const result = await KassaSaldoService.update({
+      ...req.body,
+      main_schet_id,
+      id,
+    });
+
+    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+  }
+
+  static async delete(req, res) {
+    const { budjet_id } = req.query;
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const doc = await KassaSaldoService.getById({
+      region_id,
+      budjet_id,
+      id,
+    });
+    if (!doc) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const result = await KassaSaldoService.delete({ id });
+
+    return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
+  }
+};

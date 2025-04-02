@@ -1,7 +1,7 @@
 const { db } = require("@db/index");
 const { InternalDB } = require("./db");
 const { tashkentTime, returnParamsValues } = require("@helper/functions");
-const { SaldoDB } = require("@saldo/db");
+const { SaldoDB } = require("@jur7_saldo/db");
 
 exports.Jur7InternalService = class {
   static async delete(data) {

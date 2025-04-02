@@ -1,7 +1,7 @@
 const { db } = require("@db/index");
 const { RasxodDB } = require("./db");
 const { tashkentTime, returnParamsValues } = require("@helper/functions");
-const { SaldoDB } = require("@saldo/db");
+const { SaldoDB } = require("@jur7_saldo/db");
 
 exports.Jur7RsxodService = class {
   static async delete(data) {

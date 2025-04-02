@@ -1,6 +1,6 @@
 const { DashboardService } = require("./service");
 const { MainSchetService } = require("@main_schet/service");
-const { PodotchetService } = require("../spravochnik/podotchet/service");
+const { PodotchetService } = require("@podotchet/service");
 
 exports.Controller = class {
   static async budjet(req, res) {

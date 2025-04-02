@@ -7,15 +7,15 @@ const { Middleware } = require("@middleware/index");
 routes
   // Region routes
 
-  .use("/bank/monitoring", protect, require("@bank_monitoring/index"))
-  .use("/bank/income", protect, require("@bank_prixod/index"))
-  .use("/bank/saldo", protect, require("@bank_saldo/index"))
-  .use("/bank/expense", protect, require("@bank_rasxod/index"))
+  .use("/bank/monitoring", protect, require("@jur2_monitoring/index"))
+  .use("/bank/income", protect, require("@jur2_prixod/index"))
+  .use("/bank/saldo", protect, require("@jur2_saldo/index"))
+  .use("/bank/expense", protect, require("@jur2_rasxod/index"))
 
-  .use("/kassa/monitoring", protect, require("@kassa_monitoring/index"))
-  .use("/kassa/income", protect, require("@kassa_prixod/index"))
-  .use("/kassa/saldo", protect, require("@kassa_saldo/index"))
-  .use("/kassa/expense", protect, require("@kassa_rasxod/index"))
+  .use("/kassa/monitoring", protect, require("@jur1_monitoring/index"))
+  .use("/kassa/income", protect, require("@jur1_prixod/index"))
+  .use("/kassa/saldo", protect, require("@jur1_saldo/index"))
+  .use("/kassa/expense", protect, require("@jur1_rasxod/index"))
 
   .use("/auth", require("@auth/index"))
   .use("/auth/region", protect, require("@region/index"))
@@ -101,12 +101,12 @@ routes
     require("@jur7_internal/index")
   )
   .use("/jur_7/unit", protect, require("@unit/index"))
-  .use("/jur_7/saldo", protect, require("@saldo/index"))
+  .use("/jur_7/saldo", protect, require("@jur7_saldo/index"))
   .use("/jur_7/monitoring", protect, require("@jur7_monitoring/index"))
 
   .use("/main/book", protect, require("@main_book/index"))
 
-  .use("/prixod/book", protect, require("@prixod_book/index"))
+  .use("/prixod/book", protect, require("@jur8/index"))
 
   // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
   // .use("/real/cost/report", protect, require("@real_cost_report/index"))
@@ -143,8 +143,6 @@ routes
   )
   .use("/admin/main/book", protect, require("@admin_main_book/index"))
 
-  .use("/admin/prixod/book", protect, require("@admin_prixod_book/index"))
-
   .use("/admin/video", protect, require("@video/index"))
 
   .use("/admin/dashboard", protect, require("@admin_dashboard/index"))
@@ -152,8 +150,5 @@ routes
   .use("/admin/saldo", protect, require("@admin_saldo/index"))
 
   .use("/admin/control", protect, require("@admin_control/index"));
-
-// .use("/admin/ox", protect, require("@admin_ox/index"))
-// .use("/admin/real/cost", protect, require("./admin/real.cost/index"));
 
 module.exports = routes;

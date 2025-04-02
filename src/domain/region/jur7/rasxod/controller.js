@@ -2,7 +2,7 @@ const { checkTovarId } = require("@helper/functions");
 const { ResponsibleService } = require("@responsible/service");
 const { ProductService } = require("@product/service");
 const { Jur7RsxodService } = require("./service");
-const { SaldoService } = require("@saldo/service");
+const { SaldoService } = require("@jur7_saldo/service");
 const { BudjetService } = require("@budjet/service");
 
 exports.Controller = class {

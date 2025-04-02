@@ -1,4 +1,4 @@
-const { SaldoService } = require("@saldo/service");
+const { SaldoService } = require("@jur7_saldo/service");
 
 exports.Middleware = class {
   static async jur7Block(req, res, next) {

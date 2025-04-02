@@ -8,7 +8,7 @@ const {
 const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
-const { SaldoDB } = require("@saldo/db");
+const { SaldoDB } = require("@jur7_saldo/db");
 
 exports.PrixodJur7Service = class {
   static async getByProductId(data) {
