@@ -1,9 +1,9 @@
 const { db } = require("@db/index");
 
-exports.MainBookDB = class {
+exports.PrixodBookDB = class {
   static async update(params) {
     const query = `
-      UPDATE main_book
+      UPDATE prixod_book
         SET
           status = $1,
           accept_time = $2,
@@ -22,7 +22,7 @@ exports.MainBookDB = class {
 
     if (year) {
       params.push(year);
-      conditions.push(`AND d.year = $${params.length}`);
+      conditions.push(`d.year = $${params.length}`);
     }
 
     if (budjet_id) {
@@ -35,7 +35,9 @@ exports.MainBookDB = class {
       conditions.push(`d.month = $${params.length}`);
     }
 
-    const where_clause = conditions.length ? conditions.join(" AND ") : "";
+    const where_clause = conditions.length
+      ? `AND ${conditions.join(" AND ")}`
+      : "";
 
     const query = `
       WITH data AS (
@@ -55,7 +57,7 @@ exports.MainBookDB = class {
           ua.fio AS                 accept_user_fio,
           ua.login AS               accept_user_login,
           r.name AS                 region_name
-        FROM main_book d
+        FROM prixod_book d
         JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
         JOIN users u ON u.id = d.user_id
         LEFT JOIN users ua ON ua.id = d.accept_user_id
@@ -69,7 +71,7 @@ exports.MainBookDB = class {
         (
           SELECT
             COALESCE(COUNT(d.id), 0)
-          FROM main_book d
+          FROM prixod_book d
           JOIN users u ON u.id = d.user_id
           JOIN regions r ON r.id = u.region_id
           WHERE d.isdeleted = false
@@ -99,7 +101,7 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login,
         r.name AS                 region_name
-      FROM main_book d
+      FROM prixod_book d
       JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
@@ -129,12 +131,12 @@ exports.MainBookDB = class {
                 'rasxod', subch.rasxod
               )
             )
-          FROM main_book_child subch
+          FROM prixod_book_child subch
           WHERE subch.isdeleted = false
             AND subch.type_id = t.id
             AND subch.parent_id = $1
         ) AS sub_childs
-      FROM main_book_child ch
+      FROM prixod_book_child ch
       JOIN main_book_type t ON t.id = ch.type_id
       WHERE ch.isdeleted = false
         AND parent_id = $1

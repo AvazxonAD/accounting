@@ -7,19 +7,16 @@ const { Middleware } = require("@middleware/index");
 routes
   // Region routes
 
-  // Bank monitoring
   .use("/bank/monitoring", protect, require("@bank_monitoring/index"))
   .use("/bank/income", protect, require("@bank_prixod/index"))
   .use("/bank/saldo", protect, require("@bank_saldo/index"))
   .use("/bank/expense", protect, require("@bank_rasxod/index"))
 
-  // Kassa monitoring
   .use("/kassa/monitoring", protect, require("@kassa_monitoring/index"))
   .use("/kassa/income", protect, require("@kassa_prixod/index"))
   .use("/kassa/saldo", protect, require("@kassa_saldo/index"))
   .use("/kassa/expense", protect, require("@kassa_rasxod/index"))
 
-  // Auth routes
   .use("/auth", require("@auth/index"))
   .use("/auth/region", protect, require("@region/index"))
   .use("/auth/role", protect, require("@role/index"))
@@ -27,10 +24,8 @@ routes
   .use("/auth/user", protect, require("@user/index"))
   .use("/auth/admin", protect, require("@admin_users/index"))
 
-  // Organization monitoring
   .use("/organization/monitoring", protect, require("@organ_monitoring/index"))
 
-  // Spravochnik routes
   .use(
     "/spravochnik/podotchet-litso",
     protect,
@@ -69,26 +64,19 @@ routes
   .use("/spravochnik/podpis", protect, require("@podpis/podpis.routes"))
   .use("/spravochnik/bank", protect, require("@bank/index"))
 
-  // Smeta routes
   .use("/smeta/grafik", protect, require("@smeta_grafik/index"))
   .use("/smeta", protect, require("@smeta/index"))
 
-  // Shartnoma routes
   .use("/shartnoma", protect, require("@contract/index"))
 
-  // Akt routes
   .use("/akt", protect, require("@akt/index"))
 
-  // Avans routes
   .use("/avans", protect, require("@avans/index"))
 
-  // Show service routes
   .use("/services/show", protect, require("@show_service/index"))
 
-  // Podotchet monitoring
   .use("/podotchet/monitoring", protect, require("@pod_monitoring/index"))
 
-  // Jur 7 routes
   .use("/jur_7/group", protect, require("@group/index"))
   .use("/jur_7/pereotsenka", protect, require("@pereotsenka/index"))
   .use("/jur_7/podrazdelenie", protect, require("@jur7_podraz/index"))
@@ -116,33 +104,24 @@ routes
   .use("/jur_7/saldo", protect, require("@saldo/index"))
   .use("/jur_7/monitoring", protect, require("@jur7_monitoring/index"))
 
-  // Main book routes
   .use("/main/book", protect, require("@main_book/index"))
 
-  // Prixod book routes
   .use("/prixod/book", protect, require("@prixod_book/index"))
 
-  // Real cost routes
   // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
   // .use("/real/cost/report", protect, require("@real_cost_report/index"))
 
-  // Ox routes
   // .use("/ox/doc", protect, require("@ox_doc/index"))
   // .use("/ox/report", protect, require("@ox_report/index"))
 
-  // Logs
   .use("/log", protect, require("@log/index"))
 
-  // Features
   .use("/features", protect, require("@features/index"))
 
-  // Dashboard
   .use("/dashboard", protect, require("@region_dashboard/index"))
 
-  // Organ saldo
   .use("/organ/saldo", protect, require("@organ_saldo/index"))
 
-  // Organ saldo
   .use("/podotchet/saldo", protect, require("@podotchet_saldo/index"))
 
   // Admin routes
@@ -164,9 +143,9 @@ routes
   )
   .use("/admin/main/book", protect, require("@admin_main_book/index"))
 
-  .use("/admin/video", protect, require("@video/index"))
+  .use("/admin/prixod/book", protect, require("@admin_prixod_book/index"))
 
-  // .use("/admin/ox", protect, require("@admin_ox/index"))
+  .use("/admin/video", protect, require("@video/index"))
 
   .use("/admin/dashboard", protect, require("@admin_dashboard/index"))
 
@@ -174,6 +153,7 @@ routes
 
   .use("/admin/control", protect, require("@admin_control/index"));
 
+// .use("/admin/ox", protect, require("@admin_ox/index"))
 // .use("/admin/real/cost", protect, require("./admin/real.cost/index"));
 
 module.exports = routes;

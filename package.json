@@ -51,6 +51,7 @@
     "@main_book_schet": "./src/domain/admin/spravochnik/main.book.schet",
     "@group": "./src/domain/admin/spravochnik/group",
     "@admin_main_book": "./src/domain/admin/main.book",
+    "@admin_prixod_book": "./src/domain/admin/prixod.book",
     "@video_module": "./src/domain/admin/spravochnik/video.module",
     "@main_book": "./src/domain/region/main.book",
     "@prixod_book": "./src/domain/region/prixod.book",

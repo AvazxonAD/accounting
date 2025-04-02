@@ -11,6 +11,7 @@
       "@group/*": ["domain/admin/spravochnik/group/*"],
       "@admin_saldo/*": ["domain/admin/saldo/*"],
       "@admin_main_book/*": ["domain/admin/main.book/*"],
+      "@admin_prixod_book/*": ["domain/admin/prixod.book/*"],
       "@main_book/*": ["domain/region/main.book/*"],
       "@prixod_book/*": ["domain/region/prixod.book/*"],
       "@admin_dashboard/*": ["domain/admin/dashboard/*"],
