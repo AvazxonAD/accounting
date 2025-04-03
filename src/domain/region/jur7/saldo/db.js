@@ -126,7 +126,7 @@ exports.SaldoDB = class {
   }
 
   static async checkDoc(params) {
-    const query = `
+    const query = `--sql
                 SELECT 
                     d.id,
                     d.doc_num,
@@ -180,7 +180,7 @@ exports.SaldoDB = class {
   }
 
   static async updateIznosSumma(params) {
-    const query = `
+    const query = `--sql
             UPDATE saldo_naimenovanie_jur7
             SET 
                 eski_iznos_summa = $1,
@@ -197,7 +197,7 @@ exports.SaldoDB = class {
   }
 
   static async createSaldoDate(params, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO saldo_date(
                 region_id, 
                 year, 

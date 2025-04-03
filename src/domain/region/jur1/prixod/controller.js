@@ -93,10 +93,16 @@ exports.Controller = class {
     const result = await KassaPrixodService.create({
       ...req.body,
       main_schet_id,
+      region_id,
       user_id,
     });
 
-    return res.success(req.i18n.t("createSuccess"), 201, null, result);
+    return res.success(
+      req.i18n.t("createSuccess"),
+      201,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async get(req, res) {
@@ -241,10 +247,16 @@ exports.Controller = class {
       ...req.body,
       main_schet_id,
       user_id,
+      region_id,
       id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+    return res.success(
+      req.i18n.t("updateSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async delete(req, res) {
@@ -269,8 +281,18 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await KassaPrixodService.delete({ id });
+    const result = await KassaPrixodService.delete({
+      id,
+      ...doc,
+      region_id,
+      main_schet_id,
+    });
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+    return res.success(
+      req.i18n.t("getSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 };

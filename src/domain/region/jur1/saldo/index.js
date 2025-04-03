@@ -12,6 +12,10 @@ router
     validator(Controller.createAuto, KassaSaldoSchema.createAuto())
   )
   .get("/", validator(Controller.get, KassaSaldoSchema.get()))
+  .get(
+    "/date",
+    validator(Controller.getDateSaldo, KassaSaldoSchema.getDateSaldo())
+  )
   .get("/", validator(Controller.getByMonth, KassaSaldoSchema.get()))
   .put("/:id", validator(Controller.update, KassaSaldoSchema.update()))
   .delete("/:id", validator(Controller.delete, KassaSaldoSchema.delete()))

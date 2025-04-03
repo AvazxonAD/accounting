@@ -324,28 +324,12 @@ exports.KassaMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(params, operator, search, date) {
+  static async getSumma(params, search) {
     let search_filter = ``;
-    let date_filter = ``;
 
     if (search) {
       params.push(search);
       search_filter = ` AND d.doc_num = $${params.length}`;
-    }
-
-    if (date.from && date.to) {
-      params.push(date.from, date.to);
-      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
-    }
-
-    if (date.from && !date.to) {
-      params.push(date.from);
-      date_filter = `AND d.doc_date ${operator} $${params.length}`;
-    }
-
-    if (!date.from && date.to) {
-      params.push(date.to);
-      date_filter = `AND d.doc_date ${operator} $${params.length}`;
     }
 
     const query = `--sql
@@ -361,7 +345,7 @@ exports.KassaMonitoringDB = class {
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     ${search_filter} 
-                    ${date_filter}
+                    AND d.doc_date BETWEEN $3 AND $4
             ), 
             rasxod AS (
                 SELECT 
@@ -375,7 +359,7 @@ exports.KassaMonitoringDB = class {
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     ${search_filter} 
-                    ${date_filter}
+                    AND d.doc_date BETWEEN $3 AND $4
             )
 
             SELECT 

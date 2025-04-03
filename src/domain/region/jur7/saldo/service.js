@@ -824,8 +824,6 @@ exports.SaldoService = class {
         if (doc.iznos) {
           month_iznos_summa = doc.sena * (doc.iznos_foiz / 100);
           old_iznos = doc.eski_iznos_summa ? doc.eski_iznos_summa / doc.kol : 0;
-          // iznos_summa = month_iznos_summa + old_iznos;
-          // iznos_summa = iznos_summa >= doc.sena ? doc.sena : iznos_summa;
           old_iznos = old_iznos >= doc.sena ? doc.sena : old_iznos;
         }
 

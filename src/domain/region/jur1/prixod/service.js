@@ -1,6 +1,7 @@
 const { db } = require("@db/index");
 const { KassaPrixodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.KassaPrixodService = class {
   static async create(data) {
@@ -31,7 +32,12 @@ exports.KassaPrixodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      const dates = await KassaSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -122,7 +128,12 @@ exports.KassaPrixodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      const dates = await KassaSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -132,7 +143,12 @@ exports.KassaPrixodService = class {
     const result = await db.transaction(async (client) => {
       const doc = await KassaPrixodDB.delete([data.id], client);
 
-      return doc;
+      const dates = await KassaSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;

@@ -30,19 +30,14 @@ exports.KassaMonitoringService = class {
       data.order_by,
       data.order_type
     );
+
     let page_prixod_sum = 0;
     let page_rasxod_sum = 0;
+
     for (let item of result.data) {
       page_prixod_sum += item.prixod_sum;
       page_rasxod_sum += item.rasxod_sum;
     }
-
-    const summa_from = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id],
-      "<",
-      data.search,
-      { from: data.from }
-    );
 
     const summa_to = await KassaMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id],

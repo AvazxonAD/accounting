@@ -5,8 +5,28 @@ const { HelperFunctions } = require(`@helper/functions`);
 const { KassaMonitoringService } = require(`@jur1_monitoring/service`);
 
 exports.Controller = class {
+  static async getDateSaldo(req, res) {
+    const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const result = await KassaSaldoService.getDateSaldo({
+      region_id,
+      main_schet_id,
+    });
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
+
   static async createAuto(req, res) {
-    const { region_id, user_id } = req.user;
+    const { region_id, id: user_id } = req.user;
     const { budjet_id } = req.query;
     const { year, month, main_schet_id } = req.body;
 
@@ -48,6 +68,7 @@ exports.Controller = class {
       summa: last_saldo.summa + internal.summa,
       main_schet_id,
       year,
+      region_id,
       month,
       user_id,
       budjet_id,

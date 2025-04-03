@@ -1,0 +1,1 @@
+DROP TABLE saldo_date_jur1;

@@ -7,6 +7,7 @@ const { HelperFunctions } = require("@helper/functions");
 const { CODE } = require("@helper/constants");
 const { ProductService } = require("@product/service");
 const { RegionService } = require("@region/service");
+const { isDate } = require("moment");
 
 exports.Controller = class {
   static async reportByResponsible(req, res) {
@@ -315,6 +316,8 @@ exports.Controller = class {
     }
 
     for (let item of data) {
+      const real_data = JSON.parse(JSON.stringify(item));
+
       item.responsible_id = Number(item.responsible_id);
       item.name = String(item.name);
       item.group_jur7_id = Number(item.group_jur7_id);
@@ -351,11 +354,21 @@ exports.Controller = class {
         item.doc_date = new Date();
       }
 
-      const { error, value } = SaldoSchema.importData(req.i18n).validate(item);
+      const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
+      if (!regex.test(item.doc_date)) {
+        return res.error(req.i18n.t("dateError"), 400, {
+          code: CODE.EXCEL_IMPORT.code,
+          doc: real_data,
+          header,
+        });
+      }
+
+      const { error } = SaldoSchema.importData(req.i18n).validate(item);
       if (error) {
         return res.error(error.details[0].message, 400, {
           code: CODE.EXCEL_IMPORT.code,
-          doc: item,
+          doc: real_data,
           header,
         });
       }
@@ -402,14 +415,6 @@ exports.Controller = class {
       doc.iznos_schet = group.schet;
       doc.iznos_sub_schet = group.provodka_subschet;
       doc.group = group;
-
-      // if (!doc.iznos && doc.eski_iznos_summa > 0) {
-      //   return res.error(
-      //     `${req.i18n.t("IznosSummaError")} ${doc.eski_iznos_summa}`,
-      //     400,
-      //     doc
-      //   );
-      // }
     }
 
     await SaldoService.importData({
