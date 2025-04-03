@@ -71,7 +71,6 @@ exports.Controller = class {
     const { from, to, main_schet_id, excel, report_title_id, budjet_id } =
       req.query;
     const region_id = req.user.region_id;
-    const region = await RegionService.getById({ id: region_id });
 
     const report_title = await ReportTitleService.getById({
       id: report_title_id,
@@ -79,8 +78,6 @@ exports.Controller = class {
     if (!report_title) {
       return res.error(req.i18n.t("reportTitleNotFound"), 404);
     }
-
-    const podpis = await PodpisService.get({ region_id, type: "cap" });
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -90,19 +87,32 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 400);
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const data = await KassaMonitoringService.cap({
       region_id,
       main_schet_id,
+      saldo,
       from,
       to,
     });
 
     if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
+
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 400);
+      }
+
       const { fileName, filePath } = await HelperFunctions.capExcel({
         rasxods: data,
         main_schet,
@@ -145,11 +155,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const data = await KassaMonitoringService.daysReport({
       region_id,
       main_schet_id,
       from,
       to,
+      saldo,
     });
 
     if (excel) {
@@ -215,6 +234,14 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const data = await KassaMonitoringService.prixodReport({
