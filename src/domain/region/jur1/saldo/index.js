@@ -7,6 +7,10 @@ const { Controller } = require("./controller");
 
 router
   .post("/", validator(Controller.create, KassaSaldoSchema.create()))
+  .post(
+    "/auto",
+    validator(Controller.createAuto, KassaSaldoSchema.createAuto())
+  )
   .get("/", validator(Controller.get, KassaSaldoSchema.get()))
   .get("/", validator(Controller.getByMonth, KassaSaldoSchema.get()))
   .put("/:id", validator(Controller.update, KassaSaldoSchema.update()))

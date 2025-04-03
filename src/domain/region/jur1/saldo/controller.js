@@ -2,11 +2,13 @@ const { MainSchetService } = require("@main_schet/service");
 const { KassaSaldoService } = require("./service");
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
+const { KassaMonitoringService } = require(`@jur1_monitoring/service`);
 
 exports.Controller = class {
   static async createAuto(req, res) {
-    const region_id = req.user.region_id;
-    const { year, month, main_schet_id } = req.query;
+    const { region_id, user_id } = req.user;
+    const { budjet_id } = req.query;
+    const { year, month, main_schet_id } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -16,17 +18,42 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const result = await KassaSaldoService.getByMonth({
+    const last_saldo = await KassaSaldoService.getByMonth({
       region_id,
       year: last_date.year,
       month: last_date.month,
       main_schet_id,
     });
-    if (!result) {
-      return res.error(req.i18n.t(`saldoNotFound`), 404);
+    if (!last_saldo) {
+      return res.error(req.i18n.t(`lastSaldoNotFound`), 404);
     }
+
+    const date = HelperFunctions.getDate({ year, month });
+
+    const internal = await KassaMonitoringService.getSumma({
+      main_schet_id,
+      region_id,
+      from: date[0],
+      to: date[1],
+    });
+
+    const response = await KassaSaldoService.createAuto({
+      summa: last_saldo.summa + internal.summa,
+      main_schet_id,
+      year,
+      month,
+      user_id,
+      budjet_id,
+    });
+
+    return res.success(req.i18n.t("createSuccess"), 200, null, response);
   }
 
   static async getByMonth(req, res) {

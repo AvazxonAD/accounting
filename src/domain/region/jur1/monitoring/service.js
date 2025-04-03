@@ -5,6 +5,17 @@ const path = require("path");
 const { HelperFunctions } = require("@helper/functions");
 
 exports.KassaMonitoringService = class {
+  static async getSumma(data) {
+    const summa = await KassaMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id],
+      null,
+      null,
+      { from: data.from, to: data.to }
+    );
+
+    return summa;
+  }
+
   static async get(data) {
     const result = await KassaMonitoringDB.get(
       [
@@ -27,15 +38,17 @@ exports.KassaMonitoringService = class {
     }
 
     const summa_from = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from],
+      [data.region_id, data.main_schet_id],
       "<",
-      data.search
+      data.search,
+      { from: data.from }
     );
 
     const summa_to = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.to],
+      [data.region_id, data.main_schet_id],
       "<=",
-      data.search
+      data.search,
+      { to: data.to }
     );
 
     return {

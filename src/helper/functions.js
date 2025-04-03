@@ -918,13 +918,27 @@ exports.HelperFunctions = class {
     return strNum.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   }
 
-  static getMonthStartEnd(year, month) {
+  static getMonthStartEnd(date) {
+    const { year, month } = date;
+
     if (!year || !month || month < 1 || month > 12) {
       throw new Error(`Yil yoki oy noto‘g‘ri kiritilgan! => ${year} ${month}`);
     }
 
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
+
+    return [startDate, endDate];
+  }
+
+  static getDate(data) {
+    const { year, month } = data;
+    if (!year || !month || month < 1 || month > 12) {
+      throw new Error(`Yil yoki oy noto‘g‘ri kiritilgan! => ${year} ${month}`);
+    }
+
+    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    const endDate = new Date(year, month, 0).toISOString().split("T")[0];
 
     return [startDate, endDate];
   }

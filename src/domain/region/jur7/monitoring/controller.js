@@ -71,7 +71,7 @@ exports.Controller = class {
       budjet_id,
     });
 
-    const date = HelperFunctions.getMonthStartEnd(year, month);
+    const date = HelperFunctions.getMonthStartEnd({ year, month });
 
     if (excel === "true") {
       const region = await RegionService.getById({ id: region_id });

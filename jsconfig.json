@@ -22,6 +22,7 @@
       "@bank/*": ["domain/admin/spravochnik/bank/*"],
       "@jur2_saldo/*": ["domain/region/jur2/saldo/*"],
       "@jur1_saldo/*": ["domain/region/jur1/saldo/*"],
+      "@jur1_monitoring/*": ["domain/region/jur1/monitoring/*"],
       "@operatsii/*": ["domain/admin/spravochnik/operatsii/*"],
       "@auth/*": ["domain/auth/auth//*"],
       "@user/*": ["domain/auth/user/*"],

@@ -12,7 +12,7 @@ exports.KassaMonitoringDB = class {
 
     order = `ORDER BY combined_${order_by} ${order_type}`;
 
-    const query = `
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id, 
@@ -300,7 +300,7 @@ exports.KassaMonitoringDB = class {
   }
 
   static async capData(params) {
-    const query = `
+    const query = `--sql
         SELECT
             op.schet,
             op.sub_schet,
@@ -324,14 +324,31 @@ exports.KassaMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(params, operator, search) {
+  static async getSumma(params, operator, search, date) {
     let search_filter = ``;
+    let date_filter = ``;
+
     if (search) {
       params.push(search);
       search_filter = ` AND d.doc_num = $${params.length}`;
     }
 
-    const query = `
+    if (date.from && date.to) {
+      params.push(date.from, date.to);
+      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
+    if (date.from && !date.to) {
+      params.push(date.from);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    if (!date.from && date.to) {
+      params.push(date.to);
+      date_filter = `AND d.doc_date ${operator} $${params.length}`;
+    }
+
+    const query = `--sql
             WITH prixod AS (
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
@@ -340,11 +357,11 @@ exports.KassaMonitoringDB = class {
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date ${operator} $3 
+                    AND d.main_schet_id = $2  
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     ${search_filter} 
+                    ${date_filter}
             ), 
             rasxod AS (
                 SELECT 
@@ -354,50 +371,18 @@ exports.KassaMonitoringDB = class {
                 JOIN users u ON d.user_id = u.id
                 JOIN regions r ON u.region_id = r.id
                 WHERE r.id = $1 
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date ${operator} $3 
+                    AND d.main_schet_id = $2  
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     ${search_filter} 
-            ),
-
-            rasxod_saldo AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-                FROM kassa_saldo d
-                JOIN kassa_saldo_child ch ON ch.parent_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                WHERE r.id = $1 
-                    AND d.rasxod = true
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date ${operator} $3
-                    ${search_filter} 
-            ),
-            
-            prixod_saldo AS (
-                SELECT 
-                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-                FROM kassa_saldo d
-                JOIN kassa_saldo_child ch ON ch.parent_id = d.id
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                WHERE r.id = $1 
-                    AND d.prixod = true
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-                    AND d.main_schet_id = $2 
-                    AND d.doc_date ${operator} $3
-                    ${search_filter} 
+                    ${date_filter}
             )
 
             SELECT 
-                ( prixod.summa + prixod_saldo.summa ) AS prixod_summa,
-                ( rasxod.summa + rasxod_saldo.summa ) AS rasxod_summa,
-                ( ( prixod.summa + prixod_saldo.summa ) - ( rasxod.summa + rasxod_saldo.summa ) ) AS summa
-            FROM prixod, rasxod, prixod_saldo, rasxod_saldo;
+                prixod.summa AS prixod_summa,
+                rasxod.summa AS rasxod_summa,
+                (prixod.summa - rasxod.summa) AS summa
+            FROM prixod, rasxod
         `;
 
     const result = await db.query(query, params);

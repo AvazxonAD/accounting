@@ -7,7 +7,10 @@ const { access, constants, mkdir } = require("fs").promises;
 
 exports.Jur7MonitoringService = class {
   static async cap(data) {
-    const date = HelperFunctions.getMonthStartEnd(data.year, data.month);
+    const date = HelperFunctions.getMonthStartEnd({
+      year: data.year,
+      month: data.month,
+    });
 
     let result = await Jur7MonitoringDB.capData([
       data.region_id,
@@ -292,7 +295,10 @@ exports.Jur7MonitoringService = class {
   }
 
   static async materialReport(data) {
-    const dates = HelperFunctions.getMonthStartEnd(data.year, data.month);
+    const dates = HelperFunctions.getMonthStartEnd({
+      year: data.year,
+      month: data.month,
+    });
 
     for (let responsible of data.responsibles) {
       responsible.schets = data.schets.map((item) => ({ ...item }));
@@ -527,7 +533,10 @@ exports.Jur7MonitoringService = class {
       data.month,
       data.budjet_id,
     ]);
-    const dates = HelperFunctions.getMonthStartEnd(data.year, data.month);
+    const dates = HelperFunctions.getMonthStartEnd({
+      year: data.year,
+      month: data.month,
+    });
 
     for (let schet of result) {
       schet.summa_from = await Jur7MonitoringDB.getSummaReport(

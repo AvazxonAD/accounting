@@ -23,6 +23,16 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const check = await KassaSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     if (id_podotchet_litso) {
       const podotchet = await PodotchetService.getById({
         id: id_podotchet_litso,

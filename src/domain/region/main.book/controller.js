@@ -199,7 +199,7 @@ exports.Controller = class {
       .map((item) => [item.jur3_schet, item.jur4_schet])
       .flat();
 
-    const date = HelperFunctions.getMonthStartEnd(year, month);
+    const date = HelperFunctions.getMonthStartEnd({ year, month });
 
     const from = `${date[0].getFullYear()}-${String(date[0].getMonth() + 1).padStart(2, "0")}-${String(date[0].getDate()).padStart(2, "0")}`;
     const to = `${date[1].getFullYear()}-${String(date[1].getMonth() + 1).padStart(2, "0")}-${String(date[1].getDate()).padStart(2, "0")}`;
