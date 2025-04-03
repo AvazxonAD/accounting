@@ -41,7 +41,7 @@ exports.HelperFunctions = class {
 
     worksheet.mergeCells(`A6`, `E6`);
     const summa_from = worksheet.getCell(`A6`);
-    summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from.summa}`;
+    summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from}`;
     summa_from.note = JSON.stringify({
       bold: true,
       horizontal: "left",
@@ -143,7 +143,7 @@ exports.HelperFunctions = class {
 
     worksheet.mergeCells(`A${column}`, `E${column}`);
     const summa_to = worksheet.getCell(`A${column}`);
-    summa_to.value = `Остаток к консу ${data.title} дня : ${data.summa_to.summa}`;
+    summa_to.value = `Остаток к консу ${data.title} дня : ${data.summa_to}`;
     summa_to.note = JSON.stringify({
       bold: true,
       horizontal: "left",

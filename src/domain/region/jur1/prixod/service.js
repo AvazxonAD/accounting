@@ -128,12 +128,35 @@ exports.KassaPrixodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      const dates = await KassaSaldoService.createSaldoDate({
+      let dates;
+
+      dates = await KassaSaldoService.createSaldoDate({
         ...data,
         client,
       });
 
-      return { doc, dates };
+      if (
+        new Date(data.doc_date).getFullYear() !==
+          new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !==
+          new Date(data.old_data.doc_date).getMonth() + 1
+      ) {
+        dates = dates.concat(
+          await KassaSaldoService.createSaldoDate({
+            ...data,
+            doc_date: data.old_data.doc_date,
+            client,
+          })
+        );
+      }
+
+      const uniqueDates = dates.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.year === item.year && t.month === item.month)
+      );
+
+      return { doc, dates: uniqueDates };
     });
 
     return result;

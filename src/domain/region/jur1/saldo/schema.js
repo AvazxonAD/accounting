@@ -73,7 +73,8 @@ exports.KassaSaldoSchema = class {
   static delete() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().required().min(1),
+        budjet_id: Joi.number().required().integer().min(1),
+        main_schet_id: Joi.number().required().integer().min(1),
       }),
 
       params: Joi.object({

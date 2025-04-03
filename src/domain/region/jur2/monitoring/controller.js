@@ -6,6 +6,7 @@ const { BudjetService } = require("@budjet/service");
 const { PodpisService } = require(`@podpis/service`);
 const { HelperFunctions } = require(`@helper/functions`);
 const { REPORT_TYPE } = require("@helper/constants");
+const { BankSaldoService } = require("@jur2_saldo/service");
 
 exports.Controller = class {
   static async get(req, res) {
@@ -31,6 +32,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const saldo = await BankSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const {
       total_count,
       data,
@@ -52,6 +61,7 @@ exports.Controller = class {
       search,
       order_by,
       order_type,
+      saldo,
     });
 
     const pageCount = Math.ceil(total_count / limit);
@@ -65,14 +75,12 @@ exports.Controller = class {
       prixod_sum,
       rasxod_sum,
       total_sum,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from,
+      summa_to: summa_to,
       page_prixod_sum,
       page_rasxod_sum,
       total_sum,
       page_total_sum,
-      summa_from_object: summa_from,
-      summa_to_object: summa_to,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
@@ -89,6 +97,14 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const saldo = await BankSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const data = await BankMonitoringService.cap({
@@ -157,11 +173,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const saldo = await BankSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const data = await BankMonitoringService.daysReport({
       region_id,
       main_schet_id,
       from,
       to,
+      saldo,
     });
 
     if (excel) {
@@ -227,6 +252,14 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const saldo = await BankSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const data = await BankMonitoringService.prixodReport({

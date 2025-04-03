@@ -10,6 +10,7 @@ const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
+const { BankSaldoService } = require("@jur2_saldo/service");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -23,6 +24,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
     } = req.body;
 
     const main_schet = await MainSchetService.getById({
@@ -141,13 +143,29 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await BankPrixodService.create({
       ...req.body,
       main_schet_id,
       user_id,
+      region_id,
     });
 
-    return res.success(req.i18n.t("createSuccess"), 201, null, result);
+    return res.success(
+      req.i18n.t("createSuccess"),
+      201,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async get(req, res) {
@@ -169,6 +187,16 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const offset = (page - 1) * limit;
@@ -214,6 +242,16 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await BankPrixodService.getById({
       region_id,
       main_schet_id,
@@ -239,6 +277,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
     } = req.body;
 
     const main_schet = await MainSchetService.getById({
@@ -366,20 +405,38 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await BankPrixodService.update({
       ...req.body,
       main_schet_id,
       user_id,
+      region_id,
+      old_data: doc,
       id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+    return res.success(
+      req.i18n.t("updateSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async delete(req, res) {
     const main_schet_id = req.query.main_schet_id;
     const region_id = req.user.region_id;
     const id = req.params.id;
+    const user_id = req.user.id;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -398,8 +455,29 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await BankPrixodService.delete({ id });
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc.doc_date).getFullYear(),
+      month: new Date(doc.doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+    const result = await BankPrixodService.delete({
+      id,
+      user_id,
+      main_schet_id,
+      region_id,
+      ...doc,
+    });
+
+    return res.success(
+      req.i18n.t("getSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 };

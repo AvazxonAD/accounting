@@ -2,10 +2,11 @@ const { db } = require("@db/index");
 const { BankRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
 const { FeaturesService } = require(`@features/service`);
+const { BankSaldoService } = require(`@jur2_saldo/service`);
 
 exports.BankRasxodService = class {
   static async import(data) {
-    await db.transaction(async (client) => {
+    const result = await db.transaction(async (client) => {
       for (let item of data.docs) {
         const summa = HelperFunctions.summaDoc(item.childs);
 
@@ -45,13 +46,28 @@ exports.BankRasxodService = class {
           main_schet_id: data.main_schet_id,
         });
       }
+
+      const dates = await BankSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return dates;
     });
+
+    return result;
   }
 
   static async payment(data) {
     const result = await db.transaction(async (client) => {
       const doc = await BankRasxodDB.payment([data.status, data.id], client);
-      return doc;
+
+      const dates = await BankSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -101,7 +117,12 @@ exports.BankRasxodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      const dates = await BankSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -199,7 +220,35 @@ exports.BankRasxodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      let dates;
+
+      dates = await BankSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      if (
+        new Date(data.doc_date).getFullYear() !==
+          new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !==
+          new Date(data.old_data.doc_date).getMonth() + 1
+      ) {
+        dates = dates.concat(
+          await BankSaldoService.createSaldoDate({
+            ...data,
+            doc_date: data.old_data.doc_date,
+            client,
+          })
+        );
+      }
+
+      const uniqueDates = dates.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.year === item.year && t.month === item.month)
+      );
+
+      return { doc, dates: uniqueDates };
     });
 
     return result;
@@ -209,7 +258,12 @@ exports.BankRasxodService = class {
     const result = await db.transaction(async (client) => {
       const doc = await BankRasxodDB.delete([data.id], client);
 
-      return doc;
+      const dates = await BankSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;

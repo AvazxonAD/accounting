@@ -5,6 +5,17 @@ const path = require(`path`);
 const { HelperFunctions } = require("@helper/functions");
 
 exports.BankMonitoringService = class {
+  static async getSumma(data) {
+    const summa = await BankMonitoringDB.getSumma([
+      data.region_id,
+      data.main_schet_id,
+      data.from,
+      data.to,
+    ]);
+
+    return summa;
+  }
+
   static async get(data) {
     const result = await BankMonitoringDB.get(
       [
@@ -27,28 +38,22 @@ exports.BankMonitoringService = class {
       page_rasxod_sum += item.rasxod_sum;
     }
 
-    const summa_from = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from],
-      "<",
-      data.search
-    );
-
-    const summa_to = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.to],
-      "<=",
-      data.search
-    );
+    const internal = await BankMonitoringDB.getSumma([
+      data.region_id,
+      data.main_schet_id,
+      data.from,
+      data.to,
+    ]);
 
     return {
-      summa_from,
-      summa_to,
+      summa_from: data.saldo.summa,
+      summa_to: data.saldo.summa + internal.summa,
       data: result.data || [],
       total_count: result.total_count,
       page_prixod_sum,
       page_rasxod_sum,
-      prixod_sum: result.prixod_sum,
-      rasxod_sum: result.rasxod_sum,
-      total_sum: result.prixod_sum - result.rasxod_sum,
+      prixod_sum: internal.prixod_sum,
+      rasxod_sum: internal.rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,
     };
   }
@@ -89,15 +94,12 @@ exports.BankMonitoringService = class {
       data.region_id,
     ]);
 
-    const summa_from = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from],
-      "<"
-    );
-
-    const summa_to = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.to],
-      "<="
-    );
+    const internal = await BankMonitoringDB.getSumma([
+      data.region_id,
+      data.main_schet_id,
+      data.from,
+      data.to,
+    ]);
 
     let rasxodSumma = 0;
     let prixodSumma = 0;
@@ -113,7 +115,11 @@ exports.BankMonitoringService = class {
     result.rasxodSumma = rasxodSumma;
     result.prixodSumma = prixodSumma;
 
-    return { ...result, summa_from, summa_to };
+    return {
+      ...result,
+      summa_from: data.saldo.summa,
+      summa_to: data.saldo.summa + internal.summa,
+    };
   }
 
   static async prixodReport(data) {

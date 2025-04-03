@@ -655,10 +655,10 @@ exports.SaldoService = class {
             ],
             client
           );
-
-          await SaldoDB.unblock([data.region_id, data.year, data.month]);
         }
       }
+
+      await SaldoDB.unblock([data.region_id, data.year, data.month]);
 
       const check = await SaldoDB.getSaldoDate([
         data.region_id,

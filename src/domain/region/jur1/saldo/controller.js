@@ -205,6 +205,15 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
+    const first_saldo = await KassaSaldoService.getFirstSaldo({
+      region_id,
+      main_schet_id,
+    });
+
+    if (first_saldo.id !== id) {
+      return res.error(req.i18n.t("firstSaldoError"), 400);
+    }
+
     const old_data = await KassaSaldoService.getById({
       region_id,
       budjet_id,
@@ -287,10 +296,19 @@ exports.Controller = class {
     const { budjet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
+    const { main_schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const first_saldo = await KassaSaldoService.getFirstSaldo({
+      region_id,
+      main_schet_id,
+    });
+    if (first_saldo.id !== id) {
+      return res.error(req.i18n.t("firstSaldoError"), 400);
     }
 
     const doc = await KassaSaldoService.getById({
@@ -300,6 +318,17 @@ exports.Controller = class {
     });
     if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const date_saldo = HelperFunctions.returnDate({ ...old_data });
+    const dates = await KassaSaldoService.getSaldoDate({
+      region_id,
+      main_schet_id: old_data.main_schet_id,
+      date_saldo,
+    });
+
+    if (dates.length) {
+      return res.error(req.i18n.t(`firstSaldoError`), 409);
     }
 
     const result = await KassaSaldoService.delete({ id });

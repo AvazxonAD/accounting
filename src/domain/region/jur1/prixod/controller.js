@@ -167,7 +167,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { id_podotchet_litso, childs } = req.body;
+    const { id_podotchet_litso, childs, doc_date } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -243,11 +243,22 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await KassaSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await KassaPrixodService.update({
       ...req.body,
       main_schet_id,
       user_id,
       region_id,
+      old_data: doc,
       id,
     });
 
@@ -279,6 +290,16 @@ exports.Controller = class {
     });
     if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const check = await KassaSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc.doc_date).getFullYear(),
+      month: new Date(doc.doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const result = await KassaPrixodService.delete({

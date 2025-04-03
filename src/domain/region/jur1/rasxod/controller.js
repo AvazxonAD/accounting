@@ -12,7 +12,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { id_podotchet_litso, childs } = req.body;
+    const { id_podotchet_litso, childs, doc_date } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -79,9 +79,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await KassaSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await KassaRasxodService.create({
       ...req.body,
       main_schet_id,
+      region_id,
       user_id,
     });
 
@@ -150,7 +161,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { id_podotchet_litso, childs } = req.body;
+    const { id_podotchet_litso, childs, doc_date } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -226,10 +237,22 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await KassaSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await KassaRasxodService.update({
       ...req.body,
       main_schet_id,
       user_id,
+      region_id,
+      old_data: doc,
       id,
     });
 
@@ -240,6 +263,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const region_id = req.user.region_id;
     const id = req.params.id;
+    const user_id = req.user.id;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -258,7 +282,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await KassaRasxodService.delete({ id });
+    const result = await KassaRasxodService.delete({
+      id,
+      ...doc,
+      region_id,
+      main_schet_id,
+      user_id,
+    });
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }

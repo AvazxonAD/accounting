@@ -7,7 +7,13 @@ const { Controller } = require("./controller");
 
 router
   .post("/", validator(Controller.create, BankSaldoSchema.create()))
+  .post("/auto", validator(Controller.createAuto, BankSaldoSchema.createAuto()))
   .get("/", validator(Controller.get, BankSaldoSchema.get()))
+  .get(
+    "/date",
+    validator(Controller.getDateSaldo, BankSaldoSchema.getDateSaldo())
+  )
+  .get("/", validator(Controller.getByMonth, BankSaldoSchema.get()))
   .put("/:id", validator(Controller.update, BankSaldoSchema.update()))
   .delete("/:id", validator(Controller.delete, BankSaldoSchema.delete()))
   .get("/:id", validator(Controller.getById, BankSaldoSchema.getById()));

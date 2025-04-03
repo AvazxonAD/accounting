@@ -1,6 +1,7 @@
 const { db } = require("@db/index");
 const { KassaRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.KassaRasxodService = class {
   static async create(data) {
@@ -31,7 +32,12 @@ exports.KassaRasxodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      const dates = await KassaSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -122,7 +128,35 @@ exports.KassaRasxodService = class {
         main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      let dates;
+
+      dates = await BankSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      if (
+        new Date(data.doc_date).getFullYear() !==
+          new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !==
+          new Date(data.old_data.doc_date).getMonth() + 1
+      ) {
+        dates = dates.concat(
+          await BankSaldoService.createSaldoDate({
+            ...data,
+            doc_date: data.old_data.doc_date,
+            client,
+          })
+        );
+      }
+
+      const uniqueDates = dates.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.year === item.year && t.month === item.month)
+      );
+
+      return { doc, dates: uniqueDates };
     });
 
     return result;
@@ -132,7 +166,12 @@ exports.KassaRasxodService = class {
     const result = await db.transaction(async (client) => {
       const doc = await KassaRasxodDB.delete([data.id], client);
 
-      return doc;
+      const dates = await KassaSaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;

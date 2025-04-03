@@ -219,7 +219,7 @@ exports.KassaMonitoringDB = class {
   }
 
   static async daysReport(params) {
-    const query = `
+    const query = `--sql
             WITH
                 prixod AS (
                     SELECT

@@ -1,4 +1,4 @@
-const { checkSchetsEquality } = require("@helper/functions");
+const { checkSchetsEquality, HelperFunctions } = require("@helper/functions");
 const { MainSchetService } = require("@main_schet/service");
 const { PodotchetService } = require("@podotchet/service");
 const { OperatsiiService } = require("@operatsii/service");
@@ -10,7 +10,7 @@ const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
-const { FeaturesService } = require("@features/service");
+const { BankSaldoService } = require(`@jur2_saldo/service`);
 
 exports.Controller = class {
   static async import(req, res) {
@@ -18,15 +18,37 @@ exports.Controller = class {
     const { region_id, id: user_id } = req.user;
     const { main_schet_id } = req.query;
 
-    await BankRasxodService.import({ docs, user_id, main_schet_id, region_id });
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
 
-    return res.success(req.i18n.t("createSuccess"), 200);
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year,
+      month,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const date = HelperFunctions.returnDate({ year, month });
+
+    const dates = await BankRasxodService.import({
+      docs,
+      user_id,
+      main_schet_id,
+      region_id,
+      doc_date: date,
+    });
+
+    return res.success(req.i18n.t("createSuccess"), 200, { dates }, {});
   }
 
   static async payment(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const { main_schet_id } = req.query;
+    const user_id = req.user.id;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -45,12 +67,31 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(bank_rasxod.doc_date).getFullYear(),
+      month: new Date(bank_rasxod.doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await BankRasxodService.payment({
       id,
       status: req.body.status,
+      ...bank_rasxod,
+      user_id,
+      main_schet_id,
+      region_id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+    return res.success(
+      req.i18n.t("updateSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async fio(req, res) {
@@ -70,32 +111,6 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, req.query, result);
   }
 
-  static async paymentBankRasxod(req, res) {
-    const region_id = req.user.region_id;
-    const id = req.params.id;
-    const { main_schet_id } = req.query;
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
-
-    const bank_rasxod = await BankRasxodService.getByIdBankRasxod({
-      id,
-      main_schet_id,
-      region_id,
-    });
-    if (!bank_rasxod) {
-      return res.error(req.i18n.t("docNotFound"), 404);
-    }
-
-    await BankRasxodService.paymentBankRasxod({ id, status: req.body.status });
-    return res.success("Payment successfully", 200);
-  }
-
   static async create(req, res) {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
@@ -107,6 +122,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
     } = req.body;
 
     const main_schet = await MainSchetService.getById({
@@ -225,13 +241,29 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await BankRasxodService.create({
       ...req.body,
       main_schet_id,
       user_id,
+      region_id,
     });
 
-    return res.success(req.i18n.t("createSuccess"), 201, null, result);
+    return res.success(
+      req.i18n.t("createSuccess"),
+      201,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async get(req, res) {
@@ -323,6 +355,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
     } = req.body;
 
     const main_schet = await MainSchetService.getById({
@@ -447,20 +480,38 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await BankRasxodService.update({
       ...req.body,
       main_schet_id,
       user_id,
+      region_id,
+      old_data: doc,
       id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+    return res.success(
+      req.i18n.t("updateSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async delete(req, res) {
     const main_schet_id = req.query.main_schet_id;
     const region_id = req.user.region_id;
     const id = req.params.id;
+    const user_id = req.user.id;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -479,8 +530,29 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await BankRasxodService.delete({ id });
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(doc.doc_date).getFullYear(),
+      month: new Date(doc.doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+    const result = await BankRasxodService.delete({
+      id,
+      region_id,
+      main_schet_id,
+      user_id,
+      ...doc,
+    });
+
+    return res.success(
+      req.i18n.t("getSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 };
