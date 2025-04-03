@@ -198,6 +198,7 @@ exports.Controller = class {
     const id = req.params.id;
     const { budjet_id } = req.query;
     const { year, month, main_schet_id } = req.body;
+    const user_id = req.user.id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -211,6 +212,23 @@ exports.Controller = class {
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const date_saldo = HelperFunctions.returnDate({ ...old_data });
+    const dates = await KassaSaldoService.getSaldoDate({
+      region_id,
+      main_schet_id: old_data.main_schet_id,
+      date_saldo,
+    });
+
+    if (dates.length) {
+      if (
+        old_data.year !== year ||
+        old_data.month !== month ||
+        old_data.main_schet_id !== main_schet_id
+      ) {
+        return res.error(req.i18n.t(`firstSaldoError`), 409);
+      }
     }
 
     const main_schet = await MainSchetService.getById({
@@ -252,10 +270,17 @@ exports.Controller = class {
     const result = await KassaSaldoService.update({
       ...req.body,
       main_schet_id,
+      region_id,
+      user_id,
       id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+    return res.success(
+      req.i18n.t("updateSuccess"),
+      200,
+      { dates: result.dates },
+      result.doc
+    );
   }
 
   static async delete(req, res) {

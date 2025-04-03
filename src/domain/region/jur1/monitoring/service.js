@@ -6,12 +6,12 @@ const { HelperFunctions } = require("@helper/functions");
 
 exports.KassaMonitoringService = class {
   static async getSumma(data) {
-    const summa = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id],
-      null,
-      null,
-      { from: data.from, to: data.to }
-    );
+    const summa = await KassaMonitoringDB.getSumma([
+      data.region_id,
+      data.main_schet_id,
+      data.from,
+      data.to,
+    ]);
 
     return summa;
   }
@@ -39,23 +39,21 @@ exports.KassaMonitoringService = class {
       page_rasxod_sum += item.rasxod_sum;
     }
 
-    const summa_to = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id],
-      "<=",
-      data.search,
-      { to: data.to }
+    const internal = await KassaMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, data.from, data.to],
+      data.search
     );
 
     return {
       data: result.data || [],
       total_count: result.total_count,
-      prixod_sum: result.prixod_sum,
+      prixod_sum: internal.prixod_sum,
       rasxod_sum: result.rasxod_sum,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,
-      summa_from,
-      summa_to,
+      summa_from: data.saldo.summa,
+      summa_to: data.saldo.summa + internal.summa,
     };
   }
 

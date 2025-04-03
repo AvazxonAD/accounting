@@ -6,6 +6,10 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static returnDate(data) {
+    return `${data.year}-${String(data.month).padStart(2, "0")}-01`;
+  }
+
   static returnLocalDate(date) {
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");

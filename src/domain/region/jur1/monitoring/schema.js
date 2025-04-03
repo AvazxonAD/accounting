@@ -7,6 +7,8 @@ exports.KassaRasxodSchema = class {
         main_schet_id: Joi.number().required().min(1),
         limit: Joi.number().min(1).default(10),
         page: Joi.number().min(1).default(1),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -34,6 +36,8 @@ exports.KassaRasxodSchema = class {
       query: Joi.object({
         report_title_id: Joi.number().integer().required().min(1),
         main_schet_id: Joi.number().integer().required().min(1),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
         budjet_id: Joi.number().integer().required().min(1),
         from: Joi.string()
           .trim()
@@ -55,6 +59,8 @@ exports.KassaRasxodSchema = class {
         main_schet_id: Joi.number().integer().required().min(1),
         budjet_id: Joi.number().integer().required().min(1),
         excel: Joi.boolean().default(false),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -74,6 +80,8 @@ exports.KassaRasxodSchema = class {
         main_schet_id: Joi.number().integer().required().min(1),
         budjet_id: Joi.number().integer().required().min(1),
         excel: Joi.boolean().default(false),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)

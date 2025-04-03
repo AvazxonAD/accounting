@@ -13,286 +13,130 @@ exports.KassaMonitoringDB = class {
     order = `ORDER BY combined_${order_by} ${order_type}`;
 
     const query = `--sql
-            WITH data AS (
-                SELECT 
-                    d.id, 
-                    d.doc_num,
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-                    (
-                        SELECT 
-                            COALESCE(SUM(ch.summa), 0.0)::FLOAT
-                            FROM kassa_prixod_child AS ch
-                            WHERE  ch.kassa_prixod_id = d.id
-                                AND ch.isdeleted = false
-                    ) AS prixod_sum,
-                    0::FLOAT AS rasxod_sum,
-                    d.id_podotchet_litso,
-                    p.name AS spravochnik_podotchet_litso_name,
-                    d.opisanie,
-                    d.doc_date AS combined_doc_date,
-                    d.id AS                                                             combined_id,
-                    d.doc_num AS                                                        combined_doc_num, 
-                    u.login,
-                    u.fio,
-                    u.id AS user_id,
-                    (
-                        SELECT JSON_AGG(row_to_json(ch))
-                        FROM (
-                            SELECT 
-                                op.schet AS provodki_schet,
-                                op.sub_schet AS provodki_sub_schet
-                            FROM kassa_prixod_child AS ch
-                            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                            WHERE  ch.kassa_prixod_id = d.id
-                                AND ch.isdeleted = false
-                        ) AS ch
-                    ) AS provodki_array
-                FROM kassa_prixod d
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
-                WHERE r.id = $1 
-                  AND d.main_schet_id = $2
-                  AND d.doc_date BETWEEN $3 AND $4 
-                  AND d.isdeleted = false
-                  ${search_filter}
-
-                UNION ALL
-
-                SELECT 
-                    d.id, 
-                    d.doc_num,
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-                    0::FLOAT AS prixod_sum,
-                    (
-                        SELECT 
-                            COALESCE(SUM(ch.summa), 0)::FLOAT
-                        FROM kassa_rasxod_child AS ch
-                        WHERE ch.kassa_rasxod_id = d.id
+        WITH data AS (
+            SELECT 
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                (
+                    SELECT 
+                        COALESCE(SUM(ch.summa), 0.0)::FLOAT
+                        FROM kassa_prixod_child AS ch
+                        WHERE  ch.kassa_prixod_id = d.id
                             AND ch.isdeleted = false
-                    ) AS rasxod_sum,
-                    d.id_podotchet_litso,
-                    p.name,
-                    d.opisanie,
-                    d.doc_date AS combined_doc_date,
-                    d.id AS                                                             combined_id,
-                    d.doc_num AS                                                        combined_doc_num, 
-                    u.login,
-                    u.fio,
-                    u.id AS user_id,
-                    (
-                        SELECT JSON_AGG(row_to_json(ch))
-                        FROM (
-                            SELECT 
-                                op.schet AS provodki_schet,
-                                op.sub_schet AS provodki_sub_schet
-                            FROM kassa_rasxod_child AS ch
-                            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-                            WHERE  ch.kassa_rasxod_id = d.id
-                                AND ch.isdeleted = false  
-                        ) AS ch
-                    ) AS provodki_array
-                FROM kassa_rasxod d
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
-                WHERE r.id = $1 
-                  AND d.main_schet_id = $2
-                  AND d.doc_date BETWEEN $3 AND $4 
-                  AND d.isdeleted = false
-                  ${search_filter}
+                ) AS prixod_sum,
+                0::FLOAT AS rasxod_sum,
+                d.id_podotchet_litso,
+                p.name AS spravochnik_podotchet_litso_name,
+                d.opisanie,
+                d.doc_date AS combined_doc_date,
+                d.id AS                                                             combined_id,
+                d.doc_num AS                                                        combined_doc_num, 
+                u.login,
+                u.fio,
+                u.id AS user_id,
+                (
+                    SELECT JSON_AGG(row_to_json(ch))
+                    FROM (
+                        SELECT 
+                            op.schet AS provodki_schet,
+                            op.sub_schet AS provodki_sub_schet
+                        FROM kassa_prixod_child AS ch
+                        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                        WHERE  ch.kassa_prixod_id = d.id
+                            AND ch.isdeleted = false
+                    ) AS ch
+                ) AS provodki_array
+            FROM kassa_prixod d
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
+            WHERE r.id = $1 
+                AND d.main_schet_id = $2
+                AND d.doc_date BETWEEN $3 AND $4 
+                AND d.isdeleted = false
+                ${search_filter}
 
-                UNION ALL
-
-                SELECT 
-                    d.id, 
-                    d.doc_num,
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS        doc_date,
-                    0::FLOAT AS                                 prixod_sum,
-                    d.rasxod_summa AS                           rasxod_sum,
-                    null AS                                     id_podotchet_litso,
-                    null AS                                     name,
-                    d.opisanie,
-                    d.doc_date AS                                                       combined_doc_date,
-                    d.id AS                                                             combined_id,
-                    d.doc_num AS                                                        combined_doc_num, 
-                    u.login,
-                    u.fio,
-                    u.id AS user_id,
-                    (
-                        SELECT JSON_AGG(row_to_json(ch))
-                        FROM (
-                            SELECT 
-                                op.schet AS provodki_schet,
-                                op.sub_schet AS provodki_sub_schet
-                            FROM kassa_saldo_child AS ch
-                            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                            WHERE  ch.parent_id = d.id
-                                AND ch.isdeleted = false  
-                        ) AS ch
-                    ) AS provodki_array
-                FROM kassa_saldo d
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                WHERE r.id = $1
-                  AND d.rasxod = true   
-                  AND d.main_schet_id = $2
-                  AND d.doc_date BETWEEN $3 AND $4 
-                  AND d.isdeleted = false
-                  ${search_filter}
-                
-                UNION ALL
-
-                SELECT 
-                    d.id, 
-                    d.doc_num,
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                                doc_date,
-                    d.prixod_summa AS                                                   prixod_sum,
-                    0::FLOAT AS                                                         rasxod_sum,
-                    null AS                                                             id_podotchet_litso,
-                    null AS                                                             name,
-                    d.opisanie,
-                    d.doc_date AS                                                       combined_doc_date,
-                    d.id AS                                                             combined_id,
-                    d.doc_num AS                                                        combined_doc_num,
-                    u.login,
-                    u.fio,
-                    u.id AS user_id,
-                    (
-                        SELECT JSON_AGG(row_to_json(ch))
-                        FROM (
-                            SELECT 
-                                op.schet AS provodki_schet,
-                                op.sub_schet AS provodki_sub_schet
-                            FROM kassa_saldo_child AS ch
-                            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                            WHERE  ch.parent_id = d.id
-                                AND ch.isdeleted = false  
-                        ) AS ch
-                    ) AS provodki_array
-                FROM kassa_saldo d
-                JOIN users u ON d.user_id = u.id
-                JOIN regions r ON u.region_id = r.id
-                WHERE r.id = $1
-                  AND d.prixod = true   
-                  AND d.main_schet_id = $2
-                  AND d.doc_date BETWEEN $3 AND $4 
-                  AND d.isdeleted = false
-                  ${search_filter}
-                
-                ${order}
-                OFFSET $5 LIMIT $6 
-            ) 
+            UNION ALL
 
             SELECT 
-                COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
-                ( 
-                    (
-                        SELECT 
-                            COALESCE(COUNT(d.id), 0) 
-                        FROM kassa_rasxod d
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
-                        WHERE r.id = $1 
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            ${search_filter}
-                    ) +
-                    (
-                        SELECT 
-                            COALESCE(COUNT(d.id), 0) 
-                        FROM kassa_prixod d
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
-                        WHERE r.id = $1 
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            ${search_filter}
-                    ) + 
-                    (
-                        SELECT 
-                            COALESCE(COUNT(d.id), 0) 
-                        FROM kassa_saldo d
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        WHERE r.id = $1 
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            ${search_filter}
-                    )
-                )::INTEGER AS total_count,
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                0::FLOAT AS prixod_sum,
                 (
-                    (
-                        SELECT 
-                            COALESCE(SUM(ch.summa), 0) 
-                        FROM kassa_rasxod d
-                        JOIN kassa_rasxod_child ch ON ch.kassa_rasxod_id = d.id
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
-                        WHERE r.id = $1 
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            AND ch.isdeleted = false
-                            ${search_filter}
-                    ) + 
-                    (
-                        SELECT 
-                            COALESCE(SUM(ch.summa), 0) 
-                        FROM kassa_saldo d
-                        JOIN kassa_saldo_child ch ON ch.parent_id = d.id
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        WHERE r.id = $1 
-                            AND d.rasxod = true
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            AND ch.isdeleted = false
-                            ${search_filter}
-                    )
-                )::FLOAT AS rasxod_sum,
+                    SELECT 
+                        COALESCE(SUM(ch.summa), 0)::FLOAT
+                    FROM kassa_rasxod_child AS ch
+                    WHERE ch.kassa_rasxod_id = d.id
+                        AND ch.isdeleted = false
+                ) AS rasxod_sum,
+                d.id_podotchet_litso,
+                p.name,
+                d.opisanie,
+                d.doc_date AS combined_doc_date,
+                d.id AS                                                             combined_id,
+                d.doc_num AS                                                        combined_doc_num, 
+                u.login,
+                u.fio,
+                u.id AS user_id,
                 (
-                    (
+                    SELECT JSON_AGG(row_to_json(ch))
+                    FROM (
                         SELECT 
-                            COALESCE(SUM(ch.summa), 0) 
-                        FROM kassa_prixod d
-                        JOIN kassa_prixod_child ch ON ch.kassa_prixod_id = d.id
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
-                        WHERE r.id = $1 
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            AND ch.isdeleted = false
-                            ${search_filter}
-                    ) + 
-                    (
-                        SELECT 
-                            COALESCE(SUM(ch.summa), 0) 
-                        FROM kassa_saldo d
-                        JOIN kassa_saldo_child ch ON ch.parent_id = d.id
-                        JOIN users u ON d.user_id = u.id
-                        JOIN regions r ON u.region_id = r.id
-                        WHERE r.id = $1 
-                            AND d.prixod = true
-                            AND d.main_schet_id = $2 
-                            AND d.doc_date BETWEEN $3 AND $4 
-                            AND d.isdeleted = false
-                            AND ch.isdeleted = false
-                            ${search_filter}
-                    )
-                ) AS prixod_sum
-                        
-            FROM data
-        `;
+                            op.schet AS provodki_schet,
+                            op.sub_schet AS provodki_sub_schet
+                        FROM kassa_rasxod_child AS ch
+                        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                        WHERE  ch.kassa_rasxod_id = d.id
+                            AND ch.isdeleted = false  
+                    ) AS ch
+                ) AS provodki_array
+            FROM kassa_rasxod d
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
+            WHERE r.id = $1 
+                AND d.main_schet_id = $2
+                AND d.doc_date BETWEEN $3 AND $4 
+                AND d.isdeleted = false
+                ${search_filter}
+            ${order}
+            OFFSET $5 LIMIT $6 
+        ) 
+
+        SELECT 
+            COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
+            (
+                (
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0) 
+                    FROM kassa_rasxod d
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.doc_date BETWEEN $3 AND $4 
+                        AND d.isdeleted = false
+                        ${search_filter}
+                ) +
+                (
+                    SELECT 
+                        COALESCE(COUNT(d.id), 0) 
+                    FROM kassa_prixod d
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.doc_date BETWEEN $3 AND $4 
+                        AND d.isdeleted = false
+                        ${search_filter}
+                )
+            )::INTEGER AS total_count 
+        FROM data
+    `;
 
     const result = await db.query(query, params);
 
@@ -363,8 +207,8 @@ exports.KassaMonitoringDB = class {
             )
 
             SELECT 
-                prixod.summa AS prixod_summa,
-                rasxod.summa AS rasxod_summa,
+                prixod.summa AS prixod_sum,
+                rasxod.summa AS rasxod_sum,
                 (prixod.summa - rasxod.summa) AS summa
             FROM prixod, rasxod
         `;

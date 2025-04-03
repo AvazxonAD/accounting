@@ -17,7 +17,7 @@ exports.checkJur1Saldo = (service) => {
       const check = await service({ main_schet_id, region_id });
 
       if (Array.isArray(check) && check.length > 0) {
-        return res.error(req.i18n.t("saldoError"), 400);
+        return res.error(req.i18n.t("saldoError"), 400, { dates: check });
       }
 
       next();

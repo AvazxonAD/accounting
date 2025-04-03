@@ -9,6 +9,7 @@
   "saldoAlreadyExists": "Saldo allaqachon import qilingan! Malumotlarni tozalab qaytadan urining",
   "kolError": "Tovar soni noto'g'ri kiritildi!",
   "dateError": "Sana noto'g'ri kiritildi!",
+  "firstSaldoError": "Birinchi qoldiqni ish boshlangandan so'ng faqat pulini ozgartira olasiz!",
   "ReportTitleAlreadyExists": "Ushbu hujjat sarlavhasi avval kiritilgan!",
   "reportTitleNotFound": "Hujjat sarlavhasi topilmadi!",
   "authError": "Username yoki Password xato kiritildi!",

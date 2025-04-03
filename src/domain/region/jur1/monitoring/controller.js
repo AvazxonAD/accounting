@@ -6,11 +6,12 @@ const { PodpisService } = require(`@podpis/service`);
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require("@helper/functions");
 const { REPORT_TYPE } = require("@helper/constants");
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.Controller = class {
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, main_schet_id, order_by, order_type } = req.query;
+    const { page, limit, main_schet_id } = req.query;
     const offset = (page - 1) * limit;
 
     const main_schet = await MainSchetService.getById({
@@ -19,6 +20,14 @@ exports.Controller = class {
     });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const {
@@ -35,6 +44,7 @@ exports.Controller = class {
       ...req.query,
       region_id,
       offset,
+      saldo,
     });
 
     const pageCount = Math.ceil(total_count / limit);
@@ -47,10 +57,8 @@ exports.Controller = class {
       backPage: page === 1 ? null : page - 1,
       prixod_sum,
       rasxod_sum,
-      summa_from_object: summa_from,
-      summa_to_object: summa_to,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from,
+      summa_to,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum,

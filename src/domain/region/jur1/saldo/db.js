@@ -1,6 +1,25 @@
 const { db } = require("@db/index");
 
 exports.KassaSaldoDB = class {
+  static async getFirstSaldo(params) {
+    const query = `--sql
+      SELECT 
+          d.year, d.month
+      FROM kassa_saldo d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1
+          AND d.main_schet_id = $2
+          AND d.isdeleted = false
+      ORDER BY d.created_at ASC
+      LIMIT 1
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getDateSaldo(params) {
     const query = `--sql
       SELECT 
@@ -159,7 +178,9 @@ exports.KassaSaldoDB = class {
     return result[0];
   }
 
-  static async update(params) {
+  static async update(params, client) {
+    const _db = client || db;
+
     const query = `--sql
         UPDATE kassa_saldo SET 
             summa = $1,
@@ -172,9 +193,9 @@ exports.KassaSaldoDB = class {
         RETURNING id
     `;
 
-    const result = await db.query(query, params);
+    const result = await _db.query(query, params);
 
-    return result[0];
+    return result[0] || result.rows[0];
   }
 
   static async delete(params) {

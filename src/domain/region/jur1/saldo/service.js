@@ -3,6 +3,25 @@ const { KassaSaldoDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
 exports.KassaSaldoService = class {
+  static async getFirstSaldo(data) {
+    const result = await KassaSaldoDB.getFirstSaldo([
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async getSaldoDate(data) {
+    const result = await KassaSaldoDB.getSaldoDate([
+      data.region_id,
+      data.date_saldo,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
   static async createSaldoDate(data) {
     const year = new Date(data.doc_date).getFullYear();
     const month = new Date(data.doc_date).getMonth() + 1;
@@ -72,28 +91,11 @@ exports.KassaSaldoService = class {
         client
       );
 
-      const check = await KassaSaldoDB.getSaldoDate([
-        data.region_id,
-        saldo_date,
-        data.main_schet_id,
-      ]);
-
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await KassaSaldoDB.createSaldoDate(
-            [
-              data.user_id,
-              date.year,
-              date.month,
-              data.main_schet_id,
-              HelperFunctions.tashkentTime(),
-              HelperFunctions.tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await this.createSaldoDate({
+        ...data,
+        doc_date: saldo_date,
+        client,
+      });
 
       return { dates, doc };
     });
@@ -154,17 +156,32 @@ exports.KassaSaldoService = class {
   }
 
   static async update(data) {
-    const doc = await KassaSaldoDB.update([
-      data.summa,
-      data.main_schet_id,
-      data.year,
-      data.month,
-      `${data.year}-${String(data.month).padStart(2, "0")}-01`,
-      new Date(),
-      data.id,
-    ]);
+    const result = await db.transaction(async (client) => {
+      const date_saldo = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
 
-    return doc;
+      const doc = await KassaSaldoDB.update(
+        [
+          data.summa,
+          data.main_schet_id,
+          data.year,
+          data.month,
+          date_saldo,
+          new Date(),
+          data.id,
+        ],
+        client
+      );
+
+      const dates = await this.createSaldoDate({
+        ...data,
+        doc_date: date_saldo,
+        client,
+      });
+
+      return { doc, dates };
+    });
+
+    return result;
   }
 
   static async delete(data) {
