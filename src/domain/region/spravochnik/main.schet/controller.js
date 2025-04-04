@@ -1,4 +1,3 @@
-const { JURNAL_SCHETS } = require(`@helper/constants`);
 const { MainSchetService } = require("./service");
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
@@ -108,108 +107,138 @@ exports.Controller = class {
     });
 
     if (!data) {
-      return req.i18n.t(req.i18n.t("mainSchetNotFound"), 404);
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
-    return res.success(req.i18n.t(req.i18n.t(`getSuccess`), 200, null, data));
+    return res.success(req.i18n.t(`getSuccess`), 200, null, data);
   }
-};
 
-const {
-  createMainSchetService,
-  getByIdMainSchetService,
-  getAllMainSchetService,
-  updateMainSchetService,
-  deleteMainSchetService,
-  checkMainSchetService,
-  getByBudjetIdMainSchetService,
-} = require("./main.schet.service");
-const { getByIdBudjetService } = require("@budjet/budjet.name.service");
-const {
-  mainSchetValidator,
-  queryMainSchetValidation,
-} = require("@helper/validation");
-const { resFunc } = require("@helper/functions");
-const { validationResponse } = require("@helper/functions");
-const { errorCatch } = require("@helper/functions");
-const { date } = require("joi");
-
-exports.update = async (req, res) => {
-  try {
+  static async update(req, res) {
     const region_id = req.user.region_id;
+    const user_id = req.user.id;
     const id = req.params.id;
+    const {
+      account_number,
+      jur1_schet,
+      jur2_schet,
+      jur3_schets,
+      spravochnik_budjet_name_id,
+      jur4_schets,
+    } = req.body;
 
-    const old_data = await getByIdMainSchetService(region_id, id);
+    const old_data = await MainSchetService.getById({
+      id,
+      region_id,
+      isdeleted: true,
+    });
 
-    const data = validationResponse(mainSchetValidator, req.body);
+    if (!old_data) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
 
-    for (let column_name of JURNAL_SCHETS) {
-      if (old_data[column_name] !== data[column_name]) {
-        const check = await MainSchetService.checkSchet({
-          budjet_id: data.spravochnik_budjet_name_id,
-          region_id,
-          column: data[column_name],
-          column_name,
+    if (account_number !== old_data.account_number) {
+      const checkAccount = await MainSchetService.getByAccount({
+        account_number,
+        region_id,
+      });
+
+      if (checkAccount) {
+        return res.error(req.i18n.t("docExists"), 409);
+      }
+    }
+
+    const dup3 = HelperFunctions.findDuplicateByKey(jur3_schets, "schet");
+    if (dup3) {
+      return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+        schet: dup3,
+      });
+    }
+
+    const dup4 = HelperFunctions.findDuplicateByKey(jur4_schets, "schet");
+    if (dup4) {
+      return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+        schet: dup4,
+      });
+    }
+
+    if (old_data.jur1_schet !== jur1_schet) {
+      const check = await MainSchetService.checkSchet({
+        budjet_id: spravochnik_budjet_name_id,
+        region_id,
+        column: jur1_schet,
+        column_name: "jur1_schet",
+      });
+
+      if (check) {
+        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+          schet: check["jur1_schet"],
         });
+      }
+    }
 
-        if (check) {
-          return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-            schet: check[column_name],
-          });
+    if (old_data.jur2_schet !== jur2_schet) {
+      const check = await MainSchetService.checkSchet({
+        budjet_id: spravochnik_budjet_name_id,
+        region_id,
+        column: jur2_schet,
+        column_name: "jur2_schet",
+      });
+
+      if (check) {
+        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+          schet: check["jur1_schet"],
+        });
+      }
+    }
+
+    for (let jur3 of jur3_schets) {
+      if (jur3.id) {
+        const check = old_data.jur3_schets.find((item) => item.id === jur3.id);
+        console.log(check);
+        if (!check) {
+          return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
         }
       }
     }
 
-    // if (data.account_number !== old_data.account_number) {
-    //   await getByAccountNumberMainSchetService(region_id, data.account_number);
-    // }
+    for (let jur4 of jur4_schets) {
+      if (jur4.id) {
+        const check = old_data.jur4_schets.find((item) => item.id === jur4.id);
+        console.log(check);
 
-    await getByIdBudjetService(data.spravochnik_budjet_name_id);
+        if (!check) {
+          return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
+        }
+      }
+    }
 
-    const result = await updateMainSchetService({ ...data, id });
+    const result = await MainSchetService.update({
+      ...req.body,
+      region_id,
+      old_data,
+      id,
+      user_id,
+    });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
-  } catch (error) {
-    errorCatch(error, res);
   }
-};
 
-exports.deleteValue = async (req, res) => {
-  try {
+  static async delete(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    await getByIdMainSchetService(region_id, id);
-    await checkMainSchetService(id);
-    await deleteMainSchetService(id);
 
-    return res.success(req.i18n.t("deleteSuccess"), 200);
-  } catch (error) {
-    errorCatch(error, res);
-  }
-};
+    const data = await MainSchetService.getById({
+      id,
+      region_id,
+      isdeleted: true,
+    });
 
-exports.getElementById = async (req, res) => {
-  try {
-    const data = await getByIdMainSchetService(
-      req.user.region_id,
-      req.params.id,
-      true
-    );
+    if (!data) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, data);
-  } catch (error) {
-    errorCatch(error, res);
-  }
-};
+    const result = await MainSchetService.delete({ id });
 
-exports.getByBudjetIdMainSchet = async (req, res) => {
-  try {
-    const region_id = req.query.region_id;
-    const budjet_id = req.query.budjet_id;
-    const result = await getByBudjetIdMainSchetService(budjet_id, region_id);
-
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
-  } catch (error) {
-    errorCatch(error, res);
+    return res.success(req.i18n.t(`deleteSuccess`), 200, null, result);
   }
 };

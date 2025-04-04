@@ -1182,10 +1182,7 @@ exports.OrganizationmonitoringService = class {
         message: "region not found",
       });
     }
-    const main_schet = await MainSchetDB.getByIdMainSchet([
-      region_id,
-      main_schet_id,
-    ]);
+    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
       return res.status(404).json({
         message: "main schet not found",

@@ -8,21 +8,17 @@ const { MainSchetSchema } = require("./schema");
 
 router
   .post("/", protect, validator(Controller.create, MainSchetSchema.create()))
-  .get("/:id", protect, validator(Controller.getb))
+  .put("/:id", protect, validator(Controller.update, MainSchetSchema.update()))
+  .delete(
+    "/:id",
+    protect,
+    validator(Controller.delete, MainSchetSchema.delete())
+  )
+  .get(
+    "/:id",
+    protect,
+    validator(Controller.getById, MainSchetSchema.getById())
+  )
   .get("/", protect, validator(Controller.get, MainSchetSchema.get()));
-
-const {
-  create,
-  getAll,
-  update,
-  deleteValue,
-  getElementById,
-  getByBudjetIdMainSchet,
-} = require("./main_schet.controller");
-
-router
-  .put("/:id", protect, update)
-  .delete("/:id", protect, deleteValue)
-  .get("/budjet/region/", getByBudjetIdMainSchet);
 
 module.exports = router;

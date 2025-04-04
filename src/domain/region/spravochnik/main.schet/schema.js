@@ -31,7 +31,46 @@ exports.MainSchetSchema = class {
           ),
         gazna_number: Joi.string().trim(),
       }),
-    });
+    }).options({ stripUnknown: true });
+  }
+
+  static update() {
+    return Joi.object({
+      body: Joi.object({
+        spravochnik_budjet_name_id: Joi.number().required(),
+        account_number: Joi.string().trim().trim().required(),
+        tashkilot_nomi: Joi.string().trim().required(),
+        tashkilot_bank: Joi.string().trim().required(),
+        tashkilot_mfo: Joi.string().trim().required(),
+        tashkilot_inn: Joi.string().trim().required(),
+        account_name: Joi.string().trim().required(),
+        jur1_schet: Joi.string().trim().required(),
+        jur2_schet: Joi.string().trim().required(),
+        jur3_schets: Joi.array()
+          .min(1)
+          .required()
+          .items(
+            Joi.object({
+              id: Joi.number().min(1).integer(),
+              schet: Joi.string().trim().required(),
+            })
+          ),
+        jur4_schets: Joi.array()
+          .min(1)
+          .required()
+          .items(
+            Joi.object({
+              id: Joi.number().min(1).integer(),
+              schet: Joi.string().trim().required(),
+            })
+          ),
+        gazna_number: Joi.string().trim(),
+      }),
+
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
   }
 
   static get() {
@@ -42,6 +81,22 @@ exports.MainSchetSchema = class {
         page: Joi.number().min(1).default(1),
         search: Joi.string().trim(),
       }),
-    });
+    }).options({ stripUnknown: true });
+  }
+
+  static getById() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static delete() {
+    return Joi.object({
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
   }
 };

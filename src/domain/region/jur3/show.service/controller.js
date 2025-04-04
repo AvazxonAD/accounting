@@ -30,10 +30,7 @@ exports.Controller = class {
     const user_id = req.user.id;
     const main_schet_id = req.query.main_schet_id;
 
-    const main_schet = await MainSchetDB.getByIdMainSchet([
-      region_id,
-      main_schet_id,
-    ]);
+    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -207,10 +204,7 @@ exports.Controller = class {
       order_type,
     } = req.query;
 
-    const main_schet = await MainSchetDB.getByIdMainSchet([
-      region_id,
-      main_schet_id,
-    ]);
+    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -246,10 +240,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const main_schet = await MainSchetDB.getByIdMainSchet([
-      region_id,
-      main_schet_id,
-    ]);
+    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -300,10 +291,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("operatsiiNotFound"), 404);
     }
 
-    const main_schet = await MainSchetDB.getByIdMainSchet([
-      region_id,
-      main_schet_id,
-    ]);
+    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -458,10 +446,7 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const main_schet = await MainSchetDB.getByIdMainSchet([
-      region_id,
-      main_schet_id,
-    ]);
+    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }

@@ -34,33 +34,36 @@ exports.MainSchetDB = class {
     return result;
   }
 
-  static async getByIdMainSchet(params, isdeleted = null) {
-    const ignore = `AND m_s.isdeleted = false`;
+  static async getById(params, isdeleted = null) {
+    const ignore = `AND m.isdeleted = false`;
     const query = `--sql
             SELECT 
-                m_s.id, 
-                m_s.account_number, 
-                m_s.spravochnik_budjet_name_id, 
-                m_s.tashkilot_nomi, 
-                m_s.tashkilot_bank, 
-                m_s.tashkilot_mfo, 
-                m_s.tashkilot_inn, 
-                m_s.account_name, 
-                m_s.jur1_schet, 
-                m_s.jur1_subschet,
-                m_s.jur2_schet, 
-                m_s.jur2_subschet,
-                m_s.jur3_schet,
-                m_s.jur3_subschet, 
-                m_s.jur4_schet,
-                m_s.jur4_subschet, 
-                s_b_n.name AS budjet_name
-            FROM main_schet m_s
-            JOIN users AS u ON m_s.user_id = u.id
+                m.*, 
+                COALESCE(
+                  (
+                    SELECT JSON_AGG(row_to_json(j))
+                    FROM jur_schets j
+                    WHERE j.main_schet_id = m.id
+                      AND j.isdeleted = false
+                      AND j.type = 'jur3'
+                  )
+                , '[]'::JSON) AS jur3_schets,
+                COALESCE(
+                  (
+                    SELECT JSON_AGG(row_to_json(j))
+                    FROM jur_schets j
+                    WHERE j.main_schet_id = m.id
+                      AND j.isdeleted = false
+                      AND j.type = 'jur4'
+                  )
+                , '[]'::JSON ) AS jur4_schets,
+                b.name AS budjet_name
+            FROM main_schet m
+            JOIN users AS u ON m.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
-            JOIN spravochnik_budjet_name AS s_b_n ON s_b_n.id = m_s.spravochnik_budjet_name_id
+            JOIN spravochnik_budjet_name AS b ON b.id = m.spravochnik_budjet_name_id
             WHERE r.id = $1
-                AND m_s.id = $2 ${isdeleted ? "" : ignore}
+                AND m.id = $2 ${isdeleted ? "" : ignore}
         `;
     const result = await db.query(query, params);
     return result[0];
@@ -191,5 +194,52 @@ exports.MainSchetDB = class {
     `;
 
     await client.query(query, params);
+  }
+
+  static async update(params, client) {
+    const query = `--sql
+      UPDATE  main_schet SET 
+        account_number = $1, 
+        spravochnik_budjet_name_id = $2, 
+        tashkilot_nomi = $3, 
+        tashkilot_bank = $4, 
+        tashkilot_mfo = $5, 
+        tashkilot_inn = $6, 
+        account_name = $7, 
+        jur1_schet = $8, 
+        jur2_schet = $9, 
+        gazna_number = $10
+      WHERE id = $11 RETURNING id
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
+
+  static async deleteJurSchet(params, client) {
+    const query = `UPDATE jur_schets SET isdeleted = true WHERE id = $1`;
+
+    await client.query(query, params);
+  }
+
+  static async updateJurSchet(params, client) {
+    const query = `UPDATE jur_schets SET schet = $1 WHERE id = $2`;
+
+    await client.query(query, params);
+  }
+
+  static async delete(params, client) {
+    const result = await client.query(
+      `UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
+
+    await client.query(
+      `UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`,
+      params
+    );
+
+    return result.rows[0];
   }
 };
