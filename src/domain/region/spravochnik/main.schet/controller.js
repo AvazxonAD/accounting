@@ -249,6 +249,7 @@ exports.Controller = class {
     const budjet = await BudjetService.getById({
       id: budjet_id,
     });
+
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
