@@ -6,6 +6,7 @@ exports.Schema = class {
       query: Joi.object({
         month: Joi.number().integer().min(1).required().max(12),
         year: Joi.number().integer().min(1901).required(),
+        excel: Joi.string().trim().valid("true", "false"),
         budjet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
@@ -19,6 +20,15 @@ exports.Schema = class {
         month: Joi.number().integer().min(1).required().max(12),
         year: Joi.number().integer().min(1901).required(),
         excel: Joi.string().trim().valid("true", "false"),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getSaldoDate() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().integer().min(1).required(),
+        year: Joi.number().integer().min(1901).required(),
       }),
     }).options({ stripUnknown: true });
   }

@@ -252,7 +252,7 @@ exports.Controller = class {
 
     let { data: groups, total } = await GroupService.get({
       offset: 0,
-      limit: 99999,
+      limit: 99999999,
     });
 
     if (group_id) {
@@ -433,59 +433,45 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { budjet_id } = req.query;
-    let { year, month } = JSON.parse(JSON.stringify(req.body));
+    let year = JSON.parse(JSON.stringify(req.body.year));
+    let month = JSON.parse(JSON.stringify(req.body.month));
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    let last_saldo;
-    let last_date;
-    let last_attempt = 0;
+    const last_date = HelperFunctions.lastDate({ year, month });
 
-    while (last_attempt < 1000) {
-      last_date = HelperFunctions.lastDate({ year, month });
-
-      last_saldo = await SaldoService.getSaldoCheck({
-        region_id,
-        year: last_date.year,
-        month: last_date.month,
-      });
-
-      if (last_saldo.length > 0) {
-        break;
-      }
-
-      year = last_date.year;
-      month = last_date.month;
-
-      last_attempt++;
-    }
+    const last_saldo = await SaldoService.getSaldoCheck({
+      region_id,
+      year: last_date.year,
+      month: last_date.month,
+    });
 
     if (!last_saldo.length) {
-      const check = await SaldoService.check({
-        region_id,
-        month: req.body.month,
-        year: req.body.year,
-      });
+      // const check = await SaldoService.check({
+      //   region_id,
+      //   month: req.body.month,
+      //   year: req.body.year,
+      // });
 
-      if (check.result.length) {
-        await SaldoService.deleteByYearMonth({
-          region_id,
-          month: req.body.month,
-          year: req.body.year,
-          type: "saldo",
-        });
+      // if (check.result.length) {
+      //   await SaldoService.deleteByYearMonth({
+      //     region_id,
+      //     month: req.body.month,
+      //     year: req.body.year,
+      //     type: "saldo",
+      //   });
 
-        await SaldoService.unblock({
-          region_id,
-          month: req.body.month,
-          year: req.body.year,
-        });
+      //   await SaldoService.unblock({
+      //     region_id,
+      //     month: req.body.month,
+      //     year: req.body.year,
+      //   });
 
-        return res.success(req.i18n.t("createSuccess"), 200);
-      }
+      //   return res.success(req.i18n.t("createSuccess"), 200);
+      // }
 
       return res.success(req.i18n.t("lastSaldoNotFound"), 400);
     }

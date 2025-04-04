@@ -532,8 +532,10 @@ exports.Jur7MonitoringService = class {
     const result = await Jur7MonitoringDB.getSchets([
       data.year,
       data.month,
+      data.region_id,
       data.budjet_id,
     ]);
+
     const dates = HelperFunctions.getMonthStartEnd({
       year: data.year,
       month: data.month,
@@ -555,6 +557,15 @@ exports.Jur7MonitoringService = class {
         "<="
       );
     }
+
+    return result;
+  }
+
+  static async getSaldoDate(data) {
+    const result = await Jur7MonitoringDB.getSaldoDate(
+      [data.region_id, data.budjet_id],
+      data.year
+    );
 
     return result;
   }

@@ -317,9 +317,8 @@ exports.PrixodDB = class {
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
         `;
 
-    const query3 = `
-            UPDATE saldo_naimenovanie_jur7 
-            SET isdeleted = true 
+    const query3 = `--sql
+            DELETE FROM saldo_naimenovanie_jur7  
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
         `;
 

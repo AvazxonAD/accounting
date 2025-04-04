@@ -191,7 +191,7 @@ exports.Controller = class {
     const { data: organizations } = await OrganizationService.get({
       region_id,
       offset: 0,
-      limit: 99999,
+      limit: 99999999,
     });
     const data = await OrganizationmonitoringService.prixodRasxod(
       query,
@@ -320,7 +320,7 @@ exports.Controller = class {
         await OrganizationService.get({
           region_id,
           offset: 0,
-          limit: 99999,
+          limit: 99999999,
           organ_id: query.organ_id,
         })
       ).data;

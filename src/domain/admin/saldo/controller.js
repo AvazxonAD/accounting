@@ -31,7 +31,7 @@ exports.Controller = class {
       let { data: responsibles } = await ResponsibleService.get({
         region_id,
         offset: 0,
-        limit: 99999,
+        limit: 99999999,
       });
       if (kimning_buynida) {
         responsibles = responsibles.filter(

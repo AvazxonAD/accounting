@@ -74,7 +74,7 @@ exports.SaldoSchema = class {
         kimning_buynida: Joi.number().integer().min(1),
         group_id: Joi.number().integer().min(1),
         page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).default(99999),
+        limit: Joi.number().integer().min(1).default(99999999),
         search: Joi.string().trim().allow(null, ""),
         budjet_id: Joi.number().integer().min(1).required(),
         type: Joi.string()
@@ -97,7 +97,7 @@ exports.SaldoSchema = class {
         group_id: Joi.number().integer().min(1),
         product_id: Joi.number().integer().min(1),
         page: Joi.number().integer().min(1).default(1),
-        limit: Joi.number().integer().min(1).default(99999),
+        limit: Joi.number().integer().min(1).default(99999999),
         search: Joi.string().trim().allow(null, ""),
         budjet_id: Joi.number().integer().min(1).required(),
         rasxod: Joi.boolean().default(false),

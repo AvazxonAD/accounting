@@ -1,4 +1,5 @@
 const { db } = require("@db/index");
+const { sqlFilter } = require(`@helper/functions`);
 
 exports.Jur7MonitoringDB = class {
   static async capData(params) {
@@ -48,45 +49,21 @@ exports.Jur7MonitoringDB = class {
   }
 
   static async getSchets(params, responsible_id = null) {
-    let index_responsible_id = null;
+    let resposnible_filter = ``;
     if (responsible_id) {
       params.push(responsible_id);
-      index_responsible_id = params.length;
+      resposnible_filter = `AND kimning_buynida = $${params.length}`;
     }
-    const query = `--sql
-            SELECT schet 
-            FROM (
-                SELECT d_j_ch.debet_schet AS schet
-                FROM document_prixod_jur7 d_j
-                JOIN document_prixod_jur7_child d_j_ch ON d_j_ch.document_prixod_jur7_id = d_j.id
-                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3 
-                ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""}
-                UNION ALL
-                
-                SELECT d_j_ch.kredit_schet AS schet
-                FROM document_rasxod_jur7 d_j
-                JOIN document_rasxod_jur7_child d_j_ch ON d_j_ch.document_rasxod_jur7_id = d_j.id
-                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3
-                ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""}
-                
-                UNION ALL
-                
-                SELECT d_j_ch.kredit_schet AS schet
-                FROM document_vnutr_peremesh_jur7 d_j
-                JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
-                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3
-                ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""}
-                
-                UNION ALL
-                
-                SELECT d_j_ch.debet_schet AS schet
-                FROM document_vnutr_peremesh_jur7 d_j
-                JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
-                WHERE EXTRACT(YEAR FROM d_j.doc_date) = $1 AND EXTRACT(MONTH FROM d_j.doc_date) = $2 AND d_j.main_schet_id = $3
-                ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""}
 
-            ) AS combined_schets
-            GROUP BY schet   
+    const query = `--sql
+            SELECT
+              DISTINCT debet_schet
+            FROM saldo_naimenovanie_jur7
+            WHERE year = $1
+              AND month = $2
+              AND region_id = $3
+              AND budjet_id = $4
+              ${resposnible_filter}
         `;
     const result = await db.query(query, params);
     return result;
@@ -136,45 +113,45 @@ exports.Jur7MonitoringDB = class {
     }
     let product_filter = ``;
     if (product_id) {
-      product_filter = `AND d_j_ch.naimenovanie_tovarov_jur7_id = $${params.length + 1}`;
+      product_filter = `AND ch.naimenovanie_tovarov_jur7_id = $${params.length + 1}`;
       params.push(product_id);
     }
 
     const query = `--sql
         WITH 
         jur7_prixodSum AS (
-            SELECT COALESCE(SUM(d_j_ch.summa), 0::FLOAT) AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
+            SELECT COALESCE(SUM(ch.summa), 0::FLOAT) AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_prixod_jur7 d_j
-            JOIN document_prixod_jur7_child d_j_ch ON d_j_ch.document_prixod_jur7_id = d_j.id
+            JOIN document_prixod_jur7_child ch ON ch.document_prixod_jur7_id = d_j.id
             WHERE d_j.budjet_id = $1 AND
-              d_j_ch.debet_schet = $2
+              ch.debet_schet = $2
               AND d_j.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""} ${product_filter} 
         ),
         jur7_rasxodSum AS (
-            SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
+            SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_rasxod_jur7 d_j
-            JOIN document_rasxod_jur7_child d_j_ch ON d_j_ch.document_rasxod_jur7_id = d_j.id
+            JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d_j.id
             WHERE d_j.budjet_id = $1
-              AND  d_j_ch.kredit_schet = $2
+              AND  ch.kredit_schet = $2
               AND d_j.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""} ${product_filter}
         ),
         jur7_internal_rasxodSum AS (
-            SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
+            SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_vnutr_peremesh_jur7 d_j
-            JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
+            JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d_j.id
             WHERE d_j.budjet_id = $1
-              AND  d_j_ch.kredit_schet = $2
+              AND  ch.kredit_schet = $2
               AND d_j.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""} ${product_filter}
         ),
         jur7_internal_PrixodSum AS (
-            SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
+            SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_vnutr_peremesh_jur7 d_j
-            JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
+            JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d_j.id
             WHERE d_j.budjet_id = $1
-              AND  d_j_ch.debet_schet = $2
+              AND  ch.debet_schet = $2
               AND d_j.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""} ${product_filter}
         )
@@ -190,5 +167,30 @@ exports.Jur7MonitoringDB = class {
 
     const result = await db.query(query, params);
     return result[0];
+  }
+
+  static async getSaldoDate(params, year = null) {
+    let year_filter = ``;
+
+    if (year) {
+      params.push(year);
+      year_filter = `AND year = $${params.length}`;
+    }
+    const query = `--sql
+      SELECT
+        DISTINCT
+          year, month
+      FROM saldo_naimenovanie_jur7
+      WHERE region_id = $1
+        AND isdeleted = false
+        AND budjet_id = $2
+        ${year_filter}
+
+      ORDER BY year DESC, month DESC
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
   }
 };

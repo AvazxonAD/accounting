@@ -118,7 +118,7 @@ exports.SaldoDB = class {
   }
 
   static async cleanData(params, client) {
-    const query1 = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE region_id = $1`;
+    const query1 = `DELETE FROM saldo_naimenovanie_jur7 WHERE region_id = $1`;
     const query2 = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1`;
 
     await client.query(query1, params);
@@ -413,7 +413,7 @@ exports.SaldoDB = class {
       iznos_filer = `AND s.iznos = true`;
     }
 
-    const query = `
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     s.*, 
@@ -624,7 +624,7 @@ exports.SaldoDB = class {
       type_filter = `AND type = '${type}'`;
     }
 
-    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3 ${type_filter}`;
+    const query = `DELETE FROM saldo_naimenovanie_jur7 WHERE year = $1 AND month = $2 AND region_id = $3 ${type_filter}`;
     // const query2 = `UPDATE iznos_tovar_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3`;
     // await client.query(query2, params);
 
@@ -633,7 +633,7 @@ exports.SaldoDB = class {
 
   static async deleteById(params, client) {
     const _db = client || db;
-    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE id = $1`;
+    const query = `DELETE FROM saldo_naimenovanie_jur7 WHERE id = $1`;
 
     const data = await _db.query(query, params);
 
@@ -680,6 +680,59 @@ exports.SaldoDB = class {
     return result.rows[0];
   }
 
+  static async createMultiInsert(paramsArray, client) {
+    if (!paramsArray.length) return [];
+
+    const valuesSql = [];
+    const flatValues = [];
+
+    paramsArray.forEach((row, rowIndex) => {
+      const placeholders = row.map(
+        (_, colIndex) => `$${rowIndex * row.length + colIndex + 1}`
+      );
+      valuesSql.push(`(${placeholders.join(", ")})`);
+      flatValues.push(...row);
+    });
+
+    const query = `--sql
+      INSERT INTO saldo_naimenovanie_jur7 (
+        user_id,
+        naimenovanie_tovarov_jur7_id,
+        kol,
+        sena,
+        summa,
+        month,
+        year,
+        date_saldo,
+        doc_date,
+        doc_num,
+        kimning_buynida,
+        region_id,
+        prixod_id,
+        iznos,
+        iznos_summa,
+        iznos_schet,
+        iznos_sub_schet,
+        eski_iznos_summa,
+        iznos_start,
+        month_iznos_summa,
+        debet_schet,
+        debet_sub_schet,
+        kredit_schet,
+        kredit_sub_schet,
+        budjet_id,
+        type,
+        created_at,
+        updated_at
+      )
+      VALUES ${valuesSql.join(", ")}
+      RETURNING *
+    `;
+
+    const result = await client.query(query, flatValues);
+    return result.rows;
+  }
+
   static async getProductPrixod(params) {
     const query = `--sql
             SELECT
@@ -696,7 +749,7 @@ exports.SaldoDB = class {
   }
 
   static async deleteByPrixodId(params, client) {
-    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1`;
+    const query = `DELETE FROM saldo_naimenovanie_jur7 WHERE prixod_id = $1`;
 
     await client.query(query, params);
   }

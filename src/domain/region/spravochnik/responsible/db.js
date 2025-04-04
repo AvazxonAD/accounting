@@ -1,8 +1,8 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.ResponsibleDB = class {
-    static async createResponsible(params, client) {
-        const query = `--sql
+  static async createResponsible(params, client) {
+    const query = `--sql
             INSERT INTO spravochnik_javobgar_shaxs_jur7 (
                 spravochnik_podrazdelenie_jur7_id, 
                 fio, 
@@ -14,34 +14,34 @@ exports.ResponsibleDB = class {
             RETURNING id
         `;
 
-        const _db = client || db;
+    const _db = client || db;
 
-        const result = await _db.query(query, params)
+    const result = await _db.query(query, params);
 
-        return result[0];
+    return result[0];
+  }
+
+  static async get(params, region_id = null, search = null, podraz_id = null) {
+    let search_filter = ``;
+    let podraz_filter = ``;
+    let region_filter = ``;
+
+    if (search) {
+      search_filter = `AND s_j_s_j7.fio ILIKE '%' || $${params.length + 1} || '%'`;
+      params.push(search);
     }
 
-    static async get(params, region_id = null, search = null, podraz_id = null) {
-        let search_filter = ``;
-        let podraz_filter = ``;
-        let region_filter = ``;
+    if (podraz_id) {
+      params.push(podraz_id);
+      podraz_filter = `AND s_p_j7.id = $${params.length}`;
+    }
 
-        if (search) {
-            search_filter = `AND s_j_s_j7.fio ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search)
-        }
+    if (region_id) {
+      params.push(region_id);
+      region_filter = `AND r.id = $${params.length}`;
+    }
 
-        if (podraz_id) {
-            params.push(podraz_id);
-            podraz_filter = `AND s_p_j7.id = $${params.length}`;
-        }
-
-        if (region_id) {
-            params.push(region_id);
-            region_filter = `AND r.id = $${params.length}`;
-        }
-
-        const query = `--sql
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     s_j_s_j7.id, 
@@ -70,22 +70,22 @@ exports.ResponsibleDB = class {
                         ${region_filter}
                 ) AS total
             FROM data
-        `
+        `;
 
-        const result = await db.query(query, params)
-        return result[0];
+    const result = await db.query(query, params);
+    return result[0];
+  }
+
+  static async getById(params, region_id, isdeleted) {
+    let ignore = "AND s.isdeleted = false";
+    let region_filter = ``;
+
+    if (region_id) {
+      params.push(region_id);
+      region_filter = `AND r.id = $${params.length}`;
     }
 
-    static async getById(params, region_id, isdeleted) {
-        let ignore = 'AND s.isdeleted = false';
-        let region_filter = ``;
-
-        if (region_id) {
-            params.push(region_id)
-            region_filter = `AND r.id = $${params.length}`
-        }
-
-        const query = `--sql
+    const query = `--sql
             SELECT 
                 s.id, 
                 s.fio,
@@ -98,13 +98,13 @@ exports.ResponsibleDB = class {
             WHERE s.id = $1 
                 ${isdeleted ? `` : ignore}
                 ${region_filter}
-        `
-        const result = await db.query(query, params)
-        return result[0]
-    }
+        `;
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async getByFio(params) {
-        const query = `--sql
+  static async getByFio(params) {
+    const query = `--sql
             SELECT 
                 s.id, 
                 s.fio,
@@ -119,28 +119,28 @@ exports.ResponsibleDB = class {
                 AND s.isdeleted = false
         `;
 
-        const result = await db.query(query, params)
+    const result = await db.query(query, params);
 
-        return result[0]
-    }
+    return result[0];
+  }
 
-    static async updateResponsible(params) {
-        const query = `--sql
+  static async updateResponsible(params) {
+    const query = `--sql
             UPDATE spravochnik_javobgar_shaxs_jur7 
             SET fio = $1, updated_at = $2,  spravochnik_podrazdelenie_jur7_id = $3
             WHERE id = $4 AND isdeleted = false 
             RETURNING *
-        `
-        const result = await db.query(query, params)
-        return result[0]
-    }
-    static async deleteResponsible(params) {
-        const query = `UPDATE spravochnik_javobgar_shaxs_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`
-        await db.query(query, params)
-    }
+        `;
+    const result = await db.query(query, params);
+    return result[0];
+  }
+  static async deleteResponsible(params) {
+    const query = `UPDATE spravochnik_javobgar_shaxs_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`;
+    await db.query(query, params);
+  }
 
-    static async getResponsibleReport(params) {
-        const query = `--sql
+  static async getResponsibleReport(params) {
+    const query = `--sql
             SELECT 
                 s_j_s_j7.id, 
                 s_j_s_j7.fio,
@@ -152,7 +152,7 @@ exports.ResponsibleDB = class {
             JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
             WHERE s_j_s_j7.isdeleted = false AND r.id = $1
         `;
-        const result = await db.query(query, params)
-        return result;
-    }
-}
+    const result = await db.query(query, params);
+    return result;
+  }
+};
