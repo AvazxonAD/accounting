@@ -452,13 +452,14 @@ const operatsiiValidation = Joi.object({
     .required()
     .valid(
       "akt",
-      "bank_prixod",
       "avans_otchet",
+      "show_service",
+      "bank_prixod",
+      "bank_rasxod",
       "kassa_prixod",
       "kassa_rasxod",
-      "bank_rasxod",
-      "general",
-      "show_service"
+      "jur3",
+      "jur4"
     ),
   smeta_id: Joi.number().min(1),
   budjet_id: Joi.number().min(1).integer(),

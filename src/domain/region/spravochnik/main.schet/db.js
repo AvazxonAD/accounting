@@ -18,6 +18,22 @@ exports.MainSchetDB = class {
     return result[0];
   }
 
+  static async checkJurSchet(params) {
+    const query = `--sql
+      SELECT
+        *
+      FROM jur_schets
+      WHERE main_schet_id = $1
+        AND isdeleted = false
+        AND type = $2
+        AND schet = $3
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getByIdMainSchet(params, isdeleted = null) {
     const ignore = `AND m_s.isdeleted = false`;
     const query = `--sql
@@ -71,7 +87,25 @@ exports.MainSchetDB = class {
           SELECT
             m.*, 
             b.name AS                               budjet_name,
-            b.id AS                                 spravochnik_budjet_name_id 
+            b.id AS                                 spravochnik_budjet_name_id,
+            COALESCE(
+              (
+                SELECT JSON_AGG(row_to_json(j))
+                FROM jur_schets j
+                WHERE j.main_schet_id = m.id
+                  AND j.isdeleted = false
+                  AND j.type = 'jur3'
+              )
+            , '[]'::JSON) AS jur3_schets,
+            COALESCE(
+              (
+                SELECT JSON_AGG(row_to_json(j))
+                FROM jur_schets j
+                WHERE j.main_schet_id = m.id
+                  AND j.isdeleted = false
+                  AND j.type = 'jur4'
+              )
+            , '[]'::JSON ) AS jur4_schets
           FROM main_schet m
           JOIN users u ON m.user_id = u.id
           JOIN regions r ON u.region_id = r.id
@@ -102,5 +136,60 @@ exports.MainSchetDB = class {
     const result = await db.query(query, params);
 
     return result[0];
+  }
+
+  static async getByAccount(params) {
+    const query = `--sql
+      SELECT
+        m.*
+      FROM main_schet m 
+      JOIN users u ON u.id = m.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE m.account_number = $1
+        AND m.isdeleted = false
+        AND r.id = $2
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async create(params, client) {
+    const query = `--sql
+      INSERT INTO main_schet(
+        account_number,
+        spravochnik_budjet_name_id,
+        tashkilot_nomi,
+        tashkilot_bank,
+        tashkilot_mfo,
+        tashkilot_inn,
+        account_name,
+        jur1_schet,
+        jur2_schet,
+        gazna_number,
+        user_id
+      ) 
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
+
+  static async createSchet(params, client) {
+    const query = `--sql
+      INSERT INTO jur_schets(
+        schet,
+        type,
+        main_schet_id,
+        created_at,
+        updated_at
+      )
+      VALUES($1, $2, $3, $4, $5)
+    `;
+
+    await client.query(query, params);
   }
 };

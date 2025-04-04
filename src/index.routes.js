@@ -54,7 +54,7 @@ routes
   )
   .use("/spravochnik/organization", protect, require("@organization/index"))
   .use("/spravochnik/operatsii", protect, require("@operatsii/index"))
-  .use("/spravochnik/main-schet", require("@main_schet/main_schet.routes"))
+  .use("/spravochnik/main-schet", require("@main_schet/index"))
   .use(
     "/spravochnik/budjet-name",
     protect,

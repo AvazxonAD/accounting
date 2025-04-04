@@ -4,8 +4,20 @@ const fs = require("fs").promises;
 const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
+const ErrorResponse = require("@helper/error.response");
 
 exports.HelperFunctions = class {
+  static findDuplicateByKey(arr, key) {
+    const seen = new Set();
+    return arr.find((item) => {
+      if (seen.has(item[key])) {
+        return true;
+      }
+      seen.add(item[key]);
+      return false;
+    });
+  }
+
   static returnDate(data) {
     return `${data.year}-${String(data.month).padStart(2, "0")}-01`;
   }
