@@ -241,4 +241,20 @@ exports.Controller = class {
 
     return res.success(req.i18n.t(`deleteSuccess`), 200, null, result);
   }
+
+  static async getByBudjet(req, res) {
+    const region_id = req.user.region_id;
+    const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({
+      id: budjet_id,
+    });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const result = await MainSchetService.getByBudjet({ region_id, budjet_id });
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
 };

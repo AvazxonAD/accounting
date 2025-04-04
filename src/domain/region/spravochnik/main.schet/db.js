@@ -242,4 +242,22 @@ exports.MainSchetDB = class {
 
     return result.rows[0];
   }
+
+  static async getByBudjet(params) {
+    const query = `--sql
+       SELECT 
+          main_schet.id AS main_schet_id, 
+          main_schet.account_number 
+        FROM main_schet 
+        JOIN users ON main_schet.user_id = users.id
+        JOIN regions ON users.region_id = regions.id
+        WHERE main_schet.spravochnik_budjet_name_id = $1 
+          AND main_schet.isdeleted = false
+          AND regions.id = $2
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
 };

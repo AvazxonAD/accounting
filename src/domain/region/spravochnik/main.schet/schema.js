@@ -84,6 +84,14 @@ exports.MainSchetSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static getByBudjet() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static getById() {
     return Joi.object({
       params: Joi.object({

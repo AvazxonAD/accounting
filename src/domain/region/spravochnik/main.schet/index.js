@@ -15,10 +15,17 @@ router
     validator(Controller.delete, MainSchetSchema.delete())
   )
   .get(
+    "/budjet/region",
+    protect,
+    validator(Controller.getByBudjet, MainSchetSchema.getByBudjet())
+  )
+
+  .get(
     "/:id",
     protect,
     validator(Controller.getById, MainSchetSchema.getById())
   )
+
   .get("/", protect, validator(Controller.get, MainSchetSchema.get()));
 
 module.exports = router;

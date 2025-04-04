@@ -185,4 +185,13 @@ exports.MainSchetService = class {
 
     return result;
   }
+
+  static async getByBudjet(data) {
+    const result = await MainSchetDB.getByBudjet([
+      data.budjet_id,
+      data.region_id,
+    ]);
+
+    return result;
+  }
 };
