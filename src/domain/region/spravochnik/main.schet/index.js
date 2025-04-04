@@ -8,6 +8,7 @@ const { MainSchetSchema } = require("./schema");
 
 router
   .post("/", protect, validator(Controller.create, MainSchetSchema.create()))
+  .get("/:id", protect, validator(Controller.getb))
   .get("/", protect, validator(Controller.get, MainSchetSchema.get()));
 
 const {
@@ -22,7 +23,6 @@ const {
 router
   .put("/:id", protect, update)
   .delete("/:id", protect, deleteValue)
-  .get("/:id", protect, getElementById)
   .get("/budjet/region/", getByBudjetIdMainSchet);
 
 module.exports = router;

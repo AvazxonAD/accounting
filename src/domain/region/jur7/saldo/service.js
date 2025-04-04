@@ -1,4 +1,4 @@
-const { SaldoDB } = require("@jur7_saldo/db");
+const { SaldoDB } = require("./db");
 const {
   tashkentTime,
   returnStringDate,

@@ -96,6 +96,23 @@ exports.Controller = class {
 
     res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
+
+  static async getById(req, res) {
+    const region_id = req.user.region_id;
+    const id = req.params.id;
+
+    const data = await MainSchetService.getById({
+      id,
+      region_id,
+      isdeleted: true,
+    });
+
+    if (!data) {
+      return req.i18n.t(req.i18n.t("mainSchetNotFound"), 404);
+    }
+
+    return res.success(req.i18n.t(req.i18n.t(`getSuccess`), 200, null, data));
+  }
 };
 
 const {
@@ -116,67 +133,6 @@ const { resFunc } = require("@helper/functions");
 const { validationResponse } = require("@helper/functions");
 const { errorCatch } = require("@helper/functions");
 const { date } = require("joi");
-
-exports.create = async (req, res) => {
-  try {
-    const region_id = req.user.region_id;
-    const user_id = req.user.id;
-
-    const data = validationResponse(mainSchetValidator, req.body);
-
-    for (let column_name of JURNAL_SCHETS) {
-      const check = await MainSchetService.checkSchet({
-        budjet_id: data.spravochnik_budjet_name_id,
-        region_id,
-        column: data[column_name],
-        column_name,
-      });
-
-      if (check) {
-        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-          schet: check[column_name],
-        });
-      }
-    }
-
-    await getByIdBudjetService(data.spravochnik_budjet_name_id);
-
-    // await getByAccountNumberMainSchetService(region_id, data.account_number);
-
-    const result = await createMainSchetService({ ...data, user_id });
-
-    return res.success(req.i18n.t("createSuccess"), 200, null, result);
-  } catch (error) {
-    errorCatch(error, res);
-  }
-};
-
-exports.getAll = async (req, res) => {
-  try {
-    const { limit, page, search } = validationResponse(
-      queryMainSchetValidation,
-      req.query
-    );
-    const offset = (page - 1) * limit;
-    const { result, total } = await getAllMainSchetService(
-      req.user.region_id,
-      offset,
-      limit,
-      search
-    );
-    const pageCount = Math.ceil(total / limit);
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    };
-    resFunc(res, 200, result, meta);
-  } catch (error) {
-    errorCatch(error, res);
-  }
-};
 
 exports.update = async (req, res) => {
   try {

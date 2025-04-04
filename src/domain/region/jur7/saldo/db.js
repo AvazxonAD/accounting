@@ -39,7 +39,7 @@ exports.SaldoDB = class {
       ? `AND ${conditions.join(" AND ")}`
       : "";
 
-    const query = `
+    const query = `--sql
         WITH data AS (
             SELECT  
                 s.id::INTEGER,

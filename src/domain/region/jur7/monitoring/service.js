@@ -309,6 +309,7 @@ exports.Jur7MonitoringService = class {
           schet.schet,
           responsible.id,
         ]);
+
         schet.kol_from = 0;
         schet.summa_from = 0;
         schet.kol_prixod = 0;

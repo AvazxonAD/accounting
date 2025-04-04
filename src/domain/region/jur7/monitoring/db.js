@@ -111,6 +111,7 @@ exports.Jur7MonitoringDB = class {
             AND d_ch.debet_schet = $3
             AND d_j.kimga_id = $4
     `;
+
     const result = await db.query(query, params);
     return result;
   }
@@ -145,29 +146,37 @@ exports.Jur7MonitoringDB = class {
             SELECT COALESCE(SUM(d_j_ch.summa), 0::FLOAT) AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
             FROM document_prixod_jur7 d_j
             JOIN document_prixod_jur7_child d_j_ch ON d_j_ch.document_prixod_jur7_id = d_j.id
-            WHERE d_j.budjet_id = $1 AND  d_j_ch.debet_schet = $2 AND d_j.doc_date ${internal_filter}
-            ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""} ${product_filter} 
+            WHERE d_j.budjet_id = $1 AND
+              d_j_ch.debet_schet = $2
+              AND d_j.doc_date ${internal_filter}
+              ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""} ${product_filter} 
         ),
         jur7_rasxodSum AS (
             SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
             FROM document_rasxod_jur7 d_j
             JOIN document_rasxod_jur7_child d_j_ch ON d_j_ch.document_rasxod_jur7_id = d_j.id
-            WHERE d_j.budjet_id = $1 AND  d_j_ch.kredit_schet = $2 AND d_j.doc_date ${internal_filter}
-            ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""} ${product_filter}
+            WHERE d_j.budjet_id = $1
+              AND  d_j_ch.kredit_schet = $2
+              AND d_j.doc_date ${internal_filter}
+              ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""} ${product_filter}
         ),
         jur7_internal_rasxodSum AS (
             SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
             FROM document_vnutr_peremesh_jur7 d_j
             JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
-            WHERE d_j.budjet_id = $1 AND  d_j_ch.kredit_schet = $2 AND d_j.doc_date ${internal_filter}
-            ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""} ${product_filter}
+            WHERE d_j.budjet_id = $1
+              AND  d_j_ch.kredit_schet = $2
+              AND d_j.doc_date ${internal_filter}
+              ${responsible_id ? sqlFilter("d_j.kimdan_id", index_responsible_id) : ""} ${product_filter}
         ),
         jur7_internal_PrixodSum AS (
             SELECT COALESCE(SUM(d_j_ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(d_j_ch.kol), 0)::FLOAT AS kol
             FROM document_vnutr_peremesh_jur7 d_j
             JOIN document_vnutr_peremesh_jur7_child d_j_ch ON d_j_ch.document_vnutr_peremesh_jur7_id = d_j.id
-            WHERE d_j.budjet_id = $1 AND  d_j_ch.debet_schet = $2 AND d_j.doc_date ${internal_filter}
-            ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""} ${product_filter}
+            WHERE d_j.budjet_id = $1
+              AND  d_j_ch.debet_schet = $2
+              AND d_j.doc_date ${internal_filter}
+              ${responsible_id ? sqlFilter("d_j.kimga_id", index_responsible_id) : ""} ${product_filter}
         )
         SELECT 
             ((jur7_prixodSum.summa + jur7_internal_PrixodSum.summa) - (jur7_rasxodSum.summa + jur7_internal_rasxodSum.summa)) AS summa,
