@@ -9,6 +9,7 @@ const { AccountNumberService } = require("@account_number/service");
 const { HelperFunctions } = require("@helper/functions");
 const { CODE } = require("@helper/constants");
 const { PrixodJur7Schema } = require("./schema");
+const { SaldoService } = require(`@jur7_saldo/service`);
 
 exports.Controller = class {
   static async rasxodDocs(req, res) {
@@ -87,6 +88,7 @@ exports.Controller = class {
       shartnoma_grafik_id,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
+      doc_date,
     } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -156,6 +158,15 @@ exports.Controller = class {
       }
 
       child.old_iznos = child.eski_iznos_summa / child.kol;
+    }
+
+    const check_saldo = await SaldoService.check({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+    });
+    if (!check_saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const result = await PrixodJur7Service.create({
@@ -247,6 +258,7 @@ exports.Controller = class {
       shartnoma_grafik_id,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
+      doc_date,
     } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -340,6 +352,15 @@ exports.Controller = class {
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
+    const check_saldo = await SaldoService.check({
+      region_id,
+      year: new Date(doc_date).getFullYear(),
+      month: new Date(doc_date).getMonth() + 1,
+    });
+    if (!check_saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const result = await PrixodJur7Service.update({
       ...req.body,
       budjet_id,
@@ -376,6 +397,15 @@ exports.Controller = class {
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const check_saldo = await SaldoService.check({
+      region_id,
+      year: new Date(old_data.doc_date).getFullYear(),
+      month: new Date(old_data.doc_date).getMonth() + 1,
+    });
+    if (!check_saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const productIds = await PrixodJur7Service.getProductIds({ id });

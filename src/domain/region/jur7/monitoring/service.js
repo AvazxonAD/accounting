@@ -4,6 +4,7 @@ const path = require("path");
 const { HelperFunctions } = require("@helper/functions");
 const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const { access, constants, mkdir } = require("fs").promises;
+const { SaldoService } = require("@jur7_saldo/service");
 
 exports.Jur7MonitoringService = class {
   static async cap(data) {
@@ -294,64 +295,6 @@ exports.Jur7MonitoringService = class {
     return { fileName, filePath };
   }
 
-  static async materialReport(data) {
-    const dates = HelperFunctions.getMonthStartEnd({
-      year: data.year,
-      month: data.month,
-    });
-
-    for (let responsible of data.responsibles) {
-      responsible.schets = data.schets.map((item) => ({ ...item }));
-      for (let schet of responsible.schets) {
-        schet.products = await Jur7MonitoringDB.getBySchetProducts([
-          data.region_id,
-          data.budjet_id,
-          schet.schet,
-          responsible.id,
-        ]);
-
-        schet.kol_from = 0;
-        schet.summa_from = 0;
-        schet.kol_prixod = 0;
-        schet.prixod = 0;
-        schet.kol_rasxod = 0;
-        schet.rasxod = 0;
-        schet.kol_to = 0;
-        schet.summa_to = 0;
-        for (let product of schet.products) {
-          product.summa_from = await Jur7MonitoringDB.getSummaReport(
-            [data.budjet_id, schet.schet, dates[0]],
-            "<",
-            responsible.id,
-            product.id
-          );
-          product.internal = await Jur7MonitoringDB.getSummaReport(
-            [data.budjet_id, schet.schet, dates[0], dates[1]],
-            null,
-            responsible.id,
-            product.id
-          );
-          product.summa_to = await Jur7MonitoringDB.getSummaReport(
-            [data.budjet_id, schet.schet, dates[1]],
-            "<=",
-            responsible.id,
-            product.id
-          );
-          schet.kol_from += product.summa_from.kol;
-          schet.summa_from += product.summa_from.summa;
-          schet.kol_prixod += product.internal.prixod_kol;
-          schet.prixod += product.internal.prixod;
-          schet.kol_rasxod += product.internal.rasxod_kol;
-          schet.rasxod += product.internal.rasxod;
-          schet.kol_to += product.summa_to.kol;
-          schet.summa_to += product.summa_to.summa;
-        }
-      }
-    }
-
-    return data.responsibles;
-  }
-
   static async materialExcel(data) {
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("material");
@@ -425,7 +368,7 @@ exports.Jur7MonitoringService = class {
     ];
 
     for (let responsible of data.responsibles) {
-      for (let schet of responsible.schets) {
+      for (let schet of responsible.products) {
         if (schet.products.length) {
           worksheet.addRow({});
           worksheet.addRow({ product_name: responsible.fio });
@@ -528,35 +471,32 @@ exports.Jur7MonitoringService = class {
     return { fileName, filePath };
   }
 
-  static async getSchets(data) {
-    const result = await Jur7MonitoringDB.getSchets([
-      data.year,
-      data.month,
-      data.region_id,
-      data.budjet_id,
-    ]);
+  static async history(data) {
+    const result = await Jur7MonitoringDB.history(
+      [data.from, data.to],
+      data.responsible_id
+    );
 
-    const dates = HelperFunctions.getMonthStartEnd({
+    return result;
+  }
+
+  static async getMaterial(data) {
+    const result = await Jur7MonitoringDB.getMaterial(
+      [data.year, data.month, data.region_id, data.budjet_id],
+      data.responsible_id
+    );
+
+    const date = HelperFunctions.getDate({
       year: data.year,
       month: data.month,
     });
 
-    for (let schet of result) {
-      schet.summa_from = await Jur7MonitoringDB.getSummaReport(
-        [data.budjet_id, schet.schet, dates[0]],
-        "<"
-      );
-      schet.internal = await Jur7MonitoringDB.getSummaReport([
-        data.budjet_id,
-        schet.schet,
-        dates[0],
-        dates[1],
-      ]);
-      schet.summa_to = await Jur7MonitoringDB.getSummaReport(
-        [data.budjet_id, schet.schet, dates[1]],
-        "<="
-      );
-    }
+    const history = await Jur7MonitoringDB.history(
+      [date[0], date[1]],
+      data.responsible_id
+    );
+
+    console.log(history);
 
     return result;
   }

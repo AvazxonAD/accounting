@@ -215,7 +215,7 @@ exports.SaldoDB = class {
 
   static async getSaldoDate(params, client) {
     const _db = client || db;
-    const query = `
+    const query = `--sql
             SELECT 
                 DISTINCT year, month
             FROM saldo_naimenovanie_jur7 
@@ -233,7 +233,7 @@ exports.SaldoDB = class {
   }
 
   static async getFirstSaldoDocs(params) {
-    const query = `
+    const query = `--sql
            SELECT
               DISTINCT
                 s.year,
@@ -253,7 +253,7 @@ exports.SaldoDB = class {
   }
 
   static async getFirstSaldoDate(params) {
-    const query = `
+    const query = `--sql
            SELECT 
                 DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
             FROM saldo_naimenovanie_jur7 
@@ -269,7 +269,7 @@ exports.SaldoDB = class {
   }
 
   static async getEndSaldoDate(params) {
-    const query = `
+    const query = `--sql
            SELECT 
                 DISTINCT TO_CHAR(date_saldo, 'YYYY-MM-DD') AS date_saldo
             FROM saldo_naimenovanie_jur7 
@@ -285,7 +285,7 @@ exports.SaldoDB = class {
   }
 
   static async getBlock(params) {
-    const query = `
+    const query = `--sql
             SELECT 
                 DISTINCT year, month
             FROM saldo_date 
@@ -335,7 +335,7 @@ exports.SaldoDB = class {
   }
 
   static async getById(params, isdeleted = null, iznos = null) {
-    const query = `
+    const query = `--sql
             SELECT 
                 s.*, 
                 s.id::INTEGER,

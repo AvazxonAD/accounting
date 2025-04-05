@@ -38,7 +38,7 @@
       "@organ_saldo/*": ["domain/region/jur3/saldo/*"],
       "@podotchet_saldo/*": ["domain/region/jur4/saldo/*"],
       "@jur7_prixod/*": ["domain/region/jur7/prixod/*"],
-      "@jur7_saldo/*": ["@domain/region/jur7/saldo/*"],
+      "@jur7_saldo/*": ["domain/region/jur7/saldo/*"],
       "@organization/*": ["domain/region/spravochnik/organization/*"],
       "@responsible/*": ["domain/region/spravochnik/responsible/*"],
       "@product/*": ["domain/region/spravochnik/product/*"],

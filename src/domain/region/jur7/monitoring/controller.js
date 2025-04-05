@@ -36,27 +36,46 @@ exports.Controller = class {
 
     const region = await RegionService.getById({ id: region_id });
 
-    const schets = await Jur7MonitoringService.getSchets({
+    const data = await Jur7MonitoringService.getMaterial({
       year,
       month,
       budjet_id,
-    });
-
-    const responsibles = await ResponsibleService.get({
       region_id,
-      offset: 0,
-      limit: 99999999,
     });
 
-    const result = await Jur7MonitoringService.materialReport({
-      responsibles: responsibles.data,
-      region_id,
-      budjet_id,
-      year,
-      month,
-      schets,
+    const resultMap = {};
+
+    data.forEach((product) => {
+      const responsibleId = product.kimning_buynida;
+      const schet = product.schet;
+
+      if (!resultMap[responsibleId]) {
+        resultMap[responsibleId] = {
+          responsible_id: responsibleId,
+          fio: product.fio,
+          products: [],
+        };
+      }
+
+      const responsibleObj = resultMap[responsibleId];
+
+      const checkProd = responsibleObj.products.find(
+        (item) => item.schet === schet
+      );
+
+      if (!checkProd) {
+        responsibleObj.products.push({
+          schet,
+          products: [{ ...product }],
+        });
+      } else {
+        checkProd.products.push(product);
+      }
     });
 
+    const result = Object.values(resultMap);
+
+    return res.send("javob qaytdi");
     if (excel === "true") {
       const { fileName, filePath } = await Jur7MonitoringService.materialExcel({
         responsibles: result,

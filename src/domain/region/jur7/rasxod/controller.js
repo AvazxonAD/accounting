@@ -217,6 +217,15 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const check_saldo = await SaldoService.check({
+      region_id,
+      year: new Date(data.doc_date).getFullYear(),
+      month: new Date(data.doc_date).getMonth() + 1,
+    });
+    if (!check_saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const response = await Jur7RsxodService.delete({
       id,
       old_data: data,

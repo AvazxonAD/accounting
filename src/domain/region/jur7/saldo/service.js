@@ -7,12 +7,35 @@ const {
 const { db } = require("@db/index");
 const xlsx = require("xlsx");
 const { ProductDB } = require("@product/db");
-const { ResponsibleDB } = require("@responsible/db");
 const ExcelJS = require("exceljs");
 const path = require("path");
 const fs = require("fs").promises;
 
 exports.SaldoService = class {
+  static async calculateKol(data) {
+    data.product.internal = await SaldoDB.getKolAndSumma(
+      [data.product.product_id],
+      `${data.year}-${data.month < 10 ? `0${data.month}` : data.month}-01`,
+      data.to,
+      data.product.responsible_id
+    );
+
+    data.product.to = {
+      kol: data.product.from.kol + data.product.internal.kol,
+      summa: data.product.from.summa + data.product.internal.summa,
+      iznos_summa:
+        data.product.from.iznos_summa + data.product.internal.iznos_summa,
+    };
+
+    if (data.product.to.kol !== 0) {
+      data.product.to.sena = data.product.to.summa / data.product.to.kol;
+    } else {
+      data.product.to.sena = data.product.to.summa;
+    }
+
+    return data.product;
+  }
+
   static async reportByResponsibleExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("material obarotka");
@@ -357,24 +380,7 @@ exports.SaldoService = class {
     );
 
     for (let product of result.data) {
-      product.internal = await SaldoDB.getKolAndSumma(
-        [product.product_id],
-        `${year}-${month < 10 ? `0${month}` : month}-01`,
-        data.to,
-        product.responsible_id
-      );
-
-      product.to = {
-        kol: product.from.kol + product.internal.kol,
-        summa: product.from.summa + product.internal.summa,
-        iznos_summa: product.from.iznos_summa + product.internal.iznos_summa,
-      };
-
-      if (product.to.kol !== 0) {
-        product.to.sena = product.to.summa / product.to.kol;
-      } else {
-        product.to.sena = product.to.summa;
-      }
+      product = await this.calculateKol({ product, year, month });
     }
 
     if (data.rasxod) {
