@@ -63,8 +63,10 @@ exports.Jur7MonitoringDB = class {
               n.edin,
               d.debet_schet AS                           schet,
               j.fio,
-              d.doc_date,
               d.kimning_buynida::INTEGER,
+              d.iznos,
+              g.iznos_foiz,
+              TO_CHAR(d.doc_date, 'DD-MM-YYYY') AS        doc_date,
               JSON_BUILD_OBJECT(
                 'sena', d.sena::FLOAT,
                 'summa', d.summa::FLOAT,
@@ -74,6 +76,7 @@ exports.Jur7MonitoringDB = class {
             FROM saldo_naimenovanie_jur7 d
             JOIN spravochnik_javobgar_shaxs_jur7 j ON j.id = d.kimning_buynida
             JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
+            JOIN group_jur7 AS g ON n.group_jur7_id = g.id
             WHERE d.year = $1
               AND d.month = $2
               AND d.region_id = $3

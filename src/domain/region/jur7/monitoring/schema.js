@@ -7,6 +7,7 @@ exports.Schema = class {
         month: Joi.number().integer().min(1).required().max(12),
         year: Joi.number().integer().min(1901).required(),
         excel: Joi.string().trim().valid("true", "false"),
+        iznos: Joi.string().trim().valid("true", "false"),
         budjet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });

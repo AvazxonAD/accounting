@@ -26,7 +26,7 @@ exports.Controller = class {
   }
 
   static async materialReport(req, res) {
-    const { month, year, budjet_id, excel, responsible_id } = req.query;
+    const { month, year, budjet_id, excel, iznos, responsible_id } = req.query;
     const region_id = req.user.region_id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -91,8 +91,48 @@ exports.Controller = class {
       responsible_id,
     });
 
+    const itogo = {
+      from_kol: 0,
+      from_summa: 0,
+      from_iznos_summa: 0,
+      prixod_iznos_summa: 0,
+      rasxod_iznos_summa: 0,
+      prixod_kol: 0,
+      prixod_summa: 0,
+      rasxod_kol: 0,
+      rasxod_summa: 0,
+      to_iznos_summa: 0,
+      to_kol: 0,
+      to_summa: 0,
+      month_iznos: 0,
+    };
+
+    if (iznos === "true") {
+      result.forEach((item) => {
+        for (let schet of item.products) {
+          schet.products = schet.products.filter((item) => item.iznos === true);
+        }
+      });
+    }
+
     for (let responsible of result) {
       for (let schet of responsible.products) {
+        schet.itogo = {
+          from_kol: 0,
+          from_summa: 0,
+          from_iznos_summa: 0,
+          prixod_iznos_summa: 0,
+          rasxod_iznos_summa: 0,
+          prixod_kol: 0,
+          prixod_summa: 0,
+          rasxod_kol: 0,
+          rasxod_summa: 0,
+          to_iznos_summa: 0,
+          to_kol: 0,
+          to_summa: 0,
+          month_iznos: 0,
+        };
+
         for (let product of schet.products) {
           product.internal = {
             kol: 0,
@@ -146,17 +186,87 @@ exports.Controller = class {
           } else {
             product.to.sena = product.to.summa;
           }
+
+          if (product.iznos) {
+            const docDate = new Date(product.doc_date);
+            const now = new Date(`${year}-${month}-01`);
+
+            const diffInMs = now - docDate;
+            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+            if (diffInDays >= 30) {
+              const month_iznos = product.to.summa * (product.iznos_foiz / 100);
+              if (month_iznos + product.to.iznos_summa < product.to.summa) {
+                product.to.month_iznos = month_iznos;
+              } else {
+                product.to.month_iznos =
+                  month_iznos + product.to.iznos_summa - product.to.summa;
+              }
+            } else {
+              product.to.month_iznos = 0;
+            }
+
+            product.to.iznos_summa += product.to.month_iznos;
+          }
+
+          // schet
+          schet.itogo.from_kol += product.from.kol;
+          schet.itogo.from_summa += product.from.summa;
+          schet.itogo.from_iznos_summa += product.from.iznos_summa;
+
+          schet.itogo.prixod_kol += product.internal.prixod_kol;
+          schet.itogo.prixod_summa += product.internal.prixod_summa;
+          schet.itogo.prixod_iznos_summa += product.internal.prixod_iznos_summa;
+
+          schet.itogo.rasxod_kol += product.internal.rasxod_kol;
+          schet.itogo.rasxod_summa += product.internal.rasxod_summa;
+          schet.itogo.rasxod_iznos_summa += product.internal.rasxod_iznos_summa;
+
+          schet.itogo.to_kol += product.to.kol;
+          schet.itogo.to_summa += product.to.summa;
+          schet.itogo.to_iznos_summa += product.to.iznos_summa;
+          schet.itogo.month_iznos += product.to.month_iznos;
         }
+
+        // general
+        itogo.from_kol += schet.itogo.from_kol;
+        itogo.from_summa += schet.itogo.from_summa;
+        itogo.from_iznos_summa += schet.itogo.from_iznos_summa;
+
+        itogo.prixod_kol += schet.itogo.prixod_kol;
+        itogo.prixod_summa += schet.itogo.prixod_summa;
+        itogo.prixod_iznos_summa += schet.itogo.prixod_iznos_summa;
+
+        itogo.rasxod_kol += schet.itogo.rasxod_kol;
+        itogo.rasxod_summa += schet.itogo.rasxod_summa;
+        itogo.rasxod_iznos_summa += schet.itogo.rasxod_iznos_summa;
+
+        itogo.to_kol += schet.itogo.to_kol;
+        itogo.to_summa += schet.itogo.to_summa;
+        itogo.to_iznos_summa += schet.itogo.to_iznos_summa;
+        itogo.month_iznos += schet.itogo.month_iznos;
       }
     }
 
     if (excel === "true") {
-      const { fileName, filePath } = await Jur7MonitoringService.materialExcel({
-        responsibles: result,
-        month,
-        year,
-        region,
-      });
+      let response;
+      if (iznos === "true") {
+        response = await Jur7MonitoringService.materialExcelWithIznos({
+          responsibles: result,
+          month,
+          year,
+          region,
+          itogo,
+        });
+      } else {
+        response = await Jur7MonitoringService.materialExcel({
+          responsibles: result,
+          month,
+          year,
+          region,
+          itogo,
+        });
+      }
 
       res.setHeader(
         "Content-Type",
@@ -164,10 +274,10 @@ exports.Controller = class {
       );
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${fileName}"`
+        `attachment; filename="${response.fileName}"`
       );
 
-      return res.sendFile(filePath);
+      return res.sendFile(response.filePath);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
