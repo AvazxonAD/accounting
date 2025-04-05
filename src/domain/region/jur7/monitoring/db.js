@@ -2,6 +2,71 @@ const { db } = require("@db/index");
 const { sqlFilter } = require(`@helper/functions`);
 
 exports.Jur7MonitoringDB = class {
+  static async monitoring(params) {
+    const query = `--sql
+      WITH data AS (
+        SELECT
+          ch.*,
+          d.*,
+          ch.kol::FLOAT,
+          ch.summa_s_nds::FLOAT AS                   summa,
+          ch.iznos_summa::FLOAT,
+          d.kimga_id AS                              responsible_id,
+          'prixod' AS                                type,
+          ch.naimenovanie_tovarov_jur7_id AS         product_id
+      FROM document_prixod_jur7 d
+      JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
+      WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND d.doc_date BETWEEN $1 AND $2
+          ${resposnible_filter}
+      
+      UNION ALL 
+      
+      SELECT
+        ch.kol::FLOAT,
+        ch.summa::FLOAT,
+        ch.iznos_summa::FLOAT,
+        d.kimga_id AS                                 responsible_id,
+        'internal' AS                          type,
+        ch.naimenovanie_tovarov_jur7_id AS            product_id
+      FROM document_vnutr_peremesh_jur7 d
+      JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
+      WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND d.doc_date BETWEEN $1 AND $2
+          ${resposnible_filter}
+      
+      UNION ALL
+
+      SELECT
+        ch.kol::FLOAT,
+        ch.summa::FLOAT,
+        ch.iznos_summa::FLOAT,
+        d.kimdan_id AS                            responsible_id,
+        'rasxod' AS                                type,
+        ch.naimenovanie_tovarov_jur7_id AS         product_id
+      FROM document_rasxod_jur7 d
+      JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
+      WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND d.doc_date BETWEEN $1 AND $2
+          ${resposnible_filter}
+          ${resposnible_filter}
+      )
+      
+      SELECT 
+        COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
+        (
+          
+        )  
+      FROM data
+    `;
+  }
+
   static async capData(params) {
     const query = `--sql
         SELECT 
