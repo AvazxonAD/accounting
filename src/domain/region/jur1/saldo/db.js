@@ -4,7 +4,7 @@ exports.KassaSaldoDB = class {
   static async getFirstSaldo(params) {
     const query = `--sql
       SELECT 
-          d.year, d.month
+          d.*
       FROM kassa_saldo d
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
@@ -17,7 +17,7 @@ exports.KassaSaldoDB = class {
 
     const result = await db.query(query, params);
 
-    return result;
+    return result[0];
   }
 
   static async getDateSaldo(params) {
@@ -152,6 +152,7 @@ exports.KassaSaldoDB = class {
         WHERE d.isdeleted = false
           AND d.budjet_id = $1
           ${where}
+        ORDER BY d.year DESC, d.month DESC
     `;
 
     const result = await db.query(query, params);
