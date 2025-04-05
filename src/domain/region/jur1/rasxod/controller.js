@@ -6,6 +6,7 @@ const { PodrazdelenieService } = require("@podraz/service");
 const { SostavService } = require("@sostav/service");
 const { TypeOperatsiiService } = require("@type_operatsii/service");
 const { KassaRasxodService } = require("./service");
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.Controller = class {
   static async create(req, res) {

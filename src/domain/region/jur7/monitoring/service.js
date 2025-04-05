@@ -377,14 +377,14 @@ exports.Jur7MonitoringService = class {
             worksheet.addRow({
               product_name: product.name,
               edin: product.edin,
-              from_kol: product.summa_from.kol,
-              from_summa: product.summa_from.summa,
-              prixod_kol: product.internal.prixod_kol,
-              prixod: product.internal.prixod,
-              rasxod_kol: product.internal.rasxod_kol,
-              rasxod: product.internal.rasxod,
-              to_kol: product.summa_to.kol,
-              to_summa: product.summa_to.summa,
+              from_kol: Math.round(product.from.kol * 100) / 100,
+              from_summa: Math.round(product.from.summa * 100) / 100,
+              prixod_kol: Math.round(product.internal.prixod_kol * 100) / 100,
+              prixod: Math.round(product.internal.prixod_summa * 100) / 100,
+              rasxod_kol: Math.round(product.internal.rasxod_kol * 100) / 100,
+              rasxod: Math.round(product.internal.rasxod_summa * 100) / 100,
+              to_kol: Math.round(product.to.kol * 100) / 100,
+              to_summa: Math.round(product.to.summa * 100) / 100,
               date: product.doc_date,
             });
           }
@@ -486,18 +486,6 @@ exports.Jur7MonitoringService = class {
       data.responsible_id
     );
 
-    const date = HelperFunctions.getDate({
-      year: data.year,
-      month: data.month,
-    });
-
-    const history = await Jur7MonitoringDB.history(
-      [date[0], date[1]],
-      data.responsible_id
-    );
-
-    console.log(history);
-
     return result;
   }
 
@@ -508,5 +496,19 @@ exports.Jur7MonitoringService = class {
     );
 
     return result;
+  }
+
+  static async history(data) {
+    const date = HelperFunctions.getDate({
+      year: data.year,
+      month: data.month,
+    });
+
+    const history = await Jur7MonitoringDB.history(
+      [date[0], date[1]],
+      data.responsible_id
+    );
+
+    return history;
   }
 };

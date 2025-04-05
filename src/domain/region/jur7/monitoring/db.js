@@ -57,9 +57,14 @@ exports.Jur7MonitoringDB = class {
 
     const query = `--sql
             SELECT
-              *,
+              d.id::INTEGER AS                                    saldo_id,
+              n.id::INTEGER AS                                    product_id,
+              n.name AS                                  name,
+              n.edin,
               d.debet_schet AS                           schet,
               j.fio,
+              d.doc_date,
+              d.kimning_buynida::INTEGER,
               JSON_BUILD_OBJECT(
                 'sena', d.sena::FLOAT,
                 'summa', d.summa::FLOAT,
@@ -68,6 +73,7 @@ exports.Jur7MonitoringDB = class {
               ) AS                                        from
             FROM saldo_naimenovanie_jur7 d
             JOIN spravochnik_javobgar_shaxs_jur7 j ON j.id = d.kimning_buynida
+            JOIN naimenovanie_tovarov_jur7 AS n ON n.id = d.naimenovanie_tovarov_jur7_id
             WHERE d.year = $1
               AND d.month = $2
               AND d.region_id = $3

@@ -189,16 +189,6 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const check = await BankSaldoService.getByMonth({
-      region_id,
-      year: new Date(doc_date).getFullYear(),
-      month: new Date(doc_date).getMonth() + 1,
-      main_schet_id,
-    });
-    if (!check) {
-      return res.error(req.i18n.t("saldoNotFound"), 404);
-    }
-
     const offset = (page - 1) * limit;
 
     const { data, total_count, summa, page_summa } =

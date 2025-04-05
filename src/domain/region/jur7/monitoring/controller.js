@@ -26,7 +26,7 @@ exports.Controller = class {
   }
 
   static async materialReport(req, res) {
-    const { month, year, budjet_id, excel } = req.query;
+    const { month, year, budjet_id, excel, responsible_id } = req.query;
     const region_id = req.user.region_id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -34,6 +34,15 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
+    if (responsible_id) {
+      const responsible = await ResponsibleService.getById({
+        region_id,
+        id: responsible_id,
+      });
+      if (!responsible) {
+        return res.error(req.i18n.t("responsibleNotFound"), 404);
+      }
+    }
     const region = await RegionService.getById({ id: region_id });
 
     const data = await Jur7MonitoringService.getMaterial({
@@ -41,6 +50,7 @@ exports.Controller = class {
       month,
       budjet_id,
       region_id,
+      responsible_id,
     });
 
     const resultMap = {};
@@ -75,7 +85,71 @@ exports.Controller = class {
 
     const result = Object.values(resultMap);
 
-    return res.send("javob qaytdi");
+    const history = await Jur7MonitoringService.history({
+      year,
+      month,
+      responsible_id,
+    });
+
+    for (let responsible of result) {
+      for (let schet of responsible.products) {
+        for (let product of schet.products) {
+          product.internal = {
+            kol: 0,
+            summa: 0,
+            iznos_summa: 0,
+            sena: 0,
+            prixod_kol: 0,
+            rasxod_kol: 0,
+            prixod_summa: 0,
+            rasxod_summa: 0,
+            prixod_iznos_summa: 0,
+            rasxod_iznos_summa: 0,
+          };
+
+          const productData = history.filter(
+            (item) =>
+              item.responsible_id === responsible.responsible_id &&
+              item.product_id === product.product_id
+          );
+
+          if (productData.length > 0) {
+            productData.forEach((item) => {
+              if (item.type === "prixod" || item.type === "prixod_internal") {
+                product.internal.prixod_kol += item.kol;
+                product.internal.prixod_summa += item.summa;
+                product.internal.prixod_iznos_summa += item.iznos_summa;
+              } else {
+                product.internal.rasxod_kol += item.kol;
+                product.internal.rasxod_summa += item.summa;
+                product.internal.rasxod_iznos_summa += item.iznos_summa;
+              }
+            });
+            product.internal.kol =
+              product.internal.prixod_kol - product.internal.rasxod_kol;
+            product.internal.summa =
+              product.internal.prixod_summa - product.internal.rasxod_summa;
+            product.internal.iznos_summa =
+              product.internal.prixod_iznos_summa -
+              product.internal.rasxod_iznos_summa;
+          }
+
+          product.to = {
+            kol: product.from.kol + product.internal.kol,
+            summa: product.from.summa + product.internal.summa,
+            iznos_summa:
+              product.from.iznos_summa + product.internal.iznos_summa,
+          };
+
+          if (product.to.kol !== 0) {
+            product.to.sena = product.to.summa / product.to.kol;
+          } else {
+            product.to.sena = product.to.summa;
+          }
+        }
+      }
+    }
+
     if (excel === "true") {
       const { fileName, filePath } = await Jur7MonitoringService.materialExcel({
         responsibles: result,
