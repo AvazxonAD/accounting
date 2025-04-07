@@ -20,7 +20,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
-      spravochnik_operatsii_own_id,
+      schet_id,
     } = req.body;
 
     const region_id = req.user.region_id;
@@ -31,16 +31,10 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
 
-    const operatsii = await OperatsiiService.getById({
-      id: spravochnik_operatsii_own_id,
-      type: "general",
-    });
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
+    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const organization = await OrganizationService.getById({
@@ -227,7 +221,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
-      spravochnik_operatsii_own_id,
+      schet_id,
     } = req.body;
 
     const region_id = req.user.region_id;
@@ -244,16 +238,10 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
 
-    const operatsii = await OperatsiiService.getById({
-      id: spravochnik_operatsii_own_id,
-      type: "general",
-    });
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
+    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const organization = await OrganizationService.getById({

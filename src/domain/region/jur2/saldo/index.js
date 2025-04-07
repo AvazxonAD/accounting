@@ -13,6 +13,10 @@ router
     "/date",
     validator(Controller.getDateSaldo, BankSaldoSchema.getDateSaldo())
   )
+  .delete(
+    "/clean",
+    validator(Controller.cleanData, BankSaldoSchema.cleanData())
+  )
   .get("/", validator(Controller.getByMonth, BankSaldoSchema.get()))
   .put("/:id", validator(Controller.update, BankSaldoSchema.update()))
   .delete("/:id", validator(Controller.delete, BankSaldoSchema.delete()))

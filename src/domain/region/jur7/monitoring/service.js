@@ -4,9 +4,25 @@ const path = require("path");
 const { HelperFunctions } = require("@helper/functions");
 const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const { access, constants, mkdir } = require("fs").promises;
-const { SaldoService } = require("@jur7_saldo/service");
 
 exports.Jur7MonitoringService = class {
+  static async monitoring(data) {
+    const result = await Jur7MonitoringDB.monitoring(
+      [
+        data.region_id,
+        data.from,
+        data.to,
+        data.budjet_id,
+        data.offset,
+        data.limit,
+      ],
+      data.order_by,
+      data.order_type
+    );
+
+    return result;
+  }
+
   static async cap(data) {
     const date = HelperFunctions.getMonthStartEnd({
       year: data.year,

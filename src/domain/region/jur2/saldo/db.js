@@ -20,6 +20,12 @@ exports.BankSaldoDB = class {
     return result[0];
   }
 
+  static async cleanData(params) {
+    const query = `UPDATE bank_saldo SET isdeleted = true WHERE main_schet_id = $1`;
+
+    await db.query(query, params);
+  }
+
   static async getDateSaldo(params) {
     const query = `--sql
       SELECT 

@@ -7,6 +7,35 @@ const { ReportTitleService } = require("@report_title/service");
 const { PodpisService } = require("@podpis/service");
 
 exports.Controller = class {
+  static async monitoring(req, res) {
+    const { budjet_id, page, limit } = req.query;
+    const region_id = req.user.region_id;
+
+    const offset = (page - 1) * limit;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const { total, data } = await Jur7MonitoringService.monitoring({
+      ...req.query,
+      region_id,
+      offset,
+    });
+
+    const pageCount = Math.ceil(total / limit);
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    };
+
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
   static async getSaldoDate(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id, year } = req.query;

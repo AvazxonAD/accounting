@@ -221,4 +221,10 @@ exports.KassaSaldoDB = class {
       params
     );
   }
+
+  static async cleanData(params) {
+    const query = `UPDATE kassa_saldo SET isdeleted = true WHERE main_schet_id = $1`;
+
+    await db.query(query, params);
+  }
 };

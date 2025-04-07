@@ -3,6 +3,10 @@ const { KassaSaldoDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
 exports.KassaSaldoService = class {
+  static async cleanData(data) {
+    await KassaSaldoDB.cleanData([data.main_schet_id]);
+  }
+
   static async getFirstSaldo(data) {
     const result = await KassaSaldoDB.getFirstSaldo([
       data.region_id,

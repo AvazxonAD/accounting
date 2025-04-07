@@ -125,7 +125,7 @@ exports.AktDB = class {
                 organization_by_raschet_schet_id,
                 organization_by_raschet_schet_gazna_id,
                 shartnoma_grafik_id,
-                spravochnik_operatsii_own_id,
+                schet_id,
                 created_at,
                 updated_at
             ) 
@@ -241,7 +241,7 @@ exports.AktDB = class {
                 organization_by_raschet_schet_id = $7,
                 organization_by_raschet_schet_gazna_id = $8,
                 shartnoma_grafik_id = $9,
-                spravochnik_operatsii_own_id = $10,
+                schet_id = $10,
                 updated_at = $11
             WHERE id = $12 RETURNING id
         `;

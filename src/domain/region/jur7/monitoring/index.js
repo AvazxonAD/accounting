@@ -7,6 +7,7 @@ const router = Router();
 
 router
   .get("/cap/report", validator(Controller.cap, Schema.capSchema()))
+  .get("/", validator(Controller.monitoring, Schema.monitoring()))
   .get("/saldo/date", validator(Controller.getSaldoDate, Schema.getSaldoDate()))
   .get(
     "/material/report",

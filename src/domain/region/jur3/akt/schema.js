@@ -19,8 +19,7 @@ exports.AktSchema = class {
           .min(1)
           .integer()
           .allow(null),
-        spravochnik_operatsii_id: Joi.number().required().min(1).integer(),
-        spravochnik_operatsii_own_id: Joi.number().required().min(1).integer(),
+        schet_id: Joi.number().required().min(1).integer(),
         shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array()
           .items(
@@ -62,7 +61,7 @@ exports.AktSchema = class {
         opisanie: Joi.string().trim(),
         id_spravochnik_organization: Joi.number().required().min(1).integer(),
         shartnomalar_organization_id: Joi.number().allow(null).min(1).integer(),
-        spravochnik_operatsii_own_id: Joi.number().required().min(1).integer(),
+        schet_id: Joi.number().required().min(1).integer(),
         organization_by_raschet_schet_id: Joi.number()
           .min(1)
           .integer()

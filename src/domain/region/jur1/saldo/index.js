@@ -17,6 +17,10 @@ router
     validator(Controller.getDateSaldo, KassaSaldoSchema.getDateSaldo())
   )
   .put("/:id", validator(Controller.update, KassaSaldoSchema.update()))
+  .delete(
+    "/clean",
+    validator(Controller.cleanData, KassaSaldoSchema.cleanData())
+  )
   .delete("/:id", validator(Controller.delete, KassaSaldoSchema.delete()))
   .get("/:id", validator(Controller.getById, KassaSaldoSchema.getById()));
 

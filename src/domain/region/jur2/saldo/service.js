@@ -12,6 +12,10 @@ exports.BankSaldoService = class {
     return result;
   }
 
+  static async cleanData(data) {
+    await BankSaldoDB.cleanData([data.main_schet_id]);
+  }
+
   static async getSaldoDate(data) {
     const result = await BankSaldoDB.getSaldoDate([
       data.region_id,

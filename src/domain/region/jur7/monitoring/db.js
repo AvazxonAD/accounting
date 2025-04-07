@@ -2,69 +2,175 @@ const { db } = require("@db/index");
 const { sqlFilter } = require(`@helper/functions`);
 
 exports.Jur7MonitoringDB = class {
-  static async monitoring(params) {
+  static async monitoring(params, order_by, order_type) {
+    const order = `ORDER BY combined_${order_by} ${order_type}`;
+
     const query = `--sql
       WITH data AS (
         SELECT
-          ch.*,
-          d.*,
-          ch.kol::FLOAT,
-          ch.summa_s_nds::FLOAT AS                   summa,
-          ch.iznos_summa::FLOAT,
-          d.kimga_id AS                              responsible_id,
-          'prixod' AS                                type,
-          ch.naimenovanie_tovarov_jur7_id AS         product_id
-      FROM document_prixod_jur7 d
-      JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
-      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
-      WHERE d.isdeleted = false
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                          doc_date,
+          d.opisanie,
+          0::FLOAT AS                                                   summa_rasxod, 
+          ch.summa_s_nds::FLOAT AS                                      summa_prixod,
+          f.id AS                                                       from_id,
+          f.name AS                                                     from_name,
+          t.id AS                                                       to_id,
+          t.fio AS                                                      to_name,
+          u.id AS                                                       user_id,
+          u.login,
+          u.fio,
+          ch.kredit_schet, 
+          ch.kredit_sub_schet,
+          ch.debet_schet, 
+          ch.debet_sub_schet,
+          'prixod' AS                                                   type,
+          d.doc_date AS                                                 combined_doc_date,
+          d.id AS                                                       combined_id,
+          d.doc_num AS                                                  combined_doc_num
+        FROM document_prixod_jur7 d
+        JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+        JOIN spravochnik_organization AS f ON f.id = d.kimdan_id
+        JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND r.id = $1
           AND ch.isdeleted = false
-          AND d.doc_date BETWEEN $1 AND $2
-          ${resposnible_filter}
-      
-      UNION ALL 
-      
-      SELECT
-        ch.kol::FLOAT,
-        ch.summa::FLOAT,
-        ch.iznos_summa::FLOAT,
-        d.kimga_id AS                                 responsible_id,
-        'internal' AS                          type,
-        ch.naimenovanie_tovarov_jur7_id AS            product_id
-      FROM document_vnutr_peremesh_jur7 d
-      JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
-      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
-      WHERE d.isdeleted = false
+          AND d.doc_date BETWEEN $2 AND $3
+          AND d.budjet_id = $4
+        
+        UNION ALL 
+        
+        SELECT
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                          doc_date,
+          d.opisanie,
+          0::FLOAT AS                                                   summa_rasxod, 
+          ch.summa_s_nds::FLOAT AS                                      summa_prixod,
+          f.id AS                                                       from_id,
+          f.fio AS                                                      from_name,
+          t.id AS                                                       to_id,
+          t.fio AS                                                      to_name,
+          u.id AS                                                       user_id,
+          u.login,
+          u.fio,
+          ch.kredit_schet, 
+          ch.kredit_sub_schet,
+          ch.debet_schet, 
+          ch.debet_sub_schet,
+          'internal' AS                                                 type,
+          d.doc_date AS                                                 combined_doc_date,
+          d.id AS                                                       combined_id,
+          d.doc_num AS                                                  combined_doc_num
+        FROM document_vnutr_peremesh_jur7 d
+        JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+        JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND r.id = $1
           AND ch.isdeleted = false
-          AND d.doc_date BETWEEN $1 AND $2
-          ${resposnible_filter}
-      
-      UNION ALL
+          AND d.doc_date BETWEEN $2 AND $3
+          AND d.budjet_id = $4
+        
+        UNION ALL
 
-      SELECT
-        ch.kol::FLOAT,
-        ch.summa::FLOAT,
-        ch.iznos_summa::FLOAT,
-        d.kimdan_id AS                            responsible_id,
-        'rasxod' AS                                type,
-        ch.naimenovanie_tovarov_jur7_id AS         product_id
-      FROM document_rasxod_jur7 d
-      JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
-      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
-      WHERE d.isdeleted = false
+        SELECT
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                          doc_date,
+          d.opisanie,
+          0::FLOAT AS                                                   summa_rasxod, 
+          ch.summa_s_nds::FLOAT AS                                      summa_prixod,
+          f.id AS                                                       from_id,
+          f.fio AS                                                      from_name,
+          null AS                                                       to_id,
+          null AS                                                       to_name,
+          u.id AS                                                       user_id,
+          u.login,
+          u.fio,
+          ch.kredit_schet, 
+          ch.kredit_sub_schet,
+          ch.debet_schet, 
+          ch.debet_sub_schet,
+          'rasxod' AS                                                   type,
+          d.doc_date AS                                                 combined_doc_date,
+          d.id AS                                                       combined_id,
+          d.doc_num AS                                                  combined_doc_num
+        FROM document_rasxod_jur7 d
+        JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+        JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND r.id = $1
           AND ch.isdeleted = false
-          AND d.doc_date BETWEEN $1 AND $2
-          ${resposnible_filter}
-          ${resposnible_filter}
+          AND d.doc_date BETWEEN $2 AND $3
+          AND d.budjet_id = $4
+
+        ${order}
+
+        OFFSET $5 LIMIT $6
       )
       
       SELECT 
         COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
         (
-          
-        )  
+          (
+            SELECT
+              COALESCE(COUNT(ch.id), 0)::INTEGER
+            FROM document_prixod_jur7 d
+            JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+            JOIN spravochnik_organization AS f ON f.id = d.kimdan_id
+            JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.budjet_id = $4
+          ) +
+          (
+            SELECT
+              COALESCE(COUNT(ch.id), 0)::INTEGER
+            FROM document_vnutr_peremesh_jur7 d
+            JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+            JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+            JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.budjet_id = $4
+          ) +
+          (
+            SELECT
+              COALESCE(COUNT(ch.id), 0)::INTEGER
+            FROM document_rasxod_jur7 d
+            JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+            JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.budjet_id = $4
+          )
+        )::INTEGER AS total
       FROM data
     `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
   }
 
   static async capData(params) {

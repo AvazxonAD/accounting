@@ -1,101 +1,166 @@
 const { db } = require("@db/index");
-const { OrganSaldoDB } = require("./db");
+const { BankSaldoDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
-exports.OrganSaldoService = class {
-  static async create(data) {
-    const summa = HelperFunctions.saldoSumma(data);
+exports.BankSaldoService = class {
+  static async getFirstSaldo(data) {
+    const result = await BankSaldoDB.getFirstSaldo([
+      data.region_id,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
 
-    const result = await db.transaction(async (client) => {
-      const doc = await OrganSaldoDB.create(
+    return result;
+  }
+
+  static async cleanData(data) {
+    await BankSaldoDB.cleanData([data.main_schet_id, data.schet_id]);
+  }
+
+  static async getSaldoDate(data) {
+    const result = await BankSaldoDB.getSaldoDate([
+      data.region_id,
+      data.date_saldo,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async createSaldoDate(data) {
+    const year = new Date(data.doc_date).getFullYear();
+    const month = new Date(data.doc_date).getMonth() + 1;
+
+    const saldo_date = `${year}-${String(month).padStart(2, "0")}-01`;
+    const check = await BankSaldoDB.getSaldoDate([
+      data.region_id,
+      saldo_date,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
+
+    let dates = [];
+    for (let date of check) {
+      dates.push(
+        await BankSaldoDB.createSaldoDate(
+          [
+            data.user_id,
+            date.year,
+            date.month,
+            data.main_schet_id,
+            data.schet_id,
+            HelperFunctions.tashkentTime(),
+            HelperFunctions.tashkentTime(),
+          ],
+          data.client
+        )
+      );
+    }
+
+    return dates;
+  }
+
+  static async getDateSaldo(data) {
+    const result = await BankSaldoDB.getDateSaldo([
+      data.region_id,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async createAuto(data) {
+    const response = await db.transaction(async (client) => {
+      await BankSaldoDB.deleteByMonth(
+        [data.year, data.month, data.main_schet_id, data.schet_id],
+        client
+      );
+
+      await BankSaldoDB.deleteSaldoDateByMonth(
+        [data.year, data.month, data.main_schet_id, data.schet_id],
+        client
+      );
+
+      const saldo_date = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
+
+      const doc = await BankSaldoDB.create(
         [
-          data.doc_num,
-          data.doc_date,
-          summa.prixod_summa,
-          data.prixod,
-          summa.rasxod_summa,
-          data.rasxod,
-          data.opisanie,
-          data.organ_id,
-          data.contract_id,
+          data.summa,
           data.main_schet_id,
+          data.year,
+          data.month,
           data.user_id,
-          data.organ_account_number_id,
-          data.organ_gazna_number_id,
-          data.contract_grafik_id,
+          data.budjet_id,
+          saldo_date,
+          data.schet_id,
+          new Date(),
           new Date(),
         ],
         client
       );
 
-      await this.createChild({
-        childs: data.childs,
+      const dates = await this.createSaldoDate({
+        ...data,
+        doc_date: saldo_date,
         client,
-        parent_id: doc.id,
-        user_id: data.user_id,
-        main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      return { dates, doc };
     });
+
+    return response;
+  }
+
+  static async getByMonth(data) {
+    const result = await BankSaldoDB.getByMonth([
+      data.main_schet_id,
+      data.year,
+      data.month,
+      data.region_id,
+      data.schet_id,
+    ]);
 
     return result;
   }
 
-  static async createChild(data) {
-    const create_childs = [];
-    for (let child of data.childs) {
-      create_childs.push(
-        child.operatsii_id,
-        child.summa,
-        child.podraz_id,
-        child.sostav_id,
-        child.type_operatsii_id,
-        data.main_schet_id,
-        data.parent_id,
-        data.user_id,
-        new Date()
-      );
-    }
+  static async create(data) {
+    const doc = await BankSaldoDB.create([
+      data.summa,
+      data.main_schet_id,
+      data.year,
+      data.month,
+      data.user_id,
+      data.budjet_id,
+      `${data.year}-${String(data.month).padStart(2, "0")}-01`,
+      data.schet_id,
+      new Date(),
+      new Date(),
+    ]);
 
-    const _values = HelperFunctions.paramsValues({
-      params: create_childs,
-      column_count: 9,
-    });
-
-    if (create_childs.length) {
-      await OrganSaldoDB.createChild(create_childs, _values, data.client);
-    }
+    return doc;
   }
 
   static async get(data) {
-    const result = await OrganSaldoDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
-      data.search,
-      data.order_by,
-      data.order_type
+    const result = await BankSaldoDB.get(
+      [data.budjet_id],
+      data.main_schet_id,
+      data.year,
+      data.month
     );
 
-    let page_prixod_summa = 0;
-    let page_rasxod_summa = 0;
-    result.data.forEach((item) => {
-      page_prixod_summa += item.prixod_summa;
-      page_rasxod_summa += item.rasxod_summa;
+    let summa = 0;
+    result.forEach((item) => {
+      summa += item.summa;
     });
 
-    return { ...result, page_prixod_summa, page_rasxod_summa };
+    return { docs: result, summa };
   }
 
   static async getById(data) {
-    const result = await OrganSaldoDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
+    const result = await BankSaldoDB.getById(
+      [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
 
@@ -103,80 +168,37 @@ exports.OrganSaldoService = class {
   }
 
   static async update(data) {
-    const summa = HelperFunctions.saldoSumma(data);
-
     const result = await db.transaction(async (client) => {
-      const doc = await OrganSaldoDB.update(
+      const date_saldo = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
+
+      const doc = await BankSaldoDB.update(
         [
-          data.doc_num,
-          data.doc_date,
-          summa.prixod_summa,
-          data.prixod,
-          summa.rasxod_summa,
-          data.rasxod,
-          data.opisanie,
-          data.organ_id,
-          data.contract_id,
-          data.organ_account_number_id,
-          data.organ_gazna_number_id,
-          data.contract_grafik_id,
+          data.summa,
+          data.main_schet_id,
+          data.year,
+          data.month,
+          date_saldo,
+          data.schet_id,
           new Date(),
           data.id,
         ],
         client
       );
 
-      const create_childs = [];
-
-      for (let child of data.old_data.childs) {
-        const check = data.childs.find((item) => item.id === child.id);
-        if (!check) {
-          await OrganSaldoDB.deleteChild([child.id], client);
-        }
-      }
-
-      for (let child of data.childs) {
-        if (!child.id) {
-          create_childs.push(child);
-        } else {
-          await OrganSaldoDB.updateChild(
-            [
-              child.operatsii_id,
-              child.summa,
-              child.podraz_id,
-              child.sostav_id,
-              child.type_operatsii_id,
-              child.main_schet_id,
-              data.user_id,
-              new Date(),
-              child.id,
-            ],
-            client
-          );
-        }
-      }
-
-      await this.createChild({
-        childs: create_childs,
+      const dates = await this.createSaldoDate({
+        ...data,
+        doc_date: date_saldo,
         client,
-        parent_id: doc.id,
-        user_id: data.user_id,
-        main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      return { doc, dates };
     });
 
     return result;
   }
 
   static async delete(data) {
-    const result = await db.transaction(async (client) => {
-      const doc = await OrganSaldoDB.delete([data.id], client);
-
-      return doc;
-    });
-
-    return result;
+    const doc = await BankSaldoDB.delete([data.id]);
+    return doc;
   }
 };

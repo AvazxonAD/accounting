@@ -16,6 +16,15 @@ exports.KassaSaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static cleanData() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().required().min(1).integer(),
+        password: Joi.string().trim().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static createAuto() {
     return Joi.object({
       body: Joi.object({

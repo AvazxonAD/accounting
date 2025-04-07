@@ -1,272 +1,189 @@
 const { db } = require("@db/index");
 
-exports.OrganSaldoDB = class {
-  static async create(params, client) {
-    const query = `
-            INSERT INTO organ_saldo (
-                doc_num, 
-                doc_date, 
-                prixod_summa,
-                prixod,
-                rasxod_summa,
-                rasxod,
-                opisanie, 
-                organ_id,
-                contract_id,
-                main_schet_id,
-                user_id,
-                organ_account_number_id,
-                organ_gazna_number_id,
-                contract_grafik_id,
-                created_at
-            ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-            RETURNING id
-        `;
-
-    const result = await client.query(query, params);
-
-    return result.rows[0];
-  }
-
-  static async createChild(params, _values, client) {
-    const query = `
-            INSERT INTO organ_saldo_child (
-                operatsii_id,
-                summa,
-                podraz_id,
-                sostav_id,
-                type_operatsii_id,
-                main_schet_id,
-                parent_id,
-                user_id,
-                created_at
-          )
-          VALUES ${_values}
-        `;
-
-    const result = await client.query(query, params);
-
-    return result;
-  }
-
-  static async get(params, search = null, order_by, order_type) {
-    let search_filter = ``;
-    let order = ``;
-
-    if (search) {
-      params.push(search);
-      search_filter = ` AND (
-                d.doc_num = $${params.length} OR 
-                so.inn ILIKE '%' || $${params.length} || '%'
-            )`;
-    }
-
-    if (order_by === "doc_num") {
-      order = `ORDER BY 
-        CASE WHEN d.doc_num ~ '^[0-9]+$' THEN d.doc_num::BIGINT ELSE NULL END ${order_type} NULLS LAST, 
-        d.doc_num ${order_type}`;
-    } else {
-      order = `ORDER BY d.${order_by} ${order_type}`;
-    }
-
-    const query = `
-            WITH data AS (
-                SELECT 
-                    d.*,
-                    d.id::BIGINT,
-                    d.prixod_summa::FLOAT,
-                    d.rasxod_summa::FLOAT,
-                    TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS            doc_date, 
-                    so.name AS                                      organ_name,
-                    so.bank_klient AS                               organ_bank_name,
-                    so.mfo AS                                       organ_bank_mfo,
-                    so.inn AS                                       organ_inn,
-                    (
-                        SELECT JSON_AGG(row_to_json(ch))
-                        FROM (
-                            SELECT 
-                                so.schet AS provodki_schet,
-                                so.sub_schet AS provodki_sub_schet
-                            FROM organ_saldo_child AS ch
-                            JOIN spravochnik_operatsii AS so ON so.id = ch.operatsii_id
-                            WHERE  ch.parent_id = d.id 
-                                and ch.isdeleted = false
-                        ) AS ch
-                    ) AS provodki_array 
-                FROM organ_saldo AS d
-                JOIN users AS u ON d.user_id = u.id
-                JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                WHERE d.main_schet_id = $2 
-                    AND r.id = $1 
-                    AND d.isdeleted = false 
-                    AND doc_date BETWEEN $3 AND $4 
-                    ${search_filter}
-                
-                ${order}
-                OFFSET $5 LIMIT $6
-            )
-                SELECT 
-                    COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.prixod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date BETWEEN $3 AND $4
-                            ${search_filter}
-                    )::FLOAT AS prixod_summa,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date < $3
-                            ${search_filter}
-                    )::FLOAT AS from_summa,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.prixod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date < $3
-                            ${search_filter}
-                    )::FLOAT AS from_summa_prixod,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date < $3
-                            ${search_filter}
-                    )::FLOAT AS from_summa_rasxod,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.prixod_summa), 0) - COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date <= $4
-                            ${search_filter}
-                    )::FLOAT AS to_summa,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.prixod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date <= $4
-                            ${search_filter}
-                    )::FLOAT AS to_summa_prixod,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date <= $4
-                            ${search_filter}
-                    )::FLOAT AS to_summa_rasxod,
-
-                    (
-                        SELECT 
-                            COALESCE(SUM(d.rasxod_summa), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND regions.id = $1 
-                            AND doc_date BETWEEN $3 AND $4
-                            ${search_filter}
-                    )::FLOAT AS rasxod_summa,
-                    (
-                        SELECT 
-                            COALESCE(COUNT(d.id), 0)
-                        FROM organ_saldo d
-                        JOIN users ON d.user_id = users.id
-                        JOIN regions ON users.region_id = regions.id
-                        JOIN spravochnik_organization AS so ON so.id = d.organ_id 
-                        WHERE regions.id = $1 
-                            AND d.main_schet_id = $2 
-                            AND d.isdeleted = false 
-                            AND doc_date BETWEEN $3 AND $4
-                            ${search_filter}
-                    )::FLOAT AS total_count
-                FROM data
-            `;
+exports.BankSaldoDB = class {
+  static async getFirstSaldo(params) {
+    const query = `--sql
+      SELECT 
+          d.*
+      FROM jur3_saldo d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1
+          AND d.main_schet_id = $2
+          AND d.schet_id = $3
+          AND d.isdeleted = false
+      ORDER BY d.created_at ASC
+      LIMIT 1
+    `;
 
     const result = await db.query(query, params);
 
     return result[0];
   }
 
+  static async cleanData(params) {
+    const query = `UPDATE jur3_saldo SET isdeleted = true WHERE main_schet_id = $1 AND schet_id = $2`;
+
+    await db.query(query, params);
+  }
+
+  static async getDateSaldo(params) {
+    const query = `--sql
+      SELECT 
+        DISTINCT d.year, d.month
+      FROM date_saldo_jur3 d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1
+          AND d.main_schet_id = $2 
+          AND d.schet_id = $3
+          AND d.isdeleted = false
+      ORDER BY year, month
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async createSaldoDate(params, client) {
+    const query = `--sql
+      INSERT INTO date_saldo_jur3(
+          user_id, 
+          year, 
+          month,
+          main_schet_id,
+          schet_id,
+          created_at,
+          updated_at
+      ) 
+      VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
+
+  static async getSaldoDate(params, client) {
+    const _db = client || db;
+    const query = `--sql
+      SELECT 
+        DISTINCT d.year, d.month
+      FROM jur3_saldo d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1
+          AND d.date_saldo > $2
+          AND d.main_schet_id = $3
+          AND d.schet_id = $4
+          AND d.isdeleted = false
+      ORDER BY year, month
+    `;
+
+    const data = await _db.query(query, params);
+
+    const response = client ? data.rows : data;
+
+    return response;
+  }
+
+  static async getByMonth(params) {
+    const query = `--sql
+      SELECT 
+            d.*,
+            d.summa::FLOAT
+        FROM jur3_saldo AS d
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        WHERE d.isdeleted = false
+          AND d.main_schet_id = $1
+          AND year = $2
+          AND month = $3
+          AND r.id = $4
+          AND d.schet_id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async create(params, client) {
+    const _db = client || db;
+
+    const query = `--sql
+        INSERT INTO jur3_saldo (
+            summa,
+            main_schet_id,
+            year,
+            month,
+            user_id,
+            budjet_id,
+            date_saldo,
+            schet_id,
+            created_at,
+            updated_at
+        ) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING id
+    `;
+
+    const result = await _db.query(query, params);
+
+    return result[0] || result.rows[0];
+  }
+
+  static async get(params, main_schet_id = null, year = null, month = null) {
+    let conditions = [];
+
+    if (main_schet_id) {
+      params.push(main_schet_id);
+      conditions.push(` d.main_schet_id = $${params.length}`);
+    }
+
+    if (year) {
+      params.push(year);
+      conditions.push(`d.year = $${params.length}`);
+    }
+
+    if (month) {
+      params.push(month);
+      conditions.push(`d.month = $${params.length}`);
+    }
+
+    const where = conditions.length ? `AND ${conditions.join(` AND `)}` : "";
+
+    const query = `--sql
+        SELECT 
+            d.*,
+            d.summa::FLOAT
+        FROM jur3_saldo AS d
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        WHERE d.isdeleted = false
+          AND d.budjet_id = $1
+          ${where}
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getById(params, isdeleted) {
-    const query = `
-            SELECT 
-                d.*,
-                d.id,
-                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS        doc_date,
-                d.prixod_summa::FLOAT,
-                d.rasxod_summa::FLOAT,
-                (
-                    SELECT JSON_AGG(row_to_json(ch))
-                    FROM (
-                        SELECT 
-                            ch.*
-                        FROM organ_saldo_child AS ch
-                        WHERE ch.parent_id = d.id 
-                            AND isdeleted = false
-                    ) AS ch
-                ) AS childs 
-            FROM organ_saldo AS d
-            JOIN users AS u ON d.user_id = u.id
-            JOIN regions AS r ON u.region_id = r.id
-            WHERE r.id = $1 
-                AND d.main_schet_id = $2 
-                AND d.id = $3
-                ${!isdeleted ? "AND d.isdeleted = false" : ""}
-        `;
+    const query = `--sql
+        SELECT 
+            d.*,
+            d.summa::FLOAT
+        FROM jur3_saldo AS d
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON u.region_id = r.id
+        WHERE r.id = $1 
+            AND d.id = $2
+            AND d.budjet_id = $3
+            ${!isdeleted ? "AND d.isdeleted = false" : ""}
+    `;
 
     const result = await db.query(query, params);
 
@@ -274,66 +191,46 @@ exports.OrganSaldoDB = class {
   }
 
   static async update(params, client) {
-    const query = `
-            UPDATE organ_saldo SET 
-                doc_num = $1, 
-                doc_date = $2, 
-                prixod_summa = $3,
-                prixod = $4,
-                rasxod_summa = $5,
-                rasxod = $6,
-                opisanie = $7, 
-                organ_id = $8, 
-                contract_id = $9,
-                organ_account_number_id = $10,
-                organ_gazna_number_id = $11,
-                contract_grafik_id = $12,
-                updated_at = $13
-            WHERE id = $14
-            RETURNING id
-        `;
+    const _db = client || db;
 
-    const result = await client.query(query, params);
+    const query = `--sql
+        UPDATE jur3_saldo SET 
+            summa = $1,
+            main_schet_id = $2,
+            year = $3,
+            month = $4,
+            date_saldo = $5,
+            schet_id = $6,
+            updated_at = $7
+        WHERE id = $8
+        RETURNING id
+    `;
 
-    return result.rows[0];
+    const result = await _db.query(query, params);
+
+    return result[0] || result.rows[0];
   }
 
-  static async deleteChild(params, client) {
+  static async delete(params) {
+    const result = await db.query(
+      `UPDATE jur3_saldo SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
+
+    return result[0];
+  }
+
+  static async deleteByMonth(params, client) {
     await client.query(
-      `UPDATE organ_saldo_child SET isdeleted = true WHERE id = $1`,
+      `UPDATE jur3_saldo SET isdeleted = true WHERE year = $1 AND month = $2 AND main_schet_id = $3 AND schet_id = $4`,
       params
     );
   }
 
-  static async updateChild(params, client) {
-    const query = `
-            UPDATE organ_saldo_child 
-            SET 
-                operatsii_id = $1,
-                summa = $2,
-                podraz_id = $3,
-                sostav_id = $4,
-                type_operatsii_id = $5,
-                main_schet_id = $6,
-                user_id = $7,
-                updated_at = $8
-            WHERE id = $9
-        `;
-
-    await client.query(query, params);
-  }
-
-  static async delete(params, client) {
+  static async deleteSaldoDateByMonth(params, client) {
     await client.query(
-      `UPDATE organ_saldo_child SET isdeleted = true WHERE parent_id = $1`,
+      `UPDATE date_saldo_jur3 SET isdeleted = true WHERE year = $1 AND month = $2 AND main_schet_id = $3 AND schet_id = $4`,
       params
     );
-
-    const result = await client.query(
-      `UPDATE organ_saldo SET isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
-
-    return result.rows[0];
   }
 };

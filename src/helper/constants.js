@@ -26,3 +26,5 @@ exports.JURNAL_SCHETS = [
   "jur3_schet",
   "jur4_schet",
 ];
+
+exports.SALDO_PASSWORD = "smart-base-e-moliya-fvv";

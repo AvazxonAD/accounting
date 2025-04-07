@@ -2,9 +2,31 @@ const { MainSchetService } = require("@main_schet/service");
 const { BankSaldoService } = require("./service");
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
+const { SALDO_PASSWORD } = require(`@helper/constants`);
 const { BankMonitoringService } = require(`@jur2_monitoring/service`);
 
 exports.Controller = class {
+  static async cleanData(req, res) {
+    const region_id = req.user.region_id;
+    const { main_schet_id, password } = req.query;
+
+    if (password !== SALDO_PASSWORD) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    await BankSaldoService.cleanData({ main_schet_id });
+
+    return res.success(req.i18n.t(`cleanSuccess`), 200);
+  }
+
   static async getDateSaldo(req, res) {
     const region_id = req.user.region_id;
     const { main_schet_id } = req.query;
