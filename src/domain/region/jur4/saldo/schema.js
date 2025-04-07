@@ -1,32 +1,43 @@
 const Joi = require("joi");
 
-exports.OrganSaldoSchema = class {
+exports.Jur4SaldoSchema = class {
   static create() {
     return Joi.object({
       body: Joi.object({
-        doc_num: Joi.string().trim(),
-        doc_date: Joi.string()
-          .trim()
-          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-        opisanie: Joi.string().trim(),
-        podotchet_id: Joi.number().min(1).integer().required(),
-        prixod: Joi.boolean().required(),
-        rasxod: Joi.boolean().required(),
-        childs: Joi.array()
-          .items(
-            Joi.object({
-              operatsii_id: Joi.number().required(),
-              summa: Joi.number().required(),
-              podraz_id: Joi.number().integer().min(1).allow(null),
-              sostav_id: Joi.number().integer().min(1).allow(null),
-              type_operatsii_id: Joi.number().integer().min(1).allow(null),
-            })
-          )
-          .min(1),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        summa: Joi.number().required(),
+        main_schet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
       }),
 
       query: Joi.object({
-        main_schet_id: Joi.number().required().min(1),
+        budjet_id: Joi.number().required().min(1).integer(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static cleanData() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
+        password: Joi.string().trim().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static createAuto() {
+    return Joi.object({
+      body: Joi.object({
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        main_schet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
+      }),
+
+      query: Joi.object({
+        budjet_id: Joi.number().required().min(1).integer(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -34,38 +45,41 @@ exports.OrganSaldoSchema = class {
   static get() {
     return Joi.object({
       query: Joi.object({
-        main_schet_id: Joi.number().required().min(1),
-        limit: Joi.number().min(1).default(10),
-        search: Joi.string().trim().allow(null, ""),
-        page: Joi.number().min(1).default(1),
-        from: Joi.string()
-          .trim()
-          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
-          .required(),
-        to: Joi.string()
-          .trim()
-          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
-          .required(),
-        order_by: Joi.string()
-          .trim()
-          .default("doc_date")
-          .valid("doc_num", "doc_date", "id"),
-        order_type: Joi.string()
-          .trim()
-          .allow(null, "")
-          .default("DESC")
-          .valid("ASC", "DESC"),
+        budjet_id: Joi.number().required().min(1).integer(),
+        year: Joi.number().integer().min(1901),
+        month: Joi.number().integer().min(1).max(12),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getDateSaldo() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getByMonth() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
+        year: Joi.number().integer().min(1901),
+        month: Joi.number().integer().min(1).max(12).required(),
       }),
     }).options({ stripUnknown: true });
   }
 
   static getById() {
     return Joi.object({
-      query: Joi.object({
-        main_schet_id: Joi.number().required().min(1),
-      }),
       params: Joi.object({
         id: Joi.number().required().min(1),
+      }),
+
+      query: Joi.object({
+        budjet_id: Joi.number().required().min(1).integer(),
       }),
     });
   }
@@ -73,8 +87,9 @@ exports.OrganSaldoSchema = class {
   static delete() {
     return Joi.object({
       query: Joi.object({
-        main_schet_id: Joi.number().required().min(1),
+        budjet_id: Joi.number().required().min(1),
       }),
+
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
@@ -84,33 +99,19 @@ exports.OrganSaldoSchema = class {
   static update() {
     return Joi.object({
       body: Joi.object({
-        doc_num: Joi.string().trim(),
-        doc_date: Joi.string()
-          .trim()
-          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
-        opisanie: Joi.string().trim(),
-        podotchet_id: Joi.number().min(1).integer().required(),
-        prixod: Joi.boolean().required(),
-        rasxod: Joi.boolean().required(),
-        childs: Joi.array()
-          .items(
-            Joi.object({
-              id: Joi.number().integer().min(1),
-              operatsii_id: Joi.number().required(),
-              summa: Joi.number().required(),
-              podraz_id: Joi.number().integer().min(1).allow(null),
-              sostav_id: Joi.number().integer().min(1).allow(null),
-              type_operatsii_id: Joi.number().integer().min(1).allow(null),
-            })
-          )
-          .min(1),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        summa: Joi.number().required(),
+        main_schet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
+      }),
+
+      params: Joi.object({
+        id: Joi.number().required().min(1),
       }),
 
       query: Joi.object({
-        main_schet_id: Joi.number().required().min(1),
-      }),
-      params: Joi.object({
-        id: Joi.number().required().min(1),
+        budjet_id: Joi.number().required().min(1).integer(),
       }),
     }).options({ stripUnknown: true });
   }

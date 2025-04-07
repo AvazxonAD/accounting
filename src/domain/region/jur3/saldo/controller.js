@@ -140,7 +140,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const budjet_id = req.query.budjet_id;
 
-    const { year, month, main_schet_id } = req.body;
+    const { year, month, main_schet_id, schet_id } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -151,7 +151,9 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
+
+    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 

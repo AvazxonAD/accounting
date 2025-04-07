@@ -25,6 +25,7 @@
       "@jur1_monitoring/*": ["domain/region/jur1/monitoring/*"],
       "@jur2_monitoring/*": ["domain/region/jur2/monitoring/*"],
       "@organ_monitoring/*": ["domain/region/jur3/monitoring/*"],
+      "@pod_monitoring/*": ["domain/region/jur4/monitoring/*"],
       "@operatsii/*": ["domain/admin/spravochnik/operatsii/*"],
       "@auth/*": ["domain/auth/auth//*"],
       "@user/*": ["domain/auth/user/*"],

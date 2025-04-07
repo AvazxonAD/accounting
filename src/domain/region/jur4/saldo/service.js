@@ -1,97 +1,166 @@
 const { db } = require("@db/index");
-const { PodotchetSaldoDB } = require("./db");
+const { Jur4SaldoDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
-exports.PodotchetSaldoService = class {
-  static async create(data) {
-    const summa = HelperFunctions.saldoSumma(data);
+exports.Jur4SaldoService = class {
+  static async getFirstSaldo(data) {
+    const result = await Jur4SaldoDB.getFirstSaldo([
+      data.region_id,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
 
-    const result = await db.transaction(async (client) => {
-      const doc = await PodotchetSaldoDB.create(
+    return result;
+  }
+
+  static async cleanData(data) {
+    await Jur4SaldoDB.cleanData([data.main_schet_id, data.schet_id]);
+  }
+
+  static async getSaldoDate(data) {
+    const result = await Jur4SaldoDB.getSaldoDate([
+      data.region_id,
+      data.date_saldo,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async createSaldoDate(data) {
+    const year = new Date(data.doc_date).getFullYear();
+    const month = new Date(data.doc_date).getMonth() + 1;
+
+    const saldo_date = `${year}-${String(month).padStart(2, "0")}-01`;
+    const check = await Jur4SaldoDB.getSaldoDate([
+      data.region_id,
+      saldo_date,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
+
+    let dates = [];
+    for (let date of check) {
+      dates.push(
+        await Jur4SaldoDB.createSaldoDate(
+          [
+            data.user_id,
+            date.year,
+            date.month,
+            data.main_schet_id,
+            data.schet_id,
+            HelperFunctions.tashkentTime(),
+            HelperFunctions.tashkentTime(),
+          ],
+          data.client
+        )
+      );
+    }
+
+    return dates;
+  }
+
+  static async getDateSaldo(data) {
+    const result = await Jur4SaldoDB.getDateSaldo([
+      data.region_id,
+      data.main_schet_id,
+      data.schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async createAuto(data) {
+    const response = await db.transaction(async (client) => {
+      await Jur4SaldoDB.deleteByMonth(
+        [data.year, data.month, data.main_schet_id, data.schet_id],
+        client
+      );
+
+      await Jur4SaldoDB.deleteSaldoDateByMonth(
+        [data.year, data.month, data.main_schet_id, data.schet_id],
+        client
+      );
+
+      const saldo_date = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
+
+      const doc = await Jur4SaldoDB.create(
         [
-          data.doc_num,
-          data.doc_date,
-          summa.prixod_summa,
-          data.prixod,
-          summa.rasxod_summa,
-          data.rasxod,
-          data.opisanie,
-          data.podotchet_id,
+          data.summa,
           data.main_schet_id,
+          data.year,
+          data.month,
           data.user_id,
+          data.budjet_id,
+          saldo_date,
+          data.schet_id,
+          new Date(),
           new Date(),
         ],
         client
       );
 
-      await this.createChild({
-        childs: data.childs,
+      const dates = await this.createSaldoDate({
+        ...data,
+        doc_date: saldo_date,
         client,
-        parent_id: doc.id,
-        user_id: data.user_id,
-        main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      return { dates, doc };
     });
+
+    return response;
+  }
+
+  static async getByMonth(data) {
+    const result = await Jur4SaldoDB.getByMonth([
+      data.main_schet_id,
+      data.year,
+      data.month,
+      data.region_id,
+      data.schet_id,
+    ]);
 
     return result;
   }
 
-  static async createChild(data) {
-    const create_childs = [];
-    for (let child of data.childs) {
-      create_childs.push(
-        child.operatsii_id,
-        child.summa,
-        child.podraz_id,
-        child.sostav_id,
-        child.type_operatsii_id,
-        data.main_schet_id,
-        data.parent_id,
-        data.user_id,
-        new Date()
-      );
-    }
+  static async create(data) {
+    const doc = await Jur4SaldoDB.create([
+      data.summa,
+      data.main_schet_id,
+      data.year,
+      data.month,
+      data.user_id,
+      data.budjet_id,
+      `${data.year}-${String(data.month).padStart(2, "0")}-01`,
+      data.schet_id,
+      new Date(),
+      new Date(),
+    ]);
 
-    const _values = HelperFunctions.paramsValues({
-      params: create_childs,
-      column_count: 9,
-    });
-
-    if (create_childs.length) {
-      await PodotchetSaldoDB.createChild(create_childs, _values, data.client);
-    }
+    return doc;
   }
 
   static async get(data) {
-    const result = await PodotchetSaldoDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
-      data.search,
-      data.order_by,
-      data.order_type
+    const result = await Jur4SaldoDB.get(
+      [data.budjet_id],
+      data.main_schet_id,
+      data.year,
+      data.month
     );
 
-    let page_prixod_summa = 0;
-    let page_rasxod_summa = 0;
-    result.data.forEach((item) => {
-      page_prixod_summa += item.prixod_summa;
-      page_rasxod_summa += item.rasxod_summa;
+    let summa = 0;
+    result.forEach((item) => {
+      summa += item.summa;
     });
 
-    return { ...result, page_prixod_summa, page_rasxod_summa };
+    return { docs: result, summa };
   }
 
   static async getById(data) {
-    const result = await PodotchetSaldoDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
+    const result = await Jur4SaldoDB.getById(
+      [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
 
@@ -99,76 +168,37 @@ exports.PodotchetSaldoService = class {
   }
 
   static async update(data) {
-    const summa = HelperFunctions.saldoSumma(data);
-
     const result = await db.transaction(async (client) => {
-      const doc = await PodotchetSaldoDB.update(
+      const date_saldo = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
+
+      const doc = await Jur4SaldoDB.update(
         [
-          data.doc_num,
-          data.doc_date,
-          summa.prixod_summa,
-          data.prixod,
-          summa.rasxod_summa,
-          data.rasxod,
-          data.opisanie,
-          data.podotchet_id,
+          data.summa,
+          data.main_schet_id,
+          data.year,
+          data.month,
+          date_saldo,
+          data.schet_id,
           new Date(),
           data.id,
         ],
         client
       );
 
-      const create_childs = [];
-
-      for (let child of data.old_data.childs) {
-        const check = data.childs.find((item) => item.id === child.id);
-        if (!check) {
-          await PodotchetSaldoDB.deleteChild([child.id], client);
-        }
-      }
-
-      for (let child of data.childs) {
-        if (!child.id) {
-          create_childs.push(child);
-        } else {
-          await PodotchetSaldoDB.updateChild(
-            [
-              child.operatsii_id,
-              child.summa,
-              child.podraz_id,
-              child.sostav_id,
-              child.type_operatsii_id,
-              child.main_schet_id,
-              data.user_id,
-              new Date(),
-              child.id,
-            ],
-            client
-          );
-        }
-      }
-
-      await this.createChild({
-        childs: create_childs,
+      const dates = await this.createSaldoDate({
+        ...data,
+        doc_date: date_saldo,
         client,
-        parent_id: doc.id,
-        user_id: data.user_id,
-        main_schet_id: data.main_schet_id,
       });
 
-      return doc;
+      return { doc, dates };
     });
 
     return result;
   }
 
   static async delete(data) {
-    const result = await db.transaction(async (client) => {
-      const doc = await PodotchetSaldoDB.delete([data.id], client);
-
-      return doc;
-    });
-
-    return result;
+    const doc = await Jur4SaldoDB.delete([data.id]);
+    return doc;
   }
 };

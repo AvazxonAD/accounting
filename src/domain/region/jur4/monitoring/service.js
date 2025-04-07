@@ -1,6 +1,19 @@
 const { PodotchetMonitoringDB } = require("./db");
 
 exports.PodotchetMonitoringService = class {
+  static async getSumma(data) {
+    const internal = await PodotchetMonitoringDB.getSumma(
+      [data.region_id, data.from, data.to],
+      null,
+      data.main_schet_id,
+      null,
+      data.schet,
+      null
+    );
+
+    return internal;
+  }
+
   static async cap(data) {
     let result = await PodotchetMonitoringDB.capData([
       data.main_schet_id,
@@ -27,5 +40,45 @@ exports.PodotchetMonitoringService = class {
     }
 
     return result;
+  }
+
+  static async monitoring(data) {
+    const docs = await PodotchetMonitoringDB.getMonitoring(
+      [
+        data.region_id,
+        data.main_schet_id,
+        data.from,
+        data.to,
+        data.schet,
+        data.offset,
+        data.limit,
+      ],
+      data.podotchet_id,
+      data.search,
+      data.order_by,
+      data.order_type
+    );
+
+    const internal = await PodotchetMonitoringDB.getSumma(
+      [data.region_id, data.from, data.to],
+      data.podotchet_id,
+      data.main_schet_id,
+      null,
+      data.schet,
+      data.search
+    );
+
+    const total = await PodotchetMonitoringDB.getTotalMonitoring(
+      [region_id, main_schet_id, from, to, schet],
+      podotchet_id,
+      search
+    );
+
+    let page_rasxod_sum = 0;
+    let page_prixod_sum = 0;
+    data.forEach((item) => {
+      page_rasxod_sum += item.rasxod_sum;
+      page_prixod_sum += item.prixod_sum;
+    });
   }
 };

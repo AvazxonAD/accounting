@@ -23,78 +23,23 @@ exports.Controller = class {
       order_by,
       order_type,
       podotchet_id,
-      operatsii,
+      schet,
       search,
     } = req.query;
     const region_id = req.user.region_id;
     const offset = (page - 1) * limit;
+
     if (podotchet_id) {
       const podotchet = await PodotchetDB.getById([region_id, podotchet_id]);
       if (!podotchet) {
-        return res.status(404).json({
-          message: "podotchet not found",
-        });
+        return res.error(req.i18n.t(`podotchetNotFound`), 404);
       }
     }
+
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
     if (!main_schet) {
-      return res.status(404).json({
-        message: "main schet not found",
-      });
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
-    const data = await PodotchetMonitoringDB.getMonitoring(
-      [region_id, main_schet_id, from, to, operatsii, offset, limit],
-      podotchet_id,
-      search,
-      order_by,
-      order_type
-    );
-
-    const summa_from = await PodotchetMonitoringDB.getSummaMonitoring(
-      [region_id],
-      { date: from, operator: "<" },
-      null,
-      podotchet_id,
-      main_schet_id,
-      null,
-      operatsii,
-      search
-    );
-
-    const summa_to = await PodotchetMonitoringDB.getSummaMonitoring(
-      [region_id],
-      { date: to, operator: "<=" },
-      null,
-      podotchet_id,
-      main_schet_id,
-      null,
-      operatsii,
-      search
-    );
-
-    const summa = await PodotchetMonitoringDB.getSummaMonitoring(
-      [region_id],
-      null,
-      [from, to],
-      podotchet_id,
-      main_schet_id,
-      null,
-      operatsii,
-      search
-    );
-
-    const total = await PodotchetMonitoringDB.getTotalMonitoring(
-      [region_id, main_schet_id, from, to, operatsii],
-      podotchet_id,
-      search
-    );
-
-    let page_rasxod_sum = 0;
-    let page_prixod_sum = 0;
-    data.forEach((item) => {
-      page_rasxod_sum += item.rasxod_sum;
-      page_prixod_sum += item.prixod_sum;
-    });
 
     const pageCount = Math.ceil(total / limit);
 
@@ -129,7 +74,7 @@ exports.Controller = class {
     }
     const data = (await PodotchetDB.get([region_id, 0, 99999999])).data;
     for (let podotchet of data) {
-      const summa = await PodotchetMonitoringDB.getSummaMonitoring(
+      const summa = await PodotchetMonitoringDB.getSumma(
         [region_id],
         { operator: "<=", date: to },
         null,
@@ -279,7 +224,7 @@ exports.Controller = class {
 
   static async getByIdPodotchetToExcel(req, res) {
     const podotchet_id = req.params.id;
-    const { main_schet_id, from, to, operatsii } = req.query;
+    const { main_schet_id, from, to, schet } = req.query;
     const region_id = req.user.region_id;
     const podotchet = await PodotchetDB.getById([region_id, podotchet_id]);
     if (!podotchet) {
@@ -294,27 +239,27 @@ exports.Controller = class {
       });
     }
     const data = await PodotchetMonitoringDB.getMonitoring(
-      [region_id, main_schet_id, from, to, operatsii, 0, 99999999],
+      [region_id, main_schet_id, from, to, schet, 0, 99999999],
       podotchet_id
     );
 
-    const summa_from_object = await PodotchetMonitoringDB.getSummaMonitoring(
+    const summa_from_object = await PodotchetMonitoringDB.getSumma(
       [region_id],
       { operator: "<=", date: from },
       null,
       podotchet_id,
       main_schet_id,
       null,
-      operatsii
+      schet
     );
-    const summa_to_object = await PodotchetMonitoringDB.getSummaMonitoring(
+    const summa_to_object = await PodotchetMonitoringDB.getSumma(
       [region_id],
       { operator: "<=", date: to },
       null,
       podotchet_id,
       main_schet_id,
       null,
-      operatsii
+      schet
     );
 
     const summa_from = summa_from_object.summa;
@@ -343,10 +288,10 @@ exports.Controller = class {
     opisanieCell.value = "Разъяснительный текст";
     worksheet.mergeCells(`D2`, "F2");
     const schetDebitCell = worksheet.getCell(`D2`);
-    schetDebitCell.value = `Дебет ${operatsii} / Кредит  разных   счетов`;
+    schetDebitCell.value = `Дебет ${schet} / Кредит  разных   счетов`;
     worksheet.mergeCells(`G2`, "I2");
     const schetKriditCell = worksheet.getCell(`G2`);
-    schetKriditCell.value = `Кредит ${operatsii}  /  Дебет разных счетов`;
+    schetKriditCell.value = `Кредит ${schet}  /  Дебет разных счетов`;
     const schetCell = worksheet.getCell(`D3`);
     schetCell.value = `счет`;
     const subSchetCell = worksheet.getCell(`E3`);
@@ -565,7 +510,7 @@ exports.Controller = class {
       main_schet_id,
       excel,
       budjet_id,
-      operatsii,
+      schet,
       from,
       to,
     } = req.query;
@@ -611,7 +556,7 @@ exports.Controller = class {
         podpis,
         title: "Podotchet Monitoring",
         file_name: "podotchet",
-        schet: operatsii,
+        schet: schet,
         order: 4,
       });
 
