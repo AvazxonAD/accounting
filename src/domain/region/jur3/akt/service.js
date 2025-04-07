@@ -24,6 +24,146 @@ exports.AktService = class {
     return result;
   }
 
+  static async get(data) {
+    const result = await AktDB.get(
+      [
+        data.region_id,
+        data.main_schet_id,
+        data.from,
+        data.to,
+        data.offset,
+        data.limit,
+      ],
+      data.search,
+      data.order_by,
+      data.order_type
+    );
+
+    let page_summa = 0;
+    result.data.forEach((item) => {
+      page_summa += item.summa;
+    });
+
+    return { ...result, page_summa };
+  }
+
+  static async create(data) {
+    const summa = childsSumma(data.childs);
+
+    const result = await db.transaction(async (client) => {
+      const doc = await AktDB.create(
+        [
+          data.doc_num,
+          data.doc_date,
+          data.opisanie,
+          summa,
+          data.id_spravochnik_organization,
+          data.shartnomalar_organization_id,
+          data.main_schet_id,
+          data.user_id,
+          data.organization_by_raschet_schet_id,
+          data.organization_by_raschet_schet_gazna_id,
+          data.shartnoma_grafik_id,
+          data.schet_id,
+          tashkentTime(),
+          tashkentTime(),
+        ],
+        client
+      );
+
+      await this.createChild({ ...data, docId: doc.id }, client);
+
+      return doc;
+    });
+
+    return result;
+  }
+
+  static async createChild(data, client) {
+    const create_childs = [];
+
+    for (let item of data.childs) {
+      item.nds_summa = item.nds_foiz ? (item.nds_foiz / 100) * item.summa : 0;
+      item.summa_s_nds = item.summa + item.nds_summa;
+
+      create_childs.push(
+        item.spravochnik_operatsii_id,
+        item.summa,
+        item.id_spravochnik_podrazdelenie,
+        item.id_spravochnik_sostav,
+        item.id_spravochnik_type_operatsii,
+        data.main_schet_id,
+        data.docId,
+        data.user_id,
+        item.kol,
+        item.sena,
+        item.nds_foiz,
+        item.nds_summa,
+        item.summa_s_nds,
+        tashkentTime(),
+        tashkentTime()
+      );
+    }
+
+    const _values = HelperFunctions.paramsValues({
+      params: create_childs,
+      column_count: 15,
+    });
+
+    await AktDB.createChild(create_childs, _values, client);
+  }
+
+  static async getById(data) {
+    const result = await AktDB.getById(
+      [data.region_id, data.main_schet_id, data.id],
+      data.isdeleted
+    );
+
+    return result;
+  }
+
+  static async update(data) {
+    const summa = childsSumma(data.childs);
+
+    const result = await db.transaction(async (client) => {
+      const doc = await AktDB.update(
+        [
+          data.doc_num,
+          data.doc_date,
+          data.opisanie,
+          summa,
+          data.id_spravochnik_organization,
+          data.shartnomalar_organization_id,
+          data.organization_by_raschet_schet_id,
+          data.organization_by_raschet_schet_gazna_id,
+          data.shartnoma_grafik_id,
+          data.schet_id,
+          tashkentTime(),
+          data.id,
+        ],
+        client
+      );
+
+      await AktDB.deleteChild([data.id], client);
+
+      await this.createChild({ ...data, docId: data.id }, client);
+
+      return doc;
+    });
+
+    return result;
+  }
+
+  static async delete(data) {
+    const result = await db.transaction(async (client) => {
+      const docId = await AktDB.delete([data.id], client);
+
+      return docId;
+    });
+
+    return result;
+  }
+
   static async capExcel(data) {
     const workbook = new ExcelJS.Workbook();
 
@@ -190,146 +330,5 @@ exports.AktService = class {
     await workbook.xlsx.writeFile(filePath);
 
     return { fileName, filePath };
-  }
-
-  static async get(data) {
-    const result = await AktDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-        data.schet_id,
-      ],
-      data.search,
-      data.order_by,
-      data.order_type
-    );
-
-    let page_summa = 0;
-    result.data.forEach((item) => {
-      page_summa += item.summa;
-    });
-
-    return { ...result, page_summa };
-  }
-
-  static async create(data) {
-    const summa = childsSumma(data.childs);
-
-    const result = await db.transaction(async (client) => {
-      const doc = await AktDB.create(
-        [
-          data.doc_num,
-          data.doc_date,
-          data.opisanie,
-          summa,
-          data.id_spravochnik_organization,
-          data.shartnomalar_organization_id,
-          data.main_schet_id,
-          data.user_id,
-          data.organization_by_raschet_schet_id,
-          data.organization_by_raschet_schet_gazna_id,
-          data.shartnoma_grafik_id,
-          data.schet_id,
-          tashkentTime(),
-          tashkentTime(),
-        ],
-        client
-      );
-
-      await this.createChild({ ...data, docId: doc.id }, client);
-
-      return doc;
-    });
-
-    return result;
-  }
-
-  static async createChild(data, client) {
-    const create_childs = [];
-
-    for (let item of data.childs) {
-      item.nds_summa = item.nds_foiz ? (item.nds_foiz / 100) * item.summa : 0;
-      item.summa_s_nds = item.summa + item.nds_summa;
-
-      create_childs.push(
-        item.spravochnik_operatsii_id,
-        item.summa,
-        item.id_spravochnik_podrazdelenie,
-        item.id_spravochnik_sostav,
-        item.id_spravochnik_type_operatsii,
-        data.main_schet_id,
-        data.docId,
-        data.user_id,
-        item.kol,
-        item.sena,
-        item.nds_foiz,
-        item.nds_summa,
-        item.summa_s_nds,
-        tashkentTime(),
-        tashkentTime()
-      );
-    }
-
-    const _values = HelperFunctions.paramsValues({
-      params: create_childs,
-      column_count: 15,
-    });
-
-    await AktDB.createChild(create_childs, _values, client);
-  }
-
-  static async getById(data) {
-    const result = await AktDB.getById(
-      [data.region_id, data.main_schet_id, data.id, data.schet_id],
-      data.isdeleted
-    );
-
-    return result;
-  }
-
-  static async update(data) {
-    const summa = childsSumma(data.childs);
-
-    const result = await db.transaction(async (client) => {
-      const doc = await AktDB.update(
-        [
-          data.doc_num,
-          data.doc_date,
-          data.opisanie,
-          summa,
-          data.id_spravochnik_organization,
-          data.shartnomalar_organization_id,
-          data.organization_by_raschet_schet_id,
-          data.organization_by_raschet_schet_gazna_id,
-          data.shartnoma_grafik_id,
-          data.schet_id,
-          tashkentTime(),
-          data.id,
-        ],
-        client
-      );
-
-      await AktDB.deleteChild([data.id], client);
-
-      await this.createChild({ ...data, docId: data.id }, client);
-
-      return doc;
-    });
-
-    return result;
-  }
-
-  static async delete(data) {
-    const result = await db.transaction(async (client) => {
-      const docId = await AktDB.delete([data.id], client);
-
-      return docId;
-    });
-
-    return result;
   }
 };

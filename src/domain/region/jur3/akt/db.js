@@ -63,7 +63,6 @@ exports.AktDB = class {
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $3 AND $4
-                    AND d.schet_id = $7
                     ${search_filter}
                 
                 ${order}
@@ -83,7 +82,6 @@ exports.AktDB = class {
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $3 AND $4
-                        AND d.schet_id = $7
                         ${search_filter}
                 ) AS total, 
                 (
@@ -99,7 +97,6 @@ exports.AktDB = class {
                         AND d.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND ch.isdeleted = false
-                        AND d.schet_id = $7
                         ${search_filter}
                 ) AS summa
             FROM data
@@ -225,7 +222,6 @@ exports.AktDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3
-                AND d.schet_id = $4
                 ${!isdeleted ? "AND d.isdeleted = false" : ""}   
         `;
     const data = await db.query(query, params);

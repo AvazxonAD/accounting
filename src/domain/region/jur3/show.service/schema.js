@@ -10,7 +10,6 @@ exports.createSchema = Joi.object({
     id_spravochnik_organization: Joi.number().required().min(1).integer(),
     shartnomalar_organization_id: Joi.number().allow(null).min(1).integer(),
     organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
-    spravochnik_operatsii_own_id: Joi.number().required().min(1).integer(),
     organization_by_raschet_schet_gazna_id: Joi.number()
       .min(1)
       .integer()
@@ -39,6 +38,7 @@ exports.createSchema = Joi.object({
   }),
   query: Joi.object({
     main_schet_id: Joi.number().min(1).integer().required(),
+    schet_id: Joi.number().required().min(1).integer(),
   }),
 }).options({ stripUnknown: true });
 
@@ -52,7 +52,6 @@ exports.updateSchema = Joi.object({
     id_spravochnik_organization: Joi.number().required().min(1).integer(),
     shartnomalar_organization_id: Joi.number().allow(null).min(1).integer(),
     organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
-    spravochnik_operatsii_own_id: Joi.number().required().min(1).integer(),
     organization_by_raschet_schet_gazna_id: Joi.number()
       .min(1)
       .integer()
@@ -81,6 +80,7 @@ exports.updateSchema = Joi.object({
   }),
   query: Joi.object({
     main_schet_id: Joi.number().min(1).integer().required(),
+    schet_id: Joi.number().required().min(1).integer(),
   }),
   params: Joi.object({
     id: Joi.number().min(1).integer().required(),
@@ -92,6 +92,7 @@ exports.getSchema = Joi.object({
     main_schet_id: Joi.number().required().min(1).integer(),
     limit: Joi.number().min(1).default(10),
     page: Joi.number().min(1).default(1),
+    schet_id: Joi.number().required().min(1).integer(),
     from: Joi.string()
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -119,6 +120,7 @@ exports.getByIdSchema = Joi.object({
   }),
   query: Joi.object({
     main_schet_id: Joi.number().min(1).integer().required(),
+    schet_id: Joi.number().required().min(1).integer(),
   }),
 }).options({ stripUnknown: true });
 
@@ -128,5 +130,6 @@ exports.deleteSchema = Joi.object({
   }),
   query: Joi.object({
     main_schet_id: Joi.number().min(1).integer().required(),
+    schet_id: Joi.number().required().min(1).integer(),
   }),
 }).options({ stripUnknown: true });

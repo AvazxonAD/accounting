@@ -180,7 +180,6 @@ exports.Controller = class {
       search,
       order_by,
       order_type,
-      schet_id,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -215,7 +214,6 @@ exports.Controller = class {
       region_id,
       main_schet_id,
       id,
-      schet_id,
     });
     if (!result) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -243,7 +241,6 @@ exports.Controller = class {
       region_id,
       main_schet_id,
       id,
-      schet_id,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -362,6 +359,7 @@ exports.Controller = class {
 
     const result = await AktService.update({
       main_schet_id,
+      schet_id,
       user_id,
       ...req.body,
       id,
@@ -371,7 +369,7 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
 
@@ -379,8 +377,10 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+
+    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const doc = await AktService.getById({ region_id, main_schet_id, id });

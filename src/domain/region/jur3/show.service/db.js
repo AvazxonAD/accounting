@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 const { returnParamsValues, designParams } = require("@helper/functions");
 
 exports.ShowServiceDB = class {
-  static async getByIdShowService(params, isdeleted) {
+  static async getById(params, isdeleted) {
     const ignore = "AND d.isdeleted = false";
     const query = `--sql
             SELECT 
@@ -10,26 +10,26 @@ exports.ShowServiceDB = class {
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                 d.summa::FLOAT,
                 (
-                    SELECT JSON_AGG(row_to_json(k_h_j_ch))
+                    SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                             SELECT  
-                                k_h_j_ch.id,
-                                k_h_j_ch.kursatilgan_hizmatlar_jur152_id,
-                                k_h_j_ch.spravochnik_operatsii_id,
-                                k_h_j_ch.summa::FLOAT,
-                                k_h_j_ch.id_spravochnik_podrazdelenie,
-                                k_h_j_ch.id_spravochnik_sostav,
-                                k_h_j_ch.id_spravochnik_type_operatsii,
-                                k_h_j_ch.kol,
-                                k_h_j_ch.sena,
-                                k_h_j_ch.nds_foiz,
-                                k_h_j_ch.nds_summa,
-                                k_h_j_ch.summa_s_nds
-                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
-                            JOIN users AS u ON k_h_j_ch.user_id = u.id
+                                ch.id,
+                                ch.kursatilgan_hizmatlar_jur152_id,
+                                ch.spravochnik_operatsii_id,
+                                ch.summa::FLOAT,
+                                ch.id_spravochnik_podrazdelenie,
+                                ch.id_spravochnik_sostav,
+                                ch.id_spravochnik_type_operatsii,
+                                ch.kol,
+                                ch.sena,
+                                ch.nds_foiz,
+                                ch.nds_summa,
+                                ch.summa_s_nds
+                            FROM kursatilgan_hizmatlar_jur152_child AS ch
+                            JOIN users AS u ON ch.user_id = u.id
                             JOIN regions AS r ON u.region_id = r.id
-                            WHERE k_h_j_ch.kursatilgan_hizmatlar_jur152_id = d.id
-                        ) AS k_h_j_ch
+                            WHERE ch.kursatilgan_hizmatlar_jur152_id = d.id
+                        ) AS ch
                 ) AS childs,
                 d.organization_by_raschet_schet_id::INTEGER,
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
@@ -45,7 +45,7 @@ exports.ShowServiceDB = class {
     return result[0];
   }
 
-  static async createShowService(params, client) {
+  static async create(params, client) {
     const query = `--sql
             INSERT INTO kursatilgan_hizmatlar_jur152(
                 user_id,
@@ -59,7 +59,7 @@ exports.ShowServiceDB = class {
                 organization_by_raschet_schet_id,
                 organization_by_raschet_schet_gazna_id,
                 shartnoma_grafik_id,
-                spravochnik_operatsii_own_id,
+                schet_id,
                 created_at,
                 updated_at
             )
@@ -114,7 +114,7 @@ exports.ShowServiceDB = class {
     const result = await client.query(query, _params);
     return result.rows;
   }
-  static async getShowService(params, search = null, order_by, order_type) {
+  static async get(params, search = null, order_by, order_type) {
     let search_filter = ``;
     let order = ``;
 
@@ -147,15 +147,15 @@ exports.ShowServiceDB = class {
                     sho.doc_date AS shartnomalar_organization_doc_date,
                     d.summa::FLOAT,
                     (
-                        SELECT JSON_AGG(row_to_json(k_h_j_ch))
+                        SELECT JSON_AGG(row_to_json(ch))
                         FROM (
                             SELECT 
                                 so.schet AS provodki_schet,
                                 so.sub_schet AS provodki_sub_schet
-                            FROM kursatilgan_hizmatlar_jur152_child AS k_h_j_ch
-                            JOIN spravochnik_operatsii AS so ON so.id = k_h_j_ch.spravochnik_operatsii_id
-                            WHERE  k_h_j_ch.kursatilgan_hizmatlar_jur152_id = d.id 
-                        ) AS k_h_j_ch
+                            FROM kursatilgan_hizmatlar_jur152_child AS ch
+                            JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
+                            WHERE  ch.kursatilgan_hizmatlar_jur152_id = d.id 
+                        ) AS ch
                     ) AS provodki_array,
                     d.organization_by_raschet_schet_id::INTEGER,
                     d.organization_by_raschet_schet_gazna_id::INTEGER,
@@ -208,7 +208,7 @@ exports.ShowServiceDB = class {
     return result[0];
   }
 
-  static async updateShowService(params, client) {
+  static async update(params, client) {
     const query = `--sql
             UPDATE kursatilgan_hizmatlar_jur152
             SET 
@@ -222,7 +222,7 @@ exports.ShowServiceDB = class {
                 organization_by_raschet_schet_id = $8,
                 organization_by_raschet_schet_gazna_id = $9,
                 shartnoma_grafik_id = $10,
-                spravochnik_operatsii_own_id = $11
+                schet_id = $11
             WHERE id = $12
             RETURNING *
         `;
@@ -235,7 +235,7 @@ exports.ShowServiceDB = class {
     await client.query(query, params);
   }
 
-  static async deleteShowService(params, client) {
+  static async delete(params, client) {
     await client.query(
       `UPDATE kursatilgan_hizmatlar_jur152_child SET isdeleted = true WHERE kursatilgan_hizmatlar_jur152_id = $1`,
       params

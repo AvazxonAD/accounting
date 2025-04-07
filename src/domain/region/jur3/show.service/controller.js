@@ -10,9 +10,10 @@ const { ShowServiceDB } = require("./db");
 const { db } = require("@db/index");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
+const { OperatsiiService } = require(`@operatsii/service`);
 
 exports.Controller = class {
-  static async createShowService(req, res) {
+  static async create(req, res) {
     const {
       doc_num,
       doc_date,
@@ -22,25 +23,18 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
-      spravochnik_operatsii_own_id,
       childs,
     } = req.body;
 
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
 
-    const operatsii = await OperatsiiService.getById({
-      id: spravochnik_operatsii_own_id,
-      type: "general",
-    });
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
     const organization = await OrganizationDB.getById([
@@ -147,7 +141,7 @@ exports.Controller = class {
     }
     let doc;
     await db.transaction(async (client) => {
-      doc = await ShowServiceDB.createShowService(
+      doc = await ShowServiceDB.create(
         [
           user_id,
           doc_num,
@@ -160,7 +154,7 @@ exports.Controller = class {
           organization_by_raschet_schet_id,
           organization_by_raschet_schet_gazna_id,
           shartnoma_grafik_id,
-          spravochnik_operatsii_own_id,
+          schet_id,
           tashkentTime(),
           tashkentTime(),
         ],
@@ -191,7 +185,7 @@ exports.Controller = class {
     return res.success(req.i18n.t("createSuccess"), 201, null, doc);
   }
 
-  static async getShowService(req, res) {
+  static async get(req, res) {
     const region_id = req.user.region_id;
     const {
       page,
@@ -202,15 +196,18 @@ exports.Controller = class {
       search,
       order_by,
       order_type,
+      schet_id,
     } = req.query;
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
-    if (!main_schet) {
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
     const offset = (page - 1) * limit;
-    const { data, summa, total_count } = await ShowServiceDB.getShowService(
+    const { data, summa, total_count } = await ShowServiceDB.get(
       [region_id, from, to, main_schet_id, offset, limit],
       search,
       order_by,
@@ -236,15 +233,19 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
-  static async getByIdShowService(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+  static async getById(req, res) {
+    const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
+
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
-    if (!main_schet) {
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
-    const result = await ShowServiceDB.getByIdShowService(
+
+    const result = await ShowServiceDB.getById(
       [region_id, id, main_schet_id],
       true
     );
@@ -255,7 +256,7 @@ exports.Controller = class {
     return res.error(req.i18n.t("getSuccess"), 200, null, result);
   }
 
-  static async updateShowService(req, res) {
+  static async update(req, res) {
     const {
       doc_num,
       doc_date,
@@ -265,16 +266,15 @@ exports.Controller = class {
       childs,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
-      spravochnik_operatsii_own_id,
       shartnoma_grafik_id,
     } = req.body;
 
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
     const id = req.params.id;
 
-    const old_data = await ShowServiceDB.getByIdShowService([
+    const old_data = await ShowServiceDB.getById([
       region_id,
       id,
       main_schet_id,
@@ -283,16 +283,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const operatsii = await OperatsiiService.getById({
-      id: spravochnik_operatsii_own_id,
-      type: "general",
-    });
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
-    }
-
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
-    if (!main_schet) {
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
@@ -400,7 +394,7 @@ exports.Controller = class {
     }
     let doc;
     await db.transaction(async (client) => {
-      doc = await ShowServiceDB.updateShowService(
+      doc = await ShowServiceDB.update(
         [
           doc_num,
           doc_date,
@@ -412,7 +406,7 @@ exports.Controller = class {
           organization_by_raschet_schet_id,
           organization_by_raschet_schet_gazna_id,
           shartnoma_grafik_id,
-          spravochnik_operatsii_own_id,
+          schet_id,
           id,
         ],
         client
@@ -442,25 +436,25 @@ exports.Controller = class {
     return res.success(req.i18n.t("createSuccess"), 201, null, doc);
   }
 
-  static async deleteShowService(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+  static async delete(req, res) {
+    const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
+
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
-    if (!main_schet) {
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
-    const result = await ShowServiceDB.getByIdShowService([
-      region_id,
-      id,
-      main_schet_id,
-    ]);
+
+    const result = await ShowServiceDB.getById([region_id, id, main_schet_id]);
     if (!result) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
     const data = await db.transaction(async (client) => {
-      const docId = await ShowServiceDB.deleteShowService([id], client);
+      const docId = await ShowServiceDB.delete([id], client);
 
       return docId;
     });
