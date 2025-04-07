@@ -167,6 +167,19 @@ exports.Controller = class {
       ...req.query,
     });
 
+    for (let doc of docs) {
+      const first_saldo = await BankSaldoService.getFirstSaldo({
+        region_id,
+        main_schet_id: doc.main_schet_id,
+      });
+
+      if (doc.id === first_saldo.id) {
+        doc.updated = true;
+      } else {
+        doc.updated = false;
+      }
+    }
+
     return res.success(req.i18n.t("getSuccess"), 200, { summa }, docs);
   }
 
