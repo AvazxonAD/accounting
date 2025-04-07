@@ -9,30 +9,20 @@ const { TypeOperatsiiService } = require("@type_operatsii/service");
 
 exports.Controller = class {
   static async create(req, res) {
-    const {
-      spravochnik_podotchet_litso_id,
-      childs,
-      spravochnik_operatsii_own_id,
-    } = req.body;
+    const { spravochnik_podotchet_litso_id, childs } = req.body;
 
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
 
-    const operatsii = await OperatsiiService.getById({
-      id: spravochnik_operatsii_own_id,
-      type: "general",
-    });
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const podotchet = await PodotchetService.getById({
@@ -93,7 +83,7 @@ exports.Controller = class {
     const result = await AktService.create({
       ...req.body,
       user_id,
-      main_schet_id,
+      ...req.query,
     });
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
@@ -107,6 +97,7 @@ exports.Controller = class {
       from,
       to,
       main_schet_id,
+      schet_id,
       search,
       order_by,
       order_type,
@@ -116,8 +107,10 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const offset = (page - 1) * limit;
@@ -147,7 +140,7 @@ exports.Controller = class {
   }
 
   static async getById(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
 
@@ -155,8 +148,10 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const result = await AktService.getById({
@@ -180,8 +175,18 @@ exports.Controller = class {
 
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
     const id = req.params.id;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
 
     const old_data = await AktService.getById({ region_id, main_schet_id, id });
     if (!old_data) {
@@ -252,7 +257,7 @@ exports.Controller = class {
     }
 
     const result = await AktService.update({
-      main_schet_id,
+      ...req.query,
       user_id,
       ...req.body,
       id,
@@ -262,7 +267,7 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
 
@@ -270,8 +275,10 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const doc = await AktService.getById({ region_id, main_schet_id, id });

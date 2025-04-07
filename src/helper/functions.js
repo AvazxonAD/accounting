@@ -936,11 +936,6 @@ exports.HelperFunctions = class {
 
   static getMonthStartEnd(date) {
     const { year, month } = date;
-
-    if (!year || !month || month < 1 || month > 12) {
-      throw new Error(`Yil yoki oy noto‘g‘ri kiritilgan! => ${year} ${month}`);
-    }
-
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
 
@@ -949,14 +944,17 @@ exports.HelperFunctions = class {
 
   static getDate(data) {
     const { year, month } = data;
-    if (!year || !month || month < 1 || month > 12) {
-      throw new Error(`Yil yoki oy noto‘g‘ri kiritilgan! => ${year} ${month}`);
-    }
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
 
-    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-    const endDate = new Date(year, month, 0).toISOString().split("T")[0];
+    const formatDate = (date) => {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    };
 
-    return [startDate, endDate];
+    return [formatDate(startDate), formatDate(endDate)];
   }
 
   static returnStringDate(date) {

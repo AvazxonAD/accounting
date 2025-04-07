@@ -21,6 +21,6 @@ router
   )
   .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
   .get("/order", validator(Controller.consolidated, consolidatedSchema));
-//.get('/akt/sverka', validator(Controller.aktSverka, aktSverkaSchema))
+// .get("/akt/sverka", validator(Controller.aktSverka, aktSverkaSchema));
 
 module.exports = router;

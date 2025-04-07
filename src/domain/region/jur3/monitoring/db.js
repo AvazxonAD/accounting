@@ -368,10 +368,9 @@ exports.OrganizationMonitoringDB = class {
     return result[0].total;
   }
 
-  static async getSumma(params, date, dates, organ_id, search) {
+  static async getSumma(params, organ_id, search) {
     let organ_filter = "";
     let search_filter = ``;
-    let date_filter = ``;
 
     if (organ_id) {
       params.push(organ_id);
@@ -387,16 +386,6 @@ exports.OrganizationMonitoringDB = class {
             )`;
     }
 
-    if (date) {
-      params.push(date.date);
-      date_filter = `AND d.doc_date ${date.operator} $${params.length}`;
-    }
-
-    if (dates) {
-      params.push(dates[0], dates[1]);
-      date_filter = `AND d.doc_date BETWEEN $${params.length - 1} AND $${params.length}`;
-    }
-
     const query = `--sql
             WITH 
             kursatilgan_hizmatlar_sum AS (
@@ -410,9 +399,9 @@ exports.OrganizationMonitoringDB = class {
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    ${date_filter}
                     AND ch.isdeleted = false
                     AND own.schet = $3
+                    AND d.doc_date BETWEEN $4 AND $5
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -427,9 +416,9 @@ exports.OrganizationMonitoringDB = class {
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
-                    ${date_filter}
                     AND ch.isdeleted = false
                     AND own.schet = $3
+                    AND d.doc_date BETWEEN $4 AND $5
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -445,8 +434,8 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND op.schet = $3
-                    ${date_filter}
                     AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -463,8 +452,8 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND op.schet = $3
-                    ${date_filter}
                     AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -480,8 +469,8 @@ exports.OrganizationMonitoringDB = class {
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     AND ch.kredit_schet = $3
-                    ${date_filter}
                     AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
                     ${organ_filter}
                     ${search_filter}
             )

@@ -1,9 +1,9 @@
 const { MainSchetService } = require("@main_schet/service");
-const { BankSaldoService } = require("./service");
+const { Jur3SaldoService } = require("./service");
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
 const { SALDO_PASSWORD } = require(`@helper/constants`);
-const { BankMonitoringService } = require(`@jur2_monitoring/service`);
+const { OrganizationmonitoringService } = require(`@organ_monitoring/services`);
 
 exports.Controller = class {
   static async cleanData(req, res) {
@@ -24,7 +24,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    await BankSaldoService.cleanData({ main_schet_id });
+    await Jur3SaldoService.cleanData({ ...req.query });
 
     return res.success(req.i18n.t(`cleanSuccess`), 200);
   }
@@ -43,7 +43,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const result = await BankSaldoService.getDateSaldo({
+    const result = await Jur3SaldoService.getDateSaldo({
       region_id,
       main_schet_id,
       schet_id,
@@ -74,7 +74,7 @@ exports.Controller = class {
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const last_saldo = await BankSaldoService.getByMonth({
+    const last_saldo = await Jur3SaldoService.getByMonth({
       region_id,
       year: last_date.year,
       month: last_date.month,
@@ -87,18 +87,20 @@ exports.Controller = class {
 
     const date = HelperFunctions.getDate({ year, month });
 
-    const internal = await BankMonitoringService.getSumma({
+    const internal = await OrganizationmonitoringService.getSumma({
       main_schet_id,
       region_id,
+      schet: schet.schet,
       from: date[0],
       to: date[1],
     });
 
-    const response = await BankSaldoService.createAuto({
+    const response = await Jur3SaldoService.createAuto({
       summa: last_saldo.summa + internal.summa,
       main_schet_id,
       year,
       region_id,
+      schet_id,
       month,
       user_id,
       budjet_id,
@@ -119,7 +121,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const result = await BankSaldoService.getByMonth({
+    const result = await Jur3SaldoService.getByMonth({
       region_id,
       year,
       month,
@@ -153,7 +155,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const checkBySchet = await BankSaldoService.get({
+    const checkBySchet = await Jur3SaldoService.get({
       main_schet_id,
       region_id,
       budjet_id,
@@ -162,7 +164,7 @@ exports.Controller = class {
       return res.error(req.i18n.t(`docExists`), 409);
     }
 
-    const check = await BankSaldoService.get({
+    const check = await Jur3SaldoService.get({
       year,
       main_schet_id,
       region_id,
@@ -173,7 +175,7 @@ exports.Controller = class {
       return res.error(req.i18n.t(`docExists`), 409);
     }
 
-    const result = await BankSaldoService.create({
+    const result = await Jur3SaldoService.create({
       ...req.body,
       main_schet_id,
       budjet_id,
@@ -185,22 +187,23 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id } = req.query;
+    const { budjet_id, schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const { docs, summa } = await BankSaldoService.get({
+    const { docs, summa } = await Jur3SaldoService.get({
       region_id,
       ...req.query,
     });
 
     for (let doc of docs) {
-      const first_saldo = await BankSaldoService.getFirstSaldo({
+      const first_saldo = await Jur3SaldoService.getFirstSaldo({
         region_id,
         main_schet_id: doc.main_schet_id,
+        schet_id: doc.schet_id,
       });
 
       if (doc.id === first_saldo.id) {
@@ -223,7 +226,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const result = await BankSaldoService.getById({
+    const result = await Jur3SaldoService.getById({
       region_id,
       id,
       budjet_id,
@@ -240,7 +243,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const { budjet_id } = req.query;
-    const { year, month, main_schet_id } = req.body;
+    const { year, month, main_schet_id, schet_id } = req.body;
     const user_id = req.user.id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -248,16 +251,17 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await BankSaldoService.getFirstSaldo({
+    const first_saldo = await Jur3SaldoService.getFirstSaldo({
       region_id,
       main_schet_id,
+      schet_id,
     });
 
     if (first_saldo.id !== id) {
       return res.error(req.i18n.t("firstSaldoError"), 400);
     }
 
-    const old_data = await BankSaldoService.getById({
+    const old_data = await Jur3SaldoService.getById({
       region_id,
       budjet_id,
       id,
@@ -267,7 +271,7 @@ exports.Controller = class {
     }
 
     const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await BankSaldoService.getSaldoDate({
+    const dates = await Jur3SaldoService.getSaldoDate({
       region_id,
       main_schet_id: old_data.main_schet_id,
       date_saldo,
@@ -292,7 +296,7 @@ exports.Controller = class {
     }
 
     if (old_data.main_schet_id !== main_schet_id) {
-      const checkBySchet = await BankSaldoService.get({
+      const checkBySchet = await Jur3SaldoService.get({
         main_schet_id,
         region_id,
         budjet_id,
@@ -307,7 +311,7 @@ exports.Controller = class {
       old_data.month !== month ||
       old_data.main_schet_id !== main_schet_id
     ) {
-      const check = await BankSaldoService.get({
+      const check = await Jur3SaldoService.get({
         year,
         main_schet_id,
         region_id,
@@ -319,7 +323,7 @@ exports.Controller = class {
       }
     }
 
-    const result = await BankSaldoService.update({
+    const result = await Jur3SaldoService.update({
       ...req.body,
       main_schet_id,
       region_id,
@@ -346,7 +350,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await BankSaldoService.getFirstSaldo({
+    const first_saldo = await Jur3SaldoService.getFirstSaldo({
       region_id,
       main_schet_id,
     });
@@ -354,7 +358,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("firstSaldoError"), 400);
     }
 
-    const doc = await BankSaldoService.getById({
+    const doc = await Jur3SaldoService.getById({
       region_id,
       budjet_id,
       id,
@@ -364,7 +368,7 @@ exports.Controller = class {
     }
 
     const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await BankSaldoService.getSaldoDate({
+    const dates = await Jur3SaldoService.getSaldoDate({
       region_id,
       main_schet_id: old_data.main_schet_id,
       date_saldo,
@@ -374,7 +378,7 @@ exports.Controller = class {
       return res.error(req.i18n.t(`firstSaldoError`), 409);
     }
 
-    const result = await BankSaldoService.delete({ id });
+    const result = await Jur3SaldoService.delete({ id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
   }

@@ -9,7 +9,6 @@ exports.AktSchema = class {
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
         opisanie: Joi.string().trim(),
-        spravochnik_operatsii_own_id: Joi.number().required().min(1).integer(),
         spravochnik_podotchet_litso_id: Joi.number()
           .min(1)
           .integer()
@@ -29,6 +28,7 @@ exports.AktSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -42,7 +42,6 @@ exports.AktSchema = class {
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
         opisanie: Joi.string().trim(),
         spravochnik_podotchet_litso_id: Joi.number().required(),
-        spravochnik_operatsii_own_id: Joi.number().required().min(1).integer(),
         childs: Joi.array()
           .items(
             Joi.object({
@@ -57,6 +56,7 @@ exports.AktSchema = class {
           .required(),
       }),
       query: Joi.object({
+        schet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().min(1).integer().required(),
       }),
       params: Joi.object({
@@ -68,6 +68,7 @@ exports.AktSchema = class {
   static get() {
     return Joi.object({
       query: Joi.object({
+        schet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1).integer(),
         limit: Joi.number().min(1).default(10),
         page: Joi.number().min(1).default(1),
@@ -99,6 +100,7 @@ exports.AktSchema = class {
         id: Joi.number().min(1).integer().required(),
       }),
       query: Joi.object({
+        schet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
@@ -110,6 +112,7 @@ exports.AktSchema = class {
         id: Joi.number().min(1).integer().required(),
       }),
       query: Joi.object({
+        schet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });

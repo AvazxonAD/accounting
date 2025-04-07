@@ -12,20 +12,23 @@ const { ReportTitleService } = require(`@report_title/service`);
 const { PodpisService } = require(`@podpis/service`);
 const { REPORT_TYPE } = require("@helper/constants");
 const { HelperFunctions } = require("@helper/functions");
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
 
 exports.Controller = class {
   static async monitoring(req, res) {
     const region_id = req.user.region_id;
     const { query } = req;
-    const { page, limit, organ_id, schet } = query;
+    const { page, limit, organ_id, schet, schet_id } = query;
     const offset = (query.page - 1) * limit;
+
     const main_schet = await MainSchetService.getById({
       region_id,
       id: query.main_schet_id,
     });
 
-    if (!main_schet) {
-      return res.error("main shcet not found", 404);
+    const _schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !_schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
 
     if (organ_id) {
@@ -37,6 +40,14 @@ exports.Controller = class {
       if (!organization) {
         res.error(req.i18n("organizationNotFound"), 404);
       }
+    }
+
+    const saldo = await Jur3SaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const {
@@ -56,9 +67,11 @@ exports.Controller = class {
       region_id,
       organ_id,
       schet: schet,
+      saldo,
     });
 
     const pageCount = Math.ceil(total / limit);
+
     const meta = {
       pageCount: pageCount,
       count: total,
@@ -68,8 +81,8 @@ exports.Controller = class {
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from,
+      summa_to: summa_to,
       prixod_sum,
       rasxod_sum,
       total_sum,

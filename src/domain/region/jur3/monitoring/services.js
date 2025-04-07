@@ -16,6 +16,17 @@ const ExcelJS = require("exceljs");
 const path = require("path");
 
 exports.OrganizationmonitoringService = class {
+  static async getSumma(data) {
+    const internal = await OrganizationMonitoringDB.getSumma([
+      data.region_id,
+      data.main_schet_id,
+      data.schet,
+      data.from,
+      data.to,
+    ]);
+
+    return internal;
+  }
   static async monitoring(data) {
     const docs = await OrganizationMonitoringDB.monitoring(
       [
@@ -33,26 +44,8 @@ exports.OrganizationmonitoringService = class {
       data.order_type
     );
 
-    const summa_from = await OrganizationMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet],
-      { operator: "<", date: data.from },
-      null,
-      data.organ_id,
-      data.search
-    );
-
-    const summa_to = await OrganizationMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet],
-      { operator: "<=", date: data.to },
-      null,
-      data.organ_id,
-      data.search
-    );
-
-    const summa = await OrganizationMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet],
-      null,
-      [data.from, data.to],
+    const internal = await OrganizationMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
       data.organ_id,
       data.search
     );
@@ -72,15 +65,15 @@ exports.OrganizationmonitoringService = class {
 
     return {
       data: docs,
-      summa_from,
-      summa_to,
+      summa_from: data.saldo.summa,
+      summa_to: data.saldo.summa + internal.summa,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,
       total,
-      summa,
-      prixod_sum: summa.prixod_sum,
-      rasxod_sum: summa.rasxod_sum,
+      total_sum: internal.summa,
+      prixod_sum: internal.prixod_sum,
+      rasxod_sum: internal.rasxod_sum,
     };
   }
 

@@ -47,6 +47,7 @@ exports.monitoringSchema = Joi.object({
       .required(),
     search: Joi.string().trim().allow(null, ""),
     organ_id: Joi.number().min(1).integer(),
+    schet_id: Joi.number().min(1).integer().required(),
     order_by: Joi.string()
       .trim()
       .default("doc_date")

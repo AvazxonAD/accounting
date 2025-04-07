@@ -100,7 +100,7 @@ exports.AvansDB = class {
                 spravochnik_podotchet_litso_id, 
                 main_schet_id, 
                 user_id,
-                spravochnik_operatsii_own_id,
+                schet_id,
                 created_at, 
                 updated_at
             ) 
@@ -183,7 +183,7 @@ exports.AvansDB = class {
                 opisanie = $3,
                 summa = $4,
                 spravochnik_podotchet_litso_id = $5,
-                spravochnik_operatsii_own_id = $6,
+                schet_id = $6,
                 updated_at = $7
             WHERE id = $8 RETURNING id
         `;

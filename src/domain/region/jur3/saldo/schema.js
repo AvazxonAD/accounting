@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.BankSaldoSchema = class {
+exports.Jur3SaldoSchema = class {
   static create() {
     return Joi.object({
       body: Joi.object({
