@@ -71,92 +71,6 @@ exports.OrganizationMonitoringDB = class {
                 ${search_filter}
 
             UNION ALL 
-
-            SELECT
-                d.id,
-                d.doc_num,
-                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-                d.opisanie,
-                0::FLOAT AS summa_rasxod, 
-                ch.summa::FLOAT AS summa_prixod,
-                sh_o.id AS shartnoma_id,
-                sh_o.doc_num AS shartnoma_doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
-                s.smeta_number,
-                so.id AS organ_id,
-                so.name AS organ_name,
-                so.inn AS organ_inn,
-                u.id AS user_id,
-                u.login,
-                u.fio,
-                op.schet AS provodki_schet, 
-                op.sub_schet AS provodki_sub_schet,
-                'organ_saldo_prixod' AS type,
-                d.doc_date AS                                                   combined_doc_date,
-                d.id AS                                                         combined_id,
-                d.doc_num AS                                                    combined_doc_num
-            FROM organ_saldo_child ch
-            JOIN organ_saldo AS d ON ch.parent_id = d.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id 
-            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.contract_id
-            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
-            JOIN spravochnik_organization AS so ON so.id = d.organ_id
-            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-            WHERE d.isdeleted = false
-                AND d.prixod = true
-                AND r.id = $1 
-                AND d.main_schet_id = $2
-                AND op.schet = $3
-                AND d.doc_date BETWEEN $4 AND $5
-                AND ch.isdeleted = false
-                ${organ_filter}
-                ${search_filter}
-
-            UNION ALL 
-            
-            SELECT
-                d.id,
-                d.doc_num,
-                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-                d.opisanie,
-                0::FLOAT AS summa_prixod, 
-                ch.summa::FLOAT AS summa_rasxod,
-                sh_o.id AS shartnoma_id,
-                sh_o.doc_num AS shartnoma_doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
-                s.smeta_number,
-                so.id AS organ_id,
-                so.name AS organ_name,
-                so.inn AS organ_inn,
-                u.id AS user_id,
-                u.login,
-                u.fio,
-                op.schet AS provodki_schet, 
-                op.sub_schet AS provodki_sub_schet,
-                'organ_saldo_rasxod' AS type,
-                d.doc_date AS                                                   combined_doc_date,
-                d.id AS                                                         combined_id,
-                d.doc_num AS                                                    combined_doc_num
-            FROM organ_saldo_child ch
-            JOIN organ_saldo AS d ON ch.parent_id = d.id
-            JOIN users AS u ON u.id = d.user_id
-            JOIN regions AS r ON r.id = u.region_id 
-            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.contract_id
-            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
-            JOIN spravochnik_organization AS so ON so.id = d.organ_id
-            JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-            WHERE d.isdeleted = false
-                AND d.rasxod = true
-                AND r.id = $1 
-                AND d.main_schet_id = $2
-                AND op.schet = $3
-                AND d.doc_date BETWEEN $4 AND $5
-                AND ch.isdeleted = false
-                ${organ_filter}
-                ${search_filter}
-            
-            UNION ALL
         
             SELECT 
                 d.id,
@@ -188,10 +102,12 @@ exports.OrganizationMonitoringDB = class {
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+            JOIN jur_schets AS own ON own.id = d.schet_id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE d.isdeleted = false 
                 AND r.id = $1
                 AND d.main_schet_id = $2
+                AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 AND ch.isdeleted = false
                 ${organ_filter}
@@ -229,10 +145,12 @@ exports.OrganizationMonitoringDB = class {
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
             LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+            JOIN jur_schets AS own ON own.id = d.schet_id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE d.isdeleted = false 
                 AND r.id = $1
                 AND d.main_schet_id = $2
+                AND own.schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 AND ch.isdeleted = false
                 ${organ_filter}
@@ -373,9 +291,11 @@ exports.OrganizationMonitoringDB = class {
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                JOIN jur_schets AS own ON own.id = d.schet_id
                 WHERE d.isdeleted = false 
                     AND r.id = $1
                     AND d.main_schet_id = $2
+                    AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
@@ -388,9 +308,11 @@ exports.OrganizationMonitoringDB = class {
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                JOIN jur_schets AS own ON own.id = d.schet_id
                 WHERE d.isdeleted = false 
                     AND r.id = $1
                     AND d.main_schet_id = $2
+                    AND own.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
@@ -425,26 +347,8 @@ exports.OrganizationMonitoringDB = class {
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
-            ),
-
-            organ_saldo AS (
-                SELECT COALESCE(COUNT(ch.id), 0)::INTEGER AS total_count
-                FROM organ_saldo_child ch
-                JOIN organ_saldo AS d ON ch.parent_id = d.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN spravochnik_organization AS so ON so.id = d.organ_id
-                WHERE d.isdeleted = false
-                    AND r.id = $1
-                    AND d.main_schet_id = $2
-                    AND op.schet = $3
-                    AND d.doc_date BETWEEN $4 AND $5
-                    AND ch.isdeleted = false
-                    ${organ_filter}
-                    ${search_filter}
             )
-
+            
             SELECT SUM(total_count)::INTEGER AS total
             FROM (
                 SELECT total_count FROM bank_prixod_count
@@ -456,11 +360,11 @@ exports.OrganizationMonitoringDB = class {
                 SELECT total_count FROM bank_rasxod_count
                 UNION ALL 
                 SELECT total_count FROM jur7_prixod_count
-                UNION ALL 
-                SELECT total_count FROM organ_saldo
             ) AS total_count        
         `;
+
     const result = await db.query(query, params);
+
     return result[0].total;
   }
 
@@ -502,11 +406,13 @@ exports.OrganizationMonitoringDB = class {
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                JOIN jur_schets AS own ON own.id = d.schet_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     ${date_filter}
                     AND ch.isdeleted = false
+                    AND own.schet = $3
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -517,11 +423,13 @@ exports.OrganizationMonitoringDB = class {
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                JOIN jur_schets AS own ON own.id = d.schet_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
                     ${date_filter}
                     AND ch.isdeleted = false
+                    AND own.schet = $3
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -542,45 +450,7 @@ exports.OrganizationMonitoringDB = class {
                     ${organ_filter}
                     ${search_filter}
             ),
-            
-            organ_saldo_rasxod AS (
-                SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-                FROM organ_saldo_child ch
-                JOIN organ_saldo AS d ON ch.parent_id = d.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN spravochnik_organization AS so ON so.id = d.organ_id
-                WHERE d.isdeleted = false
-                    AND d.rasxod = true
-                    AND r.id = $1
-                    AND d.main_schet_id = $2
-                    AND op.schet = $3
-                    ${date_filter}
-                    AND ch.isdeleted = false
-                    ${organ_filter}
-                    ${search_filter}
-            ),
 
-            organ_saldo_prixod AS (
-                SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-                FROM organ_saldo_child ch
-                JOIN organ_saldo AS d ON ch.parent_id = d.id
-                JOIN spravochnik_operatsii AS op ON op.id = ch.operatsii_id
-                JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN spravochnik_organization AS so ON so.id = d.organ_id
-                WHERE d.isdeleted = false
-                    AND d.prixod = true
-                    AND r.id = $1
-                    AND d.main_schet_id = $2
-                    AND op.schet = $3
-                    ${date_filter}
-                    AND ch.isdeleted = false
-                    ${organ_filter}
-                    ${search_filter}
-            ),
-            
             bank_prixod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod_child AS ch
@@ -598,6 +468,7 @@ exports.OrganizationMonitoringDB = class {
                     ${organ_filter}
                     ${search_filter}
             ),
+
             jur7_prixod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM document_prixod_jur7_child ch
@@ -616,25 +487,21 @@ exports.OrganizationMonitoringDB = class {
             )
             SELECT 
                 (
-                    (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa + organ_saldo_prixod.summa) - 
-                    (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa + organ_saldo_rasxod.summa)
+                    (kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) - 
+                    (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
                 ) AS summa,
-                ( kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa + organ_saldo_prixod.summa) AS prixod_sum,
-                ( bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa + organ_saldo_rasxod.summa) AS rasxod_sum,
+                ( kursatilgan_hizmatlar_sum.summa + bank_rasxod_sum.summa) AS prixod_sum,
+                ( bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod_sum,
                 kursatilgan_hizmatlar_sum.summa AS kursatilgan_hizmatlar_sum_prixod,
                 bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
                 bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum_rasxod,
                 bank_prixod_sum.summa AS bank_prixod_sum_rasxod,
-                jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod,
-                organ_saldo_rasxod.summa AS organ_saldo_sum_rasxod,
-                organ_saldo_prixod.summa AS organ_saldo_sum_prixod
+                jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod
             FROM kursatilgan_hizmatlar_sum, 
                 bajarilgan_ishlar_sum, 
                 bank_rasxod_sum, 
                 bank_prixod_sum, 
-                jur7_prixod_sum,
-                organ_saldo_prixod,
-                organ_saldo_rasxod
+                jur7_prixod_sum
         `;
 
     const result = await db.query(query, params);
@@ -732,14 +599,54 @@ exports.OrganizationMonitoringDB = class {
         JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON r.id = u.region_id
-        JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+        JOIN jur_schets AS own ON own.id = d.schet_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
             AND d.main_schet_id = $1
             AND d.doc_date BETWEEN $2 AND $3
             AND r.id = $4
+            AND own.schet = $5
         GROUP BY op.schet,
             op.sub_schet
+        
+        UNION ALL
+        
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            op.schet,
+            op.sub_schet
+        FROM bank_prixod_child AS ch
+        JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod 
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND op.schet = $5
+        GROUP BY op.schet,
+            op.sub_schet
+        
+        UNION ALL
+        
+        SELECT 
+            COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa,
+            ch.kredit_schet AS schet,
+            ch.kredit_sub_schet AS sub_schet
+        FROM document_prixod_jur7_child AS ch
+        JOIN document_prixod_jur7 AS d ON d.id = ch.document_prixod_jur7_id 
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND ch.kredit_schet = $5
+        GROUP BY ch.kredit_schet,
+            ch.kredit_sub_schet 
       `;
 
     const result = await db.query(query, params);
@@ -760,11 +667,13 @@ exports.OrganizationMonitoringDB = class {
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bajarilgan_ishlar_jur3_child AS ch
                 JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+                JOIN jur_schets AS own ON own.id = d.schet_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
+                    AND own.schet = $3
                     AND d.doc_date ${operator} $4
                     AND d.id_spravochnik_organization = $5
                     ${contract ? sqlFilter("d.shartnomalar_organization_id", index_contract) : ""}
@@ -995,11 +904,12 @@ exports.OrganizationMonitoringDB = class {
 
     if (search) {
       params.push(search);
-      conditions.push(`AND (
-                d.doc_num = $${params.length} OR 
-                so.name ILIKE '%' || $${params.length} || '%' OR 
-                so.inn ILIKE '%' || $${params.length} || '%'
-            )`);
+      conditions.push(`
+        AND (
+            d.doc_num = $${params.length} OR 
+            so.name ILIKE '%' || $${params.length} || '%' OR 
+            so.inn ILIKE '%' || $${params.length} || '%'
+        )`);
     }
 
     const where = conditions.length ? `AND ${conditions.join("AND")}` : "";
@@ -1025,11 +935,13 @@ exports.OrganizationMonitoringDB = class {
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
             LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-            WHERE d.isdeleted = false 
+            JOIN jur_schets AS own ON own.id = d.schet_id
+            WHERE d.isdeleted = false
                 AND r.id = $1
                 AND d.main_schet_id = $2
                 AND d.doc_date BETWEEN $3 AND $4
                 AND ch.isdeleted = false
+                AND own.schet = $5
                 ${where}
         `;
 

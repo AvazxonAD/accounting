@@ -21,7 +21,7 @@ exports.OrganizationmonitoringService = class {
       [
         data.region_id,
         data.main_schet_id,
-        data.operatsii,
+        data.schet,
         data.from,
         data.to,
         data.offset,
@@ -34,7 +34,7 @@ exports.OrganizationmonitoringService = class {
     );
 
     const summa_from = await OrganizationMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.operatsii],
+      [data.region_id, data.main_schet_id, data.schet],
       { operator: "<", date: data.from },
       null,
       data.organ_id,
@@ -42,7 +42,7 @@ exports.OrganizationmonitoringService = class {
     );
 
     const summa_to = await OrganizationMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.operatsii],
+      [data.region_id, data.main_schet_id, data.schet],
       { operator: "<=", date: data.to },
       null,
       data.organ_id,
@@ -50,7 +50,7 @@ exports.OrganizationmonitoringService = class {
     );
 
     const summa = await OrganizationMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.operatsii],
+      [data.region_id, data.main_schet_id, data.schet],
       null,
       [data.from, data.to],
       data.organ_id,
@@ -58,7 +58,7 @@ exports.OrganizationmonitoringService = class {
     );
 
     const total = await OrganizationMonitoringDB.getTotal(
-      [data.region_id, data.main_schet_id, data.operatsii, data.from, data.to],
+      [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
       data.organ_id,
       data.search
     );
@@ -86,7 +86,7 @@ exports.OrganizationmonitoringService = class {
 
   static async prixodReport(data) {
     const docs = await OrganizationMonitoringDB.prixodReport(
-      [data.region_id, data.main_schet_id, data.from, data.to],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.schet],
       data.organ_id,
       data.search
     );
@@ -104,7 +104,7 @@ exports.OrganizationmonitoringService = class {
     let itogo_prixod = 0;
     for (let item of organizations) {
       item.summa = await OrganizationMonitoringDB.getPrixodRasxod([
-        data.operatsii,
+        data.schet,
         data.to,
         item.id,
         data.budjet_id,
@@ -121,6 +121,7 @@ exports.OrganizationmonitoringService = class {
       data.from,
       data.to,
       data.region_id,
+      data.schet,
     ]);
 
     result = result.reduce((acc, item) => {
@@ -486,7 +487,7 @@ exports.OrganizationmonitoringService = class {
     worksheet.mergeCells(`A1`, "D1");
     const title = worksheet.getCell(`A1`);
 
-    title.value = `${data.organ_name} ${returnStringDate(new Date(data.to))} холатига  ${data.operatsii} счет бўйича дебитор-кредитор  карздорлик тугрисида маълумот `;
+    title.value = `${data.organ_name} ${returnStringDate(new Date(data.to))} холатига  ${data.schet} счет бўйича дебитор-кредитор  карздорлик тугрисида маълумот `;
     const organ_nameCell = worksheet.getCell(`A2`);
     organ_nameCell.value = "Наименование организации";
     const prixodCell = worksheet.getCell(`B2`);
@@ -581,7 +582,7 @@ exports.OrganizationmonitoringService = class {
     worksheet.getRow(1).height = 30;
     const filePath = path.join(
       __dirname,
-      "../../../../public/exports/" + fileName
+      "../../../../../public/exports/" + fileName
     );
     await workbook.xlsx.writeFile(filePath);
     return filePath;
@@ -591,13 +592,7 @@ exports.OrganizationmonitoringService = class {
     for (let organ of data.organizations) {
       const contract_id = data.contract ? organ.contract_id : null;
       organ.summa_from = await OrganizationMonitoringDB.getSummaConsolidated(
-        [
-          data.region_id,
-          data.main_schet_id,
-          data.operatsii,
-          data.from,
-          organ.id,
-        ],
+        [data.region_id, data.main_schet_id, data.schet, data.from, organ.id],
         "<",
         contract_id
       );
@@ -606,7 +601,7 @@ exports.OrganizationmonitoringService = class {
           [
             data.region_id,
             data.main_schet_id,
-            data.operatsii,
+            data.schet,
             data.from,
             data.to,
             organ.id,
@@ -623,7 +618,7 @@ exports.OrganizationmonitoringService = class {
           [
             data.region_id,
             data.main_schet_id,
-            data.operatsii,
+            data.schet,
             data.from,
             data.to,
             organ.id,
@@ -635,7 +630,7 @@ exports.OrganizationmonitoringService = class {
           [
             data.region_id,
             data.main_schet_id,
-            data.operatsii,
+            data.schet,
             data.from,
             data.to,
             organ.id,
@@ -657,18 +652,12 @@ exports.OrganizationmonitoringService = class {
         summa: itogo_rasxod,
       };
       organ.summa_to = await OrganizationMonitoringDB.getSummaConsolidated(
-        [data.region_id, data.main_schet_id, data.operatsii, data.to, organ.id],
+        [data.region_id, data.main_schet_id, data.schet, data.to, organ.id],
         "<=",
         contract_id
       );
       data.rasxodSchets = await OrganizationMonitoringDB.getRasxodSchets(
-        [
-          data.region_id,
-          data.main_schet_id,
-          data.operatsii,
-          data.from,
-          data.to,
-        ],
+        [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
         contract_id
       );
       data.rasxodSchets.push({ schet: "itogo_rasxod" });
@@ -689,7 +678,7 @@ exports.OrganizationmonitoringService = class {
     worksheet.getCell("A2").value = `"Расчеты с дебеторами и кредиторами"`;
     worksheet.mergeCells(`A3`, "C3");
     worksheet.getCell("A3").value =
-      `${returnStringDate(new Date(data.to))} холатига  ${data.operatsii}`;
+      `${returnStringDate(new Date(data.to))} холатига  ${data.schet}`;
     worksheet.mergeCells(`A4`, "A5");
     worksheet.mergeCells(`B4`, "C4");
     worksheet.getCell("B4").value = `Остаток к начало`;
@@ -726,7 +715,7 @@ exports.OrganizationmonitoringService = class {
       { key: "name" },
       { key: "prixod_from" },
       { key: "rasxod_from" },
-      { key: `_prixod_${data.operatsii}` },
+      { key: `_prixod_${data.schet}` },
       ...data.rasxodSchets.map((item) => {
         return { key: `_rasxod_${item.schet}` };
       }),
@@ -772,7 +761,7 @@ exports.OrganizationmonitoringService = class {
         name: organ.name,
         prixod_from: Math.max(organ.summa_from.summa, 0),
         rasxod_from: Math.max(-organ.summa_from.summa, 0),
-        [`_prixod_${data.operatsii}`]:
+        [`_prixod_${data.schet}`]:
           organ.summa_bank_rasxod_prixod[0]?.summa || "",
         ...values.reduce((acc, { schet, summa }) => {
           acc[schet] = summa;
@@ -1005,7 +994,7 @@ exports.OrganizationmonitoringService = class {
     });
 
     const fileName = `${data.file_name}_prixod_report_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../public/exports");
+    const folder_path = path.join(__dirname, "../../../../../public/exports");
 
     try {
       await access(folder_path, constants.W_OK);
@@ -1030,7 +1019,7 @@ exports.OrganizationmonitoringService = class {
     worksheet.getCell("A2").value = `"Расчеты с дебеторами и кредиторами"`;
     worksheet.mergeCells(`A3`, "C3");
     worksheet.getCell("A3").value =
-      `${returnStringDate(new Date(data.to))} холатига  ${data.operatsii}`;
+      `${returnStringDate(new Date(data.to))} холатига  ${data.schet}`;
     worksheet.mergeCells(`A4`, "A5");
     worksheet.mergeCells(`B4`, "C4");
     worksheet.getCell("B4").value = `Остаток к начало`;
@@ -1056,7 +1045,7 @@ exports.OrganizationmonitoringService = class {
       "Дата",
       "Дебет",
       "Кредит",
-      data.operatsii,
+      data.schet,
       ...data.rasxodSchets.map((item) => {
         if (item.schet === "itogo_rasxod") {
           return "итого кредит";
@@ -1073,7 +1062,7 @@ exports.OrganizationmonitoringService = class {
       { key: "contract_date" },
       { key: "prixod_from" },
       { key: "rasxod_from" },
-      { key: `_prixod_${data.operatsii}` },
+      { key: `_prixod_${data.schet}` },
       ...data.rasxodSchets.map((item) => {
         return { key: `_rasxod_${item.schet}` };
       }),
@@ -1121,7 +1110,7 @@ exports.OrganizationmonitoringService = class {
         contract_date: organ.doc_date,
         prixod_from: Math.max(organ.summa_from.summa, 0),
         rasxod_from: Math.max(-organ.summa_from.summa, 0),
-        [`_prixod_${data.operatsii}`]:
+        [`_prixod_${data.schet}`]:
           organ.summa_bank_rasxod_prixod[0]?.summa || "",
         ...values.reduce((acc, { schet, summa }) => {
           acc[schet] = summa;

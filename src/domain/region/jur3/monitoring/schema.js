@@ -7,7 +7,9 @@ exports.OrganMonitoringSchema = class {
         main_schet_id: Joi.number().required().min(1).integer(),
         budjet_id: Joi.number().required().min(1).integer(),
         report_title_id: Joi.number().required().min(1).integer(),
-        operatsii: Joi.string().required().trim(),
+        schet: Joi.string().required().trim(),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -32,7 +34,9 @@ exports.monitoringSchema = Joi.object({
     main_schet_id: Joi.number().required().min(1).integer(),
     limit: Joi.number().min(1).default(10),
     page: Joi.number().min(1).default(1),
-    operatsii: Joi.string().required().trim(),
+    schet: Joi.string().required().trim(),
+    month: Joi.number().integer().required().min(1).max(12).required(),
+    year: Joi.number().integer().required().min(1901).required(),
     from: Joi.string()
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -59,7 +63,9 @@ exports.aktSverkaSchema = Joi.object({
   query: Joi.object({
     main_schet_id: Joi.number().required().min(1),
     contract_id: Joi.number().min(1),
-    operatsii: Joi.string().required().trim(),
+    schet: Joi.string().required().trim(),
+    month: Joi.number().integer().required().min(1).max(12).required(),
+    year: Joi.number().integer().required().min(1901).required(),
     to: Joi.string()
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -84,12 +90,16 @@ exports.prixodRasxodSchema = Joi.object({
       .pattern(/^(true|false)$/)
       .allow("", null),
     main_schet_id: Joi.number().integer().min(1).required(),
+    month: Joi.number().integer().required().min(1).max(12).required(),
+    year: Joi.number().integer().required().min(1901).required(),
   }),
 }).options({ stripUnknown: true });
 
 exports.capSchema = Joi.object({
   query: Joi.object({
-    operatsii: Joi.string().required().trim(),
+    schet: Joi.string().required().trim(),
+    month: Joi.number().integer().required().min(1).max(12).required(),
+    year: Joi.number().integer().required().min(1901).required(),
     to: Joi.string()
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -110,7 +120,9 @@ exports.capSchema = Joi.object({
 
 exports.consolidatedSchema = Joi.object({
   query: Joi.object({
-    operatsii: Joi.string().required().trim(),
+    schet: Joi.string().required().trim(),
+    month: Joi.number().integer().required().min(1).max(12).required(),
+    year: Joi.number().integer().required().min(1901).required(),
     from: Joi.string()
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)

@@ -17,7 +17,7 @@ exports.Controller = class {
   static async monitoring(req, res) {
     const region_id = req.user.region_id;
     const { query } = req;
-    const { page, limit, organ_id, operatsii } = query;
+    const { page, limit, organ_id, schet } = query;
     const offset = (query.page - 1) * limit;
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -46,7 +46,6 @@ exports.Controller = class {
       page_prixod_sum,
       summa_to,
       total,
-      summa,
       page_total_sum,
       prixod_sum,
       rasxod_sum,
@@ -56,7 +55,7 @@ exports.Controller = class {
       offset,
       region_id,
       organ_id,
-      operatsii: operatsii,
+      schet: schet,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -69,14 +68,11 @@ exports.Controller = class {
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum,
-      summa_from_object: summa_from,
       summa_from: summa_from.summa,
-      summa_to_object: summa_to,
       summa_to: summa_to.summa,
       prixod_sum,
       rasxod_sum,
       total_sum,
-      summa_object: summa,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
@@ -90,7 +86,7 @@ exports.Controller = class {
       excel,
       report_title_id,
       budjet_id,
-      operatsii,
+      schet,
       from,
       to,
     } = req.query;
@@ -119,7 +115,7 @@ exports.Controller = class {
       region_id,
     });
 
-    if (excel) {
+    if (excel === "true") {
       const budjet = await BudjetService.getById({ id: budjet_id });
       if (!budjet) {
         return res.error(req.i18n.t("budjetNotFound"), 404);
@@ -152,7 +148,7 @@ exports.Controller = class {
           file_name: "jur3",
           podpis,
           budjet,
-          schet: operatsii,
+          schet: schet,
           order: 3,
         });
 
@@ -201,7 +197,7 @@ exports.Controller = class {
     if (query.excel === "true") {
       const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
         organ_name: main_schet.tashkilot_nomi,
-        operatsii: query.operatsii,
+        schet: query.schet,
         organizations: data.organizations,
         to: query.to,
       });
@@ -229,7 +225,7 @@ exports.Controller = class {
       report_title_id,
       excel,
       to,
-      operatsii,
+      schet,
     } = req.query;
 
     const main_schet = await MainSchetService.getById({
@@ -276,7 +272,7 @@ exports.Controller = class {
         podpis,
         title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
         file_name: "organization",
-        schet: operatsii,
+        schet: schet,
         order: 3,
       });
 
@@ -336,7 +332,7 @@ exports.Controller = class {
       from: query.from,
       to: query.to,
       main_schet_id: query.main_schet_id,
-      operatsii: operatsii,
+      schet: schet,
       contract: query.contract === "true" ? true : false,
     });
     if (query.excel === "true") {
@@ -346,14 +342,14 @@ exports.Controller = class {
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
-          operatsii: operatsii,
+          schet: schet,
         });
       } else {
         file = await OrganizationmonitoringService.consolidatedExcel({
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
-          operatsii: operatsii,
+          schet: schet,
         });
       }
       res.setHeader(
