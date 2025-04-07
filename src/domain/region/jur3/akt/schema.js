@@ -19,7 +19,6 @@ exports.AktSchema = class {
           .min(1)
           .integer()
           .allow(null),
-        schet_id: Joi.number().required().min(1).integer(),
         shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array()
           .items(
@@ -46,6 +45,7 @@ exports.AktSchema = class {
           .required(),
       }),
       query: Joi.object({
+        schet_id: Joi.number().required().min(1).integer(),
         main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
@@ -61,7 +61,6 @@ exports.AktSchema = class {
         opisanie: Joi.string().trim(),
         id_spravochnik_organization: Joi.number().required().min(1).integer(),
         shartnomalar_organization_id: Joi.number().allow(null).min(1).integer(),
-        schet_id: Joi.number().required().min(1).integer(),
         organization_by_raschet_schet_id: Joi.number()
           .min(1)
           .integer()
@@ -97,6 +96,7 @@ exports.AktSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        schet_id: Joi.number().required().min(1).integer(),
       }),
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
@@ -110,6 +110,7 @@ exports.AktSchema = class {
         main_schet_id: Joi.number().required().min(1).integer(),
         limit: Joi.number().min(1).default(10),
         page: Joi.number().min(1).default(1),
+        schet_id: Joi.number().required().min(1).integer(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -139,6 +140,7 @@ exports.AktSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        schet_id: Joi.number().required().min(1).integer(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -150,6 +152,7 @@ exports.AktSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        schet_id: Joi.number().required().min(1).integer(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -158,6 +161,7 @@ exports.AktSchema = class {
     return Joi.object({
       query: Joi.object({
         main_schet_id: Joi.number().required().min(1).integer(),
+        schet_id: Joi.number().required().min(1).integer(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)

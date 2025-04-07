@@ -676,7 +676,6 @@ exports.SaldoService = class {
 
       await SaldoDB.unblock([data.region_id, data.year, data.month], client);
 
-      console.log("////////////");
       const check = await SaldoDB.getSaldoDate([
         data.region_id,
         `${data.year}-${data.month}-01`,

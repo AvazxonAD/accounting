@@ -194,7 +194,6 @@ exports.Controller = class {
     for (let jur3 of jur3_schets) {
       if (jur3.id) {
         const check = old_data.jur3_schets.find((item) => item.id === jur3.id);
-        console.log(check);
         if (!check) {
           return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
         }
@@ -204,8 +203,6 @@ exports.Controller = class {
     for (let jur4 of jur4_schets) {
       if (jur4.id) {
         const check = old_data.jur4_schets.find((item) => item.id === jur4.id);
-        console.log(check);
-
         if (!check) {
           return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
         }

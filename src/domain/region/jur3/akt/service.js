@@ -201,6 +201,7 @@ exports.AktService = class {
         data.to,
         data.offset,
         data.limit,
+        data.schet_id,
       ],
       data.search,
       data.order_by,
@@ -283,7 +284,7 @@ exports.AktService = class {
 
   static async getById(data) {
     const result = await AktDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
+      [data.region_id, data.main_schet_id, data.id, data.schet_id],
       data.isdeleted
     );
 

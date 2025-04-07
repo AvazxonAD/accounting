@@ -57,7 +57,7 @@ exports.ResponsibleService = class {
       });
     });
 
-    const folder_path = path.join(__dirname, `../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
 
     try {
       await fs.access(folder_path, fs.constants.W_OK);
