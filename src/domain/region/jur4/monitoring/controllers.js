@@ -526,7 +526,7 @@ exports.Controller = class {
       main_schet_id,
       excel,
       budjet_id,
-      schet,
+      schet_id,
       from,
       to,
     } = req.query;
@@ -535,13 +535,16 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
-      return res.error("Main shcet not found", 404);
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 404);
     }
 
     const data = await PodotchetMonitoringService.cap({
       ...req.query,
       region_id,
+      schet: schet.schet,
     });
 
     if (excel === "true") {
@@ -572,7 +575,7 @@ exports.Controller = class {
         podpis,
         title: "Podotchet Monitoring",
         file_name: "podotchet",
-        schet: schet,
+        schet: schet.schet,
         order: 4,
       });
 

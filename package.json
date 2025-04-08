@@ -87,6 +87,7 @@
     "@jur7_monitoring": "./src/domain/region/jur7/monitoring",
     "@pod_monitoring": "./src/domain/region/jur4/monitoring",
     "@prixod_schets": "./src/domain/admin/spravochnik/prixod.schet",
+    "@region_prixod_schets": "./src/domain/region/jur8/schet",
     "@region": "./src/domain/admin/spravochnik/region",
     "@jur2_prixod": "./src/domain/region/jur2/prixod",
     "@jur1_prixod": "./src/domain/region/jur1/prixod",

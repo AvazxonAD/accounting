@@ -1,16 +1,16 @@
-const { PrixodSchetsService } = require("./service");
+const { Jur8SchetsService } = require("./service");
 
 exports.Controller = class {
   static async create(req, res) {
     const { schet, name } = req.body;
 
-    const check = await PrixodSchetsService.getBySchet({ schet });
+    const check = await Jur8SchetsService.getBySchet({ schet });
 
     if (check) {
       return res.error(req.i18n.t("docExists"), 409);
     }
 
-    const result = await PrixodSchetsService.create({ schet, name });
+    const result = await Jur8SchetsService.create({ schet, name });
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
   }
@@ -20,7 +20,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total } = await PrixodSchetsService.get({
+    const { data, total } = await Jur8SchetsService.get({
       offset,
       limit,
       search,
@@ -42,7 +42,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const id = req.params.id;
 
-    const data = await PrixodSchetsService.getById({ id, isdeleted: true });
+    const data = await Jur8SchetsService.getById({ id, isdeleted: true });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
@@ -54,19 +54,19 @@ exports.Controller = class {
     const { schet, name } = req.body;
     const id = req.params.id;
 
-    const old_data = await PrixodSchetsService.getById({ id });
+    const old_data = await Jur8SchetsService.getById({ id });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
     if (old_data.schet !== schet) {
-      const check = await PrixodSchetsService.getBySchet({ schet });
+      const check = await Jur8SchetsService.getBySchet({ schet });
       if (check) {
         return res.error(req.i18n.t("docExists"), 409);
       }
     }
 
-    const result = await PrixodSchetsService.update({ schet, name, id });
+    const result = await Jur8SchetsService.update({ schet, name, id });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   }
@@ -74,12 +74,12 @@ exports.Controller = class {
   static async delete(req, res) {
     const id = req.params.id;
 
-    const check = await PrixodSchetsService.getById({ id });
+    const check = await Jur8SchetsService.getById({ id });
     if (!check) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    await PrixodSchetsService.delete({ id });
+    await Jur8SchetsService.delete({ id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200);
   }

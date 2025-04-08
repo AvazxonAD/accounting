@@ -9,6 +9,7 @@
   "jur7Block": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",
   "saldoAlreadyExists": "Saldo allaqachon import qilingan! Malumotlarni tozalab qaytadan urining",
   "kolError": "Tovar soni noto'g'ri kiritildi!",
+  "prixodSchetNotFound": "Prixod schet not found",
   "cleanSuccess": "Malumotlar tozalandi!",
   "dateError": "Sana noto'g'ri kiritildi!",
   "firstSaldoError": "Faqat birinchi qoldiqni ish boshlangandan so'ng faqat pulini ozgartira olasiz qolgan amallar avtomat boladi!",

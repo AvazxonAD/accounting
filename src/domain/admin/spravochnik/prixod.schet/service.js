@@ -1,15 +1,15 @@
-const { PrixodSchetsDB } = require("./db");
+const { Jur8SchetsDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
-exports.PrixodSchetsService = class {
+exports.Jur8SchetsService = class {
   static async getBySchet(data) {
-    const result = await PrixodSchetsDB.getBySchet([data.schet]);
+    const result = await Jur8SchetsDB.getBySchet([data.schet]);
 
     return result;
   }
 
   static async get(data) {
-    const result = await PrixodSchetsDB.get(
+    const result = await Jur8SchetsDB.get(
       [data.offset, data.limit],
       data.search
     );
@@ -18,19 +18,19 @@ exports.PrixodSchetsService = class {
   }
 
   static async getById(data) {
-    const result = await PrixodSchetsDB.getById([data.id], data.isdeleted);
+    const result = await Jur8SchetsDB.getById([data.id], data.isdeleted);
 
     return result;
   }
 
   static async delete(data) {
-    const result = await PrixodSchetsDB.delete([data.id]);
+    const result = await Jur8SchetsDB.delete([data.id]);
 
     return result;
   }
 
   static async create(data) {
-    const result = await PrixodSchetsDB.create([
+    const result = await Jur8SchetsDB.create([
       data.schet,
       data.name,
       HelperFunctions.tashkentTime(),
@@ -41,7 +41,7 @@ exports.PrixodSchetsService = class {
   }
 
   static async update(data) {
-    const result = await PrixodSchetsDB.update([
+    const result = await Jur8SchetsDB.update([
       data.schet,
       data.name,
       HelperFunctions.tashkentTime(),

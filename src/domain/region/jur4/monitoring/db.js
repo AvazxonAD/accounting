@@ -210,7 +210,7 @@ exports.PodotchetMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(params, podotcbet_id, search) {
+  static async getSumma(params, podotcbet_id = null, search = null) {
     const conditions = [];
 
     if (podotcbet_id) {
@@ -347,7 +347,7 @@ exports.PodotchetMonitoringDB = class {
     return result[0];
   }
 
-  static async getTotalMonitoring(params, podotcbet_id, search) {
+  static async getTotalMonitoring(params, podotcbet_id = null, search = null) {
     const conditions = [];
 
     if (podotcbet_id) {
@@ -473,7 +473,24 @@ exports.PodotchetMonitoringDB = class {
     return result[0].total_docs;
   }
 
-  static async capData(params) {
+  static async capData(params, podotcbet_id = null, search = null) {
+    const conditions = [];
+
+    if (podotcbet_id) {
+      params.push(podotcbet_id);
+      conditions.push(`p.id = $${params.length}`);
+    }
+
+    if (search) {
+      params.push(search);
+      conditions.push(`(
+                d.doc_num = $${params.length} OR 
+                p.name ILIKE '%' || $${params.length} || '%'
+            )`);
+    }
+
+    const where = conditions.length ? `AND ${conditions.join(` AND `)}` : ``;
+
     const query = `--sql
         SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
@@ -492,6 +509,7 @@ exports.PodotchetMonitoringDB = class {
             AND r.id = $4
             AND own.schet = $5
             AND d.spravochnik_podotchet_litso_id IS NOT NULL
+            ${where}
         GROUP BY op.schet,
             op.sub_schet
 
@@ -508,13 +526,16 @@ exports.PodotchetMonitoringDB = class {
         JOIN regions r ON u.region_id = r.id
         JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
         JOIN main_schet AS m ON m.id = d.main_schet_id
-        WHERE r.id = $1  
-            AND d.isdeleted = false 
-            AND p.id IS NOT NULL
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
             AND d.doc_date BETWEEN $2 AND $3
-            AND op.schet = $4
-            AND d.main_schet_id = $5
+            AND r.id = $4
+            AND op.schet = $5
+            AND ch.id_spravochnik_podotchet_litso IS NOT NULL
             ${where}
+        GROUP BY op.schet,
+            op.sub_schet
 
             UNION ALL 
 
@@ -529,13 +550,16 @@ exports.PodotchetMonitoringDB = class {
             JOIN regions r ON u.region_id = r.id
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             JOIN main_schet AS m ON m.id = d.main_schet_id
-            WHERE r.id = $1  
-                AND d.isdeleted = false 
-                AND p.id IS NOT NULL
-                AND d.doc_date BETWEEN $2 AND $3
-                AND op.schet = $4
-                AND d.main_schet_id = $5
-                ${where}
+            WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND op.schet = $5
+            AND d.id_podotchet_litso IS NOT NULL
+            ${where}
+        GROUP BY op.schet,
+            op.sub_schet
     `;
 
     const result = await db.query(query, params);

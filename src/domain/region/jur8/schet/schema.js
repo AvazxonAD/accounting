@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.Jur8SchetsSchema = class {
+exports.RegionJur8SchetsSchema = class {
   static getById() {
     return Joi.object({
       params: Joi.object({
@@ -12,8 +12,7 @@ exports.Jur8SchetsSchema = class {
   static create() {
     return Joi.object({
       body: Joi.object({
-        name: Joi.string().trim().required(),
-        schet: Joi.string().trim().required(),
+        schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -21,8 +20,7 @@ exports.Jur8SchetsSchema = class {
   static update() {
     return Joi.object({
       body: Joi.object({
-        name: Joi.string().trim().required(),
-        schet: Joi.string().trim().required(),
+        schet_id: Joi.number().integer().min(1).required(),
       }),
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),

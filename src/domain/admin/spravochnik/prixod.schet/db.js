@@ -1,6 +1,6 @@
 const { db } = require("@db/index");
 
-exports.PrixodSchetsDB = class {
+exports.Jur8SchetsDB = class {
   static async create(params) {
     const query = `--sql
             INSERT INTO prixod_schets (

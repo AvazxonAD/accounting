@@ -69,7 +69,7 @@ exports.GroupService = class {
       });
     });
 
-    const folder_path = path.join(__dirname, `../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
 
     try {
       await fs.access(folder_path, fs.constants.W_OK);
@@ -204,7 +204,7 @@ exports.GroupService = class {
 
   static async templateFile() {
     const fileName = `group.xlsx`;
-    const folder_path = path.join(__dirname, `../../../../public/template`);
+    const folder_path = path.join(__dirname, `../../../../../public/template`);
 
     const filePath = path.join(folder_path, fileName);
 

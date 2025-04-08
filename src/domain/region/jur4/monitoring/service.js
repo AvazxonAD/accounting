@@ -19,6 +19,7 @@ exports.PodotchetMonitoringService = class {
       data.from,
       data.to,
       data.region_id,
+      data.schet,
     ]);
 
     result = result.reduce((acc, item) => {
