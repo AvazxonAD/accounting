@@ -6,17 +6,59 @@ const path = require("path");
 const { HelperFunctions } = require(`@helper/functions`);
 
 exports.MainBookService = class {
-  static async getUniqueSchets(data) {
-    const result = await MainBookDB.getUniqueSchets([]);
+  static async cleanData(data) {
+    const ids = data.data.map((item) => item.id);
+
+    await db.transaction(async (client) => {
+      await MainBookDB.cleanData([ids], client);
+    });
+  }
+
+  static async getCheckFirst(data) {
+    const result = await MainBookDB.getCheckFirst([
+      data.budjet_id,
+      data.region_id,
+    ]);
 
     return result;
   }
 
-  static async getMainSchets(data) {
-    const result = await MainBookDB.getMainSchets([
+  static async getUniqueSchets(data) {
+    const main_schets = await MainBookDB.getMainSchets([
       data.region_id,
       data.budjet_id,
     ]);
+
+    const schets = await MainBookDB.getUniqueSchets([]);
+
+    const set_schets = new Set(schets.map((item) => item.schet));
+
+    for (let main_schet of main_schets) {
+      [main_schet.jur1_schet, main_schet.jur2_schet].forEach((schet) => {
+        if (schet && !set_schets.has(schet)) {
+          set_schets.add(schet);
+          schets.push({ schet, prixod: 0, rasxod: 0 });
+        }
+      });
+    }
+
+    schets.sort((a, b) => {
+      const numA = a.schet.split("/").map(Number);
+      const numB = b.schet.split("/").map(Number);
+
+      for (let i = 0; i < Math.max(numA.length, numB.length); i++) {
+        if ((numA[i] || 0) !== (numB[i] || 0)) {
+          return (numA[i] || 0) - (numB[i] || 0);
+        }
+      }
+      return 0;
+    });
+
+    return { schets, main_schets };
+  }
+
+  static async getJurSchets(data) {
+    const result = await MainBookDB.getJurSchets([data.budjet_id]);
 
     return result;
   }
@@ -175,6 +217,63 @@ exports.MainBookService = class {
     return result;
   }
 
+  static async getByMonth(data) {
+    let result = await MainBookDB.getByMonth([
+      data.region_id,
+      data.year,
+      data.month,
+      data.budjet_id,
+    ]);
+
+    if (result) {
+      result.childs = await MainBookDB.getByIdChild([result.id]);
+
+      result = result.childs.find((item) => item.type_id === 10).sub_childs;
+    }
+
+    return result;
+  }
+
+  static getJur9Data(data) {
+    const index = data.types.findIndex((item) => item.id === 9);
+    data.types[index].sub_childs = [...data.schets];
+
+    for (let type of data.types) {
+      if (type.id !== 9 && type.id !== 0 && type.id !== 10) {
+        for (let child of type.sub_childs) {
+          const child_index = data.types[index].sub_childs.findIndex(
+            (item) => item.schet === child.schet
+          );
+
+          data.types[index].sub_childs[child_index].prixod += child.prixod;
+          data.types[index].sub_childs[child_index].rasxod += child.rasxod;
+        }
+      }
+    }
+
+    return data.types[index];
+  }
+
+  static getJur10Data(data) {
+    const index = data.types.findIndex((item) => item.id === 10);
+    data.types[index].sub_childs = [...data.schets];
+
+    for (let type of data.types) {
+      if (type.id === 9 || type.id === 0) {
+        for (let child of type.sub_childs) {
+          const child_index = data.types[index].sub_childs.findIndex(
+            (item) => item.schet === child.schet
+          );
+
+          data.types[index].sub_childs[child_index].prixod += child.prixod;
+          data.types[index].sub_childs[child_index].rasxod += child.rasxod;
+        }
+      }
+    }
+
+    return data.types[index];
+  }
+
   static async getJur1Data(data) {
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
@@ -205,6 +304,21 @@ exports.MainBookService = class {
     }
 
     return data.schets;
+  }
+
+  static getJur0Data(data) {
+    const index = data.types.findIndex((item) => item.id === 0);
+    data.types[index].sub_childs = [...data.schets];
+
+    for (let child of data.types[index].sub_childs) {
+      const schet = data.last_saldo.find((item) => item.schet === child.schet);
+      if (schet) {
+        child.prixod += schet.prixod;
+        child.rasxod += schet.rasxod;
+      }
+    }
+
+    return data.types[index];
   }
 
   static async getJur2Data(data) {
@@ -240,64 +354,64 @@ exports.MainBookService = class {
   }
 
   static async getJur3Data(data) {
-    for (let main_schet of data.main_schets) {
-      let rasxod = 0;
+    const jur3_schets = data.jur3AndJur4Schets
+      .filter((item) => item.type === "jur3")
+      .map((item) => item.schet);
 
-      const rasxod_data = await MainBookDB.getJur3Rasxod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
+    const rasxod_data = await MainBookDB.getJur3Rasxod(
+      [data.region_id, data.budjet_id, jur3_schets],
+      { from: data.from, to: data.to },
+      data.operator
+    );
+
+    for (let schet of rasxod_data) {
+      const index_prixod = data.schets.findIndex(
+        (item) => item.schet === schet.schet
       );
 
-      for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        if (data.schets[index]) {
-          data.schets[index].prixod += schet.summa;
-        }
-
-        rasxod += schet.summa;
+      if (data.schets[index_prixod]) {
+        data.schets[index_prixod].prixod += schet.summa;
       }
 
-      const index = data.schets.findIndex(
-        (item) => item.schet === main_schet.jur3_schet
+      const index_rasxod = data.schets.findIndex(
+        (item) => item.schet === schet.own
       );
 
-      data.schets[index].rasxod += rasxod;
+      if (data.schets[index_rasxod]) {
+        data.schets[index_rasxod].rasxod += schet.summa;
+      }
     }
 
     return data.schets;
   }
 
   static async getJur4Data(data) {
-    for (let main_schet of data.main_schets) {
-      let rasxod = 0;
+    const jur4_schets = data.jur3AndJur4Schets
+      .filter((item) => item.type === "jur4")
+      .map((item) => item.schet);
 
-      const rasxod_data = await MainBookDB.getJur4Rasxod(
-        [data.region_id, main_schet.id],
-        { from: data.from, to: data.to },
-        data.operator
+    const rasxod_data = await MainBookDB.getJur4Rasxod(
+      [data.region_id, data.budjet_id, jur4_schets],
+      { from: data.from, to: data.to },
+      data.operator
+    );
+
+    for (let schet of rasxod_data) {
+      const index_prixod = data.schets.findIndex(
+        (item) => item.schet === schet.schet
       );
 
-      const index = data.schets.findIndex(
-        (item) => item.schet === main_schet.jur4_schet
-      );
-
-      for (let schet of rasxod_data) {
-        const index = data.schets.findIndex(
-          (item) => item.schet === schet.schet
-        );
-
-        if (data.schets[index]) {
-          data.schets[index].prixod += schet.summa;
-        }
-
-        rasxod += schet.summa;
+      if (data.schets[index_prixod]) {
+        data.schets[index_prixod].prixod += schet.summa;
       }
 
-      data.schets[index].rasxod += rasxod;
+      const index_rasxod = data.schets.findIndex(
+        (item) => item.schet === schet.own
+      );
+
+      if (data.schets[index_rasxod]) {
+        data.schets[index_rasxod].rasxod += schet.summa;
+      }
     }
 
     return data.schets;
@@ -391,11 +505,14 @@ exports.MainBookService = class {
     }
 
     // jur3
+    const jur3_schets = data.jur3AndJur4Schets
+      .filter((item) => item.type === "jur3")
+      .map((item) => item.schet);
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
 
       const rasxod_data = await MainBookDB.getJur3Rasxod(
-        [data.region_id, main_schet.id],
+        [data.region_id, main_schet.id, jur3_schets],
         { from: data.from, to: data.to },
         data.operator
       );
@@ -556,11 +673,15 @@ exports.MainBookService = class {
     }
 
     // jur3
+    const jur3_schets = data.jur3AndJur4Schets
+      .filter((item) => item.type === "jur3")
+      .map((item) => item.schet);
+
     for (let main_schet of data.main_schets) {
       let rasxod = 0;
 
       const rasxod_data = await MainBookDB.getJur3Rasxod(
-        [data.region_id, main_schet.id],
+        [data.region_id, main_schet.id, jur3_schets],
         { from: data.from, to: data.to },
         data.operator
       );

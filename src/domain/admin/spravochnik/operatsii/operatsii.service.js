@@ -112,8 +112,9 @@ const getAllOperatsiiService = async (
             s.type_schet = 'avans_otchet' OR 
             s.type_schet = 'kassa_prixod' OR 
             s.type_schet = 'kassa_rasxod' OR 
+            s.type_schet = 'jur3' OR 
+            s.type_schet = 'jur4' OR 
             s.type_schet = 'bank_rasxod' OR 
-            s.type_schet = 'general' OR 
             s.type_schet = 'show_service'
           )
           ${schet_filter}

@@ -81,6 +81,30 @@ exports.MainBookSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static cleanData() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getUniqueSchets() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getCheckFirst() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static getData() {
     return Joi.object({
       query: Joi.object({

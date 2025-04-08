@@ -1,6 +1,55 @@
 const { db } = require("@db/index");
 
 exports.MainBookDB = class {
+  static async getJur8Rasxod(params) {
+    const query = `
+      
+    `;
+  }
+
+  static async cleanData(params, client) {
+    const queryParent = `UPDATE main_book SET isdeleted = true WHERE id = ANY($1)`;
+
+    const queryChild = `UPDATE main_book_child SET isdeleted = true WHERE parent_id = ANY($1)`;
+
+    await client.query(queryChild, params);
+    await client.query(queryParent, params);
+  }
+
+  static async getCheckFirst(params) {
+    const query = `--sql
+      SELECT
+        m.*
+      FROM main_book m 
+      JOIN users u ON u.id = m.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE m.budjet_id = $1
+        AND r.id = $2
+        AND m.isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getJurSchets(params) {
+    const query = `--sql
+      SELECT
+        d.*
+      FROM jur_schets d
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN users u ON u.id = m.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE m.spravochnik_budjet_name_id = $1
+        AND d.isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getUniqueSchets(params) {
     const query = `--sql
       SELECT 
@@ -19,6 +68,16 @@ exports.MainBookDB = class {
           0 AS prixod,
           0 AS rasxod
       FROM group_jur7 
+      WHERE isdeleted = false
+
+      UNION ALL
+      
+      SELECT
+          DISTINCT ON (schet)
+          schet,
+          0 AS prixod,
+          0 AS rasxod
+      FROM jur_schets 
       WHERE isdeleted = false
     `;
 
@@ -63,7 +122,7 @@ exports.MainBookDB = class {
   }
 
   static async create(params, client) {
-    const query = `
+    const query = `--sql
       INSERT INTO main_book (
           status,
           accept_time,
@@ -242,6 +301,38 @@ exports.MainBookDB = class {
     return result[0];
   }
 
+  static async getByMonth(params, isdeleted = null) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.status,
+        d.accept_time,
+        d.send_time,
+        d.user_id,
+        d.year,
+        d.month,
+        d.budjet_id,
+        b.name AS                 budjet_name,
+        d.accept_user_id,
+        ua.fio AS                 accept_user_fio,
+        ua.login AS               accept_user_login
+      FROM main_book d
+      JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
+      JOIN users u ON u.id = d.user_id
+      LEFT JOIN users ua ON ua.id = d.accept_user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND d.year = $2
+        AND d.month = $3
+        AND d.budjet_id = $4
+        AND d.isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async getByIdChild(params) {
     const query = `--sql
       SELECT
@@ -375,22 +466,66 @@ exports.MainBookDB = class {
 
     const query = `--sql
       SELECT 
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS  summa,
           op.schet,
-          own.schet AS                                  jur3_schet
+          own.schet AS own,
+          'akt' AS type
       FROM bajarilgan_ishlar_jur3_child AS ch
       JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-      JOIN spravochnik_operatsii AS own ON own.id = d.spravochnik_operatsii_own_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND m.spravochnik_budjet_name_id = $2
+        AND own.schet = ANY($3)
+        ${date_filter}
+      GROUP BY op.schet,
+          own.schet
+        
+      UNION ALL 
+
+      SELECT 
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+          m.jur2_schet AS schet,
+          op.schet AS own,
+          'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND m.spravochnik_budjet_name_id = $2
+        AND op.schet = ANY($3)
+        ${date_filter}
+      GROUP BY op.schet, m.jur2_schet
+
+      UNION ALL 
+
+      SELECT 
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+          ch.debet_schet AS schet,
+          ch.kredit_schet AS own,
+          'jur7_prixod' AS type
+      FROM document_prixod_jur7_child ch
+      JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND d.main_schet_id = $2
+        AND d.budjet_id = $2
+        AND ch.kredit_schet = ANY($3)
         ${date_filter}
-      GROUP BY op.schet,
-          own.schet  
+      GROUP BY ch.debet_schet,
+          ch.kredit_schet
     `;
 
     const result = await db.query(query, params);
@@ -418,19 +553,66 @@ exports.MainBookDB = class {
 
     const query = `--sql
       SELECT 
-        COALESCE(SUM(ch.summa), 0)::FLOAT AS          summa,
-        op.schet
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+        op.schet,
+        own.schet AS own,
+        'avans' AS type
       FROM avans_otchetlar_jur4_child ch
       JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
       JOIN users u ON d.user_id = u.id
       JOIN regions r ON u.region_id = r.id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets own ON own.id = d.schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND d.main_schet_id = $2
+        AND m.spravochnik_budjet_name_id = $2
+        AND own.schet = ANY($3)
         ${date_filter}
-      GROUP BY op.schet
+      GROUP BY op.schet, own.schet
+
+      UNION ALL 
+
+      SELECT 
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+          m.jur2_schet AS schet,
+          op.schet AS own,
+          'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND m.spravochnik_budjet_name_id = $2
+        AND op.schet = ANY($3)
+        ${date_filter}
+      GROUP BY op.schet, m.jur2_schet
+
+      UNION ALL 
+
+      SELECT 
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+          m.jur1_schet AS schet,
+          op.schet AS own,
+          'kassa_prixod' AS type
+      FROM kassa_prixod_child ch
+      JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND m.spravochnik_budjet_name_id = $2
+        AND op.schet = ANY($3)
+        ${date_filter}
+      GROUP BY op.schet, m.jur1_schet
     `;
 
     const result = await db.query(query, params);

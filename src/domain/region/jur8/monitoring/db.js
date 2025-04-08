@@ -56,8 +56,12 @@ exports.Jur8MonitoringDB = class {
   static async getChilds(params) {
     const query = `--sql
       SELECT
-        ch.*
+        ch.*,
+        schet.schet,
+        schet.name AS schet_name
       FROM jur8_monitoring_child ch
+      JOIN region_prixod_schets sch ON sch.id = ch.schet_id
+      JOIN prixod_schets schet ON schet.id = sch.schet_id 
       WHERE ch.parent_id = $1
         AND ch.isdeleted = false 
     `;

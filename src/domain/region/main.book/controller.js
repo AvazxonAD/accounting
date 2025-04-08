@@ -4,6 +4,60 @@ const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
 
 exports.Controller = class {
+  static async cleanData(req, res) {
+    const region_id = req.user.region_id;
+    const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const { data } = await MainBookService.get({
+      region_id,
+      offset: 0,
+      limit: 999999999,
+      budjet_id,
+    });
+
+    await MainBookService.cleanData({ data });
+
+    return res.success(req.i18n.t("cleanSuccess"), 200);
+  }
+
+  static async getCheckFirst(req, res) {
+    const region_id = req.user.region_id;
+    const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const result = await MainBookService.getCheckFirst({
+      budjet_id,
+      region_id,
+    });
+
+    if (!result) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
+
+  static async getUniqueSchets(req, res) {
+    const { budjet_id } = req.query;
+    const region_id = req.user.region_id;
+
+    const result = await MainBookService.getUniqueSchets({
+      budjet_id,
+      region_id,
+    });
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
+
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const { id } = req.params;
@@ -154,50 +208,32 @@ exports.Controller = class {
     const { year, month, budjet_id } = req.query;
     const region_id = req.user.region_id;
 
+    const last_date = HelperFunctions.lastDate({ year, month });
+
+    const last_saldo = await MainBookService.getByMonth({
+      region_id,
+      budjet_id,
+      year: last_date.year,
+      month: last_date.month,
+    });
+
+    if (!last_saldo.length) {
+      return res.error(req.i18n.t("lastSaldoNotFound"), 400);
+    }
+
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const main_schets = await MainBookService.getMainSchets({
+    const { schets, main_schets } = await MainBookService.getUniqueSchets({
+      ...req.query,
       region_id,
-      budjet_id,
     });
 
     const types = await MainBookService.getMainBookType({});
 
-    const schets = await MainBookService.getUniqueSchets({});
-    const set_schets = new Set(schets.map((item) => item.schet));
-
-    for (let main_schet of main_schets) {
-      [
-        main_schet.jur1_schet,
-        main_schet.jur2_schet,
-        main_schet.jur3_schet,
-        main_schet.jur4_schet,
-      ].forEach((schet) => {
-        if (schet && !set_schets.has(schet)) {
-          set_schets.add(schet);
-          schets.push({ schet, prixod: 0, rasxod: 0 });
-        }
-      });
-    }
-
-    schets.sort((a, b) => {
-      const numA = a.schet.split("/").map(Number);
-      const numB = b.schet.split("/").map(Number);
-
-      for (let i = 0; i < Math.max(numA.length, numB.length); i++) {
-        if ((numA[i] || 0) !== (numB[i] || 0)) {
-          return (numA[i] || 0) - (numB[i] || 0);
-        }
-      }
-      return 0;
-    });
-
-    const jur3AndJur4Schets = main_schets
-      .map((item) => [item.jur3_schet, item.jur4_schet])
-      .flat();
+    const jur3AndJur4Schets = await MainBookService.getJurSchets({ budjet_id });
 
     const date = HelperFunctions.getMonthStartEnd({ year, month });
 
@@ -205,25 +241,13 @@ exports.Controller = class {
     const to = `${date[1].getFullYear()}-${String(date[1].getMonth() + 1).padStart(2, "0")}-${String(date[1].getDate()).padStart(2, "0")}`;
 
     for (let type of types) {
-      // from
+      //from
       if (type.id === 0) {
-        type.prixod = 0;
-        type.rasxod = 0;
-
-        type.sub_childs = await MainBookService.getFromData({
+        type = MainBookService.getJur0Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
-          from,
-          region_id,
-          main_schets: main_schets,
-          jur3AndJur4Schets,
-          operator: "<",
+          types,
+          last_saldo,
         });
-
-        for (let child of type.sub_childs) {
-          type.prixod += child.prixod;
-          type.rasxod += child.rasxod;
-        }
       }
 
       // jurnal 1
@@ -259,6 +283,7 @@ exports.Controller = class {
           to,
           region_id,
           main_schets: main_schets,
+          jur3AndJur4Schets,
         });
       }
 
@@ -271,6 +296,7 @@ exports.Controller = class {
           to,
           region_id,
           main_schets: main_schets,
+          jur3AndJur4Schets,
         });
       }
 
@@ -292,39 +318,24 @@ exports.Controller = class {
 
       // jurnal 9
       if (type.id === 9) {
-        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type = MainBookService.getJur9Data({
+          schets: JSON.parse(JSON.stringify(schets)),
+          types,
+        });
       }
 
       // jurnal 10
       if (type.id === 10) {
-        type.sub_childs = await MainBookService.getToData({
+        type = MainBookService.getJur10Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
-          to,
-          region_id,
-          main_schets: main_schets,
-          jur3AndJur4Schets,
-          operator: "<=",
+          types,
         });
       }
     }
 
-    const index = types.findIndex((item) => item.id === 9);
     for (let type of types) {
-      if (type.id !== 9 && type.id !== 0 && type.id !== 10) {
-        for (let child of type.sub_childs) {
-          const child_index = types[index].sub_childs.findIndex(
-            (item) => item.schet === child.schet
-          );
-
-          types[index].sub_childs[child_index].prixod += child.prixod;
-          types[index].sub_childs[child_index].rasxod += child.rasxod;
-        }
-      }
-
       type.prixod = 0;
       type.rasxod = 0;
-
       for (let child of type.sub_childs) {
         type.prixod += child.prixod;
         type.rasxod += child.rasxod;
