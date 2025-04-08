@@ -11,21 +11,11 @@ const { ReportTitleService } = require(`@report_title/service`);
 const { BudjetService } = require(`@budjet/service`);
 const { RegionService } = require("@region/service");
 const { PodpisService } = require("@podpis/service");
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.Controller = class {
   static async getMonitoring(req, res) {
-    const {
-      limit,
-      page,
-      main_schet_id,
-      from,
-      to,
-      order_by,
-      order_type,
-      podotchet_id,
-      schet,
-      search,
-    } = req.query;
+    const { limit, page, main_schet_id, podotchet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const offset = (page - 1) * limit;
 
@@ -36,10 +26,39 @@ exports.Controller = class {
       }
     }
 
-    const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
+
+    const saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+
+    const {
+      data,
+      summa_from,
+      page_rasxod_sum,
+      page_prixod_sum,
+      summa_to,
+      total,
+      page_total_sum,
+      prixod_sum,
+      rasxod_sum,
+      total_sum,
+    } = await PodotchetMonitoringService.monitoring({
+      ...req.query,
+      offset,
+      region_id,
+      schet: schet.schet,
+      saldo,
+    });
 
     const pageCount = Math.ceil(total / limit);
 
@@ -49,17 +68,14 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
       page_prixod_sum,
       page_rasxod_sum,
-      page_total_sum: page_prixod_sum - page_rasxod_sum,
-      prixod_sum: summa.prixod_sum,
-      rasxod_sum: summa.rasxod_sum,
-      summa: summa.summa,
-      summa_object: summa,
-      summa_from_object: summa_from,
-      summa_to_object: summa_to,
+      page_total_sum,
+      summa_from: summa_from,
+      summa_to: summa_to,
+      prixod_sum,
+      rasxod_sum,
+      total_sum,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);

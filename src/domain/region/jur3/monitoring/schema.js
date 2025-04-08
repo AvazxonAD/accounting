@@ -7,9 +7,9 @@ exports.OrganMonitoringSchema = class {
         main_schet_id: Joi.number().required().min(1).integer(),
         budjet_id: Joi.number().required().min(1).integer(),
         report_title_id: Joi.number().required().min(1).integer(),
-        schet: Joi.string().required().trim(),
         month: Joi.number().integer().required().min(1).max(12).required(),
         year: Joi.number().integer().required().min(1901).required(),
+        schet_id: Joi.number().min(1).integer().required(),
         from: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -34,7 +34,6 @@ exports.monitoringSchema = Joi.object({
     main_schet_id: Joi.number().required().min(1).integer(),
     limit: Joi.number().min(1).default(10),
     page: Joi.number().min(1).default(1),
-    schet: Joi.string().required().trim(),
     month: Joi.number().integer().required().min(1).max(12).required(),
     year: Joi.number().integer().required().min(1901).required(),
     from: Joi.string()
@@ -67,6 +66,7 @@ exports.aktSverkaSchema = Joi.object({
     schet: Joi.string().required().trim(),
     month: Joi.number().integer().required().min(1).max(12).required(),
     year: Joi.number().integer().required().min(1901).required(),
+    schet_id: Joi.number().min(1).integer().required(),
     to: Joi.string()
       .trim()
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -90,6 +90,7 @@ exports.prixodRasxodSchema = Joi.object({
       .trim()
       .pattern(/^(true|false)$/)
       .allow("", null),
+    schet_id: Joi.number().min(1).integer().required(),
     main_schet_id: Joi.number().integer().min(1).required(),
     month: Joi.number().integer().required().min(1).max(12).required(),
     year: Joi.number().integer().required().min(1901).required(),
@@ -115,6 +116,7 @@ exports.capSchema = Joi.object({
       .allow("", null),
     main_schet_id: Joi.number().integer().min(1).required(),
     report_title_id: Joi.number().integer().min(1).required(),
+    schet_id: Joi.number().min(1).integer().required(),
     budjet_id: Joi.number().integer().min(1).required(),
   }),
 }).options({ stripUnknown: true });
@@ -133,6 +135,7 @@ exports.consolidatedSchema = Joi.object({
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       .required(),
     schet: Joi.string().trim().required(),
+    schet_id: Joi.number().min(1).integer().required(),
     excel: Joi.string()
       .trim()
       .pattern(/^(true|false)$/)

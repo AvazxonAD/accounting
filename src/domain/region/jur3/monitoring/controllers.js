@@ -18,7 +18,7 @@ exports.Controller = class {
   static async monitoring(req, res) {
     const region_id = req.user.region_id;
     const { query } = req;
-    const { page, limit, organ_id, schet, schet_id } = query;
+    const { page, limit, organ_id, schet_id } = query;
     const offset = (query.page - 1) * limit;
 
     const main_schet = await MainSchetService.getById({
@@ -26,8 +26,8 @@ exports.Controller = class {
       id: query.main_schet_id,
     });
 
-    const _schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
-    if (!main_schet || !_schet) {
+    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
 
@@ -66,7 +66,7 @@ exports.Controller = class {
       offset,
       region_id,
       organ_id,
-      schet: schet,
+      schet: schet.schet,
       saldo,
     });
 

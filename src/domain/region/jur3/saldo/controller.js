@@ -85,7 +85,10 @@ exports.Controller = class {
       return res.error(req.i18n.t(`lastSaldoNotFound`), 404);
     }
 
-    const date = HelperFunctions.getDate({ year, month });
+    const date = HelperFunctions.getDate({
+      year: last_date.year,
+      month: last_date.month,
+    });
 
     const internal = await OrganizationmonitoringService.getSumma({
       main_schet_id,

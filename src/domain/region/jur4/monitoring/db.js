@@ -340,8 +340,6 @@ exports.PodotchetMonitoringDB = class {
         CROSS JOIN kassa_prixod
         CROSS JOIN kassa_rasxod
         CROSS JOIN avans_otchet
-        CROSS JOIN podotchet_saldo_rasxod
-        CROSS JOIN podotchet_saldo_prixod
     `;
 
     const result = await db.query(query, params);
