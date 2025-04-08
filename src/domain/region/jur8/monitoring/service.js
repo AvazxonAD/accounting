@@ -31,9 +31,7 @@ exports.Jur8MonitoringService = class {
           child.type_doc
         );
 
-        child.doc_date = doc.doc_date;
         child.document_id = doc.document_id;
-        child.doc_num = doc.doc_num;
       }
     }
 
@@ -74,6 +72,10 @@ exports.Jur8MonitoringService = class {
           child.summa,
           child.type_doc,
           child.doc_id,
+          child.rasxod_schet,
+          child.doc_num,
+          child.doc_date,
+          child.schet,
           this.now,
         ],
         data.client

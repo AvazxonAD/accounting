@@ -9,6 +9,7 @@ router
   .post("/", validator(Controller.create, MainBookSchema.create()))
   .get("/", validator(Controller.get, MainBookSchema.get()))
   .delete("/clean", validator(Controller.cleanData, MainBookSchema.cleanData()))
+  .get("/docs", validator(Controller.getDocs, MainBookSchema.getDocs()))
   .get(
     "/unique",
     validator(Controller.getUniqueSchets, MainBookSchema.getUniqueSchets())

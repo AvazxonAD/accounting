@@ -4,6 +4,49 @@ const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
 
 exports.Controller = class {
+  static async getDocs(req, res) {
+    const { budjet_id, type_id, schet, prixod, rasxod, year, month } =
+      req.query;
+    const region_id = req.user.region_id;
+    let docs = [];
+
+    // jur1
+    if (type_id === 1) {
+    }
+
+    // jur2
+    if (type_id === 2) {
+      docs = [];
+    }
+
+    // jur3
+    if (type_id === 3) {
+      docs = [];
+    }
+
+    // jur4
+    if (type_id === 4) {
+      docs = [];
+    }
+
+    // jur5
+    if (type_id === 5) {
+      docs = [];
+    }
+
+    // jur7
+    if (type_id === 7) {
+      docs = [];
+    }
+
+    // jur8
+    if (type_id === 8) {
+      docs = [];
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, docs);
+  }
+
   static async cleanData(req, res) {
     const region_id = req.user.region_id;
     const { budjet_id } = req.query;
@@ -217,7 +260,7 @@ exports.Controller = class {
       month: last_date.month,
     });
 
-    if (!last_saldo.length) {
+    if (!last_saldo) {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
@@ -312,6 +355,17 @@ exports.Controller = class {
           budjet_id,
           from,
           to,
+          region_id,
+        });
+      }
+
+      // jurnal 8
+      if (type.id === 8) {
+        type.sub_childs = await MainBookService.getJur8Data({
+          schets: JSON.parse(JSON.stringify(schets)),
+          budjet_id,
+          year,
+          month,
           region_id,
         });
       }

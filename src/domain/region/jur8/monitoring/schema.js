@@ -16,6 +16,14 @@ exports.Jur8MonitoringSchema = class {
               type_doc: Joi.string().trim().required(),
               schet_id: Joi.number().integer().required().min(1),
               doc_id: Joi.number().integer().required().min(1),
+              rasxod_schet: Joi.string().trim().required(),
+              schet: Joi.string().trim().required(),
+              doc_num: Joi.string().trim(),
+              doc_date: Joi.string()
+                .trim()
+                .pattern(
+                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+                ),
               summa: Joi.number().required().min(1),
             })
           )
@@ -40,6 +48,14 @@ exports.Jur8MonitoringSchema = class {
               type_doc: Joi.string().trim().required(),
               schet_id: Joi.number().integer().required().min(1),
               doc_id: Joi.number().integer().required().min(1),
+              rasxod_schet: Joi.string().trim().required(),
+              schet: Joi.string().trim().required(),
+              doc_num: Joi.string().trim(),
+              doc_date: Joi.string()
+                .trim()
+                .pattern(
+                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+                ),
               summa: Joi.number().required().min(1),
             })
           )

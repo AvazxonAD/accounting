@@ -15,7 +15,7 @@ exports.MainBookSchema = class {
             Joi.object({
               type_id: Joi.number()
                 .integer()
-                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
+                .valid(1, 2, 3, 4, 5, 7, 0, 8, 9, 10)
                 .required(),
               sub_childs: Joi.array()
                 .items(
@@ -45,7 +45,7 @@ exports.MainBookSchema = class {
             Joi.object({
               type_id: Joi.number()
                 .integer()
-                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
+                .valid(1, 2, 3, 4, 5, 7, 0, 8, 9, 10)
                 .required(),
               sub_childs: Joi.array()
                 .items(
@@ -85,6 +85,20 @@ exports.MainBookSchema = class {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getDocs() {
+    return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+        type_id: Joi.number().min(1).integer().required(),
+        schet: Joi.string().trim().required(),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        prixod: Joi.string().trim().valid("true", "false").required(),
+        rasxod: Joi.string().trim().valid("true", "false").required(),
       }),
     }).options({ stripUnknown: true });
   }

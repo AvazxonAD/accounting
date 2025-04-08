@@ -385,6 +385,35 @@ exports.MainBookService = class {
     return data.schets;
   }
 
+  static async getJur8Data(data) {
+    const rasxod_data = await MainBookDB.getJur8Rasxod([
+      data.region_id,
+      data.budjet_id,
+      data.year,
+      data.month,
+    ]);
+
+    for (let schet of rasxod_data) {
+      const index_prixod = data.schets.findIndex(
+        (item) => item.schet === schet.schet
+      );
+
+      if (data.schets[index_prixod]) {
+        data.schets[index_prixod].prixod += schet.summa;
+      }
+
+      const index_rasxod = data.schets.findIndex(
+        (item) => item.schet === schet.own
+      );
+
+      if (data.schets[index_rasxod]) {
+        data.schets[index_rasxod].rasxod += schet.summa;
+      }
+    }
+
+    return data.schets;
+  }
+
   static async getJur4Data(data) {
     const jur4_schets = data.jur3AndJur4Schets
       .filter((item) => item.type === "jur4")

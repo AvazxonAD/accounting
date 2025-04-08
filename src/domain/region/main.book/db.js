@@ -1,10 +1,38 @@
 const { db } = require("@db/index");
 
 exports.MainBookDB = class {
-  static async getJur8Rasxod(params) {
+  static async jur1Docs(params) {
     const query = `
-      
+      SELECT
+        *
+      FROM kassa_rasxod d
+      JOIN kassa_rasxod_child ch 
     `;
+  }
+
+  static async getJur8Rasxod(params) {
+    const query = `--sql
+      SELECT
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS             summa,
+        ch.rasxod_schet AS own,
+        ch.schet
+      FROM jur8_monitoring d
+      JOIN jur8_monitoring_child ch ON ch.parent_id = d.id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND d.budjet_id = $2
+        AND d.year = $3
+        AND d.month = $4
+      GROUP BY ch.rasxod_schet,
+        ch.schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
   }
 
   static async cleanData(params, client) {
@@ -70,7 +98,7 @@ exports.MainBookDB = class {
       FROM group_jur7 
       WHERE isdeleted = false
 
-      UNION ALL
+      UNION 
       
       SELECT
           DISTINCT ON (schet)

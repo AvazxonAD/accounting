@@ -58,7 +58,8 @@ exports.Jur8MonitoringDB = class {
       SELECT
         ch.*,
         schet.schet,
-        schet.name AS schet_name
+        schet.name AS schet_name,
+        TO_CHAR(ch.doc_date, 'YYYY-MM-DD') AS doc_date
       FROM jur8_monitoring_child ch
       JOIN region_prixod_schets sch ON sch.id = ch.schet_id
       JOIN prixod_schets schet ON schet.id = sch.schet_id 
@@ -169,8 +170,8 @@ exports.Jur8MonitoringDB = class {
 
   static async createChild(params, client) {
     const query = `--sql
-      INSERT INTO jur8_monitoring_child (schet_id, parent_id, summa, type_doc, doc_id, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $6)
+      INSERT INTO jur8_monitoring_child (schet_id, parent_id, summa, type_doc, doc_id, rasxod_schet, doc_num, doc_date, schet, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)
     `;
 
     await client.query(query, params);
@@ -180,12 +181,13 @@ exports.Jur8MonitoringDB = class {
     const query = `--sql
       SELECT
         d.doc_num,
-        d.doc_date,
+       TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         ch.id AS doc_id,
         op.schet,
         ch.summa::FLOAT,
         d.id AS document_id,
-        'kassa_prixod_child' AS type_doc
+        'kassa_prixod_child' AS type_doc,
+        m.jur1_schet AS rasxod_schet
       FROM kassa_prixod d 
       JOIN kassa_prixod_child ch ON ch.kassa_prixod_id = d.id
       JOIN users u ON u.id = d.user_id
@@ -202,12 +204,13 @@ exports.Jur8MonitoringDB = class {
 
       SELECT
         d.doc_num,
-        d.doc_date,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         ch.id AS doc_id,
         op.schet,
         ch.summa::FLOAT,
         d.id AS document_id,
-        'bank_prixod_child' AS type_doc
+        'bank_prixod_child' AS type_doc,
+        m.jur2_schet AS rasxod_schet
       FROM bank_prixod d 
       JOIN bank_prixod_child ch ON ch.id_bank_prixod  = d.id
       JOIN users u ON u.id = d.user_id
@@ -224,42 +227,24 @@ exports.Jur8MonitoringDB = class {
       
       SELECT
         d.doc_num,
-        d.doc_date,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         ch.id AS doc_id,
         op.schet,
         ch.summa::FLOAT,
         d.id AS document_id,
-        'kursatilgan_hizmatlar_jur152_child' AS type_doc
+        'kursatilgan_hizmatlar_jur152_child' AS type_doc,
+        rsch.schet AS rasxod_schet
       FROM kursatilgan_hizmatlar_jur152 d 
       JOIN kursatilgan_hizmatlar_jur152_child ch ON ch.kursatilgan_hizmatlar_jur152_id  = d.id
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets rsch ON rsch.id = d.schet_id
       WHERE m.spravochnik_budjet_name_id = $1
         AND d.isdeleted = false
         AND d.doc_date BETWEEN $2 AND $3
         AND op.schet = ANY($4)
-        AND r.id = $5
-
-      UNION ALL
-
-      SELECT
-        d.doc_num,
-        d.doc_date,
-        ch.id AS doc_id,
-        ch.kredit_schet AS schet,
-        ch.summa_s_nds::FLOAT AS summa,
-        d.id AS document_id,
-        'document_prixod_jur7_child' AS type_doc
-      FROM document_prixod_jur7 d 
-      JOIN document_prixod_jur7_child ch ON ch.document_prixod_jur7_id  = d.id
-      JOIN users u ON u.id = d.user_id
-      JOIN regions r ON r.id = u.region_id
-      WHERE d.budjet_id = $1
-        AND d.isdeleted = false
-        AND d.doc_date BETWEEN $2 AND $3
-        AND ch.kredit_schet = ANY($4)
         AND r.id = $5
     `;
 
