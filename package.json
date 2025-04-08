@@ -54,7 +54,7 @@
     "@admin_prixod_book": "./src/domain/admin/prixod.book",
     "@video_module": "./src/domain/admin/spravochnik/video.module",
     "@main_book": "./src/domain/region/main.book",
-    "@jur8": "./src/domain/region/jur8",
+    "@jur8_monitoring": "./src/domain/region/jur8/monitoring",
     "@admin_dashboard": "./src/domain/admin/dashboard",
     "@unit": "./src/domain/admin/spravochnik/unit",
     "@log": "./src/domain/admin/log",

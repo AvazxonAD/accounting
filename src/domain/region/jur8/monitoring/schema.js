@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.PrixodBookSchema = class {
+exports.Jur8MonitoringSchema = class {
   static create() {
     return Joi.object({
       query: Joi.object({
@@ -13,20 +13,10 @@ exports.PrixodBookSchema = class {
         childs: Joi.array()
           .items(
             Joi.object({
-              type_id: Joi.number()
-                .integer()
-                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
-                .required(),
-              sub_childs: Joi.array()
-                .items(
-                  Joi.object({
-                    schet: Joi.string().required(),
-                    prixod: Joi.number().min(0).required(),
-                    rasxod: Joi.number().min(0).required(),
-                  })
-                )
-                .min(1)
-                .required(),
+              type_doc: Joi.string().trim().required(),
+              schet_id: Joi.number().integer().required().min(1),
+              doc_id: Joi.number().integer().required().min(1),
+              summa: Joi.number().required().min(1),
             })
           )
           .min(1)
@@ -37,27 +27,20 @@ exports.PrixodBookSchema = class {
 
   static update() {
     return Joi.object({
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+      }),
+
       body: Joi.object({
         month: Joi.number().integer().required().min(1).max(12).required(),
         year: Joi.number().integer().required().min(1901).required(),
         childs: Joi.array()
           .items(
             Joi.object({
-              type_id: Joi.number()
-                .integer()
-                .valid(1, 2, 3, 4, 5, 7, 0, 9, 10)
-                .required(),
-              sub_childs: Joi.array()
-                .items(
-                  Joi.object({
-                    id: Joi.number().integer().allow(null),
-                    schet: Joi.string().required(),
-                    prixod: Joi.number().min(0).required(),
-                    rasxod: Joi.number().min(0).required(),
-                  })
-                )
-                .min(1)
-                .required(),
+              type_doc: Joi.string().trim().required(),
+              schet_id: Joi.number().integer().required().min(1),
+              doc_id: Joi.number().integer().required().min(1),
+              summa: Joi.number().required().min(1),
             })
           )
           .min(1)
@@ -98,8 +81,7 @@ exports.PrixodBookSchema = class {
       }),
 
       query: Joi.object({
-        report_title_id: Joi.number().min(1).integer(),
-        excel: Joi.string().valid("true", "false"),
+        budjet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -108,6 +90,10 @@ exports.PrixodBookSchema = class {
     return Joi.object({
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
+      }),
+
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }

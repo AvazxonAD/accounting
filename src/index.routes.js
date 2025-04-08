@@ -107,7 +107,7 @@ routes
   .use("/main/book", protect, require("@main_book/index"))
 
   .use("/jur8/schets", protect, require("@region_prixod_schets/index"))
-  .use("/jur8", protect, require("@jur8/index"))
+  .use("/jur8/monitoring", protect, require("@jur8_monitoring/index"))
 
   // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
   // .use("/real/cost/report", protect, require("@real_cost_report/index"))
