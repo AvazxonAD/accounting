@@ -19,7 +19,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -38,7 +40,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -62,7 +66,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -155,7 +161,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -209,7 +217,7 @@ exports.Controller = class {
 
       if (schet_id) {
         const schet = main_schet.jur3_schets.find(
-          (item) => item.id === schet_id
+          (item) => item.id === Number(schet_id)
         );
         if (!schet) {
           check = false;

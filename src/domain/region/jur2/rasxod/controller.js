@@ -21,6 +21,28 @@ exports.Controller = class {
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
+
+    for (let doc of docs) {
+      for (let child of doc.childs) {
+        const operatsii = await OperatsiiService.getById({
+          type: "bank_rasxod",
+          id: child.spravochnikOperatsiiId,
+        });
+        if (!operatsii) {
+          return res.error(req.i18n.t("operatsiiNotFound"), 404);
+        }
+        child.schet = jur_schets.find((item) => item.schet === operatsii.schet);
+      }
+    }
+
     const check = await BankSaldoService.getByMonth({
       region_id,
       year,
@@ -37,6 +59,7 @@ exports.Controller = class {
       docs,
       user_id,
       main_schet_id,
+      main_schet,
       region_id,
       doc_date: date,
     });
@@ -77,12 +100,16 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await BankRasxodService.payment({
       id,
       status: req.body.status,
       ...bank_rasxod,
       user_id,
       main_schet_id,
+      jur_schets,
+      main_schet,
       region_id,
     });
 
@@ -193,6 +220,7 @@ exports.Controller = class {
       if (!operatsii) {
         return res.error(req.i18n.t("operatsiiNotFound"), 404);
       }
+      child.schet = operatsii.schet;
 
       operatsiis.push(operatsii);
 
@@ -237,6 +265,8 @@ exports.Controller = class {
       }
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     if (!checkSchetsEquality(operatsiis)) {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
@@ -254,7 +284,9 @@ exports.Controller = class {
     const result = await BankRasxodService.create({
       ...req.body,
       main_schet_id,
+      main_schet,
       user_id,
+      jur_schets,
       region_id,
     });
 
@@ -428,10 +460,10 @@ exports.Controller = class {
         type: "bank_rasxod",
         id: child.spravochnik_operatsii_id,
       });
-
       if (!operatsii) {
         return res.error(req.i18n.t("operatsiiNotFound"), 404);
       }
+      child.schet = operatsii.schet;
 
       operatsiis.push(operatsii);
 
@@ -490,11 +522,15 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await BankRasxodService.update({
       ...req.body,
       main_schet_id,
       user_id,
       region_id,
+      jur_schets,
+      main_schet,
       old_data: doc,
       id,
     });
@@ -540,16 +576,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await BankRasxodService.delete({
       id,
       region_id,
       main_schet_id,
+      main_schet,
+      jur_schets,
       user_id,
       ...doc,
     });
 
     return res.success(
-      req.i18n.t("getSuccess"),
+      req.i18n.t("deleteSuccess"),
       200,
       { dates: result.dates },
       result.doc

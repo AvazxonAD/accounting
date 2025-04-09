@@ -147,7 +147,8 @@ exports.Jur4SaldoService = class {
       [data.budjet_id],
       data.main_schet_id,
       data.year,
-      data.month
+      data.month,
+      data.schet_id
     );
 
     let summa = 0;

@@ -25,11 +25,6 @@ router
     checkJur4Saldo(Jur4SaldoService.getSaldoDate),
     validator(Controller.cleanData, Jur4SaldoSchema.cleanData())
   )
-  .get(
-    "/",
-    checkJur4Saldo(Jur4SaldoService.getSaldoDate),
-    validator(Controller.getByMonth, Jur4SaldoSchema.get())
-  )
   .put(
     "/:id",
     checkJur4Saldo(Jur4SaldoService.getSaldoDate),

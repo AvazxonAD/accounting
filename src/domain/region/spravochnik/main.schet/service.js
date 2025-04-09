@@ -194,4 +194,10 @@ exports.MainSchetService = class {
 
     return result;
   }
+
+  static async getJurSchets(data) {
+    const result = await MainSchetDB.getJurSchets([data.region_id]);
+
+    return result;
+  }
 };

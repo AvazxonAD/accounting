@@ -20,7 +20,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -83,6 +85,7 @@ exports.Controller = class {
     const result = await AktService.create({
       ...req.body,
       user_id,
+      region_id,
       ...req.query,
     });
 
@@ -108,7 +111,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -149,7 +154,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -183,7 +190,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -276,7 +285,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }

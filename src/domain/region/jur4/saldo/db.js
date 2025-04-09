@@ -134,12 +134,23 @@ exports.Jur4SaldoDB = class {
     return result[0] || result.rows[0];
   }
 
-  static async get(params, main_schet_id = null, year = null, month = null) {
+  static async get(
+    params,
+    main_schet_id = null,
+    year = null,
+    month = null,
+    schet_id = null
+  ) {
     let conditions = [];
 
     if (main_schet_id) {
       params.push(main_schet_id);
       conditions.push(` d.main_schet_id = $${params.length}`);
+    }
+
+    if (schet_id) {
+      params.push(schet_id);
+      conditions.push(` d.schet_id = $${params.length}`);
     }
 
     if (year) {

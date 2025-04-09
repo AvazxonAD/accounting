@@ -10,6 +10,7 @@ const { HelperFunctions } = require("@helper/functions");
 const { CODE } = require("@helper/constants");
 const { PrixodJur7Schema } = require("./schema");
 const { SaldoService } = require(`@jur7_saldo/service`);
+const { MainSchetService } = require(`@main_schet/service`);
 
 exports.Controller = class {
   static async rasxodDocs(req, res) {
@@ -169,9 +170,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await PrixodJur7Service.create({
       ...req.body,
       user_id,
+      jur_schets,
       budjet_id,
       budjet_id,
       childs,
@@ -361,11 +365,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await PrixodJur7Service.update({
       ...req.body,
       budjet_id,
       budjet_id,
       user_id,
+      jur_schets,
       id,
       childs,
       old_data,
@@ -384,6 +391,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const budjet_id = req.query.budjet_id;
+    const user_id = req.user.id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -419,10 +427,14 @@ exports.Controller = class {
         });
       }
     }
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
 
     const result = await PrixodJur7Service.deleteDoc({
       id,
       region_id,
+      user_id,
+      jur_schets,
+      ...old_data,
       old_data,
     });
 

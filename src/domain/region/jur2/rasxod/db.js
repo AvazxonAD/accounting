@@ -28,7 +28,7 @@ exports.BankRasxodDB = class {
   }
 
   static async create(params, client) {
-    const query = `
+    const query = `--sql
              INSERT INTO bank_rasxod(
                 doc_num, 
                 doc_date, 
@@ -56,7 +56,7 @@ exports.BankRasxodDB = class {
   }
 
   static async createChild(params, _values, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO bank_rasxod_child (
                spravochnik_operatsii_id,
                 tulanmagan_summa,
@@ -98,7 +98,7 @@ exports.BankRasxodDB = class {
       order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
-    const query = `
+    const query = `--sql
             WITH data AS (
                 SELECT 
                 d.id,
@@ -183,7 +183,7 @@ exports.BankRasxodDB = class {
   }
 
   static async getById(params, isdeleted) {
-    const query = `
+    const query = `--sql
             SELECT 
                 d.id,
                 d.doc_num, 
@@ -205,6 +205,7 @@ exports.BankRasxodDB = class {
                         SELECT 
                             ch.id,
                             ch.spravochnik_operatsii_id,
+                            so.schet,
                             so.name AS spravochnik_operatsii_name,
                             ch.summa::FLOAT,
                             ch.id_spravochnik_podrazdelenie,
@@ -240,7 +241,7 @@ exports.BankRasxodDB = class {
 
   static async update(params, client) {
     const result = await client.query(
-      `
+      `--sql
             UPDATE bank_rasxod SET 
                 doc_num = $1, 
                 doc_date = $2, 
@@ -286,7 +287,7 @@ exports.BankRasxodDB = class {
   }
 
   static async fio(params) {
-    const query = `
+    const query = `--sql
             SELECT 
               b.rukovoditel,
               b.glav_buxgalter

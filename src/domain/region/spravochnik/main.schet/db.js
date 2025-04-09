@@ -18,6 +18,23 @@ exports.MainSchetDB = class {
     return result[0];
   }
 
+  static async getJurSchets(params) {
+    const query = `
+      SELECT
+        sch.*
+      FROM jur_schets sch
+      JOIN main_schet m ON m.id = sch.main_schet_id
+      JOIN users u ON u.id = m.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND sch.isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async checkJurSchet(params) {
     const query = `--sql
       SELECT

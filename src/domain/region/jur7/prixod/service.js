@@ -9,6 +9,7 @@ const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { SaldoDB } = require("@jur7_saldo/db");
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
 
 exports.PrixodJur7Service = class {
   static async getByProductId(data) {
@@ -351,6 +352,24 @@ exports.PrixodJur7Service = class {
         );
       }
 
+      // check jur3
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.kredit_schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
       return { doc, dates };
     });
 
@@ -522,6 +541,42 @@ exports.PrixodJur7Service = class {
         );
       }
 
+      // check jur3
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.kredit_schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
+      for (let child of data.old_data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.kredit_schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              doc_date: data.old_data.doc_date,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
       return { doc, dates };
     });
 
@@ -563,6 +618,23 @@ exports.PrixodJur7Service = class {
             client
           )
         );
+      }
+
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.kredit_schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
       }
 
       return { doc, dates };

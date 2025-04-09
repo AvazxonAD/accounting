@@ -35,7 +35,9 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -179,7 +181,9 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -218,7 +222,9 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -277,7 +283,9 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -384,8 +392,8 @@ exports.Controller = class {
     const { dates, doc } = await ShowServiceService.update({
       ...req.query,
       ...req.body,
-      user_id,
       id,
+      user_id,
       region_id,
       old_data,
     });
@@ -401,7 +409,9 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur3_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }

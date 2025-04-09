@@ -4,8 +4,6 @@ const router = Router();
 const { validator } = require("@helper/validator");
 const { BankRasxodSchema } = require("./schema");
 const { Controller } = require("./controller");
-const { checkJur2Saldo } = require(`@middleware/check.saldo`);
-const { BankSaldoService } = require(`@jur2_saldo/service`);
 
 router
   .post("/", validator(Controller.create, BankRasxodSchema.create()))

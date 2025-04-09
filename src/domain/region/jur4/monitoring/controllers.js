@@ -31,7 +31,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
@@ -40,6 +42,9 @@ exports.Controller = class {
       ...req.query,
       region_id,
     });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
 
     const {
       data,
@@ -536,7 +541,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 404);
     }

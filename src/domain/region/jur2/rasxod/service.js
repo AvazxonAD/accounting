@@ -3,6 +3,7 @@ const { BankRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
 const { FeaturesService } = require(`@features/service`);
 const { BankSaldoService } = require(`@jur2_saldo/service`);
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
 
 exports.BankRasxodService = class {
   static async import(data) {
@@ -45,6 +46,19 @@ exports.BankRasxodService = class {
           user_id: data.user_id,
           main_schet_id: data.main_schet_id,
         });
+
+        for (let child of item.childs) {
+          if (child.schet) {
+            if (child.schet.type === "jur3") {
+              await Jur3SaldoService.createSaldoDate({
+                ...data,
+                schet_id: child.schet.id,
+                main_schet_id: child.schet.main_schet_id,
+                client,
+              });
+            }
+          }
+        }
       }
 
       const dates = await BankSaldoService.createSaldoDate({
@@ -66,6 +80,23 @@ exports.BankRasxodService = class {
         ...data,
         client,
       });
+
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
 
       return { doc, dates };
     });
@@ -121,6 +152,23 @@ exports.BankRasxodService = class {
         ...data,
         client,
       });
+
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
 
       return { doc, dates };
     });
@@ -248,6 +296,42 @@ exports.BankRasxodService = class {
           self.findIndex((t) => t.year === item.year && t.month === item.month)
       );
 
+      // check jur3
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
+      for (let child of data.old_data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              doc_date: data.old_data.doc_date,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
       return { doc, dates: uniqueDates };
     });
 
@@ -262,6 +346,24 @@ exports.BankRasxodService = class {
         ...data,
         client,
       });
+
+      // check jur3
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur3") {
+            await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
 
       return { doc, dates };
     });

@@ -1,3 +1,4 @@
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 const { AvansDB } = require("./db");
 const {
   childsSumma,
@@ -52,7 +53,12 @@ exports.AktService = class {
 
       await this.createChild({ ...data, docId: doc.id }, client);
 
-      return doc;
+      const dates = await Jur4SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;

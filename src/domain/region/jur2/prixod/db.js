@@ -150,7 +150,7 @@ exports.BankPrixodDB = class {
   }
 
   static async getById(params, isdeleted) {
-    const query = `
+    const query = `--sql
             SELECT 
                 d.id,
                 d.doc_num, 
@@ -172,6 +172,7 @@ exports.BankPrixodDB = class {
                             ch.spravochnik_operatsii_id,
                             so.name AS spravochnik_operatsii_name,
                             ch.summa,
+                            so.schet,
                             ch.id_spravochnik_podrazdelenie,
                             s_p.name AS spravochnik_podrazdelenie_name,
                             ch.id_spravochnik_sostav,

@@ -19,7 +19,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -38,7 +40,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -62,7 +66,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -155,7 +161,9 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find((item) => item.id === schet_id);
+    const schet = main_schet.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -192,11 +200,41 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, schet_id } = req.query;
+    const { budjet_id, schet_id, main_schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    let check = true;
+
+    if (!main_schet_id && schet_id) {
+      check = false;
+    }
+
+    if (main_schet_id && check) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+
+      if (!main_schet) {
+        check = false;
+      }
+
+      if (schet_id) {
+        const schet = main_schet.jur4_schets.find(
+          (item) => item.id === Number(schet_id)
+        );
+        if (!schet) {
+          check = false;
+        }
+      }
+    }
+
+    if (!check) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
     const { docs, summa } = await Jur4SaldoService.get({
