@@ -232,16 +232,6 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const check = await BankSaldoService.getByMonth({
-      region_id,
-      year: new Date(doc_date).getFullYear(),
-      month: new Date(doc_date).getMonth() + 1,
-      main_schet_id,
-    });
-    if (!check) {
-      return res.error(req.i18n.t("saldoNotFound"), 404);
-    }
-
     const result = await BankPrixodService.getById({
       region_id,
       main_schet_id,
@@ -250,6 +240,16 @@ exports.Controller = class {
     });
     if (!result) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const check = await BankSaldoService.getByMonth({
+      region_id,
+      year: new Date(result.doc_date).getFullYear(),
+      month: new Date(result.doc_date).getMonth() + 1,
+      main_schet_id,
+    });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);

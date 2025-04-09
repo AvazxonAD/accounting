@@ -151,8 +151,10 @@ exports.BankSaldoDB = class {
     const query = `--sql
         SELECT 
             d.*,
-            d.summa::FLOAT
+            d.summa::FLOAT,
+            m.account_number
         FROM bank_saldo AS d
+        JOIN main_schet m ON d.main_schet_id = m.id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
         WHERE d.isdeleted = false

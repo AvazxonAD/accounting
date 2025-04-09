@@ -48,7 +48,7 @@ exports.KassaMonitoringService = class {
       data: result.data || [],
       total_count: result.total_count,
       prixod_sum: internal.prixod_sum,
-      rasxod_sum: result.rasxod_sum,
+      rasxod_sum: internal.rasxod_sum,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,

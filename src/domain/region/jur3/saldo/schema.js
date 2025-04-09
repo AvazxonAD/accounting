@@ -46,6 +46,8 @@ exports.Jur3SaldoSchema = class {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().required().min(1).integer(),
+        main_schet_id: Joi.number().min(1).integer(),
+        schet_id: Joi.number().min(1).integer(),
         year: Joi.number().integer().min(1901),
         month: Joi.number().integer().min(1).max(12),
       }),

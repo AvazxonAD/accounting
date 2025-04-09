@@ -109,10 +109,10 @@ exports.ShowServiceDB = class {
                 summa_s_nds,
                 created_at,
                 updated_at
-            ) VALUES ${_values} RETURNING *
+            ) VALUES ${_values}
         `;
-    const result = await client.query(query, _params);
-    return result.rows;
+
+    await client.query(query, _params);
   }
   static async get(params, search = null, order_by, order_type) {
     let search_filter = ``;
@@ -246,6 +246,6 @@ exports.ShowServiceDB = class {
       params
     );
 
-    return result;
+    return result.rows[0];
   }
 };

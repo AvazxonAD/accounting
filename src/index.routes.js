@@ -3,28 +3,106 @@ const routes = express.Router();
 
 const { protect } = require("@middleware/auth");
 const { Middleware } = require("@middleware/index");
+const {
+  checkJur2Saldo,
+  checkJur1Saldo,
+  checkJur3Saldo,
+  checkJur4Saldo,
+} = require(`@middleware/check.saldo`);
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { BankSaldoService } = require(`@jur2_saldo/service`);
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 routes
   // Region routes
 
-  .use("/bank/monitoring", protect, require("@jur2_monitoring/index"))
-  .use("/bank/income", protect, require("@jur2_prixod/index"))
+  // jur2
+  .use(
+    "/bank/monitoring",
+    protect,
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
+    require("@jur2_monitoring/index")
+  )
+  .use(
+    "/bank/income",
+    protect,
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
+    require("@jur2_prixod/index")
+  )
   .use("/bank/saldo", protect, require("@jur2_saldo/index"))
-  .use("/bank/expense", protect, require("@jur2_rasxod/index"))
+  .use(
+    "/bank/expense",
+    protect,
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
+    require("@jur2_rasxod/index")
+  )
 
-  .use("/kassa/monitoring", protect, require("@jur1_monitoring/index"))
-  .use("/kassa/income", protect, require("@jur1_prixod/index"))
+  // jur1
+  .use(
+    "/kassa/monitoring",
+    protect,
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    require("@jur1_monitoring/index")
+  )
+  .use(
+    "/kassa/income",
+    protect,
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    require("@jur1_prixod/index")
+  )
   .use("/kassa/saldo", protect, require("@jur1_saldo/index"))
-  .use("/kassa/expense", protect, require("@jur1_rasxod/index"))
+  .use(
+    "/kassa/expense",
+    protect,
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    require("@jur1_rasxod/index")
+  )
 
+  // jur3
+  .use(
+    "/organization/monitoring",
+    protect,
+    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    require("@organ_monitoring/index")
+  )
+  .use(
+    "/akt",
+    protect,
+    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    require("@akt/index")
+  )
+  .use("/shartnoma", protect, require("@contract/index"))
+  .use(
+    "/services/show",
+    protect,
+    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    require("@show_service/index")
+  )
+  .use("/organ/saldo", protect, require("@organ_saldo/index"))
+
+  // jur4
+  .use(
+    "/avans",
+    checkJur4Saldo(Jur4SaldoService.getDateSaldo),
+    protect,
+    require("@avans/index")
+  )
+  .use(
+    "/podotchet/monitoring",
+    protect,
+    checkJur4Saldo(Jur4SaldoService.getDateSaldo),
+    require("@pod_monitoring/index")
+  )
+  .use("/podotchet/saldo", protect, require("@podotchet_saldo/index"))
+
+  // auth
   .use("/auth", require("@auth/index"))
   .use("/auth/region", protect, require("@region/index"))
   .use("/auth/role", protect, require("@role/index"))
   .use("/auth/access", protect, require("@access/index"))
   .use("/auth/user", protect, require("@user/index"))
   .use("/auth/admin", protect, require("@admin_users/index"))
-
-  .use("/organization/monitoring", protect, require("@organ_monitoring/index"))
 
   .use(
     "/spravochnik/podotchet-litso",
@@ -67,16 +145,6 @@ routes
   .use("/smeta/grafik", protect, require("@smeta_grafik/index"))
   .use("/smeta", protect, require("@smeta/index"))
 
-  .use("/shartnoma", protect, require("@contract/index"))
-
-  .use("/akt", protect, require("@akt/index"))
-
-  .use("/avans", protect, require("@avans/index"))
-
-  .use("/services/show", protect, require("@show_service/index"))
-
-  .use("/podotchet/monitoring", protect, require("@pod_monitoring/index"))
-
   .use("/jur_7/group", protect, require("@group/index"))
   .use("/jur_7/pereotsenka", protect, require("@pereotsenka/index"))
   .use("/jur_7/podrazdelenie", protect, require("@jur7_podraz/index"))
@@ -109,21 +177,17 @@ routes
   .use("/jur8/schets", protect, require("@region_prixod_schets/index"))
   .use("/jur8/monitoring", protect, require("@jur8_monitoring/index"))
 
-  // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
-  // .use("/real/cost/report", protect, require("@real_cost_report/index"))
-
-  // .use("/ox/doc", protect, require("@ox_doc/index"))
-  // .use("/ox/report", protect, require("@ox_report/index"))
-
   .use("/log", protect, require("@log/index"))
 
   .use("/features", protect, require("@features/index"))
 
   .use("/dashboard", protect, require("@region_dashboard/index"))
 
-  .use("/organ/saldo", protect, require("@organ_saldo/index"))
+  // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
+  // .use("/real/cost/report", protect, require("@real_cost_report/index"))
 
-  .use("/podotchet/saldo", protect, require("@podotchet_saldo/index"))
+  // .use("/ox/doc", protect, require("@ox_doc/index"))
+  // .use("/ox/report", protect, require("@ox_report/index"))
 
   // Admin routes
 

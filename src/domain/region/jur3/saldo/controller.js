@@ -160,18 +160,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const checkBySchet = await Jur3SaldoService.get({
-      main_schet_id,
-      region_id,
-      budjet_id,
-    });
-    if (checkBySchet.docs.length) {
-      return res.error(req.i18n.t(`docExists`), 409);
-    }
-
     const check = await Jur3SaldoService.get({
       year,
       main_schet_id,
+      schet_id,
       region_id,
       month,
       budjet_id,
@@ -192,11 +184,41 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, schet_id } = req.query;
+    const { budjet_id, schet_id, main_schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    let check = true;
+
+    if (!main_schet_id && schet_id) {
+      check = false;
+    }
+
+    if (main_schet_id && check) {
+      const main_schet = await MainSchetService.getById({
+        region_id,
+        id: main_schet_id,
+      });
+
+      if (!main_schet) {
+        check = false;
+      }
+
+      if (schet_id) {
+        const schet = main_schet.jur3_schets.find(
+          (item) => item.id === schet_id
+        );
+        if (!schet) {
+          check = false;
+        }
+      }
+    }
+
+    if (!check) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
     const { docs, summa } = await Jur3SaldoService.get({
@@ -248,8 +270,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const { budjet_id } = req.query;
-    const { year, month, main_schet_id, schet_id } = req.body;
-    const user_id = req.user.id;
+    const { main_schet_id, schet_id } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -275,64 +296,8 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await Jur3SaldoService.getSaldoDate({
-      region_id,
-      main_schet_id: old_data.main_schet_id,
-      date_saldo,
-    });
-
-    if (dates.length) {
-      if (
-        old_data.year !== year ||
-        old_data.month !== month ||
-        old_data.main_schet_id !== main_schet_id
-      ) {
-        return res.error(req.i18n.t(`firstSaldoError`), 409);
-      }
-    }
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    if (old_data.main_schet_id !== main_schet_id) {
-      const checkBySchet = await Jur3SaldoService.get({
-        main_schet_id,
-        region_id,
-        budjet_id,
-      });
-      if (checkBySchet.docs.length) {
-        return res.error(req.i18n.t(`docExists`), 409);
-      }
-    }
-
-    if (
-      old_data.year !== year ||
-      old_data.month !== month ||
-      old_data.main_schet_id !== main_schet_id
-    ) {
-      const check = await Jur3SaldoService.get({
-        year,
-        main_schet_id,
-        region_id,
-        month,
-        budjet_id: main_schet.spravochnik_budjet_name_id,
-      });
-      if (check.docs.length) {
-        return res.error(req.i18n.t(`docExists`), 409);
-      }
-    }
-
     const result = await Jur3SaldoService.update({
       ...req.body,
-      main_schet_id,
-      region_id,
-      user_id,
       id,
     });
 

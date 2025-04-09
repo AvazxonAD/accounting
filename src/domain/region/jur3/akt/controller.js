@@ -1,4 +1,4 @@
-const { checkSchetsEquality } = require("@helper/functions");
+const { checkSchetsEquality, HelperFunctions } = require("@helper/functions");
 const { PodrazdelenieService } = require("@podraz/service");
 const { MainSchetService } = require("@main_schet/service");
 const { AktService } = require("./service");
@@ -10,6 +10,7 @@ const { TypeOperatsiiService } = require("@type_operatsii/service");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
 const { RegionService } = require("@region/service");
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
 
 exports.Controller = class {
   static async create(req, res) {
@@ -20,6 +21,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
     } = req.body;
 
     const region_id = req.user.region_id;
@@ -34,6 +36,20 @@ exports.Controller = class {
     const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
+
+    const saldo = await Jur3SaldoService.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const organization = await OrganizationService.getById({
@@ -139,6 +155,7 @@ exports.Controller = class {
     const result = await AktService.create({
       ...req.body,
       user_id,
+      region_id,
       ...req.query,
     });
 
@@ -230,6 +247,7 @@ exports.Controller = class {
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
     } = req.body;
 
     const region_id = req.user.region_id;
@@ -254,6 +272,20 @@ exports.Controller = class {
     const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
+
+    const saldo = await Jur3SaldoService.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const organization = await OrganizationService.getById({
@@ -360,6 +392,8 @@ exports.Controller = class {
     const result = await AktService.update({
       main_schet_id,
       schet_id,
+      old_data,
+      region_id,
       user_id,
       ...req.body,
       id,
@@ -372,6 +406,7 @@ exports.Controller = class {
     const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
+    const user_id = req.user.id;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -383,14 +418,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const doc = await AktService.getById({ region_id, main_schet_id, id });
-    if (!doc) {
+    const old_doc = await AktService.getById({ region_id, main_schet_id, id });
+    if (!old_doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await AktService.delete({ id });
+    const { dates, doc } = await AktService.delete({
+      id,
+      ...old_doc,
+      region_id,
+      user_id,
+      ...req.query,
+    });
 
-    return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
+    return res.success(req.i18n.t("deleteSuccess"), 200, { dates }, doc);
   }
 
   static async cap(req, res) {

@@ -130,7 +130,7 @@ exports.KassaRasxodService = class {
 
       let dates;
 
-      dates = await BankSaldoService.createSaldoDate({
+      dates = await KassaSaldoService.createSaldoDate({
         ...data,
         client,
       });
@@ -142,7 +142,7 @@ exports.KassaRasxodService = class {
           new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
-          await BankSaldoService.createSaldoDate({
+          await KassaSaldoService.createSaldoDate({
             ...data,
             doc_date: data.old_data.doc_date,
             client,

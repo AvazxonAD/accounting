@@ -56,7 +56,6 @@ const Controller = class {
 const getSchet = async (req, res) => {
   try {
     const result = await getSchetService();
-    console.log(result);
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   } catch (error) {
@@ -116,16 +115,6 @@ const getOperatsii = async (req, res) => {
       sub_schet
     );
 
-    console.log(
-      offset,
-      limit,
-      type_schet,
-      search,
-      meta_search,
-      schet,
-      sub_schet,
-      budjet_id
-    );
     const pageCount = Math.ceil(total / limit);
 
     const meta = {

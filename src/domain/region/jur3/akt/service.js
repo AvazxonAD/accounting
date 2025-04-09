@@ -8,6 +8,7 @@ const {
   tashkentTime,
 } = require("@helper/functions");
 const { db } = require("@db/index");
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
 
 exports.AktService = class {
   static async getSchets(data) {
@@ -17,9 +18,6 @@ exports.AktService = class {
       data.from,
       data.to,
     ]);
-
-    for (let item of result) {
-    }
 
     return result;
   }
@@ -40,6 +38,7 @@ exports.AktService = class {
     );
 
     let page_summa = 0;
+
     result.data.forEach((item) => {
       page_summa += item.summa;
     });
@@ -73,7 +72,12 @@ exports.AktService = class {
 
       await this.createChild({ ...data, docId: doc.id }, client);
 
-      return doc;
+      const dates = await Jur3SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -148,7 +152,35 @@ exports.AktService = class {
 
       await this.createChild({ ...data, docId: data.id }, client);
 
-      return doc;
+      let dates;
+
+      dates = await Jur3SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      if (
+        new Date(data.doc_date).getFullYear() !==
+          new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !==
+          new Date(data.old_data.doc_date).getMonth() + 1
+      ) {
+        dates = dates.concat(
+          await Jur3SaldoService.createSaldoDate({
+            ...data,
+            doc_date: data.old_data.doc_date,
+            client,
+          })
+        );
+      }
+
+      const uniqueDates = dates.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.year === item.year && t.month === item.month)
+      );
+
+      return { doc, dates: uniqueDates };
     });
 
     return result;
@@ -156,9 +188,14 @@ exports.AktService = class {
 
   static async delete(data) {
     const result = await db.transaction(async (client) => {
-      const docId = await AktDB.delete([data.id], client);
+      const doc = await AktDB.delete([data.id], client);
 
-      return docId;
+      const dates = await Jur3SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
@@ -319,7 +356,7 @@ exports.AktService = class {
       worksheet.getColumn(6).width = 5;
     }
 
-    const folder_path = path.join(__dirname, "../../../public/exports/");
+    const folder_path = path.join(__dirname, "../../../../../public/exports/");
     try {
       await access(folder_path, constants.W_OK);
     } catch (error) {

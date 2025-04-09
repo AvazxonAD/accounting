@@ -7,6 +7,15 @@ const { REPORT_RASXOD_SCHET } = require("./constants");
 const ErrorResponse = require("@helper/error.response");
 
 exports.HelperFunctions = class {
+  static returnSummaWithKol(data) {
+    let summa = 0;
+    for (let child of data.childs) {
+      summa += child.kol * child.sena;
+    }
+
+    return summa;
+  }
+
   static findDuplicateByKey(arr, key) {
     const seen = new Set();
     return arr.find((item) => {
@@ -20,6 +29,13 @@ exports.HelperFunctions = class {
 
   static returnDate(data) {
     return `${data.year}-${String(data.month).padStart(2, "0")}-01`;
+  }
+
+  static returnMonthAndYear(data) {
+    const year = new Date(data.doc_date).getFullYear();
+    const month = new Date(data.doc_date).getMonth() + 1;
+
+    return { year, month };
   }
 
   static returnLocalDate(date) {

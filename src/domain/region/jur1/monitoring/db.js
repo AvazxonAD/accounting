@@ -188,8 +188,8 @@ exports.KassaMonitoringDB = class {
                     AND d.main_schet_id = $2  
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
-                    ${search_filter} 
                     AND d.doc_date BETWEEN $3 AND $4
+                    ${search_filter} 
             ), 
             rasxod AS (
                 SELECT 
@@ -207,10 +207,12 @@ exports.KassaMonitoringDB = class {
             )
 
             SELECT 
-                prixod.summa AS prixod_sum,
-                rasxod.summa AS rasxod_sum,
-                (prixod.summa - rasxod.summa) AS summa
-            FROM prixod, rasxod
+                ( SELECT summa FROM prixod ) AS prixod_sum,
+                ( SELECT summa FROM rasxod ) AS rasxod_sum,
+                (
+                    ( SELECT summa FROM prixod ) -
+                    ( SELECT summa FROM rasxod )
+                ) AS summa 
         `;
 
     const result = await db.query(query, params);

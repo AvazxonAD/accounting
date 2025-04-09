@@ -4,17 +4,29 @@ const router = Router();
 const { validator } = require("@helper/validator");
 const { BankMonitoringSchema } = require("./schema");
 const { Controller } = require("./controller");
+const { BankSaldoService } = require(`@jur2_saldo/service`);
+const { checkJur2Saldo } = require(`@middleware/check.saldo`);
 
 router
-  .get("/", validator(Controller.get, BankMonitoringSchema.get()))
+  .get(
+    "/",
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
+    validator(Controller.get, BankMonitoringSchema.get())
+  )
   .get(
     "/daily",
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
     validator(Controller.daysReport, BankMonitoringSchema.daysReport())
   )
   .get(
     "/prixod",
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
     validator(Controller.prixodReport, BankMonitoringSchema.prixodReport())
   )
-  .get("/cap", validator(Controller.cap, BankMonitoringSchema.cap()));
+  .get(
+    "/cap",
+    checkJur2Saldo(BankSaldoService.getDateSaldo),
+    validator(Controller.cap, BankMonitoringSchema.cap())
+  );
 
 module.exports = router;

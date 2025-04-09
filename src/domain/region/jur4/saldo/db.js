@@ -157,8 +157,12 @@ exports.Jur4SaldoDB = class {
     const query = `--sql
         SELECT 
             d.*,
-            d.summa::FLOAT
-        FROM jur4_saldo AS d
+            d.summa::FLOAT,
+            m.account_number,
+            op.schet
+        FROM jur4_saldo AS d  
+        JOIN main_schet m ON d.main_schet_id = m.id
+        JOIN jur_schets op ON op.id = d.schet_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
         WHERE d.isdeleted = false

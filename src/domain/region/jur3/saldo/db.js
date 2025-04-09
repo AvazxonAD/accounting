@@ -134,12 +134,23 @@ exports.Jur3SaldoDB = class {
     return result[0] || result.rows[0];
   }
 
-  static async get(params, main_schet_id = null, year = null, month = null) {
+  static async get(
+    params,
+    main_schet_id = null,
+    year = null,
+    month = null,
+    schet_id = null
+  ) {
     let conditions = [];
 
     if (main_schet_id) {
       params.push(main_schet_id);
       conditions.push(` d.main_schet_id = $${params.length}`);
+    }
+
+    if (schet_id) {
+      params.push(schet_id);
+      conditions.push(` d.schet_id = $${params.length}`);
     }
 
     if (year) {
@@ -157,8 +168,12 @@ exports.Jur3SaldoDB = class {
     const query = `--sql
         SELECT 
             d.*,
-            d.summa::FLOAT
-        FROM jur3_saldo AS d
+            d.summa::FLOAT,
+            m.account_number,
+            op.schet
+        FROM jur3_saldo AS d  
+        JOIN main_schet m ON d.main_schet_id = m.id
+        JOIN jur_schets op ON op.id = d.schet_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
         WHERE d.isdeleted = false
@@ -196,13 +211,8 @@ exports.Jur3SaldoDB = class {
     const query = `--sql
         UPDATE jur3_saldo SET 
             summa = $1,
-            main_schet_id = $2,
-            year = $3,
-            month = $4,
-            date_saldo = $5,
-            schet_id = $6,
-            updated_at = $7
-        WHERE id = $8
+            updated_at = $2
+        WHERE id = $3
         RETURNING id
     `;
 

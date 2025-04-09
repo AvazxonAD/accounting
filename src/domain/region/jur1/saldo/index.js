@@ -5,23 +5,39 @@ const { validator } = require("@helper/validator");
 const { KassaSaldoSchema } = require("./schema");
 const { Controller } = require("./controller");
 
+const { checkJur1Saldo } = require(`@middleware/check.saldo`);
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
+
 router
   .post("/", validator(Controller.create, KassaSaldoSchema.create()))
   .post(
     "/auto",
     validator(Controller.createAuto, KassaSaldoSchema.createAuto())
   )
-  .get("/", validator(Controller.get, KassaSaldoSchema.get()))
   .get(
-    "/date",
-    validator(Controller.getDateSaldo, KassaSaldoSchema.getDateSaldo())
+    "/",
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    validator(Controller.get, KassaSaldoSchema.get())
   )
-  .put("/:id", validator(Controller.update, KassaSaldoSchema.update()))
+  .put(
+    "/:id",
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    validator(Controller.update, KassaSaldoSchema.update())
+  )
   .delete(
     "/clean",
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
     validator(Controller.cleanData, KassaSaldoSchema.cleanData())
   )
-  .delete("/:id", validator(Controller.delete, KassaSaldoSchema.delete()))
-  .get("/:id", validator(Controller.getById, KassaSaldoSchema.getById()));
+  .delete(
+    "/:id",
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    validator(Controller.delete, KassaSaldoSchema.delete())
+  )
+  .get(
+    "/:id",
+    checkJur1Saldo(KassaSaldoService.getDateSaldo),
+    validator(Controller.getById, KassaSaldoSchema.getById())
+  );
 
 module.exports = router;

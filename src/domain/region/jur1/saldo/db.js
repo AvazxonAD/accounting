@@ -27,9 +27,9 @@ exports.KassaSaldoDB = class {
       FROM date_saldo_jur1 d
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
-      WHERE r.id = $1
-          AND d.main_schet_id = $2 
-          AND d.isdeleted = false
+      WHERE d.isdeleted = false
+        AND r.id = $1    
+        AND d.main_schet_id = $2
       ORDER BY year, month
     `;
 
@@ -145,8 +145,10 @@ exports.KassaSaldoDB = class {
     const query = `--sql
         SELECT 
             d.*,
-            d.summa::FLOAT
+            d.summa::FLOAT,
+            m.account_number
         FROM kassa_saldo AS d
+        JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
         WHERE d.isdeleted = false

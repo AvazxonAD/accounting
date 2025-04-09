@@ -2,7 +2,11 @@ const { MainSchetDB } = require("@main_schet/db");
 const { OperatsiiDB } = require("@operatsii/db");
 const { OrganizationDB } = require("@organization/db");
 const { ContractDB } = require("@contract/db");
-const { checkSchetsEquality, tashkentTime } = require("@helper/functions");
+const {
+  checkSchetsEquality,
+  tashkentTime,
+  HelperFunctions,
+} = require("@helper/functions");
 const { PodrazdelenieDB } = require("@podraz/db");
 const { SostavDB } = require("@sostav/db");
 const { TypeOperatsiiDB } = require("@type_operatsii/db");
@@ -10,19 +14,18 @@ const { ShowServiceDB } = require("./db");
 const { db } = require("@db/index");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
-const { OperatsiiService } = require(`@operatsii/service`);
+const { ShowServiceService } = require("./service");
+const { Jur3SaldoService } = require(`@organ_saldo/service`);
 
 exports.Controller = class {
   static async create(req, res) {
     const {
-      doc_num,
-      doc_date,
-      opisanie,
       id_spravochnik_organization,
       shartnomalar_organization_id,
       organization_by_raschet_schet_id,
       organization_by_raschet_schet_gazna_id,
       shartnoma_grafik_id,
+      doc_date,
       childs,
     } = req.body;
 
@@ -35,6 +38,20 @@ exports.Controller = class {
     const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
+
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
+
+    const saldo = await Jur3SaldoService.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const organization = await OrganizationDB.getById([
@@ -135,54 +152,15 @@ exports.Controller = class {
     if (!checkSchetsEquality(operatsiis)) {
       return res.error(req.i18n.t("schetDifferentError"), 400);
     }
-    let summa = 0;
-    for (let child of childs) {
-      summa += child.kol * child.sena;
-    }
-    let doc;
-    await db.transaction(async (client) => {
-      doc = await ShowServiceDB.create(
-        [
-          user_id,
-          doc_num,
-          doc_date,
-          summa,
-          opisanie,
-          id_spravochnik_organization,
-          shartnomalar_organization_id,
-          main_schet_id,
-          organization_by_raschet_schet_id,
-          organization_by_raschet_schet_gazna_id,
-          shartnoma_grafik_id,
-          schet_id,
-          tashkentTime(),
-          tashkentTime(),
-        ],
-        client
-      );
-      const result_childs = childs.map((item) => {
-        item.summa = item.kol * item.sena;
-        if (item.nds_foiz) {
-          item.nds_summa = (item.nds_foiz / 100) * item.summa;
-        } else {
-          item.nds_summa = 0;
-        }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.created_at = tashkentTime();
-        item.updated_at = tashkentTime();
-        item.main_schet_id = main_schet_id;
-        item.user_id = user_id;
-        item.kursatilgan_hizmatlar_jur152_id = doc.id;
-        return item;
-      });
-      const items = await ShowServiceDB.createShowServiceChild(
-        result_childs,
-        client
-      );
-      doc.childs = items;
+
+    const { dates, doc } = await ShowServiceService.create({
+      ...req.body,
+      ...req.query,
+      user_id,
+      region_id,
     });
 
-    return res.success(req.i18n.t("createSuccess"), 201, null, doc);
+    return res.success(req.i18n.t("createSuccess"), 201, { dates }, doc);
   }
 
   static async get(req, res) {
@@ -283,6 +261,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
+
+    const saldo = await Jur3SaldoService.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
     const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
@@ -388,57 +380,23 @@ exports.Controller = class {
     if (!checkSchetsEquality(operatsiis)) {
       return res.error(req.i18n.t("schetDifferentError"), 400);
     }
-    let summa = 0;
-    for (let child of childs) {
-      summa += child.kol * child.sena;
-    }
-    let doc;
-    await db.transaction(async (client) => {
-      doc = await ShowServiceDB.update(
-        [
-          doc_num,
-          doc_date,
-          opisanie,
-          summa,
-          id_spravochnik_organization,
-          shartnomalar_organization_id,
-          tashkentTime(),
-          organization_by_raschet_schet_id,
-          organization_by_raschet_schet_gazna_id,
-          shartnoma_grafik_id,
-          schet_id,
-          id,
-        ],
-        client
-      );
-      await ShowServiceDB.deleteShowServiceChild([id], client);
-      const result_childs = childs.map((item) => {
-        item.summa = item.kol * item.sena;
-        if (item.nds_foiz) {
-          item.nds_summa = (item.nds_foiz / 100) * item.summa;
-        } else {
-          item.nds_summa = 0;
-        }
-        item.summa_s_nds = item.summa + item.nds_summa;
-        item.created_at = tashkentTime();
-        item.updated_at = tashkentTime();
-        item.main_schet_id = main_schet_id;
-        item.user_id = user_id;
-        item.kursatilgan_hizmatlar_jur152_id = doc.id;
-        return item;
-      });
-      const items = await ShowServiceDB.createShowServiceChild(
-        result_childs,
-        client
-      );
-      doc.childs = items;
+
+    const { dates, doc } = await ShowServiceService.update({
+      ...req.query,
+      ...req.body,
+      user_id,
+      id,
+      region_id,
+      old_data,
     });
-    return res.success(req.i18n.t("createSuccess"), 201, null, doc);
+
+    return res.success(req.i18n.t("createSuccess"), 201, { dates }, doc);
   }
 
   static async delete(req, res) {
     const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
+    const user_id = req.user.id;
     const id = req.params.id;
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
@@ -448,15 +406,18 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
-    const result = await ShowServiceDB.getById([region_id, id, main_schet_id]);
-    if (!result) {
+    const doc = await ShowServiceDB.getById([region_id, id, main_schet_id]);
+    if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const data = await db.transaction(async (client) => {
-      const docId = await ShowServiceDB.delete([id], client);
-
-      return docId;
+    const data = await ShowServiceService.delete({
+      id,
+      region_id,
+      main_schet_id,
+      schet_id,
+      user_id,
+      ...doc,
     });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, data);

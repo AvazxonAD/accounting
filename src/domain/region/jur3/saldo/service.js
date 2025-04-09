@@ -147,7 +147,8 @@ exports.Jur3SaldoService = class {
       [data.budjet_id],
       data.main_schet_id,
       data.year,
-      data.month
+      data.month,
+      data.schet_id
     );
 
     let summa = 0;
@@ -172,16 +173,7 @@ exports.Jur3SaldoService = class {
       const date_saldo = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
 
       const doc = await Jur3SaldoDB.update(
-        [
-          data.summa,
-          data.main_schet_id,
-          data.year,
-          data.month,
-          date_saldo,
-          data.schet_id,
-          new Date(),
-          data.id,
-        ],
+        [data.summa, new Date(), data.id],
         client
       );
 

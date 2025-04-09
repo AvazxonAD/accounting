@@ -282,7 +282,7 @@ exports.AktDB = class {
             JOIN smeta AS s ON s.id = so.smeta_id
             WHERE d.doc_date BETWEEN $1 AND $2 
                 AND r.id = $3 
-                AND s_own.schet = $4 
+                AND so.schet = $4 
                 AND d.main_schet_id = $5
                 AND ch.isdeleted = false
                 
