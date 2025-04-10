@@ -424,7 +424,6 @@ exports.Controller = class {
     const schet = main_schet.jur3_schets.find(
       (item) => item.id === Number(schet_id)
     );
-    console.log(schet_id);
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }

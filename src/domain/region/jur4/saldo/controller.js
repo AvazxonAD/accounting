@@ -172,19 +172,10 @@ exports.Controller = class {
       main_schet_id,
       region_id,
       budjet_id,
+      schet_id,
     });
-    if (checkBySchet.docs.length) {
-      return res.error(req.i18n.t(`docExists`), 409);
-    }
 
-    const check = await Jur4SaldoService.get({
-      year,
-      main_schet_id,
-      region_id,
-      month,
-      budjet_id,
-    });
-    if (check.docs.length) {
+    if (checkBySchet.docs.length) {
       return res.error(req.i18n.t(`docExists`), 409);
     }
 

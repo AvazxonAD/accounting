@@ -84,8 +84,8 @@ routes
   // jur4
   .use(
     "/avans",
-    checkJur4Saldo(Jur4SaldoService.getDateSaldo),
     protect,
+    checkJur4Saldo(Jur4SaldoService.getDateSaldo),
     require("@avans/index")
   )
   .use(

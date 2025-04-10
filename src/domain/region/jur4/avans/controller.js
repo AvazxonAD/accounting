@@ -202,14 +202,6 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const operatsii = await OperatsiiService.getById({
-      id: spravochnik_operatsii_own_id,
-      type: "general",
-    });
-    if (!operatsii) {
-      return res.error(req.i18n.t("operatsiiNotFound"), 404);
-    }
-
     const podotchet = await PodotchetService.getById({
       id: spravochnik_podotchet_litso_id,
       region_id,
@@ -268,6 +260,8 @@ exports.Controller = class {
     const result = await AktService.update({
       ...req.query,
       user_id,
+      old_data,
+      region_id,
       ...req.body,
       id,
     });
@@ -279,6 +273,7 @@ exports.Controller = class {
     const { main_schet_id, schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
+    const user_id = req.user.id;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -297,7 +292,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await AktService.delete({ id });
+    const result = await AktService.delete({
+      id,
+      region_id,
+      user_id,
+      ...req.query,
+      ...doc,
+    });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
   }

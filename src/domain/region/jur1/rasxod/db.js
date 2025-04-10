@@ -143,7 +143,7 @@ exports.KassaRasxodDB = class {
   }
 
   static async getById(params, isdeleted) {
-    const query = `
+    const query = `--sql
             SELECT 
                 d.id, 
                 d.doc_num,
@@ -161,12 +161,14 @@ exports.KassaRasxodDB = class {
                     FROM (
                         SELECT  
                             ch.id,
+                            op.schet,
                             ch.spravochnik_operatsii_id,
                             ch.summa,
                             ch.id_spravochnik_podrazdelenie,
                             ch.id_spravochnik_sostav,
                             ch.id_spravochnik_type_operatsii
-                        FROM kassa_rasxod_child AS ch 
+                        FROM kassa_rasxod_child AS ch
+                        JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1 
@@ -192,7 +194,7 @@ exports.KassaRasxodDB = class {
 
   static async update(params, client) {
     const result = await client.query(
-      `
+      `--sql
             UPDATE kassa_rasxod SET 
                 doc_num = $1, 
                 doc_date = $2, 

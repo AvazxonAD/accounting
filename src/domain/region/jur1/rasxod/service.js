@@ -2,6 +2,7 @@ const { db } = require("@db/index");
 const { KassaRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.KassaRasxodService = class {
   static async create(data) {
@@ -36,6 +37,24 @@ exports.KassaRasxodService = class {
         ...data,
         client,
       });
+
+      // jur4
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
 
       return { doc, dates };
     });
@@ -156,6 +175,42 @@ exports.KassaRasxodService = class {
           self.findIndex((t) => t.year === item.year && t.month === item.month)
       );
 
+      // check jur4
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
+      for (let child of data.old_data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
+              ...data,
+              doc_date: data.old_data.doc_date,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
+
       return { doc, dates: uniqueDates };
     });
 
@@ -170,6 +225,24 @@ exports.KassaRasxodService = class {
         ...data,
         client,
       });
+
+      // check jur4
+      for (let child of data.childs) {
+        const schet = data.jur_schets.find(
+          (item) => item.schet === child.schet
+        );
+
+        if (schet) {
+          if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          }
+        }
+      }
 
       return { doc, dates };
     });

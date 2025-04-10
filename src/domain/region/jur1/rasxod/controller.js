@@ -42,6 +42,7 @@ exports.Controller = class {
       if (!operatsii) {
         return res.error(req.i18n.t("operatsiiNotFound"), 404);
       }
+      child.schet = operatsii.schet;
 
       operatsiis.push(operatsii);
 
@@ -90,8 +91,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await KassaRasxodService.create({
       ...req.body,
+      ...req.query,
+      jur_schets,
       main_schet_id,
       region_id,
       user_id,
@@ -201,6 +206,8 @@ exports.Controller = class {
         return res.error(req.i18n.t("operatsiiNotFound"), 404);
       }
 
+      child.schet = operatsii.schet;
+
       operatsiis.push(operatsii);
 
       if (child.id_spravochnik_podrazdelenie) {
@@ -248,10 +255,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await KassaRasxodService.update({
       ...req.body,
-      main_schet_id,
+      ...req.query,
       user_id,
+      jur_schets,
       region_id,
       old_data: doc,
       id,
@@ -283,10 +293,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+
     const result = await KassaRasxodService.delete({
       id,
       ...doc,
+      ...req.query,
       region_id,
+      jur_schets,
       main_schet_id,
       user_id,
     });

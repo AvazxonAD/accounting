@@ -154,8 +154,10 @@ exports.KassaPrixodDB = class {
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT  
-                            ch.*
+                            ch.*,
+                            op.schet
                         FROM kassa_prixod_child AS ch 
+                        JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1

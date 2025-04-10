@@ -18,8 +18,8 @@ exports.Controller = class {
     const { region_id, id: user_id } = req.user;
     const { main_schet_id } = req.query;
 
-    const year = new Date().getFullYear();
-    const month = new Date().getMonth() + 1;
+    const year = 2024 || new Date().getFullYear();
+    const month = 12; // new Date().getMonth() + 1;
 
     const jur_schets = await MainSchetService.getJurSchets({ region_id });
     const main_schet = await MainSchetService.getById({

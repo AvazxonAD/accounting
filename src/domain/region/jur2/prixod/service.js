@@ -3,6 +3,7 @@ const { BankPrixodDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 const { BankSaldoService } = require(`@jur2_saldo/service`);
 const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.BankPrixodService = class {
   static async create(data) {
@@ -43,6 +44,13 @@ exports.BankPrixodService = class {
         if (schet) {
           if (schet.type === "jur3") {
             await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          } else if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -193,6 +201,13 @@ exports.BankPrixodService = class {
               main_schet_id: schet.main_schet_id,
               client,
             });
+          } else if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
           }
         }
       }
@@ -205,6 +220,14 @@ exports.BankPrixodService = class {
         if (schet) {
           if (schet.type === "jur3") {
             await Jur3SaldoService.createSaldoDate({
+              ...data,
+              doc_date: data.old_data.doc_date,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          } else if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
               ...data,
               doc_date: data.old_data.doc_date,
               schet_id: schet.id,
@@ -239,6 +262,13 @@ exports.BankPrixodService = class {
         if (schet) {
           if (schet.type === "jur3") {
             await Jur3SaldoService.createSaldoDate({
+              ...data,
+              schet_id: schet.id,
+              main_schet_id: schet.main_schet_id,
+              client,
+            });
+          } else if (schet.type === "jur4") {
+            await Jur4SaldoService.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,

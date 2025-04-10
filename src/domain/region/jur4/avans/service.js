@@ -120,8 +120,35 @@ exports.AktService = class {
       await AvansDB.deleteChild([data.id], client);
 
       await this.createChild({ ...data, docId: data.id }, client);
+      let dates;
 
-      return doc;
+      dates = await Jur4SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      if (
+        new Date(data.doc_date).getFullYear() !==
+          new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !==
+          new Date(data.old_data.doc_date).getMonth() + 1
+      ) {
+        dates = dates.concat(
+          await Jur4SaldoService.createSaldoDate({
+            ...data,
+            doc_date: data.old_data.doc_date,
+            client,
+          })
+        );
+      }
+
+      const uniqueDates = dates.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.year === item.year && t.month === item.month)
+      );
+
+      return { doc, dates: uniqueDates };
     });
 
     return result;
@@ -129,9 +156,14 @@ exports.AktService = class {
 
   static async delete(data) {
     const result = await db.transaction(async (client) => {
-      const docId = await AvansDB.delete([data.id], client);
+      const doc = await AvansDB.delete([data.id], client);
 
-      return docId;
+      const dates = await Jur4SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
+
+      return { doc, dates };
     });
 
     return result;
