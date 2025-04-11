@@ -1,6 +1,54 @@
 const { db } = require("@db/index");
 
 exports.MainBookDB = class {
+  static async getCheck(params) {
+    const query = `--sql
+      SELECT
+        DISTINCT d.main_book_id, d.budjet_id
+      FROM main_book_saldo d
+      JOIN users u ON u.id = d.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND r.id = $1
+        AND d.budjet_id = $2
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async checkLarge(params) {
+    const query = `--sql
+      SELECT
+        m.*
+      FROM main_book m
+      JOIN users u ON u.id = m.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND ( (year > $2) OR (year = $2 AND month > $3))
+        AND m.budjet_id = $4
+        AND m.isdeleted = false
+      ORDER BY id
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async createCheck(params, client) {
+    const query = `--sql
+      INSERT INTO main_book_saldo(main_book_id, budjet_id, user_id, created_at, updated_at)
+      VALUES($1, $2, $3, $4, $5)
+      RETURNING * 
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
+
   static async getJur1PrixodDocs(params) {
     const query = `--sql
       SELECT

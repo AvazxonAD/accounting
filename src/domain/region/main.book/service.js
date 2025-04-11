@@ -6,6 +6,14 @@ const path = require("path");
 const { HelperFunctions } = require(`@helper/functions`);
 
 exports.MainBookService = class {
+  static now = new Date();
+
+  static async getCheck(data) {
+    const result = await MainBookDB.getCheck([data.region_id, data.budjet_id]);
+
+    return result;
+  }
+
   static async getJur1PrixodDocs(data) {
     const result = await MainBookDB.getJur1PrixodDocs([
       data.year,
@@ -216,7 +224,11 @@ exports.MainBookService = class {
         });
       }
 
-      return doc;
+      const check = await this.checkLarge({ ...data, client });
+
+      const dates = await this.createCheck({ ...data, client, docs: check });
+
+      return { doc, dates };
     });
 
     return result;
@@ -1111,5 +1123,30 @@ exports.MainBookService = class {
     await workbook.xlsx.writeFile(file_path);
 
     return { file_name, file_path };
+  }
+
+  static async checkLarge(data) {
+    const check = await MainBookDB.checkLarge([
+      data.region_id,
+      data.year,
+      data.month,
+      data.budjet_id,
+    ]);
+
+    return check;
+  }
+
+  static async createCheck(data) {
+    const dates = [];
+    for (let doc of data.docs) {
+      dates.push(
+        await MainBookDB.createCheck(
+          [doc.id, doc.budjet_id, data.user_id, this.now, this.now],
+          data.client
+        )
+      );
+    }
+
+    return dates;
   }
 };

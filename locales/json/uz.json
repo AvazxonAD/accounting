@@ -2,6 +2,7 @@
   "notFound": "{{data}} topilmadi!",
   "bankNotFound": "Bank topilmadi topilmadi!",
   "bankAlreadyExists": "Bank avval kiritilgan!",
+  "conflictError": "Hujjat bilan bog'liq documentlar bor",
   "success": "{{data}} muvaffaqiyatli",
   "readFileSuccess": "File muvaffaqiyatli oqib olindi",
   "accountNumberSchetExists": "Ushbu schet raqam allaqachon kiritilgan!",

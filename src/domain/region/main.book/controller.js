@@ -162,6 +162,11 @@ exports.Controller = class {
     const { budjet_id } = req.query;
     const region_id = req.user.region_id;
 
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
     const result = await MainBookService.getUniqueSchets({
       budjet_id,
       region_id,
@@ -174,6 +179,11 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { id } = req.params;
     const { budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const data = await MainBookService.getById({
       region_id,
@@ -195,6 +205,17 @@ exports.Controller = class {
 
     if (data.status === 3) {
       return res.error(req.i18n.t("mainBookStatus"), 409);
+    }
+
+    const check = await MainBookService.checkLarge({
+      region_id,
+      year: data.year,
+      month: data.month,
+      budjet_id,
+    });
+
+    if (check.length) {
+      return res.error(req.i18n.t(`conflictError`), 400);
     }
 
     await MainBookService.delete({ id });
@@ -514,6 +535,11 @@ exports.Controller = class {
     const { month, year } = req.body;
     const { budjet_id } = req.query;
 
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
     const old_data = await MainBookService.getById({
       region_id,
       id,
@@ -542,13 +568,15 @@ exports.Controller = class {
       }
     }
 
-    const result = await MainBookService.update({
+    const { dates, doc } = await MainBookService.update({
       ...req.body,
       old_data,
+      region_id,
+      budjet_id,
       id,
       user_id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+    return res.success(req.i18n.t("updateSuccess"), 200, { dates }, doc);
   }
 };

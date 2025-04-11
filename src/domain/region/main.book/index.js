@@ -4,10 +4,20 @@ const router = Router();
 const { validator } = require("@helper/validator");
 const { MainBookSchema } = require("./schema");
 const { Controller } = require("./controller");
+const { checkMainBook } = require("@middleware/check.saldo");
+const { MainBookService } = require(`./service`);
 
 router
-  .post("/", validator(Controller.create, MainBookSchema.create()))
-  .get("/", validator(Controller.get, MainBookSchema.get()))
+  .post(
+    "/",
+    checkMainBook(MainBookService.getCheck),
+    validator(Controller.create, MainBookSchema.create())
+  )
+  .get(
+    "/",
+    checkMainBook(MainBookService.getCheck),
+    validator(Controller.get, MainBookSchema.get())
+  )
   .delete("/clean", validator(Controller.cleanData, MainBookSchema.cleanData()))
   .get("/docs", validator(Controller.getDocs, MainBookSchema.getDocs()))
   .get(
