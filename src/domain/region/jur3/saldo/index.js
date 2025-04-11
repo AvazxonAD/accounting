@@ -20,11 +20,6 @@ router
     checkJur3Saldo(Jur3SaldoService.getDateSaldo),
     validator(Controller.cleanData, Jur3SaldoSchema.cleanData())
   )
-  // .get(
-  //   "/",
-  //   checkJur3Saldo(Jur3SaldoService.getDateSaldo),
-  //   validator(Controller.getByMonth, Jur3SaldoSchema.get())
-  // )
   .put(
     "/:id",
     checkJur3Saldo(Jur3SaldoService.getDateSaldo),

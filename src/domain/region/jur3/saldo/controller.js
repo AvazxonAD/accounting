@@ -279,6 +279,7 @@ exports.Controller = class {
     const id = req.params.id;
     const { budjet_id } = req.query;
     const { main_schet_id, schet_id } = req.body;
+    const user_id = req.user.id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -306,6 +307,8 @@ exports.Controller = class {
 
     const result = await Jur3SaldoService.update({
       ...req.body,
+      region_id,
+      user_id,
       id,
     });
 
