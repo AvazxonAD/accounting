@@ -93,6 +93,7 @@ exports.Controller = class {
     if (!bujet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
+
     const data = (await PodotchetDB.get([region_id, 0, 99999999])).data;
     for (let podotchet of data) {
       const summa = await PodotchetMonitoringDB.getSumma(
@@ -105,7 +106,6 @@ exports.Controller = class {
       );
       podotchet.summa = summa.summa;
     }
-
     if (excel === "true") {
       const workbook = new ExcelJS.Workbook();
       const fileName = `prixod_rasxod_${new Date().getTime()}.xlsx`;
