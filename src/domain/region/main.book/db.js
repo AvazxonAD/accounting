@@ -4,7 +4,7 @@ exports.MainBookDB = class {
   static async getCheck(params) {
     const query = `--sql
       SELECT
-        DISTINCT d.main_book_id, d.budjet_id
+        DISTINCT d.main_book_id, d.budjet_id, d.year, d.month
       FROM main_book_saldo d
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
@@ -39,8 +39,8 @@ exports.MainBookDB = class {
 
   static async createCheck(params, client) {
     const query = `--sql
-      INSERT INTO main_book_saldo(main_book_id, budjet_id, user_id, created_at, updated_at)
-      VALUES($1, $2, $3, $4, $5)
+      INSERT INTO main_book_saldo(main_book_id, budjet_id, user_id, year, month, created_at, updated_at)
+      VALUES($1, $2, $3, $4, $5, $6, $7)
       RETURNING * 
     `;
 

@@ -1141,7 +1141,15 @@ exports.MainBookService = class {
     for (let doc of data.docs) {
       dates.push(
         await MainBookDB.createCheck(
-          [doc.id, doc.budjet_id, data.user_id, this.now, this.now],
+          [
+            doc.id,
+            doc.budjet_id,
+            data.user_id,
+            doc.year,
+            doc.month,
+            this.now,
+            this.now,
+          ],
           data.client
         )
       );
