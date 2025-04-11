@@ -99,7 +99,6 @@ exports.prixodRasxodSchema = Joi.object({
 
 exports.capSchema = Joi.object({
   query: Joi.object({
-    schet: Joi.string().required().trim(),
     month: Joi.number().integer().required().min(1).max(12).required(),
     year: Joi.number().integer().required().min(1901).required(),
     to: Joi.string()

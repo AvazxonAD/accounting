@@ -242,9 +242,7 @@ exports.Controller = class {
 
   static async update(req, res) {
     const {
-      doc_num,
       doc_date,
-      opisanie,
       id_spravochnik_organization,
       shartnomalar_organization_id,
       childs,

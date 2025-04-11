@@ -232,7 +232,6 @@ exports.OrganizationMonitoringDB = class {
             JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
             WHERE d.isdeleted = false
                 AND r.id = $1 
-                AND d.main_schet_id = $2
                 AND ch.kredit_schet = $3
                 AND d.doc_date BETWEEN $4 AND $5
                 AND ch.isdeleted = false
@@ -581,7 +580,7 @@ exports.OrganizationMonitoringDB = class {
     const query = `--sql
         SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-            op.schet,
+            op.schet AS schet,
             op.sub_schet
         FROM bajarilgan_ishlar_jur3_child AS ch
         JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
@@ -596,16 +595,18 @@ exports.OrganizationMonitoringDB = class {
             AND r.id = $4
             AND own.schet = $5
         GROUP BY op.schet,
-            op.sub_schet
+             own.schet,
+             op.sub_schet
         
         UNION ALL
         
         SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-            op.schet,
-            op.sub_schet
+            m.jur2_schet AS debet_schet,
+            '0' AS sub_schet
         FROM bank_prixod_child AS ch
         JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod 
+        JOIN main_schet AS m ON m.id = d.main_schet_id
         JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON r.id = u.region_id
@@ -616,26 +617,26 @@ exports.OrganizationMonitoringDB = class {
             AND r.id = $4
             AND op.schet = $5
         GROUP BY op.schet,
-            op.sub_schet
+            m.jur2_schet
         
         UNION ALL
         
         SELECT 
             COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa,
-            ch.kredit_schet AS schet,
-            ch.kredit_sub_schet AS sub_schet
+            ch.debet_schet,
+            ch.debet_sub_schet AS sub_schet
         FROM document_prixod_jur7_child AS ch
         JOIN document_prixod_jur7 AS d ON d.id = ch.document_prixod_jur7_id 
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON r.id = u.region_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
-            AND d.main_schet_id = $1
             AND d.doc_date BETWEEN $2 AND $3
             AND r.id = $4
             AND ch.kredit_schet = $5
         GROUP BY ch.kredit_schet,
-            ch.kredit_sub_schet 
+            ch.debet_schet,
+            ch.debet_sub_schet
       `;
 
     const result = await db.query(query, params);

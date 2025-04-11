@@ -790,6 +790,7 @@ exports.MainBookDB = class {
       FROM bank_prixod_child ch
       JOIN bank_prixod d ON d.id = ch.id_bank_prixod
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
@@ -798,6 +799,7 @@ exports.MainBookDB = class {
         AND r.id = $1
         AND m.spravochnik_budjet_name_id = $2
         AND op.schet = ANY($3)
+        AND p.id IS NOT NULL
         ${date_filter}
       GROUP BY op.schet, m.jur2_schet
 
@@ -811,6 +813,7 @@ exports.MainBookDB = class {
       FROM kassa_prixod_child ch
       JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
@@ -819,6 +822,7 @@ exports.MainBookDB = class {
         AND r.id = $1
         AND m.spravochnik_budjet_name_id = $2
         AND op.schet = ANY($3)
+        AND p.id IS NOT NULL
         ${date_filter}
       GROUP BY op.schet, m.jur1_schet
     `;

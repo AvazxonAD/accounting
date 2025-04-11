@@ -107,7 +107,7 @@ exports.Jur8MonitoringService = class {
     let summa = 0;
     for (let doc of docs) {
       const schet = data.schets.find((item) => item.schet === doc.schet);
-      doc.schet_id = schet.schet_id;
+      doc.schet_id = schet.id;
       summa += doc.summa;
     }
 

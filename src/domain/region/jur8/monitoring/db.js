@@ -38,7 +38,14 @@ exports.Jur8MonitoringDB = class {
   static async getById(params, isdeleted = null) {
     const query = `--sql
       SELECT
-        d.*
+        d.*,
+        (
+          SELECT
+            COALESCE(SUM(ch.summa))
+          FROM jur8_monitoring_child ch
+          WHERE parent_id = d.id
+            AND isdeleted = false
+        )::FLOAT AS summa
       FROM jur8_monitoring AS d
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
@@ -221,6 +228,7 @@ exports.Jur8MonitoringDB = class {
         AND d.doc_date BETWEEN $2 AND $3
         AND op.schet = ANY($4)
         AND r.id = $5
+        AND m.isdeleted = false
       
       UNION ALL
 
@@ -245,6 +253,7 @@ exports.Jur8MonitoringDB = class {
         AND d.doc_date BETWEEN $2 AND $3
         AND op.schet = ANY($4)
         AND r.id = $5
+        AND m.isdeleted = false
 
       UNION ALL
       
@@ -270,6 +279,7 @@ exports.Jur8MonitoringDB = class {
         AND d.doc_date BETWEEN $2 AND $3
         AND op.schet = ANY($4)
         AND r.id = $5
+        AND m.isdeleted = false
     `;
 
     const result = await db.query(query, params);

@@ -240,19 +240,22 @@ exports.Controller = class {
       report_title_id,
       excel,
       to,
-      schet,
+      schet_id,
     } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
-    if (!main_schet) {
+
+    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    if (!main_schet || !schet) {
       return res.error("Main shcet not found", 404);
     }
 
     const data = await OrganizationmonitoringService.cap({
       ...req.query,
+      schet: schet.schet,
       region_id,
     });
 
@@ -276,20 +279,21 @@ exports.Controller = class {
         type: REPORT_TYPE.cap,
       });
 
-      const { filePath, fileName } = await HelperFunctions.capExcel({
-        rasxods: data,
-        main_schet,
-        report_title,
-        from,
-        to,
-        region,
-        budjet,
-        podpis,
-        title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
-        file_name: "organization",
-        schet: schet,
-        order: 3,
-      });
+      const { filePath, fileName } =
+        await OrganizationmonitoringService.capExcel({
+          rasxods: data,
+          main_schet,
+          report_title,
+          from,
+          to,
+          region,
+          budjet,
+          podpis,
+          title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
+          file_name: "organization",
+          schet: schet.schet,
+          order: 3,
+        });
 
       res.setHeader(
         "Content-Type",
