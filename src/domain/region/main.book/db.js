@@ -211,8 +211,13 @@ exports.MainBookDB = class {
 
     const queryChild = `UPDATE main_book_child SET isdeleted = true WHERE parent_id = ANY($1)`;
 
+    const querySaldo = `UPDATE main_book_saldo SET isdeleted = true WHERE main_book_id = ANY($1)`;
+
     await client.query(queryChild, params);
+
     await client.query(queryParent, params);
+
+    await client.query(querySaldo, params);
   }
 
   static async getCheckFirst(params) {
