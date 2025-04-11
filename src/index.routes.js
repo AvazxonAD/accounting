@@ -9,10 +9,10 @@ const {
   checkJur3Saldo,
   checkJur4Saldo,
 } = require(`@middleware/check.saldo`);
-const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 const { Jur3SaldoService } = require(`@organ_saldo/service`);
 const { BankSaldoService } = require(`@jur2_saldo/service`);
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 routes
   // Region routes
@@ -60,7 +60,12 @@ routes
   )
 
   // jur3
-  .use("/organization/monitoring", protect, require("@organ_monitoring/index"))
+  .use(
+    "/organization/monitoring",
+    protect,
+    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    require("@organ_monitoring/index")
+  )
   .use(
     "/akt",
     protect,
@@ -83,7 +88,12 @@ routes
     checkJur4Saldo(Jur4SaldoService.getDateSaldo),
     require("@avans/index")
   )
-  .use("/podotchet/monitoring", protect, require("@pod_monitoring/index"))
+  .use(
+    "/podotchet/monitoring",
+    protect,
+    checkJur4Saldo(Jur4SaldoService.getDateSaldo),
+    require("@pod_monitoring/index")
+  )
   .use("/podotchet/saldo", protect, require("@podotchet_saldo/index"))
 
   // auth

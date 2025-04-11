@@ -5,6 +5,10 @@ exports.checkJur1Saldo = (service) => {
       const region_id = req.user.region_id;
       const main_schet_id = req.query.main_schet_id || req.body.main_schet_id;
 
+      if (!main_schet_id) {
+        return res.error(req.i18n.t("validationError"), 400);
+      }
+
       const main_schet = await MainSchetService.getById({
         id: main_schet_id,
         region_id,
@@ -32,6 +36,10 @@ exports.checkJur2Saldo = (service) => {
     try {
       const region_id = req.user.region_id;
       const main_schet_id = req.query.main_schet_id;
+
+      if (!main_schet_id) {
+        return res.error(req.i18n.t("validationError"), 400);
+      }
 
       const main_schet = await MainSchetService.getById({
         id: main_schet_id,
@@ -61,6 +69,10 @@ exports.checkJur3Saldo = (service) => {
       const region_id = req.user.region_id;
       const main_schet_id = req.query.main_schet_id || req.body.main_schet_id;
       const schet_id = req.query.schet_id || req.body.schet_id;
+
+      if (!main_schet_id || !schet_id) {
+        return res.error(req.i18n.t("validationError"), 400);
+      }
 
       const main_schet = await MainSchetService.getById({
         id: main_schet_id,
@@ -94,6 +106,10 @@ exports.checkJur4Saldo = (service) => {
       const region_id = req.user.region_id;
       const main_schet_id = req.query.main_schet_id || req.body.main_schet_id;
       const schet_id = req.query.schet_id || req.body.schet_id;
+
+      if (!main_schet_id || !schet_id) {
+        return res.error(req.i18n.t("validationError"), 400);
+      }
 
       const main_schet = await MainSchetService.getById({
         id: main_schet_id,
