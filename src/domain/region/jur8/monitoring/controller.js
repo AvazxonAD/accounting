@@ -117,7 +117,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const { data, total } = await Jur8MonitoringService.get({
+    const { data, summa, total } = await Jur8MonitoringService.get({
       region_id,
       offset,
       ...req.query,
@@ -130,6 +130,7 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
+      summa,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);

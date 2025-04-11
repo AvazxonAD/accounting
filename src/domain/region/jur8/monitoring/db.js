@@ -94,7 +94,8 @@ exports.Jur8MonitoringDB = class {
       SELECT
         d.doc_num,
         d.doc_date,
-        d.id AS document_id
+        d.id AS document_id,
+        d.opisanie
       FROM ${child_table_name} ch
       JOIN ${table_name} d ON d.id = ch.${concat}
       WHERE ch.id = $1
@@ -123,7 +124,14 @@ exports.Jur8MonitoringDB = class {
     const query = `--sql
       WITH data AS (
         SELECT
-          d.*
+          d.*,
+          (
+            SELECT
+              COALESCE(SUM(ch.summa))
+            FROM jur8_monitoring_child ch
+            WHERE parent_id = d.id
+              AND isdeleted = false
+          )::FLOAT AS summa
         FROM jur8_monitoring AS d
         JOIN users u ON u.id = d.user_id
         JOIN regions r ON r.id = u.region_id
@@ -147,7 +155,20 @@ exports.Jur8MonitoringDB = class {
             AND d.isdeleted = false
             AND r.id = $2
             ${where}
-        )::INTEGER AS total
+        )::INTEGER AS total,
+
+        (
+          SELECT
+            COALESCE(SUM(ch.summa), 0)
+          FROM jur8_monitoring d
+          JOIN jur8_monitoring_child ch ON ch.parent_id = d.id
+          JOIN users u ON u.id = d.user_id
+          JOIN regions r ON r.id = u.region_id
+          WHERE d.budjet_id = $1
+            AND d.isdeleted = false
+            AND r.id = $2
+            ${where}
+        )::FLOAT AS summa
       FROM data
     `;
 
@@ -181,7 +202,8 @@ exports.Jur8MonitoringDB = class {
     const query = `--sql
       SELECT
         d.doc_num,
-       TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        d.opisanie,
         ch.id AS doc_id,
         op.schet,
         ch.summa::FLOAT,
@@ -205,6 +227,7 @@ exports.Jur8MonitoringDB = class {
       SELECT
         d.doc_num,
         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        d.opisanie,
         ch.id AS doc_id,
         op.schet,
         ch.summa::FLOAT,
@@ -228,6 +251,7 @@ exports.Jur8MonitoringDB = class {
       SELECT
         d.doc_num,
         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        d.opisanie,
         ch.id AS doc_id,
         op.schet,
         ch.summa::FLOAT,

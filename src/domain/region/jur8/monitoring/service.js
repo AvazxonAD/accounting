@@ -31,7 +31,17 @@ exports.Jur8MonitoringService = class {
           child.type_doc
         );
 
-        child.document_id = doc.document_id;
+        if (doc) {
+          child.doc_date = doc.doc_date;
+          child.doc_num = doc.doc_num;
+          child.opisanie = doc.opisanie;
+          child.document_id = doc.document_id;
+        } else {
+          child.doc_date = null;
+          child.doc_num = null;
+          child.opisanie = null;
+          child.document_id = null;
+        }
       }
     }
 

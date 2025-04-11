@@ -7,6 +7,20 @@ const { REPORT_RASXOD_SCHET } = require("./constants");
 const ErrorResponse = require("@helper/error.response");
 
 exports.HelperFunctions = class {
+  static returnStringSumma(num) {
+    const formatNumber = (number) => {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    };
+
+    if (Number.isInteger(num)) {
+      return formatNumber(num) + ".00";
+    } else {
+      let parts = num.toString().split(".");
+      parts[0] = formatNumber(parts[0]);
+      return parts.join(".");
+    }
+  }
+
   static returnSummaWithKol(data) {
     let summa = 0;
     for (let child of data.childs) {
@@ -69,7 +83,7 @@ exports.HelperFunctions = class {
 
     worksheet.mergeCells(`A6`, `E6`);
     const summa_from = worksheet.getCell(`A6`);
-    summa_from.value = `Остаток к началу ${data.title} дня : ${data.summa_from}`;
+    summa_from.value = `Остаток к началу ${data.title} дня : ${this.returnStringSumma(data.summa_from)}`;
     summa_from.note = JSON.stringify({
       bold: true,
       horizontal: "left",
@@ -171,12 +185,14 @@ exports.HelperFunctions = class {
 
     worksheet.mergeCells(`A${column}`, `E${column}`);
     const summa_to = worksheet.getCell(`A${column}`);
-    summa_to.value = `Остаток к консу ${data.title} дня : ${data.summa_to}`;
+    summa_to.value = `Остаток к консу ${data.title} дня : ${this.returnStringSumma(data.summa_to)}`;
     summa_to.note = JSON.stringify({
       bold: true,
       horizontal: "left",
     });
     column += 2;
+
+    const endrow = column - 2;
 
     for (let podpis of data.podpis) {
       worksheet.mergeCells(`A${column}`, `B${column}`);
@@ -200,7 +216,7 @@ exports.HelperFunctions = class {
     worksheet.eachRow((row, rowNumber) => {
       let bold = false;
       let horizontal = "center";
-      let height = 25;
+      let height = null;
       let argb = "FFFFFFFF";
 
       if (rowNumber === 1) {
@@ -219,18 +235,25 @@ exports.HelperFunctions = class {
         horizontal = "left";
       }
 
-      worksheet.getRow(rowNumber).height = height;
+      if (height) {
+        worksheet.getRow(rowNumber).height = height;
+      }
 
-      row.eachCell((cell, column) => {
+      if (rowNumber > endrow) {
+        bold = true;
+        worksheet.getRow(rowNumber).height = 30;
+      }
+
+      row.eachCell((cell, columnNumber) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
         if (
-          (column === 6 || column === 7) &&
+          (columnNumber === 6 || columnNumber === 7) &&
           rowNumber > 8 &&
           !cellData.horizontal
         ) {
           horizontal = "right";
-        } else if (column > 7 && rowNumber > 8) {
+        } else if (columnNumber > 7 && rowNumber > 8) {
           horizontal = "center";
         }
 
@@ -240,10 +263,6 @@ exports.HelperFunctions = class {
 
         if (cellData.horizontal) {
           horizontal = cellData.horizontal;
-        }
-
-        if (cellData.height) {
-          worksheet.getRow(rowNumber).height = cellData.height;
         }
 
         Object.assign(cell, {
@@ -273,6 +292,9 @@ exports.HelperFunctions = class {
           cell.note = undefined;
         }
       });
+
+      worksheet.getRow(endrow).height = 30;
+      worksheet.getRow(endrow - 2).height = 30;
     });
 
     const fileName = `${data.file_name}_days_report_${new Date().getTime()}.xlsx`;
@@ -384,6 +406,7 @@ exports.HelperFunctions = class {
     itogoTitleCell.note = JSON.stringify({
       bold: true,
       horizontal: "left",
+      height: 30,
     });
 
     const itogoPrixodCell = worksheet.getCell(`E${column}`);
@@ -405,6 +428,7 @@ exports.HelperFunctions = class {
     summa_to.note = JSON.stringify({
       bold: true,
       horizontal: "left",
+      height: 30,
     });
     column += 2;
 

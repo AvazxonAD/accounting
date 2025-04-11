@@ -6,6 +6,30 @@ const path = require("path");
 const { HelperFunctions } = require(`@helper/functions`);
 
 exports.MainBookService = class {
+  static async getJur1PrixodDocs(data) {
+    const result = await MainBookDB.getJur1PrixodDocs([
+      data.year,
+      data.month,
+      data.budjet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
+  static async getJur1RasxodDocs(data) {
+    const result = await MainBookDB.getJur1RasxodDocs([
+      data.year,
+      data.month,
+      data.budjet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
   static async cleanData(data) {
     const ids = data.data.map((item) => item.id);
 

@@ -85,6 +85,7 @@ exports.MainBookSchema = class {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().min(1).integer().required(),
+        password: Joi.string().trim().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -97,8 +98,8 @@ exports.MainBookSchema = class {
         schet: Joi.string().trim().required(),
         month: Joi.number().integer().required().min(1).max(12).required(),
         year: Joi.number().integer().required().min(1901).required(),
-        prixod: Joi.string().trim().valid("true", "false").required(),
-        rasxod: Joi.string().trim().valid("true", "false").required(),
+        prixod: Joi.string().trim().valid("true", "false"),
+        rasxod: Joi.string().trim().valid("true", "false"),
       }),
     }).options({ stripUnknown: true });
   }

@@ -2,6 +2,7 @@ const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
 const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
+const { SALDO_PASSWORD } = require(`@helper/constants`);
 
 exports.Controller = class {
   static async getDocs(req, res) {
@@ -10,8 +11,23 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     let docs = [];
 
-    // jur1
+    if (prixod === "true" && rasxod === "true") {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
     if (type_id === 1) {
+      // jur1
+      if (prixod === "true") {
+        docs = await MainBookService.getJur1PrixodDocs({
+          ...req.query,
+          region_id,
+        });
+      } else if (rasxod === "true") {
+        docs = await MainBookService.getJur1RasxodDocs({
+          ...req.query,
+          region_id,
+        });
+      }
     }
 
     // jur2
@@ -49,11 +65,15 @@ exports.Controller = class {
 
   static async cleanData(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id } = req.query;
+    const { budjet_id, password } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    if (password !== SALDO_PASSWORD) {
+      return res.error(req.i18n.t("validationError"), 400);
     }
 
     const { data } = await MainBookService.get({
