@@ -30,6 +30,30 @@ exports.MainBookService = class {
     return result;
   }
 
+  static async getJur2PrixodDocs(data) {
+    const result = await MainBookDB.getJur2PrixodDocs([
+      data.year,
+      data.month,
+      data.budjet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
+  static async getJur2RasxodDocs(data) {
+    const result = await MainBookDB.getJur2RasxodDocs([
+      data.year,
+      data.month,
+      data.budjet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
   static async cleanData(data) {
     const ids = data.data.map((item) => item.id);
 

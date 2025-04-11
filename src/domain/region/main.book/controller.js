@@ -6,8 +6,7 @@ const { SALDO_PASSWORD } = require(`@helper/constants`);
 
 exports.Controller = class {
   static async getDocs(req, res) {
-    const { budjet_id, type_id, schet, prixod, rasxod, year, month } =
-      req.query;
+    const { type_id, prixod, rasxod } = req.query;
     const region_id = req.user.region_id;
     let docs = [];
 
@@ -32,17 +31,47 @@ exports.Controller = class {
 
     // jur2
     if (type_id === 2) {
-      docs = [];
+      if (prixod === "true") {
+        docs = await MainBookService.getJur2PrixodDocs({
+          ...req.query,
+          region_id,
+        });
+      } else if (rasxod === "true") {
+        docs = await MainBookService.getJur2RasxodDocs({
+          ...req.query,
+          region_id,
+        });
+      }
     }
 
     // jur3
     if (type_id === 3) {
-      docs = [];
+      if (prixod === "true") {
+        docs = await MainBookService.getJur1PrixodDocs({
+          ...req.query,
+          region_id,
+        });
+      } else if (rasxod === "true") {
+        docs = await MainBookService.getJur1RasxodDocs({
+          ...req.query,
+          region_id,
+        });
+      }
     }
 
     // jur4
     if (type_id === 4) {
-      docs = [];
+      if (prixod === "true") {
+        docs = await MainBookService.getJur1PrixodDocs({
+          ...req.query,
+          region_id,
+        });
+      } else if (rasxod === "true") {
+        docs = await MainBookService.getJur1RasxodDocs({
+          ...req.query,
+          region_id,
+        });
+      }
     }
 
     // jur5
@@ -52,12 +81,32 @@ exports.Controller = class {
 
     // jur7
     if (type_id === 7) {
-      docs = [];
+      if (prixod === "true") {
+        docs = await MainBookService.getJur1PrixodDocs({
+          ...req.query,
+          region_id,
+        });
+      } else if (rasxod === "true") {
+        docs = await MainBookService.getJur1RasxodDocs({
+          ...req.query,
+          region_id,
+        });
+      }
     }
 
     // jur8
     if (type_id === 8) {
-      docs = [];
+      if (prixod === "true") {
+        docs = await MainBookService.getJur1PrixodDocs({
+          ...req.query,
+          region_id,
+        });
+      } else if (rasxod === "true") {
+        docs = await MainBookService.getJur1RasxodDocs({
+          ...req.query,
+          region_id,
+        });
+      }
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, docs);

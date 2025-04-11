@@ -67,6 +67,72 @@ exports.MainBookDB = class {
     return result;
   }
 
+  static async getJur2PrixodDocs(params) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        d.opisanie,
+        d.main_schet_id,
+        ch.summa::FLOAT,
+        op.schet AS debet_schet,
+        m.jur2_schet AS kredit_schet,
+        m.spravochnik_budjet_name_id AS budjet_id,
+        'bank_rasxod' AS type
+      FROM bank_rasxod d
+      JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.spravochnik_budjet_name_id = $3
+        AND op.schet = $4
+        AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur2RasxodDocs(params) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        d.opisanie,
+        d.main_schet_id,
+        ch.summa::FLOAT,
+        m.jur2_schet AS kredit_schet,
+        op.schet AS debet_schet,
+        m.spravochnik_budjet_name_id AS budjet_id,
+        'bank_rasxod' AS type
+      FROM bank_rasxod d
+      JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.spravochnik_budjet_name_id = $3
+        AND m.jur2_schet = $4
+        AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getJur8Rasxod(params) {
     const query = `--sql
       SELECT
@@ -111,7 +177,7 @@ exports.MainBookDB = class {
       WHERE m.budjet_id = $1
         AND r.id = $2
         AND m.isdeleted = false
-      ORDER BY id DESC
+      ORDER BY id 
       LIMIT 1
     `;
 
