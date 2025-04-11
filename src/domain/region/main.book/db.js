@@ -111,6 +111,8 @@ exports.MainBookDB = class {
       WHERE m.budjet_id = $1
         AND r.id = $2
         AND m.isdeleted = false
+      ORDER BY id DESC
+      LIMIT 1
     `;
 
     const result = await db.query(query, params);

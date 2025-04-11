@@ -138,6 +138,7 @@ exports.MainBookSchema = class {
 
       query: Joi.object({
         report_title_id: Joi.number().min(1).integer(),
+        budjet_id: Joi.number().min(1).integer().required(),
         excel: Joi.string().valid("true", "false"),
       }),
     }).options({ stripUnknown: true });

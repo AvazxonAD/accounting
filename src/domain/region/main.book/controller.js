@@ -216,7 +216,7 @@ exports.Controller = class {
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
-    const { excel, report_title_id } = req.query;
+    const { excel, report_title_id, budjet_id } = req.query;
     const { id } = req.params;
 
     const data = await MainBookService.getById({
@@ -227,6 +227,22 @@ exports.Controller = class {
 
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const first = await MainBookService.getCheckFirst({
+      budjet_id,
+      region_id,
+    });
+
+    if (data.id === first.id) {
+      data.first = true;
+    } else {
+      data.first = false;
     }
 
     for (let type of data.childs) {
