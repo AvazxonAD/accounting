@@ -154,6 +154,7 @@ exports.KassaSaldoDB = class {
         WHERE d.isdeleted = false
           AND d.budjet_id = $1
           ${where}
+          
         ORDER BY d.year DESC, d.month DESC
     `;
 

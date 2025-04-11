@@ -333,6 +333,8 @@ exports.MainBookDB = class {
           AND r.id = $1
           AND d.budjet_id = $2
           ${where_clause}
+        
+        ORDER BY d.year DESC, d.month DESC
         OFFSET $3 LIMIT $4 
       )
       SELECT

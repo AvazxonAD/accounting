@@ -160,6 +160,7 @@ exports.BankSaldoDB = class {
         WHERE d.isdeleted = false
           AND d.budjet_id = $1
           ${where}
+        ORDER BY d.date_saldo DESC
     `;
 
     const result = await db.query(query, params);
