@@ -149,6 +149,9 @@ exports.MainBookSchema = class {
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
       }),
+      query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
+      }),
     }).options({ stripUnknown: true });
   }
 };

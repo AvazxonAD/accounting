@@ -173,6 +173,7 @@ exports.Controller = class {
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const { id } = req.params;
+    const { budjet_id } = req.query;
 
     const data = await MainBookService.getById({
       region_id,
@@ -181,6 +182,15 @@ exports.Controller = class {
 
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const first = await MainBookService.getCheckFirst({
+      budjet_id,
+      region_id,
+    });
+
+    if (first.id === id) {
+      return res.error(req.i18n.t("validationError"), 400);
     }
 
     if (data.status === 3) {
@@ -242,6 +252,11 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
+    const first = await MainBookService.getCheckFirst({
+      budjet_id,
+      region_id,
+    });
+
     const { data, total } = await MainBookService.get({
       region_id,
       offset,
@@ -249,6 +264,14 @@ exports.Controller = class {
       budjet_id,
       year,
     });
+
+    for (let doc of data) {
+      if (doc.id === first.id) {
+        doc.first = true;
+      } else {
+        doc.first = false;
+      }
+    }
 
     const pageCount = Math.ceil(total / limit);
 
