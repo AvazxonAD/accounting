@@ -21,10 +21,12 @@ exports.Jur3SaldoDB = class {
     return result[0];
   }
 
-  static async cleanData(params) {
-    const query = `UPDATE jur3_saldo SET isdeleted = true WHERE main_schet_id = $1 AND schet_id = $2`;
+  static async cleanData(params, client) {
+    const queryParent = `UPDATE jur3_saldo SET isdeleted = true WHERE main_schet_id = $1 AND schet_id = $2`;
+    const queryChild = `UPDATE date_saldo_jur3 SET isdeleted = true WHERE main_schet_id = $1 AND schet_id = $2`;
 
-    await db.query(query, params);
+    await client.query(queryParent, params);
+    await client.query(queryChild, params);
   }
 
   static async getDateSaldo(params) {
