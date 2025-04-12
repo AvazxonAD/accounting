@@ -40,7 +40,7 @@ exports.Controller = class {
         isdeleted: false,
       });
       if (!organization) {
-        res.error(req.i18n("organizationNotFound"), 404);
+        res.error(req.i18n.t("organizationNotFound"), 404);
       }
     }
 

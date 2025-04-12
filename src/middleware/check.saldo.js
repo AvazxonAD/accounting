@@ -80,7 +80,7 @@ exports.checkJur3Saldo = (service) => {
         region_id,
       });
 
-      const schet = main_schet.jur3_schets.find(
+      const schet = main_schet?.jur3_schets.find(
         (item) => item.id === Number(schet_id)
       );
 
