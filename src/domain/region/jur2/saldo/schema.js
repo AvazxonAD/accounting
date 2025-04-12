@@ -6,7 +6,7 @@ exports.BankSaldoSchema = class {
       body: Joi.object({
         month: Joi.number().integer().required().min(1).max(12).required(),
         year: Joi.number().integer().required().min(1901).required(),
-        summa: Joi.number().required(),
+        summa: Joi.number().required().min(0),
         main_schet_id: Joi.number().required().min(1),
       }),
 
