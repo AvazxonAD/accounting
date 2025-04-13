@@ -159,6 +159,7 @@ exports.BankSaldoDB = class {
         JOIN regions AS r ON u.region_id = r.id
         WHERE d.isdeleted = false
           AND d.budjet_id = $1
+          AND r.id = $2
           ${where}
         ORDER BY d.date_saldo DESC
     `;

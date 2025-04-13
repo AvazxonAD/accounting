@@ -1,7 +1,7 @@
 const { ShowServiceDB } = require("./db");
 const { db } = require(`@db/index`);
 const { HelperFunctions } = require(`@helper/functions`);
-const { Jur3SaldoService } = require("@organ_saldo/service");
+const { Saldo159Service } = require("@saldo_159/service");
 
 exports.ShowServiceService = class {
   static now = new Date();
@@ -32,7 +32,7 @@ exports.ShowServiceService = class {
 
       await this.createChild({ ...data, doc, client });
 
-      const dates = await Jur3SaldoService.createSaldoDate({
+      const dates = await Saldo159Service.createSaldoDate({
         ...data,
         client,
       });
@@ -92,7 +92,7 @@ exports.ShowServiceService = class {
 
       let dates;
 
-      dates = await Jur3SaldoService.createSaldoDate({
+      dates = await Saldo159Service.createSaldoDate({
         ...data,
         client,
       });
@@ -104,7 +104,7 @@ exports.ShowServiceService = class {
           new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
-          await Jur3SaldoService.createSaldoDate({
+          await Saldo159Service.createSaldoDate({
             ...data,
             doc_date: data.old_data.doc_date,
             client,
@@ -128,7 +128,7 @@ exports.ShowServiceService = class {
     const result = await db.transaction(async (client) => {
       const doc = await ShowServiceDB.delete([data.id], client);
 
-      const dates = await Jur3SaldoService.createSaldoDate({
+      const dates = await Saldo159Service.createSaldoDate({
         ...data,
         client,
       });

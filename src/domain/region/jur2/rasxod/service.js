@@ -3,7 +3,7 @@ const { BankRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
 const { FeaturesService } = require(`@features/service`);
 const { BankSaldoService } = require(`@jur2_saldo/service`);
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.BankRasxodService = class {
@@ -51,7 +51,7 @@ exports.BankRasxodService = class {
         for (let child of item.childs) {
           if (child.schet) {
             if (child.schet.type === "jur3") {
-              await Jur3SaldoService.createSaldoDate({
+              await Saldo159Service.createSaldoDate({
                 ...data,
                 schet_id: child.schet.id,
                 main_schet_id: child.schet.main_schet_id,
@@ -96,7 +96,7 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -175,7 +175,7 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -326,7 +326,7 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -350,7 +350,7 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               doc_date: data.old_data.doc_date,
               schet_id: schet.id,
@@ -392,7 +392,7 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,

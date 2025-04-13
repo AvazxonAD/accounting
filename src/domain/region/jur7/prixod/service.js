@@ -9,7 +9,7 @@ const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { SaldoDB } = require("@jur7_saldo/db");
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 
 exports.PrixodJur7Service = class {
   static async getByProductId(data) {
@@ -360,7 +360,7 @@ exports.PrixodJur7Service = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -549,7 +549,7 @@ exports.PrixodJur7Service = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -566,7 +566,7 @@ exports.PrixodJur7Service = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               doc_date: data.old_data.doc_date,
               schet_id: schet.id,
@@ -627,7 +627,7 @@ exports.PrixodJur7Service = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,

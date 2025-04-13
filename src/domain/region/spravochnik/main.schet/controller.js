@@ -10,7 +10,8 @@ exports.Controller = class {
       account_number,
       jur1_schet,
       jur2_schet,
-      jur3_schets,
+      jur3_schets_159,
+      jur3_schets_152,
       spravochnik_budjet_name_id,
       jur4_schets,
     } = req.body;
@@ -30,10 +31,23 @@ exports.Controller = class {
       return res.error(req.i18n.t("docExists"), 409);
     }
 
-    const dup3 = HelperFunctions.findDuplicateByKey(jur3_schets, "schet");
-    if (dup3) {
+    const dup3_159 = HelperFunctions.findDuplicateByKey(
+      jur3_schets_159,
+      "schet"
+    );
+    if (dup3_159) {
       return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-        schet: dup3,
+        schet: dup3_159,
+      });
+    }
+
+    const dup3_152 = HelperFunctions.findDuplicateByKey(
+      jur3_schets_152,
+      "schet"
+    );
+    if (dup3_152) {
+      return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+        schet: dup3_152,
       });
     }
 
@@ -121,7 +135,8 @@ exports.Controller = class {
       account_number,
       jur1_schet,
       jur2_schet,
-      jur3_schets,
+      jur3_schets_159,
+      jur3_schets_152,
       spravochnik_budjet_name_id,
       jur4_schets,
     } = req.body;
@@ -147,10 +162,23 @@ exports.Controller = class {
       }
     }
 
-    const dup3 = HelperFunctions.findDuplicateByKey(jur3_schets, "schet");
-    if (dup3) {
+    const dup3_159 = HelperFunctions.findDuplicateByKey(
+      jur3_schets_159,
+      "schet"
+    );
+    if (dup3_159) {
       return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-        schet: dup3,
+        schet: dup3_159,
+      });
+    }
+
+    const dup3_152 = HelperFunctions.findDuplicateByKey(
+      jur3_schets_152,
+      "schet"
+    );
+    if (dup3_152) {
+      return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+        schet: dup3_152,
       });
     }
 
@@ -191,9 +219,22 @@ exports.Controller = class {
       }
     }
 
-    for (let jur3 of jur3_schets) {
+    for (let jur3 of jur3_schets_159) {
       if (jur3.id) {
-        const check = old_data.jur3_schets.find((item) => item.id === jur3.id);
+        const check = old_data.jur3_schets_159.find(
+          (item) => item.id === jur3.id
+        );
+        if (!check) {
+          return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
+        }
+      }
+    }
+
+    for (let jur3 of jur3_schets_152) {
+      if (jur3.id) {
+        const check = old_data.jur3_schets_152.find(
+          (item) => item.id === jur3.id
+        );
         if (!check) {
           return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
         }

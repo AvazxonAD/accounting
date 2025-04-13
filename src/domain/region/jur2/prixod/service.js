@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 const { BankPrixodDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 const { BankSaldoService } = require(`@jur2_saldo/service`);
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.BankPrixodService = class {
@@ -43,7 +43,7 @@ exports.BankPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -195,7 +195,7 @@ exports.BankPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,
@@ -219,7 +219,7 @@ exports.BankPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               doc_date: data.old_data.doc_date,
               schet_id: schet.id,
@@ -261,7 +261,7 @@ exports.BankPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Jur3SaldoService.createSaldoDate({
+            await Saldo159Service.createSaldoDate({
               ...data,
               schet_id: schet.id,
               main_schet_id: schet.main_schet_id,

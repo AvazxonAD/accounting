@@ -136,7 +136,7 @@ exports.BankSaldoService = class {
 
   static async get(data) {
     const result = await BankSaldoDB.get(
-      [data.budjet_id],
+      [data.budjet_id, data.region_id],
       data.main_schet_id,
       data.year,
       data.month

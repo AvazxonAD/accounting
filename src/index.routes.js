@@ -6,10 +6,10 @@ const { Middleware } = require("@middleware/index");
 const {
   checkJur2Saldo,
   checkJur1Saldo,
-  checkJur3Saldo,
+  check159Saldo,
   checkJur4Saldo,
 } = require(`@middleware/check.saldo`);
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 const { BankSaldoService } = require(`@jur2_saldo/service`);
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
@@ -61,25 +61,25 @@ routes
 
   // jur3
   .use(
-    "/organization/monitoring",
+    "/159/monitoring",
     protect,
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
-    require("@organ_monitoring/index")
+    // check159Saldo(Saldo159Service.getDateSaldo),
+    require("@monitoring_159/index")
   )
   .use(
     "/akt",
     protect,
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    check159Saldo(Saldo159Service.getDateSaldo),
     require("@akt/index")
   )
   .use("/shartnoma", protect, require("@contract/index"))
   .use(
     "/services/show",
     protect,
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    check159Saldo(Saldo159Service.getDateSaldo),
     require("@show_service/index")
   )
-  .use("/organ/saldo", protect, require("@organ_saldo/index"))
+  .use("/159/saldo", protect, require("@saldo_159/index"))
 
   // jur4
   .use(

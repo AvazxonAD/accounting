@@ -62,9 +62,18 @@ exports.MainSchetDB = class {
                     FROM jur_schets j
                     WHERE j.main_schet_id = m.id
                       AND j.isdeleted = false
-                      AND j.type = 'jur3'
+                      AND j.type = '159'
                   )
-                , '[]'::JSON) AS jur3_schets,
+                , '[]'::JSON) AS jur3_schets_159,
+                COALESCE(
+                  (
+                    SELECT JSON_AGG(row_to_json(j))
+                    FROM jur_schets j
+                    WHERE j.main_schet_id = m.id
+                      AND j.isdeleted = false
+                      AND j.type = '152'
+                  )
+                , '[]'::JSON) AS jur3_schets_152,
                 COALESCE(
                   (
                     SELECT JSON_AGG(row_to_json(j))
@@ -114,9 +123,18 @@ exports.MainSchetDB = class {
                 FROM jur_schets j
                 WHERE j.main_schet_id = m.id
                   AND j.isdeleted = false
-                  AND j.type = 'jur3'
+                  AND j.type = '159'
               )
-            , '[]'::JSON) AS jur3_schets,
+            , '[]'::JSON) AS jur3_schets_159,
+            COALESCE(
+                  (
+                    SELECT JSON_AGG(row_to_json(j))
+                    FROM jur_schets j
+                    WHERE j.main_schet_id = m.id
+                      AND j.isdeleted = false
+                      AND j.type = '152'
+                  )
+                , '[]'::JSON) AS jur3_schets_152,
             COALESCE(
               (
                 SELECT JSON_AGG(row_to_json(j))

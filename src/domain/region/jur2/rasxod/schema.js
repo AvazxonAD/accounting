@@ -69,6 +69,7 @@ exports.BankRasxodSchema = class {
           .min(1),
       }),
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1),
       }),
     }).options({ stripUnknown: true });
@@ -111,6 +112,7 @@ exports.BankRasxodSchema = class {
           .required(),
       }),
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().integer().min(1).required(),
       }).required(),
     }).options({ stripUnknown: true });
@@ -158,6 +160,7 @@ exports.BankRasxodSchema = class {
   static delete() {
     return Joi.object({
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1),
       }),
       params: Joi.object({
@@ -212,6 +215,7 @@ exports.BankRasxodSchema = class {
           .min(1),
       }),
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1),
       }),
       params: Joi.object({

@@ -1,10 +1,10 @@
 const { db } = require("@db/index");
-const { Jur3SaldoDB } = require("./db");
+const { Saldo159DB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
-exports.Jur3SaldoService = class {
+exports.Saldo159Service = class {
   static async getFirstSaldo(data) {
-    const result = await Jur3SaldoDB.getFirstSaldo([
+    const result = await Saldo159DB.getFirstSaldo([
       data.region_id,
       data.main_schet_id,
       data.schet_id,
@@ -15,12 +15,12 @@ exports.Jur3SaldoService = class {
 
   static async cleanData(data) {
     await db.transaction(async (client) => {
-      await Jur3SaldoDB.cleanData([data.main_schet_id, data.schet_id], client);
+      await Saldo159DB.cleanData([data.main_schet_id, data.schet_id], client);
     });
   }
 
   static async getSaldoDate(data) {
-    const result = await Jur3SaldoDB.getSaldoDate([
+    const result = await Saldo159DB.getSaldoDate([
       data.region_id,
       data.date_saldo,
       data.main_schet_id,
@@ -35,7 +35,7 @@ exports.Jur3SaldoService = class {
     const month = new Date(data.doc_date).getMonth() + 1;
 
     const saldo_date = `${year}-${String(month).padStart(2, "0")}-01`;
-    const check = await Jur3SaldoDB.getSaldoDate([
+    const check = await Saldo159DB.getSaldoDate([
       data.region_id,
       saldo_date,
       data.main_schet_id,
@@ -45,7 +45,7 @@ exports.Jur3SaldoService = class {
     let dates = [];
     for (let date of check) {
       dates.push(
-        await Jur3SaldoDB.createSaldoDate(
+        await Saldo159DB.createSaldoDate(
           [
             data.user_id,
             date.year,
@@ -64,7 +64,7 @@ exports.Jur3SaldoService = class {
   }
 
   static async getDateSaldo(data) {
-    const result = await Jur3SaldoDB.getDateSaldo([
+    const result = await Saldo159DB.getDateSaldo([
       data.region_id,
       data.main_schet_id,
       data.schet_id,
@@ -75,19 +75,19 @@ exports.Jur3SaldoService = class {
 
   static async createAuto(data) {
     const response = await db.transaction(async (client) => {
-      await Jur3SaldoDB.deleteByMonth(
+      await Saldo159DB.deleteByMonth(
         [data.year, data.month, data.main_schet_id, data.schet_id],
         client
       );
 
-      await Jur3SaldoDB.deleteSaldoDateByMonth(
+      await Saldo159DB.deleteSaldoDateByMonth(
         [data.year, data.month, data.main_schet_id, data.schet_id],
         client
       );
 
       const saldo_date = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
 
-      const doc = await Jur3SaldoDB.create(
+      const doc = await Saldo159DB.create(
         [
           data.summa,
           data.main_schet_id,
@@ -116,7 +116,7 @@ exports.Jur3SaldoService = class {
   }
 
   static async getByMonth(data) {
-    const result = await Jur3SaldoDB.getByMonth([
+    const result = await Saldo159DB.getByMonth([
       data.main_schet_id,
       data.year,
       data.month,
@@ -128,7 +128,7 @@ exports.Jur3SaldoService = class {
   }
 
   static async create(data) {
-    const doc = await Jur3SaldoDB.create([
+    const doc = await Saldo159DB.create([
       data.summa,
       data.main_schet_id,
       data.year,
@@ -145,7 +145,7 @@ exports.Jur3SaldoService = class {
   }
 
   static async get(data) {
-    const result = await Jur3SaldoDB.get(
+    const result = await Saldo159DB.get(
       [data.budjet_id],
       data.main_schet_id,
       data.year,
@@ -162,7 +162,7 @@ exports.Jur3SaldoService = class {
   }
 
   static async getById(data) {
-    const result = await Jur3SaldoDB.getById(
+    const result = await Saldo159DB.getById(
       [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
@@ -174,7 +174,7 @@ exports.Jur3SaldoService = class {
     const result = await db.transaction(async (client) => {
       const date_saldo = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
 
-      const doc = await Jur3SaldoDB.update(
+      const doc = await Saldo159DB.update(
         [data.summa, new Date(), data.id],
         client
       );
@@ -192,7 +192,7 @@ exports.Jur3SaldoService = class {
   }
 
   static async delete(data) {
-    const doc = await Jur3SaldoDB.delete([data.id]);
+    const doc = await Saldo159DB.delete([data.id]);
     return doc;
   }
 };

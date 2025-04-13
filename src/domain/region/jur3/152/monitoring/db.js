@@ -1,7 +1,7 @@
 const { db } = require("@db/index");
 const { sqlFilter } = require("@helper/functions");
 
-exports.OrganizationMonitoringDB = class {
+exports.Monitoring159DB = class {
   static async monitoring(
     params,
     organ_id,

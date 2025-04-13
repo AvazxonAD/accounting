@@ -16,7 +16,12 @@ exports.Controller = class {
   static async import(req, res) {
     const { docs } = req.body;
     const { region_id, id: user_id } = req.user;
-    const { main_schet_id } = req.query;
+    const { main_schet_id, budjet_id } = req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const year = 2024 || new Date().getFullYear();
     const month = 12; // new Date().getMonth() + 1;
@@ -56,9 +61,9 @@ exports.Controller = class {
     const date = HelperFunctions.returnDate({ year, month });
 
     const dates = await BankRasxodService.import({
+      ...req.query,
       docs,
       user_id,
-      main_schet_id,
       main_schet,
       region_id,
       doc_date: date,
@@ -70,8 +75,13 @@ exports.Controller = class {
   static async payment(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id } = req.query;
+    const { main_schet_id, budjet_id } = req.query;
     const user_id = req.user.id;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -103,11 +113,11 @@ exports.Controller = class {
     const jur_schets = await MainSchetService.getJurSchets({ region_id });
 
     const result = await BankRasxodService.payment({
-      id,
-      status: req.body.status,
+      ...req.query,
       ...bank_rasxod,
+      ...req.body,
+      id,
       user_id,
-      main_schet_id,
       jur_schets,
       main_schet,
       region_id,
@@ -139,7 +149,7 @@ exports.Controller = class {
   }
 
   static async create(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const {
@@ -151,6 +161,11 @@ exports.Controller = class {
       shartnoma_grafik_id,
       doc_date,
     } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -283,7 +298,7 @@ exports.Controller = class {
 
     const result = await BankRasxodService.create({
       ...req.body,
-      main_schet_id,
+      ...req.query,
       main_schet,
       user_id,
       jur_schets,
@@ -376,7 +391,7 @@ exports.Controller = class {
   }
 
   static async update(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const id = req.params.id;
@@ -389,6 +404,11 @@ exports.Controller = class {
       shartnoma_grafik_id,
       doc_date,
     } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -526,7 +546,7 @@ exports.Controller = class {
 
     const result = await BankRasxodService.update({
       ...req.body,
-      main_schet_id,
+      ...req.query,
       user_id,
       region_id,
       jur_schets,
@@ -544,10 +564,15 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -579,13 +604,13 @@ exports.Controller = class {
     const jur_schets = await MainSchetService.getJurSchets({ region_id });
 
     const result = await BankRasxodService.delete({
+      ...req.query,
+      ...doc,
       id,
       region_id,
-      main_schet_id,
       main_schet,
       jur_schets,
       user_id,
-      ...doc,
     });
 
     return res.success(

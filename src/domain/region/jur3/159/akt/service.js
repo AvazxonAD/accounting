@@ -8,7 +8,7 @@ const {
   tashkentTime,
 } = require("@helper/functions");
 const { db } = require("@db/index");
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 
 exports.AktService = class {
   static async getSchets(data) {
@@ -72,7 +72,7 @@ exports.AktService = class {
 
       await this.createChild({ ...data, docId: doc.id }, client);
 
-      const dates = await Jur3SaldoService.createSaldoDate({
+      const dates = await Saldo159Service.createSaldoDate({
         ...data,
         client,
       });
@@ -154,7 +154,7 @@ exports.AktService = class {
 
       let dates;
 
-      dates = await Jur3SaldoService.createSaldoDate({
+      dates = await Saldo159Service.createSaldoDate({
         ...data,
         client,
       });
@@ -166,7 +166,7 @@ exports.AktService = class {
           new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
-          await Jur3SaldoService.createSaldoDate({
+          await Saldo159Service.createSaldoDate({
             ...data,
             doc_date: data.old_data.doc_date,
             client,
@@ -190,7 +190,7 @@ exports.AktService = class {
     const result = await db.transaction(async (client) => {
       const doc = await AktDB.delete([data.id], client);
 
-      const dates = await Jur3SaldoService.createSaldoDate({
+      const dates = await Saldo159Service.createSaldoDate({
         ...data,
         client,
       });

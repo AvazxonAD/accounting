@@ -11,10 +11,11 @@ const { ContractService } = require("@contract/service");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
 const { BankSaldoService } = require("@jur2_saldo/service");
+const { BudjetService } = require("@budjet/service");
 
 exports.Controller = class {
   static async create(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const {
@@ -26,6 +27,11 @@ exports.Controller = class {
       shartnoma_grafik_id,
       doc_date,
     } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -159,7 +165,7 @@ exports.Controller = class {
 
     const result = await BankPrixodService.create({
       ...req.body,
-      main_schet_id,
+      ...req.query,
       jur_schets,
       main_schet,
       user_id,
@@ -262,7 +268,7 @@ exports.Controller = class {
   }
 
   static async update(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
@@ -275,6 +281,11 @@ exports.Controller = class {
       shartnoma_grafik_id,
       doc_date,
     } = req.body;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -416,7 +427,7 @@ exports.Controller = class {
 
     const result = await BankPrixodService.update({
       ...req.body,
-      main_schet_id,
+      ...req.query,
       user_id,
       jur_schets,
       region_id,
@@ -433,10 +444,15 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const main_schet_id = req.query.main_schet_id;
+    const { main_schet_id, budjet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -468,12 +484,12 @@ exports.Controller = class {
     const jur_schets = await MainSchetService.getJurSchets({ region_id });
 
     const result = await BankPrixodService.delete({
+      ...doc,
+      ...req.query,
       id,
       user_id,
-      main_schet_id,
       jur_schets,
       region_id,
-      ...doc,
     });
 
     return res.success(

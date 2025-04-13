@@ -58,11 +58,24 @@ exports.MainSchetService = class {
         client
       );
 
-      for (let schet of data.jur3_schets) {
+      for (let schet of data.jur3_schets_159) {
         await MainSchetDB.createSchet(
           [
             schet.schet,
-            "jur3",
+            "159",
+            doc.id,
+            HelperFunctions.tashkentTime(),
+            HelperFunctions.tashkentTime(),
+          ],
+          client
+        );
+      }
+
+      for (let schet of data.jur3_schets_152) {
+        await MainSchetDB.createSchet(
+          [
+            schet.schet,
+            "152",
             doc.id,
             HelperFunctions.tashkentTime(),
             HelperFunctions.tashkentTime(),
@@ -118,8 +131,17 @@ exports.MainSchetService = class {
         client
       );
 
-      for (let jur3 of data.old_data.jur3_schets) {
-        const check = await data.jur3_schets.find(
+      for (let jur3 of data.old_data.jur3_schets_152) {
+        const check = await data.jur3_schets_152.find(
+          (item) => item.id === jur3.id
+        );
+        if (!check) {
+          await MainSchetDB.deleteJurSchet([jur3.id], client);
+        }
+      }
+
+      for (let jur3 of data.old_data.jur3_schets_159) {
+        const check = await data.jur3_schets_159.find(
           (item) => item.id === jur3.id
         );
         if (!check) {
@@ -136,12 +158,29 @@ exports.MainSchetService = class {
         }
       }
 
-      for (let jur3 of data.jur3_schets) {
+      for (let jur3 of data.jur3_schets_159) {
         if (!jur3.id) {
           await MainSchetDB.createSchet(
             [
               jur3.schet,
-              "jur3",
+              "159",
+              doc.id,
+              HelperFunctions.tashkentTime(),
+              HelperFunctions.tashkentTime(),
+            ],
+            client
+          );
+        } else {
+          await MainSchetDB.updateJurSchet([jur3.schet, jur3.id], client);
+        }
+      }
+
+      for (let jur3 of data.jur3_schets_152) {
+        if (!jur3.id) {
+          await MainSchetDB.createSchet(
+            [
+              jur3.schet,
+              "152",
               doc.id,
               HelperFunctions.tashkentTime(),
               HelperFunctions.tashkentTime(),

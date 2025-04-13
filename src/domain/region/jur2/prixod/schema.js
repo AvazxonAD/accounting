@@ -44,6 +44,7 @@ exports.BankPrixodSchema = class {
           .min(1),
       }),
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1),
       }),
     }).options({ stripUnknown: true });
@@ -91,6 +92,7 @@ exports.BankPrixodSchema = class {
   static delete() {
     return Joi.object({
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1),
       }),
       params: Joi.object({
@@ -142,6 +144,7 @@ exports.BankPrixodSchema = class {
           .min(1),
       }),
       query: Joi.object({
+        budjet_id: Joi.number().min(1).integer().required(),
         main_schet_id: Joi.number().required().min(1),
       }),
       params: Joi.object({

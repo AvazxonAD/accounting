@@ -4,15 +4,15 @@ const router = Router();
 const { validator } = require("@helper/validator");
 const { Jur3SaldoSchema } = require("./schema");
 const { Controller } = require("./controller");
-const { checkJur3Saldo } = require(`@middleware/check.saldo`);
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { check159Saldo } = require(`@middleware/check.saldo`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 
 router
   .post("/", validator(Controller.create, Jur3SaldoSchema.create()))
   .post("/auto", validator(Controller.createAuto, Jur3SaldoSchema.createAuto()))
   .get(
     "/",
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    check159Saldo(Saldo159Service.getDateSaldo),
     validator(Controller.get, Jur3SaldoSchema.get())
   )
   .delete(
@@ -21,17 +21,17 @@ router
   )
   .put(
     "/:id",
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    check159Saldo(Saldo159Service.getDateSaldo),
     validator(Controller.update, Jur3SaldoSchema.update())
   )
   .delete(
     "/:id",
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    check159Saldo(Saldo159Service.getDateSaldo),
     validator(Controller.delete, Jur3SaldoSchema.delete())
   )
   .get(
     "/:id",
-    checkJur3Saldo(Jur3SaldoService.getDateSaldo),
+    check159Saldo(Saldo159Service.getDateSaldo),
     validator(Controller.getById, Jur3SaldoSchema.getById())
   );
 

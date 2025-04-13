@@ -15,7 +15,7 @@ const { db } = require("@db/index");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
 const { ShowServiceService } = require("./service");
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 
 exports.Controller = class {
   static async create(req, res) {
@@ -35,7 +35,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -44,7 +44,7 @@ exports.Controller = class {
 
     const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
 
-    const saldo = await Jur3SaldoService.getByMonth({
+    const saldo = await Saldo159Service.getByMonth({
       main_schet_id,
       year,
       month,
@@ -181,7 +181,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -222,7 +222,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -267,7 +267,7 @@ exports.Controller = class {
 
     const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
 
-    const saldo = await Jur3SaldoService.getByMonth({
+    const saldo = await Saldo159Service.getByMonth({
       main_schet_id,
       year,
       month,
@@ -281,7 +281,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -407,7 +407,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {

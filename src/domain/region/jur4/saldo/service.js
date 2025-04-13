@@ -144,7 +144,7 @@ exports.Jur4SaldoService = class {
 
   static async get(data) {
     const result = await Jur4SaldoDB.get(
-      [data.budjet_id],
+      [data.budjet_id, data.region_id],
       data.main_schet_id,
       data.year,
       data.month,

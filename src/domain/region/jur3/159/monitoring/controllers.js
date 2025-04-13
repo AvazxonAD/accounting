@@ -1,4 +1,4 @@
-const { OrganizationmonitoringService } = require("./services");
+const { Monitoring159Service } = require("./services");
 const { MainSchetService } = require("@main_schet/service");
 const { OrganizationService } = require("@organization/service");
 const { BudjetService } = require("@budjet/service");
@@ -6,13 +6,12 @@ const { ContractService } = require("@contract/service");
 const { RegionDB } = require("@region/db");
 const { MainSchetDB } = require("@main_schet/db");
 const { OrganizationDB } = require("@organization/db");
-const { OrganizationMonitoringDB } = require("./db");
+const { Monitoring159DB } = require("./db");
 const { RegionService } = require("@region/service");
 const { ReportTitleService } = require(`@report_title/service`);
 const { PodpisService } = require(`@podpis/service`);
 const { REPORT_TYPE } = require("@helper/constants");
-const { HelperFunctions } = require("@helper/functions");
-const { Jur3SaldoService } = require(`@organ_saldo/service`);
+const { Saldo159Service } = require(`@saldo_159/service`);
 
 exports.Controller = class {
   static async monitoring(req, res) {
@@ -26,7 +25,7 @@ exports.Controller = class {
       id: query.main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -40,11 +39,11 @@ exports.Controller = class {
         isdeleted: false,
       });
       if (!organization) {
-        res.error(req.i18n.t("organizationNotFound"), 404);
+        return res.error(req.i18n.t("organizationNotFound"), 404);
       }
     }
 
-    const saldo = await Jur3SaldoService.getByMonth({
+    const saldo = await Saldo159Service.getByMonth({
       ...req.query,
       region_id,
     });
@@ -63,7 +62,7 @@ exports.Controller = class {
       prixod_sum,
       rasxod_sum,
       total_sum,
-    } = await OrganizationmonitoringService.monitoring({
+    } = await Monitoring159Service.monitoring({
       ...query,
       offset,
       region_id,
@@ -93,6 +92,7 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
+  // old
   static async prixodReport(req, res) {
     const region_id = req.user.region_id;
     const {
@@ -125,7 +125,7 @@ exports.Controller = class {
       }
     }
 
-    const data = await OrganizationmonitoringService.prixodReport({
+    const data = await Monitoring159Service.prixodReport({
       ...req.query,
       region_id,
     });
@@ -151,7 +151,7 @@ exports.Controller = class {
       });
 
       const { fileName, filePath } =
-        await OrganizationmonitoringService.prixodReportExcel({
+        await Monitoring159Service.prixodReportExcel({
           ...data,
           from,
           region,
@@ -204,13 +204,10 @@ exports.Controller = class {
       offset: 0,
       limit: 99999999,
     });
-    const data = await OrganizationmonitoringService.prixodRasxod(
-      query,
-      organizations
-    );
+    const data = await Monitoring159Service.prixodRasxod(query, organizations);
 
     if (query.excel === "true") {
-      const filePath = await OrganizationmonitoringService.prixodRasxodExcel({
+      const filePath = await Monitoring159Service.prixodRasxodExcel({
         organ_name: main_schet.tashkilot_nomi,
         schet: query.schet,
         organizations: data.organizations,
@@ -248,12 +245,14 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find((item) => item.id === schet_id);
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === schet_id
+    );
     if (!main_schet || !schet) {
       return res.error("Main shcet not found", 404);
     }
 
-    const data = await OrganizationmonitoringService.cap({
+    const data = await Monitoring159Service.cap({
       ...req.query,
       schet: schet.schet,
       region_id,
@@ -279,21 +278,20 @@ exports.Controller = class {
         type: REPORT_TYPE.cap,
       });
 
-      const { filePath, fileName } =
-        await OrganizationmonitoringService.capExcel({
-          rasxods: data,
-          main_schet,
-          report_title,
-          from,
-          to,
-          region,
-          budjet,
-          podpis,
-          title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
-          file_name: "organization",
-          schet: schet.schet,
-          order: 3,
-        });
+      const { filePath, fileName } = await Monitoring159Service.capExcel({
+        rasxods: data,
+        main_schet,
+        report_title,
+        from,
+        to,
+        region,
+        budjet,
+        podpis,
+        title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
+        file_name: "organization",
+        schet: schet.schet,
+        order: 3,
+      });
 
       res.setHeader(
         "Content-Type",
@@ -345,7 +343,7 @@ exports.Controller = class {
         organ_id: query.organ_id,
       });
     }
-    data = await OrganizationmonitoringService.consolidated({
+    data = await Monitoring159Service.consolidated({
       organizations,
       region_id,
       from: query.from,
@@ -357,14 +355,14 @@ exports.Controller = class {
     if (query.excel === "true") {
       let file;
       if (query.contract === "true") {
-        file = await OrganizationmonitoringService.consolidatedByContractExcel({
+        file = await Monitoring159Service.consolidatedByContractExcel({
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
           schet: schet,
         });
       } else {
-        file = await OrganizationmonitoringService.consolidatedExcel({
+        file = await Monitoring159Service.consolidatedExcel({
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
@@ -421,16 +419,13 @@ exports.Controller = class {
         });
       }
     }
-    const data = await OrganizationMonitoringDB.ge(
-      [from, to, organ_id],
-      contract_id
-    );
-    const summa_from = await OrganizationMonitoringDB.getByContractIdSumma(
+    const data = await Monitoring159DB.ge([from, to, organ_id], contract_id);
+    const summa_from = await Monitoring159DB.getByContractIdSumma(
       [from, organ_id],
       "<",
       contract_id
     );
-    const summa_to = await OrganizationMonitoringDB.getByContractIdSumma(
+    const summa_to = await Monitoring159DB.getByContractIdSumma(
       [to, organ_id],
       "<=",
       contract_id

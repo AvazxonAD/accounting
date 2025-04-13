@@ -64,7 +64,7 @@ exports.checkJur2Saldo = (service) => {
   };
 };
 
-exports.checkJur3Saldo = (service) => {
+exports.check159Saldo = (service) => {
   return async (req, res, next) => {
     try {
       const region_id = req.user.region_id;
@@ -80,7 +80,7 @@ exports.checkJur3Saldo = (service) => {
         region_id,
       });
 
-      const schet = main_schet?.jur3_schets.find(
+      const schet = main_schet?.jur3_schets_159.find(
         (item) => item.id === Number(schet_id)
       );
 

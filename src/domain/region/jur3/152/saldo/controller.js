@@ -1,9 +1,9 @@
 const { MainSchetService } = require("@main_schet/service");
-const { Jur3SaldoService } = require("./service");
+const { Saldo159Service } = require("./service");
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
 const { SALDO_PASSWORD } = require(`@helper/constants`);
-const { OrganizationmonitoringService } = require(`@organ_monitoring/services`);
+const { Monitoring159Service } = require(`@monitoring_159/services`);
 
 exports.Controller = class {
   static async cleanData(req, res) {
@@ -19,14 +19,14 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    await Jur3SaldoService.cleanData({ ...req.query });
+    await Saldo159Service.cleanData({ ...req.query });
 
     return res.success(req.i18n.t(`cleanSuccess`), 200);
   }
@@ -40,14 +40,14 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const result = await Jur3SaldoService.getDateSaldo({
+    const result = await Saldo159Service.getDateSaldo({
       region_id,
       main_schet_id,
       schet_id,
@@ -66,7 +66,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -80,7 +80,7 @@ exports.Controller = class {
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const last_saldo = await Jur3SaldoService.getByMonth({
+    const last_saldo = await Saldo159Service.getByMonth({
       region_id,
       year: last_date.year,
       month: last_date.month,
@@ -96,7 +96,7 @@ exports.Controller = class {
       month: last_date.month,
     });
 
-    const internal = await OrganizationmonitoringService.getSumma({
+    const internal = await Monitoring159Service.getSumma({
       main_schet_id,
       region_id,
       schet: schet.schet,
@@ -104,7 +104,7 @@ exports.Controller = class {
       to: date[1],
     });
 
-    const response = await Jur3SaldoService.createAuto({
+    const response = await Saldo159Service.createAuto({
       summa: last_saldo.summa + internal.summa,
       main_schet_id,
       year,
@@ -130,7 +130,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const result = await Jur3SaldoService.getByMonth({
+    const result = await Saldo159Service.getByMonth({
       region_id,
       year,
       month,
@@ -161,14 +161,14 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur3_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const check = await Jur3SaldoService.get({
+    const check = await Saldo159Service.get({
       year,
       main_schet_id,
       schet_id,
@@ -180,7 +180,7 @@ exports.Controller = class {
       return res.error(req.i18n.t(`docExists`), 409);
     }
 
-    const result = await Jur3SaldoService.create({
+    const result = await Saldo159Service.create({
       ...req.body,
       main_schet_id,
       budjet_id,
@@ -216,7 +216,7 @@ exports.Controller = class {
       }
 
       if (schet_id) {
-        const schet = main_schet.jur3_schets.find(
+        const schet = main_schet?.jur3_schets_159.find(
           (item) => item.id === Number(schet_id)
         );
         if (!schet) {
@@ -229,13 +229,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
-    const { docs, summa } = await Jur3SaldoService.get({
+    const { docs, summa } = await Saldo159Service.get({
       region_id,
       ...req.query,
     });
 
     for (let doc of docs) {
-      const first_saldo = await Jur3SaldoService.getFirstSaldo({
+      const first_saldo = await Saldo159Service.getFirstSaldo({
         region_id,
         main_schet_id: doc.main_schet_id,
         schet_id: doc.schet_id,
@@ -261,7 +261,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const result = await Jur3SaldoService.getById({
+    const result = await Saldo159Service.getById({
       region_id,
       id,
       budjet_id,
@@ -286,7 +286,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await Jur3SaldoService.getFirstSaldo({
+    const first_saldo = await Saldo159Service.getFirstSaldo({
       region_id,
       main_schet_id,
       schet_id,
@@ -296,7 +296,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("firstSaldoError"), 400);
     }
 
-    const old_data = await Jur3SaldoService.getById({
+    const old_data = await Saldo159Service.getById({
       region_id,
       budjet_id,
       id,
@@ -305,7 +305,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await Jur3SaldoService.update({
+    const result = await Saldo159Service.update({
       ...req.body,
       region_id,
       user_id,
@@ -331,7 +331,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await Jur3SaldoService.getFirstSaldo({
+    const first_saldo = await Saldo159Service.getFirstSaldo({
       region_id,
       main_schet_id,
     });
@@ -339,7 +339,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("firstSaldoError"), 400);
     }
 
-    const doc = await Jur3SaldoService.getById({
+    const doc = await Saldo159Service.getById({
       region_id,
       budjet_id,
       id,
@@ -349,7 +349,7 @@ exports.Controller = class {
     }
 
     const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await Jur3SaldoService.getSaldoDate({
+    const dates = await Saldo159Service.getSaldoDate({
       region_id,
       main_schet_id: old_data.main_schet_id,
       date_saldo,
@@ -359,7 +359,7 @@ exports.Controller = class {
       return res.error(req.i18n.t(`firstSaldoError`), 409);
     }
 
-    const result = await Jur3SaldoService.delete({ id });
+    const result = await Saldo159Service.delete({ id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
   }

@@ -13,7 +13,15 @@ exports.MainSchetSchema = class {
         account_name: Joi.string().trim().required(),
         jur1_schet: Joi.string().trim().required(),
         jur2_schet: Joi.string().trim().required(),
-        jur3_schets: Joi.array()
+        jur3_schets_159: Joi.array()
+          .min(1)
+          .required()
+          .items(
+            Joi.object({
+              schet: Joi.string().trim().required(),
+            })
+          ),
+        jur3_schets_152: Joi.array()
           .min(1)
           .required()
           .items(
@@ -46,7 +54,16 @@ exports.MainSchetSchema = class {
         account_name: Joi.string().trim().required(),
         jur1_schet: Joi.string().trim().required(),
         jur2_schet: Joi.string().trim().required(),
-        jur3_schets: Joi.array()
+        jur3_schets_159: Joi.array()
+          .min(1)
+          .required()
+          .items(
+            Joi.object({
+              id: Joi.number().min(1).integer(),
+              schet: Joi.string().trim().required(),
+            })
+          ),
+        jur3_schets_152: Joi.array()
           .min(1)
           .required()
           .items(

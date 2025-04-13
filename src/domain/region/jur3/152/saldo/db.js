@@ -1,6 +1,6 @@
 const { db } = require("@db/index");
 
-exports.Jur3SaldoDB = class {
+exports.Saldo159DB = class {
   static async getFirstSaldo(params) {
     const query = `--sql
       SELECT 

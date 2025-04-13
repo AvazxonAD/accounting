@@ -47,6 +47,7 @@ exports.AktSchema = class {
       query: Joi.object({
         schet_id: Joi.number().required().min(1).integer(),
         main_schet_id: Joi.number().min(1).integer().required(),
+        budjet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -96,6 +97,7 @@ exports.AktSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        budjet_id: Joi.number().min(1).integer().required(),
         schet_id: Joi.number().required().min(1).integer(),
       }),
       params: Joi.object({
@@ -152,6 +154,7 @@ exports.AktSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        budjet_id: Joi.number().min(1).integer().required(),
         schet_id: Joi.number().required().min(1).integer(),
       }),
     }).options({ stripUnknown: true });

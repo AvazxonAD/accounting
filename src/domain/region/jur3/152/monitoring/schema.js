@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.OrganMonitoringSchema = class {
+exports.Monitoring159Schema = class {
   static prixodReport() {
     return Joi.object({
       query: Joi.object({
