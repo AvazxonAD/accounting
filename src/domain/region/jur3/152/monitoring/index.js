@@ -13,8 +13,9 @@ const { Router } = require("express");
 const router = Router();
 
 router
-  .get("/cap", validator(Controller.cap, capSchema))
   .get("/", validator(Controller.monitoring, monitoringSchema))
+  .get("/cap", validator(Controller.cap, capSchema))
+  // old
   .get(
     "/prixod",
     validator(Controller.prixodReport, Monitoring159Schema.prixodReport())

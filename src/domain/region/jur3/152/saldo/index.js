@@ -2,37 +2,34 @@ const { Router } = require("express");
 const router = Router();
 
 const { validator } = require("@helper/validator");
-const { Jur3SaldoSchema } = require("./schema");
+const { Saldo152Schema } = require("./schema");
 const { Controller } = require("./controller");
-const { check159Saldo } = require(`@middleware/check.saldo`);
-const { Saldo159Service } = require(`@saldo_159/service`);
+const { check152Saldo } = require(`@middleware/check.saldo`);
+const { Saldo152Service } = require(`./service`);
 
 router
-  .post("/", validator(Controller.create, Jur3SaldoSchema.create()))
-  .post("/auto", validator(Controller.createAuto, Jur3SaldoSchema.createAuto()))
+  .post(
+    "/",
+    check152Saldo(Saldo152Service.getDateSaldo),
+    validator(Controller.create, Saldo152Schema.create())
+  )
   .get(
     "/",
-    check159Saldo(Saldo159Service.getDateSaldo),
-    validator(Controller.get, Jur3SaldoSchema.get())
+    check152Saldo(Saldo152Service.getDateSaldo),
+    validator(Controller.get, Saldo152Schema.get())
   )
-  .delete(
-    "/clean",
-    validator(Controller.cleanData, Jur3SaldoSchema.cleanData())
-  )
-  .put(
-    "/:id",
-    check159Saldo(Saldo159Service.getDateSaldo),
-    validator(Controller.update, Jur3SaldoSchema.update())
-  )
-  .delete(
-    "/:id",
-    check159Saldo(Saldo159Service.getDateSaldo),
-    validator(Controller.delete, Jur3SaldoSchema.delete())
-  )
+  .get("/data", validator(Controller.getData, Saldo152Schema.getData()))
   .get(
+    "/first",
+    validator(Controller.getFirstSaldo, Saldo152Schema.getFirstSaldo())
+  )
+  .delete("/clean", validator(Controller.cleanData, Saldo152Schema.cleanData()))
+  .put("/:id", validator(Controller.update, Saldo152Schema.update()))
+  .delete(
     "/:id",
-    check159Saldo(Saldo159Service.getDateSaldo),
-    validator(Controller.getById, Jur3SaldoSchema.getById())
-  );
+    check152Saldo(Saldo152Service.getDateSaldo),
+    validator(Controller.delete, Saldo152Schema.delete())
+  )
+  .get("/:id", validator(Controller.getById, Saldo152Schema.getById()));
 
 module.exports = router;

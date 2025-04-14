@@ -1,5 +1,5 @@
 const { MainSchetDB } = require("@main_schet/db");
-const { Monitoring159DB } = require("./db");
+const { Monitoring152DB } = require("./db");
 const { OrganizationDB } = require("@organization/db");
 const { RegionDB } = require("@region/db");
 const { ContractDB } = require("@contract/db");
@@ -16,9 +16,72 @@ const ExcelJS = require("exceljs");
 const path = require("path");
 const fs = require(`fs`).promises;
 
-exports.Monitoring159Service = class {
+exports.Monitoring152Service = class {
+  static async getSumma(data) {
+    const internal = await Monitoring152DB.getSumma([
+      data.region_id,
+      data.main_schet_id,
+      data.schet,
+      data.from,
+      data.to,
+    ]);
+
+    return internal;
+  }
+  static async monitoring(data) {
+    const docs = await Monitoring152DB.monitoring(
+      [
+        data.region_id,
+        data.main_schet_id,
+        data.schet,
+        data.from,
+        data.to,
+        data.offset,
+        data.limit,
+      ],
+      data.organ_id,
+      data.search,
+      data.order_by || "doc_date",
+      data.order_type || "DESC"
+    );
+
+    const internal = await Monitoring152DB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
+      data.organ_id,
+      data.search
+    );
+
+    const total = await Monitoring152DB.getTotal(
+      [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
+      data.organ_id,
+      data.search
+    );
+
+    let page_rasxod_sum = 0;
+    let page_prixod_sum = 0;
+    for (let item of docs) {
+      page_prixod_sum += item.summa_prixod;
+      page_rasxod_sum += item.summa_rasxod;
+    }
+
+    return {
+      data: docs,
+      summa_from: data.saldo?.summa,
+      summa_to: data.saldo?.summa + internal.summa,
+      page_prixod_sum,
+      page_rasxod_sum,
+      page_total_sum: page_prixod_sum - page_rasxod_sum,
+      total,
+      total_sum: internal.summa,
+      prixod_sum: internal.prixod_sum,
+      rasxod_sum: internal.rasxod_sum,
+    };
+  }
+
+  // old
+
   static async cap(data) {
-    let result = await Monitoring159DB.capData([
+    let result = await Monitoring152DB.capData([
       data.main_schet_id,
       data.from,
       data.to,
@@ -297,69 +360,8 @@ exports.Monitoring159Service = class {
     return { fileName, filePath };
   }
 
-  static async getSumma(data) {
-    const internal = await Monitoring159DB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.schet,
-      data.from,
-      data.to,
-    ]);
-
-    return internal;
-  }
-  static async monitoring(data) {
-    const docs = await Monitoring159DB.monitoring(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.schet,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
-      data.organ_id,
-      data.search,
-      data.order_by,
-      data.order_type
-    );
-
-    const internal = await Monitoring159DB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
-      data.organ_id,
-      data.search
-    );
-
-    const total = await Monitoring159DB.getTotal(
-      [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
-      data.organ_id,
-      data.search
-    );
-
-    let page_rasxod_sum = 0;
-    let page_prixod_sum = 0;
-    for (let item of docs) {
-      page_prixod_sum += item.summa_prixod;
-      page_rasxod_sum += item.summa_rasxod;
-    }
-
-    return {
-      data: docs,
-      summa_from: data.saldo.summa,
-      summa_to: data.saldo.summa + internal.summa,
-      page_prixod_sum,
-      page_rasxod_sum,
-      page_total_sum: page_prixod_sum - page_rasxod_sum,
-      total,
-      total_sum: internal.summa,
-      prixod_sum: internal.prixod_sum,
-      rasxod_sum: internal.rasxod_sum,
-    };
-  }
-
   static async prixodReport(data) {
-    const docs = await Monitoring159DB.prixodReport(
+    const docs = await Monitoring152DB.prixodReport(
       [data.region_id, data.main_schet_id, data.from, data.to, data.schet],
       data.organ_id,
       data.search
@@ -377,7 +379,7 @@ exports.Monitoring159Service = class {
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
     for (let item of organizations) {
-      item.summa = await Monitoring159DB.getPrixodRasxod([
+      item.summa = await Monitoring152DB.getPrixodRasxod([
         data.schet,
         data.to,
         item.id,
@@ -504,13 +506,13 @@ exports.Monitoring159Service = class {
   static async consolidated(data) {
     for (let organ of data.organizations) {
       const contract_id = data.contract ? organ.contract_id : null;
-      organ.summa_from = await Monitoring159DB.getSummaConsolidated(
+      organ.summa_from = await Monitoring152DB.getSummaConsolidated(
         [data.region_id, data.main_schet_id, data.schet, data.from, organ.id],
         "<",
         contract_id
       );
       organ.summa_bank_rasxod_prixod =
-        await Monitoring159DB.getSummaPrixodConsolidated(
+        await Monitoring152DB.getSummaPrixodConsolidated(
           [
             data.region_id,
             data.main_schet_id,
@@ -521,11 +523,11 @@ exports.Monitoring159Service = class {
           ],
           contract_id
         );
-      organ.summa_akt_rasxod = await Monitoring159DB.getSummaAktConsolidated(
+      organ.summa_akt_rasxod = await Monitoring152DB.getSummaAktConsolidated(
         [data.region_id, data.main_schet_id, data.from, data.to, organ.id],
         contract_id
       );
-      organ.summa_jur7_rasxod = await Monitoring159DB.getSummaJur7Consolidated(
+      organ.summa_jur7_rasxod = await Monitoring152DB.getSummaJur7Consolidated(
         [
           data.region_id,
           data.main_schet_id,
@@ -537,7 +539,7 @@ exports.Monitoring159Service = class {
         contract_id
       );
       organ.summa_bank_prixod_rasxod =
-        await Monitoring159DB.getSummaBankPrixodConsolidated(
+        await Monitoring152DB.getSummaBankPrixodConsolidated(
           [
             data.region_id,
             data.main_schet_id,
@@ -562,12 +564,12 @@ exports.Monitoring159Service = class {
         schet: "itogo_kredit",
         summa: itogo_rasxod,
       };
-      organ.summa_to = await Monitoring159DB.getSummaConsolidated(
+      organ.summa_to = await Monitoring152DB.getSummaConsolidated(
         [data.region_id, data.main_schet_id, data.schet, data.to, organ.id],
         "<=",
         contract_id
       );
-      data.rasxodSchets = await Monitoring159DB.getRasxodSchets(
+      data.rasxodSchets = await Monitoring152DB.getRasxodSchets(
         [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
         contract_id
       );
@@ -1107,16 +1109,16 @@ exports.Monitoring159Service = class {
         });
       }
     }
-    const data = await Monitoring159DB.getByContractIdData(
+    const data = await Monitoring152DB.getByContractIdData(
       [from, to, organ_id],
       contract_id
     );
-    const summa_from = await Monitoring159DB.getByContractIdSumma(
+    const summa_from = await Monitoring152DB.getByContractIdSumma(
       [from, organ_id],
       "<",
       contract_id
     );
-    const summa_to = await Monitoring159DB.getByContractIdSumma(
+    const summa_to = await Monitoring152DB.getByContractIdSumma(
       [to, organ_id],
       "<=",
       contract_id

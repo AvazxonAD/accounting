@@ -236,11 +236,13 @@ exports.Saldo159DB = class {
       )
     `;
 
+    const queryDate = `UPDATE date_saldo_159 SET isdeleted = true WHERE main_schet_id = $1 AND schet_id = $2`;
+
     await client.query(queryParent, params);
 
     await client.query(queryChild, params);
 
-    // const queryDate = `UPDATE date_saldo_159 SET isdeleted = true WHERE main_schet_id = $1 AND schet_id = $2`;
+    await client.query(queryDate, params);
   }
 
   static async getFirstSaldo(params) {

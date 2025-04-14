@@ -105,17 +105,16 @@ exports.Controller = class {
 
       if (schet) {
         if (schet.type === "jur4") {
-          const saldo = await Jur4SaldoService.getByMonth({
-            main_schet_id,
-            year,
-            month,
-            region_id,
-            schet_id: schet.id,
-          });
-
-          if (!saldo) {
-            return res.error(req.i18n.t("saldoNotFound"), 404);
-          }
+          // const saldo = await Jur4SaldoService.getByMonth({
+          //   main_schet_id,
+          //   year,
+          //   month,
+          //   region_id,
+          //   schet_id: schet.id,
+          // });
+          // if (!saldo) {
+          //   return res.error(req.i18n.t("saldoNotFound"), 404);
+          // }
         }
       }
     }
@@ -295,16 +294,16 @@ exports.Controller = class {
 
       if (schet) {
         if (schet.type === "jur4") {
-          const saldo = await Jur4SaldoService.getByMonth({
-            main_schet_id,
-            year,
-            month,
-            region_id,
-            schet_id: schet.id,
-          });
-          if (!saldo) {
-            return res.error(req.i18n.t("saldoNotFound"), 404);
-          }
+          // const saldo = await Jur4SaldoService.getByMonth({
+          //   main_schet_id,
+          //   year,
+          //   month,
+          //   region_id,
+          //   schet_id: schet.id,
+          // });
+          // if (!saldo) {
+          //   return res.error(req.i18n.t("saldoNotFound"), 404);
+          // }
         }
       }
     }
@@ -368,17 +367,16 @@ exports.Controller = class {
 
       if (schet) {
         if (schet.type === "jur4") {
-          const saldo = await Jur4SaldoService.getByMonth({
-            main_schet_id,
-            year,
-            month,
-            region_id,
-            schet_id: schet.id,
-          });
-
-          if (!saldo) {
-            return res.error(req.i18n.t("saldoNotFound"), 404);
-          }
+          // const saldo = await Jur4SaldoService.getByMonth({
+          //   main_schet_id,
+          //   year,
+          //   month,
+          //   region_id,
+          //   schet_id: schet.id,
+          // });
+          // if (!saldo) {
+          //   return res.error(req.i18n.t("saldoNotFound"), 404);
+          // }
         }
       }
     }

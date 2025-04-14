@@ -86,7 +86,7 @@ exports.BankPrixodSchema = class {
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static delete() {
@@ -98,7 +98,7 @@ exports.BankPrixodSchema = class {
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static update() {

@@ -1,4 +1,4 @@
-const { Monitoring159Service } = require("./services");
+const { Monitoring152Service } = require("./services");
 const { MainSchetService } = require("@main_schet/service");
 const { OrganizationService } = require("@organization/service");
 const { BudjetService } = require("@budjet/service");
@@ -6,13 +6,12 @@ const { ContractService } = require("@contract/service");
 const { RegionDB } = require("@region/db");
 const { MainSchetDB } = require("@main_schet/db");
 const { OrganizationDB } = require("@organization/db");
-const { Monitoring159DB } = require("./db");
+const { Monitoring152DB } = require("./db");
 const { RegionService } = require("@region/service");
 const { ReportTitleService } = require(`@report_title/service`);
 const { PodpisService } = require(`@podpis/service`);
 const { REPORT_TYPE } = require("@helper/constants");
-const { HelperFunctions } = require("@helper/functions");
-const { Saldo159Service } = require(`@saldo_159/service`);
+const { Saldo152Service } = require(`@saldo_152/service`);
 
 exports.Controller = class {
   static async monitoring(req, res) {
@@ -40,11 +39,11 @@ exports.Controller = class {
         isdeleted: false,
       });
       if (!organization) {
-        res.error(req.i18n.t("organizationNotFound"), 404);
+        return res.error(req.i18n.t("organizationNotFound"), 404);
       }
     }
 
-    const saldo = await Saldo159Service.getByMonth({
+    const saldo = await Saldo152Service.getByMonth({
       ...req.query,
       region_id,
     });
@@ -63,7 +62,7 @@ exports.Controller = class {
       prixod_sum,
       rasxod_sum,
       total_sum,
-    } = await Monitoring159Service.monitoring({
+    } = await Monitoring152Service.monitoring({
       ...query,
       offset,
       region_id,
@@ -93,6 +92,7 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
+  // old
   static async prixodReport(req, res) {
     const region_id = req.user.region_id;
     const {
@@ -125,7 +125,7 @@ exports.Controller = class {
       }
     }
 
-    const data = await Monitoring159Service.prixodReport({
+    const data = await Monitoring152Service.prixodReport({
       ...req.query,
       region_id,
     });
@@ -151,7 +151,7 @@ exports.Controller = class {
       });
 
       const { fileName, filePath } =
-        await Monitoring159Service.prixodReportExcel({
+        await Monitoring152Service.prixodReportExcel({
           ...data,
           from,
           region,
@@ -204,10 +204,10 @@ exports.Controller = class {
       offset: 0,
       limit: 99999999,
     });
-    const data = await Monitoring159Service.prixodRasxod(query, organizations);
+    const data = await Monitoring152Service.prixodRasxod(query, organizations);
 
     if (query.excel === "true") {
-      const filePath = await Monitoring159Service.prixodRasxodExcel({
+      const filePath = await Monitoring152Service.prixodRasxodExcel({
         organ_name: main_schet.tashkilot_nomi,
         schet: query.schet,
         organizations: data.organizations,
@@ -252,7 +252,7 @@ exports.Controller = class {
       return res.error("Main shcet not found", 404);
     }
 
-    const data = await Monitoring159Service.cap({
+    const data = await Monitoring152Service.cap({
       ...req.query,
       schet: schet.schet,
       region_id,
@@ -278,7 +278,7 @@ exports.Controller = class {
         type: REPORT_TYPE.cap,
       });
 
-      const { filePath, fileName } = await Monitoring159Service.capExcel({
+      const { filePath, fileName } = await Monitoring152Service.capExcel({
         rasxods: data,
         main_schet,
         report_title,
@@ -343,7 +343,7 @@ exports.Controller = class {
         organ_id: query.organ_id,
       });
     }
-    data = await Monitoring159Service.consolidated({
+    data = await Monitoring152Service.consolidated({
       organizations,
       region_id,
       from: query.from,
@@ -355,14 +355,14 @@ exports.Controller = class {
     if (query.excel === "true") {
       let file;
       if (query.contract === "true") {
-        file = await Monitoring159Service.consolidatedByContractExcel({
+        file = await Monitoring152Service.consolidatedByContractExcel({
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
           schet: schet,
         });
       } else {
-        file = await Monitoring159Service.consolidatedExcel({
+        file = await Monitoring152Service.consolidatedExcel({
           organizations: data.organizations,
           rasxodSchets: data.rasxodSchets,
           to: query.to,
@@ -419,13 +419,13 @@ exports.Controller = class {
         });
       }
     }
-    const data = await Monitoring159DB.ge([from, to, organ_id], contract_id);
-    const summa_from = await Monitoring159DB.getByContractIdSumma(
+    const data = await Monitoring152DB.ge([from, to, organ_id], contract_id);
+    const summa_from = await Monitoring152DB.getByContractIdSumma(
       [from, organ_id],
       "<",
       contract_id
     );
-    const summa_to = await Monitoring159DB.getByContractIdSumma(
+    const summa_to = await Monitoring152DB.getByContractIdSumma(
       [to, organ_id],
       "<=",
       contract_id
