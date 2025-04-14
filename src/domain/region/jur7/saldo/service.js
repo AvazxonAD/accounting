@@ -380,7 +380,7 @@ exports.SaldoService = class {
     );
 
     for (let product of result.data) {
-      product = await this.calculateKol({ product, year, month });
+      product = await this.calculateKol({ product, to: data.to, year, month });
     }
 
     if (data.rasxod) {

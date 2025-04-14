@@ -4,34 +4,10 @@ const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
 const { SALDO_PASSWORD } = require(`@helper/constants`);
 const { PodotchetMonitoringService } = require(`@pod_monitoring/service`);
+const { PodotchetService } = require("@podotchet/service");
 
 exports.Controller = class {
-  static async cleanData(req, res) {
-    const region_id = req.user.region_id;
-    const { main_schet_id, password, schet_id } = req.query;
-
-    if (password !== SALDO_PASSWORD) {
-      return res.error(req.i18n.t("validationError"), 400);
-    }
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
-    if (!main_schet || !schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    await Jur4SaldoService.cleanData({ ...req.query });
-
-    return res.success(req.i18n.t(`cleanSuccess`), 200);
-  }
-
-  static async getDateSaldo(req, res) {
+  static async getFirstSaldo(req, res) {
     const region_id = req.user.region_id;
     const { main_schet_id, schet_id } = req.query;
 
@@ -40,105 +16,20 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const result = await Jur4SaldoService.getDateSaldo({
+    const result = await Jur4SaldoService.getFirstSaldo({
+      ...req.query,
       region_id,
-      main_schet_id,
-      schet_id,
-    });
-
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
-  }
-
-  static async createAuto(req, res) {
-    const { region_id, id: user_id } = req.user;
-    const { budjet_id } = req.query;
-    const { year, month, main_schet_id, schet_id } = req.body;
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
-    if (!main_schet || !schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const last_date = HelperFunctions.lastDate({ year, month });
-
-    const last_saldo = await Jur4SaldoService.getByMonth({
-      region_id,
-      year: last_date.year,
-      month: last_date.month,
-      main_schet_id,
-      schet_id,
-    });
-    if (!last_saldo) {
-      return res.error(req.i18n.t(`lastSaldoNotFound`), 404);
-    }
-
-    const date = HelperFunctions.getDate({
-      year: last_date.year,
-      month: last_date.month,
-    });
-
-    const internal = await PodotchetMonitoringService.getSumma({
-      main_schet_id,
-      region_id,
-      schet: schet.schet,
-      from: date[0],
-      to: date[1],
-    });
-
-    const response = await Jur4SaldoService.createAuto({
-      summa: last_saldo.summa + internal.summa,
-      main_schet_id,
-      year,
-      region_id,
-      schet_id,
-      month,
-      user_id,
-      budjet_id,
-    });
-
-    return res.success(req.i18n.t("createSuccess"), 200, null, response);
-  }
-
-  static async getByMonth(req, res) {
-    const region_id = req.user.region_id;
-    const { year, month, main_schet_id } = req.query;
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    const result = await Jur4SaldoService.getByMonth({
-      region_id,
-      year,
-      month,
-      main_schet_id,
     });
 
     if (!result) {
-      return res.error(req.i18n.t(`saldoNotFound`), 404);
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
@@ -147,9 +38,9 @@ exports.Controller = class {
   static async create(req, res) {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const budjet_id = req.query.budjet_id;
+    const { budjet_id, main_schet_id, schet_id } = req.query;
 
-    const { main_schet_id, schet_id } = req.body;
+    const { podotchets } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -161,32 +52,122 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
+    const schet = main_schet?.jur3_schets_159.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const checkBySchet = await Jur4SaldoService.get({
-      main_schet_id,
+    const check = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      ...req.body,
       region_id,
-      budjet_id,
-      schet_id,
     });
+    if (check) {
+      return res.error(req.i18n.t(`docExists`), 400);
+    }
 
-    if (checkBySchet.docs.length) {
-      return res.error(req.i18n.t(`docExists`), 409);
+    for (let podotchet of podotchets) {
+      const check = await PodotchetService.getById({
+        region_id,
+        id: podotchet.organization_id,
+      });
+      if (!check) {
+        return res.error(req.i18n.t("organizationNotFound"), 404);
+      }
     }
 
     const result = await Jur4SaldoService.create({
       ...req.body,
-      main_schet_id,
-      budjet_id,
+      ...req.query,
       user_id,
     });
 
-    return res.success(req.i18n.t("createSuccess"), 201, null, result);
+    return res.success(
+      req.i18n.t("createSuccess"),
+      201,
+      { dates: result.dates },
+      result.doc
+    );
+  }
+
+  static async getData(req, res) {
+    const region_id = req.user.region_id;
+    const { first, year, month, main_schet_id, schet_id, budjet_id } =
+      req.query;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    if (first === "true") {
+      const podotchets = await PodotchetService.get({
+        region_id,
+        offset: 0,
+        limit: 99999999,
+      });
+
+      for (let organ of podotchets.data) {
+        organ.prixod = 0;
+        organ.rasxod = 0;
+        organ.organization_id = organ.id;
+      }
+
+      return res.success(req.i18n.t("getSuccess"), 200, null, podotchets.data);
+    }
+
+    const last_date = HelperFunctions.lastDate({ ...req.query });
+
+    const last_saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      year: last_date.year,
+      month: last_date.month,
+      region_id,
+    });
+
+    if (!last_saldo) {
+      return res.error(req.i18n.t("lastSaldoNotFound"), 400);
+    }
+
+    const date = HelperFunctions.getDate({
+      year: last_date.year,
+      month: last_date.month,
+    });
+
+    const docs = await PodotchetMonitoringService.monitoring({
+      region_id,
+      main_schet_id,
+      schet: schet.schet,
+      from: date[0],
+      to: date[1],
+      offset: 0,
+      limit: 99999999,
+    });
+
+    for (let organ of last_saldo.childs) {
+      for (let doc of docs.data) {
+        if (organ.organization_id === doc.organ_id) {
+          organ.prixod += doc.summa_prixod;
+          organ.rasxod += doc.summa_rasxod;
+        }
+      }
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, last_saldo.childs);
   }
 
   static async get(req, res) {
@@ -215,7 +196,7 @@ exports.Controller = class {
       }
 
       if (schet_id) {
-        const schet = main_schet?.jur4_schets.find(
+        const schet = main_schet?.jur3_schets_159.find(
           (item) => item.id === Number(schet_id)
         );
         if (!schet) {
@@ -228,32 +209,22 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
-    const { docs, summa } = await Jur4SaldoService.get({
+    const { docs, meta } = await Jur4SaldoService.get({
       region_id,
       ...req.query,
     });
 
-    for (let doc of docs) {
-      const first_saldo = await Jur4SaldoService.getFirstSaldo({
-        region_id,
-        main_schet_id: doc.main_schet_id,
-        schet_id: doc.schet_id,
-      });
-
-      if (doc.id === first_saldo.id) {
-        doc.updated = true;
-      } else {
-        doc.updated = false;
-      }
+    if (docs[0]) {
+      docs[0].isdeleted = true;
     }
 
-    return res.success(req.i18n.t("getSuccess"), 200, { summa }, docs);
+    return res.success(req.i18n.t("getSuccess"), 200, meta, docs);
   }
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { budjet_id } = req.query;
+    const { budjet_id, main_schet_id, schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -270,14 +241,49 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const first = await Jur4SaldoService.getFirstSaldo({
+      ...req.query,
+      region_id,
+    });
+
+    if (result.id === first.id) {
+      result.first = true;
+    } else {
+      result.first = false;
+    }
+
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
+  }
+
+  static async cleanData(req, res) {
+    const region_id = req.user.region_id;
+    const { main_schet_id, password, schet_id } = req.query;
+
+    if (password !== SALDO_PASSWORD) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    await Jur4SaldoService.cleanData({ ...req.query });
+
+    return res.success(req.i18n.t(`cleanSuccess`), 200);
   }
 
   static async update(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { budjet_id } = req.query;
-    const { year, month, main_schet_id, schet_id } = req.body;
+    const { budjet_id, main_schet_id, schet_id } = req.query;
     const user_id = req.user.id;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
@@ -285,14 +291,16 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await Jur4SaldoService.getFirstSaldo({
+    const main_schet = await MainSchetService.getById({
       region_id,
-      main_schet_id,
-      schet_id,
+      id: main_schet_id,
     });
 
-    if (first_saldo.id !== id) {
-      return res.error(req.i18n.t("firstSaldoError"), 400);
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
     const old_data = await Jur4SaldoService.getById({
@@ -304,62 +312,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await Jur4SaldoService.getSaldoDate({
-      region_id,
-      main_schet_id: old_data.main_schet_id,
-      date_saldo,
-    });
-
-    if (dates.length) {
-      if (
-        old_data.year !== year ||
-        old_data.month !== month ||
-        old_data.main_schet_id !== main_schet_id
-      ) {
-        return res.error(req.i18n.t(`firstSaldoError`), 409);
-      }
-    }
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-    if (!main_schet) {
-      return res.error(req.i18n.t("mainSchetNotFound"), 400);
-    }
-
-    if (old_data.main_schet_id !== main_schet_id) {
-      const checkBySchet = await Jur4SaldoService.get({
-        main_schet_id,
-        region_id,
-        budjet_id,
-      });
-      if (checkBySchet.docs.length) {
-        return res.error(req.i18n.t(`docExists`), 409);
-      }
-    }
-
-    if (
-      old_data.year !== year ||
-      old_data.month !== month ||
-      old_data.main_schet_id !== main_schet_id
-    ) {
-      const check = await Jur4SaldoService.get({
-        year,
-        main_schet_id,
-        region_id,
-        month,
-        budjet_id: main_schet.spravochnik_budjet_name_id,
-      });
-      if (check.docs.length) {
-        return res.error(req.i18n.t(`docExists`), 409);
-      }
-    }
-
     const result = await Jur4SaldoService.update({
       ...req.body,
-      main_schet_id,
+      ...old_data,
+      ...req.query,
       region_id,
       user_id,
       id,
@@ -377,19 +333,35 @@ exports.Controller = class {
     const { budjet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id } = req.query;
+    const { main_schet_id, schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await Jur4SaldoService.getFirstSaldo({
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const end = await Jur4SaldoService.getEndSaldo({
       region_id,
       main_schet_id,
+      schet_id,
     });
-    if (first_saldo.id !== id) {
-      return res.error(req.i18n.t("firstSaldoError"), 400);
+    if (!end) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+    if (end.id !== id) {
+      return res.error(req.i18n.t("deleteSaldoError"), 400);
     }
 
     const doc = await Jur4SaldoService.getById({
@@ -399,17 +371,6 @@ exports.Controller = class {
     });
     if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
-    }
-
-    const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await Jur4SaldoService.getSaldoDate({
-      region_id,
-      main_schet_id: old_data.main_schet_id,
-      date_saldo,
-    });
-
-    if (dates.length) {
-      return res.error(req.i18n.t(`firstSaldoError`), 409);
     }
 
     const result = await Jur4SaldoService.delete({ id });
