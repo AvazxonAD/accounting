@@ -81,6 +81,8 @@ exports.KassaPrixodDB = class {
                     p.rayon AS spravochnik_podotchet_litso_rayon,
                     mp.id AS main_zarplata_id,
                     mp.fio AS zarplata_fio,
+                    so.name AS organization_name,
+                    so.inn AS organization_inn,
                     (
                         SELECT JSON_AGG(row_to_json(ch))
                         FROM (
@@ -97,6 +99,7 @@ exports.KassaPrixodDB = class {
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+                LEFT JOIN spravochnik_organization AS so ON so.id = d.organ_id 
                 LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
                 WHERE r.id = $1
                     AND d.main_schet_id = $2 

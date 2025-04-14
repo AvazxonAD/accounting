@@ -11,11 +11,17 @@ exports.KassaRasxodDB = class {
                 id_podotchet_litso,
                 main_schet_id, 
                 user_id,
+                organ_id, 
+                contract_id, 
+                contract_grafik_id,
+                organ_account_id,
+                organ_gazna_id,
+                type,
                 created_at,
                 updated_at,
                 main_zarplata_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
             RETURNING id
         `;
 
@@ -69,17 +75,14 @@ exports.KassaRasxodDB = class {
     const query = `
                 WITH data AS (
                     SELECT 
-                        d.id, 
-                        d.doc_num,
+                        d.*, 
                         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                        d.opisanie, 
-                        d.summa, 
-                        d.id_podotchet_litso,
                         p.name AS spravochnik_podotchet_litso_name,
                         p.rayon AS spravochnik_podotchet_litso_rayon,
-                        d.main_zarplata_id,
                         mp.id AS main_zarplata_id,
                         mp.fio AS zarplata_fio,
+                        so.name AS organization_name,
+                        so.inn AS organization_inn,
                         (
                             SELECT JSON_AGG(row_to_json(ch))
                             FROM (
@@ -96,6 +99,7 @@ exports.KassaRasxodDB = class {
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
                     LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+                    LEFT JOIN spravochnik_organization AS so ON so.id = d.organ_id 
                     LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
@@ -145,15 +149,11 @@ exports.KassaRasxodDB = class {
   static async getById(params, isdeleted) {
     const query = `--sql
             SELECT 
-                d.id, 
-                d.doc_num,
+                d.*, 
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                d.opisanie, 
                 d.summa::FLOAT, 
-                d.id_podotchet_litso,
                 p.name AS spravochnik_podotchet_litso_name,
                 p.rayon AS spravochnik_podotchet_litso_rayon,
-                d.main_zarplata_id,
                 mp.id AS main_zarplata_id,
                 mp.fio AS zarplata_fio,
                 (
@@ -201,9 +201,15 @@ exports.KassaRasxodDB = class {
                 opisanie = $3, 
                 summa = $4, 
                 id_podotchet_litso = $5, 
-                updated_at = $6,
-                main_zarplata_id = $8
-            WHERE id = $7 RETURNING id 
+                organ_id = $6,
+                contract_id = $7,
+                contract_grafik_id = $8,
+                organ_account_id = $9,
+                organ_gazna_id = $10,
+                type = $11,
+                updated_at = $12,
+                main_zarplata_id = $13
+            WHERE id = $14 RETURNING id
         `,
       params
     );

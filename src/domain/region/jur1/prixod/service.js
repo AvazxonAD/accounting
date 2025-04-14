@@ -143,8 +143,8 @@ exports.KassaPrixodService = class {
           data.organ_gazna_id,
           data.type,
           tashkentTime(),
-          data.id,
           data.main_zarplata_id,
+          data.id,
         ],
         client
       );
