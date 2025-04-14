@@ -55,8 +55,8 @@ exports.PodotchetMonitoringService = class {
       ],
       data.podotchet_id,
       data.search,
-      data.order_by,
-      data.order_type
+      data.order_by || "doc_date",
+      data.order_type || "DESC"
     );
 
     const internal = await PodotchetMonitoringDB.getSumma(
@@ -80,8 +80,8 @@ exports.PodotchetMonitoringService = class {
 
     return {
       data: docs,
-      summa_from: data.saldo.summa,
-      summa_to: data.saldo.summa + internal.summa,
+      summa_from: data.saldo?.summa,
+      summa_to: data.saldo?.summa + internal.summa,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,

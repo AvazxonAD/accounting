@@ -16,7 +16,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -52,7 +52,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -71,7 +71,7 @@ exports.Controller = class {
     for (let podotchet of podotchets) {
       const check = await PodotchetService.getById({
         region_id,
-        id: podotchet.organization_id,
+        id: podotchet.podotchet_id,
       });
       if (!check) {
         return res.error(req.i18n.t("organizationNotFound"), 404);
@@ -107,7 +107,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -121,10 +121,10 @@ exports.Controller = class {
         limit: 99999999,
       });
 
-      for (let organ of podotchets.data) {
-        organ.prixod = 0;
-        organ.rasxod = 0;
-        organ.organization_id = organ.id;
+      for (let podotchet of podotchets.data) {
+        podotchet.prixod = 0;
+        podotchet.rasxod = 0;
+        podotchet.podotchet_id = podotchet.id;
       }
 
       return res.success(req.i18n.t("getSuccess"), 200, null, podotchets.data);
@@ -158,11 +158,11 @@ exports.Controller = class {
       limit: 99999999,
     });
 
-    for (let organ of last_saldo.childs) {
+    for (let podotchet of last_saldo.childs) {
       for (let doc of docs.data) {
-        if (organ.organization_id === doc.organ_id) {
-          organ.prixod += doc.summa_prixod;
-          organ.rasxod += doc.summa_rasxod;
+        if (podotchet.podotchet_id === doc.podotchet_id) {
+          podotchet.prixod += doc.prixod_sum;
+          podotchet.rasxod += doc.rasxod_sum;
         }
       }
     }
@@ -196,7 +196,7 @@ exports.Controller = class {
       }
 
       if (schet_id) {
-        const schet = main_schet?.jur3_schets_159.find(
+        const schet = main_schet?.jur4_schets.find(
           (item) => item.id === Number(schet_id)
         );
         if (!schet) {
@@ -268,7 +268,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -296,7 +296,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -345,7 +345,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {

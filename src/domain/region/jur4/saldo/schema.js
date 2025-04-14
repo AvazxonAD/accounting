@@ -38,7 +38,7 @@ exports.Jur3SaldoSchema = class {
           .required()
           .items(
             Joi.object({
-              organization_id: Joi.number().min(1).integer().required(),
+              podotchet_id: Joi.number().min(1).integer().required(),
               prixod: Joi.number().min(0).required(),
               rasxod: Joi.number().min(0).required(),
             })
@@ -106,7 +106,7 @@ exports.Jur3SaldoSchema = class {
           .required()
           .items(
             Joi.object({
-              organization_id: Joi.number().min(1).integer().required(),
+              podotchet_id: Joi.number().min(1).integer().required(),
               prixod: Joi.number().min(0).required(),
               rasxod: Joi.number().min(0).required(),
             })
