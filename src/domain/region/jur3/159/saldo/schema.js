@@ -9,6 +9,8 @@ exports.Jur3SaldoSchema = class {
 
       query: Joi.object({
         budjet_id: Joi.number().required().min(1).integer(),
+        main_schet_id: Joi.number().required().min(1).integer(),
+        schet_id: Joi.number().required().min(1).integer(),
       }),
     }).options({ stripUnknown: true });
   }

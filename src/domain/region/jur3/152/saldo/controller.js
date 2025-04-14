@@ -247,6 +247,17 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const first = await Saldo152Service.getFirstSaldo({
+      ...req.query,
+      region_id,
+    });
+
+    if (result.id === first.id) {
+      result.first = true;
+    } else {
+      result.first = false;
+    }
+
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 

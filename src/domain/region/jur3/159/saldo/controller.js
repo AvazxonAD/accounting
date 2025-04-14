@@ -229,7 +229,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { budjet_id } = req.query;
+    const { budjet_id, main_schet_id, schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -244,6 +244,17 @@ exports.Controller = class {
     });
     if (!result) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const first = await Saldo159Service.getFirstSaldo({
+      ...req.query,
+      region_id,
+    });
+
+    if (result.id === first.id) {
+      result.first = true;
+    } else {
+      result.first = false;
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
