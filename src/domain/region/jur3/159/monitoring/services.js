@@ -78,8 +78,6 @@ exports.Monitoring159Service = class {
     };
   }
 
-  // old
-
   static async cap(data) {
     let result = await Monitoring159DB.capData([
       data.main_schet_id,
@@ -345,7 +343,10 @@ exports.Monitoring159Service = class {
     });
 
     const fileName = `${data.file_name}_shapka_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../../public/exports");
+    const folder_path = path.join(
+      __dirname,
+      "../../../../../../public/exports"
+    );
 
     try {
       await fs.access(folder_path, fs.constants.W_OK);
@@ -359,6 +360,8 @@ exports.Monitoring159Service = class {
 
     return { fileName, filePath };
   }
+
+  // old
 
   static async prixodReport(data) {
     const docs = await Monitoring159DB.prixodReport(

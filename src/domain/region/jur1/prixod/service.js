@@ -46,12 +46,12 @@ exports.KassaPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -183,12 +183,12 @@ exports.KassaPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -200,13 +200,13 @@ exports.KassaPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              doc_date: data.old_data.doc_date,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   doc_date: data.old_data.doc_date,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -234,12 +234,12 @@ exports.KassaPrixodService = class {
 
         if (schet) {
           if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }

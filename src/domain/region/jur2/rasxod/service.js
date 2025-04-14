@@ -51,19 +51,19 @@ exports.BankRasxodService = class {
         for (let child of item.childs) {
           if (child.schet) {
             if (child.schet.type === "jur3") {
-              await Saldo159Service.createSaldoDate({
-                ...data,
-                schet_id: child.schet.id,
-                main_schet_id: child.schet.main_schet_id,
-                client,
-              });
+              // await Saldo159Service.createSaldoDate({
+              //   ...data,
+              //   schet_id: child.schet.id,
+              //   main_schet_id: child.schet.main_schet_id,
+              //   client,
+              // });
             } else if (child.schet.type === "jur4") {
-              await Jur4SaldoService.createSaldoDate({
-                ...data,
-                schet_id: child.schet.id,
-                main_schet_id: child.schet.main_schet_id,
-                client,
-              });
+              // await Jur4SaldoService.createSaldoDate({
+              //   ...data,
+              //   schet_id: child.schet.id,
+              //   main_schet_id: child.schet.main_schet_id,
+              //   client,
+              // });
             }
           }
         }
@@ -96,19 +96,19 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Saldo159Service.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           } else if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -175,19 +175,19 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Saldo159Service.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           } else if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -326,19 +326,19 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Saldo159Service.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           } else if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -350,21 +350,21 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              doc_date: data.old_data.doc_date,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Saldo159Service.createSaldoDate({
+            //   ...data,
+            //   doc_date: data.old_data.doc_date,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           } else if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              doc_date: data.old_data.doc_date,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   doc_date: data.old_data.doc_date,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }
@@ -392,19 +392,19 @@ exports.BankRasxodService = class {
 
         if (schet) {
           if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Saldo159Service.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           } else if (schet.type === "jur4") {
-            await Jur4SaldoService.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
+            // await Jur4SaldoService.createSaldoDate({
+            //   ...data,
+            //   schet_id: schet.id,
+            //   main_schet_id: schet.main_schet_id,
+            //   client,
+            // });
           }
         }
       }

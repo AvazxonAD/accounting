@@ -107,8 +107,6 @@ exports.Monitoring152Service = class {
     return result;
   }
 
-  // old
-
   static async capExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Hisobot");
@@ -345,7 +343,10 @@ exports.Monitoring152Service = class {
     });
 
     const fileName = `${data.file_name}_shapka_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../../public/exports");
+    const folder_path = path.join(
+      __dirname,
+      "../../../../../../public/exports"
+    );
 
     try {
       await fs.access(folder_path, fs.constants.W_OK);
@@ -359,6 +360,8 @@ exports.Monitoring152Service = class {
 
     return { fileName, filePath };
   }
+
+  // old
 
   static async prixodReport(data) {
     const docs = await Monitoring152DB.prixodReport(

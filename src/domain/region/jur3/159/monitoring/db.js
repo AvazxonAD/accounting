@@ -417,6 +417,74 @@ exports.Monitoring159DB = class {
     return result[0];
   }
 
+  static async capData(params) {
+    const query = `--sql
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            op.schet AS schet,
+            op.sub_schet
+        FROM bajarilgan_ishlar_jur3_child AS ch
+        JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN jur_schets AS own ON own.id = d.schet_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND own.schet = $5
+        GROUP BY op.schet,
+             own.schet,
+             op.sub_schet
+        
+        UNION ALL
+        
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            m.jur2_schet AS debet_schet,
+            '0' AS sub_schet
+        FROM bank_prixod_child AS ch
+        JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod 
+        JOIN main_schet AS m ON m.id = d.main_schet_id
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND op.schet = $5
+        GROUP BY op.schet,
+            m.jur2_schet
+        
+        UNION ALL
+        
+        SELECT 
+            COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa,
+            ch.debet_schet,
+            ch.debet_sub_schet AS sub_schet
+        FROM document_prixod_jur7_child AS ch
+        JOIN document_prixod_jur7 AS d ON d.id = ch.document_prixod_jur7_id 
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND ch.kredit_schet = $5
+        GROUP BY ch.kredit_schet,
+            ch.debet_schet,
+            ch.debet_sub_schet
+      `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   // old
   static async getPrixodRasxod(params) {
     const query = `--sql
@@ -495,74 +563,6 @@ exports.Monitoring159DB = class {
         `;
     const data = await db.query(query, params);
     return data[0];
-  }
-
-  static async capData(params) {
-    const query = `--sql
-        SELECT 
-            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-            op.schet AS schet,
-            op.sub_schet
-        FROM bajarilgan_ishlar_jur3_child AS ch
-        JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
-        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        JOIN jur_schets AS own ON own.id = d.schet_id
-        WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND d.main_schet_id = $1
-            AND d.doc_date BETWEEN $2 AND $3
-            AND r.id = $4
-            AND own.schet = $5
-        GROUP BY op.schet,
-             own.schet,
-             op.sub_schet
-        
-        UNION ALL
-        
-        SELECT 
-            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-            m.jur2_schet AS debet_schet,
-            '0' AS sub_schet
-        FROM bank_prixod_child AS ch
-        JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod 
-        JOIN main_schet AS m ON m.id = d.main_schet_id
-        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND d.main_schet_id = $1
-            AND d.doc_date BETWEEN $2 AND $3
-            AND r.id = $4
-            AND op.schet = $5
-        GROUP BY op.schet,
-            m.jur2_schet
-        
-        UNION ALL
-        
-        SELECT 
-            COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT AS summa,
-            ch.debet_schet,
-            ch.debet_sub_schet AS sub_schet
-        FROM document_prixod_jur7_child AS ch
-        JOIN document_prixod_jur7 AS d ON d.id = ch.document_prixod_jur7_id 
-        JOIN users AS u ON d.user_id = u.id
-        JOIN regions AS r ON r.id = u.region_id
-        WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND d.doc_date BETWEEN $2 AND $3
-            AND r.id = $4
-            AND ch.kredit_schet = $5
-        GROUP BY ch.kredit_schet,
-            ch.debet_schet,
-            ch.debet_sub_schet
-      `;
-
-    const result = await db.query(query, params);
-
-    return result;
   }
 
   static async getSummaConsolidated(params, operator, contract) {

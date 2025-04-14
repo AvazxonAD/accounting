@@ -86,6 +86,87 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
+  static async cap(req, res) {
+    const region_id = req.user.region_id;
+    const {
+      report_title_id,
+      main_schet_id,
+      excel,
+      budjet_id,
+      schet_id,
+      from,
+      to,
+    } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 404);
+    }
+
+    const data = await PodotchetMonitoringService.cap({
+      ...req.query,
+      region_id,
+      schet: schet.schet,
+    });
+
+    if (excel === "true") {
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
+
+      const { filePath, fileName } = await HelperFunctions.capExcel({
+        rasxods: data,
+        main_schet,
+        report_title,
+        from,
+        to,
+        region,
+        budjet,
+        podpis,
+        title: "Podotchet Monitoring",
+        file_name: "podotchet",
+        schet: schet.schet,
+        order: 4,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.download(filePath, (err) => {
+        if (err) {
+          res.error(err.message, err.statusCode);
+        }
+      });
+    }
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
+  }
+
+  // old
   static async prixodRasxodPodotchet(req, res) {
     const region_id = req.user.region_id;
     const { to, budjet_id, excel } = req.query;
@@ -522,85 +603,5 @@ exports.Controller = class {
     return res.download(filePath, (err) => {
       if (err) throw new ErrorResponse(err, err.statusCode);
     });
-  }
-
-  static async cap(req, res) {
-    const region_id = req.user.region_id;
-    const {
-      report_title_id,
-      main_schet_id,
-      excel,
-      budjet_id,
-      schet_id,
-      from,
-      to,
-    } = req.query;
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
-    if (!main_schet || !schet) {
-      return res.error(req.i18n.t(`mainSchetNotFound`), 404);
-    }
-
-    const data = await PodotchetMonitoringService.cap({
-      ...req.query,
-      region_id,
-      schet: schet.schet,
-    });
-
-    if (excel === "true") {
-      const budjet = await BudjetService.getById({ id: budjet_id });
-      if (!budjet) {
-        return res.error(req.i18n.t("budjetNotFound"), 404);
-      }
-
-      const report_title = await ReportTitleService.getById({
-        id: report_title_id,
-      });
-      if (!report_title) {
-        return res.error(req.i18n.t("reportTitleNotFound"), 404);
-      }
-
-      const region = await RegionService.getById({ id: region_id });
-
-      const podpis = await PodpisService.get({ region_id, type: "cap" });
-
-      const { filePath, fileName } = await HelperFunctions.capExcel({
-        rasxods: data,
-        main_schet,
-        report_title,
-        from,
-        to,
-        region,
-        budjet,
-        podpis,
-        title: "Podotchet Monitoring",
-        file_name: "podotchet",
-        schet: schet.schet,
-        order: 4,
-      });
-
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
-
-      return res.download(filePath, (err) => {
-        if (err) {
-          res.error(err.message, err.statusCode);
-        }
-      });
-    }
-    return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 };
