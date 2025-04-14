@@ -140,15 +140,18 @@ exports.Controller = class {
     const last_saldo = await Saldo159Service.getByMonth({
       ...req.query,
       year: last_date.year,
-      region_id,
       month: last_date.month,
+      region_id,
     });
 
     if (!last_saldo) {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
-    const date = HelperFunctions.getDate({ year, month });
+    const date = HelperFunctions.getDate({
+      year: last_date.year,
+      month: last_date.month,
+    });
 
     const docs = await Monitoring159Service.monitoring({
       region_id,

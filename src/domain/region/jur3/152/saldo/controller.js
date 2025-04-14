@@ -3,7 +3,7 @@ const { Saldo152Service } = require("./service");
 const { BudjetService } = require(`@budjet/service`);
 const { HelperFunctions } = require(`@helper/functions`);
 const { SALDO_PASSWORD } = require(`@helper/constants`);
-const { Monitoring159Service } = require(`@monitoring_152/services`);
+const { Monitoring152Service } = require(`@monitoring_152/services`);
 const { OrganizationService } = require("@organization/service");
 
 exports.Controller = class {
@@ -148,9 +148,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
-    const date = HelperFunctions.getDate({ year, month });
+    const date = HelperFunctions.getDate({
+      year: last_date.year,
+      month: last_date.month,
+    });
 
-    const docs = await Monitoring159Service.monitoring({
+    const docs = await Monitoring152Service.monitoring({
       region_id,
       main_schet_id,
       schet: schet.schet,

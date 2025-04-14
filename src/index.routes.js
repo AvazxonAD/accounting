@@ -83,7 +83,7 @@ routes
   .use(
     "/152/monitoring",
     protect,
-    check159Saldo(Saldo159Service.getDateSaldo),
+    check152Saldo(Saldo152Service.getDateSaldo),
     require("@monitoring_152/index")
   )
   .use("/152/saldo", protect, require("@saldo_152/index"))

@@ -91,12 +91,12 @@ exports.Monitoring152DB = class {
                 u.fio,
                 op.schet AS provodki_schet, 
                 op.sub_schet AS provodki_sub_schet,
-                'akt' AS type,
+                'show_service' AS type,
                 d.doc_date AS                                                   combined_doc_date,
                 d.id AS                                                         combined_id,
                 d.doc_num AS                                                    combined_doc_num
-            FROM bajarilgan_ishlar_jur3_child AS ch
-            JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
+            FROM kursatilgan_hizmatlar_jur152_child AS ch
+            JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
@@ -240,10 +240,10 @@ exports.Monitoring152DB = class {
                     AND ch.isdeleted = false
                     ${search_filter}
             ),
-            bajarilgan_ishlar_jur3_count AS (
+            kursatilgan_hizmatlar_jur152_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
-                FROM bajarilgan_ishlar_jur3_child AS ch
-                JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+                FROM kursatilgan_hizmatlar_jur152_child AS ch
+                JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
@@ -293,7 +293,7 @@ exports.Monitoring152DB = class {
             FROM (
                 SELECT total_count FROM bank_prixod_count
                 UNION ALL
-                SELECT total_count FROM bajarilgan_ishlar_jur3_count
+                SELECT total_count FROM kursatilgan_hizmatlar_jur152_count
                 UNION ALL
                 SELECT total_count FROM bank_rasxod_count
                 UNION ALL 
@@ -326,10 +326,10 @@ exports.Monitoring152DB = class {
 
     const query = `--sql
             WITH 
-            bajarilgan_ishlar_sum AS (
+            kursatilgan_hizmatlar_jur152_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-                FROM bajarilgan_ishlar_jur3_child AS ch
-                JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+                FROM kursatilgan_hizmatlar_jur152_child AS ch
+                JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
@@ -398,15 +398,15 @@ exports.Monitoring152DB = class {
             SELECT 
                 (
                     (bank_rasxod_sum.summa) - 
-                    (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
+                    (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
                 ) AS summa,
                 bank_rasxod_sum.summa AS prixod_sum,
-                ( bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod_sum,
+                ( kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod_sum,
                 bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
-                bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum_rasxod,
+                kursatilgan_hizmatlar_jur152_sum.summa AS kursatilgan_hizmatlar_jur152_sum_rasxod,
                 bank_prixod_sum.summa AS bank_prixod_sum_rasxod,
                 jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod
-            FROM bajarilgan_ishlar_sum, 
+            FROM kursatilgan_hizmatlar_jur152_sum, 
                 bank_rasxod_sum, 
                 bank_prixod_sum, 
                 jur7_prixod_sum
@@ -431,10 +431,10 @@ exports.Monitoring152DB = class {
                       AND d.id_spravochnik_organization = $3
                       AND m_sch.spravochnik_budjet_name_id = $4
                 ),
-                bajarilgan_ishlar_sum AS (
+                kursatilgan_hizmatlar_jur152_sum AS (
                     SELECT COALESCE(SUM(d.summa), 0)::FLOAT AS summa
-                    FROM bajarilgan_ishlar_jur3_child AS ch
-                    JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+                    FROM kursatilgan_hizmatlar_jur152_child AS ch
+                    JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
                     JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                     JOIN main_schet AS m_sch ON  m_sch.id = d.main_schet_id
                     WHERE d.isdeleted = false
@@ -482,16 +482,16 @@ exports.Monitoring152DB = class {
                 SELECT 
                     (
                         (kursatilgan_hizmatlar_sum.summa + bank_rasxod.summa) 
-                        - (bajarilgan_ishlar_sum.summa + bank_prixod.summa + jur7_prixod.summa)
+                        - (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod.summa + jur7_prixod.summa)
                     ) AS summa,
                     (kursatilgan_hizmatlar_sum.summa + bank_rasxod.summa) AS prixod_sum,
-                    (bajarilgan_ishlar_sum.summa + bank_prixod.summa + jur7_prixod.summa) AS rasxod_sum,
+                    (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod.summa + jur7_prixod.summa) AS rasxod_sum,
                     kursatilgan_hizmatlar_sum.summa AS kursatilgan_hizmatlar_sum,
                     bank_rasxod.summa AS bank_rasxod_sum,
-                    bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum,
+                    kursatilgan_hizmatlar_jur152_sum.summa AS kursatilgan_hizmatlar_jur152_sum,
                     bank_prixod.summa AS bank_prixod_sum,
                     jur7_prixod.summa AS jur7_prixod_sum
-                FROM kursatilgan_hizmatlar_sum, bajarilgan_ishlar_sum, bank_rasxod, bank_prixod, jur7_prixod
+                FROM kursatilgan_hizmatlar_sum, kursatilgan_hizmatlar_jur152_sum, bank_rasxod, bank_prixod, jur7_prixod
         `;
     const data = await db.query(query, params);
     return data[0];
@@ -503,8 +503,8 @@ exports.Monitoring152DB = class {
             COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
             op.schet AS schet,
             op.sub_schet
-        FROM bajarilgan_ishlar_jur3_child AS ch
-        JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+        FROM kursatilgan_hizmatlar_jur152_child AS ch
+        JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
         JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
         JOIN users AS u ON d.user_id = u.id
         JOIN regions AS r ON r.id = u.region_id
@@ -574,10 +574,10 @@ exports.Monitoring152DB = class {
 
     const query = `--sql
             WITH 
-            bajarilgan_ishlar_sum AS (
+            kursatilgan_hizmatlar_jur152_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-                FROM bajarilgan_ishlar_jur3_child AS ch
-                JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+                FROM kursatilgan_hizmatlar_jur152_child AS ch
+                JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
                 JOIN jur_schets AS own ON own.id = d.schet_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id
@@ -635,9 +635,9 @@ exports.Monitoring152DB = class {
             )
             SELECT 
                 (
-                    (bank_rasxod_sum.summa) - (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
+                    (bank_rasxod_sum.summa) - (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
                 ) AS summa
-            FROM bajarilgan_ishlar_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
+            FROM kursatilgan_hizmatlar_jur152_sum, bank_rasxod_sum, bank_prixod_sum, jur7_prixod_sum
         `;
     const result = await db.query(query, params);
     return result[0];
@@ -681,8 +681,8 @@ exports.Monitoring152DB = class {
             SELECT 
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
                 op.schet
-            FROM bajarilgan_ishlar_jur3_child AS ch
-            JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id 
+            FROM kursatilgan_hizmatlar_jur152_child AS ch
+            JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id 
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON r.id = u.region_id
@@ -759,8 +759,8 @@ exports.Monitoring152DB = class {
             SELECT schet
             FROM (
                 SELECT op.schet
-                FROM bajarilgan_ishlar_jur3_child AS ch
-                JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
+                FROM kursatilgan_hizmatlar_jur152_child AS ch
+                JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON r.id = u.region_id

@@ -78,8 +78,6 @@ exports.Monitoring152Service = class {
     };
   }
 
-  // old
-
   static async cap(data) {
     let result = await Monitoring152DB.capData([
       data.main_schet_id,
@@ -108,6 +106,8 @@ exports.Monitoring152Service = class {
 
     return result;
   }
+
+  // old
 
   static async capExcel(data) {
     const workbook = new ExcelJS.Workbook();

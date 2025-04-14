@@ -25,7 +25,7 @@ exports.Controller = class {
       id: query.main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur3_schets_152.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -90,6 +90,93 @@ exports.Controller = class {
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
+  static async cap(req, res) {
+    const region_id = req.user.region_id;
+    const {
+      from,
+      main_schet_id,
+      budjet_id,
+      report_title_id,
+      excel,
+      to,
+      schet_id,
+    } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_152.find(
+      (item) => item.id === schet_id
+    );
+    if (!main_schet || !schet) {
+      return res.error("Main shcet not found", 404);
+    }
+
+    const saldo = await Saldo152Service.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const data = await Monitoring152Service.cap({
+      ...req.query,
+      schet: schet.schet,
+      region_id,
+    });
+
+    if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
+
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t(`reportTitleNotFound`), 404);
+      }
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.cap,
+      });
+
+      const { filePath, fileName } = await Monitoring152Service.capExcel({
+        rasxods: data,
+        main_schet,
+        report_title,
+        from,
+        to,
+        region,
+        budjet,
+        podpis,
+        title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
+        file_name: "organization",
+        schet: schet.schet,
+        order: 3,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, data);
   }
 
   // old
@@ -226,85 +313,6 @@ exports.Controller = class {
       { itogo_rasxod: data.itogo_rasxod, itogo_prixod: data.itogo_prixod },
       data.organizations
     );
-  }
-
-  static async cap(req, res) {
-    const region_id = req.user.region_id;
-    const {
-      from,
-      main_schet_id,
-      budjet_id,
-      report_title_id,
-      excel,
-      to,
-      schet_id,
-    } = req.query;
-
-    const main_schet = await MainSchetService.getById({
-      region_id,
-      id: main_schet_id,
-    });
-
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === schet_id
-    );
-    if (!main_schet || !schet) {
-      return res.error("Main shcet not found", 404);
-    }
-
-    const data = await Monitoring152Service.cap({
-      ...req.query,
-      schet: schet.schet,
-      region_id,
-    });
-
-    if (excel === "true") {
-      const region = await RegionService.getById({ id: region_id });
-
-      const budjet = await BudjetService.getById({ id: budjet_id });
-      if (!budjet) {
-        return res.error(req.i18n.t("budjetNotFound"), 404);
-      }
-
-      const report_title = await ReportTitleService.getById({
-        id: report_title_id,
-      });
-      if (!report_title) {
-        return res.error(req.i18n.t(`reportTitleNotFound`), 404);
-      }
-
-      const podpis = await PodpisService.get({
-        region_id,
-        type: REPORT_TYPE.cap,
-      });
-
-      const { filePath, fileName } = await Monitoring152Service.capExcel({
-        rasxods: data,
-        main_schet,
-        report_title,
-        from,
-        to,
-        region,
-        budjet,
-        podpis,
-        title: "ОРГАНИЗАТСИЯ ХИСОБОТИ",
-        file_name: "organization",
-        schet: schet.schet,
-        order: 3,
-      });
-
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
-      return res.sendFile(filePath);
-    }
-
-    return res.success(req.i18n.t("getSuccess"), 200, data);
   }
 
   static async consolidated(req, res) {

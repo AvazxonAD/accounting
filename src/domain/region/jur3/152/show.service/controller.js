@@ -11,11 +11,10 @@ const { PodrazdelenieDB } = require("@podraz/db");
 const { SostavDB } = require("@sostav/db");
 const { TypeOperatsiiDB } = require("@type_operatsii/db");
 const { ShowServiceDB } = require("./db");
-const { db } = require("@db/index");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
 const { ShowServiceService } = require("./service");
-const { Saldo159Service } = require(`@saldo_159/service`);
+const { Saldo152Service } = require(`@saldo_152/service`);
 
 exports.Controller = class {
   static async create(req, res) {
@@ -35,7 +34,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur3_schets_152.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -44,7 +43,7 @@ exports.Controller = class {
 
     const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
 
-    const saldo = await Saldo159Service.getByMonth({
+    const saldo = await Saldo152Service.getByMonth({
       main_schet_id,
       year,
       month,
@@ -181,7 +180,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur3_schets_152.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -222,7 +221,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur3_schets_152.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -267,7 +266,7 @@ exports.Controller = class {
 
     const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
 
-    const saldo = await Saldo159Service.getByMonth({
+    const saldo = await Saldo152Service.getByMonth({
       main_schet_id,
       year,
       month,
@@ -281,7 +280,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur3_schets_152.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -407,7 +406,7 @@ exports.Controller = class {
 
     const main_schet = await MainSchetDB.getById([region_id, main_schet_id]);
 
-    const schet = main_schet?.jur3_schets_159.find(
+    const schet = main_schet?.jur3_schets_152.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -417,6 +416,20 @@ exports.Controller = class {
     const doc = await ShowServiceDB.getById([region_id, id, main_schet_id]);
     if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
+
+    const saldo = await Saldo152Service.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const data = await ShowServiceService.delete({
