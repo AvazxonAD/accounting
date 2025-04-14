@@ -82,17 +82,23 @@ exports.Controller = class {
       return res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const year = new Date(doc_date).getFullYear();
+    const month = new Date(doc_date).getMonth() + 1;
+
     const check = await KassaSaldoService.getByMonth({
       region_id,
-      year: new Date(doc_date).getFullYear(),
-      month: new Date(doc_date).getMonth() + 1,
+      year,
+      month,
       main_schet_id,
     });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     for (let child of childs) {
       const schet = jur_schets.find((item) => item.schet === child.schet);
@@ -106,6 +112,7 @@ exports.Controller = class {
             region_id,
             schet_id: schet.id,
           });
+
           if (!saldo) {
             return res.error(req.i18n.t("saldoNotFound"), 404);
           }
@@ -265,17 +272,23 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const year = new Date(doc_date).getFullYear();
+    const month = new Date(doc_date).getMonth() + 1;
+
     const check = await KassaSaldoService.getByMonth({
       region_id,
-      year: new Date(doc_date).getFullYear(),
-      month: new Date(doc_date).getMonth() + 1,
+      year,
+      month,
       main_schet_id,
     });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     for (let child of childs) {
       const schet = jur_schets.find((item) => item.schet === child.schet);
@@ -345,7 +358,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     for (let child of doc.childs) {
       const schet = jur_schets.find((item) => item.schet === child.schet);
@@ -359,6 +375,7 @@ exports.Controller = class {
             region_id,
             schet_id: schet.id,
           });
+
           if (!saldo) {
             return res.error(req.i18n.t("saldoNotFound"), 404);
           }

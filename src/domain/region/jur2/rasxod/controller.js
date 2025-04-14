@@ -11,6 +11,8 @@ const { ContractService } = require("@contract/service");
 const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
 const { BankSaldoService } = require(`@jur2_saldo/service`);
+const { BudjetService } = require("@budjet/service");
+const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.Controller = class {
   static async import(req, res) {
@@ -23,10 +25,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const year = 2024 || new Date().getFullYear();
-    const month = 12; // new Date().getMonth() + 1;
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
+
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
@@ -44,7 +50,25 @@ exports.Controller = class {
         if (!operatsii) {
           return res.error(req.i18n.t("operatsiiNotFound"), 404);
         }
-        child.schet = jur_schets.find((item) => item.schet === operatsii.schet);
+        child.schet = operatsii.schet;
+
+        const schet = jur_schets.find((item) => item.schet === child.schet);
+
+        if (schet) {
+          if (schet.type === "jur4") {
+            const saldo = await Jur4SaldoService.getByMonth({
+              main_schet_id,
+              year,
+              month,
+              region_id,
+              schet_id: schet.id,
+            });
+
+            if (!saldo) {
+              return res.error(req.i18n.t("saldoNotFound"), 404);
+            }
+          }
+        }
       }
     }
 
@@ -64,6 +88,7 @@ exports.Controller = class {
       ...req.query,
       docs,
       user_id,
+      jur_schets,
       main_schet,
       region_id,
       doc_date: date,
@@ -100,17 +125,43 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const year = new Date(bank_rasxod.doc_date).getFullYear();
+    const month = new Date(bank_rasxod.doc_date).getMonth() + 1;
+
     const check = await BankSaldoService.getByMonth({
       region_id,
-      year: new Date(bank_rasxod.doc_date).getFullYear(),
-      month: new Date(bank_rasxod.doc_date).getMonth() + 1,
+      year,
+      month,
       main_schet_id,
     });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
+
+    for (let child of bank_rasxod.childs) {
+      const schet = jur_schets.find((item) => item.schet === child.schet);
+
+      if (schet) {
+        if (schet.type === "jur4") {
+          const saldo = await Jur4SaldoService.getByMonth({
+            main_schet_id,
+            year,
+            month,
+            region_id,
+            schet_id: schet.id,
+          });
+
+          if (!saldo) {
+            return res.error(req.i18n.t("saldoNotFound"), 404);
+          }
+        }
+      }
+    }
 
     const result = await BankRasxodService.payment({
       ...req.query,
@@ -280,20 +331,46 @@ exports.Controller = class {
       }
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     if (!checkSchetsEquality(operatsiis)) {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const year = new Date(doc_date).getFullYear();
+    const month = new Date(doc_date).getMonth() + 1;
+
     const check = await BankSaldoService.getByMonth({
       region_id,
-      year: new Date(doc_date).getFullYear(),
-      month: new Date(doc_date).getMonth() + 1,
+      year,
+      month,
       main_schet_id,
     });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    for (let child of childs) {
+      const schet = jur_schets.find((item) => item.schet === child.schet);
+
+      if (schet) {
+        if (schet.type === "jur4") {
+          const saldo = await Jur4SaldoService.getByMonth({
+            main_schet_id,
+            year,
+            month,
+            region_id,
+            schet_id: schet.id,
+          });
+
+          if (!saldo) {
+            return res.error(req.i18n.t("saldoNotFound"), 404);
+          }
+        }
+      }
     }
 
     const result = await BankRasxodService.create({
@@ -532,17 +609,43 @@ exports.Controller = class {
       res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
+    const year = new Date(doc_date).getFullYear();
+    const month = new Date(doc_date).getMonth() + 1;
+
     const check = await BankSaldoService.getByMonth({
       region_id,
-      year: new Date(doc_date).getFullYear(),
-      month: new Date(doc_date).getMonth() + 1,
+      year,
+      month,
       main_schet_id,
     });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
+
+    for (let child of childs) {
+      const schet = jur_schets.find((item) => item.schet === child.schet);
+
+      if (schet) {
+        if (schet.type === "jur4") {
+          const saldo = await Jur4SaldoService.getByMonth({
+            main_schet_id,
+            year,
+            month,
+            region_id,
+            schet_id: schet.id,
+          });
+
+          if (!saldo) {
+            return res.error(req.i18n.t("saldoNotFound"), 404);
+          }
+        }
+      }
+    }
 
     const result = await BankRasxodService.update({
       ...req.body,
@@ -591,17 +694,43 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const year = new Date(doc.doc_date).getFullYear();
+    const month = new Date(doc.doc_date).getMonth() + 1;
+
     const check = await BankSaldoService.getByMonth({
       region_id,
-      year: new Date(doc.doc_date).getFullYear(),
-      month: new Date(doc.doc_date).getMonth() + 1,
+      year,
+      month,
       main_schet_id,
     });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
+
+    for (let child of doc.childs) {
+      const schet = jur_schets.find((item) => item.schet === child.schet);
+
+      if (schet) {
+        if (schet.type === "jur4") {
+          const saldo = await Jur4SaldoService.getByMonth({
+            main_schet_id,
+            year,
+            month,
+            region_id,
+            schet_id: schet.id,
+          });
+
+          if (!saldo) {
+            return res.error(req.i18n.t("saldoNotFound"), 404);
+          }
+        }
+      }
+    }
 
     const result = await BankRasxodService.delete({
       ...req.query,

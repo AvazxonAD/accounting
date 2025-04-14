@@ -5,6 +5,7 @@ exports.BankRasxodSchema = class {
     return Joi.object({
       query: Joi.object({
         main_schet_id: Joi.number().integer().required().min(1),
+        budjet_id: Joi.number().integer().required().min(1),
       }),
       params: Joi.object({
         id: Joi.number().integer().required().min(1),
@@ -12,7 +13,7 @@ exports.BankRasxodSchema = class {
       body: Joi.object({
         status: Joi.boolean().required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static fio() {
@@ -20,7 +21,7 @@ exports.BankRasxodSchema = class {
       query: Joi.object({
         main_schet_id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static create() {
@@ -154,7 +155,7 @@ exports.BankRasxodSchema = class {
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static delete() {
@@ -166,7 +167,7 @@ exports.BankRasxodSchema = class {
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static update() {

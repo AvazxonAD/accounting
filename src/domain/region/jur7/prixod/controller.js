@@ -170,7 +170,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     const result = await PrixodJur7Service.create({
       ...req.body,
@@ -365,7 +368,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     const result = await PrixodJur7Service.update({
       ...req.body,
@@ -427,7 +433,10 @@ exports.Controller = class {
         });
       }
     }
-    const jur_schets = await MainSchetService.getJurSchets({ region_id });
+    const jur_schets = await MainSchetService.getJurSchets({
+      region_id,
+      main_schet_id,
+    });
 
     const result = await PrixodJur7Service.deleteDoc({
       id,
