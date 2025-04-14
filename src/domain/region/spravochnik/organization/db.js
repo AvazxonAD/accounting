@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 
 exports.OrganizationDB = class {
   static async setNullParentId(params, client) {
-    const query = `
+    const query = `--sql
             UPDATE spravochnik_organization
             SET parent_id = null 
             WHERE parent_id = $1 
@@ -12,7 +12,7 @@ exports.OrganizationDB = class {
   }
 
   static async setParentId(params, client) {
-    const query = `
+    const query = `--sql
             UPDATE spravochnik_organization
             SET parent_id = $1 
             WHERE id = $2 
@@ -25,7 +25,7 @@ exports.OrganizationDB = class {
   }
 
   static async getByInn(params) {
-    const query = `
+    const query = `--sql
             SELECT 
                 so.id, 
                 so.name, 
@@ -49,7 +49,7 @@ exports.OrganizationDB = class {
   }
 
   static async getByName(params) {
-    const query = `
+    const query = `--sql
             SELECT 
                 so.id, 
                 so.name, 

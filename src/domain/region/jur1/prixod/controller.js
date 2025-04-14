@@ -8,13 +8,26 @@ const { TypeOperatsiiService } = require("@type_operatsii/service");
 const { KassaPrixodService } = require("./service");
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
+const { OrganizationService } = require("@organization/service");
+const { ContractService } = require("@contract/service");
+const { AccountNumberService } = require("@account_number/service");
+const { GaznaService } = require("@gazna/service");
 
 exports.Controller = class {
   static async create(req, res) {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { id_podotchet_litso, childs, doc_date } = req.body;
+    const {
+      id_podotchet_litso,
+      childs,
+      organ_id,
+      contract_id,
+      contract_grafik_id,
+      organ_account_id,
+      organ_gazna_id,
+      doc_date,
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -44,6 +57,59 @@ exports.Controller = class {
       });
       if (!podotchet) {
         return res.error(req.i18n.t("podotchetNotFound"), 404);
+      }
+    }
+
+    if (organ_id) {
+      const organization = await OrganizationService.getById({
+        region_id,
+        id: organ_id,
+      });
+      if (!organization) {
+        return res.error(req.i18n.t("organizationNotFound"), 404);
+      }
+    }
+
+    if (!contract_id && contract_grafik_id) {
+      return res.error(req.i18n.t("contractNotFound"), 404);
+    }
+
+    if (contract_id) {
+      const contract = await ContractService.getById({
+        region_id,
+        id: contract_id,
+      });
+      if (!contract) {
+        return res.error(req.i18n.t("contractNotFound"), 404);
+      }
+
+      if (contract_grafik_id) {
+        const grafik = contract.grafiks.find(
+          (item) => item.id === contract_grafik_id
+        );
+        if (!grafik) {
+          return res.error(req.i18n.t("grafikNotFound"), 404);
+        }
+      }
+    }
+
+    if (organ_account_id) {
+      const account_number = await AccountNumberService.getById({
+        organ_id,
+        id: organ_account_id,
+      });
+      if (!account_number) {
+        return res.error(req.i18n.t("account_number_not_found"), 404);
+      }
+    }
+
+    if (organ_gazna_id) {
+      const gazna = await GaznaService.getById({
+        organ_id,
+        id: organ_gazna_id,
+      });
+      if (!gazna) {
+        return res.error(req.i18n.t("gazna_not_found"), 404);
       }
     }
 
@@ -198,7 +264,16 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { id_podotchet_litso, childs, doc_date } = req.body;
+    const {
+      id_podotchet_litso,
+      childs,
+      doc_date,
+      organ_id,
+      contract_id,
+      contract_grafik_id,
+      organ_account_id,
+      organ_gazna_id,
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -224,6 +299,59 @@ exports.Controller = class {
       });
       if (!podotchet) {
         return res.error(req.i18n.t("podotchetNotFound"), 404);
+      }
+    }
+
+    if (organ_id) {
+      const organization = await OrganizationService.getById({
+        region_id,
+        id: organ_id,
+      });
+      if (!organization) {
+        return res.error(req.i18n.t("organizationNotFound"), 404);
+      }
+    }
+
+    if (!contract_id && contract_grafik_id) {
+      return res.error(req.i18n.t("contractNotFound"), 404);
+    }
+
+    if (contract_id) {
+      const contract = await ContractService.getById({
+        region_id,
+        id: contract_id,
+      });
+      if (!contract) {
+        return res.error(req.i18n.t("contractNotFound"), 404);
+      }
+
+      if (contract_grafik_id) {
+        const grafik = contract.grafiks.find(
+          (item) => item.id === contract_grafik_id
+        );
+        if (!grafik) {
+          return res.error(req.i18n.t("grafikNotFound"), 404);
+        }
+      }
+    }
+
+    if (organ_account_id) {
+      const account_number = await AccountNumberService.getById({
+        organ_id,
+        id: organ_account_id,
+      });
+      if (!account_number) {
+        return res.error(req.i18n.t("account_number_not_found"), 404);
+      }
+    }
+
+    if (organ_gazna_id) {
+      const gazna = await GaznaService.getById({
+        organ_id,
+        id: organ_gazna_id,
+      });
+      if (!gazna) {
+        return res.error(req.i18n.t("gazna_not_found"), 404);
       }
     }
 

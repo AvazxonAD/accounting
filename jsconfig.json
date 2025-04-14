@@ -52,7 +52,7 @@
         "domain/region/spravochnik/organization/account_number/*"
       ],
       "@features/*": ["domain/region/features/*"],
-      "@contract/*": ["domain/region/contract/*"],
+      "@contract/*": ["domain/region/jur3/contract/*"],
       "@region/*": ["domain/admin/spravochnik/region/*"],
       "@middleware/*": ["middleware/*"],
       "@helper/*": ["helper/*"],

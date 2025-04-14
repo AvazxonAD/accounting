@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 
 exports.KassaPrixodDB = class {
   static async create(params, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO kassa_prixod(
                 doc_num, 
                 doc_date, 
@@ -11,11 +11,17 @@ exports.KassaPrixodDB = class {
                 id_podotchet_litso,
                 main_schet_id, 
                 user_id,
+                organ_id, 
+                contract_id, 
+                contract_grafik_id,
+                organ_account_id,
+                organ_gazna_id,
+                type,
                 created_at,
                 updated_at,
                 main_zarplata_id
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) 
             RETURNING id
         `;
 
@@ -25,7 +31,7 @@ exports.KassaPrixodDB = class {
   }
 
   static async createChild(params, _values, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO kassa_prixod_child (
               spravochnik_operatsii_id,
               summa,
@@ -66,15 +72,11 @@ exports.KassaPrixodDB = class {
       order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
-    const query = `
+    const query = `--sql
             WITH data AS (
                 SELECT 
-                    d.id, 
-                    d.doc_num,
+                    d.*,  
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                    d.opisanie, 
-                    d.summa, 
-                    d.id_podotchet_litso,
                     p.name AS spravochnik_podotchet_litso_name,
                     p.rayon AS spravochnik_podotchet_litso_rayon,
                     mp.id AS main_zarplata_id,
@@ -142,7 +144,7 @@ exports.KassaPrixodDB = class {
   }
 
   static async getById(params, isdeleted) {
-    const query = `
+    const query = `--sql
             SELECT 
                 d.*,
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
@@ -184,16 +186,22 @@ exports.KassaPrixodDB = class {
 
   static async update(params, client) {
     const result = await client.query(
-      `
+      `--sql
             UPDATE kassa_prixod SET 
                 doc_num = $1, 
                 doc_date = $2, 
                 opisanie = $3, 
                 summa = $4, 
-                id_podotchet_litso = $5, 
-                updated_at = $6,
-                main_zarplata_id = $8
-            WHERE id = $7 RETURNING id 
+                id_podotchet_litso = $5,
+                organ_id = $6,
+                contract_id = $7,
+                contract_grafik_id = $8,
+                organ_account_id = $9,
+                organ_gazna_id = $10,
+                type = $11,
+                updated_at = $12,
+                main_zarplata_id = $13
+            WHERE id = $14 RETURNING id 
         `,
       params
     );

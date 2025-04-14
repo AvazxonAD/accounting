@@ -11,6 +11,11 @@ exports.KassaPrixodSchema = class {
         opisanie: Joi.string().trim(),
         id_podotchet_litso: Joi.number().min(1).integer().allow(null),
         main_zarplata_id: Joi.number().allow(null),
+        organ_id: Joi.number().min(1).integer().allow(null),
+        contract_id: Joi.number().min(1).integer().allow(null),
+        contract_grafik_id: Joi.number().min(1).integer().allow(null),
+        organ_account_id: Joi.number().min(1).integer().allow(null),
+        organ_gazna_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array()
           .items(
             Joi.object({
@@ -95,6 +100,11 @@ exports.KassaPrixodSchema = class {
         opisanie: Joi.string().trim(),
         id_podotchet_litso: Joi.number().min(1).integer().allow(null),
         main_zarplata_id: Joi.number().integer().allow(null),
+        organ_id: Joi.number().min(1).integer().allow(null),
+        contract_id: Joi.number().min(1).integer().allow(null),
+        contract_grafik_id: Joi.number().min(1).integer().allow(null),
+        organ_account_id: Joi.number().min(1).integer().allow(null),
+        organ_gazna_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array()
           .items(
             Joi.object({
