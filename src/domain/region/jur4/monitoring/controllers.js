@@ -31,7 +31,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -541,7 +541,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {

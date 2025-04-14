@@ -14,7 +14,9 @@ exports.Jur4SaldoService = class {
   }
 
   static async cleanData(data) {
-    await Jur4SaldoDB.cleanData([data.main_schet_id, data.schet_id]);
+    await db.transaction(async (client) => {
+      await Jur4SaldoDB.cleanData([data.main_schet_id, data.schet_id], client);
+    });
   }
 
   static async getSaldoDate(data) {

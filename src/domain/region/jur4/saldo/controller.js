@@ -19,7 +19,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -40,7 +40,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -66,7 +66,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -149,7 +149,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const budjet_id = req.query.budjet_id;
 
-    const { year, month, main_schet_id, schet_id } = req.body;
+    const { main_schet_id, schet_id } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -161,7 +161,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet.jur4_schets.find(
+    const schet = main_schet?.jur4_schets.find(
       (item) => item.id === Number(schet_id)
     );
     if (!main_schet || !schet) {
@@ -215,7 +215,7 @@ exports.Controller = class {
       }
 
       if (schet_id) {
-        const schet = main_schet.jur4_schets.find(
+        const schet = main_schet?.jur4_schets.find(
           (item) => item.id === Number(schet_id)
         );
         if (!schet) {

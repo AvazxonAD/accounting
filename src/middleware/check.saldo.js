@@ -117,7 +117,7 @@ exports.checkJur4Saldo = (service) => {
         region_id,
       });
 
-      const schet = main_schet.jur4_schets.find(
+      const schet = main_schet?.jur4_schets.find(
         (item) => item.id === Number(schet_id)
       );
       if (!main_schet || !schet) {

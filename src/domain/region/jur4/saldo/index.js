@@ -22,7 +22,6 @@ router
   )
   .delete(
     "/clean",
-    checkJur4Saldo(Jur4SaldoService.getSaldoDate),
     validator(Controller.cleanData, Jur4SaldoSchema.cleanData())
   )
   .put(

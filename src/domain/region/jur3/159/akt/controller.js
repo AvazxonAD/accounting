@@ -448,6 +448,22 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: old_doc.doc_date,
+    });
+
+    const saldo = await Saldo159Service.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const { dates, doc } = await AktService.delete({
       ...old_doc,
       ...req.query,
@@ -459,6 +475,42 @@ exports.Controller = class {
     return res.success(req.i18n.t("deleteSuccess"), 200, { dates }, doc);
   }
 
+  static async cap(req, res) {
+    const region_id = req.user.region_id;
+    const region = await RegionService.getById({ id: region_id });
+
+    const { from, to, main_schet_id } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
+
+    const schets = await AktService.getSchets({
+      region_id,
+      main_schet_id,
+      from,
+      to,
+    });
+
+    const { fileName, filePath } = await AktService.capExcel({
+      ...req.query,
+      region_id,
+      schets,
+      region,
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+    return res.sendFile(filePath);
+  }
   static async cap(req, res) {
     const region_id = req.user.region_id;
     const region = await RegionService.getById({ id: region_id });
