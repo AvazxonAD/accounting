@@ -10,7 +10,7 @@ exports.Saldo152Schema = class {
       query: Joi.object({
         budjet_id: Joi.number().required().min(1).integer(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static getData() {
@@ -93,7 +93,7 @@ exports.Saldo152Schema = class {
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static update() {

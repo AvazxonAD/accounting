@@ -10,7 +10,7 @@ exports.Jur3SaldoSchema = class {
       query: Joi.object({
         budjet_id: Joi.number().required().min(1).integer(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static getData() {
@@ -23,7 +23,7 @@ exports.Jur3SaldoSchema = class {
         year: Joi.number().integer().min(1901),
         month: Joi.number().integer().min(1).max(12),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static create() {
@@ -93,7 +93,7 @@ exports.Jur3SaldoSchema = class {
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static update() {
