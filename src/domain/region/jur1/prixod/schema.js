@@ -10,7 +10,7 @@ exports.KassaPrixodSchema = class {
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
         opisanie: Joi.string().trim(),
         id_podotchet_litso: Joi.number().min(1).integer().allow(null),
-        main_zarplata_id: Joi.number().allow(null),
+        main_zarplata_id: Joi.number().integer().allow(null),
         organ_id: Joi.number().min(1).integer().allow(null),
         type: Joi.string()
           .trim()

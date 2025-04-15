@@ -30,6 +30,7 @@ exports.KassaPrixodService = class {
         ],
         client
       );
+      console.log(data.main_zarplata_id);
 
       await this.createChild({
         childs: data.childs,

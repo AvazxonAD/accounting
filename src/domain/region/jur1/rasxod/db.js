@@ -79,7 +79,7 @@ exports.KassaRasxodDB = class {
                         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
                         p.name AS spravochnik_podotchet_litso_name,
                         p.rayon AS spravochnik_podotchet_litso_rayon,
-                        mp.id AS main_zarplata_id,
+                        d.main_zarplata_id,
                         mp.fio AS zarplata_fio,
                         so.name AS organization_name,
                         so.inn AS organization_inn,
@@ -154,7 +154,7 @@ exports.KassaRasxodDB = class {
                 d.summa::FLOAT, 
                 p.name AS spravochnik_podotchet_litso_name,
                 p.rayon AS spravochnik_podotchet_litso_rayon,
-                mp.id AS main_zarplata_id,
+                d.main_zarplata_id,
                 mp.fio AS zarplata_fio,
                 (
                     SELECT JSON_AGG(row_to_json(ch))

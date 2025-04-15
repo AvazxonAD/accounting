@@ -345,23 +345,25 @@ exports.Controller = class {
           function excelSerialToDate(serial) {
             const utc_days = Math.floor(serial - 25569);
             const utc_value = utc_days * 86400;
-            return new Date(utc_value * 1000);
+            return `${new Date(utc_value * 1000).getFullYear()}-${new Date(utc_value * 1000).getMonth() + 1}-${String(new Date(utc_value * 1000).getDate()).padStart(2, "0")}`;
           }
 
           item.doc_date = excelSerialToDate(item.doc_date);
         }
       } else {
-        item.doc_date = new Date();
+        item.doc_date = null;
       }
 
       const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
 
-      if (!regex.test(item.doc_date)) {
-        return res.error(req.i18n.t("dateError"), 400, {
-          code: CODE.EXCEL_IMPORT.code,
-          doc: real_data,
-          header,
-        });
+      if (item.doc_date) {
+        if (!regex.test(item.doc_date)) {
+          return res.error(req.i18n.t("dateError"), 400, {
+            code: CODE.EXCEL_IMPORT.code,
+            doc: real_data,
+            header,
+          });
+        }
       }
 
       const { error } = SaldoSchema.importData(req.i18n).validate(item);

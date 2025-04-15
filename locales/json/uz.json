@@ -77,7 +77,7 @@
     "importDocDate": "Hujjat sanasi noto‘g‘ri kiritildi! To‘g‘ri format: kun/oy/yil yoki kun.oy.yil",
     "iznosStart": "Iznos boshlangan sanasi noto‘g‘ri kiritildi! To‘g‘ri format: kun.oy.yil",
     "responsibleFio": "Javobgar shaxs FIO text formatida bolishi kerak! Toldirilishi shart!",
-    "docNum": "Hujjat raqami majburiy va text formatida bo‘lishi zarur!",
+    "docNum": "Hujjat raqami text formatida bo‘lishi zarur!",
     "kimgaName": "Qabul qiluvchi shaxs maydoni text formatida bo‘lishi zarur!",
     "inventarNum": "Inventar raqami text formatida bo‘lishi yoki bo‘sh bo‘lishi mumkin!",
     "serialNum": "Seriya raqami text formatida bo‘lishi yoki bo‘sh bo‘lishi mumkin!",
