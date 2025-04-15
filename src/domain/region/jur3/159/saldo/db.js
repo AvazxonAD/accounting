@@ -192,7 +192,10 @@ exports.Saldo159DB = class {
             FROM (
               SELECT
                 ch.*,
-                o.name
+                 o.name,
+                o.inn,
+                o.bank_klient,
+                o.mfo
               FROM saldo_159_child ch
               JOIN spravochnik_organization o ON o.id = ch.organization_id
               WHERE ch.parent_id = d.id

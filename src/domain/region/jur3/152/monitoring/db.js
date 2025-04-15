@@ -70,6 +70,8 @@ exports.Monitoring152DB = class {
                 ${organ_filter}
                 ${search_filter}
 
+            UNION ALL 
+
             SELECT
                 d.id,
                 d.doc_num,
@@ -195,6 +197,8 @@ exports.Monitoring152DB = class {
                 ${organ_filter}
                 ${search_filter}
 
+            UNION ALL 
+            
             SELECT 
                 d.id,
                 d.doc_num,
@@ -305,7 +309,8 @@ exports.Monitoring152DB = class {
 
     const query = `--sql
             WITH bank_prixod_count AS (
-                SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                SELECT
+                    COALESCE(COUNT(*)::INTEGER, 0) AS total_count
                 FROM bank_prixod_child ch
                 JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
@@ -580,8 +585,7 @@ exports.Monitoring152DB = class {
                 kassa_rasxod_sum, 
                 bank_prixod_sum, 
                 kassa_prixod_sum, 
-                jur7_prixod_sum,
-
+                jur7_prixod_sum
         `;
 
     const result = await db.query(query, params);
