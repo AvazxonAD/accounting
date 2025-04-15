@@ -16,6 +16,15 @@ exports.KassaSaldoService = class {
     return result;
   }
 
+  static async getEndSaldo(data) {
+    const result = await KassaSaldoDB.getEndSaldo([
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
   static async getSaldoDate(data) {
     const result = await KassaSaldoDB.getSaldoDate([
       data.region_id,

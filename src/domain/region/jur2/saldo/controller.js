@@ -202,6 +202,10 @@ exports.Controller = class {
       ...req.query,
     });
 
+    if (docs[0]) {
+      docs[0].isdeleted = true;
+    }
+
     for (let doc of docs) {
       const first_saldo = await BankSaldoService.getFirstSaldo({
         region_id,
@@ -351,12 +355,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
-    const first_saldo = await BankSaldoService.getFirstSaldo({
+    const end_saldo = await BankSaldoService.getEndSaldo({
       region_id,
       main_schet_id,
     });
-    if (first_saldo.id !== id) {
-      return res.error(req.i18n.t("firstSaldoError"), 400);
+    if (end_saldo.id !== id) {
+      return res.error(req.i18n.t("endSaldoError"), 400);
     }
 
     const doc = await BankSaldoService.getById({
@@ -366,17 +370,6 @@ exports.Controller = class {
     });
     if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
-    }
-
-    const date_saldo = HelperFunctions.returnDate({ ...old_data });
-    const dates = await BankSaldoService.getSaldoDate({
-      region_id,
-      main_schet_id: old_data.main_schet_id,
-      date_saldo,
-    });
-
-    if (dates.length) {
-      return res.error(req.i18n.t(`firstSaldoError`), 409);
     }
 
     const result = await BankSaldoService.delete({ id });

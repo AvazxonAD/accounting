@@ -11,7 +11,26 @@ exports.BankSaldoDB = class {
       WHERE r.id = $1
           AND d.main_schet_id = $2
           AND d.isdeleted = false
-      ORDER BY d.created_at ASC
+      ORDER BY d.date_saldo ASC
+      LIMIT 1
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getEndSaldo(params) {
+    const query = `--sql
+      SELECT 
+          d.*
+      FROM bank_saldo d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1
+          AND d.main_schet_id = $2
+          AND d.isdeleted = false
+      ORDER BY d.date_saldo DESC
       LIMIT 1
     `;
 

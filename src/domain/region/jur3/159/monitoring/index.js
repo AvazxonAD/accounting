@@ -15,6 +15,7 @@ const router = Router();
 router
   .get("/", validator(Controller.monitoring, monitoringSchema))
   .get("/cap", validator(Controller.cap, capSchema))
+
   // old
   .get(
     "/prixod",

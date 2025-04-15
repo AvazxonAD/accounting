@@ -14,6 +14,7 @@
   "cleanSuccess": "Malumotlar tozalandi!",
   "dateError": "Sana noto'g'ri kiritildi!",
   "firstSaldoError": "Faqat birinchi qoldiqni ish boshlangandan so'ng faqat pulini ozgartira olasiz qolgan amallar avtomat boladi!",
+  "endSaldoError": "Faqat birinchi qoldiqni ish boshlangandan so'ng faqat pulini ozgartira olasiz qolgan amallar avtomat boladi!",
   "deleteSaldoError": "Faqat oxirgi qoldiqni ochira olasiz!",
   "ReportTitleAlreadyExists": "Ushbu hujjat sarlavhasi avval kiritilgan!",
   "reportTitleNotFound": "Hujjat sarlavhasi topilmadi!",

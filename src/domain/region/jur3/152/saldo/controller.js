@@ -209,7 +209,6 @@ exports.Controller = class {
         }
       }
     }
-    console.log(check);
 
     if (!check) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
@@ -366,6 +365,7 @@ exports.Controller = class {
     if (!end) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
+
     if (end.id !== id) {
       return res.error(req.i18n.t("deleteSaldoError"), 400);
     }

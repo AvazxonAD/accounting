@@ -114,6 +114,90 @@ exports.Monitoring159DB = class {
                 ${search_filter}    
             
             UNION ALL 
+
+            SELECT
+                d.id,
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                    doc_date,
+                d.opisanie,
+                0::FLOAT AS summa_rasxod, 
+                ch.summa::FLOAT AS summa_prixod,
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                so.id AS organ_id,
+                so.name AS organ_name,
+                so.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                op.schet AS provodki_schet, 
+                op.sub_schet AS provodki_sub_schet,
+                'kassa_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
+            FROM kassa_rasxod_child ch
+            JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.contract_id
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
+            JOIN spravochnik_organization AS so ON so.id = d.organ_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            WHERE d.isdeleted = false
+                AND r.id = $1 
+                AND d.main_schet_id = $2
+                AND op.schet = $3
+                AND d.doc_date BETWEEN $4 AND $5
+                AND ch.isdeleted = false
+                ${organ_filter}
+                ${search_filter}
+
+            UNION ALL 
+            
+            SELECT 
+                d.id,
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                d.opisanie,
+                ch.summa::FLOAT AS summa_rasxod,
+                0::FLOAT AS summa_prixod, 
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                 TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                so.id AS organ_id,
+                so.name AS organ_name,
+                so.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                op.schet AS provodki_schet, 
+                op.sub_schet AS provodki_sub_schet,
+                'kassa_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
+            FROM kassa_prixod_child ch
+            JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id 
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.contract_id
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+            JOIN spravochnik_organization AS so ON so.id = d.organ_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            WHERE d.isdeleted = false
+                AND r.id = $1 
+                AND d.main_schet_id = $2
+                AND op.schet = $3
+                AND d.doc_date BETWEEN $4 AND $5
+                AND ch.isdeleted = false
+                ${organ_filter}
+                ${search_filter}
+
+            UNION ALL 
                     
             SELECT 
                 d.id,
@@ -526,6 +610,27 @@ exports.Monitoring159DB = class {
              op.sub_schet
         
         UNION ALL
+        
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            m.jur1_schet AS debet_schet,
+            '0' AS sub_schet
+        FROM kassa_prixod_child AS ch
+        JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id 
+        JOIN main_schet AS m ON m.id = d.main_schet_id
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND op.schet = $5
+        GROUP BY op.schet,
+            m.jur1_schet
+
+        UNION ALL 
         
         SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
