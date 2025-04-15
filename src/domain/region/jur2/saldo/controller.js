@@ -345,10 +345,9 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const { budjet_id } = req.query;
+    const { budjet_id, main_schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {

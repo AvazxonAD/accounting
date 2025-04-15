@@ -265,15 +265,13 @@ exports.Jur8MonitoringDB = class {
         op.schet,
         ch.summa::FLOAT,
         d.id AS document_id,
-        'kursatilgan_hizmatlar_jur152_child' AS type_doc,
+        'document_prixod_jur7' AS type_doc,
         rsch.schet AS rasxod_schet
-      FROM kursatilgan_hizmatlar_jur152 d 
-      JOIN kursatilgan_hizmatlar_jur152_child ch ON ch.kursatilgan_hizmatlar_jur152_id  = d.id
+      FROM document_prixod_jur7 d 
+      JOIN document_prixod_jur7 ch ON ch.document_prixod_jur7_id  = d.id
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
-      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      JOIN jur_schets rsch ON rsch.id = d.schet_id
       WHERE m.spravochnik_budjet_name_id = $1
         AND d.isdeleted = false
         AND d.doc_date BETWEEN $2 AND $3

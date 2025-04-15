@@ -77,19 +77,20 @@ exports.BankSaldoSchema = class {
       query: Joi.object({
         budjet_id: Joi.number().required().min(1).integer(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static delete() {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().required().min(1),
+        main_schet_id: Joi.number().required().min(1),
       }),
 
       params: Joi.object({
         id: Joi.number().required().min(1),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static update() {
