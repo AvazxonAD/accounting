@@ -156,8 +156,13 @@ exports.BankMonitoringDB = class {
     return result[0];
   }
 
-  static async getSumma(params, operator, search) {
+  static async getSumma(params, search, operator = null) {
     let search_filter = ``;
+    let internal_filter = `BETWEEN $3 AND $4`;
+
+    if (operator) {
+      internal_filter = "";
+    }
     if (search) {
       params.push(search);
       search_filter = `AND d.doc_num = $${params.length}`;

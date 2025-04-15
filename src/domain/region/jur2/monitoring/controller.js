@@ -52,6 +52,7 @@ exports.Controller = class {
       total_sum,
       page_total_sum,
     } = await BankMonitoringService.get({
+      ...req.query,
       region_id,
       main_schet_id,
       offset,

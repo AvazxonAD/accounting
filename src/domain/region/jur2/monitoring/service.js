@@ -38,16 +38,31 @@ exports.BankMonitoringService = class {
       page_rasxod_sum += item.rasxod_sum;
     }
 
-    const internal = await BankMonitoringDB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.from,
-      data.to,
-    ]);
+    const internal = await BankMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, data.from, data.to],
+      data.search
+    );
+
+    const from = HelperFunctions.returnDate({
+      year: data.year,
+      month: data.month,
+    });
+
+    const summa_from = await BankMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, from, data.from],
+      data.search
+    );
+
+    const summa_to = await BankMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, from, data.to],
+      data.search
+    );
+
+    console.log(summa_from.summa, data.saldo.summa);
 
     return {
-      summa_from: data.saldo.summa,
-      summa_to: data.saldo.summa + internal.summa,
+      summa_from: data.saldo.summa + summa_from.summa,
+      summa_to: data.saldo.summa + summa_to.summa,
       data: result.data || [],
       total_count: result.total_count,
       page_prixod_sum,
