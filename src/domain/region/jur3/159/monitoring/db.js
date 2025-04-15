@@ -238,6 +238,7 @@ exports.Monitoring159DB = class {
                     AND op.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
+                    ${organ_filter}
                     ${search_filter}
             ),
             bajarilgan_ishlar_jur3_count AS (
@@ -272,6 +273,7 @@ exports.Monitoring159DB = class {
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
+                    ${search_filter}
             ),
             jur7_prixod_count AS (
                 SELECT COALESCE(COUNT(ch.id), 0)::INTEGER AS total_count
@@ -287,6 +289,7 @@ exports.Monitoring159DB = class {
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
+                    ${search_filter}
             )
             
             SELECT SUM(total_count)::INTEGER AS total

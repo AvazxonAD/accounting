@@ -70,6 +70,46 @@ exports.Monitoring152DB = class {
                 ${organ_filter}
                 ${search_filter}
 
+            SELECT
+                d.id,
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS                    doc_date,
+                d.opisanie,
+                0::FLOAT AS summa_rasxod, 
+                ch.summa::FLOAT AS summa_prixod,
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                so.id AS organ_id,
+                so.name AS organ_name,
+                so.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                op.schet AS provodki_schet, 
+                op.sub_schet AS provodki_sub_schet,
+                'kassa_rasxod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
+            FROM kassa_rasxod_child ch
+            JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.contract_id
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id 
+            JOIN spravochnik_organization AS so ON so.id = d.organ_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            WHERE d.isdeleted = false
+                AND r.id = $1 
+                AND d.main_schet_id = $2
+                AND op.schet = $3
+                AND d.doc_date BETWEEN $4 AND $5
+                AND ch.isdeleted = false
+                ${organ_filter}
+                ${search_filter}
+
             UNION ALL 
         
             SELECT 
@@ -153,7 +193,47 @@ exports.Monitoring152DB = class {
                 AND d.doc_date BETWEEN $4 AND $5
                 AND ch.isdeleted = false
                 ${organ_filter}
-                ${search_filter}    
+                ${search_filter}
+
+            SELECT 
+                d.id,
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                d.opisanie,
+                ch.summa::FLOAT AS summa_rasxod,
+                0::FLOAT AS summa_prixod, 
+                sh_o.id AS shartnoma_id,
+                sh_o.doc_num AS shartnoma_doc_num,
+                 TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnoma_doc_date,
+                s.smeta_number,
+                so.id AS organ_id,
+                so.name AS organ_name,
+                so.inn AS organ_inn,
+                u.id AS user_id,
+                u.login,
+                u.fio,
+                op.schet AS provodki_schet, 
+                op.sub_schet AS provodki_sub_schet,
+                'kassa_prixod' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
+            FROM kassa_prixod_child ch
+            JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id 
+            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.contract_id
+            LEFT JOIN smeta AS s ON sh_o.smeta_id = s.id
+            JOIN spravochnik_organization AS so ON so.id = d.organ_id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            WHERE d.isdeleted = false
+                AND r.id = $1 
+                AND d.main_schet_id = $2
+                AND op.schet = $3
+                AND d.doc_date BETWEEN $4 AND $5
+                AND ch.isdeleted = false
+                ${organ_filter}
+                ${search_filter}
             
             UNION ALL 
         
@@ -238,8 +318,29 @@ exports.Monitoring152DB = class {
                     AND op.schet = $3
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
+                    ${organ_filter}
                     ${search_filter}
             ),
+
+            kassa_prixod_count AS (
+                SELECT 
+                    COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                FROM kassa_prixod_child ch
+                JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id 
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1 
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND d.doc_date BETWEEN $4 AND $5
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+            
             kursatilgan_hizmatlar_jur152_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
                 FROM kursatilgan_hizmatlar_jur152_child AS ch
@@ -257,13 +358,14 @@ exports.Monitoring152DB = class {
                     ${organ_filter}
                     ${search_filter}
             ),
+
             bank_rasxod_count AS (
                 SELECT COALESCE(COUNT(*)::INTEGER, 0) AS total_count
                 FROM bank_rasxod_child ch
                 JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN users AS u ON u.id = d.user_id
-                JOIN regions AS r ON r.id = u.region_id \
+                JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
                 WHERE d.isdeleted = false
                     AND r.id = $1 
@@ -272,7 +374,28 @@ exports.Monitoring152DB = class {
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
+                    ${search_filter}
             ),
+
+            kassa_rasxod_count AS (
+                SELECT 
+                    COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                FROM kassa_rasxod_child ch
+                JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1 
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND d.doc_date BETWEEN $4 AND $5
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+
             jur7_prixod_count AS (
                 SELECT COALESCE(COUNT(ch.id), 0)::INTEGER AS total_count
                 FROM document_prixod_jur7_child ch
@@ -287,6 +410,7 @@ exports.Monitoring152DB = class {
                     AND d.doc_date BETWEEN $4 AND $5
                     AND ch.isdeleted = false
                     ${organ_filter}
+                    ${search_filter}
             )
             
             SELECT SUM(total_count)::INTEGER AS total
@@ -298,6 +422,10 @@ exports.Monitoring152DB = class {
                 SELECT total_count FROM bank_rasxod_count
                 UNION ALL 
                 SELECT total_count FROM jur7_prixod_count
+                UNION ALL 
+                SELECT total_count FROM kassa_prixod_count
+                UNION ALL 
+                SELECT total_count FROM kassa_rasxod_count
             ) AS total_count        
         `;
 
@@ -361,6 +489,25 @@ exports.Monitoring152DB = class {
                     ${search_filter}
             ),
 
+            kassa_rasxod_sum AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                FROM kassa_rasxod_child ch
+                JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+
             bank_prixod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bank_prixod_child AS ch
@@ -369,6 +516,25 @@ exports.Monitoring152DB = class {
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON r.id = u.region_id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                WHERE d.isdeleted = false
+                    AND r.id = $1
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+
+            kassa_prixod_sum AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                FROM kassa_prixod_child AS ch
+                JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
                 WHERE d.isdeleted = false
                     AND r.id = $1
                     AND d.main_schet_id = $2
@@ -397,25 +563,32 @@ exports.Monitoring152DB = class {
             )
             SELECT 
                 (
-                    (bank_rasxod_sum.summa) - 
-                    (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
+                    (bank_rasxod_sum.summa + kassa_rasxod_sum.summa) - 
+                    (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + kassa_prixod_sum.summa + jur7_prixod_sum.summa)
                 ) AS summa,
-                bank_rasxod_sum.summa AS prixod_sum,
-                ( kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod_sum,
+                (bank_rasxod_sum.summa + kassa_rasxod_sum.summa) AS prixod_sum,
+                (kursatilgan_hizmatlar_jur152_sum.summa + bank_prixod_sum.summa + kassa_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod_sum,
+                bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
+                kassa_rasxod_sum.summa AS kassa_rasxod_sum_prixod,
                 bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
                 kursatilgan_hizmatlar_jur152_sum.summa AS kursatilgan_hizmatlar_jur152_sum_rasxod,
                 bank_prixod_sum.summa AS bank_prixod_sum_rasxod,
+                kassa_prixod_sum.summa AS kassa_prixod_sum_rasxod,
                 jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod
             FROM kursatilgan_hizmatlar_jur152_sum, 
                 bank_rasxod_sum, 
+                kassa_rasxod_sum, 
                 bank_prixod_sum, 
-                jur7_prixod_sum
+                kassa_prixod_sum, 
+                jur7_prixod_sum,
+
         `;
 
     const result = await db.query(query, params);
 
     return result[0];
   }
+
   static async capData(params) {
     const query = `--sql
         SELECT 
@@ -458,6 +631,27 @@ exports.Monitoring152DB = class {
             AND op.schet = $5
         GROUP BY op.schet,
             m.jur2_schet
+
+        UNION ALL
+        
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            m.jur1_schet AS debet_schet,
+            '0' AS sub_schet
+        FROM kassa_prixod_child AS ch
+        JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id 
+        JOIN main_schet AS m ON m.id = d.main_schet_id
+        JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+        JOIN users AS u ON d.user_id = u.id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND op.schet = $5
+        GROUP BY op.schet,
+            m.jur1_schet
         
         UNION ALL
         
