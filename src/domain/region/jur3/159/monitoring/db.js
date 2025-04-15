@@ -290,6 +290,43 @@ exports.Monitoring159DB = class {
                     AND ch.isdeleted = false
                     ${organ_filter}
                     ${search_filter}
+            ),
+            kassa_prixod_count AS (
+                SELECT 
+                    COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                FROM kassa_prixod_child ch
+                JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id 
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1 
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND d.doc_date BETWEEN $4 AND $5
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+
+            kassa_rasxod_count AS (
+                SELECT 
+                    COALESCE(COUNT(*)::INTEGER, 0) AS total_count
+                FROM kassa_rasxod_child ch
+                JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1 
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND d.doc_date BETWEEN $4 AND $5
+                    AND ch.isdeleted = false
+                    ${organ_filter}
+                    ${search_filter}
             )
             
             SELECT SUM(total_count)::INTEGER AS total
@@ -301,6 +338,10 @@ exports.Monitoring159DB = class {
                 SELECT total_count FROM bank_rasxod_count
                 UNION ALL 
                 SELECT total_count FROM jur7_prixod_count
+                UNION ALL 
+                SELECT total_count FROM kassa_prixod_count
+                UNION ALL 
+                SELECT total_count FROM kassa_rasxod_count
             ) AS total_count        
         `;
 
@@ -346,6 +387,44 @@ exports.Monitoring159DB = class {
                     ${organ_filter}
                     ${search_filter}
             ),
+            kassa_rasxod_sum AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                FROM kassa_rasxod_child ch
+                JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+
+            kassa_prixod_sum AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
+                FROM kassa_prixod_child AS ch
+                JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN users AS u ON u.id = d.user_id
+                JOIN regions AS r ON r.id = u.region_id
+                JOIN spravochnik_organization AS so ON so.id = d.organ_id
+                WHERE d.isdeleted = false
+                    AND r.id = $1
+                    AND d.main_schet_id = $2
+                    AND op.schet = $3
+                    AND ch.isdeleted = false
+                    AND d.doc_date BETWEEN $4 AND $5
+                    ${organ_filter}
+                    ${search_filter}
+            ),
+
             bank_rasxod_sum AS (
                 SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
                 FROM bank_rasxod_child ch
@@ -400,17 +479,21 @@ exports.Monitoring159DB = class {
             )
             SELECT 
                 (
-                    (bank_rasxod_sum.summa) - 
-                    (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa)
+                    (bank_rasxod_sum.summa + kassa_rasxod_sum.summa) - 
+                    (bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa + kassa_prixod_sum.summa)
                 ) AS summa,
-                bank_rasxod_sum.summa AS prixod_sum,
-                ( bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa) AS rasxod_sum,
+                (bank_rasxod_sum.summa + kassa_rasxod_sum.summa) AS prixod_sum,
+                ( bajarilgan_ishlar_sum.summa + bank_prixod_sum.summa + jur7_prixod_sum.summa + kassa_prixod_sum.summa) AS rasxod_sum,
                 bank_rasxod_sum.summa AS bank_rasxod_sum_prixod,
+                kassa_rasxod_sum.summa AS kassa_rasxod_sum_prixod,
                 bajarilgan_ishlar_sum.summa AS bajarilgan_ishlar_sum_rasxod,
                 bank_prixod_sum.summa AS bank_prixod_sum_rasxod,
+                kassa_prixod_sum.summa AS kassa_prixod_sum_rasxod,
                 jur7_prixod_sum.summa AS jur7_prixod_sum_rasxod
             FROM bajarilgan_ishlar_sum, 
                 bank_rasxod_sum, 
+                kassa_rasxod_sum, 
+                kassa_prixod_sum, 
                 bank_prixod_sum, 
                 jur7_prixod_sum
         `;

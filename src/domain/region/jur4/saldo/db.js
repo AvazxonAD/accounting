@@ -192,7 +192,8 @@ exports.Saldo159DB = class {
             FROM (
               SELECT
                 ch.*,
-                p.name
+                p.name,
+                p.rayon
               FROM podotchet_saldo_child ch
               JOIN spravochnik_podotchet_litso p ON p.id = ch.podotchet_id
               WHERE ch.parent_id = d.id
