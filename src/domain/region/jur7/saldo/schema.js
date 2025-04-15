@@ -184,6 +184,15 @@ exports.SaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static cleanData() {
+    return Joi.object({
+      query: Joi.object({
+        password: Joi.string().trim().required(),
+        budjet_id: Joi.number().integer().min(1).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static check() {
     return Joi.object({
       query: Joi.object({

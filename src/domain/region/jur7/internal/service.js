@@ -2,34 +2,18 @@ const { db } = require("@db/index");
 const { InternalDB } = require("./db");
 const { tashkentTime, returnParamsValues } = require("@helper/functions");
 const { SaldoDB } = require("@jur7_saldo/db");
+const { SaldoService } = require("@jur7_saldo/service");
 
 exports.Jur7InternalService = class {
   static async delete(data) {
     const result = await db.transaction(async (client) => {
       const doc = await InternalDB.delete([data.id], client);
 
-      const year = new Date(data.old_data.doc_date).getFullYear();
-      const month = new Date(data.old_data.doc_date).getMonth() + 1;
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        doc_date: data.old_data.doc_date,
+        client,
+      });
 
       return { dates, doc };
     });
@@ -55,6 +39,7 @@ exports.Jur7InternalService = class {
           data.kimga_id,
           data.kimga_name,
           data.budjet_id,
+          data.main_schet_id,
           tashkentTime(),
           tashkentTime(),
         ],
@@ -63,28 +48,10 @@ exports.Jur7InternalService = class {
 
       await this.createChild({ ...data, docId: doc.id, client, doc: doc });
 
-      const year = new Date(data.doc_date).getFullYear();
-      const month = new Date(data.doc_date).getMonth() + 1;
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
 
       return { doc, dates };
     });

@@ -4,10 +4,9 @@ const { BudjetService } = require("@budjet/service");
 const { GroupService } = require("@group/service");
 const { SaldoSchema } = require("./schema");
 const { HelperFunctions } = require("@helper/functions");
-const { CODE } = require("@helper/constants");
+const { CODE, SALDO_PASSWORD } = require("@helper/constants");
 const { ProductService } = require("@product/service");
 const { RegionService } = require("@region/service");
-const { isDate } = require("moment");
 
 exports.Controller = class {
   static async reportByResponsible(req, res) {
@@ -154,7 +153,18 @@ exports.Controller = class {
 
   static async delete(req, res) {
     const { ids, year, month } = req.body;
+    const { budjet_id } = req.query;
     const region_id = req.user.region_id;
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    const check = await SaldoService.checkDelete({ region_id, budjet_id });
+    if (check.length > 1) {
+      return res.error(req.i18n.t("checkDelete"), 400);
+    }
 
     for (let id of ids) {
       const check = await SaldoService.getById({ id: id.id, region_id });
@@ -178,6 +188,24 @@ exports.Controller = class {
     const dates = await SaldoService.delete({ ids, region_id, year, month });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, dates);
+  }
+
+  static async cleanData(req, res) {
+    const { budjet_id, password } = req.query;
+    const region_id = req.user.region_id;
+
+    if (password !== SALDO_PASSWORD) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    const budjet = await BudjetService.getById({ id: budjet_id });
+    if (!budjet) {
+      return res.error(req.i18n.t("budjetNotFound"), 404);
+    }
+
+    await SaldoService.cleanData({ budjet_id, region_id });
+
+    return res.success(req.i18n.t("deleteSuccess"), 200);
   }
 
   static async deleteById(req, res) {

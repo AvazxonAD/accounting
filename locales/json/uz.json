@@ -64,6 +64,7 @@
   "pageNotFound": "Sahifa topilmadi!",
   "saldoNotFound": "Saldo topilmadi!",
   "productDelete": "Ushbu document qoldiqda mavjud emas!",
+  "checkDelete": "Material omborida ish boshlangan qoldiqni ochira olmaysiz malumotlarni tozalab tashlang va qaytadan yuklang!",
   "importSuccess": "Malumot muvaffaqiyatli import qilindi",
   "conflictAccountNumber": "Hisob raqam yoki gazna raqamni tanlashinggiz kerak !",
   "notLogged": "Siz tizimga kirmagansiz!",

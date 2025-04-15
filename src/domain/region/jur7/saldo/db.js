@@ -118,11 +118,11 @@ exports.SaldoDB = class {
   }
 
   static async cleanData(params, client) {
-    const query1 = `DELETE FROM saldo_naimenovanie_jur7 WHERE region_id = $1`;
+    const query1 = `DELETE FROM saldo_naimenovanie_jur7 WHERE region_id = $1 AND budjet_id = $2`;
     const query2 = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1`;
 
     await client.query(query1, params);
-    await client.query(query2, params);
+    await client.query(query2, [params[0]]);
   }
 
   static async checkDoc(params) {
@@ -202,10 +202,12 @@ exports.SaldoDB = class {
                 region_id, 
                 year, 
                 month,
+                main_schet_id,
+                budjet_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *
         `;
 
     const result = await client.query(query, params);
@@ -490,6 +492,32 @@ exports.SaldoDB = class {
     const data = await db.query(query, params);
 
     return data[0];
+  }
+
+  static async checkDelete(params) {
+    const query = `--sql
+      SELECT
+        DISTINCT year, month
+      FROM saldo_naimenovanie_jur7
+      WHERE region_id = $1
+        AND budjet_id = $2
+        AND isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async cleanSaldo(params) {
+    const query = `--sql
+      DELETE FROM saldo_naimenovanie_jur7
+      WHERE region_id = $1
+        AND budjet_id = $2
+        AND isdeleted = false
+    `;
+
+    await db.query(query, params);
   }
 
   static async getKolAndSumma(

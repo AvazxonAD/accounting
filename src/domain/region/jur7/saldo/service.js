@@ -12,6 +12,12 @@ const path = require("path");
 const fs = require("fs").promises;
 
 exports.SaldoService = class {
+  static async checkDelete(data) {
+    const result = await SaldoDB.checkDelete([data.region_id, data.budjet_id]);
+
+    return result;
+  }
+
   static async calculateKol(data) {
     data.product.internal = await SaldoDB.getKolAndSumma(
       [data.product.product_id],
@@ -390,9 +396,39 @@ exports.SaldoService = class {
     return result;
   }
 
+  static async createSaldoDate(data) {
+    const year = new Date(data.doc_date).getFullYear();
+    const month = new Date(data.doc_date).getMonth() + 1;
+
+    const check = await SaldoDB.getSaldoDate([
+      data.region_id,
+      `${year}-${String(month).padStart(2, "0")}-01`,
+    ]);
+
+    let dates = [];
+    for (let date of check) {
+      dates.push(
+        await SaldoDB.createSaldoDate(
+          [
+            data.region_id,
+            date.year,
+            date.month,
+            data.main_schet_id,
+            data.budjet_id,
+            tashkentTime(),
+            tashkentTime(),
+          ],
+          client
+        )
+      );
+    }
+
+    return dates;
+  }
+
   static async cleanData(data) {
     await db.transaction(async (client) => {
-      await SaldoDB.cleanData([data.region_id], client);
+      await SaldoDB.cleanData([data.region_id, data.budjet_id], client);
     });
   }
 

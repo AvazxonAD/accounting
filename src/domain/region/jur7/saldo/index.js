@@ -31,6 +31,7 @@ router
     Middleware.jur7Block,
     validator(Controller.delete, SaldoSchema.delete())
   )
+  .delete("/clean", validator(Controller.cleanData, SaldoSchema.cleanData()))
   .post("/", validator(Controller.create, SaldoSchema.create()))
   .put(
     "/iznos_summa/:id",
