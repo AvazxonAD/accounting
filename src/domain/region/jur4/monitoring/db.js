@@ -210,8 +210,19 @@ exports.PodotchetMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(params, podotcbet_id = null, search = null) {
+  static async getSumma(
+    params,
+    podotcbet_id = null,
+    search = null,
+    from = null
+  ) {
     const conditions = [];
+
+    let internal_filter = `BETWEEN $2 AND $3`;
+
+    if (from) {
+      internal_filter = ` >= $2 AND d.doc_date < $3`;
+    }
 
     if (podotcbet_id) {
       params.push(podotcbet_id);
@@ -243,7 +254,7 @@ exports.PodotchetMonitoringDB = class {
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
                     AND p.id IS NOT NULL
-                    AND d.doc_date BETWEEN $2 AND $3
+                    AND d.doc_date ${internal_filter}
                     AND op.schet = $4
                     AND d.main_schet_id = $5
                     ${where}
@@ -262,7 +273,7 @@ exports.PodotchetMonitoringDB = class {
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
                     AND p.id IS NOT NULL
-                    AND d.doc_date BETWEEN $2 AND $3
+                    AND d.doc_date ${internal_filter}
                     AND op.schet = $4
                     AND d.main_schet_id = $5
                     ${where}
@@ -281,7 +292,7 @@ exports.PodotchetMonitoringDB = class {
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
                     AND p.id IS NOT NULL
-                    AND d.doc_date BETWEEN $2 AND $3
+                    AND d.doc_date ${internal_filter}
                     AND op.schet = $4
                     AND d.main_schet_id = $5
                     ${where}
@@ -300,7 +311,7 @@ exports.PodotchetMonitoringDB = class {
                 WHERE r.id = $1  
                     AND d.isdeleted = false
                     AND p.id IS NOT NULL
-                    AND d.doc_date BETWEEN $2 AND $3
+                    AND d.doc_date ${internal_filter}
                     AND op.schet = $4
                     AND d.main_schet_id = $5
                     ${where}
@@ -320,7 +331,7 @@ exports.PodotchetMonitoringDB = class {
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
                     AND p.id IS NOT NULL
-                    AND d.doc_date BETWEEN $2 AND $3
+                    AND d.doc_date ${internal_filter}
                     AND own.schet = $4
                     AND d.main_schet_id = $5
                     ${where}

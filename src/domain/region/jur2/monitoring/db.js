@@ -156,13 +156,14 @@ exports.BankMonitoringDB = class {
     return result[0];
   }
 
-  static async getSumma(params, search, operator = null) {
+  static async getSumma(params, search, from = null) {
     let search_filter = ``;
     let internal_filter = `BETWEEN $3 AND $4`;
 
-    if (operator) {
-      internal_filter = "";
+    if (from) {
+      internal_filter = ` >= $3 AND d.doc_date < $4`;
     }
+
     if (search) {
       params.push(search);
       search_filter = `AND d.doc_num = $${params.length}`;
@@ -181,7 +182,7 @@ exports.BankMonitoringDB = class {
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4
+                    AND d.doc_date ${internal_filter}
                     ${search_filter} 
             ), 
             rasxod AS (
@@ -196,7 +197,7 @@ exports.BankMonitoringDB = class {
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     AND d.main_schet_id = $2 
-                    AND d.doc_date BETWEEN $3 AND $4
+                    AND d.doc_date ${internal_filter}
                     ${search_filter} 
             )
 

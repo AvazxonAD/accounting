@@ -168,8 +168,13 @@ exports.KassaMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(params, search) {
+  static async getSumma(params, search, from = null) {
     let search_filter = ``;
+    let internal_filter = `BETWEEN $3 AND $4`;
+
+    if (from) {
+      internal_filter = ` >= $3 AND d.doc_date < $4`;
+    }
 
     if (search) {
       params.push(search);
@@ -188,7 +193,7 @@ exports.KassaMonitoringDB = class {
                     AND d.main_schet_id = $2  
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
-                    AND d.doc_date BETWEEN $3 AND $4
+                    AND d.doc_date ${internal_filter}
                     ${search_filter} 
             ), 
             rasxod AS (
@@ -203,7 +208,7 @@ exports.KassaMonitoringDB = class {
                     AND d.isdeleted = false
                     AND ch.isdeleted = false
                     ${search_filter} 
-                    AND d.doc_date BETWEEN $3 AND $4
+                    AND d.doc_date ${internal_filter}
             )
 
             SELECT 
