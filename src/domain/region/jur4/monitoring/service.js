@@ -1,3 +1,4 @@
+const { HelperFunctions } = require("@helper/functions");
 const { PodotchetMonitoringDB } = require("./db");
 
 exports.PodotchetMonitoringService = class {
@@ -65,6 +66,23 @@ exports.PodotchetMonitoringService = class {
       data.search
     );
 
+    const from = HelperFunctions.returnDate({
+      year: data.year,
+      month: data.month,
+    });
+
+    const summa_from = await PodotchetMonitoringDB.getSumma(
+      [data.region_id, from, data.from, data.schet, data.main_schet_id],
+      data.podotchet_id,
+      data.search
+    );
+
+    const summa_to = await PodotchetMonitoringDB.getSumma(
+      [data.region_id, from, data.to, data.schet, data.main_schet_id],
+      data.podotchet_id,
+      data.search
+    );
+
     const total = await PodotchetMonitoringDB.getTotalMonitoring(
       [data.region_id, data.main_schet_id, data.from, data.to, data.schet],
       data.podotchet_id,
@@ -78,10 +96,12 @@ exports.PodotchetMonitoringService = class {
       page_prixod_sum += item.prixod_sum;
     });
 
+    const saldo_summa = data.saldo?.summa || 0;
+
     return {
       data: docs,
-      summa_from: data.saldo?.summa,
-      summa_to: data.saldo?.summa + internal.summa,
+      summa_from: saldo_summa + summa_from.summa,
+      summa_to: saldo_summa + summa_to.summa,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,

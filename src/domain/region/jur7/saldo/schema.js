@@ -5,6 +5,7 @@ exports.SaldoSchema = class {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
       file: Joi.object({
         path: Joi.string().trim().required(),
@@ -82,6 +83,7 @@ exports.SaldoSchema = class {
         limit: Joi.number().integer().min(1).default(99999999),
         search: Joi.string().trim().allow(null, ""),
         budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
         type: Joi.string()
           .trim()
           .valid("responsible", "group", "product")
@@ -105,6 +107,7 @@ exports.SaldoSchema = class {
         limit: Joi.number().integer().min(1).default(99999999),
         search: Joi.string().trim().allow(null, ""),
         budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
         rasxod: Joi.boolean().default(false),
         to: Joi.string()
           .trim()
@@ -121,6 +124,7 @@ exports.SaldoSchema = class {
         responsible_id: Joi.number().integer().min(1),
         group_id: Joi.number().integer().min(1),
         budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
         to: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
@@ -139,19 +143,8 @@ exports.SaldoSchema = class {
       }),
 
       query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required(),
-      }),
-    }).options({ stripUnknown: true });
-  }
-
-  static updateIznosSumma() {
-    return Joi.object({
-      body: Joi.object({
-        iznos_summa: Joi.number().min(1).required(),
-      }),
-
-      params: Joi.object({
-        id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -179,6 +172,7 @@ exports.SaldoSchema = class {
         month: Joi.number().min(1).max(12).required().integer(),
       }),
       query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
@@ -188,7 +182,7 @@ exports.SaldoSchema = class {
     return Joi.object({
       query: Joi.object({
         password: Joi.string().trim().required(),
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -198,6 +192,7 @@ exports.SaldoSchema = class {
       query: Joi.object({
         year: Joi.number().min(1901).max(2099).required().integer(),
         month: Joi.number().min(1).max(12).required().integer(),
+        main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
@@ -209,7 +204,21 @@ exports.SaldoSchema = class {
         id: Joi.number().min(1).required().integer(),
       }),
       query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  // old
+  static updateIznosSumma() {
+    return Joi.object({
+      body: Joi.object({
+        iznos_summa: Joi.number().min(1).required(),
+      }),
+
+      params: Joi.object({
+        id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }

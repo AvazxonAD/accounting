@@ -115,5 +115,12 @@
     "gaznas": "Gazna raqamlari matn formatida bo‘lishi kerak! Agar ular bir nechta bolsa ular orasi unday ajratilishi kerak  => / ",
     "account_numbers": "Xisob raqamlari matn formatida bo‘lishi kerak! Agar ular bir nechta bolsa ular orasi unday ajratilishi kerak  => / ",
     "groupMinError": "File bosh siz import uchun malumot kiritmadinggiz"
+  },
+  "error": {},
+  "message": {
+    "getSuccess": "Muvaffaqiyatli ma'lumot olindi",
+    "createSuccess": "Muvaffaqiyatli kiritildi",
+    "deleteSuccess": "Muvaffaqiyatli o'chirildi!",
+    "updateSuccess": "Muvaffaqiyatli yangilandi"
   }
 }

@@ -4,6 +4,7 @@ const {
   tashkentTime,
   returnLocalDate,
   returnSleshDate,
+  HelperFunctions,
 } = require("@helper/functions");
 const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
@@ -13,12 +14,6 @@ const { Saldo159Service } = require(`@saldo_159/service`);
 const { SaldoService } = require("../saldo/service");
 
 exports.PrixodJur7Service = class {
-  static async getByProductId(data) {
-    const result = await PrixodDB.getByProductId([data.product_id]);
-
-    return result;
-  }
-
   static async prixodReport(data) {
     const result = await PrixodDB.prixodReport([
       data.region_id,
@@ -292,10 +287,7 @@ exports.PrixodJur7Service = class {
         client,
       });
 
-      const summa = childs.reduce(
-        (acc, child) => acc + child.kol * child.sena,
-        0
-      );
+      const summa = HelperFunctions.returnSummaWithKol(data);
 
       const doc = await PrixodDB.create(
         [
@@ -312,6 +304,7 @@ exports.PrixodJur7Service = class {
           data.kimga_name,
           data.id_shartnomalar_organization,
           data.budjet_id,
+          data.main_schet_id,
           data.shartnoma_grafik_id,
           data.organization_by_raschet_schet_id,
           data.organization_by_raschet_schet_gazna_id,
@@ -320,6 +313,8 @@ exports.PrixodJur7Service = class {
         ],
         client
       );
+
+      console.log(data.main_schet_id);
 
       await this.createChild({
         ...data,
@@ -648,6 +643,16 @@ exports.PrixodJur7Service = class {
       [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
+
+    return result;
+  }
+
+  // old
+  static async getByProductId(data) {
+    const result = await PrixodDB.getByProductId([
+      data.product_id,
+      data.main_schet_id,
+    ]);
 
     return result;
   }

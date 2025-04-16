@@ -39,8 +39,24 @@ exports.KassaMonitoringService = class {
       page_rasxod_sum += item.rasxod_sum;
     }
 
+    const from = HelperFunctions.returnDate({
+      year: data.year,
+      month: data.month,
+    });
+
     const internal = await KassaMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, data.from, data.to],
+      data.search
+    );
+
+    const summa_from = await KassaMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, from, data.from],
+      data.search,
+      true
+    );
+
+    const summa_to = await KassaMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, from, data.to],
       data.search
     );
 
@@ -52,8 +68,8 @@ exports.KassaMonitoringService = class {
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,
-      summa_from: data.saldo.summa,
-      summa_to: data.saldo.summa + internal.summa,
+      summa_from: data.saldo.summa + summa_from.summa,
+      summa_to: data.saldo.summa + summa_to.summa,
     };
   }
 

@@ -51,6 +51,24 @@ exports.Monitoring159Service = class {
       data.search
     );
 
+    const from = HelperFunctions.returnDate({
+      year: data.year,
+      month: data.month,
+    });
+
+    const summa_from = await Monitoring159DB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, from, data.from],
+      data.organ_id,
+      data.search,
+      true
+    );
+
+    const summa_to = await Monitoring159DB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, from, data.to],
+      data.organ_id,
+      data.search
+    );
+
     const total = await Monitoring159DB.getTotal(
       [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
       data.organ_id,
@@ -64,10 +82,12 @@ exports.Monitoring159Service = class {
       page_rasxod_sum += item.summa_rasxod;
     }
 
+    const saldo_summa = data.saldo?.summa || 0;
+
     return {
       data: docs,
-      summa_from: data.saldo?.summa,
-      summa_to: data.saldo?.summa + internal.summa,
+      summa_from: saldo_summa + summa_from.summa,
+      summa_to: saldo_summa + summa_to.summa,
       page_prixod_sum,
       page_rasxod_sum,
       page_total_sum: page_prixod_sum - page_rasxod_sum,

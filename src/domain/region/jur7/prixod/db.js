@@ -1,35 +1,6 @@
 const { db } = require("@db/index");
 
 exports.PrixodDB = class {
-  static async getByProductId(params) {
-    const query = `
-            SELECT 
-                d.id, 
-                d.doc_num,
-                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-                d.opisanie, 
-                d.summa::FLOAT, 
-                d.kimdan_id,
-                d.kimdan_name, 
-                d.kimga_id,
-                d.kimga_name, 
-                d.doverennost,
-                d.j_o_num,
-                d.id_shartnomalar_organization,
-                d.organization_by_raschet_schet_id::INTEGER,
-                d.organization_by_raschet_schet_gazna_id::INTEGER,
-                d.shartnoma_grafik_id::INTEGER
-            FROM document_prixod_jur7 AS d
-            JOIN document_prixod_jur7_child AS ch ON ch.document_prixod_jur7_id = d.id
-            WHERE d.isdeleted = false 
-                AND ch.naimenovanie_tovarov_jur7_id = $1
-        `;
-
-    const data = await db.query(query, params);
-
-    return data[0];
-  }
-
   static async createProduct(params, client) {
     const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
@@ -70,13 +41,14 @@ exports.PrixodDB = class {
                 kimga_name,
                 id_shartnomalar_organization,
                 budjet_id,
+                main_schet_id,
                 shartnoma_grafik_id,
                 organization_by_raschet_schet_id,
                 organization_by_raschet_schet_gazna_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING *
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) RETURNING *
         `;
 
     const result = await client.query(query, params);
@@ -141,10 +113,8 @@ exports.PrixodDB = class {
     const query = `--sql
         WITH data AS (
             SELECT 
-              d.id, 
-              d.doc_num,
+              d.*, 
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-              d.opisanie, 
               ( 
                 SELECT 
                     COALESCE(SUM(ch.summa), 0)
@@ -152,7 +122,6 @@ exports.PrixodDB = class {
                 WHERE ch.isdeleted = false  
                     AND ch.document_prixod_jur7_id = d.id
               ) AS summa,
-              d.budjet_id, 
               so.name AS kimdan_name,
               so.okonx AS spravochnik_organization_okonx,
               so.bank_klient AS spravochnik_organization_bank_klient,
@@ -161,7 +130,6 @@ exports.PrixodDB = class {
               so.mfo AS spravochnik_organization_mfo,
               so.inn AS spravochnik_organization_inn,
               rj.fio AS kimga_name,
-              d.kimga_id,
               d.shartnoma_grafik_id::INTEGER,
               d.organization_by_raschet_schet_id::INTEGER,
               d.organization_by_raschet_schet_gazna_id::INTEGER
@@ -174,7 +142,7 @@ exports.PrixodDB = class {
               AND d.isdeleted = false 
               AND d.doc_date BETWEEN $2 AND $3
               ${search_filter}
-              AND d.budjet_id = $4
+              AND d.main_schet_id = $4
             
             ${order}
             OFFSET $5 LIMIT $6
@@ -192,7 +160,7 @@ exports.PrixodDB = class {
               WHERE r.id = $1 
                 AND d.doc_date BETWEEN $2 AND $3 
                 AND d.isdeleted = false ${search_filter}
-                AND d.budjet_id = $4
+                AND d.main_schet_id = $4
             )::FLOAT AS summa,
 
             (
@@ -205,7 +173,7 @@ exports.PrixodDB = class {
               WHERE r.id = $1 
                 AND d.doc_date BETWEEN $2 AND $3 
                 AND d.isdeleted = false ${search_filter}
-                AND d.budjet_id = $4
+                AND d.main_schet_id = $4
             )::INTEGER AS total
             
           FROM data
@@ -258,7 +226,10 @@ exports.PrixodDB = class {
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d.id = $2 AND d.budjet_id = $3 ${isdeleted ? `` : ignore}
+            WHERE r.id = $1
+              AND d.id = $2
+              AND d.main_schet_id = $3
+              ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);
     return result[0];
@@ -305,13 +276,13 @@ exports.PrixodDB = class {
   }
 
   static async deletePrixodChild(documentPrixodId, productIds, client) {
-    const query1 = `
+    const query1 = `--sql
             UPDATE document_prixod_jur7_child 
             SET isdeleted = true 
             WHERE document_prixod_jur7_id = $1 AND isdeleted = false
         `;
 
-    const query2 = `
+    const query2 = `--sql
             UPDATE iznos_tovar_jur7 
             SET isdeleted = true 
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
@@ -322,7 +293,7 @@ exports.PrixodDB = class {
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
         `;
 
-    const query4 = `
+    const query4 = `--sql
             UPDATE naimenovanie_tovarov_jur7 
             SET isdeleted = true 
             WHERE id = ANY($1)
@@ -337,24 +308,21 @@ exports.PrixodDB = class {
   static async prixodReport(params) {
     const query = `--sql
             SELECT 
-              d.id, 
-              d.doc_num,
+              d.*, 
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
-              d.opisanie, 
               d.summa::FLOAT,
-              d.budjet_id, 
               so.name AS organization,
-              sh_o.doc_date AS c_doc_date,
-              sh_o.doc_num AS c_doc_num
+              co.doc_date AS c_doc_date,
+              co.doc_num AS c_doc_num
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
-            LEFT JOIN shartnomalar_organization AS sh_o ON d.id_shartnomalar_organization = sh_o.id
+            LEFT JOIN shartnomalar_organization AS co ON d.id_shartnomalar_organization = co.id
             WHERE r.id = $1 
               AND d.isdeleted = false 
               AND d.doc_date BETWEEN $2 AND $3
-              AND d.budjet_id = $4
+              AND d.main_schet_id = $4
             ORDER BY d.doc_date
         `;
     const result = await db.query(query, params);
@@ -376,28 +344,28 @@ exports.PrixodDB = class {
                 d.doverennost,
                 d.j_o_num,
                 d.id_shartnomalar_organization, 
-                d_j_ch.id,
-                d_j_ch.naimenovanie_tovarov_jur7_id,
-                d_j_ch.kol,
-                d_j_ch.sena,
-                d_j_ch.summa,
-                d_j_ch.debet_schet,
-                d_j_ch.debet_sub_schet,
-                d_j_ch.kredit_schet,
-                d_j_ch.kredit_sub_schet,
-                TO_CHAR(d_j_ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
-                d_j_ch.nds_foiz,
-                d_j_ch.nds_summa,
-                d_j_ch.summa_s_nds,
-                d_j_ch.eski_iznos_summa
+                ch.id,
+                ch.naimenovanie_tovarov_jur7_id,
+                ch.kol,
+                ch.sena,
+                ch.summa,
+                ch.debet_schet,
+                ch.debet_sub_schet,
+                ch.kredit_schet,
+                ch.kredit_sub_schet,
+                TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
+                ch.nds_foiz,
+                ch.nds_summa,
+                ch.summa_s_nds,
+                ch.eski_iznos_summa
             FROM document_prixod_jur7 AS d
-            JOIN document_prixod_jur7_child AS d_j_ch ON d.id = d_j_ch.document_prixod_jur7_id 
+            JOIN document_prixod_jur7_child AS ch ON d.id = ch.document_prixod_jur7_id 
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1 
-                AND d.budjet_id = $2 
+                AND d.main_schet_id = $2 
                 AND d.isdeleted = false 
-                AND d_j_ch.naimenovanie_tovarov_jur7_id = $3
+                AND ch.naimenovanie_tovarov_jur7_id = $3
         `;
     const result = await db.query(query, params);
     return result[0];
@@ -406,29 +374,35 @@ exports.PrixodDB = class {
   static async prixodReportChild(params) {
     const query = `--sql
             SELECT  
-                d_j_ch.id,
+                ch.id,
                 n_t.name AS product_name,
                 n_t.edin,
-                d_j_ch.kol::FLOAT,
-                d_j_ch.sena::FLOAT,
-                d_j_ch.summa::FLOAT,
-                d_j_ch.debet_schet AS schet, 
-                d_j_ch.debet_sub_schet AS sub_schet,
-                d_j_ch.eski_iznos_summa
-            FROM document_prixod_jur7_child AS d_j_ch
-            JOIN naimenovanie_tovarov_jur7 AS n_t ON n_t.id = d_j_ch.naimenovanie_tovarov_jur7_id
-            WHERE d_j_ch.document_prixod_jur7_id = $1 AND d_j_ch.isdeleted = false
+                ch.kol::FLOAT,
+                ch.sena::FLOAT,
+                ch.summa::FLOAT,
+                ch.debet_schet AS schet, 
+                ch.debet_sub_schet AS sub_schet,
+                ch.eski_iznos_summa
+            FROM document_prixod_jur7_child AS ch
+            JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+            JOIN naimenovanie_tovarov_jur7 AS n_t ON n_t.id = ch.naimenovanie_tovarov_jur7_id
+            WHERE d.id = $1
+              AND ch.isdeleted = false
+              AND d.isdeleted = false
+              AND d.main_schet_id = $2
         `;
     const result = await db.query(query, params);
     return result;
   }
 
   static async getProductsByDocId(params, client) {
-    const query = `
+    const query = `--sql
             SELECT  
                 ch.naimenovanie_tovarov_jur7_id  product_id
             FROM document_prixod_jur7_child ch
-            WHERE ch.document_prixod_jur7_id = $1 AND ch.isdeleted = false 
+            WHERE ch.document_prixod_jur7_id = $1
+              AND ch.isdeleted = false
+              AND ch.isdeleted = false
         `;
 
     const _db = client || db;
@@ -441,7 +415,7 @@ exports.PrixodDB = class {
   }
 
   static async checkPrixodDoc(params) {
-    const query = `
+    const query = `--sql
             SELECT 
               d.id, 
               d.doc_num,
@@ -485,5 +459,36 @@ exports.PrixodDB = class {
 
     const result = await db.query(query, params);
     return result;
+  }
+
+  // old
+  static async getByProductId(params) {
+    const query = `--sql
+            SELECT 
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                d.opisanie, 
+                d.summa::FLOAT, 
+                d.kimdan_id,
+                d.kimdan_name, 
+                d.kimga_id,
+                d.kimga_name, 
+                d.doverennost,
+                d.j_o_num,
+                d.id_shartnomalar_organization,
+                d.organization_by_raschet_schet_id::INTEGER,
+                d.organization_by_raschet_schet_gazna_id::INTEGER,
+                d.shartnoma_grafik_id::INTEGER
+            FROM document_prixod_jur7 AS d
+            JOIN document_prixod_jur7_child AS ch ON ch.document_prixod_jur7_id = d.id
+            WHERE d.isdeleted = false 
+                AND ch.naimenovanie_tovarov_jur7_id = $1
+                AND d.main_schet_id = $2
+        `;
+
+    const data = await db.query(query, params);
+
+    return data[0];
   }
 };

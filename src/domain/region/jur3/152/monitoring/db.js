@@ -439,9 +439,14 @@ exports.Monitoring152DB = class {
     return result[0].total;
   }
 
-  static async getSumma(params, organ_id, search) {
+  static async getSumma(params, organ_id = null, search = null, from = null) {
     let organ_filter = "";
     let search_filter = ``;
+    let internal_filter = `BETWEEN $4 AND $5`;
+
+    if (from) {
+      internal_filter = ` >= $4 AND d.doc_date < $5`;
+    }
 
     if (organ_id) {
       params.push(organ_id);
@@ -472,7 +477,7 @@ exports.Monitoring152DB = class {
                     AND d.main_schet_id = $2
                     AND ch.isdeleted = false
                     AND own.schet = $3
-                    AND d.doc_date BETWEEN $4 AND $5
+                    AND d.doc_date ${internal_filter}
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -489,7 +494,7 @@ exports.Monitoring152DB = class {
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND ch.isdeleted = false
-                    AND d.doc_date BETWEEN $4 AND $5
+                    AND d.doc_date ${internal_filter}
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -508,7 +513,7 @@ exports.Monitoring152DB = class {
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND ch.isdeleted = false
-                    AND d.doc_date BETWEEN $4 AND $5
+                    AND d.doc_date ${internal_filter}
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -527,7 +532,7 @@ exports.Monitoring152DB = class {
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND ch.isdeleted = false
-                    AND d.doc_date BETWEEN $4 AND $5
+                    AND d.doc_date ${internal_filter}
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -545,7 +550,7 @@ exports.Monitoring152DB = class {
                     AND d.main_schet_id = $2
                     AND op.schet = $3
                     AND ch.isdeleted = false
-                    AND d.doc_date BETWEEN $4 AND $5
+                    AND d.doc_date ${internal_filter}
                     ${organ_filter}
                     ${search_filter}
             ),
@@ -562,7 +567,7 @@ exports.Monitoring152DB = class {
                     AND d.main_schet_id = $2
                     AND ch.kredit_schet = $3
                     AND ch.isdeleted = false
-                    AND d.doc_date BETWEEN $4 AND $5
+                    AND d.doc_date ${internal_filter}
                     ${organ_filter}
                     ${search_filter}
             )

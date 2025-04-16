@@ -50,15 +50,14 @@ exports.BankMonitoringService = class {
 
     const summa_from = await BankMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, from, data.from],
-      data.search
+      data.search,
+      true
     );
 
     const summa_to = await BankMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, from, data.to],
       data.search
     );
-
-    console.log(summa_from.summa, data.saldo.summa);
 
     return {
       summa_from: data.saldo.summa + summa_from.summa,

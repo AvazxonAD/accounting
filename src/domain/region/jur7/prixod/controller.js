@@ -11,6 +11,7 @@ const { CODE } = require("@helper/constants");
 const { PrixodJur7Schema } = require("./schema");
 const { SaldoService } = require(`@jur7_saldo/service`);
 const { MainSchetService } = require(`@main_schet/service`);
+const { ValidatorFunctions } = require(`@helper/functions`);
 
 exports.Controller = class {
   static async rasxodDocs(req, res) {
@@ -101,7 +102,6 @@ exports.Controller = class {
       region_id,
       id: main_schet_id,
     });
-
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
