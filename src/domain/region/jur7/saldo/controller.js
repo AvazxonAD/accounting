@@ -4,11 +4,210 @@ const { BudjetService } = require("@budjet/service");
 const { GroupService } = require("@group/service");
 const { SaldoSchema } = require("./schema");
 const { HelperFunctions } = require("@helper/functions");
+const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { CODE, SALDO_PASSWORD } = require("@helper/constants");
-const { ProductService } = require("@product/service");
 const { RegionService } = require("@region/service");
+const { MainSchetService } = require("@main_schet/service");
 
 exports.Controller = class {
+  static async import(req, res) {
+    if (!req.file) {
+      return res.error(req.i18n.t("fileError"), 400);
+    }
+
+    const user_id = req.user.id;
+    const region_id = req.user.region_id;
+    const { budjet_id, main_schet_id } = req.query;
+
+    // check first saldo
+    const check = await SaldoService.getFirstSaldoDocs({
+      region_id,
+      main_schet_id,
+    });
+    if (check) {
+      return res.error(req.i18n.t("saldoImportAlreadyExists"), 400, {
+        code: CODE.DOCS_HAVE.code,
+        docs: check,
+      });
+    }
+
+    // check budjet
+    await ValidatorFunctions.budjet({ budjet_id });
+
+    // check main schet
+    await ValidatorFunctions.mainSchet({
+      main_schet_id,
+      region_id,
+    });
+
+    // read file
+    const { result: data, header } = await SaldoService.readFile({
+      filePath: req.file.path,
+    });
+    if (!data.length) {
+      return res.error(req.i18n.t("emptyFile"), 400);
+    }
+
+    // validation data
+    for (let item of data) {
+      const real_data = JSON.parse(JSON.stringify(item));
+
+      item.responsible_id = Number(item.responsible_id);
+      item.name = String(item.name);
+      item.group_jur7_id = Number(item.group_jur7_id);
+      item.edin = String(item.edin);
+      item.inventar_num = item.inventar_num ? String(item.inventar_num) : null;
+      item.serial_num = item.serial_num ? String(item.serial_num) : null;
+      item.month = Number(item.month);
+      item.year = Number(item.year);
+      item.kol = Number(item.kol);
+      item.summa = Number(item.summa);
+      item.eski_iznos_summa = Number(item.eski_iznos_summa);
+      item.doc_num = String(item.doc_num);
+
+      if (item.doc_date) {
+        item.doc_date = SaldoService.returnDocDate({ doc_date: item.doc_date });
+      } else {
+        item.doc_date = null;
+      }
+
+      const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
+      if (item.doc_date) {
+        if (!regex.test(item.doc_date)) {
+          return res.error(req.i18n.t("dateError"), 400, {
+            code: CODE.EXCEL_IMPORT.code,
+            doc: real_data,
+            header,
+          });
+        }
+      }
+
+      const { error } = SaldoSchema.importData(req.i18n).validate(item);
+      if (error) {
+        return res.error(error.details[0].message, 400, {
+          code: CODE.EXCEL_IMPORT.code,
+          doc: real_data,
+          header,
+        });
+      }
+    }
+
+    // check year and month different
+    const date_saldo = HelperFunctions.checkYearMonth(data);
+    if (!date_saldo) {
+      return res.error(req.i18n.t("differentSaldoDate"), 400);
+    }
+
+    // check responsible and group
+    for (let doc of data) {
+      const responsible = await ResponsibleService.getById({
+        region_id,
+        id: doc.responsible_id,
+      });
+      if (!responsible) {
+        return res.error(
+          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
+          404
+        );
+      }
+
+      const group = await GroupService.getById({ id: doc.group_jur7_id });
+      if (!group) {
+        return res.error(
+          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
+          404
+        );
+      }
+
+      doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
+
+      if (doc.iznos_start && group.iznos_foiz > 0) {
+        const dates = doc.iznos_start.split(".");
+        doc.iznos_start = new Date(`${dates[2]}-${dates[1]}-${dates[0]}`);
+      } else {
+        doc.iznos_start = new Date();
+      }
+
+      doc.doc_num = doc.doc_num ? doc.doc_num : "saldo";
+
+      doc.iznos = group.iznos_foiz > 0 ? true : false;
+      doc.iznos_foiz = group.iznos_foiz;
+      doc.iznos_schet = group.schet;
+      doc.iznos_sub_schet = group.provodka_subschet;
+      doc.group = group;
+    }
+
+    await SaldoService.importData({
+      ...req.query,
+      docs: data,
+      user_id,
+      region_id,
+      date_saldo,
+    });
+
+    return res.success(req.i18n.t("importSuccess"), 201);
+  }
+
+  static async getByProduct(req, res) {
+    const region_id = req.user.region_id;
+    const {
+      responsible_id,
+      page,
+      product_id,
+      limit,
+      group_id,
+      budjet_id,
+      main_schet_id,
+    } = req.query;
+
+    await ValidatorFunctions.budjet({ budjet_id });
+
+    await ValidatorFunctions.mainSchet({
+      main_schet_id,
+      region_id,
+    });
+
+    const offset = (page - 1) * limit;
+
+    if (responsible_id) {
+      await ValidatorFunctions.responsibleJur7({
+        region_id,
+        responsible_id,
+      });
+    }
+
+    if (group_id) {
+      await ValidatorFunctions.groupJur7({ group_id });
+    }
+
+    if (product_id) {
+      await ValidatorFunctions.productJur7({
+        region_id,
+        product_id,
+      });
+    }
+
+    const { data, total } = await SaldoService.getByProduct({
+      ...req.query,
+      region_id,
+      offset,
+    });
+
+    const pageCount = Math.ceil(total / limit);
+
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      limit,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    };
+
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
   static async reportByResponsible(req, res) {
     const region_id = req.user.region_id;
     const { responsible_id, iznos, to, group_id, excel } = req.query;
@@ -77,103 +276,39 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 
-  static async getByProduct(req, res) {
-    const region_id = req.user.region_id;
-    const {
-      responsible_id,
-      page,
-      search,
-      product_id,
-      limit,
-      group_id,
-      to,
-      iznos,
-      rasxod,
-      budjet_id,
-    } = req.query;
-
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const offset = (page - 1) * limit;
-
-    if (responsible_id) {
-      const responsible = await ResponsibleService.getById({
-        region_id,
-        id: responsible_id,
-      });
-      if (!responsible) {
-        return res.error(req.i18n.t("responsibleNotFound"), 404);
-      }
-    }
-
-    if (group_id) {
-      const check = await GroupService.getById({ id: group_id });
-      if (!check) {
-        return res.error(req.i18n.t("groupNotFound"), 404);
-      }
-    }
-
-    if (product_id) {
-      const check = await ProductService.getById({ region_id, id: product_id });
-      if (!check) {
-        return res.error(req.i18n.t("productNotFound"), 404);
-      }
-    }
-
-    const { data, total } = await SaldoService.getByProduct({
-      region_id,
-      to,
-      offset,
-      limit,
-      iznos,
-      group_id,
-      responsible_id,
-      search,
-      product_id,
-      rasxod,
-      budjet_id,
-    });
-
-    const pageCount = Math.ceil(total / limit);
-
-    const meta = {
-      pageCount: pageCount,
-      count: total,
-      currentPage: page,
-      limit,
-      nextPage: page >= pageCount ? null : page + 1,
-      backPage: page === 1 ? null : page - 1,
-    };
-
-    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
-  }
-
   static async delete(req, res) {
     const { ids, year, month } = req.body;
-    const { budjet_id } = req.query;
+    const { budjet_id, main_schet_id } = req.query;
     const region_id = req.user.region_id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.budjet({ budjet_id });
 
-    const check = await SaldoService.checkDelete({ region_id, budjet_id });
+    await ValidatorFunctions.mainSchet({
+      region_id,
+      main_schet_id,
+    });
+
+    const check = await SaldoService.checkDelete({
+      region_id,
+      main_schet_id,
+    });
     if (check.length > 1) {
       return res.error(req.i18n.t("checkDelete"), 400);
     }
 
     for (let id of ids) {
-      const check = await SaldoService.getById({ id: id.id, region_id });
+      const check = await SaldoService.getById({
+        id: id.id,
+        region_id,
+        main_schet_id,
+      });
       if (!check) {
         return res.error(req.i18n.t("saldoNotFound"), 404);
       }
 
       const check_doc = await SaldoService.checkDoc({
         product_id: check.naimenovanie_tovarov_jur7_id,
+        main_schet_id,
       });
 
       if (check_doc.length) {
@@ -191,19 +326,19 @@ exports.Controller = class {
   }
 
   static async cleanData(req, res) {
-    const { budjet_id, password } = req.query;
+    const { main_schet_id, password } = req.query;
     const region_id = req.user.region_id;
 
     if (password !== SALDO_PASSWORD) {
       return res.error(req.i18n.t("validationError"), 400);
     }
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({
+      region_id,
+      main_schet_id,
+    });
 
-    await SaldoService.cleanData({ budjet_id, region_id });
+    await SaldoService.cleanData({ main_schet_id, region_id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200);
   }
@@ -211,8 +346,17 @@ exports.Controller = class {
   static async deleteById(req, res) {
     const { id } = req.params;
     const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
 
-    const check = await SaldoService.getById({ id, region_id });
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const check = await SaldoService.getById({ id, region_id, main_schet_id });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
@@ -221,32 +365,16 @@ exports.Controller = class {
       product_id: check.naimenovanie_tovarov_jur7_id,
     });
     if (check_doc.length) {
-      return res.error(req.i18n.t("saldoRasxodError"), 400, check_doc);
+      return res.error(req.i18n.t("saldoRasxodError"), 400, {
+        code: CODE.DOCS_HAVE.code,
+        docs: check_doc,
+        saldo_id: id,
+      });
     }
 
     const response = await SaldoService.deleteById({ id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, response);
-  }
-
-  static async updateIznosSumma(req, res) {
-    const { id } = req.params;
-    const region_id = req.user.region_id;
-
-    const { iznos_summa } = req.body;
-
-    const check = await SaldoService.getById({ id, region_id, iznos: true });
-    if (!check) {
-      return res.error(req.i18n.t("saldoNotFound"), 404);
-    }
-
-    const response = await SaldoService.updateIznosSumma({
-      id,
-      iznos_summa,
-      doc: check,
-    });
-
-    return res.success(req.i18n.t("updateSuccess"), 200, null, response);
   }
 
   static async templateFile(req, res) {
@@ -313,163 +441,17 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, groups);
   }
 
-  static async import(req, res) {
-    if (!req.file) {
-      return res.error(req.i18n.t("fileError"), 400);
-    }
-
-    const user_id = req.user.id;
-    const region_id = req.user.region_id;
-    const { budjet_id } = req.query;
-
-    const check = await SaldoService.getFirstSaldoDocs({ region_id });
-    if (check) {
-      return res.error(req.i18n.t("saldoImportAlreadyExists"), 400, {
-        code: CODE.DOCS_HAVE.code,
-        docs: check,
-      });
-    }
-
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const { result: data, header } = await SaldoService.readFile({
-      filePath: req.file.path,
-    });
-
-    if (!data.length) {
-      return res.error(req.i18n.t("emptyFile"), 400);
-    }
-
-    for (let item of data) {
-      const real_data = JSON.parse(JSON.stringify(item));
-
-      item.responsible_id = Number(item.responsible_id);
-      item.name = String(item.name);
-      item.group_jur7_id = Number(item.group_jur7_id);
-      item.edin = String(item.edin);
-      item.inventar_num = item.inventar_num ? String(item.inventar_num) : null;
-      item.serial_num = item.serial_num ? String(item.serial_num) : null;
-      item.month = Number(item.month);
-      item.year = Number(item.year);
-      item.kol = Number(item.kol);
-      item.summa = Number(item.summa);
-      item.eski_iznos_summa = Number(item.eski_iznos_summa);
-      item.doc_num = String(item.doc_num);
-
-      if (item.doc_date) {
-        const dates = String(item.doc_date).split("");
-        const checkSlesh = dates.find((item) => item === "/");
-        const checkDotNet = dates.find((item) => item === ".");
-        if (checkDotNet) {
-          const dates = String(item.doc_date).split(".");
-          item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
-        } else if (checkSlesh) {
-          const dates = String(item.doc_date).split("/");
-          item.doc_date = `${dates[2]}-${dates[1]}-${dates[0]}`;
-        } else {
-          function excelSerialToDate(serial) {
-            const utc_days = Math.floor(serial - 25569);
-            const utc_value = utc_days * 86400;
-            return `${new Date(utc_value * 1000).getFullYear()}-${new Date(utc_value * 1000).getMonth() + 1}-${String(new Date(utc_value * 1000).getDate()).padStart(2, "0")}`;
-          }
-
-          item.doc_date = excelSerialToDate(item.doc_date);
-        }
-      } else {
-        item.doc_date = null;
-      }
-
-      const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
-
-      if (item.doc_date) {
-        if (!regex.test(item.doc_date)) {
-          return res.error(req.i18n.t("dateError"), 400, {
-            code: CODE.EXCEL_IMPORT.code,
-            doc: real_data,
-            header,
-          });
-        }
-      }
-
-      const { error } = SaldoSchema.importData(req.i18n).validate(item);
-      if (error) {
-        return res.error(error.details[0].message, 400, {
-          code: CODE.EXCEL_IMPORT.code,
-          doc: real_data,
-          header,
-        });
-      }
-    }
-
-    const date_saldo = HelperFunctions.checkYearMonth(data);
-    if (!date_saldo) {
-      return res.error(req.i18n.t("differentSaldoDate"), 400);
-    }
-
-    for (let doc of data) {
-      const responsible = await ResponsibleService.getById({
-        region_id,
-        id: doc.responsible_id,
-      });
-      if (!responsible) {
-        return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
-          404
-        );
-      }
-
-      const group = await GroupService.getById({ id: doc.group_jur7_id });
-      if (!group) {
-        return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
-          404
-        );
-      }
-
-      doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
-
-      if (doc.iznos_start) {
-        const dates = doc.iznos_start.split(".");
-        doc.iznos_start = new Date(`${dates[2]}-${dates[1]}-${dates[0]}`);
-      } else {
-        doc.iznos_start = new Date();
-      }
-
-      doc.doc_num = doc.doc_num ? doc.doc_num : "saldo";
-
-      doc.iznos = group.iznos_foiz > 0 ? true : false;
-      doc.iznos_foiz = group.iznos_foiz;
-      doc.iznos_schet = group.schet;
-      doc.iznos_sub_schet = group.provodka_subschet;
-      doc.group = group;
-    }
-
-    await SaldoService.importData({
-      docs: data,
-      budjet_id,
-      budjet_id,
-      user_id,
-      region_id,
-      date_saldo,
-    });
-
-    return res.success(req.i18n.t("importSuccess"), 201);
-  }
-
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const { budjet_id } = req.query;
+    const { budjet_id, main_schet_id } = req.query;
+
     let year = JSON.parse(JSON.stringify(req.body.year));
     let month = JSON.parse(JSON.stringify(req.body.month));
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.budjet({ budjet_id });
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
@@ -480,29 +462,6 @@ exports.Controller = class {
     });
 
     if (!last_saldo.length) {
-      // const check = await SaldoService.check({
-      //   region_id,
-      //   month: req.body.month,
-      //   year: req.body.year,
-      // });
-
-      // if (check.result.length) {
-      //   await SaldoService.deleteByYearMonth({
-      //     region_id,
-      //     month: req.body.month,
-      //     year: req.body.year,
-      //     type: "saldo",
-      //   });
-
-      //   await SaldoService.unblock({
-      //     region_id,
-      //     month: req.body.month,
-      //     year: req.body.year,
-      //   });
-
-      //   return res.success(req.i18n.t("createSuccess"), 200);
-      // }
-
       return res.success(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
@@ -536,13 +495,43 @@ exports.Controller = class {
   static async getById(req, res) {
     const { id } = req.params;
     const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
 
     const response = await SaldoService.getById({
+      ...req.query,
       region_id,
       id,
       isdeleted: true,
     });
 
     return res.success(req.i18n.t("getSuccess"), 200, null, response);
+  }
+
+  static async updateIznosSumma(req, res) {
+    const { id } = req.params;
+    const region_id = req.user.region_id;
+
+    const { iznos_summa } = req.body;
+
+    const check = await SaldoService.getById({ id, region_id, iznos: true });
+    if (!check) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const response = await SaldoService.updateIznosSumma({
+      id,
+      iznos_summa,
+      doc: check,
+    });
+
+    return res.success(req.i18n.t("updateSuccess"), 200, null, response);
   }
 };

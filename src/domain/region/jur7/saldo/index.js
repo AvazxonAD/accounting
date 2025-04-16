@@ -16,30 +16,40 @@ router
     uploadExcel.single("file"),
     validator(Controller.import, SaldoSchema.import())
   )
+
   .get(
     "/product",
     Middleware.jur7Block,
     validator(Controller.getByProduct, SaldoSchema.getByProduct())
   )
-  .get(
-    "/report/responsible",
-    Middleware.jur7Block,
-    validator(Controller.reportByResponsible, SaldoSchema.reportByResponsible())
-  )
+
   .delete(
     "/",
     Middleware.jur7Block,
     validator(Controller.delete, SaldoSchema.delete())
   )
   .delete("/clean", validator(Controller.cleanData, SaldoSchema.cleanData()))
+
   .post("/", validator(Controller.create, SaldoSchema.create()))
+
+  .get("/template", Middleware.jur7Block, Controller.templateFile)
+
+  .get("/check", validator(Controller.check, SaldoSchema.check()))
+
+  .get("/:id", validator(Controller.getById, SaldoSchema.getById()))
+
+  .get("/", Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()))
+
+  // old
   .put(
     "/iznos_summa/:id",
     validator(Controller.updateIznosSumma, SaldoSchema.updateIznosSumma())
   )
-  .get("/template", Middleware.jur7Block, Controller.templateFile)
-  .get("/check", validator(Controller.check, SaldoSchema.check()))
-  .get("/:id", validator(Controller.getById, SaldoSchema.getById()))
-  .get("/", Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()));
+
+  .get(
+    "/report/responsible",
+    Middleware.jur7Block,
+    validator(Controller.reportByResponsible, SaldoSchema.reportByResponsible())
+  );
 
 module.exports = router;

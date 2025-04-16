@@ -1,8 +1,8 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.ProductDB = class {
-    static async create(params, client) {
-        const query = `--sql
+  static async create(params, client) {
+    const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
                 spravochnik_budjet_name_id, 
@@ -18,26 +18,26 @@ exports.ProductDB = class {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *
         `;
-        const result = await client.query(query, params);
+    const result = await client.query(query, params);
 
-        return result.rows[0];
+    return result.rows[0];
+  }
+
+  static async get(params, search = null, iznos) {
+    let search_filter = ``;
+    let iznos_filter = ``;
+
+    if (iznos) {
+      params.push(iznos);
+      iznos_filter = `AND iznos = $${params.length}`;
     }
 
-    static async get(params, search = null, iznos) {
-        let search_filter = ``
-        let iznos_filter = ``;
+    if (search) {
+      search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
+      params.push(search);
+    }
 
-        if (iznos) {
-            params.push(iznos);
-            iznos_filter = `AND iznos = $${params.length}`;
-        }
-
-        if (search) {
-            search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search)
-        };
-
-        const query = `--sql
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     pr.id, 
@@ -80,14 +80,14 @@ exports.ProductDB = class {
             FROM data
         `;
 
-        const result = await db.query(query, params)
+    const result = await db.query(query, params);
 
-        return result[0];
-    }
+    return result[0];
+  }
 
-    static async getById(params, isdeleted) {
-        let ignore = 'AND pr.isdeleted = false';
-        const query = `--sql
+  static async getById(params, isdeleted) {
+    let ignore = "AND pr.isdeleted = false";
+    const query = `--sql
             SELECT 
                 pr.id, 
                 pr.name, 
@@ -114,41 +114,41 @@ exports.ProductDB = class {
             LEFT JOIN group_jur7 AS g ON g.id = pr.group_jur7_id
             LEFT JOIN spravochnik_budjet_name AS b ON b.id = pr.spravochnik_budjet_name_id 
             WHERE r.id = $1 AND pr.id = $2  ${isdeleted ? `` : ignore}
-        `
-        const result = await db.query(query, params)
-        return result[0]
-    }
+        `;
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async updateNaimenovanie(params) {
-        const query = `--sql
+  static async updateNaimenovanie(params) {
+    const query = `--sql
             UPDATE naimenovanie_tovarov_jur7 
             SET 
                 name = $1, edin = $2, spravochnik_budjet_name_id = $3, 
                 group_jur7_id = $4, inventar_num = $5, serial_num = $6, updated_at = $7
             WHERE id = $8 AND isdeleted = false
             RETURNING *
-        `
-        const result = await db.query(query, params)
-        return result[0]
-    }
+        `;
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async deleteNaimenovanie(params, client) {
-        const query = `UPDATE naimenovanie_tovarov_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`
-        await client.query(query, params)
-    }
+  static async deleteNaimenovanie(params, client) {
+    const query = `UPDATE naimenovanie_tovarov_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false`;
+    await client.query(query, params);
+  }
 
-    static async getProductKol(params, search, tovar_id, client) {
-        let tovar_filter = '';
-        let search_filter = ''
-        if (search) {
-            search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
-            params.push(search);
-        }
-        if (tovar_id) {
-            tovar_filter = `AND pr.id = $${params.length + 1}`;
-            params.push(tovar_id);
-        }
-        const query = `--sql
+  static async getProductKol(params, search, tovar_id, client) {
+    let tovar_filter = "";
+    let search_filter = "";
+    if (search) {
+      search_filter = `AND pr.name ILIKE '%' || $${params.length + 1} || '%'`;
+      params.push(search);
+    }
+    if (tovar_id) {
+      tovar_filter = `AND pr.id = $${params.length + 1}`;
+      params.push(tovar_id);
+    }
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     pr.name, 
@@ -209,13 +209,13 @@ exports.ProductDB = class {
                 FROM data
             ) AS subquery
         `;
-        let data;
-        if (client) {
-            data = await client.query(query, params);
-            data = data.rows;
-        } else {
-            data = await db.query(query, params)
-        }
-        return data;
+    let data;
+    if (client) {
+      data = await client.query(query, params);
+      data = data.rows;
+    } else {
+      data = await db.query(query, params);
     }
-}
+    return data;
+  }
+};
