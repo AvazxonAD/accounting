@@ -99,7 +99,7 @@ SET
 ALTER TABLE
     saldo_date
 ADD
-    COLUMN budjet_id INTEGER REFERENCES spravochnik_budjet_name(id);
+    COLUMN IF NOT EXISTS budjet_id INTEGER REFERENCES spravochnik_budjet_name(id);
 
 ALTER TABLE
     saldo_date
