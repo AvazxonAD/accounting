@@ -38,9 +38,8 @@ router
 
   .get("/:id", validator(Controller.getById, SaldoSchema.getById()))
 
-  .get("/", Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()))
-
   // old
+  .get("/", Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()))
   .put(
     "/iznos_summa/:id",
     validator(Controller.updateIznosSumma, SaldoSchema.updateIznosSumma())

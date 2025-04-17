@@ -71,6 +71,7 @@
   "notLogged": "Siz tizimga kirmagansiz!",
   "login": "Siz tizimga muvaffaqiyatli kirdinggiz",
   "tokenError": "Token noto'g'ri yuborildi yoki token muddati tugagan!",
+  "prixodCreateSaldo": "Saldo prixod orqali kiritilgan agar prixod documentlarni ochirsanggiz saldo avtomat ochiriladi!",
   "validation": {
     "groupId": "Gruppa id raqami raqam turida bo'lishi zarur!",
     "organizationId": "Hamkor tashkilot id raqami raqam turida bo'lishi zarur!",

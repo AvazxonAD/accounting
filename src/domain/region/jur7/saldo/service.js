@@ -11,7 +11,7 @@ const path = require("path");
 const fs = require("fs").promises;
 
 exports.SaldoService = class {
-  static async returnDocDate(data) {
+  static returnDocDate(data) {
     const dates = String(data.doc_date).split("");
     const checkSlesh = dates.find((data) => data === "/");
     const checkDotNet = dates.find((data) => data === ".");
@@ -82,7 +82,7 @@ exports.SaldoService = class {
 
         if (doc.iznos) {
           for (let i = 1; i <= doc.kol; i++) {
-            const product = await SaldoDB.create(
+            const product = await SaldoDB.createProduct(
               [
                 data.user_id,
                 data.budjet_id,
@@ -110,7 +110,7 @@ exports.SaldoService = class {
             });
           }
         } else {
-          const product = await SaldoDB.create(
+          const product = await SaldoDB.createProduct(
             [
               data.user_id,
               data.budjet_id,
@@ -598,6 +598,7 @@ exports.SaldoService = class {
     const check = await SaldoDB.getSaldoDate([
       data.region_id,
       `${year}-${String(month).padStart(2, "0")}-01`,
+      data.main_schet_id,
     ]);
 
     let dates = [];
@@ -621,6 +622,15 @@ exports.SaldoService = class {
     return dates;
   }
 
+  static async getEndSaldo(data) {
+    const result = await SaldoDB.getEndSaldo([
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
   static async cleanData(data) {
     await db.transaction(async (client) => {
       await SaldoDB.cleanData([data.region_id, data.main_schet_id], client);
@@ -638,7 +648,9 @@ exports.SaldoService = class {
 
   static async checkDoc(data) {
     const result = await SaldoDB.checkDoc([
-      data.product_id,
+      data.year,
+      data.month,
+      data.region_id,
       data.main_schet_id,
     ]);
 
@@ -665,7 +677,7 @@ exports.SaldoService = class {
   }
 
   static async getBlock(data) {
-    const result = await SaldoDB.getBlock([data.region_id]);
+    const result = await SaldoDB.getBlock([data.region_id, data.main_schet_id]);
 
     return result;
   }
@@ -896,11 +908,12 @@ exports.SaldoService = class {
   }
 
   static async delete(data) {
-    await db.transaction(async (client) => {
-      for (let id of data.ids) {
-        await SaldoDB.deleteById([id.id], client);
-      }
-    });
+    await SaldoDB.deleteByMonth([
+      data.region_id,
+      data.month,
+      data.year,
+      data.main_schet_id,
+    ]);
   }
 
   static async importData(data) {
@@ -915,7 +928,7 @@ exports.SaldoService = class {
 
         if (doc.iznos) {
           for (let i = 1; i <= doc.kol; i++) {
-            const product = await SaldoDB.create(
+            const product = await SaldoDB.createProduct(
               [
                 data.user_id,
                 data.budjet_id,
@@ -939,7 +952,7 @@ exports.SaldoService = class {
             });
           }
         } else {
-          const product = await SaldoDB.create(
+          const product = await SaldoDB.createProduct(
             [
               data.user_id,
               data.budjet_id,
@@ -1053,7 +1066,7 @@ exports.SaldoService = class {
       group.products = products.data;
       for (let product of group.products) {
         product.internal = await SaldoDB.getKolAndSumma(
-          [product.naimenovanie_tovarov_jur7_id],
+          [product.naimenovanie_tovarov_jur7_id, data.main_schet_id],
           `${year}-${month < 10 ? `0${month}` : month}-01`,
           data.to,
           product.responsible.id

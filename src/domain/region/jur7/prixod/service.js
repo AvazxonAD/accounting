@@ -281,9 +281,7 @@ exports.PrixodJur7Service = class {
   static async create(data) {
     const result = await db.transaction(async (client) => {
       const childs = await this.createProduct({
-        childs: data.childs,
-        user_id: data.user_id,
-        budjet_id: data.budjet_id,
+        ...data,
         client,
       });
 
@@ -313,8 +311,6 @@ exports.PrixodJur7Service = class {
         ],
         client
       );
-
-      console.log(data.main_schet_id);
 
       await this.createChild({
         ...data,
@@ -427,6 +423,7 @@ exports.PrixodJur7Service = class {
           child.kredit_schet,
           child.kredit_sub_schet,
           data.budjet_id,
+          data.main_schet_id,
           "prixod",
           tashkentTime(),
           tashkentTime(),
@@ -484,23 +481,12 @@ exports.PrixodJur7Service = class {
 
       await this.createChild({ ...data, docId: data.id, childs, client, doc });
 
-      let year, month;
+      const _date = HelperFunctions.getSmallDate({
+        date1: data.doc_date,
+        date2: data.old_data.doc_date,
+      });
 
-      if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
-        year = new Date(data.doc_date).getFullYear();
-        month = new Date(data.doc_date).getMonth() + 1;
-      } else if (new Date(data.doc_date) > new Date(data.old_data.doc_date)) {
-        year = new Date(data.old_data.doc_date).getFullYear();
-        month = new Date(data.old_data.doc_date).getMonth() + 1;
-      } else {
-        year = new Date(data.doc_date).getFullYear();
-        month = new Date(data.doc_date).getMonth() + 1;
-      }
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
+      const check = await SaldoDB.getSaldoDate([data.region_id, _date.date]);
 
       let dates = [];
       for (let date of check) {

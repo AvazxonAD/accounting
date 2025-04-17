@@ -6,6 +6,21 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static getSmallDate(data) {
+    const d1 = new Date(data.date1);
+    const d2 = new Date(data.date2);
+
+    const date = d1 < d2 ? d1 : d2;
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    return {
+      date: `${year}-${String(month).padStart(2, "0")}-01`,
+      year,
+      month,
+    };
+  }
+
   static returnStringSumma(num) {
     const formatNumber = (number) => {
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");

@@ -28,7 +28,7 @@ exports.OrganizationService = class {
 
   static async templateFile() {
     const fileName = `organization.xlsx`;
-    const folder_path = path.join(__dirname, `../../../../public/template`);
+    const folder_path = path.join(__dirname, `../../../../../public/template`);
 
     const filePath = path.join(folder_path, fileName);
 

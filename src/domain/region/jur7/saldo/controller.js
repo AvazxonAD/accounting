@@ -1,6 +1,5 @@
 const { SaldoService } = require("./service");
 const { ResponsibleService } = require("@responsible/service");
-const { BudjetService } = require("@budjet/service");
 const { GroupService } = require("@group/service");
 const { SaldoSchema } = require("./schema");
 const { HelperFunctions } = require("@helper/functions");
@@ -8,6 +7,7 @@ const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { CODE, SALDO_PASSWORD } = require("@helper/constants");
 const { RegionService } = require("@region/service");
 const { MainSchetService } = require("@main_schet/service");
+const ErrorResponse = require("@helper/error.response");
 
 exports.Controller = class {
   static async import(req, res) {
@@ -194,6 +194,21 @@ exports.Controller = class {
       offset,
     });
 
+    const end_saldo = await SaldoService.getEndSaldo({
+      region_id,
+      main_schet_id,
+    });
+
+    for (let saldo of data) {
+      if (
+        saldo.year === end_saldo.year &&
+        saldo.month === end_saldo.month &&
+        (saldo.type === "import" || saldo.type === "saldo")
+      ) {
+        saldo.isdeleted = true;
+      }
+    }
+
     const pageCount = Math.ceil(total / limit);
 
     const meta = {
@@ -277,7 +292,7 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const { ids, year, month } = req.body;
+    const { year, month } = req.body;
     const { budjet_id, main_schet_id } = req.query;
     const region_id = req.user.region_id;
 
@@ -288,41 +303,35 @@ exports.Controller = class {
       main_schet_id,
     });
 
-    const check = await SaldoService.checkDelete({
+    const end_saldo = await SaldoService.getEndSaldo({
       region_id,
       main_schet_id,
     });
-    if (check.length > 1) {
-      return res.error(req.i18n.t("checkDelete"), 400);
+
+    if (!end_saldo) {
+      throw new ErrorResponse("saldoNotFound", 400);
     }
 
-    for (let id of ids) {
-      const check = await SaldoService.getById({
-        id: id.id,
-        region_id,
-        main_schet_id,
-      });
-      if (!check) {
-        return res.error(req.i18n.t("saldoNotFound"), 404);
-      }
-
-      const check_doc = await SaldoService.checkDoc({
-        product_id: check.naimenovanie_tovarov_jur7_id,
-        main_schet_id,
-      });
-
-      if (check_doc.length) {
-        return res.error(req.i18n.t("saldoRasxodError"), 400, {
-          code: CODE.DOCS_HAVE.code,
-          docs: check_doc,
-          saldo_id: id,
-        });
-      }
+    if (year !== end_saldo.year || month !== end_saldo.month) {
+      throw new ErrorResponse("deleteSaldoError", 400);
     }
 
-    const dates = await SaldoService.delete({ ids, region_id, year, month });
+    const check_doc = await SaldoService.checkDoc({
+      ...req.query,
+      region_id,
+    });
 
-    return res.success(req.i18n.t("deleteSuccess"), 200, dates);
+    if (check_doc.length) {
+      throw new ErrorResponse("prixodCreateSaldo", 400);
+    }
+
+    await SaldoService.delete({
+      ...req.query,
+      ...req.body,
+      region_id,
+    });
+
+    return res.success(req.i18n.t("deleteSuccess"), 200);
   }
 
   static async cleanData(req, res) {
@@ -457,22 +466,22 @@ exports.Controller = class {
 
     const last_saldo = await SaldoService.getSaldoCheck({
       region_id,
+      main_schet_id,
       year: last_date.year,
       month: last_date.month,
     });
 
     if (!last_saldo.length) {
-      return res.success(req.i18n.t("lastSaldoNotFound"), 400);
+      throw new ErrorResponse("lastSaldoNotFound", 400);
     }
 
     const dates = await SaldoService.create({
+      ...req.body,
+      ...req.query,
       region_id,
       user_id,
-      ...req.body,
       last_saldo,
       last_date,
-      budjet_id,
-      budjet_id,
     });
 
     return res.success(req.i18n.t("createSuccess"), 200, {
@@ -488,6 +497,10 @@ exports.Controller = class {
       region_id,
       ...req.query,
     });
+
+    if (!response.length) {
+      throw new ErrorResponse("saldoNotFound", 404);
+    }
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, response);
   }

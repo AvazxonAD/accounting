@@ -186,10 +186,9 @@ exports.Controller = class {
 
     const result = await PrixodJur7Service.create({
       ...req.body,
+      ...req.query,
       user_id,
       jur_schets,
-      budjet_id,
-      budjet_id,
       childs,
       region_id,
     });

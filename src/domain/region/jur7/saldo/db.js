@@ -1,7 +1,7 @@
 const { db } = require("@db/index");
 
 exports.SaldoDB = class {
-  static async create(params, client) {
+  static async createProduct(params, client) {
     const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
                 user_id, 
@@ -274,6 +274,8 @@ exports.SaldoDB = class {
                 s.kredit_sub_schet,
                 s.year,
                 s.month,
+                s.isdeleted,
+                s.type,
                 JSON_BUILD_OBJECT(
                     'docNum', s.doc_num,
                     'docDate', s.doc_date,
@@ -356,59 +358,31 @@ exports.SaldoDB = class {
 
   static async checkDoc(params) {
     const query = `--sql
-                SELECT 
-                    d.id,
-                    d.doc_num,
-                    d.doc_date,
-                    d.budjet_id,
-                    m.account_number,
-                    'internal' AS type
-                FROM document_vnutr_peremesh_jur7 d
-                JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
-                JOIN main_schet m ON m.id = d.budjet_id
-                WHERE ch.naimenovanie_tovarov_jur7_id = $1
-                    AND d.main_schet_id = $2
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-
-                UNION ALL
-
-                SELECT 
-                    d.id,
-                    d.doc_num,
-                    d.doc_date,
-                    d.budjet_id,
-                    m.account_number,
-                    'prixod' AS type
-                FROM document_prixod_jur7 d
-                JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
-                JOIN main_schet m ON m.id = d.budjet_id
-                WHERE ch.naimenovanie_tovarov_jur7_id = $1
-                    AND d.main_schet_id = $2
-                    AND d.isdeleted = false
-                    AND ch.isdeleted = false
-
-                UNION ALL
-
-                SELECT 
-                    d.id,
-                    d.doc_num,
-                    d.doc_date,
-                    d.budjet_id,
-                    m.account_number,
-                    'rasxod' AS type
-                FROM document_rasxod_jur7 d
-                JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
-                JOIN main_schet m ON m.id = d.budjet_id
-                WHERE ch.naimenovanie_tovarov_jur7_id = $1
-                    AND d.isdeleted = false
-                    AND d.main_schet_id = $2
-                    AND ch.isdeleted = false
-        `;
+      SELECT
+        *
+      FROM saldo_naimenovanie_jur7
+      WHERE type = 'prixod'
+        AND year = $1
+        AND month = $2
+        AND region_id = $3
+        AND main_schet_id = $4
+    `;
 
     const data = await db.query(query, params);
 
     return data;
+  }
+
+  static async deleteByMonth(params) {
+    const query = `--sql
+      DELETE FROM saldo_naimenovanie_jur7
+      WHERE region_id = $1
+        AND month = $2
+        AND year = $3
+        AND main_schet_id = $4
+    `;
+
+    await db.query(query, params);
   }
 
   static async createSaldoDate(params, client) {
@@ -459,6 +433,24 @@ exports.SaldoDB = class {
                 AND isdeleted = false
                 AND main_schet_id = $2
             ORDER BY date_saldo
+            LIMIT 1
+        `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getEndSaldo(params) {
+    const query = `--sql
+           SELECT
+              year,
+              month
+            FROM saldo_naimenovanie_jur7 
+            WHERE region_id = $1
+                AND isdeleted = false
+                AND main_schet_id = $2
+            ORDER BY date_saldo DESC
             LIMIT 1
         `;
 

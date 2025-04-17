@@ -159,6 +159,8 @@ exports.Controller = class {
       schet: schet.schet,
       from: date[0],
       to: date[1],
+      year: last_date.year,
+      month: last_date.month,
       offset: 0,
       limit: 99999999,
     });
