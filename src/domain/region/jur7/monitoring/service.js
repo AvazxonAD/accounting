@@ -12,15 +12,22 @@ exports.Jur7MonitoringService = class {
         data.region_id,
         data.from,
         data.to,
-        data.budjet_id,
+        data.main_schet_id,
         data.offset,
         data.limit,
       ],
       data.order_by,
       data.order_type
     );
+    let page_prixod_sum = 0;
+    let page_rasxod_sum = 0;
 
-    return result;
+    for (let doc of result.data) {
+      page_prixod_sum += doc.summa_prixod;
+      page_rasxod_sum += doc.summa_rasxod;
+    }
+
+    return { ...result, page_prixod_sum, page_rasxod_sum };
   }
 
   static async cap(data) {
@@ -33,7 +40,7 @@ exports.Jur7MonitoringService = class {
       data.region_id,
       date[0],
       date[1],
-      data.budjet_id,
+      data.main_schet_id,
     ]);
 
     result = result.reduce((acc, item) => {
@@ -817,7 +824,7 @@ exports.Jur7MonitoringService = class {
 
   static async getMaterial(data) {
     const result = await Jur7MonitoringDB.getMaterial(
-      [data.year, data.month, data.region_id, data.budjet_id],
+      [data.year, data.month, data.region_id, data.main_schet_id],
       data.responsible_id
     );
 
@@ -826,7 +833,7 @@ exports.Jur7MonitoringService = class {
 
   static async getSaldoDate(data) {
     const result = await Jur7MonitoringDB.getSaldoDate(
-      [data.region_id, data.budjet_id],
+      [data.region_id, data.main_schet_id, data.main_schet_id],
       data.year
     );
 

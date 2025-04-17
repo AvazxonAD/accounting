@@ -318,6 +318,7 @@ exports.Controller = class {
 
     const check_doc = await SaldoService.checkDoc({
       ...req.query,
+      ...req.body,
       region_id,
     });
 

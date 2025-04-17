@@ -39,7 +39,7 @@ exports.Jur7MonitoringDB = class {
           AND r.id = $1
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $2 AND $3
-          AND d.budjet_id = $4
+          AND d.main_schet_id = $4
         
         UNION ALL 
         
@@ -75,7 +75,7 @@ exports.Jur7MonitoringDB = class {
           AND r.id = $1
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $2 AND $3
-          AND d.budjet_id = $4
+          AND d.main_schet_id = $4
         
         UNION ALL
 
@@ -110,7 +110,7 @@ exports.Jur7MonitoringDB = class {
           AND r.id = $1
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $2 AND $3
-          AND d.budjet_id = $4
+          AND d.main_schet_id = $4
 
         ${order}
 
@@ -133,7 +133,7 @@ exports.Jur7MonitoringDB = class {
               AND r.id = $1
               AND ch.isdeleted = false
               AND d.doc_date BETWEEN $2 AND $3
-              AND d.budjet_id = $4
+              AND d.main_schet_id = $4
           ) +
           (
             SELECT
@@ -148,7 +148,7 @@ exports.Jur7MonitoringDB = class {
               AND r.id = $1
               AND ch.isdeleted = false
               AND d.doc_date BETWEEN $2 AND $3
-              AND d.budjet_id = $4
+              AND d.main_schet_id = $4
           ) +
           (
             SELECT
@@ -162,9 +162,72 @@ exports.Jur7MonitoringDB = class {
               AND r.id = $1
               AND ch.isdeleted = false
               AND d.doc_date BETWEEN $2 AND $3
-              AND d.budjet_id = $4
+              AND d.main_schet_id = $4
           )
-        )::INTEGER AS total
+        )::INTEGER AS total,
+        (
+          (
+            SELECT
+              COALESCE(SUM(ch.summa_s_nds), 0)::FLOAT
+            FROM document_prixod_jur7 d
+            JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+            JOIN spravochnik_organization AS f ON f.id = d.kimdan_id
+            JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.main_schet_id = $4
+          ) +
+          (
+            SELECT
+              COALESCE(SUM(ch.summa), 0)::FLOAT
+            FROM document_vnutr_peremesh_jur7 d
+            JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+            JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+            JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.main_schet_id = $4
+          )
+        )::FLOAT AS prixod_sum,
+        ( 
+          (
+            SELECT
+              COALESCE(SUM(ch.summa), 0)::FLOAT
+            FROM document_rasxod_jur7 d
+            JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+            JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.main_schet_id = $4
+          ) +
+          (
+            SELECT
+              COALESCE(SUM(ch.summa), 0)::FLOAT
+            FROM document_vnutr_peremesh_jur7 d
+            JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+            JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
+            JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            WHERE d.isdeleted = false
+              AND r.id = $1
+              AND ch.isdeleted = false
+              AND d.doc_date BETWEEN $2 AND $3
+              AND d.main_schet_id = $4
+          )
+        )::FLOAT AS rasxod_sum
       FROM data
     `;
 
@@ -187,7 +250,7 @@ exports.Jur7MonitoringDB = class {
         WHERE r.id = $1 
             AND d.isdeleted = false 
             AND d.doc_date BETWEEN $2 AND $3
-            AND d.budjet_id = $4
+            AND d.main_schet_id = $4
             AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet,
@@ -207,7 +270,7 @@ exports.Jur7MonitoringDB = class {
         WHERE r.id = $1 
             AND d.isdeleted = false 
             AND d.doc_date BETWEEN $2 AND $3
-            AND d.budjet_id = $4
+            AND d.main_schet_id = $4
             AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet,
@@ -251,7 +314,7 @@ exports.Jur7MonitoringDB = class {
             WHERE d.year = $1
               AND d.month = $2
               AND d.region_id = $3
-              AND d.budjet_id = $4
+              AND d.main_schet_id = $4
               ${resposnible_filter}
         `;
 
@@ -274,7 +337,7 @@ exports.Jur7MonitoringDB = class {
         JOIN naimenovanie_tovarov_jur7 n ON n.id = d.naimenovanie_tovarov_jur7_id
         WHERE d.isdeleted = false 
             AND r.id = $1
-            AND d.budjet_id = $2
+            AND d.main_schet_id = $2
             AND d.debet_schet = $3
             AND d.kimning_buynida = $4
             AND d.year = $5
@@ -315,7 +378,7 @@ exports.Jur7MonitoringDB = class {
             SELECT COALESCE(SUM(ch.summa), 0::FLOAT) AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_prixod_jur7 d
             JOIN document_prixod_jur7_child ch ON ch.document_prixod_jur7_id = d.id
-            WHERE d.budjet_id = $1 AND
+            WHERE d.main_schet_id = $1 AND
               ch.debet_schet = $2
               AND d.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d.kimga_id", index_responsible_id) : ""} ${product_filter} 
@@ -324,7 +387,7 @@ exports.Jur7MonitoringDB = class {
             SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_rasxod_jur7 d
             JOIN document_rasxod_jur7_child ch ON ch.document_rasxod_jur7_id = d.id
-            WHERE d.budjet_id = $1
+            WHERE d.main_schet_id = $1
               AND  ch.kredit_schet = $2
               AND d.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d.kimdan_id", index_responsible_id) : ""} ${product_filter}
@@ -333,7 +396,7 @@ exports.Jur7MonitoringDB = class {
             SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_vnutr_peremesh_jur7 d
             JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
-            WHERE d.budjet_id = $1
+            WHERE d.main_schet_id = $1
               AND  ch.kredit_schet = $2
               AND d.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d.kimdan_id", index_responsible_id) : ""} ${product_filter}
@@ -342,7 +405,7 @@ exports.Jur7MonitoringDB = class {
             SELECT COALESCE(SUM(ch.summa), 0)::FLOAT AS summa, COALESCE(SUM(ch.kol), 0)::FLOAT AS kol
             FROM document_vnutr_peremesh_jur7 d
             JOIN document_vnutr_peremesh_jur7_child ch ON ch.document_vnutr_peremesh_jur7_id = d.id
-            WHERE d.budjet_id = $1
+            WHERE d.main_schet_id = $1
               AND  ch.debet_schet = $2
               AND d.doc_date ${internal_filter}
               ${responsible_id ? sqlFilter("d.kimga_id", index_responsible_id) : ""} ${product_filter}
@@ -375,7 +438,8 @@ exports.Jur7MonitoringDB = class {
       FROM saldo_naimenovanie_jur7
       WHERE region_id = $1
         AND isdeleted = false
-        AND budjet_id = $2
+        AND main_schet_id = $2
+        AND main_schet_id = $3
         ${year_filter}
 
       ORDER BY year DESC, month DESC

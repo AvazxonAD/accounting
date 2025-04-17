@@ -1,6 +1,10 @@
 const { db } = require("@db/index");
 const { InternalDB } = require("./db");
-const { tashkentTime, returnParamsValues } = require("@helper/functions");
+const {
+  tashkentTime,
+  returnParamsValues,
+  HelperFunctions,
+} = require("@helper/functions");
 const { SaldoDB } = require("@jur7_saldo/db");
 const { SaldoService } = require("@jur7_saldo/service");
 
@@ -122,6 +126,7 @@ exports.Jur7InternalService = class {
           child.kredit_schet,
           child.kredit_sub_schet,
           data.budjet_id,
+          data.main_schet_id,
           "prixod",
           tashkentTime(),
           tashkentTime(),
@@ -161,38 +166,16 @@ exports.Jur7InternalService = class {
 
       await this.createChild({ ...data, docId: data.id, client, doc: doc });
 
-      let year, month;
+      const date = HelperFunctions.getSmallDate({
+        date1: data.doc_date,
+        date2: data.old_data.doc_date,
+      });
 
-      if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
-        year = new Date(data.doc_date).getFullYear();
-        month = new Date(data.doc_date).getMonth() + 1;
-      } else if (new Date(data.doc_date) > new Date(data.old_data.doc_date)) {
-        year = new Date(data.old_data.doc_date).getFullYear();
-        month = new Date(data.old_data.doc_date).getMonth() + 1;
-      } else {
-        year = new Date(data.doc_date).getFullYear();
-        month = new Date(data.doc_date).getMonth() + 1;
-      }
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        doc_date: date.date,
+        client,
+      });
 
       return { doc, dates };
     });
@@ -202,7 +185,7 @@ exports.Jur7InternalService = class {
 
   static async getById(data) {
     const result = await InternalDB.getById(
-      [data.region_id, data.id, data.budjet_id],
+      [data.region_id, data.id, data.main_schet_id],
       data.isdeleted
     );
     return result;
@@ -214,7 +197,7 @@ exports.Jur7InternalService = class {
         data.region_id,
         data.from,
         data.to,
-        data.budjet_id,
+        data.main_schet_id,
         data.offset,
         data.limit,
       ],
@@ -222,6 +205,7 @@ exports.Jur7InternalService = class {
       data.order_by,
       data.order_type
     );
+
     return result;
   }
 };

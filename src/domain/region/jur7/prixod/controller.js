@@ -11,7 +11,7 @@ const { CODE } = require("@helper/constants");
 const { PrixodJur7Schema } = require("./schema");
 const { SaldoService } = require(`@jur7_saldo/service`);
 const { MainSchetService } = require(`@main_schet/service`);
-const { ValidatorFunctions } = require(`@helper/functions`);
+const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
   static async rasxodDocs(req, res) {
@@ -172,6 +172,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
@@ -203,26 +204,21 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to, budjet_id, order_by, order_type } =
-      req.query;
+    const { page, limit, budjet_id, main_schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
     const offset = (page - 1) * limit;
 
     const { data, total } = await PrixodJur7Service.get({
-      search,
       region_id,
-      from,
-      to,
-      budjet_id,
+      ...req.query,
       offset,
-      limit,
-      order_by,
-      order_type,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -240,17 +236,19 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const budjet_id = req.query.budjet_id;
+    const { budjet_id, main_schet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
     const data = await PrixodJur7Service.getById({
+      ...req.query,
       region_id,
       id,
-      budjet_id,
       isdeleted: true,
     });
     if (!data) {
@@ -293,8 +291,7 @@ exports.Controller = class {
     const old_data = await PrixodJur7Service.getById({
       region_id,
       id,
-      budjet_id,
-      isdeleted: true,
+      ...req.query,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -378,6 +375,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
@@ -392,8 +390,7 @@ exports.Controller = class {
 
     const result = await PrixodJur7Service.update({
       ...req.body,
-      budjet_id,
-      budjet_id,
+      ...req.query,
       user_id,
       jur_schets,
       id,
@@ -433,7 +430,7 @@ exports.Controller = class {
     const old_data = await PrixodJur7Service.getById({
       region_id,
       id,
-      budjet_id,
+      ...req.query,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -441,6 +438,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(old_data.doc_date).getFullYear(),
       month: new Date(old_data.doc_date).getMonth() + 1,
     });
@@ -483,15 +481,12 @@ exports.Controller = class {
 
   static async getPrixodReport(req, res) {
     const region_id = req.user.region_id;
-    const { from, to, budjet_id } = req.query;
+    const { from, to, main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const { fileName, filePath } = await PrixodJur7Service.prixodReport({
-      budjet_id,
+      main_schet_id,
       region_id,
       from,
       to,

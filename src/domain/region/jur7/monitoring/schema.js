@@ -21,11 +21,11 @@ exports.Schema = class {
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
           .required(),
-        budjet_id: Joi.number().min(1).integer(),
+        main_schet_id: Joi.number().min(1).integer(),
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(10),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
   static getMaterialSchema() {
     return Joi.object({
@@ -34,7 +34,7 @@ exports.Schema = class {
         year: Joi.number().integer().min(1901).required(),
         excel: Joi.string().trim().valid("true", "false"),
         iznos: Joi.string().trim().valid("true", "false"),
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -43,6 +43,7 @@ exports.Schema = class {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
         report_title_id: Joi.number().integer().min(1).required(),
         month: Joi.number().integer().min(1).required().max(12),
         year: Joi.number().integer().min(1901).required(),
@@ -54,7 +55,8 @@ exports.Schema = class {
   static getSaldoDate() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
         year: Joi.number().integer().min(1901).required(),
       }),
     }).options({ stripUnknown: true });

@@ -6,6 +6,21 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static checkIznosDate(data) {
+    const doc_date = new Date(data.doc_date);
+    const next_date = this.nextDate({
+      year: doc_date.getFullYear(),
+      month: doc_date.getMonth() + 1,
+    });
+
+    const future_saldoDate = new Date(
+      `${next_date.year}-${next_date.month}-01`
+    );
+
+    const current_saldoDate = new Date(`${data.year}-${data.month}-01`);
+
+    return current_saldoDate >= future_saldoDate;
+  }
   static getSmallDate(data) {
     const d1 = new Date(data.date1);
     const d2 = new Date(data.date2);

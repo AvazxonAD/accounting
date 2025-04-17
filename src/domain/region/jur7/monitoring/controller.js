@@ -5,20 +5,25 @@ const { Jur7MonitoringService } = require("./service");
 const { HelperFunctions } = require("@helper/functions");
 const { ReportTitleService } = require("@report_title/service");
 const { PodpisService } = require("@podpis/service");
+const { ValidatorFunctions } = require("@helper/database.validator");
 
 exports.Controller = class {
   static async monitoring(req, res) {
-    const { budjet_id, page, limit } = req.query;
+    const { main_schet_id, page, limit } = req.query;
     const region_id = req.user.region_id;
 
     const offset = (page - 1) * limit;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const { total, data } = await Jur7MonitoringService.monitoring({
+    const {
+      total,
+      data,
+      prixod_sum,
+      rasxod_sum,
+      page_prixod_sum,
+      page_rasxod_sum,
+    } = await Jur7MonitoringService.monitoring({
       ...req.query,
       region_id,
       offset,
@@ -28,6 +33,10 @@ exports.Controller = class {
     const meta = {
       pageCount: pageCount,
       count: total,
+      prixod_sum,
+      rasxod_sum,
+      page_prixod_sum,
+      page_rasxod_sum,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
@@ -38,30 +47,25 @@ exports.Controller = class {
 
   static async getSaldoDate(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, year } = req.query;
+    const { main_schet_id, year } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const result = await Jur7MonitoringService.getSaldoDate({
       region_id,
       year,
-      budjet_id,
+      ...req.query,
     });
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 
   static async materialReport(req, res) {
-    const { month, year, budjet_id, excel, iznos, responsible_id } = req.query;
+    const { month, main_schet_id, year, excel, iznos, responsible_id } =
+      req.query;
     const region_id = req.user.region_id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     if (responsible_id) {
       const responsible = await ResponsibleService.getById({
@@ -75,11 +79,8 @@ exports.Controller = class {
     const region = await RegionService.getById({ id: region_id });
 
     const data = await Jur7MonitoringService.getMaterial({
-      year,
-      month,
-      budjet_id,
+      ...req.query,
       region_id,
-      responsible_id,
     });
 
     const resultMap = {};
@@ -314,18 +315,16 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, year, month, excel, report_title_id } = req.query;
+    const { year, budjet_id, month, main_schet_id, excel, report_title_id } =
+      req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const data = await Jur7MonitoringService.cap({
       region_id,
       year,
       month,
-      budjet_id,
+      main_schet_id,
     });
 
     const date = HelperFunctions.getMonthStartEnd({ year, month });

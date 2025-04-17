@@ -3,19 +3,16 @@ const { ResponsibleService } = require("@responsible/service");
 const { ProductService } = require("@product/service");
 const { Jur7RsxodService } = require("./service");
 const { SaldoService } = require("@jur7_saldo/service");
-const { BudjetService } = require("@budjet/service");
+const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const budjet_id = req.query.budjet_id;
+    const { main_schet_id } = req.query;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ main_schet_id, region_id });
 
     const responsible = await ResponsibleService.getById({
       region_id,
@@ -27,6 +24,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
@@ -44,6 +42,7 @@ exports.Controller = class {
       }
 
       const { data } = await SaldoService.getByProduct({
+        ...req.query,
         region_id,
         to: doc_date,
         offset: 0,
@@ -67,7 +66,8 @@ exports.Controller = class {
 
     const result = await Jur7RsxodService.create({
       ...req.body,
-      budjet_id,
+      ...req.query,
+      main_schet_id,
       user_id,
       region_id,
     });
@@ -83,17 +83,17 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const budjet_id = req.query.budjet_id;
+    const { main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({
+      main_schet_id,
+      region_id,
+    });
 
     const data = await Jur7RsxodService.getById({
       region_id,
       id,
-      budjet_id,
+      main_schet_id,
       isdeleted: true,
     });
     if (!data) {
@@ -107,18 +107,18 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const budjet_id = req.query.budjet_id;
+    const { main_schet_id } = req.query;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({
+      main_schet_id,
+      region_id,
+    });
 
     const old_data = await Jur7RsxodService.getById({
       region_id,
       id,
-      budjet_id,
+      main_schet_id,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -134,6 +134,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
@@ -158,6 +159,7 @@ exports.Controller = class {
         )?.kol || 0;
 
       const { data } = await SaldoService.getByProduct({
+        ...req.query,
         region_id,
         to: doc_date,
         offset: 0,
@@ -183,8 +185,8 @@ exports.Controller = class {
 
     const result = await Jur7RsxodService.update({
       ...req.body,
+      ...req.query,
       user_id,
-      budjet_id,
       id,
       old_data,
       region_id,
@@ -201,17 +203,17 @@ exports.Controller = class {
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const budjet_id = req.query.budjet_id;
+    const main_schet_id = req.query.main_schet_id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({
+      main_schet_id,
+      region_id,
+    });
 
     const data = await Jur7RsxodService.getById({
       region_id,
       id,
-      budjet_id,
+      main_schet_id,
     });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -219,6 +221,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(data.doc_date).getFullYear(),
       month: new Date(data.doc_date).getMonth() + 1,
     });
@@ -242,26 +245,28 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, search, from, to, budjet_id, order_by, order_type } =
-      req.query;
+    const {
+      page,
+      limit,
+      search,
+      from,
+      to,
+      main_schet_id,
+      order_by,
+      order_type,
+    } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({
+      main_schet_id,
+      region_id,
+    });
 
     const offset = (page - 1) * limit;
 
     const { data, total } = await Jur7RsxodService.get({
       region_id,
-      from,
-      to,
-      budjet_id,
       offset,
-      limit,
-      search,
-      order_by,
-      order_type,
+      ...req.query,
     });
 
     const pageCount = Math.ceil(total / limit);

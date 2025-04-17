@@ -1,35 +1,23 @@
 const { db } = require("@db/index");
 const { RasxodDB } = require("./db");
-const { tashkentTime, returnParamsValues } = require("@helper/functions");
+const {
+  tashkentTime,
+  returnParamsValues,
+  HelperFunctions,
+} = require("@helper/functions");
 const { SaldoDB } = require("@jur7_saldo/db");
+const { SaldoService } = require("@jur7_saldo/service");
 
 exports.Jur7RsxodService = class {
   static async delete(data) {
     const result = await db.transaction(async (client) => {
       const doc = await RasxodDB.delete([data.id], client);
 
-      const year = new Date(data.old_data.doc_date).getFullYear();
-      const month = new Date(data.old_data.doc_date).getMonth() + 1;
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        client,
+        doc_date: data.old_data.doc_date,
+      });
 
       return { doc, dates };
     });
@@ -54,6 +42,7 @@ exports.Jur7RsxodService = class {
           data.kimga_id,
           data.kimga_name,
           data.id_shartnomalar_organization,
+          data.main_schet_id,
           data.budjet_id,
           tashkentTime(),
           tashkentTime(),
@@ -63,28 +52,10 @@ exports.Jur7RsxodService = class {
 
       await this.createChild({ ...data, docId: doc.id, client });
 
-      const year = new Date(data.doc_date).getFullYear();
-      const month = new Date(data.doc_date).getMonth() + 1;
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        client,
+      });
 
       return { doc, dates };
     });
@@ -107,7 +78,7 @@ exports.Jur7RsxodService = class {
         child.data_pereotsenka,
         data.user_id,
         data.docId,
-        data.budjet_id,
+        data.main_schet_id,
         child.iznos,
         child.iznos_summa,
         child.iznos_schet,
@@ -146,40 +117,16 @@ exports.Jur7RsxodService = class {
 
       await this.createChild({ ...data, docId: data.id, doc, client });
 
-      let year, month;
+      const date = HelperFunctions.getSmallDate({
+        date1: data.doc_date,
+        date2: data.old_data.doc_date,
+      });
 
-      if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
-        year = new Date(data.doc_date).getFullYear();
-        month = new Date(data.doc_date).getMonth() + 1;
-      } else if (new Date(data.doc_date) > new Date(data.old_data.doc_date)) {
-        year = new Date(data.old_data.doc_date).getFullYear();
-        month = new Date(data.old_data.doc_date).getMonth() + 1;
-      } else {
-        year = new Date(data.doc_date).getFullYear();
-        month = new Date(data.doc_date).getMonth() + 1;
-      }
-
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        `${year}-${String(month).padStart(2, "0")}-01`,
-      ]);
-
-      let dates = [];
-
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        client,
+        doc_date: date.date,
+      });
 
       return { doc, dates };
     });
@@ -189,7 +136,7 @@ exports.Jur7RsxodService = class {
 
   static async getById(data) {
     const result = await RasxodDB.getById(
-      [data.region_id, data.id, data.budjet_id],
+      [data.region_id, data.id, data.main_schet_id],
       data.isdeleted
     );
     return result;
@@ -201,7 +148,7 @@ exports.Jur7RsxodService = class {
         data.region_id,
         data.from,
         data.to,
-        data.budjet_id,
+        data.main_schet_id,
         data.offset,
         data.limit,
       ],

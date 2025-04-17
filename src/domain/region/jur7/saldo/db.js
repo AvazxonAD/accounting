@@ -380,6 +380,7 @@ exports.SaldoDB = class {
         AND month = $2
         AND year = $3
         AND main_schet_id = $4
+        AND type != 'prixod'
     `;
 
     await db.query(query, params);

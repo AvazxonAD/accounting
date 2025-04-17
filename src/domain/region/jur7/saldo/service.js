@@ -212,6 +212,18 @@ exports.SaldoService = class {
         year,
         month,
       });
+
+      if (product.iznos) {
+        const iznos_date = HelperFunctions.checkIznosDate({
+          doc_date: product.prixodData.docDate,
+          year,
+          month,
+        });
+
+        if (!iznos_date) {
+          product.month_iznos_summa = 0;
+        }
+      }
     }
 
     if (data.rasxod) {
@@ -783,7 +795,6 @@ exports.SaldoService = class {
       );
 
       const saldoData = [];
-      const currentSaldoDate = new Date(`${data.year}-${data.month}-01`);
 
       for (let responsible of finalResult) {
         for (let product of responsible.products) {
@@ -792,16 +803,13 @@ exports.SaldoService = class {
           let last_iznos_summa = 0;
           let month_iznos_summa = 0;
 
-          const docDate = new Date(product.doc_data.doc_date);
-          const nextDate = HelperFunctions.nextDate({
-            year: docDate.getFullYear(),
-            month: docDate.getMonth() + 1,
+          const iznos_date = HelperFunctions.checkIznosDate({
+            doc_date: product.doc_data.doc_date,
+            year: data.year,
+            month: data.month,
           });
-          const futureSaldoDate = new Date(
-            `${nextDate.year}-${nextDate.month}-01`
-          );
 
-          if (currentSaldoDate > futureSaldoDate) {
+          if (iznos_date) {
             sena =
               product.data.kol !== 0
                 ? product.data.summa / product.data.kol

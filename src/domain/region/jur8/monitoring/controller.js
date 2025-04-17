@@ -165,8 +165,6 @@ exports.Controller = class {
         region_id,
       });
 
-      console.log({ id: child.schet_id, region_id });
-
       if (!schet) {
         return res.error(req.i18n.t(`prixodSchetNotFound`), 404);
       }

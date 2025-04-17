@@ -97,7 +97,7 @@ exports.InternalDB = class {
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $2 AND $3 
                     ${search_filter}
-                    AND d.budjet_id = $4
+                    AND d.main_schet_id = $4
                 ${order}
                 OFFSET $5 LIMIT $6
             )
@@ -115,7 +115,7 @@ exports.InternalDB = class {
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $2 AND $3 
                         ${search_filter}
-                        AND d.budjet_id = $4
+                        AND d.main_schet_id = $4
                 )::FLOAT AS summa,
                 (
                     SELECT 
@@ -129,7 +129,7 @@ exports.InternalDB = class {
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $2 AND $3 
                         ${search_filter}
-                        AND d.budjet_id = $4
+                        AND d.main_schet_id = $4
                 )::INTEGER AS total
             FROM data
         `;
@@ -175,7 +175,7 @@ exports.InternalDB = class {
             JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
             WHERE r.id = $1
               AND d.id = $2
-              AND d.budjet_id = $3
+              AND d.main_schet_id = $3
               ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);

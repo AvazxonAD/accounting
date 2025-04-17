@@ -19,11 +19,15 @@ exports.PrixodJur7Service = class {
       data.region_id,
       data.from,
       data.to,
-      data.budjet_id,
+      data.main_schet_id,
     ]);
+
     await Promise.all(
       result.map(async (item) => {
-        item.childs = await PrixodDB.prixodReportChild([item.id]);
+        item.childs = await PrixodDB.prixodReportChild([
+          item.id,
+          data.main_schet_id,
+        ]);
         return item;
       })
     );
@@ -216,7 +220,7 @@ exports.PrixodJur7Service = class {
     worksheet.getColumn(7).width = 20;
     worksheet.getColumn(8).width = 27;
 
-    const folder_path = path.join(__dirname, `../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
     try {
       await fs.access(folder_path, fs.constants.W_OK);
     } catch (error) {
@@ -486,23 +490,17 @@ exports.PrixodJur7Service = class {
         date2: data.old_data.doc_date,
       });
 
-      const check = await SaldoDB.getSaldoDate([data.region_id, _date.date]);
+      const check = await SaldoDB.getSaldoDate([
+        data.region_id,
+        _date.date,
+        data.main_schet_id,
+      ]);
 
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        client,
+        doc_date: _date.date,
+      });
 
       // check jur3
       for (let child of data.childs) {
@@ -560,28 +558,11 @@ exports.PrixodJur7Service = class {
 
       const doc = await PrixodDB.delete([data.id], client);
 
-      const year = new Date(data.old_data.doc_date).getFullYear();
-      const month = new Date(data.old_data.doc_date).getMonth() + 1;
-
-      const check = await SaldoDB.getSaldoDate(
-        [data.region_id, `${year}-${String(month).padStart(2, "0")}-01`],
-        client
-      );
-      let dates = [];
-      for (let date of check) {
-        dates.push(
-          await SaldoDB.createSaldoDate(
-            [
-              data.region_id,
-              date.year,
-              date.month,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          )
-        );
-      }
+      const dates = await SaldoService.createSaldoDate({
+        ...data,
+        doc_date: data.old_data.doc_date,
+        client,
+      });
 
       for (let child of data.childs) {
         const schet = data.jur_schets.find(
@@ -612,7 +593,7 @@ exports.PrixodJur7Service = class {
         data.region_id,
         data.from,
         data.to,
-        data.budjet_id,
+        data.main_schet_id,
         data.offset,
         data.limit,
       ],
@@ -626,14 +607,13 @@ exports.PrixodJur7Service = class {
 
   static async getById(data) {
     const result = await PrixodDB.getById(
-      [data.region_id, data.id, data.budjet_id],
+      [data.region_id, data.id, data.main_schet_id],
       data.isdeleted
     );
 
     return result;
   }
 
-  // old
   static async getByProductId(data) {
     const result = await PrixodDB.getByProductId([
       data.product_id,

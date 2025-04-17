@@ -3,22 +3,22 @@ const { ResponsibleService } = require("@responsible/service");
 const { ProductService } = require("@product/service");
 const { Jur7InternalService } = require("./service");
 const { SaldoService } = require("@jur7_saldo/service");
-const { BudjetService } = require("@budjet/service");
 const { MainSchetService } = require("@main_schet/service");
+const { ValidatorFunctions } = require("@helper/database.validator");
 
 exports.Controller = class {
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
-    const { budjet_id, main_schet_id } = req.query;
+    const { main_schet_id, budjet_id } = req.query;
     const { doc_date, kimdan_id, childs, kimga_id } = req.body;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.budjet({ budjet_id });
 
-    const main_schet = await MainSchetService.getById({ id: main_schet_id });
+    const main_schet = await MainSchetService.getById({
+      id: main_schet_id,
+      region_id,
+    });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -41,6 +41,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
@@ -58,6 +59,7 @@ exports.Controller = class {
       }
 
       const { data } = await SaldoService.getByProduct({
+        ...req.query,
         region_id,
         to: doc_date,
         offset: 0,
@@ -97,22 +99,20 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { budjet_id, main_schet_id } = req.query;
+    const { main_schet_id } = req.query;
 
-    const main_schet = await MainSchetService.getById({ id: main_schet_id });
+    const main_schet = await MainSchetService.getById({
+      id: main_schet_id,
+      region_id,
+    });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
-    }
-
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const data = await Jur7InternalService.getById({
       region_id,
       id,
-      budjet_id,
+      ...req.query,
       isdeleted: true,
     });
     if (!data) {
@@ -126,15 +126,13 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { budjet_id, main_schet_id } = req.query;
+    const { main_schet_id } = req.query;
     const { doc_date, kimdan_id, childs } = req.body;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const main_schet = await MainSchetService.getById({ id: main_schet_id });
+    const main_schet = await MainSchetService.getById({
+      id: main_schet_id,
+      region_id,
+    });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -142,7 +140,7 @@ exports.Controller = class {
     const old_data = await Jur7InternalService.getById({
       region_id,
       id,
-      budjet_id,
+      ...req.query,
       isdeleted: true,
     });
     if (!old_data) {
@@ -159,6 +157,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
@@ -183,6 +182,7 @@ exports.Controller = class {
         )?.kol || 0;
 
       const { data } = await SaldoService.getByProduct({
+        ...req.query,
         region_id,
         to: doc_date,
         offset: 0,
@@ -226,14 +226,12 @@ exports.Controller = class {
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { budjet_id, main_schet_id } = req.query;
+    const { main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const main_schet = await MainSchetService.getById({ id: main_schet_id });
+    const main_schet = await MainSchetService.getById({
+      id: main_schet_id,
+      region_id,
+    });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -241,7 +239,7 @@ exports.Controller = class {
     const old_data = await Jur7InternalService.getById({
       region_id,
       id,
-      budjet_id,
+      ...req.query,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -249,6 +247,7 @@ exports.Controller = class {
 
     const check_saldo = await SaldoService.check({
       region_id,
+      main_schet_id,
       year: new Date(old_data.doc_date).getFullYear(),
       month: new Date(old_data.doc_date).getMonth() + 1,
     });
@@ -273,24 +272,12 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const {
-      page,
-      limit,
-      search,
-      from,
-      to,
-      budjet_id,
-      main_schet_id,
-      order_by,
-      order_type,
-    } = req.query;
+    const { page, limit, main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
-
-    const main_schet = await MainSchetService.getById({ id: main_schet_id });
+    const main_schet = await MainSchetService.getById({
+      id: main_schet_id,
+      region_id,
+    });
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -298,15 +285,9 @@ exports.Controller = class {
     const offset = (page - 1) * limit;
 
     const { data, total } = await Jur7InternalService.get({
+      ...req.query,
       region_id,
-      from,
-      to,
-      budjet_id,
       offset,
-      limit,
-      search,
-      order_by,
-      order_type,
     });
 
     const pageCount = Math.ceil(total / limit);
