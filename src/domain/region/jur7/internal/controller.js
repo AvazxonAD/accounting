@@ -237,9 +237,9 @@ exports.Controller = class {
     }
 
     const old_data = await Jur7InternalService.getById({
+      ...req.query,
       region_id,
       id,
-      ...req.query,
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);

@@ -15,7 +15,7 @@ exports.Jur8MonitoringService = class {
 
   static async getById(data) {
     const result = await Jur8MonitoringDB.getById(
-      [data.budjet_id, data.region_id, data.id],
+      [data.main_schet_id, data.region_id, data.id],
       data.isdeleted
     );
 
@@ -50,7 +50,7 @@ exports.Jur8MonitoringService = class {
 
   static async get(data) {
     const result = await Jur8MonitoringDB.get(
-      [data.budjet_id, data.region_id, data.offset, data.limit],
+      [data.main_schet_id, data.region_id, data.offset, data.limit],
       data.year,
       data.month
     );
@@ -61,7 +61,7 @@ exports.Jur8MonitoringService = class {
   static async create(data) {
     const result = await db.transaction(async (client) => {
       const doc = await Jur8MonitoringDB.create(
-        [data.year, data.month, data.budjet_id, data.user_id, this.now],
+        [data.year, data.month, data.main_schet_id, data.user_id, this.now],
         client
       );
 
@@ -97,7 +97,7 @@ exports.Jur8MonitoringService = class {
     const schets = data.schets.map((item) => item.schet);
 
     const docs = await Jur8MonitoringDB.getPrixod([
-      data.budjet_id,
+      data.main_schet_id,
       data.from,
       data.to,
       schets,

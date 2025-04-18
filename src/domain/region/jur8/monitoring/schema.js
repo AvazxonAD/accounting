@@ -4,7 +4,7 @@ exports.Jur8MonitoringSchema = class {
   static create() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
 
       body: Joi.object({
@@ -36,7 +36,7 @@ exports.Jur8MonitoringSchema = class {
   static update() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
 
       body: Joi.object({
@@ -74,7 +74,7 @@ exports.Jur8MonitoringSchema = class {
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
         year: Joi.number().min(1).integer().min(1901).max(2099),
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         limit: Joi.number().min(1).integer().default(10),
       }),
     }).options({ stripUnknown: true });
@@ -83,7 +83,7 @@ exports.Jur8MonitoringSchema = class {
   static getData() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         month: Joi.number().min(1).integer().max(12).required(),
         year: Joi.number().min(1901).integer().max(2099).required(),
       }),
@@ -97,7 +97,7 @@ exports.Jur8MonitoringSchema = class {
       }),
 
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -109,7 +109,7 @@ exports.Jur8MonitoringSchema = class {
       }),
 
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }

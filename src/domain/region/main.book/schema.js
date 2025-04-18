@@ -4,7 +4,7 @@ exports.MainBookSchema = class {
   static create() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
 
       body: Joi.object({
@@ -69,7 +69,7 @@ exports.MainBookSchema = class {
       }),
 
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -79,7 +79,7 @@ exports.MainBookSchema = class {
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
         year: Joi.number().min(1).integer().min(1901).max(2099),
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         limit: Joi.number().min(1).integer().default(10),
       }),
     }).options({ stripUnknown: true });
@@ -88,7 +88,7 @@ exports.MainBookSchema = class {
   static cleanData() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         password: Joi.string().trim().required(),
       }),
     }).options({ stripUnknown: true });
@@ -97,7 +97,7 @@ exports.MainBookSchema = class {
   static getDocs() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         type_id: Joi.number().min(1).integer().required(),
         schet: Joi.string().trim().required(),
         month: Joi.number().integer().required().min(1).max(12).required(),
@@ -111,7 +111,7 @@ exports.MainBookSchema = class {
   static getUniqueSchets() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -119,7 +119,7 @@ exports.MainBookSchema = class {
   static getCheckFirst() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -127,7 +127,7 @@ exports.MainBookSchema = class {
   static getData() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         month: Joi.number().min(1).integer().max(12).required(),
         year: Joi.number().min(1901).integer().max(2099).required(),
       }),
@@ -142,7 +142,7 @@ exports.MainBookSchema = class {
 
       query: Joi.object({
         report_title_id: Joi.number().min(1).integer(),
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
         excel: Joi.string().valid("true", "false"),
       }),
     }).options({ stripUnknown: true });
@@ -154,7 +154,7 @@ exports.MainBookSchema = class {
         id: Joi.number().min(1).integer().required(),
       }),
       query: Joi.object({
-        budjet_id: Joi.number().min(1).integer().required(),
+        main_schet_id: Joi.number().min(1).integer().required(),
       }),
     }).options({ stripUnknown: true });
   }

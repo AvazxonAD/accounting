@@ -626,7 +626,7 @@ exports.SaldoService = class {
             tashkentTime(),
             tashkentTime(),
           ],
-          client
+          data.client
         )
       );
     }

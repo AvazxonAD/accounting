@@ -83,6 +83,7 @@ exports.RasxodSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().integer().min(1).required(),
+        budjet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -131,6 +132,7 @@ exports.RasxodSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().integer().min(1).required(),
+        budjet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }

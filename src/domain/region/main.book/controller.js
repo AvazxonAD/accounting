@@ -3,6 +3,7 @@ const { MainBookService } = require("./service");
 const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
 const { SALDO_PASSWORD } = require(`@helper/constants`);
+const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
   static async getDocs(req, res) {
@@ -114,12 +115,9 @@ exports.Controller = class {
 
   static async cleanData(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, password } = req.query;
+    const { main_schet_id, password } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     if (password !== SALDO_PASSWORD) {
       return res.error(req.i18n.t("validationError"), 400);
@@ -129,7 +127,7 @@ exports.Controller = class {
       region_id,
       offset: 0,
       limit: 999999999,
-      budjet_id,
+      main_schet_id,
     });
 
     await MainBookService.cleanData({ data });
@@ -139,15 +137,12 @@ exports.Controller = class {
 
   static async getCheckFirst(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const result = await MainBookService.getCheckFirst({
-      budjet_id,
+      main_schet_id,
       region_id,
     });
 
@@ -159,16 +154,13 @@ exports.Controller = class {
   }
 
   static async getUniqueSchets(req, res) {
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const result = await MainBookService.getUniqueSchets({
-      budjet_id,
+      main_schet_id,
       region_id,
     });
 
@@ -178,12 +170,9 @@ exports.Controller = class {
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const { id } = req.params;
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const data = await MainBookService.getById({
       region_id,
@@ -195,7 +184,7 @@ exports.Controller = class {
     }
 
     const first = await MainBookService.getCheckFirst({
-      budjet_id,
+      main_schet_id,
       region_id,
     });
 
@@ -211,7 +200,7 @@ exports.Controller = class {
       region_id,
       year: data.year,
       month: data.month,
-      budjet_id,
+      main_schet_id,
     });
 
     if (check.length) {
@@ -232,19 +221,16 @@ exports.Controller = class {
   static async create(req, res) {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
     const { year, month } = req.body;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const check = await MainBookService.get({
       offset: 0,
       limit: 1,
       region_id,
-      budjet_id,
+      main_schet_id,
       year,
       month,
     });
@@ -254,7 +240,7 @@ exports.Controller = class {
     }
 
     const result = await MainBookService.create({
-      budjet_id,
+      main_schet_id,
       ...req.body,
       user_id,
     });
@@ -264,17 +250,14 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, year, budjet_id } = req.query;
+    const { page, limit, year, main_schet_id } = req.query;
 
     const offset = (page - 1) * limit;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const first = await MainBookService.getCheckFirst({
-      budjet_id,
+      main_schet_id,
       region_id,
     });
 
@@ -282,7 +265,7 @@ exports.Controller = class {
       region_id,
       offset,
       limit,
-      budjet_id,
+      main_schet_id,
       year,
     });
 
@@ -309,7 +292,7 @@ exports.Controller = class {
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
-    const { excel, report_title_id, budjet_id } = req.query;
+    const { excel, report_title_id, main_schet_id } = req.query;
     const { id } = req.params;
 
     const data = await MainBookService.getById({
@@ -322,13 +305,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const first = await MainBookService.getCheckFirst({
-      budjet_id,
+      main_schet_id,
       region_id,
     });
 
@@ -377,14 +357,14 @@ exports.Controller = class {
   }
 
   static async getData(req, res) {
-    const { year, month, budjet_id } = req.query;
+    const { year, month, main_schet_id } = req.query;
     const region_id = req.user.region_id;
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
     const last_saldo = await MainBookService.getByMonth({
       region_id,
-      budjet_id,
+      main_schet_id,
       year: last_date.year,
       month: last_date.month,
     });
@@ -393,10 +373,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const { schets, main_schets } = await MainBookService.getUniqueSchets({
       ...req.query,
@@ -405,7 +382,9 @@ exports.Controller = class {
 
     const types = await MainBookService.getMainBookType({});
 
-    const jur3AndJur4Schets = await MainBookService.getJurSchets({ budjet_id });
+    const jur3AndJur4Schets = await MainBookService.getJurSchets({
+      main_schet_id,
+    });
 
     const date = HelperFunctions.getMonthStartEnd({ year, month });
 
@@ -426,7 +405,7 @@ exports.Controller = class {
       if (type.id === 1) {
         type.sub_childs = await MainBookService.getJur1Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
+          main_schet_id,
           from,
           to,
           region_id,
@@ -438,7 +417,7 @@ exports.Controller = class {
       if (type.id === 2) {
         type.sub_childs = await MainBookService.getJur2Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
+          main_schet_id,
           from,
           to,
           region_id,
@@ -450,7 +429,7 @@ exports.Controller = class {
       if (type.id === 3) {
         type.sub_childs = await MainBookService.getJur3Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
+          main_schet_id,
           from,
           to,
           region_id,
@@ -463,7 +442,7 @@ exports.Controller = class {
       if (type.id === 4) {
         type.sub_childs = await MainBookService.getJur4Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
+          main_schet_id,
           from,
           to,
           region_id,
@@ -481,7 +460,7 @@ exports.Controller = class {
       if (type.id === 7) {
         type.sub_childs = await MainBookService.getJur7Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
+          main_schet_id,
           from,
           to,
           region_id,
@@ -492,7 +471,7 @@ exports.Controller = class {
       if (type.id === 8) {
         type.sub_childs = await MainBookService.getJur8Data({
           schets: JSON.parse(JSON.stringify(schets)),
-          budjet_id,
+          main_schet_id,
           year,
           month,
           region_id,
@@ -533,12 +512,9 @@ exports.Controller = class {
     const { id } = req.params;
     const user_id = req.user.id;
     const { month, year } = req.body;
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const old_data = await MainBookService.getById({
       region_id,
@@ -558,7 +534,7 @@ exports.Controller = class {
         offset: 0,
         limit: 1,
         region_id,
-        budjet_id,
+        main_schet_id,
         year,
         month,
       });
@@ -572,7 +548,7 @@ exports.Controller = class {
       ...req.body,
       old_data,
       region_id,
-      budjet_id,
+      main_schet_id,
       id,
       user_id,
     });

@@ -490,12 +490,6 @@ exports.PrixodJur7Service = class {
         date2: data.old_data.doc_date,
       });
 
-      const check = await SaldoDB.getSaldoDate([
-        data.region_id,
-        _date.date,
-        data.main_schet_id,
-      ]);
-
       const dates = await SaldoService.createSaldoDate({
         ...data,
         client,

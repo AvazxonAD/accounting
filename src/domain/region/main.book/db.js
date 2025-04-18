@@ -4,13 +4,13 @@ exports.MainBookDB = class {
   static async getCheck(params) {
     const query = `--sql
       SELECT
-        DISTINCT d.main_book_id, d.budjet_id, d.year, d.month
+        DISTINCT d.main_book_id, d.main_schet_id, d.year, d.month
       FROM main_book_saldo d
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
       WHERE d.isdeleted = false
         AND r.id = $1
-        AND d.budjet_id = $2
+        AND d.main_schet_id = $2
     `;
 
     const result = await db.query(query, params);
@@ -27,7 +27,7 @@ exports.MainBookDB = class {
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND ( (year > $2) OR (year = $2 AND month > $3))
-        AND m.budjet_id = $4
+        AND m.id = $4
         AND m.isdeleted = false
       ORDER BY id
     `;
@@ -39,7 +39,7 @@ exports.MainBookDB = class {
 
   static async createCheck(params, client) {
     const query = `--sql
-      INSERT INTO main_book_saldo(main_book_id, budjet_id, user_id, year, month, created_at, updated_at)
+      INSERT INTO main_book_saldo(main_book_id, main_schet_id, user_id, year, month, created_at, updated_at)
       VALUES($1, $2, $3, $4, $5, $6, $7)
       RETURNING * 
     `;
@@ -60,7 +60,7 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         op.schet AS debet_schet,
         m.jur1_schet AS kredit_schet,
-        m.spravochnik_budjet_name_id AS budjet_id,
+        m.id AS main_schet_id,
         'kassa_rasxod' AS type
       FROM kassa_rasxod d
       JOIN kassa_rasxod_child ch ON d.id = ch.kassa_rasxod_id
@@ -72,7 +72,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.spravochnik_budjet_name_id = $3
+        AND m.id = $3
         AND op.schet = $4
         AND r.id = $5
     `;
@@ -93,7 +93,7 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         m.jur1_schet AS kredit_schet,
         op.schet AS debet_schet,
-        m.spravochnik_budjet_name_id AS budjet_id,
+        m.id AS main_schet_id,
         'kassa_rasxod' AS type
       FROM kassa_rasxod d
       JOIN kassa_rasxod_child ch ON d.id = ch.kassa_rasxod_id
@@ -105,7 +105,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.spravochnik_budjet_name_id = $3
+        AND m.id = $3
         AND m.jur1_schet = $4
         AND r.id = $5
     `;
@@ -126,7 +126,7 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         op.schet AS debet_schet,
         m.jur2_schet AS kredit_schet,
-        m.spravochnik_budjet_name_id AS budjet_id,
+        m.id AS main_schet_id,
         'bank_rasxod' AS type
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
@@ -138,7 +138,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.spravochnik_budjet_name_id = $3
+        AND m.id = $3
         AND op.schet = $4
         AND r.id = $5
     `;
@@ -159,7 +159,7 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         m.jur2_schet AS kredit_schet,
         op.schet AS debet_schet,
-        m.spravochnik_budjet_name_id AS budjet_id,
+        m.id AS main_schet_id,
         'bank_rasxod' AS type
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
@@ -171,7 +171,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.spravochnik_budjet_name_id = $3
+        AND m.id = $3
         AND m.jur2_schet = $4
         AND r.id = $5
     `;
@@ -194,7 +194,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND d.budjet_id = $2
+        AND d.main_schet_id = $2
         AND d.year = $3
         AND d.month = $4
       GROUP BY ch.rasxod_schet,
@@ -227,7 +227,7 @@ exports.MainBookDB = class {
       FROM main_book m 
       JOIN users u ON u.id = m.user_id
       JOIN regions r ON r.id = u.region_id
-      WHERE m.budjet_id = $1
+      WHERE m.id = $1
         AND r.id = $2
         AND m.isdeleted = false
       ORDER BY id 
@@ -247,7 +247,7 @@ exports.MainBookDB = class {
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = m.user_id
       JOIN regions r ON r.id = u.region_id
-      WHERE m.spravochnik_budjet_name_id = $1
+      WHERE m.id = $1
         AND d.isdeleted = false
     `;
 
@@ -307,7 +307,7 @@ exports.MainBookDB = class {
       JOIN regions r ON r.id = u.region_id  
       WHERE m.isdeleted = false
         AND r.id = $1
-        AND m.spravochnik_budjet_name_id = $2
+        AND m.id = $2
     `;
 
     const result = await db.query(query, params);
@@ -336,7 +336,7 @@ exports.MainBookDB = class {
           user_id,
           year,
           month,
-          budjet_id,
+          main_schet_id,
           created_at,
           updated_at
       )
@@ -440,19 +440,19 @@ exports.MainBookDB = class {
           u.login,
           d.year,
           d.month,
-          d.budjet_id,
-          b.name AS                 budjet_name,
+          d.main_schet_id,
+          m.account_number,,
           d.accept_user_id,
           ua.fio AS                 accept_user_fio,
           ua.login AS               accept_user_login
         FROM main_book d
-        JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
+        JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
         LEFT JOIN users ua ON ua.id = d.accept_user_id
         JOIN regions r ON r.id = u.region_id
         WHERE d.isdeleted = false
           AND r.id = $1
-          AND d.budjet_id = $2
+          AND d.main_schet_id = $2
           ${where_clause}
         
         ORDER BY d.year DESC, d.month DESC
@@ -468,7 +468,7 @@ exports.MainBookDB = class {
           JOIN regions r ON r.id = u.region_id
           WHERE d.isdeleted = false
             AND r.id = $1
-            AND d.budjet_id = $2
+            AND d.main_schet_id = $2
             ${where_clause}
         )::INTEGER AS total
       FROM data
@@ -489,13 +489,13 @@ exports.MainBookDB = class {
         d.user_id,
         d.year,
         d.month,
-        d.budjet_id,
-        b.name AS                 budjet_name,
+        d.main_schet_id,
+        m.account_number,,
         d.accept_user_id,
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
@@ -519,20 +519,20 @@ exports.MainBookDB = class {
         d.user_id,
         d.year,
         d.month,
-        d.budjet_id,
-        b.name AS                 budjet_name,
+        d.main_schet_id,
+        m.account_number,
         d.accept_user_id,
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN spravochnik_budjet_name b ON b.id = d.budjet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND d.year = $2
         AND d.month = $3
-        AND d.budjet_id = $4
+        AND d.main_schet_id = $4
         AND d.isdeleted = false
     `;
 
@@ -688,7 +688,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.spravochnik_budjet_name_id = $2
+        AND m.id = $2
         AND own.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet,
@@ -710,7 +710,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.spravochnik_budjet_name_id = $2
+        AND m.id = $2
         AND op.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet, m.jur2_schet
@@ -729,7 +729,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND d.budjet_id = $2
+        AND d.main_schet_id = $2
         AND ch.kredit_schet = ANY($3)
         ${date_filter}
       GROUP BY ch.debet_schet,
@@ -775,7 +775,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.spravochnik_budjet_name_id = $2
+        AND m.id = $2
         AND own.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet, own.schet
@@ -797,7 +797,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.spravochnik_budjet_name_id = $2
+        AND m.id = $2
         AND op.schet = ANY($3)
         AND p.id IS NOT NULL
         ${date_filter}
@@ -820,7 +820,7 @@ exports.MainBookDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.spravochnik_budjet_name_id = $2
+        AND m.id = $2
         AND op.schet = ANY($3)
         AND p.id IS NOT NULL
         ${date_filter}
@@ -862,7 +862,7 @@ exports.MainBookDB = class {
         WHERE d.isdeleted = false
           AND ch.isdeleted = false
           AND r.id = $1
-          AND d.budjet_id = $2
+          AND d.main_schet_id = $2
           ${date_filter}
         GROUP BY ch.debet_schet,
             ch.kredit_schet
@@ -880,7 +880,7 @@ exports.MainBookDB = class {
         WHERE d.isdeleted = false
           AND ch.isdeleted = false
           AND r.id = $1
-          AND d.budjet_id = $2
+          AND d.main_schet_id = $2
           ${date_filter}
         GROUP BY ch.debet_schet,
             ch.kredit_schet

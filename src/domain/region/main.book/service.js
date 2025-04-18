@@ -9,7 +9,10 @@ exports.MainBookService = class {
   static now = new Date();
 
   static async getCheck(data) {
-    const result = await MainBookDB.getCheck([data.region_id, data.budjet_id]);
+    const result = await MainBookDB.getCheck([
+      data.region_id,
+      data.main_schet_id,
+    ]);
 
     return result;
   }
@@ -18,7 +21,7 @@ exports.MainBookService = class {
     const result = await MainBookDB.getJur1PrixodDocs([
       data.year,
       data.month,
-      data.budjet_id,
+      data.main_schet_id,
       data.schet,
       data.region_id,
     ]);
@@ -30,7 +33,7 @@ exports.MainBookService = class {
     const result = await MainBookDB.getJur1RasxodDocs([
       data.year,
       data.month,
-      data.budjet_id,
+      data.main_schet_id,
       data.schet,
       data.region_id,
     ]);
@@ -42,7 +45,7 @@ exports.MainBookService = class {
     const result = await MainBookDB.getJur2PrixodDocs([
       data.year,
       data.month,
-      data.budjet_id,
+      data.main_schet_id,
       data.schet,
       data.region_id,
     ]);
@@ -54,7 +57,7 @@ exports.MainBookService = class {
     const result = await MainBookDB.getJur2RasxodDocs([
       data.year,
       data.month,
-      data.budjet_id,
+      data.main_schet_id,
       data.schet,
       data.region_id,
     ]);
@@ -72,7 +75,7 @@ exports.MainBookService = class {
 
   static async getCheckFirst(data) {
     const result = await MainBookDB.getCheckFirst([
-      data.budjet_id,
+      data.main_schet_id,
       data.region_id,
     ]);
 
@@ -82,7 +85,7 @@ exports.MainBookService = class {
   static async getUniqueSchets(data) {
     const main_schets = await MainBookDB.getMainSchets([
       data.region_id,
-      data.budjet_id,
+      data.main_schet_id,
     ]);
 
     const schets = await MainBookDB.getUniqueSchets([]);
@@ -114,7 +117,7 @@ exports.MainBookService = class {
   }
 
   static async getJurSchets(data) {
-    const result = await MainBookDB.getJurSchets([data.budjet_id]);
+    const result = await MainBookDB.getJurSchets([data.main_schet_id]);
 
     return result;
   }
@@ -143,7 +146,7 @@ exports.MainBookService = class {
           data.user_id,
           data.year,
           data.month,
-          data.budjet_id,
+          data.main_schet_id,
           new Date(),
           new Date(),
         ],
@@ -256,7 +259,7 @@ exports.MainBookService = class {
 
   static async get(data) {
     const result = await MainBookDB.get(
-      [data.region_id, data.budjet_id, data.offset, data.limit],
+      [data.region_id, data.main_schet_id, data.offset, data.limit],
       data.year,
       data.month
     );
@@ -282,7 +285,7 @@ exports.MainBookService = class {
       data.region_id,
       data.year,
       data.month,
-      data.budjet_id,
+      data.main_schet_id,
     ]);
 
     if (result) {
@@ -419,7 +422,7 @@ exports.MainBookService = class {
       .map((item) => item.schet);
 
     const rasxod_data = await MainBookDB.getJur3Rasxod(
-      [data.region_id, data.budjet_id, jur3_schets],
+      [data.region_id, data.main_schet_id, jur3_schets],
       { from: data.from, to: data.to },
       data.operator
     );
@@ -448,7 +451,7 @@ exports.MainBookService = class {
   static async getJur8Data(data) {
     const rasxod_data = await MainBookDB.getJur8Rasxod([
       data.region_id,
-      data.budjet_id,
+      data.main_schet_id,
       data.year,
       data.month,
     ]);
@@ -480,7 +483,7 @@ exports.MainBookService = class {
       .map((item) => item.schet);
 
     const rasxod_data = await MainBookDB.getJur4Rasxod(
-      [data.region_id, data.budjet_id, jur4_schets],
+      [data.region_id, data.main_schet_id, jur4_schets],
       { from: data.from, to: data.to },
       data.operator
     );
@@ -508,7 +511,7 @@ exports.MainBookService = class {
 
   static async getJur7Data(data) {
     const rasxod_data = await MainBookDB.getJur7Rasxod(
-      [data.region_id, data.budjet_id],
+      [data.region_id, data.main_schet_id],
       { from: data.from, to: data.to },
       data.operator
     );
@@ -656,7 +659,7 @@ exports.MainBookService = class {
 
     // jur7
     const rasxod_data = await MainBookDB.getJur7Rasxod(
-      [data.region_id, data.budjet_id],
+      [data.region_id, data.main_schet_id],
       { from: data.from, to: data.to },
       data.operator
     );
@@ -825,7 +828,7 @@ exports.MainBookService = class {
 
     // jur7
     const rasxod_data = await MainBookDB.getJur7Rasxod(
-      [data.region_id, data.budjet_id],
+      [data.region_id, data.main_schet_id],
       { from: data.from, to: data.to },
       data.operator
     );
@@ -1130,7 +1133,7 @@ exports.MainBookService = class {
       data.region_id,
       data.year,
       data.month,
-      data.budjet_id,
+      data.main_schet_id,
     ]);
 
     return check;
@@ -1143,7 +1146,7 @@ exports.MainBookService = class {
         await MainBookDB.createCheck(
           [
             doc.id,
-            doc.budjet_id,
+            doc.main_schet_id,
             data.user_id,
             doc.year,
             doc.month,

@@ -49,7 +49,7 @@ exports.Jur8MonitoringDB = class {
       FROM jur8_monitoring AS d
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
-      WHERE d.budjet_id = $1
+      WHERE d.main_schet_id = $1
         AND r.id = $2
         AND d.id = $3
         ${!isdeleted ? "AND d.isdeleted = false" : ""}
@@ -142,7 +142,7 @@ exports.Jur8MonitoringDB = class {
         FROM jur8_monitoring AS d
         JOIN users u ON u.id = d.user_id
         JOIN regions r ON r.id = u.region_id
-        WHERE d.budjet_id = $1
+        WHERE d.main_schet_id = $1
           AND d.isdeleted = false
           AND r.id = $2
           ${where}
@@ -158,7 +158,7 @@ exports.Jur8MonitoringDB = class {
           FROM jur8_monitoring d
           JOIN users u ON u.id = d.user_id
           JOIN regions r ON r.id = u.region_id
-          WHERE d.budjet_id = $1
+          WHERE d.main_schet_id = $1
             AND d.isdeleted = false
             AND r.id = $2
             ${where}
@@ -171,7 +171,7 @@ exports.Jur8MonitoringDB = class {
           JOIN jur8_monitoring_child ch ON ch.parent_id = d.id
           JOIN users u ON u.id = d.user_id
           JOIN regions r ON r.id = u.region_id
-          WHERE d.budjet_id = $1
+          WHERE d.main_schet_id = $1
             AND d.isdeleted = false
             AND r.id = $2
             ${where}
@@ -186,7 +186,7 @@ exports.Jur8MonitoringDB = class {
 
   static async create(params, client) {
     const query = `--sql
-      INSERT INTO jur8_monitoring (year, month, budjet_id, user_id, created_at, updated_at)
+      INSERT INTO jur8_monitoring (year, month, main_schet_id, user_id, created_at, updated_at)
       VALUES ($1, $2, $3, $4, $5, $5)
       RETURNING id
     `;

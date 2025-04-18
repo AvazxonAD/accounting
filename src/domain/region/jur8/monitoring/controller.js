@@ -5,20 +5,20 @@ const { HelperFunctions } = require("@helper/functions");
 
 exports.Controller = class {
   static async update(req, res) {
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
     const { childs, year, month } = req.body;
     const user_id = req.user.id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: main_schet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const doc = await Jur8MonitoringService.getById({
       region_id,
-      budjet_id,
+      main_schet_id,
       id,
     });
     if (!doc) {
@@ -27,7 +27,7 @@ exports.Controller = class {
 
     if (doc.year !== year || doc.month !== month) {
       const check = await Jur8MonitoringService.get({
-        budjet_id,
+        main_schet_id,
         region_id,
         offset: 0,
         limit: 1,
@@ -60,18 +60,18 @@ exports.Controller = class {
   }
 
   static async delete(req, res) {
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: main_schet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const doc = await Jur8MonitoringService.getById({
       region_id,
-      budjet_id,
+      main_schet_id,
       id,
     });
     if (!doc) {
@@ -84,18 +84,18 @@ exports.Controller = class {
   }
 
   static async getById(req, res) {
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: main_schet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const result = await Jur8MonitoringService.getById({
       region_id,
-      budjet_id,
+      main_schet_id,
       isdeleted: true,
       id,
     });
@@ -108,11 +108,11 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, budjet_id } = req.query;
+    const { page, limit, main_schet_id } = req.query;
 
     const offset = (page - 1) * limit;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: main_schet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -138,17 +138,17 @@ exports.Controller = class {
 
   static async create(req, res) {
     const user_id = req.user.id;
-    const { budjet_id } = req.query;
+    const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
     const { childs, year, month } = req.body;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: main_schet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
 
     const check = await Jur8MonitoringService.get({
-      budjet_id,
+      main_schet_id,
       region_id,
       offset: 0,
       limit: 1,
@@ -181,11 +181,11 @@ exports.Controller = class {
 
   static async getData(req, res) {
     const region_id = req.user.region_id;
-    const { budjet_id, year, month } = req.query;
+    const { main_schet_id, year, month } = req.query;
 
     const date = HelperFunctions.getDate({ year, month });
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
+    const budjet = await BudjetService.getById({ id: main_schet_id });
     if (!budjet) {
       return res.error(req.i18n.t("budjetNotFound"), 404);
     }
@@ -201,7 +201,7 @@ exports.Controller = class {
       schets: schets.data,
       from: date[0],
       to: date[1],
-      budjet_id,
+      main_schet_id,
     });
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);

@@ -230,6 +230,7 @@ exports.Controller = class {
     }
 
     const response = await Jur7RsxodService.delete({
+      ...req.query,
       id,
       old_data: data,
       region_id,

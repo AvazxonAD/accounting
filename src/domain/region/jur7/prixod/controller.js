@@ -463,11 +463,12 @@ exports.Controller = class {
     });
 
     const result = await PrixodJur7Service.deleteDoc({
+      ...old_data,
+      ...req.query,
       id,
       region_id,
       user_id,
       jur_schets,
-      ...old_data,
       old_data,
     });
 
