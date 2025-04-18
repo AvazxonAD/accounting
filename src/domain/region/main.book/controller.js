@@ -188,7 +188,7 @@ exports.Controller = class {
       region_id,
     });
 
-    if (first.id === id) {
+    if (first?.id === id) {
       return res.error(req.i18n.t("validationError"), 400);
     }
 
@@ -270,7 +270,7 @@ exports.Controller = class {
     });
 
     for (let doc of data) {
-      if (doc.id === first.id) {
+      if (doc.id === first?.id) {
         doc.first = true;
       } else {
         doc.first = false;
@@ -312,7 +312,7 @@ exports.Controller = class {
       region_id,
     });
 
-    if (data.id === first.id) {
+    if (data.id === first?.id) {
       data.first = true;
     } else {
       data.first = false;

@@ -223,7 +223,7 @@ exports.Jur8MonitoringDB = class {
       JOIN regions r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      WHERE m.spravochnik_budjet_name_id = $1
+      WHERE m.id = $1
         AND d.isdeleted = false
         AND d.doc_date BETWEEN $2 AND $3
         AND op.schet = ANY($4)
@@ -248,7 +248,7 @@ exports.Jur8MonitoringDB = class {
       JOIN regions r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      WHERE m.spravochnik_budjet_name_id = $1
+      WHERE m.id = $1
         AND d.isdeleted = false
         AND d.doc_date BETWEEN $2 AND $3
         AND op.schet = ANY($4)
@@ -262,20 +262,20 @@ exports.Jur8MonitoringDB = class {
         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         d.opisanie,
         ch.id AS doc_id,
-        op.schet,
+        ch.debet_schet AS schet,
         ch.summa::FLOAT,
         d.id AS document_id,
         'document_prixod_jur7' AS type_doc,
-        rsch.schet AS rasxod_schet
+        ch.kredit_schet AS rasxod_schet
       FROM document_prixod_jur7 d 
-      JOIN document_prixod_jur7 ch ON ch.document_prixod_jur7_id  = d.id
+      JOIN document_prixod_jur7_child ch ON ch.document_prixod_jur7_id  = d.id
       JOIN users u ON u.id = d.user_id
       JOIN regions r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
-      WHERE m.spravochnik_budjet_name_id = $1
+      WHERE m.id = $1
         AND d.isdeleted = false
         AND d.doc_date BETWEEN $2 AND $3
-        AND op.schet = ANY($4)
+        AND ch.debet_schet = ANY($4)
         AND r.id = $5
         AND m.isdeleted = false
     `;

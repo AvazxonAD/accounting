@@ -441,7 +441,7 @@ exports.MainBookDB = class {
           d.year,
           d.month,
           d.main_schet_id,
-          m.account_number,,
+          m.account_number,
           d.accept_user_id,
           ua.fio AS                 accept_user_fio,
           ua.login AS               accept_user_login
@@ -490,7 +490,7 @@ exports.MainBookDB = class {
         d.year,
         d.month,
         d.main_schet_id,
-        m.account_number,,
+        m.account_number,
         d.accept_user_id,
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login

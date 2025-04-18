@@ -2,6 +2,7 @@ const { BudjetService } = require("@budjet/service");
 const { Jur8MonitoringService } = require(`./service`);
 const { RegionJur8SchetsService } = require(`@region_prixod_schets/service`);
 const { HelperFunctions } = require("@helper/functions");
+const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
   static async update(req, res) {
@@ -11,10 +12,7 @@ exports.Controller = class {
     const { childs, year, month } = req.body;
     const user_id = req.user.id;
 
-    const budjet = await BudjetService.getById({ id: main_schet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const doc = await Jur8MonitoringService.getById({
       region_id,
@@ -64,10 +62,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: main_schet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const doc = await Jur8MonitoringService.getById({
       region_id,
@@ -88,10 +83,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: main_schet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const result = await Jur8MonitoringService.getById({
       region_id,
@@ -112,10 +104,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const budjet = await BudjetService.getById({ id: main_schet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const { data, summa, total } = await Jur8MonitoringService.get({
       region_id,
@@ -142,10 +131,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { childs, year, month } = req.body;
 
-    const budjet = await BudjetService.getById({ id: main_schet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const check = await Jur8MonitoringService.get({
       main_schet_id,
@@ -185,10 +171,7 @@ exports.Controller = class {
 
     const date = HelperFunctions.getDate({ year, month });
 
-    const budjet = await BudjetService.getById({ id: main_schet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const schets = await RegionJur8SchetsService.get({
       region_id,
