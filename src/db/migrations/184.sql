@@ -2,10 +2,10 @@ DELETE FROM
     main_book_child;
 
 DELETE FROM
-    main_book;
+    main_book_saldo;
 
 DELETE FROM
-    main_book_saldo;
+    main_book;
 
 ALTER TABLE
     main_book
