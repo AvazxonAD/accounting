@@ -8,10 +8,6 @@ const { TypeOperatsiiService } = require("@type_operatsii/service");
 const { KassaRasxodService } = require("./service");
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
-const { OrganizationService } = require("@organization/service");
-const { ContractService } = require("@contract/service");
-const { AccountNumberService } = require("@account_number/service");
-const { GaznaService } = require("@gazna/service");
 const { ValidatorFunctions } = require("@helper/database.validator");
 
 exports.Controller = class {
@@ -19,7 +15,17 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const { id_podotchet_litso, childs, doc_date } = req.body;
+    const {
+      id_podotchet_litso,
+      childs,
+      doc_date,
+      organ_id,
+      contract_id,
+      contract_grafik_id,
+      organ_account_id,
+      organ_gazna_id,
+      type,
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -37,6 +43,42 @@ exports.Controller = class {
       if (!podotchet) {
         return res.error(req.i18n.t("podotchetNotFound"), 404);
       }
+    }
+
+    if (
+      (type === "organ" && !organ_id) ||
+      (type === "podotchet" && !id_podotchet_litso)
+    ) {
+      return res.error(req.i18n.t("validationError", 400));
+    }
+
+    if (organ_id) {
+      await ValidatorFunctions.organization({ region_id, organ_id });
+    }
+
+    if (!contract_id && contract_grafik_id) {
+      return res.error(req.i18n.t("contractNotFound"), 404);
+    }
+
+    if (contract_id) {
+      await ValidatorFunctions.contract({ region_id, contract_id, organ_id });
+
+      if (contract_grafik_id) {
+        const grafik = contract.grafiks.find(
+          (item) => item.id === contract_grafik_id
+        );
+        if (!grafik) {
+          return res.error(req.i18n.t("grafikNotFound"), 404);
+        }
+      }
+    }
+
+    if (organ_account_id) {
+      await ValidatorFunctions.accountNumber({ organ_id, organ_account_id });
+    }
+
+    if (organ_gazna_id) {
+      await ValidatorFunctions.gaznaNumber({ organ_id, organ_gazna_id });
     }
 
     const operatsiis = [];

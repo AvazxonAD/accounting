@@ -65,6 +65,30 @@ exports.MainBookService = class {
     return result;
   }
 
+  static async getJur3PrixodDocs(data) {
+    const result = await MainBookDB.getJur3PrixodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
+  static async getJur3RasxodDocs(data) {
+    const result = await MainBookDB.getJur3RasxodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
   static async cleanData(data) {
     const ids = data.data.map((item) => item.id);
 
@@ -418,7 +442,7 @@ exports.MainBookService = class {
 
   static async getJur3Data(data) {
     const jur3_schets = data.jur3AndJur4Schets
-      .filter((item) => item.type === "jur3")
+      .filter((item) => item.type === "159" || item.type === "152")
       .map((item) => item.schet);
 
     const rasxod_data = await MainBookDB.getJur3Rasxod(

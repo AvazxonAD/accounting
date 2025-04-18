@@ -60,11 +60,10 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         op.schet AS debet_schet,
         m.jur1_schet AS kredit_schet,
-        m.main_schet_id AS main_schet_id,
         'kassa_rasxod' AS type
       FROM kassa_rasxod d
       JOIN kassa_rasxod_child ch ON d.id = ch.kassa_rasxod_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -72,7 +71,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.main_schet_id = $3
+        AND m.id = $3
         AND op.schet = $4
         AND r.id = $5
     `;
@@ -93,11 +92,10 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         m.jur1_schet AS kredit_schet,
         op.schet AS debet_schet,
-        m.main_schet_id AS main_schet_id,
         'kassa_rasxod' AS type
       FROM kassa_rasxod d
       JOIN kassa_rasxod_child ch ON d.id = ch.kassa_rasxod_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -105,7 +103,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.main_schet_id = $3
+        AND m.id = $3
         AND m.jur1_schet = $4
         AND r.id = $5
     `;
@@ -126,11 +124,10 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         op.schet AS debet_schet,
         m.jur2_schet AS kredit_schet,
-        m.main_schet_id AS main_schet_id,
         'bank_rasxod' AS type
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -138,7 +135,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.main_schet_id = $3
+        AND m.id = $3
         AND op.schet = $4
         AND r.id = $5
     `;
@@ -159,11 +156,10 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         m.jur2_schet AS kredit_schet,
         op.schet AS debet_schet,
-        m.main_schet_id AS main_schet_id,
         'bank_rasxod' AS type
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -171,7 +167,122 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.main_schet_id = $3
+        AND m.id = $3
+        AND m.jur2_schet = $4
+        AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur3PrixodDocs(params) {
+    const query = `--sql
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'akt' AS type
+      FROM bajarilgan_ishlar_jur3_child AS ch
+      JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND op.schet = $4
+        AND r.id = $5
+        
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS kredit_schet,
+          m.jur2_schet AS debet_schet,
+          'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND op.schet = $4
+        AND r.id = $5
+
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          ch.kredit_schet,
+          ch.debet_schet,
+          'jur7 prixod' AS type
+      FROM document_prixod_jur7_child ch
+      JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND ch.kredit_schet = $4
+        AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur3RasxodDocs(params) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        d.opisanie,
+        d.main_schet_id,
+        ch.summa::FLOAT,
+        m.jur2_schet AS kredit_schet,
+        op.schet AS debet_schet,
+        'bank_rasxod' AS type
+      FROM bank_rasxod d
+      JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
         AND m.jur2_schet = $4
         AND r.id = $5
     `;
@@ -233,7 +344,6 @@ exports.MainBookDB = class {
       ORDER BY id 
       LIMIT 1
     `;
-    console.log(params);
 
     const result = await db.query(query, params);
 
@@ -245,10 +355,10 @@ exports.MainBookDB = class {
       SELECT
         d.*
       FROM jur_schets d
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = m.user_id
       JOIN regions r ON r.id = u.region_id
-      WHERE m.main_schet_id = $1
+      WHERE m.id = $1
         AND d.isdeleted = false
     `;
 
@@ -307,19 +417,15 @@ exports.MainBookDB = class {
   static async getMainSchets(params) {
     const query = `--sql
       SELECT
-        m.main_schet_id,
+        m.id,
         m.jur1_schet,
-        m.jur2_schet,
-        m.jur3_schet,
-        m.jur4_schet,
-        m.jur5_schet,
-        m.jur7_schet
+        m.jur2_schet
       FROM main_schet m
       JOIN users u ON u.id = m.user_id
       JOIN regions r ON r.id = u.region_id  
       WHERE m.isdeleted = false
         AND r.id = $1
-        AND m.main_schet_id = $2
+        AND m.id = $2
     `;
 
     const result = await db.query(query, params);
@@ -458,7 +564,7 @@ exports.MainBookDB = class {
           ua.fio AS                 accept_user_fio,
           ua.login AS               accept_user_login
         FROM main_book d
-        JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+        JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
         LEFT JOIN users ua ON ua.id = d.accept_user_id
         JOIN regions r ON r.id = u.region_id
@@ -507,7 +613,7 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
@@ -537,7 +643,7 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
@@ -684,6 +790,7 @@ exports.MainBookDB = class {
       date_filter = `AND d.doc_date ${operator} $${params.length}`;
     }
 
+    console.log(params);
     const query = `--sql
       SELECT 
           COALESCE(SUM(ch.summa), 0)::FLOAT AS  summa,
@@ -696,11 +803,11 @@ exports.MainBookDB = class {
       JOIN jur_schets AS own ON own.id = d.schet_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.main_schet_id = $2
+        AND m.id = $2
         AND own.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet,
@@ -718,11 +825,11 @@ exports.MainBookDB = class {
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.main_schet_id = $2
+        AND m.id = $2
         AND op.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet, m.jur2_schet
@@ -783,11 +890,11 @@ exports.MainBookDB = class {
       JOIN regions r ON u.region_id = r.id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
       JOIN jur_schets own ON own.id = d.schet_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.main_schet_id = $2
+        AND m.id = $2
         AND own.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet, own.schet
@@ -805,11 +912,11 @@ exports.MainBookDB = class {
       LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.main_schet_id = $2
+        AND m.id = $2
         AND op.schet = ANY($3)
         AND p.id IS NOT NULL
         ${date_filter}
@@ -828,11 +935,11 @@ exports.MainBookDB = class {
       JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.main_schet_id = $2
+        AND m.id = $2
         AND op.schet = ANY($3)
         AND p.id IS NOT NULL
         ${date_filter}
