@@ -48,12 +48,12 @@ exports.Controller = class {
     // jur3
     if (type_id === 3) {
       if (prixod === "true") {
-        docs = await MainBookService.getJur1PrixodDocs({
+        docs = await MainBookService.getJur3PrixodDocs({
           ...req.query,
           region_id,
         });
       } else if (rasxod === "true") {
-        docs = await MainBookService.getJur1RasxodDocs({
+        docs = await MainBookService.getJur3RasxodDocs({
           ...req.query,
           region_id,
         });
