@@ -7,6 +7,7 @@ const { ProductService } = require("@product/service");
 const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
 const { AccountNumberService } = require("@account_number/service");
+const { GaznaService } = require("@gazna/service");
 
 exports.ValidatorFunctions = class {
   static async responsibleJur7(data) {
@@ -90,7 +91,17 @@ exports.ValidatorFunctions = class {
       id: data.organ_account_id,
     });
     if (!account_number) {
-      throw new ErrorResponse("contractNotFound", 404);
+      throw new ErrorResponse("account_number_not_found", 404);
+    }
+  }
+
+  static async gaznaNumber(data) {
+    const gazna = await GaznaService.getById({
+      organ_id: data.organ_id,
+      id: data.organ_gazna_id,
+    });
+    if (!gazna) {
+      throw new ErrorResponse("gazna_not_found", 404);
     }
   }
 };

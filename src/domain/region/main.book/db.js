@@ -27,7 +27,7 @@ exports.MainBookDB = class {
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND ( (year > $2) OR (year = $2 AND month > $3))
-        AND m.id = $4
+        AND m.main_schet_id = $4
         AND m.isdeleted = false
       ORDER BY id
     `;
@@ -60,11 +60,11 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         op.schet AS debet_schet,
         m.jur1_schet AS kredit_schet,
-        m.id AS main_schet_id,
+        m.main_schet_id AS main_schet_id,
         'kassa_rasxod' AS type
       FROM kassa_rasxod d
       JOIN kassa_rasxod_child ch ON d.id = ch.kassa_rasxod_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -72,7 +72,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
+        AND m.main_schet_id = $3
         AND op.schet = $4
         AND r.id = $5
     `;
@@ -93,11 +93,11 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         m.jur1_schet AS kredit_schet,
         op.schet AS debet_schet,
-        m.id AS main_schet_id,
+        m.main_schet_id AS main_schet_id,
         'kassa_rasxod' AS type
       FROM kassa_rasxod d
       JOIN kassa_rasxod_child ch ON d.id = ch.kassa_rasxod_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -105,7 +105,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
+        AND m.main_schet_id = $3
         AND m.jur1_schet = $4
         AND r.id = $5
     `;
@@ -126,11 +126,11 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         op.schet AS debet_schet,
         m.jur2_schet AS kredit_schet,
-        m.id AS main_schet_id,
+        m.main_schet_id AS main_schet_id,
         'bank_rasxod' AS type
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -138,7 +138,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
+        AND m.main_schet_id = $3
         AND op.schet = $4
         AND r.id = $5
     `;
@@ -159,11 +159,11 @@ exports.MainBookDB = class {
         ch.summa::FLOAT,
         m.jur2_schet AS kredit_schet,
         op.schet AS debet_schet,
-        m.id AS main_schet_id,
+        m.main_schet_id AS main_schet_id,
         'bank_rasxod' AS type
       FROM bank_rasxod d
       JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
@@ -171,7 +171,7 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
+        AND m.main_schet_id = $3
         AND m.jur2_schet = $4
         AND r.id = $5
     `;
@@ -227,12 +227,13 @@ exports.MainBookDB = class {
       FROM main_book m 
       JOIN users u ON u.id = m.user_id
       JOIN regions r ON r.id = u.region_id
-      WHERE m.id = $1
+      WHERE m.main_schet_id = $1
         AND r.id = $2
         AND m.isdeleted = false
       ORDER BY id 
       LIMIT 1
     `;
+    console.log(params);
 
     const result = await db.query(query, params);
 
@@ -244,10 +245,10 @@ exports.MainBookDB = class {
       SELECT
         d.*
       FROM jur_schets d
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN users u ON u.id = m.user_id
       JOIN regions r ON r.id = u.region_id
-      WHERE m.id = $1
+      WHERE m.main_schet_id = $1
         AND d.isdeleted = false
     `;
 
@@ -306,7 +307,7 @@ exports.MainBookDB = class {
   static async getMainSchets(params) {
     const query = `--sql
       SELECT
-        m.id,
+        m.main_schet_id,
         m.jur1_schet,
         m.jur2_schet,
         m.jur3_schet,
@@ -318,7 +319,7 @@ exports.MainBookDB = class {
       JOIN regions r ON r.id = u.region_id  
       WHERE m.isdeleted = false
         AND r.id = $1
-        AND m.id = $2
+        AND m.main_schet_id = $2
     `;
 
     const result = await db.query(query, params);
@@ -457,7 +458,7 @@ exports.MainBookDB = class {
           ua.fio AS                 accept_user_fio,
           ua.login AS               accept_user_login
         FROM main_book d
-        JOIN main_schet m ON m.id = d.main_schet_id
+        JOIN main_schet m ON m.main_schet_id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
         LEFT JOIN users ua ON ua.id = d.accept_user_id
         JOIN regions r ON r.id = u.region_id
@@ -506,7 +507,7 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
@@ -536,7 +537,7 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
@@ -695,11 +696,11 @@ exports.MainBookDB = class {
       JOIN jur_schets AS own ON own.id = d.schet_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.id = $2
+        AND m.main_schet_id = $2
         AND own.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet,
@@ -717,11 +718,11 @@ exports.MainBookDB = class {
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.id = $2
+        AND m.main_schet_id = $2
         AND op.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet, m.jur2_schet
@@ -782,11 +783,11 @@ exports.MainBookDB = class {
       JOIN regions r ON u.region_id = r.id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
       JOIN jur_schets own ON own.id = d.schet_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.id = $2
+        AND m.main_schet_id = $2
         AND own.schet = ANY($3)
         ${date_filter}
       GROUP BY op.schet, own.schet
@@ -804,11 +805,11 @@ exports.MainBookDB = class {
       LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.id = $2
+        AND m.main_schet_id = $2
         AND op.schet = ANY($3)
         AND p.id IS NOT NULL
         ${date_filter}
@@ -827,11 +828,11 @@ exports.MainBookDB = class {
       JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
-      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN main_schet m ON m.main_schet_id = d.main_schet_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND r.id = $1
-        AND m.id = $2
+        AND m.main_schet_id = $2
         AND op.schet = ANY($3)
         AND p.id IS NOT NULL
         ${date_filter}

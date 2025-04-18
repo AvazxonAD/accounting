@@ -266,23 +266,11 @@ exports.Controller = class {
     }
 
     if (organ_account_id) {
-      const account_number = await AccountNumberService.getById({
-        organ_id,
-        id: organ_account_id,
-      });
-      if (!account_number) {
-        return res.error(req.i18n.t("account_number_not_found"), 404);
-      }
+      await ValidatorFunctions.accountNumber({ organ_id, organ_account_id });
     }
 
     if (organ_gazna_id) {
-      const gazna = await GaznaService.getById({
-        organ_id,
-        id: organ_gazna_id,
-      });
-      if (!gazna) {
-        return res.error(req.i18n.t("gazna_not_found"), 404);
-      }
+      await ValidatorFunctions.gaznaNumber({ organ_id, organ_gazna_id });
     }
 
     const operatsiis = [];
