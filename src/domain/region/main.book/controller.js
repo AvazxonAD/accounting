@@ -438,6 +438,11 @@ exports.Controller = class {
         });
       }
 
+      // jur3a
+      if (type.id === 11) {
+        type.sub_childs = JSON.parse(JSON.stringify(schets));
+      }
+
       // jurnal 4
       if (type.id === 4) {
         type.sub_childs = await MainBookService.getJur4Data({

@@ -12,6 +12,7 @@ const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
 const { AccountNumberService } = require("@account_number/service");
 const { GaznaService } = require("@gazna/service");
+const { ValidatorFunctions } = require("@helper/database.validator");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -197,7 +198,17 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const { id_podotchet_litso, childs, doc_date } = req.body;
+    const {
+      id_podotchet_litso,
+      childs,
+      doc_date,
+      organ_id,
+      contract_id,
+      contract_grafik_id,
+      organ_account_id,
+      organ_gazna_id,
+      type,
+    } = req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -223,6 +234,54 @@ exports.Controller = class {
       });
       if (!podotchet) {
         return res.error(req.i18n.t("podotchetNotFound"), 404);
+      }
+    }
+
+    if (
+      (type === "organ" && !organ_id) ||
+      (type === "podotchet" && !id_podotchet_litso)
+    ) {
+      return res.error(req.i18n.t("validationError", 400));
+    }
+
+    if (organ_id) {
+      await ValidatorFunctions.organization({ region_id, organ_id });
+    }
+
+    if (!contract_id && contract_grafik_id) {
+      return res.error(req.i18n.t("contractNotFound"), 404);
+    }
+
+    if (contract_id) {
+      await ValidatorFunctions.contract({ region_id, contract_id, organ_id });
+
+      if (contract_grafik_id) {
+        const grafik = contract.grafiks.find(
+          (item) => item.id === contract_grafik_id
+        );
+        if (!grafik) {
+          return res.error(req.i18n.t("grafikNotFound"), 404);
+        }
+      }
+    }
+
+    if (organ_account_id) {
+      const account_number = await AccountNumberService.getById({
+        organ_id,
+        id: organ_account_id,
+      });
+      if (!account_number) {
+        return res.error(req.i18n.t("account_number_not_found"), 404);
+      }
+    }
+
+    if (organ_gazna_id) {
+      const gazna = await GaznaService.getById({
+        organ_id,
+        id: organ_gazna_id,
+      });
+      if (!gazna) {
+        return res.error(req.i18n.t("gazna_not_found"), 404);
       }
     }
 

@@ -27,7 +27,16 @@ exports.Controller = class {
       organ_account_id,
       organ_gazna_id,
       doc_date,
+      type,
     } = req.body;
+
+    if (type === "organ" && !organ_id) {
+      return res.error(req.i18n.t("validationError", 400));
+    }
+
+    if (type === "podotchet" && !id_podotchet_litso) {
+      return res.error(req.i18n.t("validationError", 400));
+    }
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -273,6 +282,7 @@ exports.Controller = class {
       contract_grafik_id,
       organ_account_id,
       organ_gazna_id,
+      type,
     } = req.body;
 
     const main_schet = await MainSchetService.getById({
@@ -300,6 +310,14 @@ exports.Controller = class {
       if (!podotchet) {
         return res.error(req.i18n.t("podotchetNotFound"), 404);
       }
+    }
+
+    if (type === "organ" && !organ_id) {
+      return res.error(req.i18n.t("validationError", 400));
+    }
+
+    if (type === "podotchet" && !id_podotchet_litso) {
+      return res.error(req.i18n.t("validationError", 400));
     }
 
     if (organ_id) {

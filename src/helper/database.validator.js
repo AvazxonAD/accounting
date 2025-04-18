@@ -4,6 +4,9 @@ const { BudjetService } = require(`@budjet/service`);
 const { ResponsibleService } = require("@responsible/service");
 const { GroupService } = require("@group/service");
 const { ProductService } = require("@product/service");
+const { OrganizationService } = require("@organization/service");
+const { ContractService } = require("@contract/service");
+const { AccountNumberService } = require("@account_number/service");
 
 exports.ValidatorFunctions = class {
   static async responsibleJur7(data) {
@@ -58,5 +61,36 @@ exports.ValidatorFunctions = class {
     }
 
     return budjet;
+  }
+
+  static async organization(data) {
+    const organization = await OrganizationService.getById({
+      region_id: data.region_id,
+      id: data.organ_id,
+    });
+    if (!organization) {
+      throw new ErrorResponse("organizationNotFound", 404);
+    }
+  }
+
+  static async contract(data) {
+    const contract = await ContractService.getById({
+      region_id: data.region_id,
+      id: data.contract_id,
+      organ_id: data.organ_id,
+    });
+    if (!contract) {
+      throw new ErrorResponse("contractNotFound", 404);
+    }
+  }
+
+  static async accountNumber(data) {
+    const account_number = await AccountNumberService.getById({
+      organ_id: data.organ_id,
+      id: data.organ_account_id,
+    });
+    if (!account_number) {
+      throw new ErrorResponse("contractNotFound", 404);
+    }
   }
 };

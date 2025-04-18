@@ -265,6 +265,17 @@ exports.MainBookDB = class {
           0 AS rasxod
       FROM spravochnik_operatsii 
       WHERE isdeleted = false
+         AND (
+            type_schet = 'akt' OR 
+            type_schet = 'bank_prixod' OR 
+            type_schet = 'avans_otchet' OR 
+            type_schet = 'kassa_prixod' OR 
+            type_schet = 'kassa_rasxod' OR 
+            type_schet = 'jur3' OR 
+            type_schet = 'jur4' OR 
+            type_schet = 'bank_rasxod' OR 
+            type_schet = 'show_service'
+          )
       
       UNION
       
