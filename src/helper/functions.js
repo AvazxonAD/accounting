@@ -70,6 +70,14 @@ exports.HelperFunctions = class {
     });
   }
 
+  static getLastDay(data) {
+    const lastDay = new Date(data.year, data.month, 0);
+    const yyyy = lastDay.getFullYear();
+    const mm = String(lastDay.getMonth() + 1).padStart(2, "0");
+    const dd = String(lastDay.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   static returnDate(data) {
     return `${data.year}-${String(data.month).padStart(2, "0")}-01`;
   }
@@ -82,6 +90,7 @@ exports.HelperFunctions = class {
   }
 
   static returnLocalDate(date) {
+    date = new Date(date);
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear().toString();

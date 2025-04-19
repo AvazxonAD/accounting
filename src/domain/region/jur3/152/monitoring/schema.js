@@ -1,6 +1,23 @@
 const Joi = require("joi");
 
 exports.Monitoring159Schema = class {
+  static aktSverka() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().required().min(1).integer(),
+        budjet_id: Joi.number().required().min(1).integer(),
+        report_title_id: Joi.number().required().min(1).integer(),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        schet_id: Joi.number().min(1).integer().required(),
+        excel: Joi.string()
+          .trim()
+          .pattern(/^(true|false)$/)
+          .allow("", null),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static prixodReport() {
     return Joi.object({
       query: Joi.object({

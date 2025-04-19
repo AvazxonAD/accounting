@@ -20,11 +20,6 @@ exports.REPORT_TYPE = {
   days_report: "daysReport",
 };
 
-exports.JURNAL_SCHETS = [
-  "jur1_schet",
-  "jur2_schet",
-  "jur3_schet",
-  "jur4_schet",
-];
+exports.JURNAL_SCHETS = ["jur1_schet", "jur2_schet"];
 
 exports.SALDO_PASSWORD = "smart-base-e-moliya-fvv";

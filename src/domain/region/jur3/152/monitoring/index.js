@@ -15,6 +15,11 @@ const router = Router();
 router
   .get("/", validator(Controller.monitoring, monitoringSchema))
   .get("/cap", validator(Controller.cap, capSchema))
+  .get(
+    "/akt/sverka",
+    validator(Controller.aktSverka, Monitoring159Schema.aktSverka())
+  )
+
   // old
   .get(
     "/prixod",
@@ -22,6 +27,5 @@ router
   )
   .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
   .get("/order", validator(Controller.consolidated, consolidatedSchema));
-// .get("/akt/sverka", validator(Controller.aktSverka, aktSverkaSchema));
 
 module.exports = router;

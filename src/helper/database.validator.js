@@ -44,15 +44,42 @@ exports.ValidatorFunctions = class {
   }
 
   static async mainSchet(data) {
+    let schet = null;
     const main_schet = await MainSchetService.getById({
       id: data.main_schet_id,
       region_id: data.region_id,
     });
-    if (!main_schet) {
+
+    if (data.schet_id) {
+      if (data.type === "159") {
+        schet = main_schet.jur3_schets_159.find(
+          (item) => item.id === data.schet_id
+        );
+        if (!schet) {
+          schet_check = false;
+        }
+      } else if (data.type === "152") {
+        schet = main_schet.jur3_schets_152.find(
+          (item) => item.id === data.schet_id
+        );
+        if (!schet) {
+          schet_check = false;
+        }
+      } else if (data.type === "jur4") {
+        schet = main_schet.jur4_schets.find(
+          (item) => item.id === data.schet_id
+        );
+        if (!schet) {
+          schet_check = false;
+        }
+      }
+    }
+
+    if (!main_schet || (data.schet_id && !schet)) {
       throw new ErrorResponse("mainSchetNotFound", 404);
     }
 
-    return main_schet;
+    return { main_schet, schet };
   }
 
   static async budjet(data) {
