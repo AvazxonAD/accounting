@@ -300,28 +300,105 @@ exports.MainBookDB = class {
 
   static async getJur3RasxodDocs(params) {
     const query = `--sql
-      SELECT
-        d.id,
-        d.doc_num,
-        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
-        d.opisanie,
-        d.main_schet_id,
-        ch.summa::FLOAT,
-        m.jur2_schet AS kredit_schet,
-        op.schet AS debet_schet,
-        'bank_rasxod' AS type
-      FROM bank_rasxod d
-      JOIN bank_rasxod_child ch ON d.id = ch.id_bank_rasxod
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'akt' AS type
+      FROM bajarilgan_ishlar_jur3_child AS ch
+      JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
       JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND own.schet = $4
+        AND r.id = $5
+        
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur2_schet AS debet_schet,
+          op.schet AS kredit_schet,
+          'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
       JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND d.main_schet_id = $3
+        AND op.schet = $4
+        AND r.id = $5
+
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur1_schet AS debet_schet,
+          op.schet AS kredit_schet,
+          'kassa_prixod' AS type
+      FROM kassa_prixod_child ch
+      JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND d.main_schet_id = $3
+        AND op.schet = $4
+        AND r.id = $5
+
+      UNION ALL 
+
+      SELECT
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa_s_nds::FLOAT AS summa,
+          ch.debet_schet,
+          ch.kredit_schet,
+          'jur7_prixod' AS type
+      FROM document_prixod_jur7_child ch
+      JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
       JOIN users AS u ON d.user_id = u.id
       JOIN regions AS r ON r.id = u.region_id
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
-        AND m.jur2_schet = $4
+        AND d.main_schet_id = $3
+        AND ch.kredit_schet = $4
         AND r.id = $5
     `;
 

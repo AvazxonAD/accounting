@@ -3,7 +3,7 @@ const { MainBookDB } = require("./db");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
-const { HelperFunctions } = require(`@helper/functions`);
+const { HelperFunctions, sum } = require(`@helper/functions`);
 
 exports.MainBookService = class {
   static now = new Date();

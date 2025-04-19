@@ -110,7 +110,12 @@ exports.Controller = class {
       }
     }
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, docs);
+    let summa = 0;
+    for (let doc of docs) {
+      summa += doc.summa;
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, { summa }, docs);
   }
 
   static async cleanData(req, res) {
