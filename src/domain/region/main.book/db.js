@@ -187,7 +187,7 @@ exports.MainBookDB = class {
           d.main_schet_id,
           ch.summa::FLOAT,
           op.schet AS debet_schet,
-          m.jur2_schet AS kredit_schet,
+          own.schet AS kredit_schet,
           'akt' AS type
       FROM bajarilgan_ishlar_jur3_child AS ch
       JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
@@ -203,9 +203,10 @@ exports.MainBookDB = class {
         AND m.id = $3
         AND op.schet = $4
         AND r.id = $5
+        AND own.schet = ANY($6)
+        
+      UNION ALL
       
-      UNION ALL 
-  
       SELECT 
           d.id,
           d.doc_num,
@@ -214,8 +215,8 @@ exports.MainBookDB = class {
           d.main_schet_id,
           ch.summa::FLOAT,
           op.schet AS debet_schet,
-          m.jur2_schet AS kredit_schet,
-          'bank_rasxod' AS type
+          own.schet AS kredit_schet,
+          'show_service' AS type
       FROM kursatilgan_hizmatlar_jur152_child AS ch
       JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
@@ -230,13 +231,19 @@ exports.MainBookDB = class {
         AND m.id = $3
         AND op.schet = $4
         AND r.id = $5
-        
+        AND own.schet = ANY($6)
+
       UNION ALL 
 
       SELECT 
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-          m.jur2_schet AS schet,
-          op.schet AS own,
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur2_schet AS debet_schet,
+          op.schet AS kredit_schet,
           'bank_prixod' AS type
       FROM bank_prixod_child ch
       JOIN bank_prixod d ON d.id = ch.id_bank_prixod
@@ -248,16 +255,22 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
-        AND op.schet = $4
+        AND d.main_schet_id = $3
+        AND m.jur2_schet = $4
         AND r.id = $5
+        AND op.schet = ANY($6)
 
       UNION ALL 
 
       SELECT 
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-          m.jur1_schet AS schet,
-          op.schet AS own,
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur1_schet AS debet_schet,
+          op.schet AS kredit_schet,
           'kassa_prixod' AS type
       FROM kassa_prixod_child ch
       JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
@@ -269,16 +282,22 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
-        AND op.schet = $4
+        AND d.main_schet_id = $3
+        AND m.jur1_schet = $4
         AND r.id = $5
+        AND op.schet = ANY($6)
 
       UNION ALL 
 
-      SELECT 
-          COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-          ch.debet_schet AS schet,
-          ch.kredit_schet AS own,
+      SELECT
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa_s_nds::FLOAT AS summa,
+          ch.debet_schet,
+          ch.kredit_schet,
           'jur7_prixod' AS type
       FROM document_prixod_jur7_child ch
       JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
@@ -288,9 +307,10 @@ exports.MainBookDB = class {
         AND ch.isdeleted = false
         AND EXTRACT(YEAR FROM d.doc_date) = $1
         AND EXTRACT(MONTH FROM d.doc_date) = $2
-        AND m.id = $3
-        AND op.schet = $4
+        AND d.main_schet_id = $3
+        AND ch.debet_schet = $4
         AND r.id = $5
+        AND ch.kredit_schet = ANY($6)
     `;
 
     const result = await db.query(query, params);
@@ -325,6 +345,33 @@ exports.MainBookDB = class {
         AND own.schet = $4
         AND r.id = $5
         
+      UNION ALL
+      
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'show_service' AS type
+      FROM kursatilgan_hizmatlar_jur152_child AS ch
+      JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND own.schet = $4
+        AND r.id = $5
+
       UNION ALL 
 
       SELECT 
@@ -556,6 +603,12 @@ exports.MainBookDB = class {
 
   static async deleteChildByParentId(params, client) {
     const query = `UPDATE main_book_child SET isdeleted = true WHERE parent_id = $1`;
+
+    await client.query(query, params);
+  }
+
+  static async unblockSaldo(params, client) {
+    const query = `UPDATE main_book_saldo SET isdeleted = true WHERE main_book_id = $1`;
 
     await client.query(query, params);
   }

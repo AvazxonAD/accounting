@@ -66,12 +66,17 @@ exports.MainBookService = class {
   }
 
   static async getJur3PrixodDocs(data) {
+    const jur3_schets = data.jur3AndJur4Schets
+      .filter((item) => item.type === "152" || item.type === "159")
+      .map((item) => item.schet);
+
     const result = await MainBookDB.getJur3PrixodDocs([
       data.year,
       data.month,
       data.main_schet_id,
       data.schet,
       data.region_id,
+      jur3_schets,
     ]);
 
     return result;
@@ -250,6 +255,8 @@ exports.MainBookService = class {
           parent_id: doc.id,
         });
       }
+
+      await MainBookDB.unblockSaldo([data.id], client);
 
       const check = await this.checkLarge({ ...data, client });
 

@@ -7,9 +7,13 @@ const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
   static async getDocs(req, res) {
-    const { type_id, prixod, rasxod } = req.query;
+    const { type_id, main_schet_id, prixod, rasxod } = req.query;
     const region_id = req.user.region_id;
     let docs = [];
+
+    const jur3AndJur4Schets = await MainBookService.getJurSchets({
+      main_schet_id,
+    });
 
     if (prixod === "true" && rasxod === "true") {
       return res.error(req.i18n.t("validationError"), 400);
@@ -50,6 +54,7 @@ exports.Controller = class {
       if (prixod === "true") {
         docs = await MainBookService.getJur3PrixodDocs({
           ...req.query,
+          jur3AndJur4Schets,
           region_id,
         });
       } else if (rasxod === "true") {
