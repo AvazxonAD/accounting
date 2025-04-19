@@ -200,13 +200,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const first = await MainBookService.getCheckFirst({
+    const end = await MainBookService.getEndMainBook({
       main_schet_id,
       region_id,
     });
 
-    if (first?.id === id) {
-      return res.error(req.i18n.t("validationError"), 400);
+    if (end?.id !== id) {
+      return res.error(req.i18n.t("deleteSaldo"), 400);
     }
 
     if (data.status === 3) {
