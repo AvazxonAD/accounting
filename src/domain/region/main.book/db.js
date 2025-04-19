@@ -644,7 +644,7 @@ exports.MainBookDB = class {
             ch.summa_s_nds::FLOAT AS summa,
             ch.debet_schet,
             ch.kredit_schet,
-            'rasxod' AS type  
+            'jur7_rasxod' AS type  
         FROM document_rasxod_jur7_child ch
         JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
         JOIN users AS u ON u.id = d.user_id
@@ -668,7 +668,7 @@ exports.MainBookDB = class {
             ch.summa::FLOAT,
             ch.debet_schet,
             ch.kredit_schet,
-            'internal' AS type  
+            'jur7_internal' AS type  
         FROM document_vnutr_peremesh_jur7_child ch
         JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
         JOIN users AS u ON u.id = d.user_id
@@ -698,7 +698,7 @@ exports.MainBookDB = class {
             ch.summa::FLOAT,
             ch.debet_schet,
             ch.kredit_schet,
-            'rasxod' AS type  
+            'jur7_rasxod' AS type  
         FROM document_rasxod_jur7_child ch
         JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
         JOIN users AS u ON u.id = d.user_id
@@ -722,7 +722,7 @@ exports.MainBookDB = class {
             ch.summa::FLOAT,
             ch.debet_schet,
             ch.kredit_schet,
-            'internal' AS type  
+            'jur7_internal' AS type  
         FROM document_vnutr_peremesh_jur7_child ch
         JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
         JOIN users AS u ON u.id = d.user_id
