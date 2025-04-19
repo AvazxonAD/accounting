@@ -207,4 +207,14 @@ exports.Controller = class {
 
     return res.success(req.i18n.t("importSuccess"), 201);
   }
+
+  static async export(req, res) {
+    const region_id = req.user.region_id;
+
+    const { data, total } = await OrganizationService.get({
+      region_id,
+      offset: 0,
+      limit: 9999999,
+    });
+  }
 };
