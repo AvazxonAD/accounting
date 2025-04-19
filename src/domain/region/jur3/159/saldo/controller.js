@@ -157,6 +157,8 @@ exports.Controller = class {
       region_id,
       main_schet_id,
       schet: schet.schet,
+      year: last_date.year,
+      month: last_date.month,
       from: date[0],
       to: date[1],
       offset: 0,

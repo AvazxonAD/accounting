@@ -85,6 +85,8 @@ exports.Controller = class {
     const internal = await BankMonitoringService.getSumma({
       main_schet_id,
       region_id,
+      year: last_date.year,
+      month: last_date.month,
       from: date[0],
       to: date[1],
     });
