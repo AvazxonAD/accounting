@@ -216,5 +216,17 @@ exports.Controller = class {
       offset: 0,
       limit: 9999999,
     });
+
+    const { fileName, filePath } = await OrganizationService.export({
+      organizations: data,
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+    return res.sendFile(filePath);
   }
 };

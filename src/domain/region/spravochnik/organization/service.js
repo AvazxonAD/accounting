@@ -226,28 +226,26 @@ exports.OrganizationService = class {
     worksheet.columns = [
       { header: "ID", key: "id", width: 10 },
       { header: "Nomi", key: "name", width: 40 },
-      { header: "Schet", key: "schet", width: 30 },
-      { header: "Iznos foiz", key: "iznos_foiz", width: 30 },
-      { header: "Debet", key: "provodka_debet", width: 30 },
-      { header: "Kredit", key: "provodka_kredit", width: 30 },
-      { header: "Subschet", key: "provodka_subschet", width: 30 },
-      { header: "Gruh raqami", key: "group_number", width: 30 },
-      { header: "Rim raqami", key: "roman_numeral", width: 30 },
-      { header: "Asosiy guruh", key: "pod_group", width: 30 },
+      { header: "Bank nomi", key: "bank_klient", width: 30 },
+      { header: "Mfo", key: "mfo", width: 30 },
+      { header: "Inn", key: "inn", width: 30 },
+      { header: "Okonx", key: "okonx", width: 30 },
+      { header: "G'azna raqamlari", key: "gaznas", width: 30 },
+      { header: "Xisob raqamlari", key: "account_numbers", width: 30 },
     ];
 
-    data.forEach((item) => {
+    data.organizations.forEach((item) => {
       worksheet.addRow({
         id: item.id,
         name: item.name,
-        schet: item.schet,
-        iznos_foiz: item.iznos_foiz,
-        provodka_debet: item.provodka_debet,
-        provodka_kredit: item.provodka_kredit,
-        provodka_subschet: item.provodka_subschet,
-        group_number: item.group_number,
-        roman_numeral: item.roman_numeral,
-        pod_group: item.pod_group,
+        bank_klient: item.bank_klient,
+        mfo: item.mfo,
+        inn: item.inn,
+        gaznas: item.gaznas.map((item) => item.raschet_schet_gazna).join(" / "),
+        okonx: item.okonx,
+        account_numbers: item.account_numbers
+          .map((item) => item.raschet_schet)
+          .join(" / "),
       });
     });
 

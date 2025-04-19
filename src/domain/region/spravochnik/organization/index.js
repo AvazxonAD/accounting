@@ -19,6 +19,7 @@ router
     validator(Controller.setParentId, OrganizationSchema.setParentId())
   )
   .get("/template", validator(Controller.template))
+  .get("/export", validator(Controller.export))
   .get("/:id", validator(Controller.getById, OrganizationSchema.getById()))
   .put("/:id", validator(Controller.update, OrganizationSchema.update()))
   .delete("/:id", validator(Controller.delete, OrganizationSchema.delette()))
