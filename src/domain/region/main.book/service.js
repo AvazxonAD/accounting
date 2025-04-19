@@ -111,6 +111,15 @@ exports.MainBookService = class {
     return result;
   }
 
+  static async getEndMainBook(data) {
+    const result = await MainBookDB.getEndMainBook([
+      data.main_schet_id,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
   static async getUniqueSchets(data) {
     const main_schets = await MainBookDB.getMainSchets([
       data.region_id,
@@ -156,6 +165,8 @@ exports.MainBookService = class {
       await MainBookDB.delete([data.id], client);
 
       await MainBookDB.deleteChildByParentId([data.id], client);
+
+      await MainBookDB.unblockSaldo([data.id], client);
     });
   }
 

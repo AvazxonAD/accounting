@@ -271,6 +271,11 @@ exports.Controller = class {
       region_id,
     });
 
+    const end = await MainBookService.getEndMainBook({
+      main_schet_id,
+      region_id,
+    });
+
     const { data, total } = await MainBookService.get({
       region_id,
       offset,
@@ -284,6 +289,9 @@ exports.Controller = class {
         doc.first = true;
       } else {
         doc.first = false;
+      }
+      if (end.id == doc.id) {
+        doc.isdeleted = true;
       }
     }
 

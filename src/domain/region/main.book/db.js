@@ -503,7 +503,26 @@ exports.MainBookDB = class {
       WHERE m.main_schet_id = $1
         AND r.id = $2
         AND m.isdeleted = false
-      ORDER BY id 
+      ORDER BY m.year, m.month 
+      LIMIT 1
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getEndMainBook(params) {
+    const query = `--sql
+      SELECT
+        m.*
+      FROM main_book m 
+      JOIN users u ON u.id = m.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE m.main_schet_id = $1
+        AND r.id = $2
+        AND m.isdeleted = false
+      ORDER BY m.year DESC, m.month DESC
       LIMIT 1
     `;
 
@@ -718,6 +737,7 @@ exports.MainBookDB = class {
       WITH data AS (
         SELECT
           d.id,
+          d.isdeleted,
           d.status,
           d.accept_time,
           d.send_time,
