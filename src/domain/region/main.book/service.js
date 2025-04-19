@@ -94,6 +94,87 @@ exports.MainBookService = class {
     return result;
   }
 
+  static async getJur4PrixodDocs(data) {
+    const jur3_schets = data.jur3AndJur4Schets
+      .filter((item) => item.type === "jur4")
+      .map((item) => item.schet);
+
+    const result = await MainBookDB.getJur4PrixodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+      jur3_schets,
+    ]);
+
+    return result;
+  }
+
+  static async getJur4RasxodDocs(data) {
+    const result = await MainBookDB.getJur4RasxodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
+  static async getJur7PrixodDocs(data) {
+    const result = await MainBookDB.getJur7PrixodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
+  static async getJur7RasxodDocs(data) {
+    const result = await MainBookDB.getJur7RasxodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    return result;
+  }
+
+  static async getJur8PrixodDocs(data) {
+    const result = await MainBookDB.getJur8PrixodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    const response = await MainBookDB.get8Docs(result);
+
+    return response;
+  }
+
+  static async getJur8RasxodDocs(data) {
+    const result = await MainBookDB.getJur8RasxodDocs([
+      data.year,
+      data.month,
+      data.main_schet_id,
+      data.schet,
+      data.region_id,
+    ]);
+
+    const response = await MainBookDB.get8Docs(result);
+
+    return response;
+  }
+
   static async cleanData(data) {
     const ids = data.data.map((item) => item.id);
 

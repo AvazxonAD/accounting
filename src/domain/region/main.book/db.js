@@ -454,6 +454,413 @@ exports.MainBookDB = class {
     return result;
   }
 
+  static async getJur4PrixodDocs(params) {
+    const query = `--sql
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'avans' AS type
+      FROM avans_otchetlar_jur4_child AS ch
+      JOIN avans_otchetlar_jur4 AS d ON d.id = ch.avans_otchetlar_jur4_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND op.schet = $4
+        AND r.id = $5
+        AND own.schet = ANY($6)
+        AND d.spravochnik_podotchet_litso_id IS NOT NULL
+
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur2_schet AS debet_schet,
+          op.schet AS kredit_schet,
+          'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND d.main_schet_id = $3
+        AND m.jur2_schet = $4
+        AND r.id = $5
+        AND op.schet = ANY($6)
+        AND ch.id_spravochnik_podotchet_litso IS NOT NULL
+
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur1_schet AS debet_schet,
+          op.schet AS kredit_schet,
+          'kassa_prixod' AS type
+      FROM kassa_prixod_child ch
+      JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND d.main_schet_id = $3
+        AND m.jur1_schet = $4
+        AND r.id = $5
+        AND op.schet = ANY($6)
+        AND d.id_podotchet_litso IS NOT NULL
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur4RasxodDocs(params) {
+    const query = `--sql
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'avans' AS type
+      FROM avans_otchetlar_jur4_child AS ch
+      JOIN avans_otchetlar_jur4 AS d ON d.id = ch.avans_otchetlar_jur4_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND own.schet = $4
+        AND r.id = $5
+        AND d.spravochnik_podotchet_litso_id IS NOT NULL
+
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur2_schet AS debet_schet,
+          op.schet AS kredit_schet,
+          'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND d.main_schet_id = $3
+        AND op.schet = $4
+        AND r.id = $5
+        AND ch.id_spravochnik_podotchet_litso IS NOT NULL
+
+      UNION ALL 
+
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          m.jur1_schet AS debet_schet,
+          op.schet AS kredit_schet,
+          'kassa_prixod' AS type
+      FROM kassa_prixod_child ch
+      JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND d.main_schet_id = $3
+        AND op.schet = $4
+        AND r.id = $5
+        AND d.id_podotchet_litso IS NOT NULL
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur7PrixodDocs(params) {
+    const query = `--sql
+      SELECT 
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            ch.summa_s_nds::FLOAT AS summa,
+            ch.debet_schet,
+            ch.kredit_schet,
+            'rasxod' AS type  
+        FROM document_rasxod_jur7_child ch
+        JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND EXTRACT(YEAR FROM d.doc_date) = $1
+          AND EXTRACT(MONTH FROM d.doc_date) = $2
+          AND d.main_schet_id = $3
+          AND ch.debet_schet = $4
+          AND r.id = $5
+
+        UNION ALL 
+
+        SELECT 
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            ch.summa::FLOAT,
+            ch.debet_schet,
+            ch.kredit_schet,
+            'internal' AS type  
+        FROM document_vnutr_peremesh_jur7_child ch
+        JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND EXTRACT(YEAR FROM d.doc_date) = $1
+          AND EXTRACT(MONTH FROM d.doc_date) = $2
+          AND d.main_schet_id = $3
+          AND ch.debet_schet = $4
+          AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur7RasxodDocs(params) {
+    const query = `--sql
+      SELECT 
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            ch.summa::FLOAT,
+            ch.debet_schet,
+            ch.kredit_schet,
+            'rasxod' AS type  
+        FROM document_rasxod_jur7_child ch
+        JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND EXTRACT(YEAR FROM d.doc_date) = $1
+          AND EXTRACT(MONTH FROM d.doc_date) = $2
+          AND d.main_schet_id = $3
+          AND ch.kredit_schet = $4
+          AND r.id = $5
+
+        UNION ALL 
+
+        SELECT 
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            ch.summa::FLOAT,
+            ch.debet_schet,
+            ch.kredit_schet,
+            'internal' AS type  
+        FROM document_vnutr_peremesh_jur7_child ch
+        JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND EXTRACT(YEAR FROM d.doc_date) = $1
+          AND EXTRACT(MONTH FROM d.doc_date) = $2
+          AND d.main_schet_id = $3
+          AND ch.kredit_schet = $4
+          AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur8PrixodDocs(params) {
+    const query = `--sql
+      SELECT
+          ch.summa::FLOAT AS summa,
+          ch.schet AS debet_schet,
+          ch.rasxod_schet AS kredit_schet,
+          ch.type_doc,
+          ch.doc_id
+      FROM jur8_monitoring_child ch
+      JOIN jur8_monitoring d ON d.id = ch.parent_id 
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND d.year = $1
+        AND d.month = $2
+        AND d.main_schet_id = $3
+        AND ch.schet = $4
+        AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getJur8RasxodDocs(params) {
+    const query = `--sql
+      SELECT
+          ch.summa::FLOAT AS summa,
+          ch.schet AS debet_schet,
+          ch.rasxod_schet AS kredit_schet,
+          ch.type_doc,
+          ch.doc_id
+      FROM jur8_monitoring_child ch
+      JOIN jur8_monitoring d ON d.id = ch.parent_id 
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND d.year = $1
+        AND d.month = $2
+        AND d.main_schet_id = $3
+        AND ch.rasxod_schet = $4
+        AND r.id = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async get8Docs(docs) {
+    for (let doc of docs) {
+      if (doc.type_doc === "kassa_prixod_child") {
+        const query = `--sql
+          SELECT
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            'kassa_prixod' AS type
+          FROM kassa_prixod_child ch
+          JOIN kassa_prixod d ON d.id = ch.kassa_prixod_id
+          WHERE ch.isdeleted = false
+            AND d.isdeleted = false
+            AND ch.id = $1
+        `;
+
+        const document = await db.query(query, [doc.doc_id]);
+        if (document[0]) {
+          Object.assign(doc, document[0]);
+        }
+      } else if (doc.type_doc === "bank_prixod_child") {
+        const query = `--sql
+          SELECT
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            'bank_prixod' AS type
+          FROM bank_prixod_child ch
+          JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+          WHERE ch.isdeleted = false
+            AND d.isdeleted = false
+            AND ch.id = $1
+        `;
+
+        const document = await db.query(query, [doc.doc_id]);
+        if (document[0]) {
+          Object.assign(doc, document[0]);
+        }
+      } else if (doc.type_doc === "document_prixod_jur7_child") {
+        const query = `--sql
+          SELECT
+            d.id,
+            d.doc_num,
+            TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+            d.opisanie,
+            d.main_schet_id,
+            'jur7_prixod' AS type
+          FROM document_prixod_jur7_child ch
+          JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+          WHERE ch.isdeleted = false
+            AND d.isdeleted = false
+            AND ch.id = $1
+        `;
+
+        const document = await db.query(query, [doc.doc_id]);
+        if (document[0]) {
+          Object.assign(doc, document[0]);
+        }
+      }
+    }
+
+    return docs;
+  }
+
   static async getJur8Rasxod(params) {
     const query = `--sql
       SELECT

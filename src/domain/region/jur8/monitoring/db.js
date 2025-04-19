@@ -212,11 +212,11 @@ exports.Jur8MonitoringDB = class {
         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         d.opisanie,
         ch.id AS doc_id,
-        op.schet,
+        op.schet AS rasxod_schet,
         ch.summa::FLOAT,
         d.id AS document_id,
         'kassa_prixod_child' AS type_doc,
-        m.jur1_schet AS rasxod_schet
+        m.jur1_schet AS schet
       FROM kassa_prixod d 
       JOIN kassa_prixod_child ch ON ch.kassa_prixod_id = d.id
       JOIN users u ON u.id = d.user_id
@@ -237,11 +237,11 @@ exports.Jur8MonitoringDB = class {
         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         d.opisanie,
         ch.id AS doc_id,
-        op.schet,
+        op.schet rasxod_schet,
         ch.summa::FLOAT,
         d.id AS document_id,
         'bank_prixod_child' AS type_doc,
-        m.jur2_schet AS rasxod_schet
+        m.jur2_schet AS schet
       FROM bank_prixod d 
       JOIN bank_prixod_child ch ON ch.id_bank_prixod  = d.id
       JOIN users u ON u.id = d.user_id
@@ -262,11 +262,11 @@ exports.Jur8MonitoringDB = class {
         TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
         d.opisanie,
         ch.id AS doc_id,
-        ch.debet_schet AS schet,
-        ch.summa::FLOAT,
+        ch.kredit_schet AS rasxod_schet,
+        ch.summa_s_nds::FLOAT AS summa,
         d.id AS document_id,
-        'document_prixod_jur7' AS type_doc,
-        ch.kredit_schet AS rasxod_schet
+        'document_prixod_jur7_child' AS type_doc,
+        ch.debet_schet AS schet
       FROM document_prixod_jur7 d 
       JOIN document_prixod_jur7_child ch ON ch.document_prixod_jur7_id  = d.id
       JOIN users u ON u.id = d.user_id
@@ -275,9 +275,10 @@ exports.Jur8MonitoringDB = class {
       WHERE m.id = $1
         AND d.isdeleted = false
         AND d.doc_date BETWEEN $2 AND $3
-        AND ch.debet_schet = ANY($4)
+        AND ch.kredit_schet = ANY($4)
         AND r.id = $5
         AND m.isdeleted = false
+        AND ch.isdeleted = false
     `;
 
     const result = await db.query(query, params);

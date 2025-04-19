@@ -71,8 +71,6 @@ exports.PodotchetMonitoringService = class {
       month: data.month,
     });
 
-    console.log(data.year, data.month);
-
     const summa_from = await PodotchetMonitoringDB.getSumma(
       [data.region_id, from, data.from, data.schet, data.main_schet_id],
       data.podotchet_id,

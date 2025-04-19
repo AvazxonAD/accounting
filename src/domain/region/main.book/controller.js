@@ -65,16 +65,23 @@ exports.Controller = class {
       }
     }
 
+    // jur3a
+    if (type_id === 3.1) {
+      docs = [];
+    }
+
     // jur4
     if (type_id === 4) {
       if (prixod === "true") {
-        docs = await MainBookService.getJur1PrixodDocs({
+        docs = await MainBookService.getJur4PrixodDocs({
           ...req.query,
+          jur3AndJur4Schets,
           region_id,
         });
       } else if (rasxod === "true") {
-        docs = await MainBookService.getJur1RasxodDocs({
+        docs = await MainBookService.getJur4RasxodDocs({
           ...req.query,
+          jur3AndJur4Schets,
           region_id,
         });
       }
@@ -88,12 +95,12 @@ exports.Controller = class {
     // jur7
     if (type_id === 7) {
       if (prixod === "true") {
-        docs = await MainBookService.getJur1PrixodDocs({
+        docs = await MainBookService.getJur7PrixodDocs({
           ...req.query,
           region_id,
         });
       } else if (rasxod === "true") {
-        docs = await MainBookService.getJur1RasxodDocs({
+        docs = await MainBookService.getJur7RasxodDocs({
           ...req.query,
           region_id,
         });
@@ -103,12 +110,12 @@ exports.Controller = class {
     // jur8
     if (type_id === 8) {
       if (prixod === "true") {
-        docs = await MainBookService.getJur1PrixodDocs({
+        docs = await MainBookService.getJur8PrixodDocs({
           ...req.query,
           region_id,
         });
       } else if (rasxod === "true") {
-        docs = await MainBookService.getJur1RasxodDocs({
+        docs = await MainBookService.getJur8RasxodDocs({
           ...req.query,
           region_id,
         });
