@@ -17,6 +17,7 @@
       "@admin_dashboard/*": ["domain/admin/dashboard/*"],
       "@prixod_schets/*": ["domain/admin/spravochnik/prixod.schet/*"],
       "@unit/*": ["domain/admin/spravochnik/unit/*"],
+      "@access/*": ["domain/auth/access/*"],
       "@log/*": ["domain/admin/log/*"],
       "@pereotsenka/*": ["domain/admin/spravochnik/pereotsenka/*"],
       "@bank/*": ["domain/admin/spravochnik/bank/*"],
