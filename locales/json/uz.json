@@ -70,6 +70,7 @@
   "conflictAccountNumber": "Hisob raqam yoki gazna raqamni tanlashinggiz kerak !",
   "notLogged": "Siz tizimga kirmagansiz!",
   "login": "Siz tizimga muvaffaqiyatli kirdinggiz",
+  "loginExists": "Ushbu login avval kiritilgan",
   "tokenError": "Token noto'g'ri yuborildi yoki token muddati tugagan!",
   "prixodCreateSaldo": "Saldo prixod orqali kiritilgan agar prixod documentlarni ochirsanggiz saldo avtomat ochiriladi!",
   "deleteSaldo": "Oxirgi saldoni ochirishinggiz mumkin",

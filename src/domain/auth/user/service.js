@@ -10,16 +10,12 @@ exports.UserService = class {
     const { login, password, fio, role_id } = req.body;
     const role = await RoleDB.getByIdRole([role_id]);
     if (!role || role.name === "super-admin" || role.name === "region-admin") {
-      return res.status(404).json({
-        message: "role not found",
-      });
+      return res.error(req.i18n.t("roleNotFound"), 404);
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const existLogin = await AuthDB.getByLoginAuth([login]);
     if (existLogin) {
-      return res.status(409).json({
-        message: "this login already exists",
-      });
+      return res.error(req.i18n.t("loginExists"), 400);
     }
     const result = await UserDB.createUser([
       login,
@@ -30,32 +26,22 @@ exports.UserService = class {
       tashkentTime(),
       tashkentTime(),
     ]);
-    return res.status(201).json({
-      message: "user created sucessfully",
-      data: result,
-    });
+    return res.success(req.i18n.t("createSuccess"), 201, null, result);
   }
 
   static async getUser(req, res) {
-    const roles = await UserDB.getUser([req.user.region_id]);
-    return res.status(200).json({
-      message: "Users get successfully",
-      data: roles,
-    });
+    const data = await UserDB.getUser([req.user.region_id]);
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 
   static async getByIdUser(req, res) {
     const id = req.params.id;
     const data = await UserDB.getByIdUser([id], true);
     if (!data) {
-      return res.status(404).json({
-        message: "user not found",
-      });
+      return res.error(req.i18n.t("userNotFound"), 404);
     }
-    return res.status(200).json({
-      message: "user get successfully",
-      data,
-    });
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 
   static async updateUser(req, res) {
@@ -63,25 +49,20 @@ exports.UserService = class {
     const id = req.params.id;
     const user = await UserDB.getByIdUser([id]);
     if (!user) {
-      return res.status(404).json({
-        message: "user not found",
-      });
+      return res.error(req.i18n.t("userNotFound"), 404);
     }
     const role = await RoleDB.getByIdRole([role_id]);
     if (!role || role.name === "super-admin" || role.name === "region-admin") {
-      return res.status(404).json({
-        message: "role not found",
-      });
+      return res.error(req.i18n.t("roleNotFound"), 404);
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     if (login !== user.login) {
-      const existLogin = await AuthDB.getLoginAuth([login]);
+      const existLogin = await AuthDB.getByLoginAuth([login]);
       if (existLogin) {
-        return res.status(409).json({
-          message: "this login already exists",
-        });
+        return res.error(req.i18n.t("loginExists"), 400);
       }
     }
+
     const data = await UserDB.updateUser([
       login,
       hashedPassword,
@@ -90,23 +71,17 @@ exports.UserService = class {
       tashkentTime(),
       id,
     ]);
-    return res.status(200).json({
-      message: "update user successfully",
-      data,
-    });
+    return res.success(req.i18n.t("updateSuccess"), 200, null, data);
   }
 
   static async deleteUser(req, res) {
     const id = req.params.id;
     const data = await UserDB.getByIdUser([id]);
     if (!data) {
-      return res.status(404).json({
-        message: "user not found!",
-      });
+      return res.error(req.i18n.t("userNotFound"), 404);
     }
+
     await UserDB.deleteUser([id]);
-    return res.status(200).json({
-      message: "delete user successfully",
-    });
+    return res.success(req.i18n.t("deleteSuccess"), 200);
   }
 };
