@@ -8,8 +8,15 @@ const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
 const { AccountNumberService } = require("@account_number/service");
 const { GaznaService } = require("@gazna/service");
+const { SmetaService } = require(`@smeta/service`);
 
 exports.ValidatorFunctions = class {
+  static async smeta(data) {
+    const smeta = await SmetaService.getById({ id: data.smeta_id });
+    if (!smeta) {
+      throw new ErrorResponse("smetaNotFound", 404);
+    }
+  }
   static async responsibleJur7(data) {
     const responsible = await ResponsibleService.getById({
       region_id: data.region_id,
