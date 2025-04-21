@@ -3,6 +3,31 @@ const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { SmetaGrafikService } = require("./service");
 
 exports.Controller = class {
+  static async getOld(req, res) {
+    const region_id = req.user.region_id;
+    const { page, limit, year } = req.query;
+    const offset = (page - 1) * limit;
+
+    const { data, total } = await SmetaGrafikService.getOld({
+      region_id,
+      offset,
+      year,
+      limit,
+    });
+
+    const pageCount = Math.ceil(total / limit);
+
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    };
+
+    return res.success(req.i18n.t(`getSuccess`), 200, meta, data);
+  }
+
   static async create(req, res) {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
@@ -121,11 +146,15 @@ exports.Controller = class {
 
   static async update(req, res) {
     const region_id = req.user.region_id;
+    const user_id = req.user.id;
     const id = req.params.id;
     const { smeta_id, spravochnik_budjet_name_id, main_schet_id, year } =
       req.body;
 
-    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+    const main_schet = await ValidatorFunctions.mainSchet({
+      region_id,
+      main_schet_id,
+    });
 
     const old_data = await SmetaGrafikService.getById({
       region_id,
@@ -149,15 +178,20 @@ exports.Controller = class {
       }
     }
 
-    await ValidatorFunctions.smeta({ smeta_id });
+    const smeta = await ValidatorFunctions.smeta({ smeta_id });
 
-    await ValidatorFunctions.budjet({
+    const budjet = await ValidatorFunctions.budjet({
       budjet_id: spravochnik_budjet_name_id,
     });
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const result = await SmetaGrafikService.update({ ...req.body, id });
+    const result = await SmetaGrafikService.update({
+      ...req.body,
+      user_id,
+      id,
+      old_data,
+    });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
   }

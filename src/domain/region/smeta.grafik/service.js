@@ -1,8 +1,18 @@
 const { SmetaGrafikDB } = require("./db");
 const { sum } = require("@helper/functions");
+const { db } = require(`@db/index`);
 
 exports.SmetaGrafikService = class {
   static now = new Date();
+
+  static async getOld(data) {
+    const result = await SmetaGrafikDB.getOld(
+      [data.region_id, data.offset, data.limit],
+      { year: data.year }
+    );
+
+    return result;
+  }
 
   static async create(data) {
     const itogo = sum(
@@ -93,27 +103,65 @@ exports.SmetaGrafikService = class {
       data.oy_12
     );
 
-    const result = await SmetaGrafikDB.update([
-      itogo,
-      data.oy_1,
-      data.oy_2,
-      data.oy_3,
-      data.oy_4,
-      data.oy_5,
-      data.oy_6,
-      data.oy_7,
-      data.oy_8,
-      data.oy_9,
-      data.oy_10,
-      data.oy_11,
-      data.oy_12,
-      data.smeta_id,
-      data.spravochnik_budjet_name_id,
-      data.year,
-      data.main_schet_id,
-      this.now,
-      data.id,
-    ]);
+    const order = await SmetaGrafikDB.getBySortNumber([data.id]);
+
+    const result = await db.transaction(async (client) => {
+      const grafik = await SmetaGrafikDB.update(
+        [
+          itogo,
+          data.oy_1,
+          data.oy_2,
+          data.oy_3,
+          data.oy_4,
+          data.oy_5,
+          data.oy_6,
+          data.oy_7,
+          data.oy_8,
+          data.oy_9,
+          data.oy_10,
+          data.oy_11,
+          data.oy_12,
+          data.smeta_id,
+          data.spravochnik_budjet_name_id,
+          data.year,
+          data.main_schet_id,
+          this.now,
+          data.id,
+        ],
+        client
+      );
+
+      await SmetaGrafikDB.createOld(
+        [
+          data.id,
+          order,
+          data.user_id,
+          data.old_data.smeta_name,
+          data.old_data.smeta_number,
+          data.old_data.budjet_name,
+          data.old_data.itogo,
+          data.old_data.oy_1,
+          data.old_data.oy_2,
+          data.old_data.oy_3,
+          data.old_data.oy_4,
+          data.old_data.oy_5,
+          data.old_data.oy_6,
+          data.old_data.oy_7,
+          data.old_data.oy_8,
+          data.old_data.oy_9,
+          data.old_data.oy_10,
+          data.old_data.oy_11,
+          data.old_data.oy_12,
+          data.old_data.account_number,
+          data.old_data.year,
+          this.now,
+          this.now,
+        ],
+        client
+      );
+
+      return grafik;
+    });
 
     return result;
   }

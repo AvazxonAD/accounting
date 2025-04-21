@@ -1,5 +1,17 @@
 const Joi = require("joi");
 
+exports.SmetaGrafikSchema = class {
+  static getOld() {
+    return Joi.object({
+      query: Joi.object({
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().min(1).integer().default(10),
+        year: Joi.number().integer().min(1901),
+      }),
+    }).options({ stripUnknown: true });
+  }
+};
+
 exports.createSchema = Joi.object({
   body: Joi.object({
     smeta_id: Joi.number().required().required(),

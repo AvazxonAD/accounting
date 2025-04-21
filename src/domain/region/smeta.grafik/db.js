@@ -1,4 +1,5 @@
 const { db } = require("@db/index");
+const { HelperFunctions } = require(`@helper/functions`);
 
 exports.SmetaGrafikDB = class {
   static async create(params) {
@@ -16,6 +17,112 @@ exports.SmetaGrafikDB = class {
     const result = await db.query(query, params);
 
     return result[0];
+  }
+
+  static async getOld(params, filter) {
+    const conditions = [];
+
+    if (filter.year) {
+      params.push(filter.year);
+      conditions.push(`s.year = $${params.length}`);
+    }
+
+    const where = HelperFunctions.where({ conditions });
+
+    const query = `--sql
+      WITH data AS (
+        SELECT
+          s.*, 
+          s.itogo::FLOAT,
+          s.oy_1::FLOAT,
+          s.oy_2::FLOAT,
+          s.oy_3::FLOAT,
+          s.oy_4::FLOAT,
+          s.oy_5::FLOAT,
+          s.oy_6::FLOAT,
+          s.oy_7::FLOAT,
+          s.oy_8::FLOAT,
+          s.oy_9::FLOAT,
+          s.oy_10::FLOAT,
+          s.oy_11::FLOAT,
+          s.oy_12::FLOAT
+        FROM smeta_grafik_old s 
+        JOIN users u ON s.user_id = u.id
+        JOIN regions r ON r.id = u.region_id  
+        WHERE r.id = $1
+          ${where}
+        OFFSET $2 LIMIT $3
+      )
+      
+      SELECT
+         COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
+        (
+          SELECT
+            COALESCE(COUNT(s.id), 0) 
+          FROM smeta_grafik_old s 
+          JOIN users u ON s.user_id = u.id
+          JOIN regions r ON r.id = u.region_id  
+          WHERE r.id = $1
+            ${where}
+        )::INTEGER AS total
+      
+      FROM data
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getBySortNumber(params) {
+    const query = `--sql
+      SELECT
+        sort_order
+      FROM smeta_grafik_old
+      WHERE smeta_grafik_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0]?.sort_order + 1 || 1;
+  }
+
+  static async createOld(params, client) {
+    const query = `--sql
+      INSERT INTO smeta_grafik_old (
+        smeta_grafik_id,
+        sort_order,
+        user_id,
+        smeta_name,
+        smeta_number,
+        budjet_name,
+        itogo,
+        oy_1,
+        oy_2,
+        oy_3,
+        oy_4,
+        oy_5,
+        oy_6,
+        oy_7,
+        oy_8,
+        oy_9,
+        oy_10,
+        oy_11,
+        oy_12,
+        account_number,
+        year, 
+        created_at,
+        updated_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7,
+        $8, $9, $10, $11, $12, $13, $14,
+        $15, $16, $17, $18, $19, $20, $21, $22, $23
+      )
+    `;
+
+    await client.query(query, params);
   }
 
   static async get(params, budjet_id, operator, year, search) {
@@ -303,7 +410,7 @@ exports.SmetaGrafikDB = class {
     return result[0];
   }
 
-  static async update(params) {
+  static async update(params, client) {
     const query = `--sql
             UPDATE smeta_grafik SET 
                 itogo = $1, oy_1 = $2, oy_2 = $3, oy_3 = $4,
@@ -315,8 +422,8 @@ exports.SmetaGrafikDB = class {
             RETURNING id
         `;
 
-    const result = await db.query(query, params);
-    return result[0];
+    const result = await client.query(query, params);
+    return result.rows[0];
   }
 
   static async delete(params) {

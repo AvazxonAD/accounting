@@ -8,12 +8,15 @@ const {
   getByIdSchema,
   deleteSchema,
   updateSchema,
+  SmetaGrafikSchema,
 } = require("./schema");
 
-router.get("/:id", validator(Controller.getById, getByIdSchema));
-router.get("/", validator(Controller.get, getSchema));
-router.post("/", validator(Controller.create, createSchema));
-router.put("/:id", validator(Controller.update, updateSchema));
-router.delete("/:id", validator(Controller.deleteSmetGrafik, deleteSchema));
+router
+  .get("/old", validator(Controller.getOld, SmetaGrafikSchema.getOld()))
+  .get("/:id", validator(Controller.getById, getByIdSchema))
+  .get("/", validator(Controller.get, getSchema))
+  .post("/", validator(Controller.create, createSchema))
+  .put("/:id", validator(Controller.update, updateSchema))
+  .delete("/:id", validator(Controller.deleteSmetGrafik, deleteSchema));
 
 module.exports = router;

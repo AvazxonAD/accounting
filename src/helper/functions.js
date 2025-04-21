@@ -6,6 +6,10 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static where(data) {
+    return data.conditions.length ? `AND ${data.conditions.join(" AND ")}` : "";
+  }
+
   static checkIznosDate(data) {
     const doc_date = new Date(data.doc_date);
     const next_date = this.nextDate({
