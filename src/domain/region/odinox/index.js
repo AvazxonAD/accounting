@@ -9,19 +9,6 @@ router
 
   .get("/type", validator(Controller.getOdinoxType))
   .get("/data", validator(Controller.getData, OdinoxSchema.getData()))
-
-  .get("/smeta", validator(Controller.getSmeta, OdinoxSchema.getSmeta()))
-
-  .post("/", validator(Controller.create, OdinoxSchema.create()))
-  .get("/", validator(Controller.get, OdinoxSchema.get()))
-  .delete("/clean", validator(Controller.cleanData, OdinoxSchema.cleanData()))
-  .get("/docs", validator(Controller.getDocs, OdinoxSchema.getDocs()))
-  .get(
-    "/check",
-    validator(Controller.getCheckFirst, OdinoxSchema.getCheckFirst())
-  )
-  .put("/:id", validator(Controller.update, OdinoxSchema.update()))
-  .delete("/:id", validator(Controller.delete, OdinoxSchema.delete()))
-  .get("/:id", validator(Controller.getById, OdinoxSchema.getById()));
+  .get("/smeta", validator(Controller.getSmeta, OdinoxSchema.getSmeta()));
 
 module.exports = router;

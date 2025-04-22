@@ -112,6 +112,7 @@ exports.OdinoxSchema = class {
     return Joi.object({
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        year: Joi.number().integer().required().min(1901).required(),
       }),
     }).options({ stripUnknown: true });
   }
