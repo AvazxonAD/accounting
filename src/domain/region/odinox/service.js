@@ -208,7 +208,7 @@ exports.OdinoxService = class {
   }
 
   static async getSmeta(data) {
-    const smetas = await OdinoxDB.getMainSchets([
+    const smetas = await OdinoxDB.getSmeta([
       data.region_id,
       data.main_schet_id,
     ]);

@@ -10,7 +10,7 @@ router
   .get("/type", validator(Controller.getOdinoxType))
   .get("/data", validator(Controller.getData, OdinoxSchema.getData()))
 
-  .get("/unique", validator(Controller.getSmeta, OdinoxSchema.getSmeta()))
+  .get("/smeta", validator(Controller.getSmeta, OdinoxSchema.getSmeta()))
 
   .post("/", validator(Controller.create, OdinoxSchema.create()))
   .get("/", validator(Controller.get, OdinoxSchema.get()))
