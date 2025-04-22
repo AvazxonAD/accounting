@@ -63,11 +63,12 @@ exports.AktDB = class {
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
                     AND d.doc_date BETWEEN $3 AND $4
+                    AND d.schet_id = $5
                     ${search_filter}
                 
                 ${order}
                 
-                OFFSET $5 LIMIT $6
+                OFFSET $6 LIMIT $7
             )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
@@ -82,6 +83,7 @@ exports.AktDB = class {
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
                         AND d.doc_date BETWEEN $3 AND $4
+                        AND d.schet_id = $5
                         ${search_filter}
                 ) AS total, 
                 (
@@ -97,6 +99,7 @@ exports.AktDB = class {
                         AND d.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND ch.isdeleted = false
+                        AND d.schet_id = $5
                         ${search_filter}
                 ) AS summa
             FROM data

@@ -133,6 +133,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
     const { summa, total_count, data, page_summa } = await AktService.get({
+      ...req.query,
       region_id,
       main_schet_id,
       from,

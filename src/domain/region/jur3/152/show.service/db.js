@@ -168,12 +168,13 @@ exports.ShowServiceDB = class {
                 WHERE r.id = $1 
                     AND d.doc_date BETWEEN $2 AND $3 
                     AND d.main_schet_id = $4 
-                    AND d.isdeleted = false 
+                    AND d.isdeleted = false
+                    AND d.schet_id = $5
                     ${search_filter}    
                 
                 ${order}
                 
-                OFFSET $5 LIMIT $6 
+                OFFSET $6 LIMIT $7 
             )
             SELECT 
             COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
@@ -186,6 +187,7 @@ exports.ShowServiceDB = class {
                     AND d.doc_date BETWEEN $2 AND $3 
                     AND d.main_schet_id = $4 
                     AND d.isdeleted = false
+                    AND d.schet_id = $5
                     ${search_filter}
             )::INTEGER AS total_count,
             (
@@ -199,6 +201,7 @@ exports.ShowServiceDB = class {
                     AND d.doc_date BETWEEN $2 AND $3 
                     AND d.main_schet_id = $4 
                     AND d.isdeleted = false
+                    AND d.schet_id = $5
                     ${search_filter}
             )::FLOAT AS summa
             FROM data

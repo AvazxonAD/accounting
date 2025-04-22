@@ -15,6 +15,7 @@ exports.AktService = class {
         data.main_schet_id,
         data.from,
         data.to,
+        data.schet_id,
         data.offset,
         data.limit,
       ],
