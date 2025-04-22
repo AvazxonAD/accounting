@@ -189,7 +189,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
     const { data, summa, total_count } = await ShowServiceDB.get(
-      [region_id, from, to, main_schet_id, offset, limit],
+      [region_id, from, to, main_schet_id, schet_id, offset, limit],
       search,
       order_by,
       order_type
