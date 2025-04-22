@@ -36,6 +36,15 @@ exports.Controller = class {
 
     const date = HelperFunctions.getMonthStartEnd({ year, month });
 
+    const last_date = HelperFunctions.lastDate({ year, month });
+
+    const last_doc = await OdinoxService.getByMonth({
+      region_id,
+      year: last_date.year,
+      month: last_date.month,
+      main_schet_id,
+    });
+
     const smetas = await OdinoxService.getSmeta({ ...req.query, region_id });
 
     for (let type of types) {
@@ -43,6 +52,88 @@ exports.Controller = class {
         type.sub_childs = OdinoxService.getJur0Data({
           smetas: JSON.parse(JSON.stringify(smetas)),
           ...req.query,
+        });
+      }
+
+      if (type.sort_order === 1) {
+        type.sub_childs = await OdinoxService.getJur1Data({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          ...req.query,
+          region_id,
+        });
+      }
+
+      if (type.sort_order === 2) {
+        type.sub_childs = await OdinoxService.getJur2Data({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          ...req.query,
+          region_id,
+        });
+      }
+
+      if (type.sort_order === 3) {
+        type.sub_childs = await OdinoxService.getJur3Data({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          ...req.query,
+          region_id,
+        });
+      }
+
+      if (type.sort_order === 4) {
+        type.sub_childs = await OdinoxService.getJur4Data({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          grafik: types.find((item) => item.sort_order === 0),
+          jur3a_akt_avans: types.find((item) => item.sort_order === 3),
+        });
+      }
+
+      if (type.sort_order === 5) {
+        type.sub_childs = await OdinoxService.getCangculate({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          doc: types.find((item) => item.sort_order === 0),
+          old: last_doc
+            ? last_doc.childs.find((item) => item.sort_order === 0)
+            : [],
+        });
+      }
+
+      if (type.sort_order === 6) {
+        type.sub_childs = await OdinoxService.getCangculate({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          doc: types.find((item) => item.sort_order === 1),
+          old: last_doc
+            ? last_doc.childs.find((item) => item.sort_order === 1)
+            : [],
+        });
+      }
+
+      if (type.sort_order === 7) {
+        type.sub_childs = await OdinoxService.getCangculate({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          doc: types.find((item) => item.sort_order === 2),
+          old: last_doc
+            ? last_doc.childs.find((item) => item.sort_order === 2)
+            : [],
+        });
+      }
+
+      if (type.sort_order === 8) {
+        type.sub_childs = await OdinoxService.getCangculate({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          doc: types.find((item) => item.sort_order === 3),
+          old: last_doc
+            ? last_doc.childs.find((item) => item.sort_order === 3)
+            : [],
+        });
+      }
+
+      if (type.sort_order === 9) {
+        type.sub_childs = await OdinoxService.getCangculate({
+          smetas: JSON.parse(JSON.stringify(smetas)),
+          doc: types.find((item) => item.sort_order === 4),
+          old: last_doc
+            ? last_doc.childs.find((item) => item.sort_order === 4)
+            : [],
         });
       }
     }

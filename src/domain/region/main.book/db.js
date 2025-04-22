@@ -1222,7 +1222,7 @@ exports.MainBookDB = class {
     return result[0];
   }
 
-  static async getByMonth(params, isdeleted = null) {
+  static async getByMonth(params) {
     const query = `--sql
       SELECT
         d.id,

@@ -22,7 +22,6 @@ exports.OdinoxService = class {
     for (let smeta of data.smetas) {
       if (smeta.smeta_grafik) {
         smeta.summa = smeta.smeta_grafik[`oy_${data.month}`];
-        delete smeta.smeta_grafik;
       } else {
         smeta.summa = 0;
       }
@@ -31,14 +30,93 @@ exports.OdinoxService = class {
     return data.smetas;
   }
 
-  static getJur1Data(data) {
+  static async getJur1Data(data) {
+    const _data = await OdinoxDB.getJur1Data([
+      data.year,
+      data.month,
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
     for (let smeta of data.smetas) {
-      if (smeta.smeta_grafik) {
-        smeta.summa = smeta.smeta_grafik[`oy_${data.month}`];
-        delete smeta.smeta_grafik;
-      } else {
-        smeta.summa = 0;
-      }
+      smeta.summa = 0;
+      _data.forEach((item) => {
+        if (item.sub_schet === smeta.smeta_number) {
+          smeta.summa += item.summa;
+        }
+      });
+    }
+
+    return data.smetas;
+  }
+
+  static async getJur2Data(data) {
+    const _data = await OdinoxDB.getJur2Data([
+      data.year,
+      data.month,
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    for (let smeta of data.smetas) {
+      smeta.summa = 0;
+      _data.forEach((item) => {
+        if (item.sub_schet === smeta.smeta_number) {
+          smeta.summa += item.summa;
+        }
+      });
+    }
+
+    return data.smetas;
+  }
+
+  static async getJur3Data(data) {
+    const _data = await OdinoxDB.getJur3Data([
+      data.year,
+      data.month,
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    for (let smeta of data.smetas) {
+      smeta.summa = 0;
+      _data.forEach((item) => {
+        if (item.sub_schet === smeta.smeta_number) {
+          smeta.summa += item.summa;
+        }
+      });
+    }
+
+    return data.smetas;
+  }
+
+  static async getJur4Data(data) {
+    for (let smeta of data.smetas) {
+      const grafik_summa = data.grafik.sub_childs.find(
+        (item) => item.id === smeta.id
+      );
+
+      const jur3a_akt_avans_summa = data.jur3a_akt_avans.sub_childs.find(
+        (item) => item.id === smeta.id
+      );
+
+      smeta.summa = grafik_summa.summa - jur3a_akt_avans_summa.summa;
+    }
+
+    return data.smetas;
+  }
+
+  static async getCangculate(data) {
+    for (let smeta of data.smetas) {
+      const doc_summa = data.doc.sub_childs.find(
+        (item) => item.id === smeta.id
+      );
+
+      const old_summa = data.old.length
+        ? data.old.sub_childs.find((item) => item.id === smeta.id)
+        : { summa: 0 };
+
+      smeta.summa = doc_summa.summa + old_summa.summa;
     }
 
     return data.smetas;
@@ -46,6 +124,36 @@ exports.OdinoxService = class {
 
   static async getOdinoxType() {
     const result = await OdinoxDB.getOdinoxType([]);
+
+    return result;
+  }
+
+  static async getById(data) {
+    const result = await OdinoxDB.getById(
+      [data.region_id, data.id],
+      data.isdeleted
+    );
+
+    if (result) {
+      result.childs = await OdinoxDB.getByIdChild([data.id]);
+    }
+
+    return result;
+  }
+
+  static async getByMonth(data) {
+    let result = await OdinoxDB.getByMonth([
+      data.region_id,
+      data.year,
+      data.month,
+      data.main_schet_id,
+    ]);
+
+    if (result) {
+      result.childs = await OdinoxDB.getByIdChild([result.id]);
+
+      result = result.childs.find((item) => item.type_id === 10).sub_childs;
+    }
 
     return result;
   }
