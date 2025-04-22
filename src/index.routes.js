@@ -187,6 +187,8 @@ routes
 
   .use("/main/book", protect, require("@main_book/index"))
 
+  .use("/odinox", protect, require("@region_odinox/index"))
+
   .use("/jur8/schets", protect, require("@region_prixod_schets/index"))
   .use("/jur8/monitoring", protect, require("@jur8_monitoring/index"))
 

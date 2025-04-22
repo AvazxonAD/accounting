@@ -13,6 +13,7 @@
       "@admin_main_book/*": ["domain/admin/main.book/*"],
       "@admin_prixod_book/*": ["domain/admin/prixod.book/*"],
       "@main_book/*": ["domain/region/main.book/*"],
+      "@region_odinox/*": ["/domain/region/odinox/*"],
       "@jur8_monitoring/*": ["domain/region/jur8/monitoring/*"],
       "@admin_dashboard/*": ["domain/admin/dashboard/*"],
       "@prixod_schets/*": ["domain/admin/spravochnik/prixod.schet/*"],
