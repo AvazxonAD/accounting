@@ -42,7 +42,7 @@ exports.VideoModuleDB = class {
             WHERE d.isdeleted = false 
                 ${search_filter}
                 ${status_filter}
-            ORDER BY d.created_at DESC
+            ORDER BY d.name
             OFFSET $1 LIMIT $2
         )
         SELECT 
