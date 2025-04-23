@@ -8,6 +8,55 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.OdinoxService = class {
   static now = new Date();
 
+  static async createChild(data) {
+    for (let child of data.childs) {
+      for (let sub_child of child.sub_childs) {
+        await OdinoxDB.createChild(
+          [
+            sub_child.smeta_id,
+            sub_child.summa,
+            data.parent_id,
+            child.type_id,
+            this.now,
+            this.now,
+          ],
+          data.client
+        );
+      }
+    }
+  }
+
+  static async create(data) {
+    const result = await db.transaction(async (client) => {
+      const doc = await OdinoxDB.create(
+        [
+          1,
+          data.accept_time,
+          this.now,
+          data.user_id,
+          data.year,
+          data.month,
+          data.main_schet_id,
+          this.now,
+          this.now,
+        ],
+        client
+      );
+
+      await this.createChild({ ...data, client, parent_id: doc.id });
+
+      return doc;
+    });
+
+    return result;
+  }
+
+  static async getByIdType(data) {
+    const result = await OdinoxDB.getByIdType([data.id]);
+
+    return result;
+  }
+
   static async getSmeta(data) {
     const smetas = await OdinoxDB.getSmeta([
       data.region_id,
@@ -154,6 +203,15 @@ exports.OdinoxService = class {
 
       result = result.childs.find((item) => item.type_id === 10).sub_childs;
     }
+
+    return result;
+  }
+
+  static async checkCreateCount(data) {
+    const result = await OdinoxDB.checkCreateCount([
+      data.region_id,
+      data.main_schet_id,
+    ]);
 
     return result;
   }

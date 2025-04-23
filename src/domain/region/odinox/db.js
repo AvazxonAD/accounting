@@ -8,7 +8,8 @@ exports.OdinoxDB = class {
         s.smeta_name,
         s.smeta_number,
         s.group_number,
-        row_to_json(sg) AS smeta_grafik
+        row_to_json(sg) AS smeta_grafik,
+        s.id AS smeta_id
       FROM smeta s
       LEFT JOIN smeta_grafik sg 
         ON sg.smeta_id = s.id 
@@ -32,11 +33,49 @@ exports.OdinoxDB = class {
   }
 
   static async getOdinoxType(params) {
-    const query = `SELECT * FROM odinox_type ORDER BY sort_order`;
+    const query = `SELECT *, id AS type_id FROM odinox_type ORDER BY sort_order`;
 
     const result = await db.query(query, params);
 
     return result;
+  }
+
+  static async createChild(params, client) {
+    const query = `--sql
+            INSERT INTO odinox_child (
+                smeta_id,
+                summa,
+                parent_id,
+                type_id,
+                created_at,
+                updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `;
+
+    await client.query(query, params);
+  }
+
+  static async create(params, client) {
+    const query = `--sql
+      INSERT INTO odinox (
+          status,
+          accept_time,
+          send_time,
+          user_id,
+          year,
+          month,
+          main_schet_id,
+          created_at,
+          updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
   }
 
   static async getJur1Data(params) {
@@ -199,6 +238,32 @@ exports.OdinoxDB = class {
   static async getByIdChild(params) {
     const query = `--sql
       
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getByIdType(params) {
+    const query = `SELECT * FROM odinox_type WHERE id = $1 AND is_deleted = false`;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async checkCreateCount(params) {
+    const query = `--sql
+      SELECT
+        d.*
+      FROM odinox d
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN users u ON u.id = d.user_id
+      LEFT JOIN users ua ON ua.id = d.accept_user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND d.main_schet_id = $2
     `;
 
     const result = await db.query(query, params);

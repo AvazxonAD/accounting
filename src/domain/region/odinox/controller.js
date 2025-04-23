@@ -2,10 +2,63 @@ const { BudjetService } = require("@budjet/service");
 const { OdinoxService } = require("./service");
 const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
-const { SALDO_PASSWORD } = require(`@helper/constants`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
+  static async create(req, res) {
+    const user_id = req.user.id;
+    const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
+    const { year, month, childs } = req.body;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const check = await OdinoxService.getByMonth({
+      region_id,
+      main_schet_id,
+      year,
+      month,
+    });
+
+    if (check) {
+      return res.error(req.i18n.t("docExists"), 409, { year, month });
+    }
+
+    const check_create = await OdinoxService.checkCreateCount({
+      region_id,
+      main_schet_id,
+    });
+
+    if (check_create.length > 0) {
+      const last_date = HelperFunctions.lastDate({ year, month });
+      const check = await OdinoxService.getByMonth({
+        region_id,
+        main_schet_id,
+        year: last_date.year,
+        month: last_date.month,
+      });
+
+      if (check) {
+        return res.error(req.i18n.t("yearMonthCreateError"), 400);
+      }
+    }
+
+    for (let child of childs) {
+      const check = await OdinoxService.getByIdType({ id: child.type_id });
+      if (!check) {
+        return res.error(req.i18n.t("validationError"), 400);
+      }
+    }
+
+    const result = await OdinoxService.create({
+      main_schet_id,
+      ...req.body,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("createSuccess"), 200, null, result);
+  }
+
   static async getSmeta(req, res) {
     const { main_schet_id } = req.query;
     const region_id = req.user.region_id;

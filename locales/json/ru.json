@@ -1,4 +1,5 @@
 {
+  "yearMonthCreateError": "Год и месяц введены неверно!",
   "notFound": "{{data}} не найдено!",
   "bankNotFound": "Банк не найден!",
   "bankAlreadyExists": "Банк уже был добавлен!",

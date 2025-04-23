@@ -53,6 +53,7 @@
   "podotchetNotFound": "Pododchet topilmadi!",
   "operatsiiNotFound": "Operatsii topilmadi!",
   "celanSaldo": "Malumotlar tozalandi!",
+  "yearMonthCreateError": "Yil va oy noto‘g‘ri kiritildi!",
   "emptyFile": "File bo'sh !",
   "podrazNotFound": "Podrazdelenie topilmadi!",
   "sostavNotFound": "Sostav topilmadi!",
