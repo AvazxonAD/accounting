@@ -317,7 +317,7 @@ exports.Controller = class {
     }
 
     if (type === "podotchet" && !id_podotchet_litso) {
-      return res.error(req.i18n.t("validationError", 400));
+      return res.error(req.i18n.t("validationError"), 400);
     }
 
     if (organ_id) {

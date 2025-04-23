@@ -15,7 +15,9 @@ exports.KassaMonitoringDB = class {
     const query = `--sql
         WITH data AS (
             SELECT 
-                d.id, 
+                d.id,
+                d.type,
+                so.name AS organization_name,
                 d.doc_num,
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                 (
@@ -51,6 +53,7 @@ exports.KassaMonitoringDB = class {
             JOIN users u ON d.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
+            LEFT JOIN spravochnik_organization AS so ON so.id = d.organ_id 
             WHERE r.id = $1 
                 AND d.main_schet_id = $2
                 AND d.doc_date BETWEEN $3 AND $4 
@@ -61,6 +64,8 @@ exports.KassaMonitoringDB = class {
 
             SELECT 
                 d.id, 
+                d.type,
+                so.name AS organization_name,
                 d.doc_num,
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                 0::FLOAT AS prixod_sum,
@@ -96,6 +101,7 @@ exports.KassaMonitoringDB = class {
             JOIN users u ON d.user_id = u.id
             JOIN regions r ON u.region_id = r.id
             LEFT JOIN spravochnik_podotchet_litso p ON p.id = d.id_podotchet_litso
+            LEFT JOIN spravochnik_organization AS so ON so.id = d.organ_id 
             WHERE r.id = $1 
                 AND d.main_schet_id = $2
                 AND d.doc_date BETWEEN $3 AND $4 

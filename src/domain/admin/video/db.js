@@ -42,7 +42,7 @@ exports.VideoDB = class {
             FROM video AS d
             WHERE d.isdeleted = false 
                 ${where}
-            ORDER BY d.sort_order DESC
+            ORDER BY d.sort_order
             OFFSET $1 LIMIT $2
         )
         SELECT 
