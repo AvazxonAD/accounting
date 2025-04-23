@@ -8,6 +8,12 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.OdinoxService = class {
   static now = new Date();
 
+  static async getEnd(data) {
+    const result = await OdinoxDB.getEnd([data.region_id, data.main_schet_id]);
+
+    return result;
+  }
+
   static async createChild(data) {
     for (let child of data.childs) {
       for (let sub_child of child.sub_childs) {
@@ -155,6 +161,14 @@ exports.OdinoxService = class {
     return data.smetas;
   }
 
+  static async delete(data) {
+    await db.transaction(async (client) => {
+      await OdinoxDB.delete([data.id], client);
+
+      await OdinoxDB.deleteChildByParentId([data.id], client);
+    });
+  }
+
   static async getCangculate(data) {
     for (let smeta of data.smetas) {
       const doc_summa = data.doc.sub_childs.find(
@@ -162,7 +176,7 @@ exports.OdinoxService = class {
       );
 
       const old_summa = data.old.length
-        ? data.old.sub_childs.find((item) => item.id === smeta.id)
+        ? data.old.sub_childs.find((item) => item.smeta_id === smeta.id)
         : { summa: 0 };
 
       smeta.summa = doc_summa.summa + old_summa.summa;
@@ -179,13 +193,22 @@ exports.OdinoxService = class {
 
   static async getById(data) {
     const result = await OdinoxDB.getById(
-      [data.region_id, data.id],
+      [data.region_id, data.id, data.main_schet_id],
       data.isdeleted
     );
 
     if (result) {
       result.childs = await OdinoxDB.getByIdChild([data.id]);
     }
+
+    return result;
+  }
+
+  static async get(data) {
+    const result = await OdinoxDB.get(
+      [data.region_id, data.main_schet_id, data.offset, data.limit],
+      data.year
+    );
 
     return result;
   }
@@ -200,8 +223,6 @@ exports.OdinoxService = class {
 
     if (result) {
       result.childs = await OdinoxDB.getByIdChild([result.id]);
-
-      result = result.childs.find((item) => item.type_id === 10).sub_childs;
     }
 
     return result;

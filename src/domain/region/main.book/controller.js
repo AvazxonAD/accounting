@@ -210,7 +210,7 @@ exports.Controller = class {
     }
 
     if (data.status === 3) {
-      return res.error(req.i18n.t("mainBookStatus"), 409);
+      return res.error(req.i18n.t("docStatus"), 409);
     }
 
     const check = await MainBookService.checkLarge({
@@ -556,7 +556,7 @@ exports.Controller = class {
     }
 
     if (old_data.status === 3) {
-      return res.error(req.i18n.t("mainBookStatus"), 409);
+      return res.error(req.i18n.t("docStatus"), 409);
     }
 
     if (old_data.month !== month || year !== old_data.year) {

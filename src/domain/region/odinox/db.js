@@ -187,13 +187,14 @@ exports.OdinoxDB = class {
         d.*,
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
-      FROM odiox d
+      FROM odinox d
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND d.id = $2
+        AND d.main_schet_id = $3
         ${!isdeleted ? "AND d.isdeleted = false" : ""}
     `;
 
@@ -202,20 +203,103 @@ exports.OdinoxDB = class {
     return result[0];
   }
 
+  static async getEnd(params) {
+    const query = `--sql
+      SELECT
+          d.*
+        FROM odinox d
+        JOIN main_schet m ON m.id = d.main_schet_id
+        JOIN users u ON u.id = d.user_id
+        JOIN regions r ON r.id = u.region_id
+        WHERE r.id = $1
+          AND d.main_schet_id = $2
+          AND d.isdeleted = false
+        ORDER by d.year DESC, d.month DESC
+      LIMIT 1
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async get(params, year = null) {
+    const year_filter = ``;
+
+    if (year) {
+      params.push(year);
+      year_filter = `AND d.year = $${params.length}`;
+    }
+
+    const query = `--sql
+      WITH data AS (
+         SELECT
+          d.*,
+          ua.fio AS                 accept_user_fio,
+          ua.login AS               accept_user_login
+        FROM odinox d
+        JOIN main_schet m ON m.id = d.main_schet_id
+        JOIN users u ON u.id = d.user_id
+        LEFT JOIN users ua ON ua.id = d.accept_user_id
+        JOIN regions r ON r.id = u.region_id
+        WHERE r.id = $1
+          AND d.main_schet_id = $2
+          AND d.isdeleted = false
+          ${year_filter}
+        ORDER by d.year DESC, d.month DESC
+
+        OFFSET $3 LIMIT $4
+      )
+
+      SELECT
+        COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
+        (
+           SELECT
+            COALESCE(COUNT(d.id), 0)
+          FROM odinox d
+          JOIN main_schet m ON m.id = d.main_schet_id
+          JOIN users u ON u.id = d.user_id
+          JOIN regions r ON r.id = u.region_id
+          WHERE r.id = $1
+            AND d.main_schet_id = $2
+            ${year_filter}
+            AND d.isdeleted = false
+        )::INTEGER AS total
+
+      FROM data
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async delete(params, client) {
+    const query = `UPDATE odinox SET isdeleted = true WHERE id = $1`;
+
+    await client.query(query, params);
+  }
+
+  static async deleteChildByParentId(params, client) {
+    const query = `UPDATE odinox_child SET isdeleted = true WHERE parent_id = $1`;
+
+    await client.query(query, params);
+  }
+
   static async getByIdChild(params) {
     const query = `--sql
       SELECT
         DISTINCT ON (t.id, t.name, t.sort_order)
         t.id AS             type_id,
         t.name AS           type_name,
+        t.sort_order,
         (
           SELECT
             JSON_AGG(
               JSON_BUILD_OBJECT(
                 'id', subch.id,
-                'schet', subch.schet,
-                'prixod', subch.prixod,
-                'rasxod', subch.rasxod
+                'smeta_id', subch.smeta_id,
+                'summa', summa
               )
             )
           FROM odinox_child subch
@@ -228,16 +312,6 @@ exports.OdinoxDB = class {
       WHERE ch.isdeleted = false
         AND parent_id = $1
       ORDER BY t.sort_order
-    `;
-
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
-  static async getByIdChild(params) {
-    const query = `--sql
-      
     `;
 
     const result = await db.query(query, params);
@@ -264,6 +338,7 @@ exports.OdinoxDB = class {
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND d.main_schet_id = $2
+        AND d.isdeleted = false
     `;
 
     const result = await db.query(query, params);

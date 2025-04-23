@@ -37,8 +37,7 @@ exports.Controller = class {
         year: last_date.year,
         month: last_date.month,
       });
-
-      if (check) {
+      if (!check) {
         return res.error(req.i18n.t("yearMonthCreateError"), 400);
       }
     }
@@ -73,6 +72,135 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 
+  static async getById(req, res) {
+    const region_id = req.user.region_id;
+    const { excel, report_title_id, main_schet_id } = req.query;
+    const { id } = req.params;
+
+    const data = await OdinoxService.getById({
+      region_id,
+      id,
+      main_schet_id,
+      isdeleted: true,
+    });
+
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    for (let type of data.childs) {
+      type.summa = 0;
+
+      for (let child of type.sub_childs) {
+        type.summa += child.summa;
+      }
+    }
+
+    if (excel === "true") {
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const { file_path, file_name } = await OdinoxService.getByIdExcel({
+        ...data,
+        report_title,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${file_name}"`
+      );
+
+      return res.sendFile(file_path);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
+  }
+
+  static async get(req, res) {
+    const region_id = req.user.region_id;
+    const { page, limit, year, main_schet_id } = req.query;
+
+    const offset = (page - 1) * limit;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const end = await OdinoxService.getEnd({
+      main_schet_id,
+      region_id,
+    });
+
+    const { data, total } = await OdinoxService.get({
+      region_id,
+      offset,
+      limit,
+      main_schet_id,
+      year,
+    });
+
+    for (let doc of data) {
+      if (end.id == doc.id) {
+        doc.isdeleted = true;
+      }
+    }
+
+    const pageCount = Math.ceil(total / limit);
+
+    const meta = {
+      pageCount: pageCount,
+      count: total,
+      currentPage: page,
+      nextPage: page >= pageCount ? null : page + 1,
+      backPage: page === 1 ? null : page - 1,
+    };
+
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
+  static async delete(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
+    const { main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const data = await OdinoxService.getById({
+      region_id,
+      id,
+      main_schet_id,
+    });
+
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    const end = await OdinoxService.getEnd({
+      main_schet_id,
+      region_id,
+    });
+
+    if (end?.id !== id) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    if (data.status === 3) {
+      return res.error(req.i18n.t("docStatus"), 409);
+    }
+
+    await OdinoxService.delete({ id });
+
+    return res.success(req.i18n.t("deleteSuccess"), 200);
+  }
+
   static async getOdinoxType(req, res) {
     const result = await OdinoxService.getOdinoxType();
 
@@ -82,21 +210,24 @@ exports.Controller = class {
   static async getData(req, res) {
     const { year, month, main_schet_id } = req.query;
     const region_id = req.user.region_id;
+    let last_doc;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const types = await OdinoxService.getOdinoxType({});
 
-    const date = HelperFunctions.getMonthStartEnd({ year, month });
-
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const last_doc = await OdinoxService.getByMonth({
-      region_id,
-      year: last_date.year,
-      month: last_date.month,
-      main_schet_id,
-    });
+    if (Number(month) === 1) {
+      last_doc = null;
+    } else {
+      last_doc = await OdinoxService.getByMonth({
+        region_id,
+        year: last_date.year,
+        month: last_date.month,
+        main_schet_id,
+      });
+    }
 
     const smetas = await OdinoxService.getSmeta({ ...req.query, region_id });
 
@@ -140,6 +271,7 @@ exports.Controller = class {
         });
       }
 
+      // return res.send(last_doc.childs.find((item) => item.sort_order === 0));
       if (type.sort_order === 5) {
         type.sub_childs = await OdinoxService.getCangculate({
           smetas: JSON.parse(JSON.stringify(smetas)),
@@ -189,6 +321,11 @@ exports.Controller = class {
             : [],
         });
       }
+
+      type.summa = 0;
+      type.sub_childs.forEach((item) => {
+        type.summa += item.summa;
+      });
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, types);

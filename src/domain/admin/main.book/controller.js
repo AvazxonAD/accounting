@@ -17,7 +17,7 @@ exports.Controller = class {
     }
 
     if (data.status === 3) {
-      return res.error(req.i18n.t("mainBookStatus"), 409);
+      return res.error(req.i18n.t("docStatus"), 409);
     }
 
     await MainBookService.delete({ id });
