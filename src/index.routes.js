@@ -211,6 +211,9 @@ routes
     protect,
     require("@report_title/index")
   )
+
+  .use("/admin/odinox", protect, require("@admin_odinox/index"))
+
   .use(
     "/admin/spravochnik/prixod/schets",
     protect,

@@ -55,6 +55,7 @@
     "@video_module": "./src/domain/admin/spravochnik/video.module",
     "@main_book": "./src/domain/region/main.book",
     "@region_odinox": "./src/domain/region/odinox",
+    "@admin_odinox": "./src/domain/admin/odinox",
     "@jur8_monitoring": "./src/domain/region/jur8/monitoring",
     "@admin_dashboard": "./src/domain/admin/dashboard",
     "@unit": "./src/domain/admin/spravochnik/unit",

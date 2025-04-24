@@ -8,6 +8,136 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.OdinoxService = class {
   static now = new Date();
 
+  static async getByIdExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("main book");
+
+    worksheet.mergeCells(`A1`, "T1");
+    worksheet.getCell(`A1`).value =
+      `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
+
+    worksheet.mergeCells(`A2`, "A3");
+    worksheet.getCell(`A3`).value = `№`;
+
+    worksheet.mergeCells(`B2`, "B3");
+    worksheet.getCell(`B2`).value = `Nomi`;
+
+    worksheet.mergeCells(`C2`, "C3");
+    worksheet.getCell(`C2`).value = `Smeta №`;
+
+    worksheet.mergeCells(`D2`, "H2");
+    worksheet.getCell(`D2`).value = "Ой учун";
+
+    worksheet.mergeCells(`I2`, "M2");
+    worksheet.getCell(`I2`).value = "Йил учун";
+
+    worksheet.getCell("D3").value = "Ажратилган маблағлар";
+    worksheet.getCell("E3").value =
+      "Вазирлик томонидан тўлаб берилган маблағлар";
+    worksheet.getCell("F3").value = "Касса расход / Банк расход";
+    worksheet.getCell("G3").value = "Ҳақиқатда ҳаражатлар";
+    worksheet.getCell("H3").value = "Қолдиқ";
+
+    worksheet.getCell("I3").value = "Ажратилган маблағлар";
+    worksheet.getCell("J3").value =
+      "Вазирлик томонидан тўлаб берилган маблағлар";
+    worksheet.getCell("K3").value = "Касса расход / Банк расход";
+    worksheet.getCell("L3").value = "Ҳақиқатда ҳаражатлар";
+    worksheet.getCell("M3").value = "Қолдиқ";
+
+    worksheet.columns = [
+      { key: "order", width: 5 },
+      { key: "schet", width: 10 },
+      { key: "from_prixod", width: 14 },
+      { key: "from_rasxod", width: 14 },
+      { key: "jur1_prixod", width: 14 },
+      { key: "jur1_rasxod", width: 14 },
+      { key: "jur2_prixod", width: 14 },
+      { key: "jur2_rasxod", width: 14 },
+      { key: "jur3_prixod", width: 14 },
+      { key: "jur3_rasxod", width: 14 },
+      { key: "jur4_prixod", width: 14 },
+      { key: "jur4_rasxod", width: 14 },
+      { key: "jur5_prixod", width: 14 },
+      { key: "jur5_rasxod", width: 14 },
+      { key: "jur7_prixod", width: 14 },
+      { key: "jur7_rasxod", width: 14 },
+      { key: "internal_prixod", width: 14 },
+      { key: "internal_rasxod", width: 14 },
+      { key: "to_prixod", width: 14 },
+      { key: "to_rasxod", width: 14 },
+    ];
+
+    let column = 4;
+    for (let i = 0; i < data.childs.length; i++) {}
+
+    const end_column = column;
+    worksheet.mergeCells(`A${column}`, `B${column}`);
+    worksheet.getCell(`A${column}`).value = `Итого`;
+
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let size = 13;
+
+      if (rowNumber > 3) {
+        size = 8;
+      }
+
+      if (end_column === rowNumber || rowNumber < 3) {
+        bold = true;
+      }
+
+      row.eachCell((cell, column) => {
+        if (column > 2 && rowNumber > 3) {
+          cell.numFmt = "# ##0 ##0.00";
+
+          horizontal = "right";
+        }
+
+        if (column === 2 && rowNumber > 3) {
+          horizontal = "left";
+        }
+
+        Object.assign(cell, {
+          font: { size, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+      });
+    });
+
+    const folder_path = path.join(__dirname, `../../../../public/exports`);
+
+    try {
+      await fs.promises.access(folder_path, fs.promises.constants.W_OK);
+    } catch (error) {
+      await fs.promises.mkdir(folder_path);
+    }
+
+    const file_name = `main_book.${new Date().getTime()}.xlsx`;
+
+    const file_path = `${folder_path}/${file_name}`;
+
+    await workbook.xlsx.writeFile(file_path);
+
+    return { file_name, file_path };
+  }
+
   static async update(data) {
     const result = await db.transaction(async (client) => {
       const doc = await OdinoxDB.update(

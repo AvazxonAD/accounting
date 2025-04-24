@@ -132,16 +132,8 @@ exports.Controller = class {
     }
 
     if (excel === "true") {
-      const report_title = await ReportTitleService.getById({
-        id: report_title_id,
-      });
-      if (!report_title) {
-        return res.error(req.i18n.t("reportTitleNotFound"), 404);
-      }
-
       const { file_path, file_name } = await OdinoxService.getByIdExcel({
         ...data,
-        report_title,
       });
 
       res.setHeader(

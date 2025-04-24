@@ -22,7 +22,7 @@ exports.MainBookSchema = class {
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(10),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static getById() {
@@ -30,6 +30,6 @@ exports.MainBookSchema = class {
       params: Joi.object({
         id: Joi.number().min(1).integer().required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 };

@@ -1,4 +1,4 @@
-const { MainBookService } = require("./service");
+const { OdinoxService } = require("./service");
 
 exports.Controller = class {
   static async get(req, res) {
@@ -6,7 +6,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total } = await MainBookService.get({
+    const { data, total } = await OdinoxService.get({
       offset,
       limit,
       main_schet_id,
@@ -30,7 +30,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const { id } = req.params;
 
-    const data = await MainBookService.getById({ id });
+    const data = await OdinoxService.getById({ id });
 
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -54,7 +54,7 @@ exports.Controller = class {
     const { id } = req.params;
     const user_id = req.user.id;
 
-    const old_data = await MainBookService.getById({
+    const old_data = await OdinoxService.getById({
       region_id,
       id,
     });
@@ -63,7 +63,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const result = await MainBookService.update({
+    const result = await OdinoxService.update({
       ...req.body,
       id,
       user_id,

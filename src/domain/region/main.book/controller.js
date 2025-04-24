@@ -317,7 +317,7 @@ exports.Controller = class {
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
-    const { excel, report_title_id, main_schet_id } = req.query;
+    const { excel, report_title_id, budjet_id, main_schet_id } = req.query;
     const { id } = req.params;
 
     const data = await MainBookService.getById({

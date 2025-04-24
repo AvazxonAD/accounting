@@ -1009,7 +1009,7 @@ exports.MainBookService = class {
 
     worksheet.mergeCells(`A1`, "T1");
     worksheet.getCell(`A1`).value =
-      `${data.budjet_name} ${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
+      `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
 
     worksheet.mergeCells(`A2`, "A3");
     worksheet.getCell(`A3`).value = `№`;

@@ -1,9 +1,9 @@
 const { db } = require("@db/index");
 
-exports.MainBookDB = class {
+exports.OdinoxDB = class {
   static async update(params) {
     const query = `
-      UPDATE main_book
+      UPDATE odinox
         SET
           status = $1,
           accept_time = $2,
@@ -52,10 +52,10 @@ exports.MainBookDB = class {
           d.main_schet_id,
           m.account_number,
           d.accept_user_id,
-          ua.fio AS accept_user_fio,
-          ua.login AS accept_user_login,
-          r.name AS region_name
-        FROM main_book d
+          ua.fio AS                 accept_user_fio,
+          ua.login AS               accept_user_login,
+          r.name AS                 region_name
+        FROM odinox d
         JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
         LEFT JOIN users ua ON ua.id = d.accept_user_id
@@ -69,7 +69,7 @@ exports.MainBookDB = class {
         (
           SELECT
             COALESCE(COUNT(d.id), 0)
-          FROM main_book d
+          FROM odinox d
           JOIN users u ON u.id = d.user_id
           JOIN regions r ON r.id = u.region_id
           WHERE d.isdeleted = false
@@ -84,7 +84,7 @@ exports.MainBookDB = class {
   }
 
   static async getById(params) {
-    const query = `--sql
+    const query = `
       SELECT
         d.id,
         d.status,
@@ -99,7 +99,7 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login,
         r.name AS                 region_name
-      FROM main_book d
+      FROM odinox d
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
@@ -119,23 +119,27 @@ exports.MainBookDB = class {
         DISTINCT ON (t.id, t.name, t.sort_order)
         t.id AS             type_id,
         t.name AS           type_name,
+        t.sort_order,
         (
           SELECT
             JSON_AGG(
               JSON_BUILD_OBJECT(
                 'id', subch.id,
-                'schet', subch.schet,
-                'prixod', subch.prixod,
-                'rasxod', subch.rasxod
+                'smeta_id', subch.smeta_id,
+                'summa', subch.summa,
+                'smeta_name', s.smeta_name,
+                'smeta_number', s.smeta_number,
+                'group_number', s.group_number
               )
             )
-          FROM main_book_child subch
+          FROM odinox_child subch
+          JOIN smeta s ON s.id = subch.smeta_id
           WHERE subch.isdeleted = false
             AND subch.type_id = t.id
             AND subch.parent_id = $1
         ) AS sub_childs
-      FROM main_book_child ch
-      JOIN main_book_type t ON t.id = ch.type_id
+      FROM odinox_child ch
+      JOIN odinox_type t ON t.id = ch.type_id
       WHERE ch.isdeleted = false
         AND parent_id = $1
       ORDER BY t.sort_order

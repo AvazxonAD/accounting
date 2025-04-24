@@ -8,6 +8,246 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.OdinoxService = class {
   static now = new Date();
 
+  static async getByIdExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("main book");
+
+    worksheet.mergeCells(`A1`, "T1");
+    worksheet.getCell(`A1`).value =
+      `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
+
+    worksheet.mergeCells(`A2`, "A3");
+    worksheet.getCell(`A3`).value = `№`;
+
+    worksheet.mergeCells(`B2`, "B3");
+    worksheet.getCell(`B2`).value = `Nomi`;
+
+    worksheet.mergeCells(`C2`, "C3");
+    worksheet.getCell(`C2`).value = `Smeta №`;
+
+    worksheet.mergeCells(`D2`, "H2");
+    worksheet.getCell(`D2`).value = "Ой учун";
+
+    worksheet.mergeCells(`I2`, "M2");
+    worksheet.getCell(`I2`).value = "Йил учун";
+
+    worksheet.getCell("D3").value = "Ажратилган маблағлар";
+    worksheet.getCell("E3").value =
+      "Вазирлик томонидан тўлаб берилган маблағлар";
+    worksheet.getCell("F3").value = "Касса расход / Банк расход";
+    worksheet.getCell("G3").value = "Ҳақиқатда ҳаражатлар";
+    worksheet.getCell("H3").value = "Қолдиқ";
+
+    worksheet.getCell("I3").value = "Ажратилган маблағлар";
+    worksheet.getCell("J3").value =
+      "Вазирлик томонидан тўлаб берилган маблағлар";
+    worksheet.getCell("K3").value = "Касса расход / Банк расход";
+    worksheet.getCell("L3").value = "Ҳақиқатда ҳаражатлар";
+    worksheet.getCell("M3").value = "Қолдиқ";
+
+    worksheet.columns = [
+      { key: "order", width: 5 },
+      { key: "smeta_name", width: 50 },
+      { key: "smeta_number", width: 19 },
+      { key: "grafik", width: 19 },
+      { key: "bank_prixod", width: 19 },
+      { key: "jur1_jur2_rasxod", width: 19 },
+      { key: "jur3a_akt_avans", width: 19 },
+      { key: "remaining", width: 19 },
+      { key: "grafik_year", width: 19 },
+      { key: "bank_prixod_year", width: 19 },
+      { key: "jur1_jur2_rasxod_year", width: 19 },
+      { key: "jur3a_akt_avans_year", width: 19 },
+      { key: "remaining_year", width: 19 },
+    ];
+
+    let column = 4;
+    let genral = false;
+    for (let i = 0; i < data.childs.length; i++) {
+      const type = data.childs[i];
+
+      if (!genral) {
+        type.sub_childs.forEach((item, index) => {
+          worksheet.addRow({
+            order: index + 1,
+            smeta_name: item.smeta_name || "",
+            smeta_number: item.smeta_number || "",
+          });
+
+          column++;
+        });
+
+        genral = true;
+      }
+
+      if (type.sort_order === 0) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`D${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`D${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 1) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`E${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`E${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 2) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`F${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`F${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 3) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`G${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`G${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 4) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`H${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`H${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 5) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`I${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`I${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 6) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`J${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`J${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 7) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`K${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`K${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 8) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`L${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`L${column}`).value = type.summa;
+      }
+
+      if (type.sort_order === 9) {
+        let column = 4;
+        type.sub_childs.forEach((item) => {
+          worksheet.getCell(`M${column}`).value = item.summa;
+
+          column++;
+        });
+        worksheet.getCell(`M${column}`).value = type.summa;
+      }
+    }
+
+    const end_column = column;
+    worksheet.mergeCells(`A${column}`, `C${column}`);
+    worksheet.getCell(`A${column}`).value = `Итого`;
+
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let size = 13;
+
+      if (rowNumber > 3) {
+        size = 8;
+      }
+
+      if (end_column === rowNumber || rowNumber < 4) {
+        bold = true;
+      }
+
+      row.eachCell((cell, column) => {
+        if (column > 2 && rowNumber > 3) {
+          cell.numFmt = "# ##0.00";
+
+          horizontal = "right";
+        }
+
+        if (column === 2 && rowNumber > 3) {
+          horizontal = "left";
+        }
+
+        Object.assign(cell, {
+          font: { size, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+      });
+    });
+
+    const folder_path = path.join(__dirname, `../../../../public/exports`);
+
+    try {
+      await fs.promises.access(folder_path, fs.promises.constants.W_OK);
+    } catch (error) {
+      await fs.promises.mkdir(folder_path);
+    }
+
+    const file_name = `main_book.${new Date().getTime()}.xlsx`;
+
+    const file_path = `${folder_path}/${file_name}`;
+
+    await workbook.xlsx.writeFile(file_path);
+
+    return { file_name, file_path };
+  }
+
   static async update(data) {
     const result = await db.transaction(async (client) => {
       const doc = await OdinoxDB.update(
