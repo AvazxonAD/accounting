@@ -1,5 +1,20 @@
 const { db } = require(`@db/index`);
 exports.OdinoxDB = class {
+  static async update(params, client) {
+    const query = `--sql
+      UPDATE odinox
+      SET
+        send_time = $1,
+        status = $2,
+        updated_at = $3
+      WHERE id = $4
+      RETURNING id 
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
   static async getSmeta(params) {
     const query = `--sql
       SELECT

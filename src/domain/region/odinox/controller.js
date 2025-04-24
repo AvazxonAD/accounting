@@ -5,6 +5,40 @@ const { ReportTitleService } = require(`@report_title/service`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
+  static async update(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
+    const user_id = req.user.id;
+    const { main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const old_data = await OdinoxService.getById({
+      region_id,
+      main_schet_id,
+      id,
+    });
+
+    if (!old_data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (old_data.status === 3) {
+      return res.error(req.i18n.t("docStatus"), 409);
+    }
+
+    const { dates, doc } = await OdinoxService.update({
+      ...req.body,
+      old_data,
+      region_id,
+      main_schet_id,
+      id,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("updateSuccess"), 200, { dates }, doc);
+  }
+
   static async create(req, res) {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
@@ -271,8 +305,8 @@ exports.Controller = class {
         });
       }
 
-      // return res.send(last_doc.childs.find((item) => item.sort_order === 0));
       if (type.sort_order === 5) {
+        console.log("first");
         type.sub_childs = await OdinoxService.getCangculate({
           smetas: JSON.parse(JSON.stringify(smetas)),
           doc: types.find((item) => item.sort_order === 0),

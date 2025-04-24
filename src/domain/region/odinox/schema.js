@@ -1,6 +1,41 @@
 const Joi = require("joi");
 
 exports.OdinoxSchema = class {
+  static update() {
+    return Joi.object({
+      body: Joi.object({
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        childs: Joi.array()
+          .items(
+            Joi.object({
+              type_id: Joi.number().integer().min(1).required(),
+              sub_childs: Joi.array()
+                .items(
+                  Joi.object({
+                    id: Joi.number().integer().allow(null),
+                    smeta_id: Joi.number().integer().min(1).required(),
+                    summa: Joi.number().required(),
+                  })
+                )
+                .min(1)
+                .required(),
+            })
+          )
+          .min(1)
+          .required(),
+      }),
+
+      params: Joi.object({
+        id: Joi.number().min(1).integer().required(),
+      }),
+
+      query: Joi.object({
+        main_schet_id: Joi.number().min(1).integer().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static get() {
     return Joi.object({
       query: Joi.object({
