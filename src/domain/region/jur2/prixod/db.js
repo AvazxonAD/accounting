@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 
 exports.BankPrixodDB = class {
   static async create(params, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO bank_prixod(
                 doc_num, 
                 doc_date, 
@@ -164,6 +164,11 @@ exports.BankPrixodDB = class {
                 d.organization_by_raschet_schet_id::INTEGER,
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
                 d.shartnoma_grafik_id::INTEGER,
+                row_to_json(so) AS organ,
+                row_to_json(ac) AS account_number,
+                row_to_json(g) AS gazna_number,
+                row_to_json(c) AS contract,
+                row_to_json(cg) AS contract_grafik,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -181,7 +186,12 @@ exports.BankPrixodDB = class {
                             s_t_o.name AS spravochnik_type_operatsii_name,
                             ch.id_spravochnik_podotchet_litso,
                             s_p_l.name AS spravochnik_podotchet_litso_name,
-                            ch.main_zarplata_id
+                            ch.main_zarplata_id,
+                            row_to_json(so) AS operatsii,
+                            row_to_json(s_p) AS podrazdelenie,
+                            row_to_json(s_t_o) AS type_operatsii,
+                            row_to_json(s_s) AS sostav,
+                            row_to_json(s_p_l) AS podotchet
                         FROM bank_prixod_child AS ch
                         JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
@@ -194,6 +204,11 @@ exports.BankPrixodDB = class {
             FROM bank_prixod AS d
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
+            LEFT JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+            LEFT JOIN organization_by_raschet_schet_gazna g ON g.id = d.organization_by_raschet_schet_gazna_id
+            LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organization_by_raschet_schet_id
+            LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
+            LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3
