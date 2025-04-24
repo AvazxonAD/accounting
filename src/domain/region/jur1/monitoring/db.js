@@ -255,14 +255,15 @@ exports.KassaMonitoringDB = class {
                         ch.summa::FLOAT,
                         d.doc_num,
                         d.doc_date,
-                        so.name AS                      fio,
-                        so.rayon,
+                        COALESCE(so.name, so2.name) AS fio,
+                        COALESCE(so.rayon, so2.inn) AS rayon,
                         d.opisanie AS                   comment
                     FROM kassa_prixod_child ch
                     JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
                     JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    LEFT  JOIN spravochnik_organization so2 ON so2.id = d.organ_id
                     LEFT JOIN spravochnik_podotchet_litso so ON so.id = d.id_podotchet_litso
                     WHERE d.isdeleted = false
                         AND ch.isdeleted = false
@@ -277,13 +278,14 @@ exports.KassaMonitoringDB = class {
                         ch.summa::FLOAT,
                         d.doc_num,
                         d.doc_date,
-                        so.name AS                      fio,
-                        so.rayon,
+                        COALESCE(so.name, so2.name) AS fio,
+                        COALESCE(so.rayon, so2.inn) AS rayon,
                         d.opisanie AS                   comment
                     FROM kassa_rasxod_child ch
                     JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
+                    LEFT  JOIN spravochnik_organization so2 ON so2.id = d.organ_id
                     JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
                     LEFT JOIN spravochnik_podotchet_litso so ON so.id = d.id_podotchet_litso
                     WHERE d.isdeleted = false

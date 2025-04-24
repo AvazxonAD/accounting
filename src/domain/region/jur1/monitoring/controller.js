@@ -155,20 +155,11 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const saldo = await KassaSaldoService.getByMonth({
-      ...req.query,
-      region_id,
-    });
-    if (!saldo) {
-      return res.error(req.i18n.t("saldoNotFound"), 404);
-    }
-
     const data = await KassaMonitoringService.daysReport({
       region_id,
       main_schet_id,
       from,
       to,
-      saldo,
     });
 
     if (excel) {
