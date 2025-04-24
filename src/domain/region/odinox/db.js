@@ -339,7 +339,7 @@ exports.OdinoxDB = class {
 
     const result = await db.query(query, params);
 
-    return result;
+    return result[0];
   }
 
   static async checkCreateCount(params) {
