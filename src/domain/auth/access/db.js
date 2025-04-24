@@ -37,6 +37,8 @@ exports.AccessDB = class {
                 a.spravochnik,
                 a.region,
                 a.main_book,
+                a.smeta_grafik,
+                a.odinox,
                 r.name AS role_name
             FROM access AS a
             JOIN role AS r ON r.id = a.role_id
@@ -68,8 +70,10 @@ exports.AccessDB = class {
                 spravochnik = $8,
                 region = $9,
                 main_book = $10,
-                updated_at = $11
-            WHERE id = $12
+                smeta_grafik = $11,
+                odinox = $12,
+                updated_at = $13
+            WHERE id = $14
             RETURNING id
         `;
     const data = await db.query(query, params);

@@ -12,6 +12,8 @@ exports.updateAccessSchema = Joi.object({
     spravochnik: Joi.boolean().default(false),
     region: Joi.boolean().default(false),
     main_book: Joi.boolean().default(false),
+    smeta_grafik: Joi.boolean().default(false),
+    odinox: Joi.boolean().default(false),
   }),
   params: Joi.object({
     id: Joi.number().integer().min(1).required(),

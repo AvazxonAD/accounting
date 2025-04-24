@@ -1,0 +1,4 @@
+ALTER TABLE
+    access
+ADD
+    COLUMN odinox BOOLEAN DEFAULT FALSE;
