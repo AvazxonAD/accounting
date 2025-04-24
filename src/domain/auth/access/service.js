@@ -15,6 +15,8 @@ exports.AccessService = class {
       spravochnik,
       region,
       main_book,
+      odinox,
+      smeta_grafik,
     } = req.body;
     const region_id = req.user.region_id;
     const access_id = req.params.id;
@@ -37,6 +39,8 @@ exports.AccessService = class {
       spravochnik,
       region,
       main_book,
+      smeta_grafik,
+      odinox,
       tashkentTime(),
       access_id,
     ]);
