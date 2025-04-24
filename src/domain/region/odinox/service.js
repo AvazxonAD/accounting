@@ -105,7 +105,7 @@ exports.OdinoxService = class {
   static async getJur1Data(data) {
     const _data = await OdinoxDB.getJur1Data([
       data.year,
-      data.month,
+      data.months,
       data.region_id,
       data.main_schet_id,
     ]);
@@ -125,7 +125,7 @@ exports.OdinoxService = class {
   static async getJur2Data(data) {
     const _data = await OdinoxDB.getJur2Data([
       data.year,
-      data.month,
+      data.months,
       data.region_id,
       data.main_schet_id,
     ]);
@@ -145,7 +145,7 @@ exports.OdinoxService = class {
   static async getJur3Data(data) {
     const _data = await OdinoxDB.getJur3Data([
       data.year,
-      data.month,
+      data.months,
       data.region_id,
       data.main_schet_id,
     ]);
@@ -184,6 +184,20 @@ exports.OdinoxService = class {
 
       await OdinoxDB.deleteChildByParentId([data.id], client);
     });
+  }
+
+  static getJur0DataYear(data) {
+    for (let smeta of data.smetas) {
+      if (smeta.smeta_grafik) {
+        for (let i = 1; i <= data.month; i++) {
+          smeta.summa = smeta.smeta_grafik[`oy_${i}`];
+        }
+      } else {
+        smeta.summa = 0;
+      }
+    }
+
+    return data.smetas;
   }
 
   static async getCangculate(data) {

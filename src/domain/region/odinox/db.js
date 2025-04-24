@@ -104,7 +104,7 @@ exports.OdinoxDB = class {
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
       WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
         
@@ -127,7 +127,7 @@ exports.OdinoxDB = class {
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
       WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
         
@@ -144,7 +144,7 @@ exports.OdinoxDB = class {
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
       WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
         
@@ -167,7 +167,7 @@ exports.OdinoxDB = class {
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
       WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
         
@@ -184,7 +184,7 @@ exports.OdinoxDB = class {
       JOIN users AS u ON u.id = d.user_id
       JOIN regions AS r ON r.id = u.region_id
       WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
         
