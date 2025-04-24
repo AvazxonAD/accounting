@@ -109,12 +109,20 @@ exports.KassaMonitoringService = class {
       data.region_id,
     ]);
 
-    const internal = await KassaMonitoringDB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.from,
-      data.to,
-    ]);
+    const summa_from = await KassaMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, data.from],
+      null,
+      null,
+      true
+    );
+
+    const summa_to = await KassaMonitoringDB.getSumma(
+      [data.region_id, data.main_schet_id, data.to],
+      null,
+      null,
+      null,
+      true
+    );
 
     let rasxodSumma = 0;
     let prixodSumma = 0;
@@ -132,8 +140,8 @@ exports.KassaMonitoringService = class {
 
     return {
       ...result,
-      summa_from: data.saldo.summa,
-      summa_to: data.saldo.summa + internal.summa,
+      summa_from: summa_from.summa,
+      summa_to: summa_to.summa,
     };
   }
 

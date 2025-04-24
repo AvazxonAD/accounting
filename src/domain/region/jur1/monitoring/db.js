@@ -174,12 +174,26 @@ exports.KassaMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(params, search, from = null) {
+  static async getSumma(
+    params,
+    search,
+    from = null,
+    one_from = null,
+    one_to = null
+  ) {
     let search_filter = ``;
     let internal_filter = `BETWEEN $3 AND $4`;
 
     if (from) {
       internal_filter = ` >= $3 AND d.doc_date < $4`;
+    }
+
+    if (one_from) {
+      internal_filter = `  < $3`;
+    }
+
+    if (one_to) {
+      internal_filter = `  <= $3`;
     }
 
     if (search) {

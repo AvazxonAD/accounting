@@ -156,7 +156,13 @@ exports.BankMonitoringDB = class {
     return result[0];
   }
 
-  static async getSumma(params, search, from = null) {
+  static async getSumma(
+    params,
+    search = null,
+    from = null,
+    one_from = null,
+    one_to = null
+  ) {
     let search_filter = ``;
     let internal_filter = `BETWEEN $3 AND $4`;
 
@@ -167,6 +173,14 @@ exports.BankMonitoringDB = class {
     if (search) {
       params.push(search);
       search_filter = `AND d.doc_num = $${params.length}`;
+    }
+
+    if (one_from) {
+      internal_filter = `  < $3`;
+    }
+
+    if (one_to) {
+      internal_filter = `  <= $3`;
     }
 
     const query = `--sql

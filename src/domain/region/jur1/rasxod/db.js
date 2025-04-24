@@ -154,21 +154,30 @@ exports.KassaRasxodDB = class {
                 d.summa::FLOAT, 
                 p.name AS spravochnik_podotchet_litso_name,
                 p.rayon AS spravochnik_podotchet_litso_rayon,
+                row_to_json(p) AS podotchet,
+                row_to_json(so) AS organ,
+                row_to_json(ac) AS account_number,
+                row_to_json(g) AS gazna_number,
+                row_to_json(c) AS contract,
+                row_to_json(cg) AS contract_grafik,
                 d.main_zarplata_id,
                 mp.fio AS zarplata_fio,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
                         SELECT  
-                            ch.id,
+                            ch.*,
                             op.schet,
-                            ch.spravochnik_operatsii_id,
-                            ch.summa,
-                            ch.id_spravochnik_podrazdelenie,
-                            ch.id_spravochnik_sostav,
-                            ch.id_spravochnik_type_operatsii
+                            ch.summa::FLOAT,
+                            row_to_json(op) AS operatsii,
+                            row_to_json(sp) AS podrazdelenie,
+                            row_to_json(sto) AS type_operatsii,
+                            row_to_json(so) AS sostav
                         FROM kassa_rasxod_child AS ch
                         JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+                        LEFT JOIN spravochnik_podrazdelenie sp ON sp.id = ch.id_spravochnik_podrazdelenie
+                        LEFT JOIN spravochnik_sostav so ON sp.id = ch.id_spravochnik_sostav
+                        LEFT JOIN spravochnik_type_operatsii sto ON sto.id = ch.id_spravochnik_type_operatsii
                         JOIN users AS u ON u.id = d.user_id
                         JOIN regions AS r ON r.id = u.region_id   
                         WHERE r.id = $1 
@@ -180,6 +189,11 @@ exports.KassaRasxodDB = class {
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso
+            LEFT JOIN spravochnik_organization AS so ON so.id = d.organ_id
+            LEFT JOIN organization_by_raschet_schet_gazna g ON g.spravochnik_organization_id = so.id
+            LEFT JOIN organization_by_raschet_schet ac ON ac.spravochnik_organization_id = so.id
+            LEFT JOIN shartnomalar_organization c ON c.id = d.contract_grafik_id
+            LEFT JOIN shartnoma_grafik cg ON cg.id = d.contract_grafik_id
             LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
             WHERE r.id = $1
                 AND d.main_schet_id = $2 
