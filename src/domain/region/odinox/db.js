@@ -170,6 +170,8 @@ exports.OdinoxDB = class {
         AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
+        AND d.isdeleted = false
+        AND ch.isdeleted = false
         
       GROUP BY op.sub_schet
 
@@ -187,6 +189,8 @@ exports.OdinoxDB = class {
         AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
         AND r.id = $3
         AND d.main_schet_id = $4
+        AND d.isdeleted = false
+        AND ch.isdeleted = false
         
       GROUP BY op.sub_schet
     `;

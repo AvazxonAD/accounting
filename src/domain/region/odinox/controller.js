@@ -315,7 +315,7 @@ exports.Controller = class {
           smetas: JSON.parse(JSON.stringify(smetas)),
           ...req.query,
           region_id,
-          months: [1, req.query.months],
+          months: [1, month],
         });
       }
 

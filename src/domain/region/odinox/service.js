@@ -188,34 +188,12 @@ exports.OdinoxService = class {
 
   static getJur0DataYear(data) {
     for (let smeta of data.smetas) {
+      smeta.summa = 0;
       if (smeta.smeta_grafik) {
         for (let i = 1; i <= data.month; i++) {
-          smeta.summa = smeta.smeta_grafik[`oy_${i}`];
+          smeta.summa += smeta.smeta_grafik[`oy_${i}`];
         }
-      } else {
-        smeta.summa = 0;
       }
-    }
-
-    return data.smetas;
-  }
-
-  static async getCangculate(data) {
-    for (let smeta of data.smetas) {
-      let old_summa;
-      const doc_summa = data.doc.sub_childs.find(
-        (item) => item.id === smeta.id
-      );
-
-      if (data.old) {
-        old_summa = data.old.sub_childs.find(
-          (item) => item.smeta_id === smeta.id
-        );
-      } else {
-        old_summa = { summa: 0 };
-      }
-
-      smeta.summa = doc_summa.summa + old_summa.summa;
     }
 
     return data.smetas;
