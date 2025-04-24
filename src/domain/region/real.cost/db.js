@@ -239,7 +239,7 @@ exports.OdinoxDB = class {
   }
 
   static async get(params, year = null) {
-    let year_filter = ``;
+    const year_filter = ``;
 
     if (year) {
       params.push(year);
@@ -251,9 +251,7 @@ exports.OdinoxDB = class {
          SELECT
           d.*,
           ua.fio AS                 accept_user_fio,
-          ua.login AS               accept_user_login,
-          u.fio AS                 user_fio,
-          u.login AS               user_login
+          ua.login AS               accept_user_login
         FROM odinox d
         JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
@@ -316,14 +314,10 @@ exports.OdinoxDB = class {
               JSON_BUILD_OBJECT(
                 'id', subch.id,
                 'smeta_id', subch.smeta_id,
-                'summa', subch.summa,
-                'smeta_name', s.smeta_name,
-                'smeta_number', s.smeta_number,
-                'group_number', s.group_number
+                'summa', summa
               )
             )
           FROM odinox_child subch
-          JOIN smeta s ON s.id = subch.smeta_id
           WHERE subch.isdeleted = false
             AND subch.type_id = t.id
             AND subch.parent_id = $1

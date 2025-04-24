@@ -103,7 +103,7 @@ exports.ContractDB = class {
   }
 
   static async createGrafik(params, _values, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO shartnoma_grafik(
                 id_shartnomalar_organization, 
                 user_id, 
