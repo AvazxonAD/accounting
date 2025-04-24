@@ -930,7 +930,10 @@ exports.Monitoring159Service = class {
     });
 
     const fileName = `${data.file_name}_prixod_report_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(__dirname, "../../../../../public/exports");
+    const folder_path = path.join(
+      __dirname,
+      "../../../../../../public/exports"
+    );
 
     try {
       await access(folder_path, constants.W_OK);

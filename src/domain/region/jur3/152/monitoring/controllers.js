@@ -94,6 +94,93 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
+  static async daysReport(req, res) {
+    const region_id = req.user.region_id;
+    const { main_schet_id, organ_id, schet_id, excel, report_title_id } =
+      req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_152.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 400);
+    }
+
+    if (organ_id) {
+      const organization = await OrganizationService.getById({
+        region_id,
+        id: organ_id,
+        isdeleted: false,
+      });
+      if (!organization) {
+        return res.error(req.i18n.t("organizationNotFound"), 404);
+      }
+    }
+
+    const data = await Monitoring152Service.daysReport({
+      ...req.query,
+      region_id,
+      organ_id,
+      schet: schet.schet,
+    });
+
+    if (excel) {
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.days_report,
+      });
+
+      const { fileName, filePath } = await HelperFunctions.daysReportExcel({
+        ...data,
+        from,
+        region,
+        from,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        title: "Банк кунлик ҳисоботи",
+        file_name: "bank",
+        podpis,
+        budjet,
+        schet: schet.schet,
+        order: 2,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, data);
+  }
+
   static async cap(req, res) {
     const region_id = req.user.region_id;
     const {
@@ -404,14 +491,14 @@ exports.Controller = class {
 
     const region = await RegionDB.getById([region_id]);
 
-    const { main_schet, schet } = await ValidatorFunctions.mainSchet({
+    const { schet } = await ValidatorFunctions.mainSchet({
       region_id,
       main_schet_id,
       type: "152",
       schet_id,
     });
 
-    const budjet = await ValidatorFunctions.budjet({ budjet_id });
+    await ValidatorFunctions.budjet({ budjet_id });
 
     const saldo = await Saldo152Service.getByMonth({
       budjet_id,

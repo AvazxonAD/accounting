@@ -18,6 +18,28 @@ exports.Monitoring159Schema = class {
     }).options({ stripUnknown: true });
   }
 
+  static daysReport() {
+    return Joi.object({
+      query: Joi.object({
+        report_title_id: Joi.number().integer().required().min(1),
+        budjet_id: Joi.number().integer().required().min(1),
+        schet_id: Joi.number().integer().required().min(1),
+        excel: Joi.boolean().default(false),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        main_schet_id: Joi.number().integer().required().min(1),
+        from: Joi.string()
+          .trim()
+          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+          .required(),
+        to: Joi.string()
+          .trim()
+          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+          .required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static prixodReport() {
     return Joi.object({
       query: Joi.object({

@@ -16,6 +16,10 @@ router
   .get("/", validator(Controller.monitoring, monitoringSchema))
   .get("/cap", validator(Controller.cap, capSchema))
   .get(
+    "/daily",
+    validator(Controller.daysReport, Monitoring159Schema.daysReport())
+  )
+  .get(
     "/akt/sverka",
     validator(Controller.aktSverka, Monitoring159Schema.aktSverka())
   )
