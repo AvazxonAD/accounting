@@ -2,6 +2,198 @@ const { db } = require("@db/index");
 const { sqlFilter } = require("@helper/functions");
 
 exports.Monitoring159DB = class {
+  static async daysReport(params) {
+    const query = `--sql
+            WITH
+                prixod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        d.opisanie AS                   comment,
+                        'bank_rasxod' AS type
+                    FROM bank_rasxod_child ch
+                    JOIN bank_rasxod AS d ON d.id = ch.id_bank_rasxod
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_organization so ON so.id = d.id_spravochnik_organization
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND op.schet = $5
+                    
+                    UNION ALL
+                    
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        d.opisanie AS                   comment,
+                        'kassa_rasxod' AS type
+                    FROM kassa_rasxod_child ch
+                    JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_organization so ON so.id = d.organ_id
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organ_account_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.contract_id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND op.schet = $5
+                ),
+                rasxod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        d.opisanie AS                   comment,
+                        'bank_prixod' AS type
+                    FROM bank_prixod_child ch
+                    JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_organization so ON so.id = d.id_spravochnik_organization
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND op.schet = $5
+                    
+                    UNION ALL
+                    
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        d.opisanie AS                   comment,
+                        'akt' AS type
+                    FROM bajarilgan_ishlar_jur3_child AS ch
+                    JOIN bajarilgan_ishlar_jur3 AS d ON d.id = ch.bajarilgan_ishlar_jur3_id
+                    JOIN users AS u ON d.user_id = u.id
+                    JOIN regions AS r ON r.id = u.region_id
+                    LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+                    JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+                    JOIN jur_schets AS own ON own.id = d.schet_id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.shartnomalar_organization_id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND own.schet = $5
+
+                    UNION ALL
+                    
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        d.opisanie AS                   comment,
+                        'kassa_prixod' AS type
+                    FROM kassa_prixod_child ch
+                    JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    JOIN spravochnik_organization so ON so.id = d.organ_id
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organ_account_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.contract_id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND op.schet = $5
+
+                    UNION ALL
+                    
+                    SELECT
+                        ch.kredit_schet AS schet,
+                        ch.kredit_sub_schet AS sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name,
+                        so.inn,
+                        oa.raschet_schet AS             account_number,
+                        c.doc_num AS                    contract_doc_num,
+                        c.doc_date AS                   contract_doc_date,
+                        d.opisanie AS                   comment,
+                        'jur7_prixod' AS type
+                    FROM document_prixod_jur7_child ch
+                    JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_organization so ON so.id = d.kimdan_id
+                    LEFT JOIN organization_by_raschet_schet oa ON oa.id = d.organization_by_raschet_schet_id
+                    LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND ch.kredit_schet = $5
+                )
+            SELECT
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON) FROM prixod) AS prixods,
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON) FROM rasxod) AS rasxods;
+        `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async monitoring(
     params,
     organ_id,
@@ -434,7 +626,14 @@ exports.Monitoring159DB = class {
     return result[0].total;
   }
 
-  static async getSumma(params, organ_id = null, search = null, from = null) {
+  static async getSumma(
+    params,
+    organ_id = null,
+    search = null,
+    from = null,
+    one_from = null,
+    one_to = null
+  ) {
     let organ_filter = "";
     let search_filter = ``;
     let internal_filter = `BETWEEN $4 AND $5`;
@@ -455,6 +654,14 @@ exports.Monitoring159DB = class {
                 so.name ILIKE '%' || $${params.length} || '%' OR 
                 so.inn ILIKE '%' || $${params.length} || '%'
             )`;
+    }
+
+    if (one_from) {
+      internal_filter = ` < $4 `;
+    }
+
+    if (one_to) {
+      internal_filter = ` <= $4`;
     }
 
     const query = `--sql

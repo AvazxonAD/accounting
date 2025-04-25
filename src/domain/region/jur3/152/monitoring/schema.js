@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.Monitoring159Schema = class {
+exports.Monitoring152Schema = class {
   static aktSverka() {
     return Joi.object({
       query: Joi.object({
@@ -25,8 +25,6 @@ exports.Monitoring159Schema = class {
         budjet_id: Joi.number().integer().required().min(1),
         schet_id: Joi.number().integer().required().min(1),
         excel: Joi.boolean().default(false),
-        month: Joi.number().integer().required().min(1).max(12).required(),
-        year: Joi.number().integer().required().min(1901).required(),
         main_schet_id: Joi.number().integer().required().min(1),
         from: Joi.string()
           .trim()

@@ -12,8 +12,105 @@ const { ReportTitleService } = require(`@report_title/service`);
 const { PodpisService } = require(`@podpis/service`);
 const { REPORT_TYPE } = require("@helper/constants");
 const { Saldo159Service } = require(`@saldo_159/service`);
+const { HelperFunctions } = require("@helper/functions");
 
 exports.Controller = class {
+  static async daysReport(req, res) {
+    const region_id = req.user.region_id;
+    const {
+      main_schet_id,
+      organ_id,
+      schet_id,
+      excel,
+      budjet_id,
+      from,
+      to,
+      report_title_id,
+    } = req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 400);
+    }
+
+    if (organ_id) {
+      const organization = await OrganizationService.getById({
+        region_id,
+        id: organ_id,
+        isdeleted: false,
+      });
+      if (!organization) {
+        return res.error(req.i18n.t("organizationNotFound"), 404);
+      }
+    }
+
+    const data = await Monitoring159Service.daysReport({
+      ...req.query,
+      region_id,
+      organ_id,
+      schet: schet.schet,
+    });
+    console.log(schet.schet);
+
+    if (excel) {
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 404);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.days_report,
+      });
+
+      const { fileName, filePath } = await HelperFunctions.daysReportExcel({
+        ...data,
+        region,
+        from,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        title:
+          "Етказиб берувчи корхоналар билан дебитор-кредиторлик кунлик ҳисоботи",
+        file_name: "159",
+        podpis,
+        budjet,
+        schet: schet.schet,
+        order: 2,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, data);
+  }
+
   static async monitoring(req, res) {
     const region_id = req.user.region_id;
     const { query } = req;

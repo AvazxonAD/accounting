@@ -381,6 +381,54 @@ exports.Monitoring159Service = class {
     return { fileName, filePath };
   }
 
+  static async daysReport(data) {
+    const result = await Monitoring159DB.daysReport([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+      data.schet,
+    ]);
+
+    const summa_to = await Monitoring159DB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, data.to],
+      data.organ_id,
+      null,
+      null,
+      null,
+      true
+    );
+
+    const summa_from = await Monitoring159DB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, data.from],
+      data.organ_id,
+      null,
+      null,
+      true,
+      null
+    );
+
+    let rasxodSumma = 0;
+    let prixodSumma = 0;
+
+    for (let rasxod of result.rasxods) {
+      rasxodSumma += rasxod.summa;
+    }
+
+    for (let prixod of result.prixods) {
+      prixodSumma += prixod.summa;
+    }
+
+    result.rasxodSumma = rasxodSumma;
+    result.prixodSumma = prixodSumma;
+
+    return {
+      ...result,
+      summa_from: summa_from.summa,
+      summa_to: summa_to.summa,
+    };
+  }
+
   // old
 
   static async prixodReport(data) {

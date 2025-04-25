@@ -6,7 +6,7 @@ const {
   prixodRasxodSchema,
   capSchema,
   consolidatedSchema,
-  Monitoring159Schema,
+  Monitoring152Schema,
 } = require("./schema");
 
 const { Router } = require("express");
@@ -17,17 +17,17 @@ router
   .get("/cap", validator(Controller.cap, capSchema))
   .get(
     "/daily",
-    validator(Controller.daysReport, Monitoring159Schema.daysReport())
+    validator(Controller.daysReport, Monitoring152Schema.daysReport())
   )
   .get(
     "/akt/sverka",
-    validator(Controller.aktSverka, Monitoring159Schema.aktSverka())
+    validator(Controller.aktSverka, Monitoring152Schema.aktSverka())
   )
 
   // old
   .get(
     "/prixod",
-    validator(Controller.prixodReport, Monitoring159Schema.prixodReport())
+    validator(Controller.prixodReport, Monitoring152Schema.prixodReport())
   )
   .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
   .get("/order", validator(Controller.consolidated, consolidatedSchema));

@@ -14,7 +14,6 @@ const { REPORT_TYPE } = require("@helper/constants");
 const { Saldo152Service } = require(`@saldo_152/service`);
 const { ValidatorFunctions } = require("@helper/database.validator");
 const { HelperFunctions } = require("@helper/functions");
-const { date } = require("joi");
 
 exports.Controller = class {
   static async monitoring(req, res) {
@@ -96,8 +95,16 @@ exports.Controller = class {
 
   static async daysReport(req, res) {
     const region_id = req.user.region_id;
-    const { main_schet_id, organ_id, schet_id, excel, report_title_id } =
-      req.query;
+    const {
+      main_schet_id,
+      organ_id,
+      schet_id,
+      excel,
+      budjet_id,
+      from,
+      to,
+      report_title_id,
+    } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -151,15 +158,14 @@ exports.Controller = class {
 
       const { fileName, filePath } = await HelperFunctions.daysReportExcel({
         ...data,
-        from,
         region,
         from,
         to,
         main_schet,
         report_title,
         region_id,
-        title: "Банк кунлик ҳисоботи",
-        file_name: "bank",
+        title: "Буюртмачи корхоналар билан дебитор-кредиторлик кунлик ҳисоботи",
+        file_name: "152",
         podpis,
         budjet,
         schet: schet.schet,
@@ -269,6 +275,7 @@ exports.Controller = class {
   }
 
   // old
+
   static async prixodReport(req, res) {
     const region_id = req.user.region_id;
     const {

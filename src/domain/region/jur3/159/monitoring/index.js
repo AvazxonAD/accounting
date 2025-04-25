@@ -16,6 +16,11 @@ router
   .get("/", validator(Controller.monitoring, monitoringSchema))
   .get("/cap", validator(Controller.cap, capSchema))
 
+  .get(
+    "/daily",
+    validator(Controller.daysReport, Monitoring159Schema.daysReport())
+  )
+
   // old
   .get(
     "/prixod",

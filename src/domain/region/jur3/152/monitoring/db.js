@@ -304,7 +304,8 @@ exports.Monitoring152DB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        d.opisanie AS                   comment
+                        d.opisanie AS                   comment,
+                        'bank_rasxod' AS type
                     FROM bank_rasxod_child ch
                     JOIN bank_rasxod AS d ON d.id = ch.id_bank_rasxod
                     JOIN users AS u ON u.id = d.user_id
@@ -333,7 +334,8 @@ exports.Monitoring152DB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        d.opisanie AS                   comment
+                        d.opisanie AS                   comment,
+                        'kassa_rasxod' AS type
                     FROM kassa_rasxod_child ch
                     JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
                     JOIN users AS u ON u.id = d.user_id
@@ -361,7 +363,8 @@ exports.Monitoring152DB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        d.opisanie AS                   comment
+                        d.opisanie AS                   comment,
+                        'bank_prixod' AS type
                     FROM bank_prixod_child ch
                     JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod
                     JOIN users AS u ON u.id = d.user_id
@@ -390,7 +393,8 @@ exports.Monitoring152DB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        d.opisanie AS                   comment
+                        d.opisanie AS                   comment,
+                        'show_service' AS type
                     FROM kursatilgan_hizmatlar_jur152_child AS ch
                     JOIN kursatilgan_hizmatlar_jur152 AS d ON d.id = ch.kursatilgan_hizmatlar_jur152_id
                     JOIN users AS u ON d.user_id = u.id
@@ -421,7 +425,8 @@ exports.Monitoring152DB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        d.opisanie AS                   comment
+                        d.opisanie AS                   comment,
+                        'kassa_prixod' AS type
                     FROM kassa_prixod_child ch
                     JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
                     JOIN users AS u ON u.id = d.user_id
@@ -450,7 +455,8 @@ exports.Monitoring152DB = class {
                         oa.raschet_schet AS             account_number,
                         c.doc_num AS                    contract_doc_num,
                         c.doc_date AS                   contract_doc_date,
-                        d.opisanie AS                   comment
+                        d.opisanie AS                   comment,
+                        'jur7_prixod' AS type
                     FROM document_prixod_jur7_child ch
                     JOIN document_prixod_jur7 AS d ON ch.document_prixod_jur7_id = d.id
                     JOIN users AS u ON u.id = d.user_id
