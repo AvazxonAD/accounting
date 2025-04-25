@@ -54,7 +54,8 @@ exports.PodotchetMonitoringDB = class {
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
-                AND d.isdeleted = false  
+                AND d.isdeleted = false
+                AND ch.isdeleted = false
                 AND d.doc_date BETWEEN $3 AND $4
                 AND op.schet = $5
                 AND p.id IS NOT NULL
@@ -90,6 +91,7 @@ exports.PodotchetMonitoringDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.isdeleted = false   
+                AND ch.isdeleted = false
                 AND d.doc_date BETWEEN $3 AND $4
                 AND op.schet = $5
                 AND p.id IS NOT NULL
@@ -124,6 +126,7 @@ exports.PodotchetMonitoringDB = class {
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             WHERE r.id = $1 AND d.main_schet_id = $2 
                 AND d.isdeleted = false  
+                AND ch.isdeleted = false
                 AND d.doc_date BETWEEN $3 AND $4
                 AND op.schet = $5
                 AND p.id IS NOT NULL
@@ -159,6 +162,7 @@ exports.PodotchetMonitoringDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.isdeleted = false
+                AND ch.isdeleted = false
                 AND d.doc_date BETWEEN $3 AND $4
                 AND op.schet = $5
                 AND p.id IS NOT NULL
@@ -195,6 +199,7 @@ exports.PodotchetMonitoringDB = class {
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.isdeleted = false  
+                AND ch.isdeleted = false
                 AND d.doc_date BETWEEN $3 AND $4
                 AND p.id IS NOT NULL
                 AND own.schet = $5
@@ -214,14 +219,16 @@ exports.PodotchetMonitoringDB = class {
     params,
     podotcbet_id = null,
     search = null,
-    from = null
+    from = null,
+    one_from = null,
+    one_to = null
   ) {
     const conditions = [];
 
-    let internal_filter = `BETWEEN $2 AND $3`;
+    let internal_filter = `BETWEEN $4 AND $5`;
 
     if (from) {
-      internal_filter = ` >= $2 AND d.doc_date < $3`;
+      internal_filter = ` >= $4 AND d.doc_date < $5`;
     }
 
     if (podotcbet_id) {
@@ -235,6 +242,14 @@ exports.PodotchetMonitoringDB = class {
                 d.doc_num = $${params.length} OR 
                 p.name ILIKE '%' || $${params.length} || '%'
             )`);
+    }
+
+    if (one_from) {
+      internal_filter = `< $4`;
+    }
+
+    if (one_to) {
+      internal_filter = `<= $4`;
     }
 
     const where = conditions.length ? `AND ${conditions.join(` AND `)}` : ``;
@@ -252,11 +267,12 @@ exports.PodotchetMonitoringDB = class {
                 JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                 JOIN main_schet AS m ON m.id = d.main_schet_id
                 WHERE r.id = $1  
-                    AND d.isdeleted = false 
+                    AND d.isdeleted = false
+                    AND ch.isdeleted = false
                     AND p.id IS NOT NULL
+                    AND op.schet = $2
+                    AND d.main_schet_id = $3
                     AND d.doc_date ${internal_filter}
-                    AND op.schet = $4
-                    AND d.main_schet_id = $5
                     ${where}
             ),
 
@@ -272,10 +288,11 @@ exports.PodotchetMonitoringDB = class {
                 JOIN main_schet AS m ON m.id = d.main_schet_id
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
+                    AND ch.isdeleted = false
                     AND p.id IS NOT NULL
+                    AND op.schet = $2
+                    AND d.main_schet_id = $3
                     AND d.doc_date ${internal_filter}
-                    AND op.schet = $4
-                    AND d.main_schet_id = $5
                     ${where}
             ),
 
@@ -291,10 +308,11 @@ exports.PodotchetMonitoringDB = class {
                 JOIN main_schet AS m ON m.id = d.main_schet_id
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
+                    AND ch.isdeleted = false
                     AND p.id IS NOT NULL
+                    AND op.schet = $2
+                    AND d.main_schet_id = $3
                     AND d.doc_date ${internal_filter}
-                    AND op.schet = $4
-                    AND d.main_schet_id = $5
                     ${where}
             ),
 
@@ -310,10 +328,11 @@ exports.PodotchetMonitoringDB = class {
                 JOIN main_schet AS m ON m.id = d.main_schet_id
                 WHERE r.id = $1  
                     AND d.isdeleted = false
+                    AND ch.isdeleted = false
                     AND p.id IS NOT NULL
+                    AND op.schet = $2
+                    AND d.main_schet_id = $3
                     AND d.doc_date ${internal_filter}
-                    AND op.schet = $4
-                    AND d.main_schet_id = $5
                     ${where}
             ),
 
@@ -330,10 +349,11 @@ exports.PodotchetMonitoringDB = class {
                 JOIN jur_schets AS own ON own.id = d.schet_id
                 WHERE r.id = $1  
                     AND d.isdeleted = false 
+                    AND ch.isdeleted = false
                     AND p.id IS NOT NULL
+                    AND own.schet = $2
+                    AND d.main_schet_id = $3
                     AND d.doc_date ${internal_filter}
-                    AND own.schet = $4
-                    AND d.main_schet_id = $5
                     ${where}
             )
         SELECT 
@@ -389,7 +409,8 @@ exports.PodotchetMonitoringDB = class {
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
-                        AND d.isdeleted = false 
+                        AND d.isdeleted = false
+                        AND ch.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND op.schet = $5
                         AND p.id IS NOT NULL
@@ -408,6 +429,7 @@ exports.PodotchetMonitoringDB = class {
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
+                        AND ch.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND op.schet = $5
                         AND p.id IS NOT NULL
@@ -426,6 +448,7 @@ exports.PodotchetMonitoringDB = class {
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
+                        AND ch.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND op.schet = $5
                         AND p.id IS NOT NULL
@@ -444,6 +467,7 @@ exports.PodotchetMonitoringDB = class {
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false
+                        AND ch.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND op.schet = $5
                         AND p.id IS NOT NULL
@@ -463,6 +487,7 @@ exports.PodotchetMonitoringDB = class {
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
+                        AND ch.isdeleted = false
                         AND d.doc_date BETWEEN $3 AND $4
                         AND own.schet = $5
                         AND p.id IS NOT NULL
@@ -562,13 +587,13 @@ exports.PodotchetMonitoringDB = class {
             JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
             JOIN main_schet AS m ON m.id = d.main_schet_id
             WHERE d.isdeleted = false
-            AND ch.isdeleted = false
-            AND d.main_schet_id = $1
-            AND d.doc_date BETWEEN $2 AND $3
-            AND r.id = $4
-            AND op.schet = $5
-            AND d.id_podotchet_litso IS NOT NULL
-            ${where}
+                AND ch.isdeleted = false
+                AND d.main_schet_id = $1
+                AND d.doc_date BETWEEN $2 AND $3
+                AND r.id = $4
+                AND op.schet = $5
+                AND d.id_podotchet_litso IS NOT NULL
+                ${where}
         GROUP BY op.schet,
             op.sub_schet
     `;
@@ -576,5 +601,157 @@ exports.PodotchetMonitoringDB = class {
     const result = await db.query(query, params);
 
     return result;
+  }
+
+  static async daysReport(params, podotcbet_id = null) {
+    let podotcbet_filter = ``;
+
+    if (podotcbet_id) {
+      params.push(podotcbet_id);
+      podotcbet_filter = `AND so.id = $${params.length}`;
+    }
+
+    const query = `--sql
+            WITH
+                prixod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS fio,
+                        so.rayon AS rayon,
+                        d.opisanie AS comment,
+                        'kassa_rasxod' AS type
+                    FROM kassa_rasxod_child ch
+                    JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    LEFT JOIN spravochnik_podotchet_litso so ON so.id = d.id_podotchet_litso
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false
+                        AND ch.isdeleted = false   
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND op.schet = $5
+                        AND so.id IS NOT NULL
+                        ${podotcbet_filter}
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS fio,
+                        so.rayon AS rayon,
+                        d.opisanie AS comment,
+                        'bank_rasxod' AS type
+                    FROM bank_rasxod_child ch
+                    JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
+                    LEFT JOIN spravochnik_podotchet_litso AS so ON so.id = ch.id_spravochnik_podotchet_litso 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false
+                        AND ch.isdeleted = false 
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND op.schet = $5
+                        AND so.id IS NOT NULL
+                        ${podotcbet_filter}
+                ),
+                rasxod AS (
+                    SELECT
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS fio,
+                        so.rayon AS rayon,
+                        d.opisanie AS comment,
+                        'kassa_prixod' AS type
+                    FROM kassa_prixod_child ch
+                    JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
+                    JOIN users AS u ON u.id = d.user_id
+                    JOIN regions AS r ON r.id = u.region_id
+                    JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+                    LEFT JOIN spravochnik_podotchet_litso so ON so.id = d.id_podotchet_litso
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false
+                        AND ch.isdeleted = false 
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND op.schet = $5
+                        AND so.id IS NOT NULL
+                        ${podotcbet_filter}
+
+                    UNION ALL 
+
+                    SELECT 
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS fio,
+                        so.rayon AS rayon,
+                        d.opisanie AS                   comment,
+                        'bank_prixod' AS type
+                    FROM bank_prixod_child ch
+                    JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
+                    LEFT JOIN spravochnik_podotchet_litso AS so ON so.id = ch.id_spravochnik_podotchet_litso 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false   
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND op.schet = $5
+                        AND so.id IS NOT NULL
+                        ${podotcbet_filter}
+
+                    UNION ALL
+
+                    SELECT 
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS fio,
+                        so.rayon AS rayon,
+                        d.opisanie AS comment,
+                        'avans' AS type
+                    FROM avans_otchetlar_jur4_child ch
+                    JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
+                    JOIN spravochnik_podotchet_litso AS so ON so.id = d.spravochnik_podotchet_litso_id 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                    JOIN jur_schets AS own ON own.id = d.schet_id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false   
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND own.schet = $5
+                        AND so.id IS NOT NULL
+                        ${podotcbet_filter}
+                )
+            SELECT
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(prixod)), '[]'::JSON) FROM prixod) AS prixods,
+                (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(rasxod)), '[]'::JSON) FROM rasxod) AS rasxods;
+        `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
   }
 };

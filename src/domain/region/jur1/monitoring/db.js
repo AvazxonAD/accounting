@@ -305,7 +305,7 @@ exports.KassaMonitoringDB = class {
   }
 
   static async prixodReport(params) {
-    const query = `
+    const query = `--sql
         SELECT
             op.schet,
             op.sub_schet,

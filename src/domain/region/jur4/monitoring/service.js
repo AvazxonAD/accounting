@@ -2,13 +2,58 @@ const { HelperFunctions } = require("@helper/functions");
 const { PodotchetMonitoringDB } = require("./db");
 
 exports.PodotchetMonitoringService = class {
+  static async daysReport(data) {
+    const result = await PodotchetMonitoringDB.daysReport(
+      [data.region_id, data.main_schet_id, data.from, data.to, data.schet],
+      data.podotchet_id
+    );
+
+    let rasxodSumma = 0;
+    let prixodSumma = 0;
+
+    const summa_from = await PodotchetMonitoringDB.getSumma(
+      [data.region_id, data.schet, data.main_schet_id, data.from],
+      data.podotchet_id,
+      null,
+      null,
+      true,
+      null
+    );
+
+    const summa_to = await PodotchetMonitoringDB.getSumma(
+      [data.region_id, data.schet, data.main_schet_id, data.to],
+      data.podotchet_id,
+      null,
+      null,
+      null,
+      true
+    );
+
+    for (let rasxod of result.rasxods) {
+      rasxodSumma += rasxod.summa;
+    }
+
+    for (let prixod of result.prixods) {
+      prixodSumma += prixod.summa;
+    }
+
+    result.rasxodSumma = rasxodSumma;
+    result.prixodSumma = prixodSumma;
+
+    return {
+      ...result,
+      summa_from: summa_from.summa,
+      summa_to: summa_to.summa,
+    };
+  }
+
   static async getSumma(data) {
     const internal = await PodotchetMonitoringDB.getSumma([
       data.region_id,
-      data.from,
-      data.to,
       data.schet,
       data.main_schet_id,
+      data.from,
+      data.to,
     ]);
 
     return internal;
@@ -61,7 +106,7 @@ exports.PodotchetMonitoringService = class {
     );
 
     const internal = await PodotchetMonitoringDB.getSumma(
-      [data.region_id, data.from, data.to, data.schet, data.main_schet_id],
+      [data.region_id, data.schet, data.main_schet_id, data.from, data.to],
       data.podotchet_id,
       data.search
     );
@@ -72,13 +117,13 @@ exports.PodotchetMonitoringService = class {
     });
 
     const summa_from = await PodotchetMonitoringDB.getSumma(
-      [data.region_id, from, data.from, data.schet, data.main_schet_id],
+      [data.region_id, data.schet, data.main_schet_id, from, data.from],
       data.podotchet_id,
       data.search
     );
 
     const summa_to = await PodotchetMonitoringDB.getSumma(
-      [data.region_id, from, data.to, data.schet, data.main_schet_id],
+      [data.region_id, data.schet, data.main_schet_id, from, data.to],
       data.podotchet_id,
       data.search
     );

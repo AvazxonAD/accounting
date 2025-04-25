@@ -1,9 +1,9 @@
-const { db } = require('@db/index')
+const { db } = require("@db/index");
 
 exports.PodotchetDB = class {
-    static async getById(params, isdeleted) {
-        const ignore = `AND s.isdeleted = false`
-        const query = `--sql
+  static async getById(params, isdeleted) {
+    const ignore = `AND s.isdeleted = false`;
+    const query = `--sql
             SELECT 
                 s.id, 
                 s.name, 
@@ -11,14 +11,14 @@ exports.PodotchetDB = class {
             FROM spravochnik_podotchet_litso AS s
             JOIN users ON s.user_id = users.id
             JOIN regions ON users.region_id = regions.id
-            WHERE regions.id = $1 AND s.id = $2 ${isdeleted ? '' : ignore}
+            WHERE regions.id = $1 AND s.id = $2 ${isdeleted ? "" : ignore}
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async get(params) {
-        const query = `--sql
+  static async get(params) {
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     s.id, s.name, s.rayon
@@ -42,7 +42,7 @@ exports.PodotchetDB = class {
                 ) AS total_count
             FROM data
         `;
-        const result = await db.query(query, params)
-        return result[0];
-    }
-}
+    const result = await db.query(query, params);
+    return result[0];
+  }
+};

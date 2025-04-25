@@ -6,6 +6,7 @@ const {
   prixodRasxodSchema,
   getByIdPodotchetToExcelSchema,
   capSchema,
+  PodotchetMonitoringSchema,
 } = require("./schemas");
 const { Controller } = require("./controllers");
 const { validator } = require("@helper/validator");
@@ -16,10 +17,11 @@ router
     "/prixod/rasxod",
     validator(Controller.prixodRasxodPodotchet, prixodRasxodSchema)
   )
-  .get("/cap", validator(Controller.cap, capSchema))
+
   .get(
-    "/export/:id",
-    validator(Controller.getByIdPodotchetToExcel, getByIdPodotchetToExcelSchema)
-  );
+    "/daily",
+    validator(Controller.daysReport, PodotchetMonitoringSchema.daysReport())
+  )
+  .get("/cap", validator(Controller.cap, capSchema));
 
 module.exports = router;
