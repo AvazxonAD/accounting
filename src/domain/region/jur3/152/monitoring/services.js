@@ -642,37 +642,23 @@ exports.Monitoring152Service = class {
     };
   }
 
-  // old
-
-  static async prixodReport(data) {
-    const docs = await Monitoring152DB.prixodReport(
-      [data.region_id, data.main_schet_id, data.from, data.to, data.schet],
-      data.organ_id,
-      data.search
-    );
-
-    let prixod_summa = 0;
-    for (let item of docs) {
-      prixod_summa += item.summa;
-    }
-
-    return { docs, prixod_summa };
-  }
-
-  static async prixodRasxod(data, organizations) {
+  static async prixodRasxod(data) {
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
-    for (let item of organizations) {
-      item.summa = await Monitoring152DB.getPrixodRasxod([
-        data.schet,
-        data.to,
+    for (let item of data.organizations) {
+      item.summa = await Monitoring152DB.getSumma(
+        [data.region_id, data.main_schet_id, data.schet, data.to],
         item.id,
-        data.budjet_id,
-      ]);
+        null,
+        null,
+        null,
+        true
+      );
+
       itogo_rasxod += item.summa.rasxod_sum;
       itogo_prixod += item.prixod_sum;
     }
-    return { organizations, itogo_rasxod, itogo_prixod };
+    return { organizations: data.organizations, itogo_rasxod, itogo_prixod };
   }
 
   static async prixodRasxodExcel(data) {
@@ -781,233 +767,27 @@ exports.Monitoring152Service = class {
     worksheet.getRow(1).height = 30;
     const filePath = path.join(
       __dirname,
-      "../../../../../public/exports/" + fileName
+      "../../../../../../public/exports/" + fileName
     );
     await workbook.xlsx.writeFile(filePath);
     return filePath;
   }
 
-  static async consolidated(data) {
-    for (let organ of data.organizations) {
-      const contract_id = data.contract ? organ.contract_id : null;
-      organ.summa_from = await Monitoring152DB.getSummaConsolidated(
-        [data.region_id, data.main_schet_id, data.schet, data.from, organ.id],
-        "<",
-        contract_id
-      );
-      organ.summa_bank_rasxod_prixod =
-        await Monitoring152DB.getSummaPrixodConsolidated(
-          [
-            data.region_id,
-            data.main_schet_id,
-            data.schet,
-            data.from,
-            data.to,
-            organ.id,
-          ],
-          contract_id
-        );
-      organ.summa_akt_rasxod = await Monitoring152DB.getSummaAktConsolidated(
-        [data.region_id, data.main_schet_id, data.from, data.to, organ.id],
-        contract_id
-      );
-      organ.summa_jur7_rasxod = await Monitoring152DB.getSummaJur7Consolidated(
-        [
-          data.region_id,
-          data.main_schet_id,
-          data.schet,
-          data.from,
-          data.to,
-          organ.id,
-        ],
-        contract_id
-      );
-      organ.summa_bank_prixod_rasxod =
-        await Monitoring152DB.getSummaBankPrixodConsolidated(
-          [
-            data.region_id,
-            data.main_schet_id,
-            data.schet,
-            data.from,
-            data.to,
-            organ.id,
-          ],
-          contract_id
-        );
-      let itogo_rasxod = 0;
-      organ.summa_akt_rasxod.forEach((item) => {
-        itogo_rasxod += item.summa;
-      });
-      organ.summa_jur7_rasxod.forEach((item) => {
-        itogo_rasxod += item.summa;
-      });
-      organ.summa_bank_prixod_rasxod.forEach((item) => {
-        itogo_rasxod += item.summa;
-      });
-      organ.itogo_rasxod = {
-        schet: "itogo_kredit",
-        summa: itogo_rasxod,
-      };
-      organ.summa_to = await Monitoring152DB.getSummaConsolidated(
-        [data.region_id, data.main_schet_id, data.schet, data.to, organ.id],
-        "<=",
-        contract_id
-      );
-      data.rasxodSchets = await Monitoring152DB.getRasxodSchets(
-        [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
-        contract_id
-      );
-      data.rasxodSchets.push({ schet: "itogo_rasxod" });
-    }
-    return {
-      organizations: data.organizations,
-      rasxodSchets: data.rasxodSchets,
-    };
-  }
+  // old
 
-  static async consolidatedExcel(data) {
-    const workbook = new ExcelJS.Workbook();
-    const fileName = `consolidated_${new Date().getTime()}.xlsx`;
-    const worksheet = workbook.addWorksheet("consolelidated");
-    worksheet.mergeCells(`A1`, "C1");
-    worksheet.getCell("A1").value = "Мемориал ордер N_3";
-    worksheet.mergeCells(`A2`, "C2");
-    worksheet.getCell("A2").value = `"Расчеты с дебеторами и кредиторами"`;
-    worksheet.mergeCells(`A3`, "C3");
-    worksheet.getCell("A3").value =
-      `${returnStringDate(new Date(data.to))} холатига  ${data.schet}`;
-    worksheet.mergeCells(`A4`, "A5");
-    worksheet.mergeCells(`B4`, "C4");
-    worksheet.getCell("B4").value = `Остаток к начало`;
-    worksheet.getCell("D4").value = "Дебет";
-    const endRasxodSchetsColumn = data.rasxodSchets.length + 4;
-    worksheet.mergeCells(
-      `E4`,
-      `${returnExcelColumn([endRasxodSchetsColumn])}4`
+  static async prixodReport(data) {
+    const docs = await Monitoring152DB.prixodReport(
+      [data.region_id, data.main_schet_id, data.from, data.to, data.schet],
+      data.organ_id,
+      data.search
     );
-    worksheet.getCell("E4").value = "Кредит счета";
-    worksheet.mergeCells(
-      `${returnExcelColumn([endRasxodSchetsColumn + 1])}4`,
-      `${returnExcelColumn([endRasxodSchetsColumn + 2])}4`
-    );
-    worksheet.getCell(
-      `${returnExcelColumn([endRasxodSchetsColumn + 1])}4`
-    ).value = "Остаток к конец";
-    worksheet.getRow(5).values = [
-      "Организатсия",
-      "Дебет",
-      "Кредит",
-      "",
-      ...data.rasxodSchets.map((item) => {
-        if (item.schet === "itogo_rasxod") {
-          return "итого кредит";
-        } else {
-          return item.schet;
-        }
-      }),
-      "Дебет",
-      "Кредит",
-    ];
-    worksheet.columns = [
-      { key: "name" },
-      { key: "prixod_from" },
-      { key: "rasxod_from" },
-      { key: `_prixod_${data.schet}` },
-      ...data.rasxodSchets.map((item) => {
-        return { key: `_rasxod_${item.schet}` };
-      }),
-      { key: "prixod_to" },
-      { key: "rasxod_to" },
-    ];
-    for (let organ of data.organizations) {
-      if (organ.summa_from.summa === 0 && organ.summa_to.summa === 0) {
-        continue;
-      }
-      const values = data.rasxodSchets.reduce((acc, item) => {
-        const schetKey = `_rasxod_${item.schet}`;
-        const matchAkt = organ.summa_akt_rasxod.find(
-          (i) => i.schet === item.schet
-        );
-        const matchBankPrixod = organ.summa_bank_prixod_rasxod.find(
-          (i) => i.schet === item.schet
-        );
-        const matchJur7 = organ.summa_jur7_rasxod.find(
-          (i) => i.schet === item.schet
-        );
-        if (
-          !matchAkt &&
-          !matchBankPrixod &&
-          !matchJur7 &&
-          item.schet !== "itogo_rasxod"
-        ) {
-          acc.push({ schet: schetKey, summa: "" });
-        }
-        if (matchAkt) acc.push({ schet: schetKey, summa: matchAkt.summa });
-        if (matchBankPrixod)
-          acc.push({ schet: schetKey, summa: matchBankPrixod.summa });
-        if (matchJur7) acc.push({ schet: schetKey, summa: matchJur7.summa });
-        if (item.schet === "itogo_rasxod") {
-          acc.push({
-            schet: schetKey,
-            summa: organ.itogo_rasxod.summa,
-          });
-        }
-        return acc;
-      }, []);
-      worksheet.addRow({
-        name: organ.name,
-        prixod_from: Math.max(organ.summa_from.summa, 0),
-        rasxod_from: Math.max(-organ.summa_from.summa, 0),
-        [`_prixod_${data.schet}`]:
-          organ.summa_bank_rasxod_prixod[0]?.summa || "",
-        ...values.reduce((acc, { schet, summa }) => {
-          acc[schet] = summa;
-          return acc;
-        }, {}),
-        prixod_to: Math.max(organ.summa_to.summa, 0),
-        rasxod_to: Math.max(-organ.summa_to.summa, 0),
-      });
+
+    let prixod_summa = 0;
+    for (let item of docs) {
+      prixod_summa += item.summa;
     }
-    worksheet.eachRow((row, rowNumber) => {
-      let bold = false;
-      if (rowNumber < 6) {
-        worksheet.getRow(rowNumber).height = 30;
-        bold = true;
-      }
-      row.eachCell((cell, columnNumber) => {
-        if (columnNumber === 1) {
-          worksheet.getColumn(columnNumber).width = 40;
-        } else {
-          worksheet.getColumn(columnNumber).width = 18;
-        }
-        Object.assign(cell, {
-          numFmt: "#0.00",
-          font: { size: 13, name: "Times New Roman", bold },
-          alignment: {
-            vertical: "middle",
-            horizontal: "center",
-            wrapText: true,
-          },
-          fill: {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFFFFFFF" },
-          },
-          border: {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            bottom: { style: "thin" },
-            right: { style: "thin" },
-          },
-        });
-      });
-    });
-    const filePath = path.join(
-      __dirname,
-      "../../../../public/exports/" + fileName
-    );
-    await workbook.xlsx.writeFile(filePath);
-    return { filePath, fileName };
+
+    return { docs, prixod_summa };
   }
 
   static async prixodReportExcel(data) {
@@ -1204,158 +984,5 @@ exports.Monitoring152Service = class {
     await workbook.xlsx.writeFile(filePath);
 
     return { fileName, filePath };
-  }
-
-  static async consolidatedByContractExcel(data) {
-    const workbook = new ExcelJS.Workbook();
-    const fileName = `consolidated_${new Date().getTime()}.xlsx`;
-    const worksheet = workbook.addWorksheet("consolelidated");
-    worksheet.mergeCells(`A1`, "C1");
-    worksheet.getCell("A1").value = "Мемориал ордер N_3";
-    worksheet.mergeCells(`A2`, "C2");
-    worksheet.getCell("A2").value = `"Расчеты с дебеторами и кредиторами"`;
-    worksheet.mergeCells(`A3`, "C3");
-    worksheet.getCell("A3").value =
-      `${returnStringDate(new Date(data.to))} холатига  ${data.schet}`;
-    worksheet.mergeCells(`A4`, "A5");
-    worksheet.mergeCells(`B4`, "C4");
-    worksheet.getCell("B4").value = `Остаток к начало`;
-    worksheet.mergeCells(`D4`, "E4");
-    worksheet.getCell("D4").value = "Договор ";
-    worksheet.getCell("F4").value = "Дебет";
-    const endRasxodSchetsColumn = data.rasxodSchets.length + 6;
-    worksheet.mergeCells(
-      `G4`,
-      `${returnExcelColumn([endRasxodSchetsColumn])}4`
-    );
-    worksheet.getCell("G4").value = "Кредит счета";
-    worksheet.mergeCells(
-      `${returnExcelColumn([endRasxodSchetsColumn + 1])}4`,
-      `${returnExcelColumn([endRasxodSchetsColumn + 2])}4`
-    );
-    worksheet.getCell(
-      `${returnExcelColumn([endRasxodSchetsColumn + 1])}4`
-    ).value = "Остаток к конец";
-    worksheet.getRow(5).values = [
-      "Организатсия",
-      "Номер",
-      "Дата",
-      "Дебет",
-      "Кредит",
-      data.schet,
-      ...data.rasxodSchets.map((item) => {
-        if (item.schet === "itogo_rasxod") {
-          return "итого кредит";
-        } else {
-          return item.schet;
-        }
-      }),
-      "Дебет",
-      "Кредит",
-    ];
-    worksheet.columns = [
-      { key: "name" },
-      { key: "contract_number" },
-      { key: "contract_date" },
-      { key: "prixod_from" },
-      { key: "rasxod_from" },
-      { key: `_prixod_${data.schet}` },
-      ...data.rasxodSchets.map((item) => {
-        return { key: `_rasxod_${item.schet}` };
-      }),
-      { key: "prixod_to" },
-      { key: "rasxod_to" },
-    ];
-    for (let organ of data.organizations) {
-      if (organ.summa_from.summa === 0 && organ.summa_to.summa === 0) {
-        continue;
-      }
-      const values = data.rasxodSchets.reduce((acc, item) => {
-        const schetKey = `_rasxod_${item.schet}`;
-        const matchAkt = organ.summa_akt_rasxod.find(
-          (i) => i.schet === item.schet
-        );
-        const matchBankPrixod = organ.summa_bank_prixod_rasxod.find(
-          (i) => i.schet === item.schet
-        );
-        const matchJur7 = organ.summa_jur7_rasxod.find(
-          (i) => i.schet === item.schet
-        );
-        if (
-          !matchAkt &&
-          !matchBankPrixod &&
-          !matchJur7 &&
-          item.schet !== "itogo_rasxod"
-        ) {
-          acc.push({ schet: schetKey, summa: "" });
-        }
-        if (matchAkt) acc.push({ schet: schetKey, summa: matchAkt.summa });
-        if (matchBankPrixod)
-          acc.push({ schet: schetKey, summa: matchBankPrixod.summa });
-        if (matchJur7) acc.push({ schet: schetKey, summa: matchJur7.summa });
-        if (item.schet === "itogo_rasxod") {
-          acc.push({
-            schet: schetKey,
-            summa: organ.itogo_rasxod.summa,
-          });
-        }
-        return acc;
-      }, []);
-      worksheet.addRow({
-        name: organ.name,
-        contract_number: organ.doc_num,
-        contract_date: organ.doc_date,
-        prixod_from: Math.max(organ.summa_from.summa, 0),
-        rasxod_from: Math.max(-organ.summa_from.summa, 0),
-        [`_prixod_${data.schet}`]:
-          organ.summa_bank_rasxod_prixod[0]?.summa || "",
-        ...values.reduce((acc, { schet, summa }) => {
-          acc[schet] = summa;
-          return acc;
-        }, {}),
-        prixod_to: Math.max(organ.summa_to.summa, 0),
-        rasxod_to: Math.max(-organ.summa_to.summa, 0),
-      });
-    }
-    worksheet.eachRow((row, rowNumber) => {
-      let bold = false;
-      if (rowNumber < 6) {
-        worksheet.getRow(rowNumber).height = 30;
-        bold = true;
-      }
-      row.eachCell((cell, columnNumber) => {
-        if (columnNumber === 1) {
-          worksheet.getColumn(columnNumber).width = 40;
-        } else {
-          worksheet.getColumn(columnNumber).width = 18;
-        }
-        Object.assign(cell, {
-          numFmt: "#0.00",
-          font: { size: 13, name: "Times New Roman", bold },
-          alignment: {
-            vertical: "middle",
-            horizontal: "center",
-            wrapText: true,
-          },
-          fill: {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFFFFFFF" },
-          },
-          border: {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            bottom: { style: "thin" },
-            right: { style: "thin" },
-          },
-        });
-      });
-    });
-    const filePath = path.join(
-      __dirname,
-      "../../../../public/exports/" + fileName
-    );
-    await workbook.xlsx.writeFile(filePath);
-    return { filePath, fileName };
   }
 };

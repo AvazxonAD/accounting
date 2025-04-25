@@ -20,14 +20,9 @@ router
     "/daily",
     validator(Controller.daysReport, Monitoring159Schema.daysReport())
   )
-
-  // old
   .get(
-    "/prixod",
-    validator(Controller.prixodReport, Monitoring159Schema.prixodReport())
-  )
-  .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
-  .get("/order", validator(Controller.consolidated, consolidatedSchema));
-// .get("/akt/sverka", validator(Controller.aktSverka, aktSverkaSchema));
+    "/prixod/rasxod",
+    validator(Controller.prixodRasxod, prixodRasxodSchema)
+  );
 
 module.exports = router;

@@ -23,13 +23,12 @@ router
     "/akt/sverka",
     validator(Controller.aktSverka, Monitoring152Schema.aktSverka())
   )
+  .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
 
   // old
   .get(
     "/prixod",
     validator(Controller.prixodReport, Monitoring152Schema.prixodReport())
-  )
-  .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
-  .get("/order", validator(Controller.consolidated, consolidatedSchema));
+  );
 
 module.exports = router;

@@ -123,14 +123,12 @@ exports.prixodRasxodSchema = Joi.object({
       .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
       .required(),
     budjet_id: Joi.number().integer().min(1).required(),
+    schet_id: Joi.number().integer().min(1).required(),
     excel: Joi.string()
       .trim()
       .pattern(/^(true|false)$/)
       .allow("", null),
-    schet_id: Joi.number().min(1).integer().required(),
     main_schet_id: Joi.number().integer().min(1).required(),
-    month: Joi.number().integer().required().min(1).max(12).required(),
-    year: Joi.number().integer().required().min(1901).required(),
   }),
 }).options({ stripUnknown: true });
 
