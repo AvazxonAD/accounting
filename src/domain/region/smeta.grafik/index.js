@@ -16,6 +16,10 @@ router
   .get("/:id", validator(Controller.getById, getByIdSchema))
   .get("/", validator(Controller.get, getSchema))
   .post("/", validator(Controller.create, createSchema))
+  .post(
+    "/multi/insert",
+    validator(Controller.multiInsert, SmetaGrafikSchema.multiInsert())
+  )
   .put("/:id", validator(Controller.update, updateSchema))
   .delete("/:id", validator(Controller.deleteSmetGrafik, deleteSchema));
 

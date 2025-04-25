@@ -31,7 +31,7 @@ exports.ContractSchema = class {
         ),
       }),
       query: Joi.object({
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -67,7 +67,7 @@ exports.ContractSchema = class {
         ),
       }),
       query: Joi.object({
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
@@ -80,7 +80,7 @@ exports.ContractSchema = class {
       query: Joi.object({
         page: Joi.number().min(1).default(1),
         limit: Joi.number().min(1).default(10),
-        budjet_id: Joi.number().min(1).required(),
+        main_schet_id: Joi.number().min(1).required(),
         organ_id: Joi.number().min(1),
         pudratchi_bool: Joi.string().pattern(/^(true|false)$/),
         search: Joi.string().trim().allow(null, ""),
@@ -101,7 +101,7 @@ exports.ContractSchema = class {
   static getById() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
@@ -112,7 +112,7 @@ exports.ContractSchema = class {
   static delete() {
     return Joi.object({
       query: Joi.object({
-        budjet_id: Joi.number().integer().min(1).required(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),

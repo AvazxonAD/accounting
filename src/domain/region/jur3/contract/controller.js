@@ -2,16 +2,15 @@ const { BudjetService } = require("@budjet/service");
 const { SmetaService } = require("@smeta/service");
 const { OrganizationService } = require("@organization/service");
 const { ContractService } = require("@contract/service");
+const { HelperFunctions } = require("@helper/functions");
+const { ValidatorFunctions } = require("@helper/database.validator");
 
 exports.Controller = class {
   static async create(req, res) {
-    const budjet_id = req.query.budjet_id;
+    const main_schet_id = req.query.main_schet_id;
     const { region_id, id: user_id } = req.user;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const { grafiks, spravochnik_organization_id } = req.body;
 
@@ -24,6 +23,11 @@ exports.Controller = class {
     }
 
     let summa = 0;
+
+    const check = HelperFunctions.checkId(grafiks, "smeta_id");
+    if (!check) {
+      return res.error(req.i18n.t("smetaId"), 400);
+    }
 
     for (let grafik of grafiks) {
       const smeta = await SmetaService.getById({ id: grafik.smeta_id });
@@ -50,7 +54,7 @@ exports.Controller = class {
 
     const result = await ContractService.create({
       ...req.body,
-      budjet_id,
+      main_schet_id,
       summa,
       user_id,
     });
@@ -63,7 +67,7 @@ exports.Controller = class {
     const {
       page,
       limit,
-      budjet_id,
+      main_schet_id,
       organ_id,
       pudratchi_bool,
       search,
@@ -71,10 +75,7 @@ exports.Controller = class {
       order_type,
     } = req.query;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const offset = (page - 1) * limit;
 
@@ -90,7 +91,7 @@ exports.Controller = class {
 
     const { data, total, summa, page_summa } = await ContractService.get({
       region_id,
-      budjet_id,
+      main_schet_id,
       offset,
       limit,
       organ_id,
@@ -116,17 +117,14 @@ exports.Controller = class {
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
-    const budjet_id = req.query.budjet_id;
+    const main_schet_id = req.query.main_schet_id;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const result = await ContractService.getById({
       region_id,
-      budjet_id,
+      main_schet_id,
       id,
       isdeleted: true,
     });
@@ -138,16 +136,13 @@ exports.Controller = class {
   }
 
   static async update(req, res) {
-    const budjet_id = req.query.budjet_id;
+    const main_schet_id = req.query.main_schet_id;
     const { region_id, id: user_id } = req.user;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const doc = await ContractService.getById({ region_id, budjet_id, id });
+    const doc = await ContractService.getById({ region_id, main_schet_id, id });
     if (!doc) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
@@ -178,6 +173,13 @@ exports.Controller = class {
     let summa = 0;
 
     for (let grafik of grafiks) {
+      if (grafik.id) {
+        const check = doc.grafiks.find((item) => item.id === grafik.id);
+        if (!check) {
+          return res.error(req.i18n.t("grafikNotFound"), 404);
+        }
+      }
+
       const smeta = await SmetaService.getById({ id: grafik.smeta_id });
       if (!smeta) {
         return res.error(req.i18n.t("smetaNotFound"));
@@ -202,7 +204,7 @@ exports.Controller = class {
 
     const result = await ContractService.update({
       ...req.body,
-      budjet_id,
+      main_schet_id,
       summa,
       user_id,
       id,
@@ -214,17 +216,14 @@ exports.Controller = class {
 
   static async delete(req, res) {
     const region_id = req.user.region_id;
-    const budjet_id = req.query.budjet_id;
+    const main_schet_id = req.query.main_schet_id;
     const id = req.params.id;
 
-    const budjet = await BudjetService.getById({ id: budjet_id });
-    if (!budjet) {
-      return res.error(req.i18n.t("budjetNotFound"), 404);
-    }
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const doc = await ContractService.getById({
       region_id,
-      budjet_id,
+      main_schet_id,
       id,
       isdeleted: true,
     });

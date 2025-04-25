@@ -20,7 +20,7 @@ exports.ContractService = class {
           data.user_id,
           data.spravochnik_organization_id,
           data.pudratchi_bool,
-          data.budjet_id,
+          data.main_schet_id,
         ],
         client
       );
@@ -39,7 +39,7 @@ exports.ContractService = class {
       create_grafiks.push(
         data.contract.id,
         data.user_id,
-        data.budjet_id,
+        data.main_schet_id,
         new Date(data.contract.doc_date).getFullYear(),
         grafik.oy_1,
         grafik.oy_2,
@@ -69,7 +69,7 @@ exports.ContractService = class {
 
   static async get(data) {
     const result = await ContractDB.get(
-      [data.region_id, data.budjet_id, data.offset, data.limit],
+      [data.region_id, data.main_schet_id, data.offset, data.limit],
       data.organ_id,
       data.pudratchi_bool,
       data.search,
@@ -89,7 +89,7 @@ exports.ContractService = class {
     const result = await ContractDB.getById(
       [data.region_id, data.id],
       data.isdeleted,
-      data.budjet_id,
+      data.main_schet_id,
       data.organ_id
     );
 

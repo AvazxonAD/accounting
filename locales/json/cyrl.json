@@ -4,6 +4,7 @@
   "bankAlreadyExists": "Банк аввал киритилган!",
   "conflictError": "Ҳужжат билан боғлиқ documentлар бор",
   "success": "{{data}} муваффақиятли",
+  "smetaId": "Смета ид рақами такрорланди!",
   "yearMonthCreateError": "Йил ва ой нотўғри киритилди!",
   "readFileSuccess": "File муваффақиятли ўқиб олинди",
   "accountNumberSchetExists": "Ушбу счёт рақам аллақачон киритилган!",

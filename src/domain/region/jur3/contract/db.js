@@ -62,7 +62,7 @@ exports.ContractDB = class {
                 user_id, 
                 spravochnik_organization_id, 
                 pudratchi_bool, 
-                budjet_id
+                main_schet_id
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id, doc_date
@@ -107,7 +107,7 @@ exports.ContractDB = class {
             INSERT INTO shartnoma_grafik(
                 id_shartnomalar_organization, 
                 user_id, 
-                budjet_id, 
+                main_schet_id, 
                 year, 
                 oy_1,
                 oy_2,
@@ -133,14 +133,14 @@ exports.ContractDB = class {
     return result.rows;
   }
 
-  static async getById(params, isdeleted, budjet_id, organ_id) {
+  static async getById(params, isdeleted, main_schet_id, organ_id) {
     const ignore = `AND d.isdeleted = false`;
     let budjet_filter = ``;
     let organ_filter = ``;
 
-    if (budjet_id) {
-      budjet_filter = `AND d.budjet_id = $${params.length + 1}`;
-      params.push(budjet_id);
+    if (main_schet_id) {
+      budjet_filter = `AND d.main_schet_id = $${params.length + 1}`;
+      params.push(main_schet_id);
     }
 
     if (organ_id) {
@@ -248,7 +248,7 @@ exports.ContractDB = class {
                         ${pudratchi_filter}
                         ${search_filter}
                         AND r.id = $1
-                        AND d.budjet_id = $2
+                        AND d.main_schet_id = $2
                     ${order}
                     OFFSET $3 LIMIT $4
                 ) 
@@ -261,7 +261,7 @@ exports.ContractDB = class {
                         JOIN regions AS r ON u.region_id = r.id
                         WHERE d.isdeleted = false ${filter_organization} ${pudratchi_filter} ${search_filter}
                             AND r.id = $1
-                            AND d.budjet_id = $2
+                            AND d.main_schet_id = $2
                     )::INTEGER AS total_count
                 FROM data
         `;
@@ -292,7 +292,7 @@ exports.ContractDB = class {
             FROM shartnoma_grafik AS g
             JOIN smeta s ON s.id = g.smeta_id 
             WHERE g.id_shartnomalar_organization = $1 
-                AND g.budjet_id = $2 
+                AND g.main_schet_id = $2 
                 AND g.isdeleted = false
         `;
 

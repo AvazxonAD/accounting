@@ -2,7 +2,9 @@ const { db } = require("@db/index");
 const { HelperFunctions } = require(`@helper/functions`);
 
 exports.SmetaGrafikDB = class {
-  static async create(params) {
+  static async create(params, client) {
+    const _db = client || db;
+
     const query = `--sql
             INSERT INTO smeta_grafik (
                 smeta_id, spravochnik_budjet_name_id, user_id, 
@@ -14,9 +16,9 @@ exports.SmetaGrafikDB = class {
             ) RETURNING *;
         `;
 
-    const result = await db.query(query, params);
+    const result = await _db.query(query, params);
 
-    return result[0];
+    return result.rows[0] || result[0];
   }
 
   static async getOld(params, filter) {
@@ -169,7 +171,7 @@ exports.SmetaGrafikDB = class {
               FROM smeta_grafik AS s
               JOIN users ON s.user_id = users.id
               JOIN regions ON regions.id = users.region_id  
-              JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s.spravochnik_budjet_name_id
+              LEFT JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s.spravochnik_budjet_name_id
               JOIN smeta ON smeta.id = s.smeta_id
               JOIN main_schet AS m ON m.id = s.main_schet_id
               WHERE s.isdeleted = false
@@ -444,9 +446,8 @@ exports.SmetaGrafikDB = class {
       WHERE regions.id = $1
         AND s.smeta_id = $2
         AND s.isdeleted = false
-        AND s.spravochnik_budjet_name_id = $3
-        AND s.year = $4
-        AND s.main_schet_id = $5
+        AND s.year = $3
+        AND s.main_schet_id = $4
     `;
     const result = await db.query(query, params);
     return result[0];

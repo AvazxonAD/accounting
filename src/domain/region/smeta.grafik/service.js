@@ -14,6 +14,53 @@ exports.SmetaGrafikService = class {
     return result;
   }
 
+  static async multiInsert(data) {
+    await db.transaction(async (client) => {
+      for (let smeta of data.smetas) {
+        const itogo = sum(
+          smeta.oy_1,
+          smeta.oy_2,
+          smeta.oy_3,
+          smeta.oy_4,
+          smeta.oy_5,
+          smeta.oy_6,
+          smeta.oy_7,
+          smeta.oy_8,
+          smeta.oy_9,
+          smeta.oy_10,
+          smeta.oy_11,
+          smeta.oy_12
+        );
+
+        await SmetaGrafikDB.create(
+          [
+            smeta.smeta_id,
+            null,
+            data.user_id,
+            itogo,
+            smeta.oy_1,
+            smeta.oy_2,
+            smeta.oy_3,
+            smeta.oy_4,
+            smeta.oy_5,
+            smeta.oy_6,
+            smeta.oy_7,
+            smeta.oy_8,
+            smeta.oy_9,
+            smeta.oy_10,
+            smeta.oy_11,
+            smeta.oy_12,
+            data.year,
+            data.main_schet_id,
+            this.now,
+            this.now,
+          ],
+          client
+        );
+      }
+    });
+  }
+
   static async create(data) {
     const itogo = sum(
       data.oy_1,
@@ -79,7 +126,6 @@ exports.SmetaGrafikService = class {
     const result = await SmetaGrafikDB.getByYear([
       data.region_id,
       data.smeta_id,
-      data.spravochnik_budjet_name_id,
       data.year,
       data.main_schet_id,
     ]);

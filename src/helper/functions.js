@@ -6,6 +6,18 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static checkId(array, column_name) {
+    const seen = new Set();
+    for (const obj of array) {
+      if (seen.has(obj[`${column_name}`])) {
+        return false;
+      }
+      seen.add(obj[`${column_name}`]);
+    }
+
+    return true;
+  }
+
   static where(data) {
     return data.conditions.length ? `AND ${data.conditions.join(" AND ")}` : "";
   }

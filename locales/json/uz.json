@@ -33,6 +33,7 @@
   "fileError": "File yuklashda xatolik mavjud!",
   "organizationNotFound": "Hamkor tashkilot topilmadi!",
   "gazna_not_found": "Gazna raqami topilmadi!",
+  "smetaId": "Smeta id raqami takrorlandi!",
   "account_number_not_found": "Hisob raqami raqami topilmadi!",
   "responsibleNotFound": "Javobgar shaxs topilmadi!",
   "responsibleExists": "{{data}} ushbu javobgar shaxs avval kiritilgan!",

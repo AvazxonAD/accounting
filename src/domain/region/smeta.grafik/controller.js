@@ -1,6 +1,7 @@
 const { BudjetService } = require("@budjet/service");
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { SmetaGrafikService } = require("./service");
+const { HelperFunctions } = require("@helper/functions");
 
 exports.Controller = class {
   static async getOld(req, res) {
@@ -26,6 +27,42 @@ exports.Controller = class {
     };
 
     return res.success(req.i18n.t(`getSuccess`), 200, meta, data);
+  }
+
+  static async multiInsert(req, res) {
+    const region_id = req.user.region_id;
+    const user_id = req.user.id;
+    const { main_schet_id, year } = req.query;
+    const { smetas } = req.body;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const check = HelperFunctions.checkId(smetas, "smeta_id");
+    if (!check) {
+      return res.error(req.i18n.t("smetaId"), 400);
+    }
+
+    for (let smeta of smetas) {
+      await ValidatorFunctions.smeta({ smeta_id: smeta.smeta_id });
+
+      const check = await SmetaGrafikService.getByYear({
+        region_id,
+        smeta_id: smeta.smeta_id,
+        year,
+        main_schet_id,
+      });
+      if (check) {
+        return res.error(req.i18n.t("docExists"), 409);
+      }
+    }
+
+    const result = await SmetaGrafikService.multiInsert({
+      ...req.body,
+      ...req.query,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("createSuccess"), 201, null, result);
   }
 
   static async create(req, res) {
@@ -61,9 +98,10 @@ exports.Controller = class {
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
   }
+
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, budjet_id, operator, year, search } = req.query;
+    const { page, limit, budjet_id, operator, year } = req.query;
     if (budjet_id) {
       const budjet = await BudjetService.getById({ id: budjet_id });
       if (!budjet) {
