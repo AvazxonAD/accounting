@@ -10,6 +10,7 @@ exports.Controller = class {
     const offset = (page - 1) * limit;
 
     const { data, total } = await SmetaGrafikService.getOld({
+      ...req.query,
       region_id,
       offset,
       year,

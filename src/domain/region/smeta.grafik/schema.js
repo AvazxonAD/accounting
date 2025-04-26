@@ -7,6 +7,7 @@ exports.SmetaGrafikSchema = class {
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().min(1).integer().default(10),
         year: Joi.number().integer().min(1901),
+        smeta_id: Joi.number().integer().min(1),
       }),
     }).options({ stripUnknown: true });
   }

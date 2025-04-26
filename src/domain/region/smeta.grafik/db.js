@@ -29,6 +29,11 @@ exports.SmetaGrafikDB = class {
       conditions.push(`s.year = $${params.length}`);
     }
 
+    if (filter.smeta_id) {
+      params.push(filter.smeta_id);
+      conditions.push(`sg.smeta_id = $${params.length}`);
+    }
+
     const where = HelperFunctions.where({ conditions });
 
     const query = `--sql
@@ -48,7 +53,8 @@ exports.SmetaGrafikDB = class {
           s.oy_10::FLOAT,
           s.oy_11::FLOAT,
           s.oy_12::FLOAT
-        FROM smeta_grafik_old s 
+        FROM smeta_grafik_old s
+        JOIN smeta_grafik sg ON sg.id = s.smeta_grafik_id
         JOIN users u ON s.user_id = u.id
         JOIN regions r ON r.id = u.region_id  
         WHERE r.id = $1
@@ -63,6 +69,7 @@ exports.SmetaGrafikDB = class {
             COALESCE(COUNT(s.id), 0) 
           FROM smeta_grafik_old s 
           JOIN users u ON s.user_id = u.id
+          JOIN smeta_grafik sg ON sg.id = s.smeta_grafik_id
           JOIN regions r ON r.id = u.region_id  
           WHERE r.id = $1
             ${where}

@@ -8,7 +8,7 @@ exports.SmetaGrafikService = class {
   static async getOld(data) {
     const result = await SmetaGrafikDB.getOld(
       [data.region_id, data.offset, data.limit],
-      { year: data.year }
+      { year: data.year, smeta_id: data.smeta_id }
     );
 
     return result;
