@@ -395,13 +395,14 @@ exports.SmetaGrafikDB = class {
                 s.oy_10::FLOAT,
                 s.oy_11::FLOAT,
                 s.oy_12::FLOAT,
-                m.account_number
+                m.account_number,
+                b.name AS budjet_name
             FROM smeta_grafik AS s
             JOIN users ON s.user_id = users.id
             JOIN regions ON users.region_id = regions.id  
-            LEFT JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s.spravochnik_budjet_name_id
             JOIN smeta ON smeta.id = s.smeta_id
             JOIN main_schet m ON m.id = s.main_schet_id
+            JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
             WHERE regions.id = $1
               AND s.id = $2 ${isdeleted ? "" : ignore}
               AND main_schet_id = $3
