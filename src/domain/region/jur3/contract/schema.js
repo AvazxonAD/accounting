@@ -95,7 +95,7 @@ exports.ContractSchema = class {
           .default("DESC")
           .valid("ASC", "DESC"),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static getById() {
@@ -106,7 +106,7 @@ exports.ContractSchema = class {
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 
   static delete() {
@@ -117,6 +117,6 @@ exports.ContractSchema = class {
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
       }),
-    });
+    }).options({ stripUnknown: true });
   }
 };
