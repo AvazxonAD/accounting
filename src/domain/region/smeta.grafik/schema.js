@@ -48,7 +48,7 @@ exports.createSchema = Joi.object({
   body: Joi.object({
     smeta_id: Joi.number().required().required(),
     spravochnik_budjet_name_id: Joi.number().required().required(),
-    main_schet_id: Joi.number().required().required(),
+    main_schet_id: Joi.number().required().min(1900),
     year: Joi.number().required().required(),
     oy_1: Joi.number().required(),
     oy_2: Joi.number().required(),
@@ -70,7 +70,7 @@ exports.updateSchema = Joi.object({
     smeta_id: Joi.number().required().required(),
     spravochnik_budjet_name_id: Joi.number().required().required(),
     main_schet_id: Joi.number().required().required(),
-    year: Joi.number().required().required(),
+    year: Joi.number().required().min(1900),
     oy_1: Joi.number().required(),
     oy_2: Joi.number().required(),
     oy_3: Joi.number().required(),
