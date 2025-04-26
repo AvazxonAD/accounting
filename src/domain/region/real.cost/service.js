@@ -37,10 +37,39 @@ exports.OdinoxService = class {
 
   static async byMonth(data) {
     for (let smeta of data.smetas) {
-      smeta.by_month = await OdinoxDB.getGrafiksByMonth(
+      smeta.by_month = await OdinoxDB.byMonth(
         [data.region_id, data.main_schet_id, data.year, smeta.id],
         data.month
       );
+
+      for (let contract of smeta.by_month) {
+        contract.contract_grafik_summa = Number(contract[`oy_${data.month}`]);
+
+        contract.remaining_summa =
+          contract.contract_grafik_summa - contract.rasxod_summa;
+      }
+    }
+
+    return data.smetas;
+  }
+
+  static async byYear(data) {
+    for (let smeta of data.smetas) {
+      smeta.by_year = await OdinoxDB.byMonth(
+        [data.region_id, data.main_schet_id, data.year, smeta.id],
+        null,
+        data.month
+      );
+
+      for (let contract of smeta.by_year) {
+        contract.contract_grafik_summa = 0;
+        for (let i = 1; i <= data.month; i++) {
+          contract.contract_grafik_summa += Number(contract[`oy_${i}`]);
+        }
+
+        contract.remaining_summa =
+          contract.contract_grafik_summa - contract.rasxod_summa;
+      }
     }
 
     return data.smetas;

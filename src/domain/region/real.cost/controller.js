@@ -248,6 +248,12 @@ exports.Controller = class {
       ...req.query,
     });
 
+    data.smetas = await OdinoxService.byYear({
+      ...data,
+      region_id,
+      ...req.query,
+    });
+
     return res.success(req.i18n.t("getSuccess"), 200, null, data.smetas);
   }
 };

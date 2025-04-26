@@ -87,21 +87,52 @@ exports.OdinoxDB = class {
     return result.rows[0];
   }
 
-  static async getGrafiksByMonth(params, month) {
+  static async byMonth(params, month = null, by_year = null) {
+    function monthFilter(param, column, operator) {
+      params.push(param);
+      return `AND EXTRACT(MONTH FROM ${column}.doc_date) ${operator} $${params.length}`;
+    }
+
     const query = `--sql
       SELECT
+        cg.*,
         c.doc_num,
         c.doc_date,
         so.name,
         so.inn,
-        cg.oy_${month}::FLOAT AS grafik_summa,
-        (
-          SELECT 
-            COALESCE(SUM())
-          FROM bank_rasxod d 
-          WHERE 
-            d.isdeleted = false
-        ) AS rasxod_summa
+        COALESCE(
+          (
+            (
+              SELECT 
+                COALESCE(SUM(ch.summa))
+              FROM bank_rasxod_child ch
+              JOIN bank_rasxod d ON d.id = ch.id_bank_rasxod 
+              WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.shartnoma_grafik_id = cg.id
+                AND d.id_spravochnik_organization = c.spravochnik_organization_id
+                AND d.id_shartnomalar_organization = cg.id_shartnomalar_organization 
+                AND d.main_schet_id = $2
+                AND EXTRACT(YEAR FROM d.doc_date) = $3
+                ${month ? monthFilter(month, "d", "=") : ""}
+                ${by_year ? monthFilter(by_year, "d", "<=") : ""}
+            ) +
+            (
+              SELECT 
+                COALESCE(SUM(ch.summa))
+              FROM kassa_rasxod_child ch
+              JOIN kassa_rasxod d ON d.id = ch.kassa_rasxod_id 
+              WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.contract_grafik_id = cg.id
+                AND d.organ_id = c.spravochnik_organization_id
+                AND d.contract_id = cg.id_shartnomalar_organization
+                AND d.main_schet_id = $2
+                AND EXTRACT(YEAR FROM d.doc_date) = $3
+                ${month ? monthFilter(month, "d", "=") : ""}
+                ${by_year ? monthFilter(by_year, "d", "<=") : ""}
+            )
+        ), 0)::FLOAT AS rasxod_summa
       FROM shartnoma_grafik cg
       JOIN shartnomalar_organization c ON c.id = cg.id_shartnomalar_organization
       JOIN spravochnik_organization so ON so.id = c.spravochnik_organization_id
@@ -112,6 +143,9 @@ exports.OdinoxDB = class {
         AND cg.main_schet_id = $2
         AND cg.year = $3
         AND cg.smeta_id = $4
+        AND EXTRACT(YEAR FROM c.doc_date) = $3
+        ${month ? monthFilter(month, "c", "=") : ""}
+        ${by_year ? monthFilter(by_year, "c", "<=") : ""}
     `;
 
     const result = await db.query(query, params);
@@ -120,7 +154,6 @@ exports.OdinoxDB = class {
   }
 
   // old
-
   static async update(params, client) {
     const query = `--sql
       UPDATE odinox
