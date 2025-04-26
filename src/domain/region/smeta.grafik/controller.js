@@ -175,8 +175,9 @@ exports.Controller = class {
       main_schet_id,
       isdeleted: true,
     });
+
     if (!result) {
-      return res.error(req.i18n.t("smetaNotFound"), 404);
+      return res.error(req.i18n.t("grafikNotFound"), 404);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);

@@ -233,106 +233,21 @@ exports.Controller = class {
   }
 
   static async getData(req, res) {
-    const { month, main_schet_id } = req.query;
+    const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const types = await OdinoxService.getOdinoxType({});
+    const data = await OdinoxService.getSmeta({ ...req.query, region_id });
 
-    const smetas = await OdinoxService.getSmeta({ ...req.query, region_id });
+    data.smetas = OdinoxService.getMonthYearSumma({ ...data });
 
-    for (let type of types) {
-      if (type.sort_order === 0) {
-        type.sub_childs = OdinoxService.getJur0Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-        });
-      }
+    data.smetas = await OdinoxService.byMonth({
+      ...data,
+      region_id,
+      ...req.query,
+    });
 
-      if (type.sort_order === 1) {
-        type.sub_childs = await OdinoxService.getJur1Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-          region_id,
-          months: [month],
-        });
-      }
-
-      if (type.sort_order === 2) {
-        type.sub_childs = await OdinoxService.getJur2Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-          region_id,
-          months: [month],
-        });
-      }
-
-      if (type.sort_order === 3) {
-        type.sub_childs = await OdinoxService.getJur3Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-          region_id,
-          months: [month],
-        });
-      }
-
-      if (type.sort_order === 4) {
-        type.sub_childs = await OdinoxService.getJur4Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          grafik: types.find((item) => item.sort_order === 0),
-          jur3a_akt_avans: types.find((item) => item.sort_order === 3),
-        });
-      }
-
-      if (type.sort_order === 5) {
-        type.sub_childs = await OdinoxService.getJur0DataYear({
-          ...req.query,
-          smetas: JSON.parse(JSON.stringify(smetas)),
-        });
-      }
-
-      if (type.sort_order === 6) {
-        type.sub_childs = await OdinoxService.getJur1Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-          region_id,
-          months: [1, month],
-        });
-      }
-
-      if (type.sort_order === 7) {
-        type.sub_childs = await OdinoxService.getJur2Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-          region_id,
-          months: [1, req.query.months],
-        });
-      }
-
-      if (type.sort_order === 8) {
-        type.sub_childs = await OdinoxService.getJur3Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          ...req.query,
-          region_id,
-          months: [1, month],
-        });
-      }
-
-      if (type.sort_order === 9) {
-        type.sub_childs = await OdinoxService.getJur4Data({
-          smetas: JSON.parse(JSON.stringify(smetas)),
-          grafik: types.find((item) => item.sort_order === 5),
-          jur3a_akt_avans: types.find((item) => item.sort_order === 8),
-        });
-      }
-
-      type.summa = 0;
-      type.sub_childs.forEach((item) => {
-        type.summa += item.summa;
-      });
-    }
-
-    return res.success(req.i18n.t("getSuccess"), 200, null, types);
+    return res.success(req.i18n.t("getSuccess"), 200, null, data.smetas);
   }
 };

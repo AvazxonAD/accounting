@@ -153,7 +153,6 @@ exports.SmetaGrafikDB = class {
                 s.*, 
                 smeta.smeta_name,
                 smeta.smeta_number,
-                spravochnik_budjet_name.name AS budjet_name,
                 s.itogo::FLOAT,
                 s.oy_1::FLOAT,
                 s.oy_2::FLOAT,
@@ -383,7 +382,6 @@ exports.SmetaGrafikDB = class {
                 s.*, 
                 smeta.smeta_name,
                 smeta.smeta_number,
-                spravochnik_budjet_name.name AS budjet_name,
                 s.itogo::FLOAT,
                 s.oy_1::FLOAT,
                 s.oy_2::FLOAT,
@@ -401,7 +399,7 @@ exports.SmetaGrafikDB = class {
             FROM smeta_grafik AS s
             JOIN users ON s.user_id = users.id
             JOIN regions ON users.region_id = regions.id  
-            JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s.spravochnik_budjet_name_id
+            LEFT JOIN spravochnik_budjet_name ON spravochnik_budjet_name.id = s.spravochnik_budjet_name_id
             JOIN smeta ON smeta.id = s.smeta_id
             JOIN main_schet m ON m.id = s.main_schet_id
             WHERE regions.id = $1

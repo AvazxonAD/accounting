@@ -188,6 +188,7 @@ routes
   .use("/main/book", protect, require("@main_book/index"))
 
   .use("/odinox", protect, require("@region_odinox/index"))
+  .use("/real/cost", protect, require("@region_real_cost/index"))
 
   .use("/jur8/schets", protect, require("@region_prixod_schets/index"))
   .use("/jur8/monitoring", protect, require("@jur8_monitoring/index"))
@@ -197,12 +198,6 @@ routes
   .use("/features", protect, require("@features/index"))
 
   .use("/dashboard", protect, require("@region_dashboard/index"))
-
-  // .use("/real/cost/doc", protect, require("@real_cost_doc/index"))
-  // .use("/real/cost/report", protect, require("@real_cost_report/index"))
-
-  // .use("/ox/doc", protect, require("@ox_doc/index"))
-  // .use("/ox/report", protect, require("@ox_report/index"))
 
   // Admin routes
 

@@ -8,6 +8,89 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.OdinoxService = class {
   static now = new Date();
 
+  static async getSmeta(data) {
+    const smetas = await OdinoxDB.getSmeta([
+      data.region_id,
+      data.main_schet_id,
+      data.year,
+    ]);
+
+    return { smetas };
+  }
+
+  static getMonthYearSumma(data) {
+    for (let smeta of data.smetas) {
+      if (smeta.smeta_grafik) {
+        smeta.month_summa = smeta.smeta_grafik[`oy_${data.month}`];
+
+        for (let i = 1; i <= data.month; i++) {
+          smeta.year_summa = smeta.smeta_grafik[`oy_${i}`];
+        }
+      } else {
+        smeta.month_summa = 0;
+        smeta.year_summa = 0;
+      }
+    }
+
+    return data.smetas;
+  }
+
+  static async byMonth(data) {
+    for (let smeta of data.smetas) {
+      smeta.by_month = await OdinoxDB.getGrafiksByMonth(
+        [data.region_id, data.main_schet_id, data.year, smeta.id],
+        data.month
+      );
+    }
+
+    return data.smetas;
+  }
+
+  static async create(data) {
+    const result = await db.transaction(async (client) => {
+      const doc = await OdinoxDB.create(
+        [
+          1,
+          data.accept_time,
+          this.now,
+          data.user_id,
+          data.year,
+          data.month,
+          data.main_schet_id,
+          this.now,
+          this.now,
+        ],
+        client
+      );
+
+      await this.createChild({ ...data, client, parent_id: doc.id });
+
+      return doc;
+    });
+
+    return result;
+  }
+
+  static async createChild(data) {
+    for (let child of data.childs) {
+      for (let sub_child of child.sub_childs) {
+        await OdinoxDB.createChild(
+          [
+            sub_child.smeta_id,
+            sub_child.summa,
+            data.parent_id,
+            child.is_year,
+            this.now,
+            this.now,
+          ],
+          data.client
+        );
+      }
+    }
+  }
+
+  // old
+
   static async getByIdExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("main book");
@@ -161,75 +244,10 @@ exports.OdinoxService = class {
     return result;
   }
 
-  static async createChild(data) {
-    for (let child of data.childs) {
-      for (let sub_child of child.sub_childs) {
-        await OdinoxDB.createChild(
-          [
-            sub_child.smeta_id,
-            sub_child.summa,
-            data.parent_id,
-            child.type_id,
-            this.now,
-            this.now,
-          ],
-          data.client
-        );
-      }
-    }
-  }
-
-  static async create(data) {
-    const result = await db.transaction(async (client) => {
-      const doc = await OdinoxDB.create(
-        [
-          1,
-          data.accept_time,
-          this.now,
-          data.user_id,
-          data.year,
-          data.month,
-          data.main_schet_id,
-          this.now,
-          this.now,
-        ],
-        client
-      );
-
-      await this.createChild({ ...data, client, parent_id: doc.id });
-
-      return doc;
-    });
-
-    return result;
-  }
-
   static async getByIdType(data) {
     const result = await OdinoxDB.getByIdType([data.id]);
 
     return result;
-  }
-
-  static async getSmeta(data) {
-    const smetas = await OdinoxDB.getSmeta([
-      data.region_id,
-      data.main_schet_id,
-      data.year,
-    ]);
-
-    return smetas;
-  }
-
-  static getJur0Data(data) {
-    for (let smeta of data.smetas) {
-      if (smeta.smeta_grafik) {
-        smeta.summa = smeta.smeta_grafik[`oy_${data.month}`];
-      } else {
-        smeta.summa = 0;
-      }
-    }
-
-    return data.smetas;
   }
 
   static async getJur1Data(data) {
@@ -314,47 +332,6 @@ exports.OdinoxService = class {
 
       await OdinoxDB.deleteChildByParentId([data.id], client);
     });
-  }
-
-  static getJur0DataYear(data) {
-    for (let smeta of data.smetas) {
-      if (smeta.smeta_grafik) {
-        for (let i = 1; i <= data.month; i++) {
-          smeta.summa = smeta.smeta_grafik[`oy_${i}`];
-        }
-      } else {
-        smeta.summa = 0;
-      }
-    }
-
-    return data.smetas;
-  }
-
-  static async getCangculate(data) {
-    for (let smeta of data.smetas) {
-      let old_summa;
-      const doc_summa = data.doc.sub_childs.find(
-        (item) => item.id === smeta.id
-      );
-
-      if (data.old) {
-        old_summa = data.old.sub_childs.find(
-          (item) => item.smeta_id === smeta.id
-        );
-      } else {
-        old_summa = { summa: 0 };
-      }
-
-      smeta.summa = doc_summa.summa + old_summa.summa;
-    }
-
-    return data.smetas;
-  }
-
-  static async getOdinoxType() {
-    const result = await OdinoxDB.getOdinoxType([]);
-
-    return result;
   }
 
   static async getById(data) {

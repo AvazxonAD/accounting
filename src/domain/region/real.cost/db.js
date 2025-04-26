@@ -1,20 +1,5 @@
 const { db } = require(`@db/index`);
 exports.OdinoxDB = class {
-  static async update(params, client) {
-    const query = `--sql
-      UPDATE odinox
-      SET
-        send_time = $1,
-        status = $2,
-        updated_at = $3
-      WHERE id = $4
-      RETURNING id 
-    `;
-
-    const result = await client.query(query, params);
-
-    return result.rows[0];
-  }
   static async getSmeta(params) {
     const query = `--sql
       SELECT
@@ -47,26 +32,35 @@ exports.OdinoxDB = class {
     return result;
   }
 
-  static async getOdinoxType(params) {
-    const query = `SELECT *, id AS type_id FROM odinox_type ORDER BY sort_order`;
-
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
   static async createChild(params, client) {
     const query = `--sql
             INSERT INTO odinox_child (
                 smeta_id,
                 summa,
                 parent_id,
-                type_id,
+                is_year,
                 created_at,
                 updated_at
             )
             VALUES ($1, $2, $3, $4, $5, $6)
         `;
+
+    await client.query(query, params);
+  }
+
+  static async createSubChild(params, client) {
+    const query = `--sql
+      INSERT INTO odinox_sub_child (
+        contract_grafik_id,
+        grafik_summa,
+        rasxod_summa,
+        remaining_summa,
+        parent_id,
+        created_at,
+        updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `;
 
     await client.query(query, params);
   }
@@ -91,6 +85,64 @@ exports.OdinoxDB = class {
     const result = await client.query(query, params);
 
     return result.rows[0];
+  }
+
+  static async getGrafiksByMonth(params, month) {
+    const query = `--sql
+      SELECT
+        c.doc_num,
+        c.doc_date,
+        so.name,
+        so.inn,
+        cg.oy_${month}::FLOAT AS grafik_summa,
+        (
+          SELECT 
+            COALESCE(SUM())
+          FROM bank_rasxod d 
+          WHERE 
+            d.isdeleted = false
+        ) AS rasxod_summa
+      FROM shartnoma_grafik cg
+      JOIN shartnomalar_organization c ON c.id = cg.id_shartnomalar_organization
+      JOIN spravochnik_organization so ON so.id = c.spravochnik_organization_id
+      JOIN users u ON u.id = cg.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1 
+        AND cg.isdeleted = false
+        AND cg.main_schet_id = $2
+        AND cg.year = $3
+        AND cg.smeta_id = $4
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  // old
+
+  static async update(params, client) {
+    const query = `--sql
+      UPDATE odinox
+      SET
+        send_time = $1,
+        status = $2,
+        updated_at = $3
+      WHERE id = $4
+      RETURNING id 
+    `;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
+
+  static async getOdinoxType(params) {
+    const query = `SELECT *, id AS type_id FROM odinox_type ORDER BY sort_order`;
+
+    const result = await db.query(query, params);
+
+    return result;
   }
 
   static async getJur1Data(params) {
