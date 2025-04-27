@@ -160,21 +160,20 @@ exports.RealCostDB = class {
     return result;
   }
 
-  static async getById(params, isdeleted = null) {
+  static async getByMonth(params) {
     const query = `--sql
       SELECT
-        d.*,
-        ua.fio AS                 accept_user_fio,
-        ua.login AS               accept_user_login
+        d.*
       FROM real_cost d
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
-        AND d.id = $2
-        AND d.main_schet_id = $3
-        ${!isdeleted ? "AND d.isdeleted = false" : ""}
+        AND d.year = $2
+        AND d.month = $3
+        AND d.main_schet_id = $4
+        AND d.isdeleted = false
     `;
 
     const result = await db.query(query, params);
@@ -182,127 +181,18 @@ exports.RealCostDB = class {
     return result[0];
   }
 
-  // old
-  static async update(params, client) {
-    const query = `--sql
-      UPDATE real_cost
-      SET
-        send_time = $1,
-        status = $2,
-        updated_at = $3
-      WHERE id = $4
-      RETURNING id 
-    `;
-
-    const result = await client.query(query, params);
-
-    return result.rows[0];
-  }
-
-  static async getreal_costType(params) {
-    const query = `SELECT *, id AS type_id FROM real_cost_type ORDER BY sort_order`;
-
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
-  static async getJur1Data(params) {
+  static async checkCreateCount(params) {
     const query = `--sql
       SELECT
-        op.sub_schet,
-        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-      FROM bank_prixod_child ch
-      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
-      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      JOIN users AS u ON u.id = d.user_id
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
-        AND r.id = $3
-        AND d.main_schet_id = $4
-        
-      GROUP BY op.sub_schet
-    `;
-
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
-  static async getJur2Data(params) {
-    const query = `--sql
-      SELECT
-        op.sub_schet,
-        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-      FROM bank_rasxod_child ch
-      JOIN bank_rasxod d ON d.id = ch.id_bank_rasxod
-      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      JOIN users AS u ON u.id = d.user_id
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
-        AND r.id = $3
-        AND d.main_schet_id = $4
-        
-      GROUP BY op.sub_schet
-
-      UNION ALL
-      
-      SELECT
-        op.sub_schet,
-        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-      FROM kassa_rasxod_child ch
-      JOIN kassa_rasxod d ON d.id = ch.kassa_rasxod_id
-      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      JOIN users AS u ON u.id = d.user_id
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
-        AND r.id = $3
-        AND d.main_schet_id = $4
-        
-      GROUP BY op.sub_schet
-    `;
-
-    const result = await db.query(query, params);
-
-    return result;
-  }
-
-  static async getJur3Data(params) {
-    const query = `--sql
-      SELECT
-        op.sub_schet,
-        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-      FROM avans_otchetlar_jur4_child ch
-      JOIN avans_otchetlar_jur4 d ON d.id = ch.avans_otchetlar_jur4_id
-      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      JOIN users AS u ON u.id = d.user_id
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
-        AND r.id = $3
-        AND d.main_schet_id = $4
-        
-      GROUP BY op.sub_schet
-
-      UNION ALL
-      
-      SELECT
-        op.sub_schet,
-        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa
-      FROM bajarilgan_ishlar_jur3_child ch
-      JOIN bajarilgan_ishlar_jur3 d ON d.id = ch.bajarilgan_ishlar_jur3_id
-      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
-      JOIN users AS u ON u.id = d.user_id
-      JOIN regions AS r ON r.id = u.region_id
-      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
-        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
-        AND r.id = $3
-        AND d.main_schet_id = $4
-        
-      GROUP BY op.sub_schet
+        d.*
+      FROM real_cost d
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN users u ON u.id = d.user_id
+      LEFT JOIN users ua ON ua.id = d.accept_user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND d.main_schet_id = $2
+        AND d.isdeleted = false
     `;
 
     const result = await db.query(query, params);
@@ -342,8 +232,10 @@ exports.RealCostDB = class {
       WITH data AS (
          SELECT
           d.*,
-          ua.fio AS                 accept_user_fio,
-          ua.login AS               accept_user_login
+          ua.fio AS accept_user_fio,
+          ua.login AS accept_user_login,
+          u.fio,
+          u.login   
         FROM real_cost d
         JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
@@ -381,21 +273,32 @@ exports.RealCostDB = class {
     return result[0];
   }
 
-  static async delete(params, client) {
-    const query = `UPDATE real_cost SET isdeleted = true WHERE id = $1`;
+  static async getById(params, isdeleted = null) {
+    const query = `--sql
+      SELECT
+        d.*,
+        ua.fio AS                 accept_user_fio,
+        ua.login AS               accept_user_login
+      FROM real_cost d
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN users u ON u.id = d.user_id
+      LEFT JOIN users ua ON ua.id = d.accept_user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND d.id = $2
+        AND d.main_schet_id = $3
+        ${!isdeleted ? "AND d.isdeleted = false" : ""}
+    `;
 
-    await client.query(query, params);
-  }
+    const result = await db.query(query, params);
 
-  static async deleteChildByParentId(params, client) {
-    const query = `UPDATE real_cost_child SET isdeleted = true WHERE parent_id = $1`;
-
-    await client.query(query, params);
+    return result[0];
   }
 
   static async getByIdChild(params) {
     const query = `--sql
       SELECT
+        ch.id,
         ch.smeta_id,
         s.smeta_name,
         s.smeta_number,
@@ -405,7 +308,7 @@ exports.RealCostDB = class {
       FROM real_cost_child ch
       JOIN smeta s ON s.id = ch.smeta_id
       WHERE ch.isdeleted = false
-        AND parent_id = $1
+        AND ch.parent_id = $1
     `;
 
     const result = await db.query(query, params);
@@ -413,57 +316,79 @@ exports.RealCostDB = class {
     return result;
   }
 
-  static async getBySubChild(params) {
-    const query = `
-      
+  static async getByMonthChild(params) {
+    const query = `--sql
+      WITH by_month AS (
+        SELECT
+          cg.*,
+          ch.*,
+          cg.id AS contract_grafik_id,
+          c.doc_num,
+          c.doc_date,
+          so.name,
+          so.inn
+        FROM real_cost_sub_child ch
+        JOIN shartnoma_grafik cg ON cg.id = ch.contract_grafik_id
+        JOIN shartnomalar_organization c ON c.id = cg.id_shartnomalar_organization
+        JOIN spravochnik_organization so ON so.id = c.spravochnik_organization_id
+        WHERE ch.isdeleted = false
+          AND ch.parent_id = $1
+          AND ch.is_year = false
+      ),
+      by_year AS (
+        SELECT
+          cg.*,
+          ch.*,
+          cg.id AS contract_grafik_id,
+          c.doc_num,
+          c.doc_date,
+          so.name,
+          so.inn
+        FROM real_cost_sub_child ch
+        JOIN shartnoma_grafik cg ON cg.id = ch.contract_grafik_id
+        JOIN shartnomalar_organization c ON c.id = cg.id_shartnomalar_organization
+        JOIN spravochnik_organization so ON so.id = c.spravochnik_organization_id
+        WHERE ch.isdeleted = false
+          AND ch.parent_id = $1
+          AND ch.is_year = true
+      )
+      SELECT
+        (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(by_month)), '[]'::JSON) FROM by_month) AS by_month,
+        (SELECT COALESCE(JSON_AGG(ROW_TO_JSON(by_year)), '[]'::JSON) FROM by_year) AS by_year;
     `;
-  }
-
-  static async getByIdType(params) {
-    const query = `SELECT * FROM real_cost_type WHERE id = $1 AND is_deleted = false`;
 
     const result = await db.query(query, params);
 
     return result[0];
   }
 
-  static async checkCreateCount(params) {
-    const query = `--sql
-      SELECT
-        d.*
-      FROM real_cost d
-      JOIN main_schet m ON m.id = d.main_schet_id
-      JOIN users u ON u.id = d.user_id
-      LEFT JOIN users ua ON ua.id = d.accept_user_id
-      JOIN regions r ON r.id = u.region_id
-      WHERE r.id = $1
-        AND d.main_schet_id = $2
-        AND d.isdeleted = false
-    `;
+  static async deleteChildByParentId(params, client) {
+    const queryParent = `UPDATE real_cost_child SET isdeleted = true WHERE id = ANY($1)`;
+    const queryChild = `UPDATE real_cost_sub_child SET isdeleted = true WHERE parent_id = ANY($1)`;
 
-    const result = await db.query(query, params);
-
-    return result;
+    await client.query(queryParent, params);
+    await client.query(queryChild, params);
   }
 
-  static async getByMonth(params) {
+  static async delete(params, client) {
+    const query = `UPDATE real_cost SET isdeleted = true WHERE id = $1`;
+
+    await client.query(query, params);
+  }
+
+  static async update(params, client) {
     const query = `--sql
-      SELECT
-        d.*
-      FROM real_cost d
-      JOIN main_schet m ON m.id = d.main_schet_id
-      JOIN users u ON u.id = d.user_id
-      LEFT JOIN users ua ON ua.id = d.accept_user_id
-      JOIN regions r ON r.id = u.region_id
-      WHERE r.id = $1
-        AND d.year = $2
-        AND d.month = $3
-        AND d.main_schet_id = $4
-        AND d.isdeleted = false
+      UPDATE real_cost
+      SET
+        send_time = $1,
+        status = $2,
+        updated_at = $3
+      WHERE id = $4
+      RETURNING id 
     `;
 
-    const result = await db.query(query, params);
+    const result = await client.query(query, params);
 
-    return result[0];
+    return result.rows[0];
   }
 };

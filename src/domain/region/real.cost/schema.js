@@ -1,24 +1,41 @@
 const Joi = require("joi");
 
-exports.OdinoxSchema = class {
+exports.RealCostSchema = class {
   static update() {
     return Joi.object({
       body: Joi.object({
-        month: Joi.number().integer().required().min(1).max(12).required(),
-        year: Joi.number().integer().required().min(1901).required(),
         childs: Joi.array()
           .items(
             Joi.object({
-              type_id: Joi.number().integer().min(1).required(),
-              sub_childs: Joi.array()
+              smeta_id: Joi.number().integer().required().min(1),
+              month_summa: Joi.number().required(),
+              year_summa: Joi.number().required(),
+              by_month: Joi.array()
                 .items(
                   Joi.object({
-                    id: Joi.number().integer().allow(null),
-                    smeta_id: Joi.number().integer().min(1).required(),
-                    summa: Joi.number().required(),
+                    contract_grafik_id: Joi.number()
+                      .integer()
+                      .required()
+                      .min(1),
+                    rasxod_summa: Joi.number().required(),
+                    contract_grafik_summa: Joi.number().required(),
+                    remaining_summa: Joi.number().required(),
                   })
                 )
-                .min(1)
+                .required(),
+
+              by_year: Joi.array()
+                .items(
+                  Joi.object({
+                    contract_grafik_id: Joi.number()
+                      .integer()
+                      .required()
+                      .min(1),
+                    rasxod_summa: Joi.number().required(),
+                    contract_grafik_summa: Joi.number().required(),
+                    remaining_summa: Joi.number().required(),
+                  })
+                )
                 .required(),
             })
           )

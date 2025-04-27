@@ -11,34 +11,34 @@ exports.Controller = class {
     const { year, month, childs } = req.body;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
-    // const check = await RealCostService.getByMonth({
-    //   region_id,
-    //   main_schet_id,
-    //   year,
-    //   month,
-    // });
+    const check = await RealCostService.getByMonth({
+      region_id,
+      main_schet_id,
+      year,
+      month,
+    });
 
-    // if (check) {
-    //   return res.error(req.i18n.t("docExists"), 409, { year, month });
-    // }
+    if (check) {
+      return res.error(req.i18n.t("docExists"), 409, { year, month });
+    }
 
-    // const check_create = await RealCostService.checkCreateCount({
-    //   region_id,
-    //   main_schet_id,
-    // });
+    const check_create = await RealCostService.checkCreateCount({
+      region_id,
+      main_schet_id,
+    });
 
-    // if (check_create.length > 0) {
-    //   const last_date = HelperFunctions.lastDate({ year, month });
-    //   const check = await RealCostService.getByMonth({
-    //     region_id,
-    //     main_schet_id,
-    //     year: last_date.year,
-    //     month: last_date.month,
-    //   });
-    //   if (!check) {
-    //     return res.error(req.i18n.t("yearMonthCreateError"), 400);
-    //   }
-    // }
+    if (check_create.length > 0) {
+      const last_date = HelperFunctions.lastDate({ year, month });
+      const check = await RealCostService.getByMonth({
+        region_id,
+        main_schet_id,
+        year: last_date.year,
+        month: last_date.month,
+      });
+      if (!check) {
+        return res.error(req.i18n.t("yearMonthCreateError"), 400);
+      }
+    }
 
     const result = await RealCostService.create({
       main_schet_id,
@@ -52,6 +52,21 @@ exports.Controller = class {
   static async getData(req, res) {
     const { main_schet_id } = req.query;
     const region_id = req.user.region_id;
+
+    const meta = {
+      month_summa: 0,
+      year_summa: 0,
+      by_month: {
+        rasxod_summa: 0,
+        contract_grafik_summa: 0,
+        remaining_summa: 0,
+      },
+      by_year: {
+        rasxod_summa: 0,
+        contract_grafik_summa: 0,
+        remaining_summa: 0,
+      },
+    };
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
@@ -71,103 +86,24 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, data.smetas);
-  }
+    for (let smeta of data.smetas) {
+      meta.year_summa += smeta.year_summa;
+      meta.month_summa += smeta.month_summa;
 
-  // old
+      for (let child of smeta.by_month) {
+        meta.by_month.rasxod_summa += child.rasxod_summa;
+        meta.by_month.contract_grafik_summa += child.contract_grafik_summa;
+        meta.by_month.remaining_summa += child.remaining_summa;
+      }
 
-  static async update(req, res) {
-    const region_id = req.user.region_id;
-    const { id } = req.params;
-    const user_id = req.user.id;
-    const { main_schet_id } = req.query;
-
-    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
-
-    const old_data = await RealCostService.getById({
-      region_id,
-      main_schet_id,
-      id,
-    });
-
-    if (!old_data) {
-      return res.error(req.i18n.t("docNotFound"), 404);
-    }
-
-    if (old_data.status === 3) {
-      return res.error(req.i18n.t("docStatus"), 409);
-    }
-
-    const { dates, doc } = await RealCostService.update({
-      ...req.body,
-      old_data,
-      region_id,
-      main_schet_id,
-      id,
-      user_id,
-    });
-
-    return res.success(req.i18n.t("updateSuccess"), 200, { dates }, doc);
-  }
-
-  static async getSmeta(req, res) {
-    const { main_schet_id } = req.query;
-    const region_id = req.user.region_id;
-
-    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
-
-    const result = await RealCostService.getSmeta({
-      ...req.query,
-      region_id,
-    });
-
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
-  }
-
-  static async getById(req, res) {
-    const region_id = req.user.region_id;
-    const { excel, report_title_id, main_schet_id } = req.query;
-    const { id } = req.params;
-
-    const data = await RealCostService.getById({
-      region_id,
-      id,
-      main_schet_id,
-      isdeleted: true,
-    });
-
-    if (!data) {
-      return res.error(req.i18n.t("docNotFound"), 404);
-    }
-
-    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
-
-    for (let type of data.childs) {
-      type.summa = 0;
-
-      for (let child of type.sub_childs) {
-        type.summa += child.summa;
+      for (let child of smeta.by_year) {
+        meta.by_year.rasxod_summa += child.rasxod_summa;
+        meta.by_year.contract_grafik_summa += child.contract_grafik_summa;
+        meta.by_year.remaining_summa += child.remaining_summa;
       }
     }
 
-    if (excel === "true") {
-      const { file_path, file_name } = await RealCostService.getByIdExcel({
-        ...data,
-      });
-
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${file_name}"`
-      );
-
-      return res.sendFile(file_path);
-    }
-
-    return res.success(req.i18n.t("getSuccess"), 200, null, data);
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data.smetas);
   }
 
   static async get(req, res) {
@@ -210,6 +146,111 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
+  static async getById(req, res) {
+    const region_id = req.user.region_id;
+    const { excel, main_schet_id } = req.query;
+    const { id } = req.params;
+
+    const meta = {
+      month_summa: 0,
+      year_summa: 0,
+      by_month: {
+        rasxod_summa: 0,
+        contract_grafik_summa: 0,
+        remaining_summa: 0,
+      },
+      by_year: {
+        rasxod_summa: 0,
+        contract_grafik_summa: 0,
+        remaining_summa: 0,
+      },
+    };
+
+    const data = await RealCostService.getById({
+      region_id,
+      id,
+      main_schet_id,
+      isdeleted: true,
+    });
+
+    if (!data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    for (let smeta of data.childs) {
+      meta.year_summa += smeta.year_summa;
+      meta.month_summa += smeta.month_summa;
+
+      for (let child of smeta.by_month) {
+        meta.by_month.rasxod_summa += child.rasxod_summa;
+        meta.by_month.contract_grafik_summa += child.contract_grafik_summa;
+        meta.by_month.remaining_summa += child.remaining_summa;
+      }
+
+      for (let child of smeta.by_year) {
+        meta.by_year.rasxod_summa += child.rasxod_summa;
+        meta.by_year.contract_grafik_summa += child.contract_grafik_summa;
+        meta.by_year.remaining_summa += child.remaining_summa;
+      }
+    }
+
+    if (excel === "true") {
+      const { file_path, file_name } = await RealCostService.getByIdExcel({
+        ...data,
+        meta,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${file_name}"`
+      );
+
+      return res.sendFile(file_path);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
+  static async update(req, res) {
+    const region_id = req.user.region_id;
+    const { id } = req.params;
+    const user_id = req.user.id;
+    const { main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const old_data = await RealCostService.getById({
+      region_id,
+      main_schet_id,
+      id,
+    });
+
+    if (!old_data) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (old_data.status === 3) {
+      return res.error(req.i18n.t("docStatus"), 409);
+    }
+
+    const result = await RealCostService.update({
+      ...req.body,
+      old_data,
+      region_id,
+      main_schet_id,
+      id,
+      user_id,
+    });
+
+    return res.success(req.i18n.t("updateSuccess"), 200, null, result);
+  }
+
   static async delete(req, res) {
     const region_id = req.user.region_id;
     const { id } = req.params;
@@ -217,13 +258,13 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const data = await RealCostService.getById({
+    const old_data = await RealCostService.getById({
       region_id,
       id,
       main_schet_id,
     });
 
-    if (!data) {
+    if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
@@ -236,18 +277,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("validationError"), 400);
     }
 
-    if (data.status === 3) {
+    if (old_data.status === 3) {
       return res.error(req.i18n.t("docStatus"), 409);
     }
 
-    await RealCostService.delete({ id });
+    await RealCostService.delete({ id, old_data });
 
     return res.success(req.i18n.t("deleteSuccess"), 200);
-  }
-
-  static async getOdinoxType(req, res) {
-    const result = await RealCostService.getOdinoxType();
-
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
   }
 };

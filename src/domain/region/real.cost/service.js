@@ -148,6 +148,44 @@ exports.RealCostService = class {
     }
   }
 
+  static async getByMonth(data) {
+    let result = await RealCostDB.getByMonth([
+      data.region_id,
+      data.year,
+      data.month,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async checkCreateCount(data) {
+    const result = await RealCostDB.checkCreateCount([
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async getEnd(data) {
+    const result = await RealCostDB.getEnd([
+      data.region_id,
+      data.main_schet_id,
+    ]);
+
+    return result;
+  }
+
+  static async get(data) {
+    const result = await RealCostDB.get(
+      [data.region_id, data.main_schet_id, data.offset, data.limit],
+      data.year
+    );
+
+    return result;
+  }
+
   static async getById(data) {
     const result = await RealCostDB.getById(
       [data.region_id, data.id, data.main_schet_id],
@@ -156,12 +194,15 @@ exports.RealCostService = class {
 
     if (result) {
       result.childs = await RealCostDB.getByIdChild([data.id]);
+      for (let child of result.childs) {
+        const smeta_data = await RealCostDB.getByMonthChild([child.id]);
+        child.by_month = smeta_data.by_month;
+        child.by_year = smeta_data.by_year;
+      }
     }
 
     return result;
   }
-
-  // old
 
   static async getByIdExcel(data) {
     const workbook = new ExcelJS.Workbook();
@@ -300,145 +341,25 @@ exports.RealCostService = class {
         client
       );
 
-      await RealCostDB.deleteChildByParentId([data.id], client);
+      const ids = data.old_data.childs.map((item) => item.id);
+
+      await RealCostDB.deleteChildByParentId([ids], client);
 
       await this.createChild({ ...data, client, parent_id: doc.id });
 
-      return { doc, dates: [] };
+      return doc;
     });
 
     return result;
-  }
-
-  static async getEnd(data) {
-    const result = await RealCostDB.getEnd([
-      data.region_id,
-      data.main_schet_id,
-    ]);
-
-    return result;
-  }
-
-  static async getByIdType(data) {
-    const result = await RealCostDB.getByIdType([data.id]);
-
-    return result;
-  }
-
-  static async getJur1Data(data) {
-    const _data = await RealCostDB.getJur1Data([
-      data.year,
-      data.months,
-      data.region_id,
-      data.main_schet_id,
-    ]);
-
-    for (let smeta of data.smetas) {
-      smeta.summa = 0;
-      _data.forEach((item) => {
-        if (item.sub_schet === smeta.smeta_number) {
-          smeta.summa += item.summa;
-        }
-      });
-    }
-
-    return data.smetas;
-  }
-
-  static async getJur2Data(data) {
-    const _data = await RealCostDB.getJur2Data([
-      data.year,
-      data.months,
-      data.region_id,
-      data.main_schet_id,
-    ]);
-
-    for (let smeta of data.smetas) {
-      smeta.summa = 0;
-      _data.forEach((item) => {
-        if (item.sub_schet === smeta.smeta_number) {
-          smeta.summa += item.summa;
-        }
-      });
-    }
-
-    return data.smetas;
-  }
-
-  static async getJur3Data(data) {
-    const _data = await RealCostDB.getJur3Data([
-      data.year,
-      data.months,
-      data.region_id,
-      data.main_schet_id,
-    ]);
-
-    for (let smeta of data.smetas) {
-      smeta.summa = 0;
-      _data.forEach((item) => {
-        if (item.sub_schet === smeta.smeta_number) {
-          smeta.summa += item.summa;
-        }
-      });
-    }
-
-    return data.smetas;
-  }
-
-  static async getJur4Data(data) {
-    for (let smeta of data.smetas) {
-      const grafik_summa = data.grafik.sub_childs.find(
-        (item) => item.id === smeta.id
-      );
-
-      const jur3a_akt_avans_summa = data.jur3a_akt_avans.sub_childs.find(
-        (item) => item.id === smeta.id
-      );
-
-      smeta.summa = grafik_summa.summa - jur3a_akt_avans_summa.summa;
-    }
-
-    return data.smetas;
   }
 
   static async delete(data) {
     await db.transaction(async (client) => {
       await RealCostDB.delete([data.id], client);
 
-      await RealCostDB.deleteChildByParentId([data.id], client);
+      const ids = data.old_data.childs.map((item) => item.id);
+
+      await RealCostDB.deleteChildByParentId([ids], client);
     });
-  }
-
-  static async get(data) {
-    const result = await RealCostDB.get(
-      [data.region_id, data.main_schet_id, data.offset, data.limit],
-      data.year
-    );
-
-    return result;
-  }
-
-  static async getByMonth(data) {
-    let result = await RealCostDB.getByMonth([
-      data.region_id,
-      data.year,
-      data.month,
-      data.main_schet_id,
-    ]);
-
-    if (result) {
-      result.childs = await RealCostDB.getByIdChild([result.id]);
-    }
-
-    return result;
-  }
-
-  static async checkCreateCount(data) {
-    const result = await RealCostDB.checkCreateCount([
-      data.region_id,
-      data.main_schet_id,
-    ]);
-
-    return result;
   }
 };
