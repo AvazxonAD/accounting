@@ -25,7 +25,9 @@ exports.RealCostDB = class {
       WHERE 
         s.isdeleted = false
         AND s.smeta_number IS NOT NULL
-        AND s.smeta_number != '';
+        AND s.smeta_number != ''
+
+      ORDER BY s.smeta_number
     `;
 
     const result = await db.query(query, params);
@@ -309,6 +311,8 @@ exports.RealCostDB = class {
       JOIN smeta s ON s.id = ch.smeta_id
       WHERE ch.isdeleted = false
         AND ch.parent_id = $1
+
+      ORDER BY s.smeta_number
     `;
 
     const result = await db.query(query, params);

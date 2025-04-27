@@ -208,7 +208,7 @@ exports.RealCostService = class {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("main book");
 
-    worksheet.mergeCells(`A1`, "T1");
+    worksheet.mergeCells(`A1`, "O1");
     worksheet.getCell(`A1`).value =
       `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
 
@@ -221,55 +221,96 @@ exports.RealCostService = class {
     worksheet.mergeCells(`C2`, "C3");
     worksheet.getCell(`C2`).value = `Smeta №`;
 
-    worksheet.mergeCells(`D2`, "H2");
+    worksheet.mergeCells(`D2`, "I2");
     worksheet.getCell(`D2`).value = "Ой учун";
 
-    worksheet.mergeCells(`I2`, "M2");
-    worksheet.getCell(`I2`).value = "Йил учун";
+    worksheet.mergeCells(`J2`, "O2");
+    worksheet.getCell(`J2`).value = "Йил учун";
 
     worksheet.getCell("D3").value = "Ажратилган маблағлар";
-    worksheet.getCell("E3").value =
-      "Вазирлик томонидан тўлаб берилган маблағлар";
-    worksheet.getCell("F3").value = "Касса расход / Банк расход";
-    worksheet.getCell("G3").value = "Ҳақиқатда ҳаражатлар";
-    worksheet.getCell("H3").value = "Қолдиқ";
+    worksheet.getCell("E3").value = "Договор дата";
+    worksheet.getCell("F3").value = "Корхона номи";
+    worksheet.getCell("G3").value = "Шартнома график суммаси";
+    worksheet.getCell("H3").value = "Касса расход / Банк расход";
+    worksheet.getCell("I3").value = "Қолдиқ";
 
-    worksheet.getCell("I3").value = "Ажратилган маблағлар";
-    worksheet.getCell("J3").value =
-      "Вазирлик томонидан тўлаб берилган маблағлар";
-    worksheet.getCell("K3").value = "Касса расход / Банк расход";
-    worksheet.getCell("L3").value = "Ҳақиқатда ҳаражатлар";
-    worksheet.getCell("M3").value = "Қолдиқ";
+    worksheet.getCell("J3").value = "Ажратилган маблағлар";
+    worksheet.getCell("K3").value = "Договор дата";
+    worksheet.getCell("L3").value = "Корхона номи";
+    worksheet.getCell("M3").value = "Шартнома график суммаси";
+    worksheet.getCell("N3").value = "Касса расход / Банк расход";
+    worksheet.getCell("O3").value = "Қолдиқ";
 
     worksheet.columns = [
       { key: "order", width: 5 },
-      { key: "schet", width: 10 },
-      { key: "from_prixod", width: 14 },
-      { key: "from_rasxod", width: 14 },
-      { key: "jur1_prixod", width: 14 },
-      { key: "jur1_rasxod", width: 14 },
-      { key: "jur2_prixod", width: 14 },
-      { key: "jur2_rasxod", width: 14 },
-      { key: "jur3_prixod", width: 14 },
-      { key: "jur3_rasxod", width: 14 },
-      { key: "jur4_prixod", width: 14 },
-      { key: "jur4_rasxod", width: 14 },
-      { key: "jur5_prixod", width: 14 },
-      { key: "jur5_rasxod", width: 14 },
-      { key: "jur7_prixod", width: 14 },
-      { key: "jur7_rasxod", width: 14 },
-      { key: "internal_prixod", width: 14 },
-      { key: "internal_rasxod", width: 14 },
-      { key: "to_prixod", width: 14 },
-      { key: "to_rasxod", width: 14 },
+      { key: "smeta_name", width: 40 },
+      { key: "smeta_number", width: 17 },
+      { key: "month_summa", width: 17 },
+      { key: "doc_data", width: 17 },
+      { key: "organization", width: 17 },
+      { key: "contract_grafik_summa", width: 17 },
+      { key: "rasxod_summa", width: 17 },
+      { key: "remaining_summa", width: 17 },
+      { key: "year_summa", width: 17 },
+      { key: "doc_data_year", width: 17 },
+      { key: "organization_year", width: 17 },
+      { key: "contract_grafik_summa_year", width: 17 },
+      { key: "rasxod_summa_year", width: 17 },
+      { key: "remaining_summa_year", width: 17 },
     ];
 
     let column = 4;
-    for (let i = 0; i < data.childs.length; i++) {}
 
-    const end_column = column;
-    worksheet.mergeCells(`A${column}`, `B${column}`);
+    const fillCells = (worksheet, startRow, dataList, columns) => {
+      let row = startRow;
+      if (dataList.length) {
+        for (let item of dataList) {
+          worksheet.getCell(`${columns[0]}${row}`).value =
+            `${item.doc_num}   ${item.doc_date}`;
+          worksheet.getCell(`${columns[1]}${row}`).value =
+            `Номи: ${item.name}. Инн: ${item.inn}`;
+          worksheet.getCell(`${columns[2]}${row}`).value =
+            item.contract_grafik_summa;
+          worksheet.getCell(`${columns[3]}${row}`).value = item.rasxod_summa;
+          worksheet.getCell(`${columns[4]}${row}`).value = item.remaining_summa;
+          row++;
+        }
+      } else {
+        worksheet.getCell(`${columns[0]}${row}`).value = "";
+        worksheet.getCell(`${columns[1]}${row}`).value = "";
+        worksheet.getCell(`${columns[2]}${row}`).value = 0;
+        worksheet.getCell(`${columns[3]}${row}`).value = 0;
+        worksheet.getCell(`${columns[4]}${row}`).value = 0;
+      }
+    };
+
+    data.childs.forEach((smeta, index) => {
+      worksheet.getCell(`A${column}`).value = index + 1;
+      worksheet.getCell(`B${column}`).value = smeta.smeta_name;
+      worksheet.getCell(`C${column}`).value = smeta.smeta_number;
+      worksheet.getCell(`D${column}`).value = smeta.month_summa;
+      worksheet.getCell(`J${column}`).value = smeta.year_summa;
+
+      fillCells(worksheet, column, smeta.by_month, ["E", "F", "G", "H", "I"]);
+      fillCells(worksheet, column, smeta.by_year, ["K", "L", "M", "N", "O"]);
+
+      column++;
+    });
+
+    worksheet.mergeCells(`A${column}`, `C${column}`);
     worksheet.getCell(`A${column}`).value = `Итого`;
+    worksheet.getCell(`D${column}`).value = data.meta.month_summa;
+    worksheet.getCell(`J${column}`).value = data.meta.year_summa;
+
+    worksheet.getCell(`G${column}`).value =
+      data.meta.by_month.contract_grafik_summa;
+    worksheet.getCell(`H${column}`).value = data.meta.by_month.rasxod_summa;
+    worksheet.getCell(`I${column}`).value = data.meta.by_month.remaining_summa;
+
+    worksheet.getCell(`M${column}`).value =
+      data.meta.by_year.contract_grafik_summa;
+    worksheet.getCell(`N${column}`).value = data.meta.by_year.rasxod_summa;
+    worksheet.getCell(`O${column}`).value = data.meta.by_year.remaining_summa;
 
     worksheet.eachRow((row, rowNumber) => {
       let bold = false;
@@ -280,18 +321,18 @@ exports.RealCostService = class {
         size = 8;
       }
 
-      if (end_column === rowNumber || rowNumber < 3) {
+      if (column === rowNumber || rowNumber < 4) {
         bold = true;
       }
 
-      row.eachCell((cell, column) => {
-        if (column > 2 && rowNumber > 3) {
-          cell.numFmt = "# ##0 ##0.00";
+      row.eachCell((cell, columnNumber) => {
+        if (columnNumber > 2 && rowNumber > 3) {
+          cell.numFmt = "# ##0.00";
 
           horizontal = "right";
         }
 
-        if (column === 2 && rowNumber > 3) {
+        if (columnNumber === 2 && rowNumber > 3) {
           horizontal = "left";
         }
 
@@ -325,7 +366,7 @@ exports.RealCostService = class {
       await fs.promises.mkdir(folder_path);
     }
 
-    const file_name = `main_book.${new Date().getTime()}.xlsx`;
+    const file_name = `real_cost.${new Date().getTime()}.xlsx`;
 
     const file_path = `${folder_path}/${file_name}`;
 

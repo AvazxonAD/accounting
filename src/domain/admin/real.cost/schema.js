@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-exports.OdinoxSchema = class {
+exports.RealCostSchema = class {
   static update() {
     return Joi.object({
       body: Joi.object({

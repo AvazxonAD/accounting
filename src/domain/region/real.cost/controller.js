@@ -199,6 +199,7 @@ exports.Controller = class {
     if (excel === "true") {
       const { file_path, file_name } = await RealCostService.getByIdExcel({
         ...data,
+        ...req.query,
         meta,
       });
 

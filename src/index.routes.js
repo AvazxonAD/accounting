@@ -209,6 +209,8 @@ routes
 
   .use("/admin/odinox", protect, require("@admin_odinox/index"))
 
+  .use("/admin/real/cost", protect, require("@admin_real_cost/index"))
+
   .use(
     "/admin/spravochnik/prixod/schets",
     protect,
