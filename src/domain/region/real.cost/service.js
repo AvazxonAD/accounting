@@ -1,15 +1,15 @@
-const { OdinoxDB } = require("./db");
+const { RealCostDB } = require("./db");
 const { db } = require("@db/index");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
 const { HelperFunctions, sum } = require(`@helper/functions`);
 
-exports.OdinoxService = class {
+exports.RealCostService = class {
   static now = new Date();
 
   static async getSmeta(data) {
-    const smetas = await OdinoxDB.getSmeta([
+    const smetas = await RealCostDB.getSmeta([
       data.region_id,
       data.main_schet_id,
       data.year,
@@ -37,7 +37,7 @@ exports.OdinoxService = class {
 
   static async byMonth(data) {
     for (let smeta of data.smetas) {
-      smeta.by_month = await OdinoxDB.byMonth(
+      smeta.by_month = await RealCostDB.byMonth(
         [data.region_id, data.main_schet_id, data.year, smeta.id],
         data.month
       );
@@ -55,7 +55,7 @@ exports.OdinoxService = class {
 
   static async byYear(data) {
     for (let smeta of data.smetas) {
-      smeta.by_year = await OdinoxDB.byMonth(
+      smeta.by_year = await RealCostDB.byMonth(
         [data.region_id, data.main_schet_id, data.year, smeta.id],
         null,
         data.month
@@ -77,7 +77,7 @@ exports.OdinoxService = class {
 
   static async create(data) {
     const result = await db.transaction(async (client) => {
-      const doc = await OdinoxDB.create(
+      const doc = await RealCostDB.create(
         [
           1,
           data.accept_time,
@@ -102,13 +102,43 @@ exports.OdinoxService = class {
 
   static async createChild(data) {
     for (let child of data.childs) {
-      for (let sub_child of child.sub_childs) {
-        await OdinoxDB.createChild(
+      const doc = await RealCostDB.createChild(
+        [
+          child.smeta_id,
+          child.month_summa,
+          child.year_summa,
+          data.parent_id,
+          this.now,
+          this.now,
+        ],
+        data.client
+      );
+
+      for (let sub_child of child.by_month) {
+        await RealCostDB.createSubChild(
           [
-            sub_child.smeta_id,
-            sub_child.summa,
-            data.parent_id,
-            child.is_year,
+            sub_child.contract_grafik_id,
+            sub_child.contract_grafik_summa,
+            sub_child.rasxod_summa,
+            sub_child.remaining_summa,
+            false,
+            doc.id,
+            this.now,
+            this.now,
+          ],
+          data.client
+        );
+      }
+
+      for (let sub_child of child.by_year) {
+        await RealCostDB.createSubChild(
+          [
+            sub_child.contract_grafik_id,
+            sub_child.contract_grafik_summa,
+            sub_child.rasxod_summa,
+            sub_child.remaining_summa,
+            true,
+            doc.id,
             this.now,
             this.now,
           ],
@@ -116,6 +146,19 @@ exports.OdinoxService = class {
         );
       }
     }
+  }
+
+  static async getById(data) {
+    const result = await RealCostDB.getById(
+      [data.region_id, data.id, data.main_schet_id],
+      data.isdeleted
+    );
+
+    if (result) {
+      result.childs = await RealCostDB.getByIdChild([data.id]);
+    }
+
+    return result;
   }
 
   // old
@@ -252,12 +295,12 @@ exports.OdinoxService = class {
 
   static async update(data) {
     const result = await db.transaction(async (client) => {
-      const doc = await OdinoxDB.update(
+      const doc = await RealCostDB.update(
         [this.now, 1, this.now, data.id],
         client
       );
 
-      await OdinoxDB.deleteChildByParentId([data.id], client);
+      await RealCostDB.deleteChildByParentId([data.id], client);
 
       await this.createChild({ ...data, client, parent_id: doc.id });
 
@@ -268,19 +311,22 @@ exports.OdinoxService = class {
   }
 
   static async getEnd(data) {
-    const result = await OdinoxDB.getEnd([data.region_id, data.main_schet_id]);
+    const result = await RealCostDB.getEnd([
+      data.region_id,
+      data.main_schet_id,
+    ]);
 
     return result;
   }
 
   static async getByIdType(data) {
-    const result = await OdinoxDB.getByIdType([data.id]);
+    const result = await RealCostDB.getByIdType([data.id]);
 
     return result;
   }
 
   static async getJur1Data(data) {
-    const _data = await OdinoxDB.getJur1Data([
+    const _data = await RealCostDB.getJur1Data([
       data.year,
       data.months,
       data.region_id,
@@ -300,7 +346,7 @@ exports.OdinoxService = class {
   }
 
   static async getJur2Data(data) {
-    const _data = await OdinoxDB.getJur2Data([
+    const _data = await RealCostDB.getJur2Data([
       data.year,
       data.months,
       data.region_id,
@@ -320,7 +366,7 @@ exports.OdinoxService = class {
   }
 
   static async getJur3Data(data) {
-    const _data = await OdinoxDB.getJur3Data([
+    const _data = await RealCostDB.getJur3Data([
       data.year,
       data.months,
       data.region_id,
@@ -357,27 +403,14 @@ exports.OdinoxService = class {
 
   static async delete(data) {
     await db.transaction(async (client) => {
-      await OdinoxDB.delete([data.id], client);
+      await RealCostDB.delete([data.id], client);
 
-      await OdinoxDB.deleteChildByParentId([data.id], client);
+      await RealCostDB.deleteChildByParentId([data.id], client);
     });
   }
 
-  static async getById(data) {
-    const result = await OdinoxDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      data.isdeleted
-    );
-
-    if (result) {
-      result.childs = await OdinoxDB.getByIdChild([data.id]);
-    }
-
-    return result;
-  }
-
   static async get(data) {
-    const result = await OdinoxDB.get(
+    const result = await RealCostDB.get(
       [data.region_id, data.main_schet_id, data.offset, data.limit],
       data.year
     );
@@ -386,7 +419,7 @@ exports.OdinoxService = class {
   }
 
   static async getByMonth(data) {
-    let result = await OdinoxDB.getByMonth([
+    let result = await RealCostDB.getByMonth([
       data.region_id,
       data.year,
       data.month,
@@ -394,14 +427,14 @@ exports.OdinoxService = class {
     ]);
 
     if (result) {
-      result.childs = await OdinoxDB.getByIdChild([result.id]);
+      result.childs = await RealCostDB.getByIdChild([result.id]);
     }
 
     return result;
   }
 
   static async checkCreateCount(data) {
-    const result = await OdinoxDB.checkCreateCount([
+    const result = await RealCostDB.checkCreateCount([
       data.region_id,
       data.main_schet_id,
     ]);

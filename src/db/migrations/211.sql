@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS odinox(
+CREATE TABLE IF NOT EXISTS real_cost(
     id SERIAL PRIMARY KEY,
     status INTEGER NOT NULL,
     accept_time TIMESTAMPTZ,
@@ -13,26 +13,26 @@ CREATE TABLE IF NOT EXISTS odinox(
     isdeleted BOOLEAN DEFAULT false
 );
 
-DROP TABLE odinox_child;
+DROP TABLE real_cost_child;
 
-CREATE TABLE IF NOT EXISTS odinox_child(
+CREATE TABLE IF NOT EXISTS real_cost_child(
     id SERIAL PRIMARY KEY,
     smeta_id INTEGER REFERENCES smeta(id),
     summa DECIMAL NOT NULL,
     is_year BOOLEAN NOT NULL,
-    parent_id INTEGER REFERENCES odinox(id) NOT NULL,
+    parent_id INTEGER REFERENCES real_cost(id) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     isdeleted BOOLEAN DEFAULT false
 );
 
-CREATE TABLE IF NOT EXISTS odinox_sub_child(
+CREATE TABLE IF NOT EXISTS real_cost_sub_child(
     id SERIAL PRIMARY KEY,
     contract_grafik_id INTEGER REFERENCES shartnoma_grafik(id),
     grafik_summa DECIMAL NOT NULL,
     rasxod_summa DECIMAL NOT NULL,
     remaining_summa DECIMAL NOT NULL,
-    parent_id INTEGER REFERENCES odinox_child(id) NOT NULL,
+    parent_id INTEGER REFERENCES real_cost_child(id) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     isdeleted BOOLEAN DEFAULT false

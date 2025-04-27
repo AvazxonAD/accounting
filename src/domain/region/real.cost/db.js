@@ -1,10 +1,11 @@
 const { db } = require(`@db/index`);
-exports.OdinoxDB = class {
+exports.RealCostDB = class {
   static async getSmeta(params) {
     const query = `--sql
       SELECT
         DISTINCT ON(s.smeta_number)
         s.id,
+        s.id AS smeta_id,
         s.smeta_name,
         s.smeta_number,
         s.group_number,
@@ -34,32 +35,37 @@ exports.OdinoxDB = class {
 
   static async createChild(params, client) {
     const query = `--sql
-            INSERT INTO odinox_child (
+            INSERT INTO real_cost_child (
                 smeta_id,
-                summa,
+                month_summa,
+                year_summa,
                 parent_id,
-                is_year,
                 created_at,
                 updated_at
             )
             VALUES ($1, $2, $3, $4, $5, $6)
+
+            RETURNING id
         `;
 
-    await client.query(query, params);
+    const result = await client.query(query, params);
+
+    return result.rows[0];
   }
 
   static async createSubChild(params, client) {
     const query = `--sql
-      INSERT INTO odinox_sub_child (
+      INSERT INTO real_cost_sub_child (
         contract_grafik_id,
-        grafik_summa,
+        contract_grafik_summa,
         rasxod_summa,
         remaining_summa,
+        is_year,
         parent_id,
         created_at,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
 
     await client.query(query, params);
@@ -67,7 +73,7 @@ exports.OdinoxDB = class {
 
   static async create(params, client) {
     const query = `--sql
-      INSERT INTO odinox (
+      INSERT INTO real_cost (
           status,
           accept_time,
           send_time,
@@ -96,6 +102,7 @@ exports.OdinoxDB = class {
     const query = `--sql
       SELECT
         cg.*,
+        cg.id AS contract_grafik_id,
         c.doc_num,
         c.doc_date,
         so.name,
@@ -153,10 +160,32 @@ exports.OdinoxDB = class {
     return result;
   }
 
+  static async getById(params, isdeleted = null) {
+    const query = `--sql
+      SELECT
+        d.*,
+        ua.fio AS                 accept_user_fio,
+        ua.login AS               accept_user_login
+      FROM real_cost d
+      JOIN main_schet m ON m.id = d.main_schet_id
+      JOIN users u ON u.id = d.user_id
+      LEFT JOIN users ua ON ua.id = d.accept_user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE r.id = $1
+        AND d.id = $2
+        AND d.main_schet_id = $3
+        ${!isdeleted ? "AND d.isdeleted = false" : ""}
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   // old
   static async update(params, client) {
     const query = `--sql
-      UPDATE odinox
+      UPDATE real_cost
       SET
         send_time = $1,
         status = $2,
@@ -170,8 +199,8 @@ exports.OdinoxDB = class {
     return result.rows[0];
   }
 
-  static async getOdinoxType(params) {
-    const query = `SELECT *, id AS type_id FROM odinox_type ORDER BY sort_order`;
+  static async getreal_costType(params) {
+    const query = `SELECT *, id AS type_id FROM real_cost_type ORDER BY sort_order`;
 
     const result = await db.query(query, params);
 
@@ -281,33 +310,11 @@ exports.OdinoxDB = class {
     return result;
   }
 
-  static async getById(params, isdeleted = null) {
-    const query = `--sql
-      SELECT
-        d.*,
-        ua.fio AS                 accept_user_fio,
-        ua.login AS               accept_user_login
-      FROM odinox d
-      JOIN main_schet m ON m.id = d.main_schet_id
-      JOIN users u ON u.id = d.user_id
-      LEFT JOIN users ua ON ua.id = d.accept_user_id
-      JOIN regions r ON r.id = u.region_id
-      WHERE r.id = $1
-        AND d.id = $2
-        AND d.main_schet_id = $3
-        ${!isdeleted ? "AND d.isdeleted = false" : ""}
-    `;
-
-    const result = await db.query(query, params);
-
-    return result[0];
-  }
-
   static async getEnd(params) {
     const query = `--sql
       SELECT
           d.*
-        FROM odinox d
+        FROM real_cost d
         JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
         JOIN regions r ON r.id = u.region_id
@@ -337,7 +344,7 @@ exports.OdinoxDB = class {
           d.*,
           ua.fio AS                 accept_user_fio,
           ua.login AS               accept_user_login
-        FROM odinox d
+        FROM real_cost d
         JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users u ON u.id = d.user_id
         LEFT JOIN users ua ON ua.id = d.accept_user_id
@@ -356,7 +363,7 @@ exports.OdinoxDB = class {
         (
            SELECT
             COALESCE(COUNT(d.id), 0)
-          FROM odinox d
+          FROM real_cost d
           JOIN main_schet m ON m.id = d.main_schet_id
           JOIN users u ON u.id = d.user_id
           JOIN regions r ON r.id = u.region_id
@@ -375,13 +382,13 @@ exports.OdinoxDB = class {
   }
 
   static async delete(params, client) {
-    const query = `UPDATE odinox SET isdeleted = true WHERE id = $1`;
+    const query = `UPDATE real_cost SET isdeleted = true WHERE id = $1`;
 
     await client.query(query, params);
   }
 
   static async deleteChildByParentId(params, client) {
-    const query = `UPDATE odinox_child SET isdeleted = true WHERE parent_id = $1`;
+    const query = `UPDATE real_cost_child SET isdeleted = true WHERE parent_id = $1`;
 
     await client.query(query, params);
   }
@@ -389,29 +396,16 @@ exports.OdinoxDB = class {
   static async getByIdChild(params) {
     const query = `--sql
       SELECT
-        DISTINCT ON (t.id, t.name, t.sort_order)
-        t.id AS             type_id,
-        t.name AS           type_name,
-        t.sort_order,
-        (
-          SELECT
-            JSON_AGG(
-              JSON_BUILD_OBJECT(
-                'id', subch.id,
-                'smeta_id', subch.smeta_id,
-                'summa', summa
-              )
-            )
-          FROM odinox_child subch
-          WHERE subch.isdeleted = false
-            AND subch.type_id = t.id
-            AND subch.parent_id = $1
-        ) AS sub_childs
-      FROM odinox_child ch
-      JOIN odinox_type t ON t.id = ch.type_id
+        ch.smeta_id,
+        s.smeta_name,
+        s.smeta_number,
+        s.group_number,
+        ch.month_summa::FLOAT,
+        ch.year_summa::FLOAT
+      FROM real_cost_child ch
+      JOIN smeta s ON s.id = ch.smeta_id
       WHERE ch.isdeleted = false
         AND parent_id = $1
-      ORDER BY t.sort_order
     `;
 
     const result = await db.query(query, params);
@@ -419,8 +413,14 @@ exports.OdinoxDB = class {
     return result;
   }
 
+  static async getBySubChild(params) {
+    const query = `
+      
+    `;
+  }
+
   static async getByIdType(params) {
-    const query = `SELECT * FROM odinox_type WHERE id = $1 AND is_deleted = false`;
+    const query = `SELECT * FROM real_cost_type WHERE id = $1 AND is_deleted = false`;
 
     const result = await db.query(query, params);
 
@@ -431,7 +431,7 @@ exports.OdinoxDB = class {
     const query = `--sql
       SELECT
         d.*
-      FROM odinox d
+      FROM real_cost d
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
@@ -450,7 +450,7 @@ exports.OdinoxDB = class {
     const query = `--sql
       SELECT
         d.*
-      FROM odinox d
+      FROM real_cost d
       JOIN main_schet m ON m.id = d.main_schet_id
       JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
