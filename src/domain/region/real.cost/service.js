@@ -55,6 +55,9 @@ exports.RealCostService = class {
         data.month
       );
 
+      if (smeta.id === 228) {
+      }
+
       for (let contract of smeta.by_month) {
         contract.contract_grafik_summa = Number(contract[`oy_${data.month}`]);
 

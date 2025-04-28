@@ -53,7 +53,6 @@ exports.RealCostDB = class {
   static async getSmeta(params) {
     const query = `--sql
       SELECT
-        DISTINCT ON(s.smeta_number)
         s.id,
         s.id AS smeta_id,
         s.smeta_name,

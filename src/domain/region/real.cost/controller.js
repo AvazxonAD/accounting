@@ -20,11 +20,11 @@ exports.Controller = class {
 
     const general_data = need_data.find((item) => item.smeta_id === smeta_id);
 
-    const grafik_month = general_data.by_month.find(
+    const grafik_month = general_data?.by_month.find(
       (item) => item.id === grafik_id
     );
 
-    const grafik_year = general_data.by_year.find(
+    const grafik_year = general_data?.by_year.find(
       (item) => item.id === grafik_id
     );
 
@@ -66,6 +66,19 @@ exports.Controller = class {
         organ_id: grafik_month.spravochnik_organization_id,
         contract_id: grafik_month.id_shartnomalar_organization,
       });
+    } else if (type === "rasxod_year") {
+      docs = await RealCostService.getRasxodDocs({
+        main_schet_id,
+        year,
+        months: [1, month],
+        contract_grafik_id: grafik_year.id,
+        organ_id: grafik_year.spravochnik_organization_id,
+        contract_id: grafik_year.id_shartnomalar_organization,
+      });
+    } else if (type === "remaining_month") {
+      docs.push({ ...grafik_month, summa: grafik_month.remaining_summa });
+    } else if (type === "remaining_year") {
+      docs.push({ ...grafik_year, summa: grafik_year.remaining_summa });
     }
 
     let summa = 0;
