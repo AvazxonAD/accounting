@@ -94,8 +94,7 @@ exports.Controller = class {
 
   static async getData(req, res) {
     const region_id = req.user.region_id;
-    const { first, year, month, main_schet_id, schet_id, budjet_id } =
-      req.query;
+    const { first, main_schet_id, schet_id, budjet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
