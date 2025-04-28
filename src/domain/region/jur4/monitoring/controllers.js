@@ -284,18 +284,42 @@ exports.Controller = class {
 
     const data = (await PodotchetDB.get([region_id, 0, 99999999])).data;
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: to,
+    });
+
+    const saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      region_id,
+      year,
+      month,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const from = HelperFunctions.returnDate({ year, month });
+
     for (let podotchet of data) {
-      const summa_to = await PodotchetMonitoringDB.getSumma(
-        [region_id, schet.schet, main_schet_id, to],
-        null,
-        null,
-        null,
-        null,
-        true
+      const internal = await PodotchetMonitoringDB.getSumma([
+        region_id,
+        schet.schet,
+        main_schet_id,
+        from,
+        to,
+      ]);
+
+      const podotchet_saldo = saldo.childs.find(
+        (item) => item.podotchet_id === podotchet.id
       );
 
-      podotchet.summa = summa_to.summa;
+      if (!podotchet_saldo) {
+        podotchet.summa = internal.summa;
+      } else {
+        podotchet.summa = internal.summa + podotchet_saldo.summa;
+      }
     }
+
     if (excel === "true") {
       const workbook = new ExcelJS.Workbook();
       const fileName = `prixod_rasxod_${new Date().getTime()}.xlsx`;
