@@ -32,19 +32,13 @@ router
 
   .post("/", validator(Controller.create, SaldoSchema.create()))
 
-  .get("/template", Middleware.jur7Block, Controller.templateFile)
+  .get("/template", validator(Controller.templateFile))
 
   .get("/check", validator(Controller.check, SaldoSchema.check()))
 
   .get("/:id", validator(Controller.getById, SaldoSchema.getById()))
 
   // old
-  .get("/", Middleware.jur7Block, validator(Controller.get, SaldoSchema.get()))
-  .put(
-    "/iznos_summa/:id",
-    validator(Controller.updateIznosSumma, SaldoSchema.updateIznosSumma())
-  )
-
   .get(
     "/report/responsible",
     Middleware.jur7Block,
