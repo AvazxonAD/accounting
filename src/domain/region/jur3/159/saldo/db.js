@@ -157,7 +157,11 @@ exports.Saldo159DB = class {
               FROM (
                 SELECT
                   ch.*,
-                  o.name
+                  o.name,
+                  o.inn,
+                  o.bank_klient,
+                  o.mfo,
+                (ch.prixod - ch.rasxod)::FLOAT AS summa
                 FROM saldo_159_child ch
                 JOIN spravochnik_organization o ON o.id = ch.organization_id
                 WHERE ch.parent_id = d.id
@@ -195,7 +199,8 @@ exports.Saldo159DB = class {
                  o.name,
                 o.inn,
                 o.bank_klient,
-                o.mfo
+                o.mfo,
+                (ch.prixod - ch.rasxod)::FLOAT AS summa
               FROM saldo_159_child ch
               JOIN spravochnik_organization o ON o.id = ch.organization_id AND o.isdeleted = false
               WHERE ch.parent_id = d.id

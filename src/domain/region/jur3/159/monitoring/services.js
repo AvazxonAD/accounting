@@ -432,18 +432,31 @@ exports.Monitoring159Service = class {
   static async prixodRasxod(data) {
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
+
     for (let item of data.organizations) {
-      item.summa = await Monitoring159DB.getSumma(
-        [data.region_id, data.main_schet_id, data.schet, data.to],
-        item.id,
-        null,
-        null,
-        null,
-        true
+      const saldo = data.saldo.childs.find(
+        (saldo_item) => saldo_item.organization_id === item.id
+      ) || { prixod: 0, rasxod: 0, summa: 0 };
+
+      const internal = await Monitoring159DB.getSumma(
+        [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
+        item.id
       );
 
-      itogo_rasxod += item.summa.rasxod_sum;
-      itogo_prixod += item.prixod_sum;
+      item.saldo = saldo;
+      item.summa = saldo.summa + internal.summa;
+      item.prixod_sum = saldo.prixod + internal.prixod_sum;
+      item.rasxod_sum = saldo.rasxod + internal.rasxod_sum;
+
+      if (item.summa > 0) {
+        itogo_prixod += item.summa;
+      } else {
+        itogo_rasxod += item.summa;
+      }
+
+      data.organizations = data.organizations.filter(
+        (item) => item.summa !== 0
+      );
     }
     return { organizations: data.organizations, itogo_rasxod, itogo_prixod };
   }
@@ -466,7 +479,17 @@ exports.Monitoring159Service = class {
     prixodCell.value = `Дебит`;
     const rasxodCell = worksheet.getCell(`C2`);
     rasxodCell.value = "Кредит";
-    const css_array = [title, organ_nameCell, prixodCell, rasxodCell];
+    const organ_id_cell = worksheet.getCell(`D2`);
+    organ_id_cell.value = "OrganID";
+
+    const css_array = [
+      title,
+      organ_nameCell,
+      prixodCell,
+      rasxodCell,
+      organ_id_cell,
+    ];
+
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
     let row_number = 3;
@@ -474,6 +497,7 @@ exports.Monitoring159Service = class {
       if (column.summa.summa === 0) {
         continue;
       }
+
       const organ_nameCell = worksheet.getCell(`A${row_number}`);
       organ_nameCell.value = column.name;
       const prixodCell = worksheet.getCell(`B${row_number}`);
@@ -482,6 +506,9 @@ exports.Monitoring159Service = class {
       const rasxodCell = worksheet.getCell(`C${row_number}`);
       rasxodCell.value =
         column.summa.summa < 0 ? Math.abs(column.summa.summa) : 0;
+      const organ_id_cell = worksheet.getCell(`D${row_number}`);
+      organ_id_cell.value = column.id;
+
       itogo_rasxod += rasxodCell.value;
       const css_array = [organ_nameCell, prixodCell, rasxodCell];
       css_array.forEach((item, index) => {
@@ -515,7 +542,6 @@ exports.Monitoring159Service = class {
     const rasxod_itogoCell = worksheet.getCell(`C${row_number}`);
     rasxod_itogoCell.value = itogo_rasxod;
     css_array.push(itogoStr, prixod_itogoCell, rasxod_itogoCell);
-
     css_array.forEach((item, index) => {
       let fill = {
         type: "pattern",
@@ -535,6 +561,7 @@ exports.Monitoring159Service = class {
         (fill = null), (border = { bottom: { style: "thin" } }), (size = 12);
       if (index === 4) (fill = null), (border = null), (horizontal = "right");
       if (index > 4) horizontal = "right";
+
       Object.assign(item, {
         numFmt: "#,##0.00",
         font: {
@@ -551,6 +578,7 @@ exports.Monitoring159Service = class {
     worksheet.getColumn(1).width = 40;
     worksheet.getColumn(2).width = 20;
     worksheet.getColumn(3).width = 20;
+    worksheet.getColumn(4).width = 20;
     worksheet.getRow(1).height = 30;
     const filePath = path.join(
       __dirname,

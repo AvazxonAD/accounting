@@ -297,6 +297,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: req.query.to,
+    });
+
+    const saldo = await Saldo159Service.getByMonth({
+      ...req.query,
+      year,
+      month,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const { data: organizations } = await OrganizationService.get({
       region_id,
       offset: 0,
@@ -305,6 +319,8 @@ exports.Controller = class {
 
     const data = await Monitoring159Service.prixodRasxod({
       ...req.query,
+      saldo,
+      from: HelperFunctions.returnDate({ year, month }),
       schet: schet.schet,
       region_id,
       organizations,
