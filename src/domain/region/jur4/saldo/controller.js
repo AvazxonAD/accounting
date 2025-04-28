@@ -114,13 +114,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    if (first === "true") {
-      const podotchets = await PodotchetService.get({
-        region_id,
-        offset: 0,
-        limit: 99999999,
-      });
+    const podotchets = await PodotchetService.get({
+      region_id,
+      offset: 0,
+      limit: 99999999,
+    });
 
+    if (first === "true") {
       for (let podotchet of podotchets.data) {
         podotchet.prixod = 0;
         podotchet.rasxod = 0;
@@ -141,6 +141,21 @@ exports.Controller = class {
 
     if (!last_saldo) {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
+    }
+
+    for (let podotchet of podotchets.data) {
+      const check = last_saldo.childs.find(
+        (item) => item.podotchet_id === podotchet.id
+      );
+      if (!check) {
+        last_saldo.childs.push({
+          ...podotchet,
+          podotchet_id: podotchet.id,
+          prixod: 0,
+          rasxod: 0,
+          summa: 0,
+        });
+      }
     }
 
     const date = HelperFunctions.getDate({

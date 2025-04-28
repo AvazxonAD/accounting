@@ -314,6 +314,7 @@ exports.Controller = class {
       offset: 0,
       limit: 99999999,
     });
+
     const data = await Monitoring152Service.prixodRasxod({
       ...req.query,
       schet: schet.schet,
