@@ -4,6 +4,8 @@ exports.RealCostSchema = class {
   static update() {
     return Joi.object({
       body: Joi.object({
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
         childs: Joi.array()
           .items(
             Joi.object({
@@ -60,6 +62,36 @@ exports.RealCostSchema = class {
         year: Joi.number().min(1).integer().min(1901).max(2099),
         main_schet_id: Joi.number().min(1).integer().required(),
         limit: Joi.number().min(1).integer().default(10),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static getDocs() {
+    return Joi.object({
+      query: Joi.object({
+        month: Joi.number().min(1).integer().required().max(12),
+        year: Joi.number().min(1).integer().min(1901).max(2099),
+        main_schet_id: Joi.number().min(1).integer().required(),
+        contract_id: Joi.number().min(1).integer(),
+        grafik_id: Joi.number().min(1).integer(),
+        smeta_id: Joi.number().min(1).integer().required(),
+        type: Joi.string()
+          .trim()
+          .required()
+          .valid(
+            "month_summa",
+            "year_summa",
+            "contract_grafik_month",
+            "contract_grafik_year",
+            "rasxod_month",
+            "rasxod_year",
+            "remaining_month",
+            "remaining_year"
+          ),
+      }),
+
+      body: Joi.object({
+        need_data: Joi.array().required(),
       }),
     }).options({ stripUnknown: true });
   }

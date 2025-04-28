@@ -19,6 +19,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("smetaNotFound"), 404);
     }
 
+    const general_data = need_data[sort_order].sub_childs.find(
+      (item) => item.smeta_id === smeta_id
+    );
+
     if (sort_order === 0 || sort_order === 5) {
       docs.push(
         need_data[sort_order].sub_childs.find((item) => item.id === smeta_id)
@@ -26,40 +30,26 @@ exports.Controller = class {
     } else if (sort_order === 1 || sort_order === 6) {
       const months = sort_order === 1 ? [month] : [1, month];
 
-      const data = need_data[sort_order].sub_childs.find(
-        (item) => item.id === smeta_id
-      );
-
       docs = await OdinoxService.getSort1Docs({
         ...req.query,
         region_id,
-        sub_schet: data.smeta_number,
+        sub_schet: general_data.smeta_number,
         months,
       });
     } else if (sort_order === 2 || sort_order === 7) {
       const months = sort_order === 1 ? [month] : [1, month];
-
-      const data = need_data[sort_order].sub_childs.find(
-        (item) => item.id === smeta_id
-      );
-
       docs = await OdinoxService.getSort2Docs({
         ...req.query,
         region_id,
-        sub_schet: data.smeta_number,
+        sub_schet: general_data.smeta_number,
         months,
       });
     } else if (sort_order === 3 || sort_order === 8) {
       const months = sort_order === 1 ? [month] : [1, month];
-
-      const data = need_data[sort_order].sub_childs.find(
-        (item) => item.id === smeta_id
-      );
-
       docs = await OdinoxService.getSort3Docs({
         ...req.query,
         region_id,
-        sub_schet: data.smeta_number,
+        sub_schet: general_data.smeta_number,
         months,
       });
     } else if (sort_order === 4 || sort_order === 9) {
@@ -93,6 +83,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { id } = req.params;
     const user_id = req.user.id;
+    const { year, month } = req.body;
     const { main_schet_id } = req.query;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
@@ -109,6 +100,19 @@ exports.Controller = class {
 
     if (old_data.status === 3) {
       return res.error(req.i18n.t("docStatus"), 409);
+    }
+
+    if (year !== old_data.year || month !== old_data.month) {
+      const check = await OdinoxService.getByMonth({
+        region_id,
+        main_schet_id,
+        year,
+        month,
+      });
+
+      if (check) {
+        return res.error(req.i18n.t("docExists"), 409, { year, month });
+      }
     }
 
     const { dates, doc } = await OdinoxService.update({

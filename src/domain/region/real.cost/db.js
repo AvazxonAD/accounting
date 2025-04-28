@@ -1,5 +1,55 @@
 const { db } = require(`@db/index`);
 exports.RealCostDB = class {
+  static async getRasxodDocs(params) {
+    const query = `--sql
+      SELECT 
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.schet,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'bank_rasxod' AS type
+      FROM bank_rasxod_child ch
+      JOIN bank_rasxod d ON d.id = ch.id_bank_rasxod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND d.main_schet_id = $1
+        AND EXTRACT(YEAR FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($3)
+        AND d.shartnoma_grafik_id = $4
+        AND d.id_spravochnik_organization = $5
+        AND d.id_shartnomalar_organization = $6 
+
+      UNION ALL 
+      
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.schet,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'kassa_rasxod' AS type
+      FROM kassa_rasxod_child ch
+      JOIN kassa_rasxod d ON d.id = ch.kassa_rasxod_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND d.main_schet_id = $1
+        AND EXTRACT(YEAR FROM d.doc_date) = $2
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($3)
+        AND d.contract_grafik_id = $4
+        AND d.organ_id = $5
+        AND d.contract_id = $6
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getSmeta(params) {
     const query = `--sql
       SELECT
@@ -107,6 +157,7 @@ exports.RealCostDB = class {
         cg.id AS contract_grafik_id,
         c.doc_num,
         c.doc_date,
+        c.spravochnik_organization_id,
         so.name,
         so.inn,
         COALESCE(
@@ -386,8 +437,10 @@ exports.RealCostDB = class {
       SET
         send_time = $1,
         status = $2,
-        updated_at = $3
-      WHERE id = $4
+        year = $3,
+        month = $4,
+        updated_at = $5
+      WHERE id = $6
       RETURNING id 
     `;
 

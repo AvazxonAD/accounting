@@ -8,6 +8,19 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.RealCostService = class {
   static now = new Date();
 
+  static async getRasxodDocs(data) {
+    const result = await RealCostDB.getRasxodDocs([
+      data.main_schet_id,
+      data.year,
+      data.months,
+      data.contract_grafik_id,
+      data.organ_id,
+      data.contract_id,
+    ]);
+
+    return result;
+  }
+
   static async getSmeta(data) {
     const smetas = await RealCostDB.getSmeta([
       data.region_id,
@@ -378,7 +391,7 @@ exports.RealCostService = class {
   static async update(data) {
     const result = await db.transaction(async (client) => {
       const doc = await RealCostDB.update(
-        [this.now, 1, this.now, data.id],
+        [this.now, 1, data.year, data.month, this.now, data.id],
         client
       );
 

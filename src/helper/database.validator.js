@@ -117,6 +117,8 @@ exports.ValidatorFunctions = class {
     if (!contract) {
       throw new ErrorResponse("contractNotFound", 404);
     }
+
+    return contract;
   }
 
   static async accountNumber(data) {

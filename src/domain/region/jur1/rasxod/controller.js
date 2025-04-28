@@ -295,7 +295,11 @@ exports.Controller = class {
     }
 
     if (contract_id) {
-      await ValidatorFunctions.contract({ region_id, contract_id, organ_id });
+      const contract = await ValidatorFunctions.contract({
+        region_id,
+        contract_id,
+        organ_id,
+      });
 
       if (contract_grafik_id) {
         const grafik = contract.grafiks.find(

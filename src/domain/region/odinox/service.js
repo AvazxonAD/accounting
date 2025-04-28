@@ -287,7 +287,7 @@ exports.OdinoxService = class {
   static async update(data) {
     const result = await db.transaction(async (client) => {
       const doc = await OdinoxDB.update(
-        [this.now, 1, this.now, data.id],
+        [this.now, 1, data.year, data.month, this.now, data.id],
         client
       );
 

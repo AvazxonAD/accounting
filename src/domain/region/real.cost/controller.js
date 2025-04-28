@@ -1,9 +1,81 @@
 const { RealCostService } = require("./service");
-const { HelperFunctions } = require(`@helper/functions`);
-const { ReportTitleService } = require(`@report_title/service`);
+const { HelperFunctions, sum } = require(`@helper/functions`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
+const { SmetaService } = require("@smeta/service");
+const { ContractService } = require(`@contract/service`);
 
 exports.Controller = class {
+  static async getDocs(req, res) {
+    const { main_schet_id, smeta_id, month, type, grafik_id, year } = req.query;
+    const { need_data } = req.body;
+    const region_id = req.user.region_id;
+    let docs = [];
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const smeta = await SmetaService.getById({ id: smeta_id });
+    if (!smeta) {
+      return res.error(req.i18n.t("smetaNotFound"), 404);
+    }
+
+    const general_data = need_data.find((item) => item.smeta_id === smeta_id);
+
+    const grafik_month = general_data.by_month.find(
+      (item) => item.id === grafik_id
+    );
+
+    const grafik_year = general_data.by_year.find(
+      (item) => item.id === grafik_id
+    );
+
+    if (
+      (type === "contract_grafik_month" || type === "rasxod_month") &&
+      !grafik_month
+    ) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    if (
+      (type === "contract_grafik_year" || type === "rasxod_year") &&
+      !grafik_year
+    ) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    if (type === "month_summa") {
+      docs.push({ ...general_data, summa: general_data.month_summa });
+    } else if (type === "year_summa") {
+      docs.push({ ...general_data, summa: general_data.year_summa });
+    } else if (type === "contract_grafik_month") {
+      const summa = grafik[`oy_${month}`];
+
+      docs.push({ ...grafik_month, summa });
+    } else if (type === "contract_grafik_year") {
+      let summa = 0;
+      for (let i = 1; i <= month; i++) {
+        summa += grafik[`oy_${i}`];
+      }
+
+      docs.push({ ...grafik_year, summa });
+    } else if (type === "rasxod_month") {
+      docs = await RealCostService.getRasxodDocs({
+        main_schet_id,
+        year,
+        months: [month],
+        contract_grafik_id: grafik_month.id,
+        organ_id: grafik_month.spravochnik_organization_id,
+        contract_id: grafik_month.id_shartnomalar_organization,
+      });
+    }
+
+    let summa = 0;
+    for (let doc of docs) {
+      summa += doc.summa;
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, { summa }, docs);
+  }
+
   static async create(req, res) {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
@@ -222,6 +294,7 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const { id } = req.params;
     const user_id = req.user.id;
+    const { year, month } = req.body;
     const { main_schet_id } = req.query;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
@@ -238,6 +311,19 @@ exports.Controller = class {
 
     if (old_data.status === 3) {
       return res.error(req.i18n.t("docStatus"), 409);
+    }
+
+    if (old_data.year !== year || month !== old_data.month) {
+      const check = await RealCostService.getByMonth({
+        region_id,
+        main_schet_id,
+        year,
+        month,
+      });
+
+      if (check) {
+        return res.error(req.i18n.t("docExists"), 409, { year, month });
+      }
     }
 
     const result = await RealCostService.update({

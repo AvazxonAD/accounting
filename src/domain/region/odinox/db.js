@@ -130,8 +130,10 @@ exports.OdinoxDB = class {
       SET
         send_time = $1,
         status = $2,
-        updated_at = $3
-      WHERE id = $4
+        year = $3,
+        month = $4,
+        updated_at = $5
+      WHERE id = $6
       RETURNING id 
     `;
 
