@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS real_cost(
     isdeleted BOOLEAN DEFAULT false
 );
 
-DROP TABLE real_cost_child;
+DROP TABLE real_cost_child CASCADE;
 
 CREATE TABLE IF NOT EXISTS real_cost_child(
     id SERIAL PRIMARY KEY,
