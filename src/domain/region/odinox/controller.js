@@ -3,8 +3,32 @@ const { OdinoxService } = require("./service");
 const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
+const { SmetaService } = require("@smeta/service");
 
 exports.Controller = class {
+  static async getDocs(req, res) {
+    const { sort_order, main_schet_id, need_data, smeta_id } = req.query;
+    const region_id = req.user.region_id;
+    let docs = [];
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const smeta = await SmetaService.getById({ id: smeta_id });
+    if (!smeta) {
+      return res.error(req.i18n.t("smetaNotFound"), 404);
+    }
+
+    if (sort_order === 0) {
+    }
+
+    let summa = 0;
+    for (let doc of docs) {
+      summa += doc.summa;
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, { summa }, docs);
+  }
+
   static async update(req, res) {
     const region_id = req.user.region_id;
     const { id } = req.params;

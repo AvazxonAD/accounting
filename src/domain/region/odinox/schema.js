@@ -110,6 +110,18 @@ exports.OdinoxSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static getDocs() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().min(1).integer().required(),
+        smeta_id: Joi.number().min(1).integer().required(),
+        month: Joi.number().min(1).integer().max(12).required(),
+        year: Joi.number().min(1901).integer().max(2099).required(),
+        need_data: Joi.array().required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static delete() {
     return Joi.object({
       params: Joi.object({

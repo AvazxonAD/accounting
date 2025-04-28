@@ -223,7 +223,7 @@ exports.RealCostDB = class {
   }
 
   static async get(params, year = null) {
-    const year_filter = ``;
+    let year_filter = ``;
 
     if (year) {
       params.push(year);
