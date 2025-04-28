@@ -1,5 +1,129 @@
 const { db } = require(`@db/index`);
 exports.OdinoxDB = class {
+  static async getSort3Docs(params) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'avans' AS type
+      FROM avans_otchetlar_jur4_child ch
+      JOIN avans_otchetlar_jur4 d ON d.id = ch.avans_otchetlar_jur4_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
+        AND r.id = $3
+        AND d.main_schet_id = $4
+        AND d.isdeleted = false
+        AND ch.isdeleted = false
+        AND op.sub_schet = $5
+
+      UNION ALL
+      
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'akt' AS type
+      FROM bajarilgan_ishlar_jur3_child ch
+      JOIN bajarilgan_ishlar_jur3 d ON d.id = ch.bajarilgan_ishlar_jur3_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
+        AND r.id = $3
+        AND d.main_schet_id = $4
+        AND d.isdeleted = false
+        AND ch.isdeleted = false
+        AND op.sub_schet = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getSort1Docs(params) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'bank_prixod' AS type
+      FROM bank_prixod_child ch
+      JOIN bank_prixod d ON d.id = ch.id_bank_prixod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
+        AND r.id = $3
+        AND d.main_schet_id = $4
+        AND op.sub_schet = $5
+    `;
+
+    console.log(params);
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async getSort2Docs(params) {
+    const query = `--sql
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'bank_rasxod' AS type
+      FROM bank_rasxod_child ch
+      JOIN bank_rasxod d ON d.id = ch.id_bank_rasxod
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
+        AND r.id = $3
+        AND d.main_schet_id = $4
+        AND op.sub_schet = $5
+
+      UNION ALL
+      
+      SELECT
+        d.id,
+        d.doc_num,
+        TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+        op.sub_schet,
+        ch.summa::FLOAT,
+        'kassa_rasxod' AS type
+      FROM kassa_rasxod_child ch
+      JOIN kassa_rasxod d ON d.id = ch.kassa_rasxod_id
+      JOIN spravochnik_operatsii op ON op.id = ch.spravochnik_operatsii_id
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
+        AND r.id = $3
+        AND d.main_schet_id = $4
+        AND op.sub_schet = $5
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async update(params, client) {
     const query = `--sql
       UPDATE odinox

@@ -8,6 +8,42 @@ const { HelperFunctions, sum } = require(`@helper/functions`);
 exports.OdinoxService = class {
   static now = new Date();
 
+  static async getSort1Docs(data) {
+    const result = await OdinoxDB.getSort1Docs([
+      data.year,
+      data.months,
+      data.region_id,
+      data.main_schet_id,
+      data.sub_schet,
+    ]);
+
+    return result;
+  }
+
+  static async getSort2Docs(data) {
+    const result = await OdinoxDB.getSort2Docs([
+      data.year,
+      data.months,
+      data.region_id,
+      data.main_schet_id,
+      data.sub_schet,
+    ]);
+
+    return result;
+  }
+
+  static async getSort3Docs(data) {
+    const result = await OdinoxDB.getSort3Docs([
+      data.year,
+      data.months,
+      data.region_id,
+      data.main_schet_id,
+      data.sub_schet,
+    ]);
+
+    return result;
+  }
+
   static async getByIdExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("main book");

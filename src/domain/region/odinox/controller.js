@@ -7,7 +7,8 @@ const { SmetaService } = require("@smeta/service");
 
 exports.Controller = class {
   static async getDocs(req, res) {
-    const { sort_order, main_schet_id, need_data, smeta_id } = req.query;
+    const { sort_order, main_schet_id, smeta_id, month } = req.query;
+    const { need_data } = req.body;
     const region_id = req.user.region_id;
     let docs = [];
 
@@ -18,7 +19,66 @@ exports.Controller = class {
       return res.error(req.i18n.t("smetaNotFound"), 404);
     }
 
-    if (sort_order === 0) {
+    if (sort_order === 0 || sort_order === 5) {
+      docs.push(
+        need_data[sort_order].sub_childs.find((item) => item.id === smeta_id)
+      );
+    } else if (sort_order === 1 || sort_order === 6) {
+      const months = sort_order === 1 ? [month] : [1, month];
+
+      const data = need_data[sort_order].sub_childs.find(
+        (item) => item.id === smeta_id
+      );
+
+      docs = await OdinoxService.getSort1Docs({
+        ...req.query,
+        region_id,
+        sub_schet: data.smeta_number,
+        months,
+      });
+    } else if (sort_order === 2 || sort_order === 7) {
+      const months = sort_order === 1 ? [month] : [1, month];
+
+      const data = need_data[sort_order].sub_childs.find(
+        (item) => item.id === smeta_id
+      );
+
+      docs = await OdinoxService.getSort2Docs({
+        ...req.query,
+        region_id,
+        sub_schet: data.smeta_number,
+        months,
+      });
+    } else if (sort_order === 3 || sort_order === 8) {
+      const months = sort_order === 1 ? [month] : [1, month];
+
+      const data = need_data[sort_order].sub_childs.find(
+        (item) => item.id === smeta_id
+      );
+
+      docs = await OdinoxService.getSort3Docs({
+        ...req.query,
+        region_id,
+        sub_schet: data.smeta_number,
+        months,
+      });
+    } else if (sort_order === 4 || sort_order === 9) {
+      const grafik_index = sort_order === 4 ? 0 : 5;
+      const rasxod_index = sort_order === 4 ? 3 : 8;
+
+      const grafik_data = need_data[grafik_index].sub_childs.find(
+        (item) => item.id === smeta_id
+      );
+
+      const jur1_jur2_rasxod_data = need_data[rasxod_index].sub_childs.find(
+        (item) => item.id === smeta_id
+      );
+
+      docs.push({
+        grafik_data,
+        jur1_jur2_rasxod_data,
+        summa: grafik_data.summa - jur1_jur2_rasxod_data.summa,
+      });
     }
 
     let summa = 0;

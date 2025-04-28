@@ -114,9 +114,13 @@ exports.OdinoxSchema = class {
     return Joi.object({
       query: Joi.object({
         main_schet_id: Joi.number().min(1).integer().required(),
+        sort_order: Joi.number().required(),
         smeta_id: Joi.number().min(1).integer().required(),
         month: Joi.number().min(1).integer().max(12).required(),
         year: Joi.number().min(1901).integer().max(2099).required(),
+      }),
+
+      body: Joi.object({
         need_data: Joi.array().required(),
       }),
     }).options({ stripUnknown: true });
