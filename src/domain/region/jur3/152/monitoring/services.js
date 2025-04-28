@@ -646,18 +646,29 @@ exports.Monitoring152Service = class {
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
     for (let item of data.organizations) {
-      item.summa = await Monitoring152DB.getSumma(
-        [data.region_id, data.main_schet_id, data.schet, data.to],
-        item.id,
-        null,
-        null,
-        null,
-        true
+      const saldo = data.saldo.childs.find(
+        (saldo_item) => saldo_item.organization_id === item.id
+      ) || { prixod: 0, rasxod: 0, summa: 0 };
+
+      const internal = await Monitoring152DB.getSumma(
+        [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
+        item.id
       );
 
-      itogo_rasxod += item.summa.rasxod_sum;
-      itogo_prixod += item.prixod_sum;
+      item.saldo = saldo;
+      item.summa = saldo.summa + internal.summa;
+      item.prixod_sum = saldo.prixod + internal.prixod_sum;
+      item.rasxod_sum = saldo.rasxod + internal.rasxod_sum;
+
+      if (item.summa > 0) {
+        itogo_prixod += item.summa;
+      } else {
+        itogo_rasxod += item.summa;
+      }
     }
+
+    data.organizations = data.organizations.filter((item) => item.summa !== 0);
+
     return { organizations: data.organizations, itogo_rasxod, itogo_prixod };
   }
 
