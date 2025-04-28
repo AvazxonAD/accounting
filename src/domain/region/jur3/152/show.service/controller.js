@@ -418,20 +418,6 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date });
-
-    const saldo = await Saldo152Service.getByMonth({
-      main_schet_id,
-      year,
-      month,
-      region_id,
-      schet_id,
-    });
-
-    if (!saldo) {
-      return res.error(req.i18n.t("saldoNotFound"), 404);
-    }
-
     const data = await ShowServiceService.delete({
       id,
       region_id,
