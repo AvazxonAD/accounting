@@ -210,6 +210,7 @@ exports.OrganizationDB = class {
                   so.inn, 
                   so.okonx,
                   so.parent_id,
+                  so.isdeleted,
                   COALESCE((
                         SELECT 
                             JSON_AGG(g)

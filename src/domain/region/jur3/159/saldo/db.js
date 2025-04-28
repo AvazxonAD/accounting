@@ -197,7 +197,7 @@ exports.Saldo159DB = class {
                 o.bank_klient,
                 o.mfo
               FROM saldo_159_child ch
-              JOIN spravochnik_organization o ON o.id = ch.organization_id
+              JOIN spravochnik_organization o ON o.id = ch.organization_id AND o.isdeleted = false
               WHERE ch.parent_id = d.id
                 AND ch.isdeleted = false          
             ) AS ch
