@@ -522,6 +522,7 @@ exports.SaldoDB = class {
                 AND main_schet_id = $2 
                 ${year_filter}
                 ${month_filter}  
+            LIMIT 1
         `;
 
     const result = await db.query(query, params);
