@@ -161,11 +161,16 @@ exports.RasxodDB = class {
                     WHERE ch.document_rasxod_jur7_id = d.id
                         AND ch.isdeleted = false
                 ) AS ch
-                ) AS childs
+                ) AS childs,
+                row_to_json(rj) AS responsible 
             FROM document_rasxod_jur7 AS d
+            JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
-            WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${isdeleted ? `` : ignore}
+            WHERE r.id = $1
+              AND d.id = $2
+              AND d.main_schet_id = $3
+               ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);
     return result[0];

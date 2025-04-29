@@ -33,10 +33,10 @@ exports.AvansDB = class {
                         SELECT JSON_AGG(row_to_json(a_j_ch))
                         FROM (
                             SELECT 
-                                s_o.schet AS provodki_schet,
-                                s_o.sub_schet AS provodki_sub_schet
+                                so.schet AS provodki_schet,
+                                so.sub_schet AS provodki_sub_schet
                             FROM avans_otchetlar_jur4_child AS a_j_ch
-                            JOIN spravochnik_operatsii AS s_o ON s_o.id = a_j_ch.spravochnik_operatsii_id
+                            JOIN spravochnik_operatsii AS so ON so.id = a_j_ch.spravochnik_operatsii_id
                             WHERE  a_j_ch.avans_otchetlar_jur4_id = d.id 
                         ) AS a_j_ch
                     ) AS provodki_array
@@ -143,22 +143,27 @@ exports.AvansDB = class {
                 d.spravochnik_podotchet_litso_id AS id_spravochnik_podotchet_litso,
                 sp.name AS spravochnik_podotchet_litso_name,
                 sp.rayon AS spravochnik_podotchet_litso_rayon,
+                row_to_json(sp) AS podotchet,
                 (
                     SELECT JSON_AGG(row_to_json(a_o_j_4_child))
                     FROM (
                         SELECT   
                             ch.id,
                             ch.spravochnik_operatsii_id,
-                            s_o.name AS spravochnik_operatsii_name,
+                            so.name AS spravochnik_operatsii_name,
                             ch.summa::FLOAT,
                             ch.id_spravochnik_podrazdelenie,
                             s_p.name AS spravochnik_podrazdelenie_name,
                             ch.id_spravochnik_sostav,
                             s_s.name AS spravochnik_sostav_name,
                             ch.id_spravochnik_type_operatsii,
-                            s_t_o.name AS spravochnik_type_operatsii_name
+                            s_t_o.name AS spravochnik_type_operatsii_name,
+                            row_to_json(so) AS operatsii,
+                            row_to_json(s_p) AS podrazdelenie,
+                            row_to_json(s_t_o) AS type_operatsii,
+                            row_to_json(s_s) AS sostav
                         FROM  avans_otchetlar_jur4_child AS ch 
-                        JOIN spravochnik_operatsii AS s_o ON s_o.id = ch.spravochnik_operatsii_id
+                        JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii

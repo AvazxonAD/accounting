@@ -200,6 +200,11 @@ exports.PrixodDB = class {
                 d.doverennost,
                 d.j_o_num,
                 d.id_shartnomalar_organization,
+                row_to_json(so) AS organ,
+                row_to_json(ac) AS account_number,
+                row_to_json(g) AS gazna_number,
+                row_to_json(c) AS contract,
+                row_to_json(cg) AS contract_grafik,
                 (
                     SELECT JSON_AGG(row_to_json(child))
                     FROM (
@@ -222,10 +227,17 @@ exports.PrixodDB = class {
                 ) AS childs,
                 d.organization_by_raschet_schet_id::INTEGER,
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
-                d.shartnoma_grafik_id::INTEGER
+                d.shartnoma_grafik_id::INTEGER,
+                row_to_json(rj) AS responsible 
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
+            LEFT JOIN organization_by_raschet_schet_gazna g ON g.id = d.organization_by_raschet_schet_gazna_id
+            LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organization_by_raschet_schet_id
+            LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
+            LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
+            JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimga_id
             WHERE r.id = $1
               AND d.id = $2
               AND d.main_schet_id = $3

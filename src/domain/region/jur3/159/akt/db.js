@@ -37,8 +37,8 @@ exports.AktDB = class {
                     so.name AS spravochnik_organization_name,
                     so.raschet_schet AS spravochnik_organization_raschet_schet,
                     so.inn AS spravochnik_organization_inn, 
-                    sh_o.doc_num AS shartnomalar_organization_doc_num,
-                    TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                    c.doc_num AS shartnomalar_organization_doc_num,
+                    TO_CHAR(c.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
                     (
                         SELECT JSON_AGG(row_to_json(ch))
                         FROM (
@@ -58,7 +58,7 @@ exports.AktDB = class {
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id
                 JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-                LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
+                LEFT JOIN shartnomalar_organization AS c ON c.id = d.shartnomalar_organization_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
@@ -182,8 +182,13 @@ exports.AktDB = class {
                 so.name AS spravochnik_organization_name,
                 so.raschet_schet AS spravochnik_organization_raschet_schet,
                 so.inn AS spravochnik_organization_inn, 
-                sh_o.doc_num AS shartnomalar_organization_doc_num,
-                TO_CHAR(sh_o.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                c.doc_num AS shartnomalar_organization_doc_num,
+                TO_CHAR(c.doc_date, 'YYYY-MM-DD') AS shartnomalar_organization_doc_date,
+                row_to_json(so) AS organ,
+                row_to_json(ac) AS account_number,
+                row_to_json(g) AS gazna_number,
+                row_to_json(c) AS contract,
+                row_to_json(cg) AS contract_grafik,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -203,7 +208,11 @@ exports.AktDB = class {
                         ch.sena,
                         ch.nds_foiz,
                         ch.nds_summa,
-                        ch.summa_s_nds
+                        ch.summa_s_nds,
+                        row_to_json(so) AS operatsii,
+                        row_to_json(s_p) AS podrazdelenie,
+                        row_to_json(s_t_o) AS type_operatsii,
+                        row_to_json(s_s) AS sostav
                         FROM bajarilgan_ishlar_jur3_child AS ch
                         JOIN users AS u ON ch.user_id = u.id
                         JOIN regions AS r ON u.region_id = r.id
@@ -221,7 +230,10 @@ exports.AktDB = class {
             JOIN users AS u ON d.user_id = u.id
             JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
-            LEFT JOIN shartnomalar_organization AS sh_o ON sh_o.id = d.shartnomalar_organization_id
+            LEFT JOIN shartnomalar_organization AS c ON c.id = d.shartnomalar_organization_id
+            LEFT JOIN organization_by_raschet_schet_gazna g ON g.id = d.organization_by_raschet_schet_gazna_id
+            LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organization_by_raschet_schet_id
+            LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3

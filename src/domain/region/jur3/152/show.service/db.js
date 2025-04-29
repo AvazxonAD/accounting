@@ -9,6 +9,11 @@ exports.ShowServiceDB = class {
                 d.*,
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
                 d.summa::FLOAT,
+                row_to_json(so) AS organ,
+                row_to_json(ac) AS account_number,
+                row_to_json(g) AS gazna_number,
+                row_to_json(c) AS contract,
+                row_to_json(cg) AS contract_grafik,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -24,17 +29,32 @@ exports.ShowServiceDB = class {
                                 ch.sena,
                                 ch.nds_foiz,
                                 ch.nds_summa,
-                                ch.summa_s_nds
+                                ch.summa_s_nds,
+                                row_to_json(so) AS operatsii,
+                                row_to_json(s_p) AS podrazdelenie,
+                                row_to_json(s_t_o) AS type_operatsii,
+                                row_to_json(s_s) AS sostav
                             FROM kursatilgan_hizmatlar_jur152_child AS ch
                             JOIN users AS u ON ch.user_id = u.id
                             JOIN regions AS r ON u.region_id = r.id
+                            JOIN spravochnik_operatsii AS so ON so.id = ch.spravochnik_operatsii_id
+                            LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
+                            LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
+                            LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii
                             WHERE ch.kursatilgan_hizmatlar_jur152_id = d.id
+                              AND ch.isdeleted = false
+
                         ) AS ch
                 ) AS childs,
                 d.organization_by_raschet_schet_id::INTEGER,
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
                 d.shartnoma_grafik_id::INTEGER
             FROM kursatilgan_hizmatlar_jur152 AS d
+            LEFT JOIN spravochnik_organization AS so ON so.id = d.id_spravochnik_organization
+            LEFT JOIN organization_by_raschet_schet_gazna g ON g.id = d.organization_by_raschet_schet_gazna_id
+            LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organization_by_raschet_schet_id
+            LEFT JOIN shartnomalar_organization c ON c.id = d.shartnomalar_organization_id
+            LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
             WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${!isdeleted ? ignore : ""}
