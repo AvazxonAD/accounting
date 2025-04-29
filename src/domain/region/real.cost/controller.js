@@ -29,14 +29,18 @@ exports.Controller = class {
     );
 
     if (
-      (type === "contract_grafik_month" || type === "rasxod_month") &&
+      (type === "contract_grafik_month" ||
+        type === "rasxod_month" ||
+        type === "remaining_month") &&
       !grafik_month
     ) {
       return res.error(req.i18n.t("validationError"), 400);
     }
 
     if (
-      (type === "contract_grafik_year" || type === "rasxod_year") &&
+      (type === "contract_grafik_year" ||
+        type === "rasxod_year" ||
+        type === "remaining_year") &&
       !grafik_year
     ) {
       return res.error(req.i18n.t("validationError"), 400);
