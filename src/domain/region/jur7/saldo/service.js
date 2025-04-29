@@ -25,7 +25,7 @@ exports.SaldoService = class {
       function excelSerialToDate(serial) {
         const utc_days = Math.floor(serial - 25569);
         const utc_value = utc_days * 86400;
-        return `${new Date(utc_value * 1000).getFullYear()}-${new Date(utc_value * 1000).getMonth() + 1}-${String(new Date(utc_value * 1000).getDate()).padStart(2, "0")}`;
+        return `${new Date(utc_value * 1000).getFullYear()}-${String(new Date(utc_value * 1000).getMonth() + 1).padStart(2, "0")}-${String(new Date(utc_value * 1000).getDate()).padStart(2, "0")}`;
       }
 
       data.doc_date = excelSerialToDate(data.doc_date);
