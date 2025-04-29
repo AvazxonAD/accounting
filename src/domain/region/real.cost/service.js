@@ -33,15 +33,15 @@ exports.RealCostService = class {
 
   static getMonthYearSumma(data) {
     for (let smeta of data.smetas) {
+      smeta.year_summa = 0;
+      smeta.month_summa = 0;
+
       if (smeta.smeta_grafik) {
         smeta.month_summa = smeta.smeta_grafik[`oy_${data.month}`];
 
         for (let i = 1; i <= data.month; i++) {
-          smeta.year_summa = smeta.smeta_grafik[`oy_${i}`];
+          smeta.year_summa += smeta.smeta_grafik[`oy_${i}`];
         }
-      } else {
-        smeta.month_summa = 0;
-        smeta.year_summa = 0;
       }
     }
 

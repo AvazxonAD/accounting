@@ -157,8 +157,8 @@ exports.RealCostDB = class {
         c.doc_num,
         c.doc_date,
         c.spravochnik_organization_id,
-        so.name,
-        so.inn,
+        so.name AS organ_name,
+        so.inn AS organ_inn,
         COALESCE(
           (
             (
@@ -391,8 +391,8 @@ exports.RealCostDB = class {
           cg.id AS contract_grafik_id,
           c.doc_num,
           c.doc_date,
-          so.name,
-          so.inn
+          so.name AS organ_name,
+          so.inn AS organ_inn
         FROM real_cost_sub_child ch
         JOIN shartnoma_grafik cg ON cg.id = ch.contract_grafik_id
         JOIN shartnomalar_organization c ON c.id = cg.id_shartnomalar_organization
@@ -408,8 +408,8 @@ exports.RealCostDB = class {
           cg.id AS contract_grafik_id,
           c.doc_num,
           c.doc_date,
-          so.name,
-          so.inn
+          so.name AS organ_name,
+          so.inn AS organ_inn
         FROM real_cost_sub_child ch
         JOIN shartnoma_grafik cg ON cg.id = ch.contract_grafik_id
         JOIN shartnomalar_organization c ON c.id = cg.id_shartnomalar_organization

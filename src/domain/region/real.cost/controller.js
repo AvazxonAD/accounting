@@ -50,13 +50,13 @@ exports.Controller = class {
     } else if (type === "year_summa") {
       docs.push({ ...general_data, summa: general_data.year_summa });
     } else if (type === "contract_grafik_month") {
-      const summa = grafik[`oy_${month}`];
+      const summa = Number(grafik_month[`oy_${month}`]);
 
       docs.push({ ...grafik_month, summa });
     } else if (type === "contract_grafik_year") {
       let summa = 0;
       for (let i = 1; i <= month; i++) {
-        summa += grafik[`oy_${i}`];
+        summa += Number(grafik_year[`oy_${i}`]);
       }
 
       docs.push({ ...grafik_year, summa });
