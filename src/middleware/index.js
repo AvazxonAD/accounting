@@ -11,7 +11,7 @@ exports.Middleware = class {
 
     const main_schet = await MainSchetService.getById({
       region_id,
-      main_schet_id,
+      id: main_schet_id,
     });
 
     if (!main_schet) {

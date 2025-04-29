@@ -2,7 +2,6 @@ const { RealCostService } = require("./service");
 const { HelperFunctions, sum } = require(`@helper/functions`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { SmetaService } = require("@smeta/service");
-const { ContractService } = require(`@contract/service`);
 
 exports.Controller = class {
   static async getDocs(req, res) {

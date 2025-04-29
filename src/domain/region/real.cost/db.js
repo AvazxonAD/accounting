@@ -356,9 +356,21 @@ exports.RealCostDB = class {
         s.smeta_number,
         s.group_number,
         ch.month_summa::FLOAT,
-        ch.year_summa::FLOAT
+        ch.year_summa::FLOAT,
+        row_to_json(sg) AS smeta_grafik
       FROM real_cost_child ch
+      JOIN real_cost d ON d.id = ch.parent_id
       JOIN smeta s ON s.id = ch.smeta_id
+      LEFT JOIN smeta_grafik sg 
+        ON sg.smeta_id = s.id 
+        AND sg.main_schet_id = d.main_schet_id 
+        AND sg.isdeleted = false
+        AND sg.year = d.year
+      LEFT JOIN users u 
+        ON u.id = sg.user_id
+      LEFT JOIN regions r 
+        ON r.id = u.region_id 
+        AND r.id = $1
       WHERE ch.isdeleted = false
         AND ch.parent_id = $1
 
