@@ -208,7 +208,7 @@ exports.Controller = class {
       (item) => item.id === schet_id
     );
     if (!main_schet || !schet) {
-      return res.error("Main shcet not found", 404);
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
     const saldo = await Saldo152Service.getByMonth({
@@ -441,7 +441,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
     if (!main_schet) {
-      return res.error("main shcet not found", 404);
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
     if (organ_id) {

@@ -695,17 +695,16 @@ exports.Monitoring152Service = class {
     let itogo_prixod = 0;
     let row_number = 3;
     for (let column of data.organizations) {
-      if (column.summa.summa === 0) {
+      if (column.summa === 0) {
         continue;
       }
       const organ_nameCell = worksheet.getCell(`A${row_number}`);
       organ_nameCell.value = column.name;
       const prixodCell = worksheet.getCell(`B${row_number}`);
-      prixodCell.value = column.summa.summa > 0 ? column.summa.summa : 0;
+      prixodCell.value = column.summa > 0 ? column.summa : 0;
       itogo_prixod += prixodCell.value;
       const rasxodCell = worksheet.getCell(`C${row_number}`);
-      rasxodCell.value =
-        column.summa.summa < 0 ? Math.abs(column.summa.summa) : 0;
+      rasxodCell.value = column.summa < 0 ? Math.abs(column.summa) : 0;
       itogo_rasxod += rasxodCell.value;
       const css_array = [organ_nameCell, prixodCell, rasxodCell];
       css_array.forEach((item, index) => {
