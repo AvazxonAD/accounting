@@ -188,7 +188,16 @@ exports.Controller = class {
       });
     }
 
-    const { data, total } = await SaldoService.getByProduct({
+    const {
+      data,
+      total,
+      summa,
+      kol,
+      iznos_summa,
+      page_summa,
+      page_kol,
+      page_iznos_summa,
+    } = await SaldoService.getByProduct({
       ...req.query,
       region_id,
       offset,
@@ -218,6 +227,12 @@ exports.Controller = class {
       limit,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
+      summa,
+      kol,
+      iznos_summa,
+      page_summa,
+      page_kol,
+      page_iznos_summa,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);

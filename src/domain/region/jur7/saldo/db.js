@@ -299,7 +299,6 @@ exports.SaldoDB = class {
               AND s.isdeleted = false
               AND s.main_schet_id = $4
               ${whereClouse}
-            OFFSET $5 LIMIT $6
         )
         SELECT
             COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,

@@ -6,6 +6,13 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static paginate(data) {
+    const offset = (data.page - 1) * data.limit;
+    const paginatedItems = data.array.slice(offset, offset + data.limit);
+
+    return paginatedItems;
+  }
+
   static checkId(array, column_name) {
     const seen = new Set();
     for (const obj of array) {

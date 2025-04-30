@@ -1,4 +1,5 @@
 const { SaldoDB } = require("./db");
+
 const {
   tashkentTime,
   returnStringDate,
@@ -181,19 +182,14 @@ exports.SaldoService = class {
   }
 
   static async getByProduct(data) {
+    const pLimit = (await import("p-limit")).default;
+
     const { year, month } = HelperFunctions.returnMonthAndYear({
       doc_date: data.to,
     });
 
     const result = await SaldoDB.getByProduct(
-      [
-        data.region_id,
-        month,
-        year,
-        data.main_schet_id,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, month, year, data.main_schet_id],
       {
         group_id: data.group_id,
         responsible_id: data.responsible_id,
@@ -204,31 +200,65 @@ exports.SaldoService = class {
       }
     );
 
-    for (let product of result.data) {
-      product = await this.calculateKol({
-        product,
-        main_schet_id: data.main_schet_id,
-        to: data.to,
-        year,
-        month,
-      });
+    const limit = pLimit(50);
 
-      if (product.iznos) {
-        const iznos_date = HelperFunctions.checkIznosDate({
-          doc_date: product.prixodData.docDate,
+    const updatedDataPromises = result.data.map((product) =>
+      limit(async () => {
+        product = await this.calculateKol({
+          product,
+          main_schet_id: data.main_schet_id,
+          to: data.to,
           year,
           month,
         });
 
-        if (!iznos_date) {
-          product.month_iznos_summa = 0;
+        if (product.iznos) {
+          const iznos_date = HelperFunctions.checkIznosDate({
+            doc_date: product.prixodData.docDate,
+            year,
+            month,
+          });
+
+          if (!iznos_date) {
+            product.month_iznos_summa = 0;
+          }
         }
-      }
-    }
+
+        return product;
+      })
+    );
+
+    result.data = await Promise.all(updatedDataPromises);
 
     if (data.rasxod) {
       result.data = result.data.filter((item) => item.to.kol !== 0);
     }
+
+    result.summa = 0;
+    result.iznos_summa = 0;
+    result.kol = 0;
+
+    result.page_summa = 0;
+    result.page_iznos_summa = 0;
+    result.page_kol = 0;
+
+    result.data.forEach((item) => {
+      result.summa += item.to.summa;
+      result.iznos_summa += item.to.iznos_summa;
+      result.kol += item.to.kol;
+    });
+
+    result.data = HelperFunctions.paginate({
+      array: result.data,
+      page: data.page,
+      limit: data.limit,
+    });
+
+    result.data.forEach((item) => {
+      result.page_summa += item.to.summa;
+      result.page_iznos_summa += item.to.iznos_summa;
+      result.page_kol += item.to.kol;
+    });
 
     return result;
   }
