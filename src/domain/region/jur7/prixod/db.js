@@ -209,20 +209,48 @@ exports.PrixodDB = class {
                     SELECT JSON_AGG(row_to_json(child))
                     FROM (
                         SELECT  
-                            ch.*,
+                            COALESCE(SUM(ch.kol), 0) AS kol,
+                            ch.sena,
+                            ch.summa,
+                            ch.eski_iznos_summa,
                             TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
                             n.name,
                             n.edin,
                             n.group_jur7_id,
                             n.inventar_num,
                             n.serial_num,
-                            row_to_json(n) AS product,
-                            row_to_json(g) AS group
+                            ch.nds_foiz,
+                            ch.debet_schet,
+                            ch.debet_sub_schet,
+                            ch.kredit_schet,
+                            ch.kredit_sub_schet,
+                            ch.iznos_schet,
+                            ch.iznos_sub_schet,
+                            TO_CHAR(ch.iznos_start, 'YYYY-MM-DD') AS iznos_start,
+                            ch.iznos
                         FROM document_prixod_jur7_child AS ch
                         JOIN naimenovanie_tovarov_jur7 AS n ON n.id = ch.naimenovanie_tovarov_jur7_id
                         JOIN group_jur7 g ON g.id = n.group_jur7_id
                         WHERE ch.document_prixod_jur7_id = d.id  
                             AND ch.isdeleted = false
+                        GROUP BY n.name,
+                            n.edin,
+                            n.group_jur7_id,
+                            n.inventar_num,
+                            n.serial_num,
+                            ch.data_pereotsenka,
+                            ch.nds_foiz,
+                            ch.debet_schet,
+                            ch.debet_sub_schet,
+                            ch.kredit_schet,
+                            ch.kredit_sub_schet,
+                            ch.iznos_schet,
+                            ch.iznos_sub_schet,
+                            ch.iznos_start,
+                            ch.iznos,
+                            ch.sena,
+                            ch.summa,
+                            ch.eski_iznos_summa
                     ) AS child
                 ) AS childs,
                 d.organization_by_raschet_schet_id::INTEGER,
