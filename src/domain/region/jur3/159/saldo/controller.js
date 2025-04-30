@@ -306,6 +306,7 @@ exports.Controller = class {
     const id = req.params.id;
     const { budjet_id, main_schet_id, schet_id } = req.query;
     const user_id = req.user.id;
+    const { organizations } = req.body;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -331,6 +332,20 @@ exports.Controller = class {
     });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    for (let organization of organizations) {
+      const check = await OrganizationService.getById({
+        region_id,
+        id: organization.organization_id,
+      });
+
+      if (!check) {
+        return res.error(
+          `${req.i18n.t("organizationNotFound")} ID => ${organization.organization_id}`,
+          404
+        );
+      }
     }
 
     const result = await Saldo159Service.update({
