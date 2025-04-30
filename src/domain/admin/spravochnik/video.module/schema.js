@@ -27,7 +27,7 @@ exports.VideoModuleSchema = class {
     return Joi.object({
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
-        limit: Joi.number().min(1).integer().default(10),
+        limit: Joi.number().min(1).integer().default(100),
         search: Joi.string().trim(),
         status: Joi.string().valid("true", "false"),
       }),
