@@ -69,6 +69,7 @@ exports.Saldo152Service = class {
 
     let prixod = 0;
     let rasxod = 0;
+
     result.forEach((item) => {
       item.prixod = 0;
       item.rasxod = 0;
@@ -77,6 +78,7 @@ exports.Saldo152Service = class {
         item.prixod += child.prixod;
         item.rasxod += child.rasxod;
       });
+      item.summa = item.prixod - item.rasxod;
 
       prixod += item.prixod;
       rasxod += item.rasxod;
