@@ -92,7 +92,7 @@ const getAllOperatsiiService = async (
       budjet_filter = `AND s.budjet_id = $${params.length}`;
     }
 
-    const query = `
+    const query = `--sql
       WITH data AS (
         SELECT 
           s.id, 

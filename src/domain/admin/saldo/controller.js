@@ -49,6 +49,7 @@ exports.Controller = class {
       });
     } else {
       const _data = await SaldoService.getByProduct({
+        ...req.query,
         region_id,
         to,
         search,
