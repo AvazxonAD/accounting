@@ -71,7 +71,7 @@ exports.Controller = class {
       const contract = await ContractDB.getById(
         [region_id, shartnomalar_organization_id],
         false,
-        main_schet.spravochnik_budjet_name_id,
+        main_schet_id,
         id_spravochnik_organization
       );
 
@@ -303,7 +303,7 @@ exports.Controller = class {
       const contract = await ContractDB.getById(
         [region_id, shartnomalar_organization_id],
         false,
-        main_schet.spravochnik_budjet_name_id,
+        main_schet_id,
         id_spravochnik_organization
       );
 

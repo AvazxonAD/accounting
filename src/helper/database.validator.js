@@ -113,6 +113,7 @@ exports.ValidatorFunctions = class {
       region_id: data.region_id,
       id: data.contract_id,
       organ_id: data.organ_id,
+      main_schet_id: data.main_schet_id,
     });
     if (!contract) {
       throw new ErrorResponse("contractNotFound", 404);

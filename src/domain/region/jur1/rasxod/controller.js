@@ -65,6 +65,7 @@ exports.Controller = class {
         region_id,
         contract_id,
         organ_id,
+        main_schet_id,
       });
 
       if (contract_grafik_id) {
@@ -303,6 +304,7 @@ exports.Controller = class {
         region_id,
         contract_id,
         organ_id,
+        main_schet_id,
       });
 
       if (contract_grafik_id) {

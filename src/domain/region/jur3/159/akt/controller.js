@@ -76,6 +76,7 @@ exports.Controller = class {
       const contract = await ContractService.getById({
         region_id,
         id: shartnomalar_organization_id,
+        main_schet_id,
       });
       if (!contract || !contract.pudratchi_bool) {
         return res.error(req.i18n.t("contractNotFound"), 404);
@@ -324,6 +325,7 @@ exports.Controller = class {
       const contract = await ContractService.getById({
         region_id,
         id: shartnomalar_organization_id,
+        main_schet_id,
       });
       if (!contract || !contract.pudratchi_bool) {
         return res.error(req.i18n.t("contractNotFound"), 404);
