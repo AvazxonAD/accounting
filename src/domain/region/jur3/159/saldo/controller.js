@@ -143,6 +143,10 @@ exports.Controller = class {
       region_id,
     });
 
+    if (!last_saldo) {
+      return res.error(req.i18n.t("lastSaldoNotFound"), 400);
+    }
+
     for (let organ of organizations.data) {
       const check = last_saldo.childs.find(
         (item) => item.organization_id === organ.id
@@ -156,10 +160,6 @@ exports.Controller = class {
           summa: 0,
         });
       }
-    }
-
-    if (!last_saldo) {
-      return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
     const date = HelperFunctions.getDate({

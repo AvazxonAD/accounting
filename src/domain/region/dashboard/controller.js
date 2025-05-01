@@ -1,6 +1,9 @@
 const { DashboardService } = require("./service");
 const { MainSchetService } = require("@main_schet/service");
 const { PodotchetService } = require("@podotchet/service");
+const { HelperFunctions } = require("@helper/functions");
+const { BankSaldoService } = require(`@jur2_saldo/service`);
+const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.Controller = class {
   static async budjet(req, res) {
@@ -36,7 +39,7 @@ exports.Controller = class {
     });
 
     const { budjets, page_prixod_sum, page_rasxod_sum, page_total_sum } =
-      await DashboardService.kassa({ budjets: _budjets, to });
+      await DashboardService.kassa({ budjets: _budjets, to, region_id });
 
     const meta = {
       page_prixod_sum,
@@ -68,7 +71,7 @@ exports.Controller = class {
     });
 
     const { budjets, page_prixod_sum, page_rasxod_sum, page_total_sum } =
-      await DashboardService.bank({ budjets: _budjets, to });
+      await DashboardService.bank({ budjets: _budjets, to, region_id });
 
     const meta = {
       page_prixod_sum,
@@ -113,6 +116,7 @@ exports.Controller = class {
       await DashboardService.podotchet({
         budjets: _budjets,
         to,
+        region_id,
         podotchets: data,
       });
 

@@ -1,6 +1,6 @@
 const { db } = require("@db/index");
 
-exports.Saldo159DB = class {
+exports.Jur4SaldoDB = class {
   static async create(params, client) {
     const query = `--sql
         INSERT INTO podotchet_saldo (

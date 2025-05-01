@@ -1,5 +1,5 @@
 const { db } = require("@db/index");
-const { Saldo159DB } = require("./db");
+const { Jur4SaldoDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 
 exports.Jur4SaldoService = class {
@@ -7,7 +7,7 @@ exports.Jur4SaldoService = class {
 
   static async createChild(data) {
     for (let podotchet of data.podotchets) {
-      await Saldo159DB.createChild(
+      await Jur4SaldoDB.createChild(
         [
           podotchet.podotchet_id,
           data.doc.id,
@@ -23,19 +23,19 @@ exports.Jur4SaldoService = class {
 
   static async create(data) {
     const result = await db.transaction(async (client) => {
-      await Saldo159DB.deleteByMonth(
+      await Jur4SaldoDB.deleteByMonth(
         [data.year, data.month, data.main_schet_id, data.schet_id],
         client
       );
 
-      // await Saldo159DB.deleteSaldoDateByMonth(
+      // await Jur4SaldoDB.deleteSaldoDateByMonth(
       //   [data.year, data.month, data.main_schet_id, data.schet_id],
       //   client
       // );
 
       const saldo_date = `${data.year}-${String(data.month).padStart(2, "0")}-01`;
 
-      const doc = await Saldo159DB.create(
+      const doc = await Jur4SaldoDB.create(
         [
           data.main_schet_id,
           data.year,
@@ -59,7 +59,7 @@ exports.Jur4SaldoService = class {
   }
 
   static async get(data) {
-    const result = await Saldo159DB.get(
+    const result = await Jur4SaldoDB.get(
       [data.budjet_id, data.region_id],
       data.main_schet_id,
       data.year,
@@ -88,7 +88,7 @@ exports.Jur4SaldoService = class {
   }
 
   static async getById(data) {
-    const result = await Saldo159DB.getById(
+    const result = await Jur4SaldoDB.getById(
       [data.region_id, data.id, data.budjet_id],
       data.isdeleted
     );
@@ -104,7 +104,7 @@ exports.Jur4SaldoService = class {
   }
 
   static async getByMonth(data) {
-    const result = await Saldo159DB.getByMonth([
+    const result = await Jur4SaldoDB.getByMonth([
       data.main_schet_id,
       data.year,
       data.month,
@@ -129,12 +129,12 @@ exports.Jur4SaldoService = class {
 
   static async cleanData(data) {
     await db.transaction(async (client) => {
-      await Saldo159DB.cleanData([data.main_schet_id, data.schet_id], client);
+      await Jur4SaldoDB.cleanData([data.main_schet_id, data.schet_id], client);
     });
   }
 
   static async getFirstSaldo(data) {
-    const result = await Saldo159DB.getFirstSaldo([
+    const result = await Jur4SaldoDB.getFirstSaldo([
       data.region_id,
       data.main_schet_id,
       data.schet_id,
@@ -144,7 +144,7 @@ exports.Jur4SaldoService = class {
   }
 
   static async getEndSaldo(data) {
-    const result = await Saldo159DB.getEndSaldo([
+    const result = await Jur4SaldoDB.getEndSaldo([
       data.region_id,
       data.main_schet_id,
       data.schet_id,
@@ -161,11 +161,11 @@ exports.Jur4SaldoService = class {
           month: data.month,
         });
 
-        await Saldo159DB.deleteChild([data.id], client);
+        await Jur4SaldoDB.deleteChild([data.id], client);
 
         const doc = { id: data.id };
 
-        await Saldo159DB.deleteSaldoDateByMonth([data.id], client);
+        await Jur4SaldoDB.deleteSaldoDateByMonth([data.id], client);
 
         await this.createChild({ ...data, client, doc });
 
@@ -186,9 +186,9 @@ exports.Jur4SaldoService = class {
 
   static async delete(data) {
     const result = await db.transaction(async (client) => {
-      await Saldo159DB.deleteChild([data.id], client);
+      await Jur4SaldoDB.deleteChild([data.id], client);
 
-      const doc = await Saldo159DB.delete([data.id], client);
+      const doc = await Jur4SaldoDB.delete([data.id], client);
 
       return doc;
     });
@@ -201,7 +201,7 @@ exports.Jur4SaldoService = class {
     const month = new Date(data.doc_date).getMonth() + 1;
 
     const saldo_date = HelperFunctions.returnDate({ year, month });
-    const check = await Saldo159DB.getSaldoDate([
+    const check = await Jur4SaldoDB.getSaldoDate([
       data.region_id,
       saldo_date,
       data.main_schet_id,
@@ -211,7 +211,7 @@ exports.Jur4SaldoService = class {
     let dates = [];
     for (let date of check) {
       dates.push(
-        await Saldo159DB.createSaldoDate(
+        await Jur4SaldoDB.createSaldoDate(
           [
             data.user_id,
             date.year,
@@ -232,7 +232,7 @@ exports.Jur4SaldoService = class {
   }
 
   static async getDateSaldo(data) {
-    const result = await Saldo159DB.getDateSaldo([
+    const result = await Jur4SaldoDB.getDateSaldo([
       data.region_id,
       data.main_schet_id,
       data.schet_id,
