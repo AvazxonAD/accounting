@@ -467,11 +467,15 @@ exports.Jur7MonitoringDB = class {
         'prixod' AS                                type,
         ch.naimenovanie_tovarov_jur7_id AS         product_id
       FROM document_prixod_jur7 d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
       JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
       JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
       WHERE d.isdeleted = false
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $1 AND $2
+          AND r.id = $3
+          AND d.main_schet_id = $4
           ${resposnible_filter}
       
       UNION ALL 
@@ -484,11 +488,15 @@ exports.Jur7MonitoringDB = class {
         'prixod_internal' AS                          type,
         ch.naimenovanie_tovarov_jur7_id AS            product_id
       FROM document_vnutr_peremesh_jur7 d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
       JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
       JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
       WHERE d.isdeleted = false
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $1 AND $2
+          AND r.id = $3
+          AND d.main_schet_id = $4
           ${resposnible_filter}
       
       UNION ALL
@@ -501,11 +509,15 @@ exports.Jur7MonitoringDB = class {
         'rasxod' AS                                type,
         ch.naimenovanie_tovarov_jur7_id AS         product_id
       FROM document_rasxod_jur7 d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
       JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
       JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
       WHERE d.isdeleted = false
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $1 AND $2
+          AND r.id = $3
+          AND d.main_schet_id = $4
           ${resposnible_filter}
 
       UNION ALL
@@ -518,11 +530,15 @@ exports.Jur7MonitoringDB = class {
         'rasxod_internal' AS                       type,
         ch.naimenovanie_tovarov_jur7_id AS         product_id
       FROM document_vnutr_peremesh_jur7 d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
       JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
       JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
       WHERE d.isdeleted = false
           AND ch.isdeleted = false
           AND d.doc_date BETWEEN $1 AND $2
+          AND r.id = $3
+          AND d.main_schet_id = $4
           ${resposnible_filter}
     `;
 

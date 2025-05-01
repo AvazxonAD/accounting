@@ -815,7 +815,7 @@ exports.Jur7MonitoringService = class {
 
   static async history(data) {
     const result = await Jur7MonitoringDB.history(
-      [data.from, data.to],
+      [data.from, data.to, data.region_id, data.main_schet_id],
       data.responsible_id
     );
 
@@ -841,13 +841,8 @@ exports.Jur7MonitoringService = class {
   }
 
   static async history(data) {
-    const date = HelperFunctions.getDate({
-      year: data.year,
-      month: data.month,
-    });
-
     const history = await Jur7MonitoringDB.history(
-      [date[0], date[1]],
+      [data.from, data.to, data.region_id, data.main_schet_id],
       data.responsible_id
     );
 

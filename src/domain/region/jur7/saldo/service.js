@@ -9,6 +9,8 @@ const { db } = require("@db/index");
 const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const path = require("path");
+const { Jur7MonitoringService } = require(`@jur7_monitoring/service`);
+const { FORMERR } = require("dns");
 const fs = require("fs").promises;
 
 exports.SaldoService = class {
@@ -182,8 +184,6 @@ exports.SaldoService = class {
   }
 
   static async getByProduct(data) {
-    const pLimit = (await import("p-limit")).default;
-
     const { year, month } = HelperFunctions.returnMonthAndYear({
       doc_date: data.to,
     });
@@ -200,35 +200,89 @@ exports.SaldoService = class {
       }
     );
 
-    const limit = pLimit(50);
+    const history = await Jur7MonitoringService.history({
+      region_id: data.region_id,
+      responsible_id: data.responsible_id,
+      main_schet_id: data.main_schet_id,
+      from: HelperFunctions.returnDate({ year, month }),
+      to: HelperFunctions.returnDate({ year, month, end: true }),
+    });
 
-    const updatedDataPromises = result.data.map((product) =>
-      limit(async () => {
-        product = await this.calculateKol({
-          product,
-          main_schet_id: data.main_schet_id,
-          to: data.to,
-          year,
-          month,
-        });
+    for (let product of result.data) {
+      product.internal = {
+        kol: 0,
+        summa: 0,
+        iznos_summa: 0,
+        sena: 0,
+        prixod_kol: 0,
+        rasxod_kol: 0,
+        prixod_summa: 0,
+        rasxod_summa: 0,
+        prixod_iznos_summa: 0,
+        rasxod_iznos_summa: 0,
+      };
 
-        if (product.iznos) {
-          const iznos_date = HelperFunctions.checkIznosDate({
-            doc_date: product.prixodData.docDate,
-            year,
-            month,
-          });
+      const productData = history.filter(
+        (item) =>
+          item.responsible_id === product.responsible_id &&
+          item.product_id === product.product_id
+      );
 
-          if (!iznos_date) {
-            product.month_iznos_summa = 0;
+      if (productData.length > 0) {
+        productData.forEach((item) => {
+          if (item.type === "prixod" || item.type === "prixod_internal") {
+            product.internal.prixod_kol += item.kol;
+            product.internal.prixod_summa += item.summa;
+            product.internal.prixod_iznos_summa += item.iznos_summa;
+          } else {
+            product.internal.rasxod_kol += item.kol;
+            product.internal.rasxod_summa += item.summa;
+            product.internal.rasxod_iznos_summa += item.iznos_summa;
           }
+        });
+        product.internal.kol =
+          product.internal.prixod_kol - product.internal.rasxod_kol;
+        product.internal.summa =
+          product.internal.prixod_summa - product.internal.rasxod_summa;
+        product.internal.iznos_summa =
+          product.internal.prixod_iznos_summa -
+          product.internal.rasxod_iznos_summa;
+      }
+
+      product.to = {
+        kol: product.from.kol + product.internal.kol,
+        summa: product.from.summa + product.internal.summa,
+        iznos_summa: product.from.iznos_summa + product.internal.iznos_summa,
+      };
+
+      if (product.to.kol !== 0) {
+        product.to.sena = product.to.summa / product.to.kol;
+      } else {
+        product.to.sena = product.to.summa;
+      }
+
+      if (product.iznos) {
+        const docDate = new Date(product.prixodData.doc_date);
+        const now = new Date(`${year}-${month}-01`);
+
+        const diffInMs = now - docDate;
+        const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+        if (diffInDays >= 30) {
+          const month_iznos = product.to.summa * (product.iznos_foiz / 100);
+          if (month_iznos + product.to.iznos_summa < product.to.summa) {
+            product.to.month_iznos = month_iznos;
+          } else {
+            product.to.month_iznos =
+              month_iznos + product.to.iznos_summa - product.to.summa;
+          }
+        } else {
+          product.to.month_iznos = 0;
         }
 
-        return product;
-      })
-    );
-
-    result.data = await Promise.all(updatedDataPromises);
+        product.to.iznos_summa += product.to.month_iznos;
+      }
+    }
 
     if (data.rasxod) {
       result.data = result.data.filter((item) => item.to.kol !== 0);
@@ -1080,67 +1134,5 @@ exports.SaldoService = class {
         );
       }
     });
-  }
-
-  static async updateIznosSumma(data) {
-    const result = await SaldoDB.updateIznosSumma([data.iznos_summa, data.id]);
-
-    return result;
-  }
-
-  static async getByGroup(data) {
-    const month = new Date(data.to).getMonth() + 1;
-    const year = new Date(data.to).getFullYear();
-
-    for (let group of data.groups) {
-      const products = await SaldoDB.get(
-        [data.region_id, year, month, data.main_schet_id, 0, 99999999],
-        data.responsible_id,
-        data.search,
-        data.product_id,
-        group.id,
-        data.iznos
-      );
-      group.products = products.data;
-      for (let product of group.products) {
-        product.internal = await SaldoDB.getKolAndSumma(
-          [product.naimenovanie_tovarov_jur7_id, data.main_schet_id],
-          `${year}-${month < 10 ? `0${month}` : month}-01`,
-          data.to,
-          product.responsible.id
-        );
-
-        product.to = {
-          kol: product.from.kol + product.internal.kol,
-          summa: product.from.summa + product.internal.summa,
-          iznos_summa: product.from.iznos_summa + product.internal.iznos_summa,
-        };
-
-        if (product.to.kol !== 0) {
-          product.to.sena = product.to.summa / product.to.kol;
-        } else {
-          product.to.sena = product.to.summa;
-        }
-
-        if (product.iznos) {
-          product.to.month_iznos = product.month_iznos_summa;
-          product.to.eski_iznos_summa = product.eski_iznos_summa;
-        }
-      }
-
-      if (data.iznos) {
-        group.products = group.products.filter(
-          (item) =>
-            (item.to.kol !== 0 && item.to.summa !== 0) ||
-            item.to.iznos_summa !== 0
-        );
-      } else {
-        group.products = group.products.filter(
-          (item) => item.to.kol !== 0 && item.to.summa !== 0
-        );
-      }
-    }
-
-    return data.groups;
   }
 };

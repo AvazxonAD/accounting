@@ -115,9 +115,15 @@ exports.Controller = class {
 
     const result = Object.values(resultMap);
 
+    const from = HelperFunctions.returnDate({ year, month });
+    const to = HelperFunctions.returnDate({ year, month, end: true });
     const history = await Jur7MonitoringService.history({
       year,
+      region_id,
+      main_schet_id,
       month,
+      from,
+      to,
       responsible_id,
     });
 

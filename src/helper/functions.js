@@ -102,6 +102,10 @@ exports.HelperFunctions = class {
   }
 
   static returnDate(data) {
+    if (data.end === true) {
+      const lastDay = new Date(data.year, data.month, 0).getDate();
+      return `${data.year}-${String(data.month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    }
     return `${data.year}-${String(data.month).padStart(2, "0")}-01`;
   }
 
