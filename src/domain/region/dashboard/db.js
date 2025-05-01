@@ -41,7 +41,7 @@ exports.DashboardDB = class {
   }
 
   static async kassa(params) {
-    const query = `
+    const query = `--sql
             SELECT 
                 COALESCE(SUM(p.summa), 0)::FLOAT AS prixod_sum,
                 COALESCE(SUM(r.summa), 0)::FLOAT AS rasxod_sum,

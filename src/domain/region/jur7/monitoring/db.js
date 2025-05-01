@@ -114,8 +114,8 @@ exports.Jur7MonitoringDB = class {
               ch.kredit_sub_schet,
               ch.debet_schet,
               ch.debet_sub_schet
-            FROM document_rasxod_jur7_child ch
-            WHERE ch.document_rasxod_jur7_id = d.id
+            FROM document_vnutr_peremesh_jur7_child ch
+            WHERE ch.document_vnutr_peremesh_jur7_id = d.id
               AND ch.isdeleted = false
           ) AS unique_schets
         ), '[]'::JSON) AS schets,
