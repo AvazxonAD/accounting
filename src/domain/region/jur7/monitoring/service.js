@@ -17,7 +17,8 @@ exports.Jur7MonitoringService = class {
         data.limit,
       ],
       data.order_by,
-      data.order_type
+      data.order_type,
+      data.search
     );
     let page_prixod_sum = 0;
     let page_rasxod_sum = 0;
