@@ -378,17 +378,17 @@ exports.Jur7MonitoringService = class {
     ];
 
     worksheet.columns = [
-      { key: "product_name", width: 30 },
-      { key: "edin", width: 15 },
-      { key: "from_kol", width: 15 },
-      { key: "from_summa", width: 15 },
-      { key: "prixod_kol", width: 15 },
-      { key: "prixod", width: 15 },
-      { key: "rasxod_kol", width: 15 },
-      { key: "rasxod", width: 15 },
-      { key: "to_kol", width: 15 },
-      { key: "to_summa", width: 15 },
-      { key: "date", width: 15 },
+      { key: "product_name", width: 40 },
+      { key: "edin", width: 22 },
+      { key: "from_kol", width: 22 },
+      { key: "from_summa", width: 22 },
+      { key: "prixod_kol", width: 22 },
+      { key: "prixod", width: 22 },
+      { key: "rasxod_kol", width: 22 },
+      { key: "rasxod", width: 22 },
+      { key: "to_kol", width: 22 },
+      { key: "to_summa", width: 22 },
+      { key: "date", width: 22 },
     ];
 
     for (let responsible of data.responsibles) {
@@ -479,20 +479,10 @@ exports.Jur7MonitoringService = class {
         bottom: { style: "thin", color: { argb: "FFD3D3D3" } },
         right: { style: "thin", color: { argb: "FFD3D3D3" } },
       };
+
       if (rowNumber < 8) {
         worksheet.getRow(rowNumber).height = 25;
         bold = true;
-      }
-      if (rowNumber === 3) {
-        horizontal = "left";
-      }
-      if (rowNumber === 4) {
-        border = {
-          top: { style: "thin", color: { argb: "FFD3D3D3" } },
-          left: { style: "thin", color: { argb: "FFD3D3D3" } },
-          bottom: { style: "thin" },
-          right: { style: "thin", color: { argb: "FFD3D3D3" } },
-        };
       }
 
       row.eachCell((cell) => {
@@ -519,7 +509,7 @@ exports.Jur7MonitoringService = class {
             color: { argb: "FF000000" },
             name: "Times New Roman",
           },
-          alignment: { vertical: "middle", horizontal },
+          alignment: { vertical: "middle", horizontal, wrapText: true },
           fill: {
             type: "pattern",
             pattern: "solid",
@@ -527,6 +517,15 @@ exports.Jur7MonitoringService = class {
           },
           border,
         });
+
+        // Matn uzunligiga qarab katak balandligini oshirish
+        if (typeof cell.value === "string") {
+          const lineCount = Math.ceil(cell.value.length / 30); // Har 30 belgidan keyin yangi qator
+          const newHeight = lineCount * 15; // Har bir qator uchun 15px balandlik
+          if (newHeight > row.height) {
+            row.height = newHeight;
+          }
+        }
       });
     });
 
@@ -759,7 +758,7 @@ exports.Jur7MonitoringService = class {
         };
       }
 
-      row.eachCell((cell) => {
+      row.eachCell((cell, colNumber) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
         if (cellData.bold) {
@@ -783,7 +782,7 @@ exports.Jur7MonitoringService = class {
             color: { argb: "FF000000" },
             name: "Times New Roman",
           },
-          alignment: { vertical: "middle", horizontal },
+          alignment: { vertical: "middle", horizontal, wrapText: true },
           fill: {
             type: "pattern",
             pattern: "solid",
@@ -792,9 +791,16 @@ exports.Jur7MonitoringService = class {
           border,
         });
 
-        // clean note
         if (cell.note) {
           cell.note = undefined;
+        }
+
+        if (typeof cell.value === "string") {
+          const lineCount = Math.ceil(cell.value.length / 30);
+          const newHeight = lineCount * 15;
+          if (newHeight > row.height) {
+            row.height = newHeight;
+          }
         }
       });
     });

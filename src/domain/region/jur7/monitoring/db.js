@@ -34,7 +34,7 @@ exports.Jur7MonitoringDB = class {
         u.id AS                                                       user_id,
         u.login,
         u.fio,
-        (
+        COALESCE((
         SELECT
           JSON_AGG(
           JSON_BUILD_OBJECT(
@@ -54,7 +54,7 @@ exports.Jur7MonitoringDB = class {
             WHERE ch.document_prixod_jur7_id = d.id
               AND ch.isdeleted = false
           ) AS unique_schets
-        ) AS schets,
+        ), '[]'::JSON) AS schets,
         'prixod' AS                                                   type,
         d.doc_date AS                                                 combined_doc_date,
         d.id AS                                                       combined_id,
@@ -98,7 +98,7 @@ exports.Jur7MonitoringDB = class {
         u.id AS                                                       user_id,
         u.login,
         u.fio,
-        (
+        COALESCE((
           SELECT
             JSON_AGG(
               JSON_BUILD_OBJECT(
@@ -118,7 +118,7 @@ exports.Jur7MonitoringDB = class {
             WHERE ch.document_rasxod_jur7_id = d.id
               AND ch.isdeleted = false
           ) AS unique_schets
-        ) AS schets,
+        ), '[]'::JSON) AS schets,
         'internal' AS                                                 type,
         d.doc_date AS                                                 combined_doc_date,
         d.id AS                                                       combined_id,
@@ -156,14 +156,14 @@ exports.Jur7MonitoringDB = class {
         u.id AS                                                       user_id,
         u.login,
         u.fio,
-        (
+        COALESCE((
           SELECT
             JSON_AGG(
               JSON_BUILD_OBJECT(
-               'kredit_schet', unique_schets.kredit_schet,
-            'kredit_sub_schet', unique_schets.kredit_sub_schet,
-            'debet_schet', unique_schets.debet_schet,
-            'debet_sub_schet', unique_schets.debet_sub_schet
+                'kredit_schet', unique_schets.kredit_schet,
+                'kredit_sub_schet', unique_schets.kredit_sub_schet,
+                'debet_schet', unique_schets.debet_schet,
+                'debet_sub_schet', unique_schets.debet_sub_schet
               )
             )
           FROM (
@@ -176,7 +176,7 @@ exports.Jur7MonitoringDB = class {
             WHERE ch.document_rasxod_jur7_id = d.id
               AND ch.isdeleted = false
           ) AS unique_schets
-        ) AS schets,
+        ), '[]'::JSON) AS schets,
         'rasxod' AS                                                   type,
         d.doc_date AS                                                 combined_doc_date,
         d.id AS                                                       combined_id,
