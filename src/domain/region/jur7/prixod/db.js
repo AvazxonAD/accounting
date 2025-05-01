@@ -117,7 +117,7 @@ exports.PrixodDB = class {
               TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
               ( 
                 SELECT 
-                    COALESCE(SUM(ch.summa), 0)
+                    COALESCE(SUM(ch.summa_s_nds), 0)
                 FROM document_prixod_jur7_child ch
                 WHERE ch.isdeleted = false  
                     AND ch.document_prixod_jur7_id = d.id
@@ -213,8 +213,9 @@ exports.PrixodDB = class {
                     FROM (
                         SELECT  
                             COALESCE(SUM(ch.kol), 0) AS kol,
+                            COALESCE(SUM(ch.summa), 0) AS summa,
+                            COALESCE(SUM(ch.nds_summa), 0) AS nds_summa,
                             ch.sena,
-                            ch.summa,
                             ch.eski_iznos_summa,
                             TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka,
                             n.name,
@@ -252,7 +253,6 @@ exports.PrixodDB = class {
                             ch.iznos_start,
                             ch.iznos,
                             ch.sena,
-                            ch.summa,
                             ch.eski_iznos_summa
                     ) AS child
                 ) AS childs,
