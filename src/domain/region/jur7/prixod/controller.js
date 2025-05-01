@@ -216,7 +216,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total } = await PrixodJur7Service.get({
+    const { data, total, summa } = await PrixodJur7Service.get({
       region_id,
       ...req.query,
       offset,
@@ -226,6 +226,7 @@ exports.Controller = class {
     const meta = {
       pageCount: pageCount,
       count: total,
+      summa,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,

@@ -246,16 +246,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const {
-      page,
-      limit,
-      search,
-      from,
-      to,
-      main_schet_id,
-      order_by,
-      order_type,
-    } = req.query;
+    const { page, limit, main_schet_id } = req.query;
 
     await ValidatorFunctions.mainSchet({
       main_schet_id,
@@ -264,7 +255,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total } = await Jur7RsxodService.get({
+    const { data, total, summa } = await Jur7RsxodService.get({
       region_id,
       offset,
       ...req.query,
@@ -275,6 +266,7 @@ exports.Controller = class {
     const meta = {
       pageCount: pageCount,
       count: total,
+      summa,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,

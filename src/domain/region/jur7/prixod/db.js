@@ -151,8 +151,10 @@ exports.PrixodDB = class {
             COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
             
             (
-              SELECT COALESCE(SUM(d.summa), 0)
+              SELECT 
+                COALESCE(SUM(ch.summa_s_nds), 0)
               FROM document_prixod_jur7 AS d
+              JOIN document_prixod_jur7_child AS ch ON ch.document_prixod_jur7_id = d.id
               JOIN users AS u ON u.id = d.user_id
               JOIN regions AS r ON r.id = u.region_id  
               LEFT JOIN spravochnik_organization AS so ON so.id = d.kimdan_id
@@ -161,6 +163,7 @@ exports.PrixodDB = class {
                 AND d.doc_date BETWEEN $2 AND $3 
                 AND d.isdeleted = false ${search_filter}
                 AND d.main_schet_id = $4
+                AND ch.isdeleted = false
             )::FLOAT AS summa,
 
             (

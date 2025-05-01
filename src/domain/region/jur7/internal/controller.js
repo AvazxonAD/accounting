@@ -284,7 +284,7 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total } = await Jur7InternalService.get({
+    const { data, total, summa } = await Jur7InternalService.get({
       ...req.query,
       region_id,
       offset,
@@ -295,6 +295,7 @@ exports.Controller = class {
     const meta = {
       pageCount: pageCount,
       count: total,
+      summa,
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
