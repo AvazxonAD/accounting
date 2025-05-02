@@ -71,8 +71,6 @@ exports.OdinoxDB = class {
         AND op.sub_schet = $5
     `;
 
-    console.log(params);
-
     const result = await db.query(query, params);
 
     return result;

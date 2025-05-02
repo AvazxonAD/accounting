@@ -37,7 +37,7 @@ exports.Controller = class {
         months,
       });
     } else if (sort_order === 2 || sort_order === 7) {
-      const months = sort_order === 1 ? [month] : [1, month];
+      const months = sort_order === 2 ? [month] : [1, month];
       docs = await OdinoxService.getSort2Docs({
         ...req.query,
         region_id,
@@ -45,7 +45,7 @@ exports.Controller = class {
         months,
       });
     } else if (sort_order === 3 || sort_order === 8) {
-      const months = sort_order === 1 ? [month] : [1, month];
+      const months = sort_order === 3 ? [month] : [1, month];
       docs = await OdinoxService.getSort3Docs({
         ...req.query,
         region_id,
