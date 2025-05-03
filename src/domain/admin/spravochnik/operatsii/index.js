@@ -20,6 +20,7 @@ router
     validator(Controller.getUniqueSchets, OperatsiiSchema.getUniqueSchets())
   )
   .get("/template", validator(Controller.templateFile))
+  .get("/export", validator(Controller.getExport, OperatsiiSchema.getExport()))
   .get("/:id", getByIdOperatsii)
   .post("/", createOperatsii)
   .get("/", getOperatsii)

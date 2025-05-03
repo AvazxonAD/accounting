@@ -54,6 +54,33 @@ const Controller = class {
 
     return res.send(fileRes);
   }
+
+  static async getExport(req, res) {
+    const { type_schet, excel } = req.query;
+    const { data, total } = await OperatsiiService.get({
+      limit: 999999,
+      type_schet,
+      offset: 0,
+    });
+
+    if (excel === "true") {
+      const { fileName, filePath } = await OperatsiiService.export(data);
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
+    }
+
+    const meta = { total };
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
 };
 
 const getSchet = async (req, res) => {

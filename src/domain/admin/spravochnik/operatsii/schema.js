@@ -9,4 +9,13 @@ exports.OperatsiiSchema = class {
       }),
     });
   }
+
+  static getExport() {
+    return Joi.object({
+      query: Joi.object({
+        type_schet: Joi.string().trim(),
+        excel: Joi.string().trim().default("false"),
+      }),
+    });
+  }
 };

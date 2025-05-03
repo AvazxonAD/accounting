@@ -55,10 +55,10 @@ exports.OperatsiiDB = class {
     return result;
   }
 
-  static async get(params, offset, limit, search, type_schet) {
+  static async get(params, search, type_schet) {
     let type_schet_filter = "";
     let search_filter = ``;
-    let offset_limit = ``;
+
     if (search) {
       search_filter = `AND (
                 schet = $${params.length + 1} OR 
@@ -68,37 +68,63 @@ exports.OperatsiiDB = class {
             `;
       params.push(search);
     }
+
     if (type_schet) {
       type_schet_filter = `AND type_schet = $${params.length + 1}`;
       params.push(type_schet);
     }
-    if (offset !== undefined && offset !== null && limit) {
-      offset_limit = `OFFSET $${params.length + 1} LIMIT $${params.length + 2}`;
-      params.push(offset, limit);
-    }
+
     const query = `--sql
             WITH data AS (
                 SELECT 
                     id, name, schet, sub_schet, 
                     type_schet, smeta_id
                 FROM spravochnik_operatsii  
-                WHERE isdeleted = false 
-                    
-                    ${search_filter} 
-                    ${type_schet_filter})
+                WHERE isdeleted = false
+                  AND (
+                    type_schet = 'akt' OR 
+                    type_schet = 'bank_prixod' OR 
+                    type_schet = 'avans_otchet' OR 
+                    type_schet = 'kassa_prixod' OR 
+                    type_schet = 'kassa_rasxod' OR 
+                    type_schet = 'jur3' OR 
+                    type_schet = 'jur4' OR 
+                    type_schet = 'bank_rasxod' OR 
+                    type_schet = 'jur7' OR 
+                    type_schet = 'show_service'
+                  )
+                  ${search_filter} 
+                  ${type_schet_filter}
+                
+                ORDER BY schet ASC
+                OFFSET $1 LIMIT $2
+                )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
                     SELECT COUNT(spravochnik_operatsii.id) 
                     FROM spravochnik_operatsii 
                     WHERE isdeleted = false 
-                        
-                        ${search_filter} 
-                        ${type_schet_filter}
+                      AND (
+                        type_schet = 'akt' OR 
+                        type_schet = 'bank_prixod' OR 
+                        type_schet = 'avans_otchet' OR 
+                        type_schet = 'kassa_prixod' OR 
+                        type_schet = 'kassa_rasxod' OR 
+                        type_schet = 'jur3' OR 
+                        type_schet = 'jur4' OR 
+                        type_schet = 'bank_rasxod' OR 
+                        type_schet = 'jur7' OR 
+                        type_schet = 'show_service'
+                      ) 
+                      ${search_filter} 
+                      ${type_schet_filter}
                 )::INTEGER AS total_count
             FROM data
         `;
+
     const result = await db.query(query, params);
+
     return result[0];
   }
 
