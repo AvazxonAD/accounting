@@ -41,7 +41,10 @@ const Controller = class {
   }
 
   static async templateFile(req, res) {
-    const { fileName, fileRes } = await OperatsiiService.templateFile();
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile(
+      "operatsii.xlsx",
+      req.i18n
+    );
 
     res.setHeader(
       "Content-Type",

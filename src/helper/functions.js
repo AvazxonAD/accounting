@@ -914,17 +914,16 @@ exports.HelperFunctions = class {
 
   static async returnTemplateFile(fileName, lang) {
     const folder_path = path.join(__dirname, `../../public/template`);
-
-    const filePath = path.join(folder_path, fileName);
+    const filePath = path.join(folder_path, `${fileName}`);
 
     try {
-      await fs.access(filePath, fs.constants.R_OK);
+      await fs.access(filePath);
     } catch (error) {
+      console.error(`Fayl topilmadi: ${filePath}`);
       throw new Error(lang.t("fileError"));
     }
 
     const fileRes = await fs.readFile(filePath);
-
     return { fileName, fileRes };
   }
 

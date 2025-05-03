@@ -94,6 +94,7 @@ exports.DashboardService = class {
     const from = HelperFunctions.returnDate({ year, month });
 
     for (let podotchet of data.podotchets) {
+      podotchet.summa = 0;
       podotchet.budjets = JSON.parse(JSON.stringify(data.budjets));
 
       for (let budjet of podotchet.budjets) {
@@ -131,6 +132,8 @@ exports.DashboardService = class {
                 ]);
 
                 schet.podotchet.summa += podotchet_saldo.summa;
+
+                podotchet.summa += schet.podotchet.summa;
               }
             }
 

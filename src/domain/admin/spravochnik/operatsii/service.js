@@ -11,10 +11,6 @@ exports.OperatsiiService = class {
     return result;
   }
 
-  static async get(data) {
-    const result = await OperatsiiDB.get([]);
-  }
-
   static async getUniqueSchets(data) {
     const result = await OperatsiiDB.getUniqueSchets(
       [],

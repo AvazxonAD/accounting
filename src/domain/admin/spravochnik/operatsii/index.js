@@ -19,6 +19,7 @@ router
     "/unique",
     validator(Controller.getUniqueSchets, OperatsiiSchema.getUniqueSchets())
   )
+  .get("/template", validator(Controller.templateFile))
   .get("/:id", getByIdOperatsii)
   .post("/", createOperatsii)
   .get("/", getOperatsii)
