@@ -6,6 +6,12 @@ const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const { access, constants, mkdir } = require("fs").promises;
 
 exports.Jur7MonitoringService = class {
+  static async uniqueSchets(data) {
+    const result = await Jur7MonitoringDB.uniqueSchets([]);
+
+    return result;
+  }
+
   static async monitoring(data) {
     const result = await Jur7MonitoringDB.monitoring(
       [

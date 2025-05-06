@@ -627,4 +627,174 @@ exports.Jur7MonitoringDB = class {
 
     return result;
   }
+
+  static async getSummaBySchet(params, responsible_id = null) {
+    let resposnible_filter = ``;
+
+    if (responsible_id) {
+      params.push(responsible_id);
+      resposnible_filter = `AND jsh.id = $${params.length}`;
+    }
+
+    const query = `--sql
+      WITH prixod (
+        SELECT
+        ch.summa_s_nds::FLOAT AS summa
+      FROM document_prixod_jur7 d
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id
+      JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
+      WHERE d.isdeleted = false
+          AND ch.isdeleted = false
+          AND d.doc_date BETWEEN $1 AND $2
+          AND r.id = $3
+          AND d.main_schet_id = $4
+          AND ch.debet_schet = $5
+          ${resposnible_filter}
+      ),
+
+      internal_prixod AS (
+        SELECT
+          ch.summa::FLOAT
+        FROM document_vnutr_peremesh_jur7 d
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.doc_date BETWEEN $1 AND $2
+            AND r.id = $3
+            AND d.main_schet_id = $4
+            AND ch.debet_schet = $5 
+            ${resposnible_filter}
+        ),
+      rasxod_rasxod AS (
+        SELECT
+          ch.summa::FLOAT
+        FROM document_rasxod_jur7 d
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+        JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.doc_date BETWEEN $1 AND $2
+            AND r.id = $3
+            AND d.main_schet_id = $4
+            AND ch.kredit_schet = $5
+            ${resposnible_filter}
+      ),
+      rasxod_prixod AS (
+        SELECT
+          ch.summa::FLOAT
+        FROM document_rasxod_jur7 d
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id
+        JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.doc_date BETWEEN $1 AND $2
+            AND r.id = $3
+            AND d.main_schet_id = $4
+            AND ch.debet_schet = $5
+            ${resposnible_filter}
+      ),
+      internal_rasxod AS (
+        SELECT
+          ch.summa::FLOAT
+        FROM document_vnutr_peremesh_jur7 d
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.doc_date BETWEEN $1 AND $2
+            AND r.id = $3
+            AND d.main_schet_id = $4
+            AND ch.kredit_schet = $5
+            ${resposnible_filter}
+      )
+
+      SELECT 
+        (
+          COALESCE((
+            SELECT SUM(summa) FROM prixod
+          ), 0) + COALESCE((
+            SELECT SUM(summa) FROM internal_prixod
+          ), 0) 
+          -
+          COALESCE((
+            SELECT SUM(summa) FROM rasxod_rasxod
+          ), 0) - COALESCE((
+            SELECT SUM(summa) FROM rasxod_prixod
+          ), 0) - COALESCE((
+            SELECT SUM(summa) FROM internal_rasxod
+          ), 0)
+        ) AS balans
+    `;
+  }
+
+  static async uniqueSchets(params) {
+    const query = `--sql
+      SELECT d.schet
+      FROM group_jur7 d
+      WHERE d.isdeleted = false
+
+      UNION
+
+      SELECT ch.kredit_schet AS schet
+      FROM document_prixod_jur7 d
+      JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id 
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+
+      UNION
+
+      SELECT ch.debet_schet AS schet
+      FROM document_prixod_jur7 d
+      JOIN document_prixod_jur7_child ch ON d.id = ch.document_prixod_jur7_id 
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+
+      UNION
+
+      SELECT ch.debet_schet AS schet
+      FROM document_rasxod_jur7 d
+      JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id 
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+
+      UNION 
+
+      SELECT ch.kredit_schet AS schet
+      FROM document_rasxod_jur7 d
+      JOIN document_rasxod_jur7_child ch ON d.id = ch.document_rasxod_jur7_id 
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+
+      UNION
+
+      SELECT ch.debet_schet AS schet
+      FROM document_vnutr_peremesh_jur7 d
+      JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id 
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+
+      UNION 
+
+      SELECT ch.kredit_schet AS schet
+      FROM document_vnutr_peremesh_jur7 d
+      JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id 
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false;
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
 };
