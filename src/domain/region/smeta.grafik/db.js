@@ -139,14 +139,17 @@ exports.SmetaGrafikDB = class {
     let operator_filter = ``;
     let year_filter = ``;
     let search_filter = ``;
+
     if (search) {
       params.push(search);
       search_filter = `AND (smeta.smeta_number ILIKE '%' || $${params.length} || '%')`;
     }
+
     if (budjet_id) {
       budjet_filter = `AND s.spravochnik_budjet_name_id = $${params.length + 1}`;
       params.push(budjet_id);
     }
+
     if (operator) {
       operator_filter = `AND s.itogo ${operator} 0`;
     }

@@ -108,7 +108,8 @@ exports.SmetaGrafikService = class {
       [data.region_id, data.main_schet_id, data.offset, data.limit],
       data.budjet_id,
       data.operator,
-      data.year
+      data.year,
+      data.search
     );
 
     return result;
