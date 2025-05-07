@@ -187,6 +187,7 @@ exports.SmetaGrafikDB = class {
                 ${operator_filter} 
                 ${year_filter}
                 ${search_filter}
+              ORDER BY smeta.smeta_number
               OFFSET $3 LIMIT $4
             )
           SELECT
