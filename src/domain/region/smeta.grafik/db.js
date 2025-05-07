@@ -141,7 +141,7 @@ exports.SmetaGrafikDB = class {
     let search_filter = ``;
     if (search) {
       params.push(search);
-      search_filter = `AND (smeta.smeta_name ILIKE '%' || $${params.length} || '%' OR smeta.smeta_number ILIKE '%' || $${params.length} || '%')`;
+      search_filter = `AND (smeta.smeta_number ILIKE '%' || $${params.length} || '%')`;
     }
     if (budjet_id) {
       budjet_filter = `AND s.spravochnik_budjet_name_id = $${params.length + 1}`;
