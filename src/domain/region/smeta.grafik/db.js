@@ -1,137 +1,49 @@
 const { db } = require("@db/index");
-const { HelperFunctions } = require(`@helper/functions`);
 
 exports.SmetaGrafikDB = class {
-  static async create(params, client) {
-    const _db = client || db;
+  static async createParent(params, client) {
+    const query = `--sql
+      INSERT INTO smeta_grafik_parent ( user_id, year, main_schet_id, order_number, created_at, updated_at ) VALUES (
+          $1, $2, $3, $4, $5, $6
+      ) RETURNING id 
+    `;
 
+    const result = await client.query(query, params);
+
+    return result.rows[0];
+  }
+
+  static async create(params, client) {
     const query = `--sql
             INSERT INTO smeta_grafik (
-                smeta_id, spravochnik_budjet_name_id, user_id, 
+                smeta_id, user_id, 
                 itogo, oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, 
-                oy_7, oy_8, oy_9, oy_10, oy_11, oy_12, year, main_schet_id, created_at, updated_at
+                oy_7, oy_8, oy_9, oy_10, oy_11, oy_12, year, main_schet_id, parent_id, created_at, updated_at
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
                 $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
-            ) RETURNING *;
+            );
         `;
 
-    const result = await _db.query(query, params);
-
-    return result.rows[0] || result[0];
+    await client.query(query, params);
   }
 
-  static async getOld(params, filter) {
-    const conditions = [];
-
-    if (filter.year) {
-      params.push(filter.year);
-      conditions.push(`s.year = $${params.length}`);
-    }
-
-    if (filter.smeta_id) {
-      params.push(filter.smeta_id);
-      conditions.push(`sg.smeta_id = $${params.length}`);
-    }
-
-    const where = HelperFunctions.where({ conditions });
-
-    const query = `--sql
-      WITH data AS (
-        SELECT
-          s.*, 
-          s.itogo::FLOAT,
-          s.oy_1::FLOAT,
-          s.oy_2::FLOAT,
-          s.oy_3::FLOAT,
-          s.oy_4::FLOAT,
-          s.oy_5::FLOAT,
-          s.oy_6::FLOAT,
-          s.oy_7::FLOAT,
-          s.oy_8::FLOAT,
-          s.oy_9::FLOAT,
-          s.oy_10::FLOAT,
-          s.oy_11::FLOAT,
-          s.oy_12::FLOAT
-        FROM smeta_grafik_old s
-        JOIN smeta_grafik sg ON sg.id = s.smeta_grafik_id
-        JOIN users u ON s.user_id = u.id
-        JOIN regions r ON r.id = u.region_id  
-        WHERE r.id = $1
-          ${where}
-        OFFSET $2 LIMIT $3
-      )
-      
-      SELECT
-         COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
-        (
-          SELECT
-            COALESCE(COUNT(s.id), 0) 
-          FROM smeta_grafik_old s 
-          JOIN users u ON s.user_id = u.id
-          JOIN smeta_grafik sg ON sg.id = s.smeta_grafik_id
-          JOIN regions r ON r.id = u.region_id  
-          WHERE r.id = $1
-            ${where}
-        )::INTEGER AS total
-      
-      FROM data
-    `;
-
-    const result = await db.query(query, params);
-
-    return result[0];
-  }
-
-  static async getBySortNumber(params) {
+  static async getOrderNumber(params) {
     const query = `--sql
       SELECT
-        sort_order
-      FROM smeta_grafik_old
-      WHERE smeta_grafik_id = $1
-      ORDER BY created_at DESC
+        order_number
+      FROM smeta_grafik_parent
+      WHERE year = $1
+        AND isdeleted = false
+        AND main_schet_id = $2
+        AND order_number != 0
+      ORDER BY id DESC 
       LIMIT 1
     `;
 
     const result = await db.query(query, params);
 
-    return result[0]?.sort_order + 1 || 1;
-  }
-
-  static async createOld(params, client) {
-    const query = `--sql
-      INSERT INTO smeta_grafik_old (
-        smeta_grafik_id,
-        sort_order,
-        user_id,
-        smeta_name,
-        smeta_number,
-        budjet_name,
-        itogo,
-        oy_1,
-        oy_2,
-        oy_3,
-        oy_4,
-        oy_5,
-        oy_6,
-        oy_7,
-        oy_8,
-        oy_9,
-        oy_10,
-        oy_11,
-        oy_12,
-        account_number,
-        year, 
-        created_at,
-        updated_at
-      ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14,
-        $15, $16, $17, $18, $19, $20, $21, $22, $23
-      )
-    `;
-
-    await client.query(query, params);
+    return result[0]?.order_number + 1 || 1;
   }
 
   static async get(params, budjet_id, operator, year, search) {
@@ -159,7 +71,8 @@ exports.SmetaGrafikDB = class {
     }
     const query = `--sql
           WITH data AS 
-            (SELECT 
+            (
+              SELECT
                 s.*, 
                 smeta.smeta_name,
                 smeta.smeta_number,
@@ -386,40 +299,102 @@ exports.SmetaGrafikDB = class {
     };
   }
 
+  static async getMain(params) {
+    const query = `--sql
+      SELECT
+        d.*,
+        (
+          SELECT JSON_AGG( row_to_json(s))
+          FROM smeta_grafik s
+          JOIN smeta ON smeta.id = s.smeta_id
+          WHERE s.isdeleted = false AND s.parent_id = d.id
+        ) AS smetas
+      FROM smeta_grafik_parent AS d  
+      JOIN users u ON d.user_id = u.id
+      JOIN regions r ON u.region_id = r.id  
+      WHERE d.isdeleted = false
+        AND d.order_number = $1
+        AND d.year = $2
+        AND d.main_schet_id = $3
+        AND r.id = $4
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async getById(params, isdeleted) {
     const ignore = "AND s.isdeleted = false";
     const query = `--sql
-            SELECT
-                s.*, 
-                smeta.smeta_name,
-                smeta.smeta_number,
-                s.itogo::FLOAT,
-                s.oy_1::FLOAT,
-                s.oy_2::FLOAT,
-                s.oy_3::FLOAT,
-                s.oy_4::FLOAT,
-                s.oy_5::FLOAT,
-                s.oy_6::FLOAT,
-                s.oy_7::FLOAT,
-                s.oy_8::FLOAT,
-                s.oy_9::FLOAT,
-                s.oy_10::FLOAT,
-                s.oy_11::FLOAT,
-                s.oy_12::FLOAT,
-                m.account_number,
-                b.name AS budjet_name
-            FROM smeta_grafik AS s
-            JOIN users ON s.user_id = users.id
-            JOIN regions ON users.region_id = regions.id  
-            JOIN smeta ON smeta.id = s.smeta_id
-            JOIN main_schet m ON m.id = s.main_schet_id
-            JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
-            WHERE regions.id = $1
-              AND s.id = $2 ${isdeleted ? "" : ignore}
-              AND main_schet_id = $3
+           SELECT
+              d.*,
+              m.account_number,
+              (
+                SELECT JSON_AGG(
+                  JSON_BUILD_OBJECT(
+                    'id', s.id,
+                    'smeta_id', s.smeta_id,
+                    'smeta_name', smeta.smeta_name,
+                    'smeta_number', smeta.smeta_number,
+                    'itogo', s.itogo::FLOAT,
+                    'oy_1', s.oy_1::FLOAT,
+                    'oy_2', s.oy_2::FLOAT,
+                    'oy_3', s.oy_3::FLOAT,
+                    'oy_4', s.oy_4::FLOAT,
+                    'oy_5', s.oy_5::FLOAT,
+                    'oy_6', s.oy_6::FLOAT,
+                    'oy_7', s.oy_7::FLOAT,
+                    'oy_8', s.oy_8::FLOAT,
+                    'oy_9', s.oy_9::FLOAT,
+                    'oy_10', s.oy_10::FLOAT,
+                    'oy_11', s.oy_11::FLOAT,
+                    'oy_12', s.oy_12::FLOAT
+                  )
+                )
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false AND s.parent_id = d.id
+              ) AS smetas
+            FROM smeta_grafik_parent AS d
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id  
+            JOIN main_schet m ON m.id = d.main_schet_id
+            WHERE r.id = $1
+              AND d.id = $2
+              AND m.id = $3
+              ${isdeleted ? "" : ignore}
         `;
+
     const result = await db.query(query, params);
+
     return result[0];
+  }
+
+  static async updateMain(params, client) {
+    const query = `--sql
+            UPDATE smeta_grafik SET 
+                itogo = $1, oy_1 = $2, oy_2 = $3, oy_3 = $4,
+                oy_4 = $5, oy_5 = $6, oy_6 = $7, oy_7 = $8,
+                oy_8 = $9, oy_9 = $10, oy_10 = $11, oy_11 = $12, oy_12 = $13, 
+                updated_at = $14
+            WHERE smeta_id = $15
+              AND isdeleted = false
+              AND parent_id = $16
+        `;
+
+    await client.query(query, params);
+  }
+
+  static async deleteMain(params, client) {
+    const query = `--sql
+            UPDATE smeta_grafik SET isdeleted = true 
+            WHERE smeta_id = $1
+              AND isdeleted = false
+              AND parent_id = $2
+        `;
+
+    await client.query(query, params);
   }
 
   static async update(params, client) {
@@ -444,22 +419,5 @@ exports.SmetaGrafikDB = class {
     const result = await db.query(query, params);
 
     return result;
-  }
-
-  static async getByYear(params) {
-    const query = `--sql   
-      SELECT
-        s.*
-      FROM smeta_grafik AS s
-      JOIN users ON s.user_id = users.id
-      JOIN regions ON users.region_id = regions.id
-      WHERE regions.id = $1
-        AND s.smeta_id = $2
-        AND s.isdeleted = false
-        AND s.year = $3
-        AND s.main_schet_id = $4
-    `;
-    const result = await db.query(query, params);
-    return result[0];
   }
 };

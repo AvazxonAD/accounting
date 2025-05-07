@@ -12,7 +12,7 @@ exports.SmetaGrafikSchema = class {
     }).options({ stripUnknown: true });
   }
 
-  static multiInsert() {
+  static create() {
     return Joi.object({
       body: Joi.object({
         smetas: Joi.array()
