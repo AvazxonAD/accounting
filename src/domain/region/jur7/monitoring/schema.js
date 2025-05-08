@@ -36,6 +36,7 @@ exports.Schema = class {
         excel: Joi.string().trim().valid("true", "false"),
         iznos: Joi.string().trim().valid("true", "false"),
         main_schet_id: Joi.number().integer().min(1).required(),
+        responsible_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
