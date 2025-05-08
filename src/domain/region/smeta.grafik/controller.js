@@ -33,39 +33,16 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, budjet_id, operator, year } = req.query;
-    if (budjet_id) {
-      const budjet = await BudjetService.getById({ id: budjet_id });
-      if (!budjet) {
-        return res.error(req.i18n.t("budjetNotFound"), 404);
-      }
-    }
+    const { page, limit, main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const offset = (page - 1) * limit;
-    const {
-      data,
-      total,
-      itogo,
-      oy_1,
-      oy_2,
-      oy_3,
-      oy_4,
-      oy_5,
-      oy_6,
-      oy_7,
-      oy_8,
-      oy_9,
-      oy_10,
-      oy_11,
-      oy_12,
-    } = await SmetaGrafikService.get({
+
+    const { data, total } = await SmetaGrafikService.get({
       ...req.query,
       region_id,
       offset,
-      limit,
-      budjet_id,
-      operator,
-      year,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -76,19 +53,6 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      itogo,
-      oy_1,
-      oy_2,
-      oy_3,
-      oy_4,
-      oy_5,
-      oy_6,
-      oy_7,
-      oy_8,
-      oy_9,
-      oy_10,
-      oy_11,
-      oy_12,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);

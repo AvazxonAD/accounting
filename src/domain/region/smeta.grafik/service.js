@@ -234,8 +234,8 @@ exports.SmetaGrafikService = class {
   }
 
   static async delete(data) {
-    const result = await SmetaGrafikDB.delete([data.id]);
-
-    return result;
+    await db.transaction(async (client) => {
+      await SmetaGrafikDB.delete([data.id], client);
+    });
   }
 };
