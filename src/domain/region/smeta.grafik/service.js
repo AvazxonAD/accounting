@@ -21,7 +21,7 @@ exports.SmetaGrafikService = class {
       const itogo = HelperFunctions.smetaSum(smeta);
 
       const check = data.main_parent.smetas.find(
-        (item) => (item.smeta_id = smeta.smeta_id)
+        (item) => item.smeta_id === smeta.smeta_id
       );
 
       if (check) {
@@ -64,9 +64,9 @@ exports.SmetaGrafikService = class {
             smeta.oy_10,
             smeta.oy_11,
             smeta.oy_12,
-            data.old_data.year,
-            data.old_data.main_schet_id,
-            data.parent_id,
+            data.main_parent.year,
+            data.main_parent.main_schet_id,
+            data.main_parent.id,
             this.now,
             this.now,
           ],
@@ -75,15 +75,18 @@ exports.SmetaGrafikService = class {
       }
     }
 
-    data.main_parent.smetas.forEach(async (item) => {
+    for (let item of data.main_parent.smetas) {
       const check = data.smetas.find(
         (smeta) => smeta.smeta_id === item.smeta_id
       );
 
       if (!check) {
-        await SmetaGrafikDB.deleteMain([item.smeta_id, data.main_parent.id]);
+        await SmetaGrafikDB.deleteMain(
+          [item.smeta_id, data.main_parent.id],
+          data.client
+        );
       }
-    });
+    }
   }
 
   static async createChild(data) {
