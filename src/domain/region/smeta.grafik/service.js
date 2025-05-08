@@ -18,7 +18,7 @@ exports.SmetaGrafikService = class {
 
   static async updateMain(data) {
     for (let smeta of data.smetas) {
-      const itogo = HelperFunctions.smetaSum({ smeta });
+      const itogo = HelperFunctions.smetaSum(smeta);
 
       const check = data.main_parent.smetas.find(
         (item) => (item.smeta_id = smeta.smeta_id)
@@ -42,7 +42,7 @@ exports.SmetaGrafikService = class {
             smeta.oy_12,
             this.now,
             smeta.smeta_id,
-            data.parent_id,
+            data.main_parent.id,
           ],
           data.client
         );
@@ -88,7 +88,7 @@ exports.SmetaGrafikService = class {
 
   static async createChild(data) {
     for (let smeta of data.smetas) {
-      const itogo = HelperFunctions.smetaSum({ smeta });
+      const itogo = HelperFunctions.smetaSum(smeta);
 
       await SmetaGrafikDB.create(
         [

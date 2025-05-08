@@ -107,7 +107,7 @@ exports.getByIdSchema = Joi.object({
   query: Joi.object({
     main_schet_id: Joi.number().min(1).integer().required(),
   }),
-});
+}).options({ stripUnknown: true });
 
 exports.deleteSchema = Joi.object({
   params: Joi.object({
@@ -117,4 +117,4 @@ exports.deleteSchema = Joi.object({
   query: Joi.object({
     main_schet_id: Joi.number().min(1).integer().required(),
   }),
-});
+}).options({ stripUnknown: true });

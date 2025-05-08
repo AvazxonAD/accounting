@@ -163,12 +163,7 @@ routes
   .use("/jur_7/podrazdelenie", protect, require("@jur7_podraz/index"))
   .use("/jur_7/responsible", protect, require("@responsible/index"))
   .use("/jur_7/naimenovanie", protect, require("@product/index"))
-  .use(
-    "/jur_7/doc_prixod",
-    protect,
-    Middleware.jur7Block,
-    require("@jur7_prixod/index")
-  )
+  .use("/jur_7/doc_prixod", protect, require("@jur7_prixod/index"))
   .use(
     "/jur_7/doc_rasxod",
     protect,
