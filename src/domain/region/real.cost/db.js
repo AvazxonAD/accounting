@@ -66,6 +66,7 @@ exports.RealCostDB = class {
         AND sg.main_schet_id = $2 
         AND sg.isdeleted = false
         AND sg.year = $3
+        AND sg.order_number = 0
       LEFT JOIN users u 
         ON u.id = sg.user_id
       LEFT JOIN regions r 
@@ -366,6 +367,7 @@ exports.RealCostDB = class {
         AND sg.main_schet_id = d.main_schet_id 
         AND sg.isdeleted = false
         AND sg.year = d.year
+        AND sg.order_number = 0
       LEFT JOIN users u 
         ON u.id = sg.user_id
       LEFT JOIN regions r 

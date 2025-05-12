@@ -5,7 +5,7 @@ exports.SmetaGrafikDB = class {
     const query = `--sql
       INSERT INTO smeta_grafik_parent ( user_id, year, main_schet_id, order_number,command, created_at, updated_at ) VALUES (
           $1, $2, $3, $4, $5, $6, $7
-      ) RETURNING id 
+      ) RETURNING * 
     `;
 
     const result = await client.query(query, params);
@@ -29,7 +29,7 @@ exports.SmetaGrafikDB = class {
       WHERE s.isdeleted = false
         AND r.id = $1
         AND s.year = $2
-
+        AND s.main_schet_id = $3
       ORDER BY s.order_number DESC
       LIMIT 1
     `;
@@ -44,10 +44,10 @@ exports.SmetaGrafikDB = class {
       INSERT INTO smeta_grafik (
           smeta_id, user_id, 
           itogo, oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, 
-          oy_7, oy_8, oy_9, oy_10, oy_11, oy_12, year, main_schet_id, parent_id, created_at, updated_at
+          oy_7, oy_8, oy_9, oy_10, oy_11, oy_12, year, main_schet_id, parent_id, order_number, created_at, updated_at
       ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
-          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
       );
     `;
 

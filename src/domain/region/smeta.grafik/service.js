@@ -67,6 +67,7 @@ exports.SmetaGrafikService = class {
             data.main_parent.year,
             data.main_parent.main_schet_id,
             data.main_parent.id,
+            data.main_parent.order_number,
             this.now,
             this.now,
           ],
@@ -113,6 +114,7 @@ exports.SmetaGrafikService = class {
           data.year,
           data.main_schet_id,
           data.parent_id,
+          data.parent.order_number,
           this.now,
           this.now,
         ],
@@ -151,7 +153,7 @@ exports.SmetaGrafikService = class {
         client,
       });
 
-      await this.createChild({ ...data, parent_id: parent.id, client });
+      await this.createChild({ ...data, parent_id: parent.id, parent, client });
 
       if (order_number === 1) {
         const main_parent = await this.createParent({
@@ -160,7 +162,12 @@ exports.SmetaGrafikService = class {
           client,
         });
 
-        await this.createChild({ ...data, parent_id: main_parent.id, client });
+        await this.createChild({
+          ...data,
+          parent_id: main_parent.id,
+          parent: main_parent,
+          client,
+        });
       } else {
         const main_parent = await this.getByOrderNumber({
           ...data,
@@ -173,7 +180,11 @@ exports.SmetaGrafikService = class {
   }
 
   static async getEnd(data) {
-    const result = await SmetaGrafikDB.getEnd([data.region_id, data.year]);
+    const result = await SmetaGrafikDB.getEnd([
+      data.region_id,
+      data.year,
+      data.main_schet_id,
+    ]);
 
     return result;
   }
@@ -181,10 +192,7 @@ exports.SmetaGrafikService = class {
   static async get(data) {
     const result = await SmetaGrafikDB.get(
       [data.region_id, data.main_schet_id, data.offset, data.limit],
-      data.budjet_id,
-      data.operator,
-      data.year,
-      data.search
+      data.year
     );
 
     const end = await this.getEnd({ ...data });
@@ -267,6 +275,7 @@ exports.SmetaGrafikService = class {
               smeta.oy_12,
               data.old_data.year,
               data.old_data.main_schet_id,
+              data.old_data.order_number,
               data.id,
               this.now,
               this.now,

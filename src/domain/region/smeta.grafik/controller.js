@@ -118,6 +118,7 @@ exports.Controller = class {
     const end = await SmetaGrafikService.getEnd({
       region_id,
       year: old_data.year,
+      main_schet_id,
     });
 
     if (end.id !== id) {
@@ -156,6 +157,7 @@ exports.Controller = class {
     const end = await SmetaGrafikService.getEnd({
       region_id,
       year: smeta_grafik.year,
+      main_schet_id,
     });
 
     if (end.id !== id) {
