@@ -78,7 +78,14 @@ exports.SmetaGrafikDB = class {
             (
               SELECT
                 s.*, 
-                m.account_number
+                m.account_number,
+                (
+                  SELECT
+                    COALESCE(SUM(sub.itogo), 0)
+                  FROM smeta_grafik sub
+                  WHERE sub.isdeleted = false
+                    AND sub.parent_id = s.id
+                )::FLOAT AS summa
               FROM smeta_grafik_parent AS s
               JOIN users ON s.user_id = users.id
               JOIN regions ON regions.id = users.region_id  

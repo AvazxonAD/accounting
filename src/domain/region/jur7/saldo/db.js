@@ -227,7 +227,12 @@ exports.SaldoDB = class {
     if (filter.search) {
       params.push(filter.search);
       conditions.push(
-        `(n.name ILIKE '%' || $${params.length} || '%' OR jsh.fio ILIKE '%' || $${params.length} || '%')`
+        `(
+          n.name ILIKE '%' || $${params.length} || '%' OR
+          jsh.fio ILIKE '%' || $${params.length} || '%' OR
+          s.debet_schet ILIKE '%' || $${params.length} || '%' OR
+          s.kredit_schet ILIKE '%' || $${params.length} || '%'
+        )`
       );
     }
 

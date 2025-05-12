@@ -8,6 +8,55 @@ const { PodpisService } = require("@podpis/service");
 const { ValidatorFunctions } = require("@helper/database.validator");
 
 exports.Controller = class {
+  static async reportBySchet(req, res) {
+    const { main_schet_id, month, excel, is_year } = req.query;
+    const { region_id } = req.user;
+    let months;
+
+    if (is_year === "true") {
+      months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    } else {
+      months = [month];
+    }
+    const { from, to } = HelperFunctions.getFromTo(req.query);
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const { schets, itogo } = await Jur7MonitoringService.reportBySchet({
+      region_id,
+      from,
+      months,
+      to,
+      ...req.query,
+    });
+
+    if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
+
+      const { fileName, filePath } =
+        await Jur7MonitoringService.reportBySchetExcel({
+          schets,
+          region,
+          itogo,
+          ...req.query,
+          to,
+        });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t(`getSuccess`), 200, { itogo }, schets);
+  }
+
   static async monitoring(req, res) {
     const { main_schet_id, page, limit } = req.query;
     const region_id = req.user.region_id;
@@ -285,12 +334,18 @@ exports.Controller = class {
     }
 
     if (excel === "true") {
+      const podpis = await PodpisService.get({
+        region_id,
+        type: "jur7_material",
+      });
+
       let response;
       if (iznos === "true") {
         response = await Jur7MonitoringService.materialExcelWithIznos({
           responsibles: result,
           month,
           year,
+          podpis,
           region,
           itogo,
         });
@@ -299,6 +354,7 @@ exports.Controller = class {
           responsibles: result,
           month,
           year,
+          podpis,
           region,
           itogo,
         });

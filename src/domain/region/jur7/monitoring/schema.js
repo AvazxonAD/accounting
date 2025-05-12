@@ -28,6 +28,19 @@ exports.Schema = class {
       }),
     }).options({ stripUnknown: true });
   }
+
+  static reportBySchet() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().min(1).integer(),
+        month: Joi.number().integer().min(1).required().max(12),
+        year: Joi.number().integer().min(1901).required(),
+        excel: Joi.string().trim().valid("true", "false"),
+        is_year: Joi.string().trim().valid("true", "false"),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static getMaterialSchema() {
     return Joi.object({
       query: Joi.object({

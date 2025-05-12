@@ -6,6 +6,23 @@ const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
 
 exports.HelperFunctions = class {
+  static getFromTo(data) {
+    const from = new Date(data.year, data.month - 1, 1);
+    const to = new Date(data.year, data.month, 0); // oyning oxirgi kuni
+
+    const formatDate = (date) => {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0"); // oy 1-12 oraliqda bo'lishi uchun
+      const dd = String(date.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    return {
+      from: formatDate(from),
+      to: formatDate(to),
+    };
+  }
+
   static smetaSum(data) {
     let sum = 0;
     [

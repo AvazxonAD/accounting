@@ -67,7 +67,7 @@ exports.Controller = class {
     const result = await SmetaGrafikService.getById({
       region_id,
       id,
-      main_schet_id,
+      ...req.query,
       isdeleted: true,
     });
 

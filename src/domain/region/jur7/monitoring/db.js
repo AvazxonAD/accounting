@@ -382,6 +382,7 @@ exports.Jur7MonitoringDB = class {
               d.iznos,
               g.iznos_foiz,
               TO_CHAR(d.doc_date, 'DD-MM-YYYY') AS        doc_date,
+              d.doc_num,
               JSON_BUILD_OBJECT(
                 'sena', d.sena::FLOAT,
                 'summa', d.summa::FLOAT,
@@ -637,7 +638,7 @@ exports.Jur7MonitoringDB = class {
     }
 
     const query = `--sql
-      WITH prixod (
+      WITH prixod AS (
         SELECT
         ch.summa_s_nds::FLOAT AS summa
       FROM document_prixod_jur7 d
@@ -647,7 +648,8 @@ exports.Jur7MonitoringDB = class {
       JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
       WHERE d.isdeleted = false
           AND ch.isdeleted = false
-          AND d.doc_date BETWEEN $1 AND $2
+          AND EXTRACT(YEAR FROM d.doc_date) = $1
+          AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
           AND r.id = $3
           AND d.main_schet_id = $4
           AND ch.debet_schet = $5
@@ -664,7 +666,8 @@ exports.Jur7MonitoringDB = class {
         JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimga_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
-            AND d.doc_date BETWEEN $1 AND $2
+            AND EXTRACT(YEAR FROM d.doc_date) = $1
+            AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
             AND r.id = $3
             AND d.main_schet_id = $4
             AND ch.debet_schet = $5 
@@ -680,7 +683,8 @@ exports.Jur7MonitoringDB = class {
         JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
-            AND d.doc_date BETWEEN $1 AND $2
+            AND EXTRACT(YEAR FROM d.doc_date) = $1
+            AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
             AND r.id = $3
             AND d.main_schet_id = $4
             AND ch.kredit_schet = $5
@@ -696,7 +700,8 @@ exports.Jur7MonitoringDB = class {
         JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
-            AND d.doc_date BETWEEN $1 AND $2
+            AND EXTRACT(YEAR FROM d.doc_date) = $1
+            AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
             AND r.id = $3
             AND d.main_schet_id = $4
             AND ch.debet_schet = $5
@@ -712,7 +717,8 @@ exports.Jur7MonitoringDB = class {
         JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = d.kimdan_id
         WHERE d.isdeleted = false
             AND ch.isdeleted = false
-            AND d.doc_date BETWEEN $1 AND $2
+            AND EXTRACT(YEAR FROM d.doc_date) = $1
+            AND EXTRACT(MONTH FROM d.doc_date) = ANY($2)
             AND r.id = $3
             AND d.main_schet_id = $4
             AND ch.kredit_schet = $5
@@ -725,17 +731,22 @@ exports.Jur7MonitoringDB = class {
             SELECT SUM(summa) FROM prixod
           ), 0) + COALESCE((
             SELECT SUM(summa) FROM internal_prixod
+          ), 0) + COALESCE((
+            SELECT SUM(summa) FROM rasxod_prixod
           ), 0) 
-          -
+        )::FLOAT AS prixod,
+        (
           COALESCE((
             SELECT SUM(summa) FROM rasxod_rasxod
-          ), 0) - COALESCE((
-            SELECT SUM(summa) FROM rasxod_prixod
-          ), 0) - COALESCE((
+          ), 0) + COALESCE((
             SELECT SUM(summa) FROM internal_rasxod
           ), 0)
-        ) AS balans
+        )::FLOAT rasxod
     `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
   }
 
   static async uniqueSchets(params) {
@@ -784,6 +795,12 @@ exports.Jur7MonitoringDB = class {
       WHERE d.isdeleted = false
         AND ch.isdeleted = false
 
+      UNION
+      
+      SELECT d.debet_schet AS schet
+      FROM saldo_naimenovanie_jur7 d
+      WHERE d.isdeleted = false
+
       UNION 
 
       SELECT ch.kredit_schet AS schet
@@ -796,5 +813,24 @@ exports.Jur7MonitoringDB = class {
     const result = await db.query(query, params);
 
     return result;
+  }
+
+  static async getSchetSummaBySaldo(params) {
+    const query = `--sql
+      SELECT
+        COALESCE(SUM(summa), 0)::FLOAT AS summa
+      FROM saldo_naimenovanie_jur7
+      WHERE  isdeleted = false
+          AND year = $1
+          AND month = $2
+          AND region_id = $3
+          AND main_schet_id = $4
+          AND debet_schet = $5
+          AND (type = 'saldo' OR type = 'import') 
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
   }
 };

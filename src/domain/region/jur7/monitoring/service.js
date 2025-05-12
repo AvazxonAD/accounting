@@ -232,30 +232,30 @@ exports.Jur7MonitoringService = class {
     }
 
     // css
-    worksheet.eachRow((row, rowNumber) => {
+    worksheet.eachRow((row, row_number) => {
       let bold = false;
       let horizontal = "center";
       let height = 20;
       let argb = "FFFFFFFF";
 
-      if (rowNumber === 1) {
+      if (row_number === 1) {
         height = 50;
       }
 
-      if (rowNumber > 1 && rowNumber < 4) {
+      if (row_number > 1 && row_number < 4) {
         height = 30;
       }
 
-      if (rowNumber < 8) {
+      if (row_number < 8) {
         bold = true;
       }
 
-      worksheet.getRow(rowNumber).height = height;
+      worksheet.getRow(row_number).height = height;
 
       row.eachCell((cell, column) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
-        if (column === 3 && rowNumber > 6 && !cellData.horizontal) {
+        if (column === 3 && row_number > 6 && !cellData.horizontal) {
           horizontal = "right";
         }
 
@@ -277,7 +277,7 @@ exports.Jur7MonitoringService = class {
         }
 
         if (cellData.height) {
-          worksheet.getRow(rowNumber).height = cellData.height;
+          worksheet.getRow(row_number).height = cellData.height;
         }
 
         Object.assign(cell, {
@@ -326,12 +326,13 @@ exports.Jur7MonitoringService = class {
   }
 
   static async materialExcel(data) {
+    const podpis = data.podpis[0];
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("material");
 
     worksheet.mergeCells("G1", "K1");
     const title1 = worksheet.getCell("G1");
-    title1.value = '"Тасдиқлайман"';
+    title1.value = `"Тасдиқлайман" ${podpis.position} ${podpis.fio}`;
 
     worksheet.mergeCells("G2", "K2");
     const title2 = worksheet.getCell("G2");
@@ -370,6 +371,9 @@ exports.Jur7MonitoringService = class {
     const date_prixod = worksheet.getCell("K6");
     date_prixod.value = "Дата приход";
 
+    const doc_num = worksheet.getCell("L6");
+    doc_num.value = "Документ рақам";
+
     worksheet.getRow(7).values = [
       "",
       "",
@@ -395,28 +399,25 @@ exports.Jur7MonitoringService = class {
       { key: "to_kol", width: 22 },
       { key: "to_summa", width: 22 },
       { key: "date", width: 22 },
+      { key: "doc_num", width: 22 },
     ];
 
     for (let responsible of data.responsibles) {
       for (let schet of responsible.products) {
         if (schet.products.length) {
           worksheet.addRow({});
-          const rowFio = worksheet.addRow({ product_name: responsible.fio });
-          const rowSchet = worksheet.addRow({
-            product_name: `Счет ${schet.schet}`,
+
+          const title = `${responsible.fio} Счет ${schet.schet}`;
+          const rowFio = worksheet.addRow({
+            product_name: title,
           });
 
-          const fioIndex = rowFio.values.findIndex(
-            (v) => v === responsible.fio
-          );
+          const fioIndex = rowFio.values.findIndex((v) => v === title);
           if (fioIndex !== -1) {
-            rowFio.getCell(fioIndex).note = JSON.stringify({ bold: true });
-          }
-
-          const schetText = `Счет ${schet.schet}`;
-          const schetIndex = rowSchet.values.findIndex((v) => v === schetText);
-          if (schetIndex !== -1) {
-            rowSchet.getCell(schetIndex).note = JSON.stringify({ bold: true });
+            rowFio.getCell(fioIndex).note = JSON.stringify({
+              bold: true,
+              horizontal: "left",
+            });
           }
 
           for (let product of schet.products) {
@@ -432,6 +433,7 @@ exports.Jur7MonitoringService = class {
               to_kol: Math.round(product.to.kol * 100) / 100,
               to_summa: Math.round(product.to.summa * 100) / 100,
               date: product.doc_date,
+              doc_num: product.doc_num,
             });
           }
 
@@ -447,6 +449,7 @@ exports.Jur7MonitoringService = class {
             to_kol: schet.itogo.to_kol,
             to_summa: schet.itogo.to_summa,
             date: undefined,
+            doc_num: undefined,
           });
 
           for (let i = 1; i < schetRow.values.length; i++) {
@@ -475,10 +478,11 @@ exports.Jur7MonitoringService = class {
       itogoRow.getCell(i).note = JSON.stringify({ bold: true });
     }
 
-    worksheet.eachRow((row, rowNumber) => {
+    worksheet.eachRow((row, row_number) => {
       let size = 12;
       let bold = false;
       let horizontal = "center";
+
       let border = {
         top: { style: "thin", color: { argb: "FFD3D3D3" } },
         left: { style: "thin", color: { argb: "FFD3D3D3" } },
@@ -486,8 +490,8 @@ exports.Jur7MonitoringService = class {
         right: { style: "thin", color: { argb: "FFD3D3D3" } },
       };
 
-      if (rowNumber < 8) {
-        worksheet.getRow(rowNumber).height = 25;
+      if (row_number < 8) {
+        worksheet.getRow(row_number).height = 25;
         bold = true;
       }
 
@@ -498,7 +502,11 @@ exports.Jur7MonitoringService = class {
           bold = true;
         }
 
-        if (rowNumber > 5 && cell.value !== "" && cell.value !== undefined) {
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        }
+
+        if (row_number > 5 && cell.value !== "" && cell.value !== undefined) {
           border = {
             top: { style: "thin" },
             left: { style: "thin" },
@@ -551,12 +559,13 @@ exports.Jur7MonitoringService = class {
   }
 
   static async materialExcelWithIznos(data) {
+    const podpis = data.podpis[0];
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("material");
 
     worksheet.mergeCells("G1", "K1");
     const title1 = worksheet.getCell("G1");
-    title1.value = '"Тасдиқлайман"';
+    title1.value = `"Тасдиқлайман" ${podpis.position} ${podpis.fio}`;
 
     worksheet.mergeCells("G2", "K2");
     const title2 = worksheet.getCell("G2");
@@ -599,6 +608,9 @@ exports.Jur7MonitoringService = class {
     const date_prixod = worksheet.getCell("K6");
     date_prixod.value = "Дата приход";
 
+    const doc_num = worksheet.getCell("L6");
+    doc_num.value = "Документ рақам";
+
     worksheet.getRow(7).values = [
       "",
       "",
@@ -610,6 +622,7 @@ exports.Jur7MonitoringService = class {
       "Расход",
       "Кол",
       "Остаток",
+      "",
       "",
       "Сальдо износ",
       "Приход",
@@ -630,6 +643,7 @@ exports.Jur7MonitoringService = class {
       { key: "to_kol", width: 15 },
       { key: "to_summa", width: 15 },
       { key: "date", width: 15 },
+      { key: "doc_num", width: 15 },
       { key: "from_iznos", width: 15 },
       { key: "prixod_iznos", width: 15 },
       { key: "month_iznos", width: 15 },
@@ -641,22 +655,17 @@ exports.Jur7MonitoringService = class {
       for (let schet of responsible.products) {
         if (schet.products.length) {
           worksheet.addRow({});
-          const rowFio = worksheet.addRow({ product_name: responsible.fio });
-          const rowSchet = worksheet.addRow({
-            product_name: `Счет ${schet.schet}`,
+          const title = `${responsible.fio} Счет ${schet.schet}`;
+          const rowFio = worksheet.addRow({
+            product_name: title,
           });
 
-          const fioIndex = rowFio.values.findIndex(
-            (v) => v === responsible.fio
-          );
+          const fioIndex = rowFio.values.findIndex((v) => v === title);
           if (fioIndex !== -1) {
-            rowFio.getCell(fioIndex).note = JSON.stringify({ bold: true });
-          }
-
-          const schetText = `Счет ${schet.schet}`;
-          const schetIndex = rowSchet.values.findIndex((v) => v === schetText);
-          if (schetIndex !== -1) {
-            rowSchet.getCell(schetIndex).note = JSON.stringify({ bold: true });
+            rowFio.getCell(fioIndex).note = JSON.stringify({
+              bold: true,
+              horizontal: "left",
+            });
           }
 
           for (let product of schet.products) {
@@ -672,6 +681,7 @@ exports.Jur7MonitoringService = class {
               to_kol: Math.round(product.to.kol * 100) / 100,
               to_summa: Math.round(product.to.summa * 100) / 100,
               date: product.doc_date,
+              doc_num: product.doc_num,
               from_iznos: Math.round(product.from.iznos_summa * 100) / 100,
               prixod_iznos:
                 Math.round(product.internal.prixod_iznos_summa * 100) / 100,
@@ -734,7 +744,7 @@ exports.Jur7MonitoringService = class {
       itogoRow.getCell(i).note = JSON.stringify({ bold: true });
     }
 
-    worksheet.eachRow((row, rowNumber) => {
+    worksheet.eachRow((row, row_number) => {
       let size = 12;
       let bold = false;
       let horizontal = "center";
@@ -746,16 +756,16 @@ exports.Jur7MonitoringService = class {
         right: { style: "thin", color: { argb: "FFD3D3D3" } },
       };
 
-      if (rowNumber < 8) {
-        worksheet.getRow(rowNumber).height = 25;
+      if (row_number < 8) {
+        worksheet.getRow(row_number).height = 25;
         bold = true;
       }
 
-      if (rowNumber === 3) {
+      if (row_number === 3) {
         horizontal = "left";
       }
 
-      if (rowNumber === 4) {
+      if (row_number === 4) {
         border = {
           top: { style: "thin", color: { argb: "FFD3D3D3" } },
           left: { style: "thin", color: { argb: "FFD3D3D3" } },
@@ -771,7 +781,11 @@ exports.Jur7MonitoringService = class {
           bold = true;
         }
 
-        if (rowNumber > 5 && cell.value !== "" && cell.value !== undefined) {
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        }
+
+        if (row_number > 5 && cell.value !== "" && cell.value !== undefined) {
           border = {
             top: { style: "thin" },
             left: { style: "thin" },
@@ -853,12 +867,135 @@ exports.Jur7MonitoringService = class {
     return result;
   }
 
-  static async history(data) {
-    const history = await Jur7MonitoringDB.history(
-      [data.from, data.to, data.region_id, data.main_schet_id],
-      data.responsible_id
-    );
+  static async reportBySchet(data) {
+    const result = await Jur7MonitoringDB.uniqueSchets([]);
+    const itogo = { saldo_from: 0, prixod: 0, rasxod: 0, saldo_to: 0 };
 
-    return history;
+    for (let schet of result) {
+      schet.saldo_from = await Jur7MonitoringDB.getSchetSummaBySaldo([
+        data.year,
+        data.months[0],
+        data.region_id,
+        data.main_schet_id,
+        schet.schet,
+      ]);
+
+      schet.internal = await Jur7MonitoringDB.getSummaBySchet([
+        data.year,
+        data.months,
+        data.region_id,
+        data.main_schet_id,
+        schet.schet,
+      ]);
+
+      schet.saldo_to = {
+        summa:
+          schet.saldo_from.summa +
+          (schet.internal.prixod - schet.internal.rasxod),
+      };
+
+      itogo.saldo_from += schet.saldo_from.summa;
+      itogo.prixod += schet.internal.prixod;
+      itogo.rasxod += schet.internal.rasxod;
+      itogo.saldo_to += schet.saldo_to.summa;
+    }
+
+    return { schets: result, itogo };
+  }
+
+  static async reportBySchetExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("responsibles");
+
+    worksheet.mergeCells(`A1`, "E1");
+    worksheet.getCell("A1").value =
+      `СВОДНАЯ ОБОРОТЬ ЗА ${data.is_year === "true" ? `${data.year} года` : HelperFunctions.returnStringDate(new Date(data.to))}          ${data.region.name}`;
+
+    worksheet.columns = [
+      { key: "schet", width: 10 },
+      { key: "from", width: 40 },
+      { key: "prixod", width: 30 },
+      { key: "rasxod", width: 30 },
+      { key: "to", width: 30 },
+    ];
+
+    worksheet.getRow(2).values = [
+      "Счет",
+      "Сальдо",
+      "Приход",
+      "Расход",
+      "Сальдо",
+    ];
+
+    data.schets.forEach((item) => {
+      worksheet.addRow({
+        schet: item.schet,
+        from: item.saldo_from.summa,
+        prixod: item.internal.prixod,
+        rasxod: item.internal.rasxod,
+        to: item.saldo_to.summa,
+      });
+    });
+
+    worksheet.addRow({
+      schet: "Итого",
+      from: data.itogo.saldo_from,
+      prixod: data.itogo.prixod,
+      rasxod: data.itogo.rasxod,
+      to: data.itogo.saldo_to,
+    });
+
+    worksheet.eachRow((row, row_number) => {
+      let bold = false;
+      let horizontal = "center";
+
+      if (row_number < 3 || worksheet.rowCount === row_number) {
+        worksheet.getRow(row_number).height = 30;
+        bold = true;
+      }
+
+      row.eachCell((cell, column) => {
+        if (row_number > 2 && column > 1) {
+          horizontal = "right";
+        }
+
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+      });
+    });
+
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
+
+    try {
+      await access(folder_path, constants.W_OK);
+    } catch (error) {
+      await mkdir(folder_path);
+    }
+
+    const fileName = `schets.${new Date().getTime()}.xlsx`;
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
   }
 };

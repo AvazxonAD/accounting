@@ -208,6 +208,13 @@ exports.SmetaGrafikService = class {
       [data.region_id, data.id, data.main_schet_id],
       isdeleted
     );
+
+    const end = await this.getEnd({ ...data });
+    if (end && result) {
+      result.updated_at = result.id === end.id ? true : false;
+      result.isdeleted = result.id === end.id ? true : false;
+    }
+
     return result;
   }
 

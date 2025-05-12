@@ -284,7 +284,6 @@ exports.SaldoService = class {
       }
     }
 
-    console.log(result.data.length)
     if (data.rasxod) {
       result.data = result.data.filter((item) => item.to.kol !== 0);
     }

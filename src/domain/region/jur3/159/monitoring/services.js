@@ -498,10 +498,6 @@ exports.Monitoring159Service = class {
         continue;
       }
 
-      if (column.organization_id) {
-        console.log(column);
-      }
-
       const organ_nameCell = worksheet.getCell(`A${row_number}`);
       organ_nameCell.value = column.name;
       const prixodCell = worksheet.getCell(`B${row_number}`);
