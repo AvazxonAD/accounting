@@ -55,7 +55,6 @@ exports.Controller = class {
       region_id,
       schet_id,
     });
-
     if (!saldo) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
@@ -195,6 +194,21 @@ exports.Controller = class {
     );
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: from,
+    });
+
+    const saldo = await Saldo159Service.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
     const offset = (page - 1) * limit;

@@ -131,6 +131,8 @@ exports.AvansDB = class {
             VALUES ${_values}
         `;
 
+    console.log(query, params);
+
     await client.query(query, params);
   }
 

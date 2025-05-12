@@ -187,6 +187,21 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: from,
+    });
+
+    const saldo = await Saldo152Service.getByMonth({
+      main_schet_id,
+      year,
+      month,
+      region_id,
+      schet_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const offset = (page - 1) * limit;
     const { data, summa, total_count } = await ShowServiceDB.get(
       [region_id, from, to, main_schet_id, schet_id, offset, limit],
@@ -273,7 +288,6 @@ exports.Controller = class {
       region_id,
       schet_id,
     });
-
     if (!saldo) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }

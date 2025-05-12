@@ -131,6 +131,20 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: from,
+    });
+
+    const saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      year,
+      month,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const offset = (page - 1) * limit;
     const { summa, total_count, data, page_summa } = await AktService.get({
       ...req.query,

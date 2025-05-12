@@ -85,7 +85,7 @@ exports.AktService = class {
 
     const _values = HelperFunctions.paramsValues({
       params: create_childs,
-      column_count: 15,
+      column_count: 10,
     });
 
     await AvansDB.createChild(create_childs, _values, client);
