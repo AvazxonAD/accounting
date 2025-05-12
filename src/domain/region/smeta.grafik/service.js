@@ -128,6 +128,7 @@ exports.SmetaGrafikService = class {
         data.year,
         data.main_schet_id,
         data.order_number,
+        data.command,
         this.now,
         this.now,
       ],
@@ -220,6 +221,7 @@ exports.SmetaGrafikService = class {
 
   static async update(data) {
     const result = await db.transaction(async (client) => {
+      await SmetaGrafikDB.updateParent([data.command, data.id], client);
       for (let smeta of data.smetas) {
         const itogo = HelperFunctions.smetaSum(smeta);
 

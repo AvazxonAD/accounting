@@ -3,14 +3,20 @@ const { db } = require("@db/index");
 exports.SmetaGrafikDB = class {
   static async createParent(params, client) {
     const query = `--sql
-      INSERT INTO smeta_grafik_parent ( user_id, year, main_schet_id, order_number, created_at, updated_at ) VALUES (
-          $1, $2, $3, $4, $5, $6
+      INSERT INTO smeta_grafik_parent ( user_id, year, main_schet_id, order_number,command, created_at, updated_at ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7
       ) RETURNING id 
     `;
 
     const result = await client.query(query, params);
 
     return result.rows[0];
+  }
+
+  static async updateParent(params, client) {
+    const query = `UPDATE smeta_grafik_parent  SET command = $1 WHERE id = $2 `;
+
+    await client.query(query, params);
   }
 
   static async getEnd(params) {

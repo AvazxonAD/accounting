@@ -14,6 +14,7 @@ exports.SmetaGrafikSchema = class {
   static create() {
     return Joi.object({
       body: Joi.object({
+        command: Joi.string().trim().required(),
         smetas: Joi.array()
           .min(1)
           .required()
@@ -46,6 +47,7 @@ exports.SmetaGrafikSchema = class {
   static update() {
     return Joi.object({
       body: Joi.object({
+        command: Joi.string().trim().required(),
         smetas: Joi.array()
           .min(1)
           .required()
