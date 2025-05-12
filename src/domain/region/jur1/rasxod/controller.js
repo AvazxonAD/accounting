@@ -1,4 +1,4 @@
-const { checkSchetsEquality } = require("@helper/functions");
+const { checkSchetsEquality, HelperFunctions } = require("@helper/functions");
 const { MainSchetService } = require("@main_schet/service");
 const { PodotchetService } = require("@podotchet/service");
 const { OperatsiiService } = require("@operatsii/service");
@@ -185,7 +185,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const { page, limit, main_schet_id } = req.query;
+    const { page, limit, main_schet_id, from } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -196,10 +196,15 @@ exports.Controller = class {
     }
 
     const offset = (page - 1) * limit;
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: from,
+    });
 
     const saldo = await KassaSaldoService.getByMonth({
       ...req.query,
       region_id,
+      year,
+      month,
     });
 
     if (!saldo) {

@@ -1,4 +1,4 @@
-const { checkSchetsEquality } = require("@helper/functions");
+const { checkSchetsEquality, HelperFunctions } = require("@helper/functions");
 const { MainSchetService } = require("@main_schet/service");
 const { PodotchetService } = require("@podotchet/service");
 const { OperatsiiService } = require("@operatsii/service");
@@ -227,10 +227,15 @@ exports.Controller = class {
     if (!main_schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: from,
+    });
 
     const saldo = await BankSaldoService.getByMonth({
       ...req.query,
       region_id,
+      year,
+      month,
     });
     if (!saldo) {
       return res.error(req.i18n.t("saldoNotFound"), 404);

@@ -409,8 +409,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({
+      doc_date: from,
+    });
+
     const saldo = await BankSaldoService.getByMonth({
       ...req.query,
+      year,
+      month,
       region_id,
     });
     if (!saldo) {
