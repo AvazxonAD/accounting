@@ -44,7 +44,7 @@ exports.PrixodJur7Schema = class {
                   /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
                 ),
               kol: Joi.number().min(1).required(),
-              sena: Joi.number().min(1).required(),
+              sena: Joi.number().min(0).required(),
               nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
               debet_schet: Joi.string().trim(),
               debet_sub_schet: Joi.string().trim(),
@@ -108,7 +108,7 @@ exports.PrixodJur7Schema = class {
                   /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
                 ),
               kol: Joi.number().min(1).required(),
-              sena: Joi.number().min(1).required(),
+              sena: Joi.number().min(0).required(),
               nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
               debet_schet: Joi.string().trim(),
               debet_sub_schet: Joi.string().trim(),

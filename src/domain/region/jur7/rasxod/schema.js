@@ -19,7 +19,7 @@ exports.RasxodSchema = class {
             Joi.object({
               naimenovanie_tovarov_jur7_id: Joi.number().required(),
               kol: Joi.number().min(1).required(),
-              sena: Joi.number().min(1).required(),
+              sena: Joi.number().min(0).required(),
               debet_schet: Joi.string().trim(),
               debet_sub_schet: Joi.string().trim(),
               kredit_schet: Joi.string().trim(),
@@ -61,7 +61,7 @@ exports.RasxodSchema = class {
             Joi.object({
               naimenovanie_tovarov_jur7_id: Joi.number().required(),
               kol: Joi.number().min(1).required(),
-              sena: Joi.number().min(1).required(),
+              sena: Joi.number().min(0).required(),
               debet_schet: Joi.string().trim(),
               debet_sub_schet: Joi.string().trim(),
               kredit_schet: Joi.string().trim(),

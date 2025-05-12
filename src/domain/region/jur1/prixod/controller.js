@@ -226,6 +226,15 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const { data, total_count, summa, page_summa } =
       await KassaPrixodService.get({ ...req.query, region_id, offset });
 

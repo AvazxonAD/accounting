@@ -86,7 +86,8 @@ exports.BankRasxodDB = class {
       params.push(search);
       search_filter = ` AND (
                 d.doc_num = $${params.length} OR 
-                so.inn ILIKE '%' || $${params.length} || '%'
+                so.inn ILIKE '%' || $${params.length} || '%' OR 
+                d.opisanie ILIKE '%' || $${params.length} || '%' 
             )`;
     }
 

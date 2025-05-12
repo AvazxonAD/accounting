@@ -178,6 +178,7 @@ exports.SmetaGrafikDB = class {
                     'oy_11', s.oy_11::FLOAT,
                     'oy_12', s.oy_12::FLOAT
                   )
+                  ORDER BY smeta.smeta_number
                 )
                 FROM smeta_grafik s
                 JOIN smeta ON smeta.id = s.smeta_id

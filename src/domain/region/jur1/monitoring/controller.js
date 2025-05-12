@@ -26,6 +26,7 @@ exports.Controller = class {
       ...req.query,
       region_id,
     });
+
     if (!saldo) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
