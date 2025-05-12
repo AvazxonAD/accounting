@@ -1,4 +1,3 @@
-const { BudjetService } = require("@budjet/service");
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { SmetaGrafikService } = require("./service");
 const { HelperFunctions } = require("@helper/functions");
@@ -83,10 +82,10 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const id = req.params.id;
-    const { smeta_id, spravochnik_budjet_name_id, main_schet_id, year } =
-      req.body;
+    const { main_schet_id } = req.query;
+    const { smetas } = req.body;
 
-    const main_schet = await ValidatorFunctions.mainSchet({
+    await ValidatorFunctions.mainSchet({
       region_id,
       main_schet_id,
     });
@@ -100,29 +99,35 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    if (old_data.year !== year) {
-      const check = await SmetaGrafikService.getByYear({
-        region_id,
-        smeta_id,
-        spravochnik_budjet_name_id,
-        year,
-        main_schet_id,
-      });
-      if (check) {
-        return res.error(req.i18n.t("docExists"), 409);
+    const check = HelperFunctions.checkId(smetas, "smeta_id");
+    if (!check) {
+      return res.error(req.i18n.t("smetaId"), 400);
+    }
+
+    for (let smeta of smetas) {
+      await ValidatorFunctions.smeta({ smeta_id: smeta.smeta_id });
+
+      if (smeta.id) {
+        const check = old_data.smetas.find((item) => item.id === smeta.id);
+        if (!check) {
+          return res.error(req.i18n.t("smetaNotFound"), 404);
+        }
       }
     }
 
-    const smeta = await ValidatorFunctions.smeta({ smeta_id });
-
-    const budjet = await ValidatorFunctions.budjet({
-      budjet_id: spravochnik_budjet_name_id,
+    const end = await SmetaGrafikService.getEnd({
+      region_id,
+      year: old_data.year,
     });
 
-    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+    if (end.id !== id) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
 
     const result = await SmetaGrafikService.update({
       ...req.body,
+      ...req.query,
+      region_id,
       user_id,
       id,
       old_data,
@@ -135,6 +140,7 @@ exports.Controller = class {
     const id = req.params.id;
     const region_id = req.user.region_id;
     const { main_schet_id } = req.query;
+    const user_id = req.user.id;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
@@ -147,8 +153,40 @@ exports.Controller = class {
       return res.error(req.i18n.t("smetaNotFound"), 404);
     }
 
-    const result = await SmetaGrafikService.delete({ id });
+    const end = await SmetaGrafikService.getEnd({
+      region_id,
+      year: smeta_grafik.year,
+    });
+
+    if (end.id !== id) {
+      return res.error(req.i18n.t("validationError"), 400);
+    }
+
+    const result = await SmetaGrafikService.delete({
+      id,
+      ...req.query,
+      old_data: smeta_grafik,
+      region_id,
+      user_id,
+    });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, result);
+  }
+
+  static async getByOrderNumber(req, res) {
+    const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const data = await SmetaGrafikService.getByOrderNumber({
+      ...req.query,
+      region_id,
+    });
+    if (!data) {
+      return res.error(req.i18n.t("smetaNotFound"), 404);
+    }
+
+    return res.success(req.i18n.t("deleteSuccess"), 200, null, data);
   }
 };

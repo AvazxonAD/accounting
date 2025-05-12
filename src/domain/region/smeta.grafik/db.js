@@ -13,17 +13,37 @@ exports.SmetaGrafikDB = class {
     return result.rows[0];
   }
 
+  static async getEnd(params) {
+    const query = `--sql
+      SELECT
+        s.*
+      FROM smeta_grafik_parent s 
+      JOIN users u ON u.id = s.user_id
+      JOIN  regions r ON r.id = u.region_id  
+      WHERE s.isdeleted = false
+        AND r.id = $1
+        AND s.year = $2
+
+      ORDER BY s.order_number DESC
+      LIMIT 1
+    `;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async create(params, client) {
     const query = `--sql
-            INSERT INTO smeta_grafik (
-                smeta_id, user_id, 
-                itogo, oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, 
-                oy_7, oy_8, oy_9, oy_10, oy_11, oy_12, year, main_schet_id, parent_id, created_at, updated_at
-            ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
-                $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
-            );
-        `;
+      INSERT INTO smeta_grafik (
+          smeta_id, user_id, 
+          itogo, oy_1, oy_2, oy_3, oy_4, oy_5, oy_6, 
+          oy_7, oy_8, oy_9, oy_10, oy_11, oy_12, year, main_schet_id, parent_id, created_at, updated_at
+      ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
+          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+      );
+    `;
 
     await client.query(query, params);
   }
@@ -93,7 +113,7 @@ exports.SmetaGrafikDB = class {
     };
   }
 
-  static async getMain(params) {
+  static async getByOrderNumber(params) {
     const query = `--sql
       SELECT
         d.*,
@@ -198,20 +218,13 @@ exports.SmetaGrafikDB = class {
                 itogo = $1, oy_1 = $2, oy_2 = $3, oy_3 = $4,
                 oy_4 = $5, oy_5 = $6, oy_6 = $7, oy_7 = $8,
                 oy_8 = $9, oy_9 = $10, oy_10 = $11, oy_11 = $12, oy_12 = $13, 
-                smeta_id = $14, spravochnik_budjet_name_id = $15, year = $16, main_schet_id = $17, updated_at = $18
-            WHERE id = $19
+                smeta_id = $14, updated_at = $15
+            WHERE id = $16
               AND isdeleted = false
             RETURNING id
         `;
 
-    const result = await client.query(query, params);
-    return result.rows[0];
-  }
-
-  static async getEnd(data) {
-    const query = `
-      SELECT * FROM 
-    `;
+    await client.query(query, params);
   }
 
   static async delete(params, client) {
@@ -220,5 +233,11 @@ exports.SmetaGrafikDB = class {
 
     await client.query(query_child, params);
     await client.query(query_parent, params);
+  }
+
+  static async deleteChild(params, client) {
+    const query_child = `UPDATE smeta_grafik SET isdeleted = true WHERE id = $1`;
+
+    await client.query(query_child, params);
   }
 };
