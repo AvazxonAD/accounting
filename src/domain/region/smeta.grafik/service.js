@@ -2,6 +2,8 @@ const { SmetaGrafikDB } = require("./db");
 const { HelperFunctions } = require("@helper/functions");
 const { db } = require(`@db/index`);
 const ExcelJS = require(`exceljs`);
+const path = require("path");
+const fs = require("fs").promises;
 
 exports.SmetaGrafikService = class {
   static now = new Date();
@@ -232,13 +234,13 @@ exports.SmetaGrafikService = class {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("responsibles");
 
-    worksheet.mergeCells("A1", "P1");
+    worksheet.mergeCells("A1", "O1");
 
-    worksheet.getCell(`A1`).value = ``;
+    worksheet.getCell(`A1`).value =
+      `${data.year} года ${data.command} буйруқ Хисоб рақам: ${data.account_number}`;
 
-    worksheet.getRow("A1").values = [
+    worksheet.getRow(2).values = [
       `№`,
-      `Смета номи`,
       "Смета рақами",
       "Январ",
       "Феврал",
@@ -256,36 +258,93 @@ exports.SmetaGrafikService = class {
     ];
 
     worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
-      { header: "Nomi", key: "name", width: 40 },
-      { header: "Schet", key: "schet", width: 30 },
-      { header: "Iznos foiz", key: "iznos_foiz", width: 30 },
-      { header: "Debet", key: "provodka_debet", width: 30 },
-      { header: "Kredit", key: "provodka_kredit", width: 30 },
-      { header: "Subschet", key: "provodka_subschet", width: 30 },
-      { header: "Gruh raqami", key: "group_number", width: 30 },
-      { header: "Rim raqami", key: "roman_numeral", width: 30 },
-      { header: "Asosiy guruh", key: "pod_group", width: 30 },
+      { key: "order", width: 7 },
+      { key: "smeta_number", width: 20 },
+      { key: "oy_1", width: 18 },
+      { key: "oy_2", width: 18 },
+      { key: "oy_3", width: 18 },
+      { key: "oy_4", width: 18 },
+      { key: "oy_5", width: 18 },
+      { key: "oy_6", width: 18 },
+      { key: "oy_7", width: 18 },
+      { key: "oy_8", width: 18 },
+      { key: "oy_9", width: 18 },
+      { key: "oy_10", width: 18 },
+      { key: "oy_11", width: 18 },
+      { key: "oy_12", width: 18 },
+      { key: "itogo", width: 18 },
     ];
 
-    data.forEach((item) => {
+    let itogo = {
+      oy_1: 0,
+      oy_2: 0,
+      oy_3: 0,
+      oy_4: 0,
+      oy_5: 0,
+      oy_6: 0,
+      oy_7: 0,
+      oy_8: 0,
+      oy_9: 0,
+      oy_10: 0,
+      oy_11: 0,
+      oy_12: 0,
+      itogo: 0,
+    };
+
+    data.smetas.forEach((item, index) => {
       worksheet.addRow({
-        id: item.id,
-        name: item.name,
-        schet: item.schet,
-        iznos_foiz: item.iznos_foiz,
-        provodka_debet: item.provodka_debet,
-        provodka_kredit: item.provodka_kredit,
-        provodka_subschet: item.provodka_subschet,
-        group_number: item.group_number,
-        roman_numeral: item.roman_numeral,
-        pod_group: item.pod_group,
+        order: index + 1,
+        smeta_number: item.smeta_number,
+        oy_1: item.oy_1,
+        oy_2: item.oy_2,
+        oy_3: item.oy_3,
+        oy_4: item.oy_4,
+        oy_5: item.oy_5,
+        oy_6: item.oy_6,
+        oy_7: item.oy_7,
+        oy_8: item.oy_8,
+        oy_9: item.oy_9,
+        oy_10: item.oy_10,
+        oy_11: item.oy_11,
+        oy_12: item.oy_12,
+        itogo: item.itogo,
       });
+
+      itogo.oy_1 += item.oy_1;
+      itogo.oy_2 += item.oy_2;
+      itogo.oy_3 += item.oy_3;
+      itogo.oy_4 += item.oy_4;
+      itogo.oy_5 += item.oy_5;
+      itogo.oy_6 += item.oy_6;
+      itogo.oy_7 += item.oy_7;
+      itogo.oy_8 += item.oy_8;
+      itogo.oy_9 += item.oy_9;
+      itogo.oy_10 += item.oy_10;
+      itogo.oy_11 += item.oy_11;
+      itogo.oy_12 += item.oy_12;
+      itogo.itogo += item.itogo;
+    });
+
+    worksheet.addRow({
+      smeta_number: `Жами: `,
+      oy_1: itogo.oy_1,
+      oy_2: itogo.oy_2,
+      oy_3: itogo.oy_3,
+      oy_4: itogo.oy_4,
+      oy_5: itogo.oy_5,
+      oy_6: itogo.oy_6,
+      oy_7: itogo.oy_7,
+      oy_8: itogo.oy_8,
+      oy_9: itogo.oy_9,
+      oy_10: itogo.oy_10,
+      oy_11: itogo.oy_11,
+      oy_12: itogo.oy_12,
+      itogo: itogo.itogo,
     });
 
     worksheet.eachRow((row, rowNumber) => {
       let bold = false;
-      if (rowNumber === 1) {
+      if (rowNumber < 3 || worksheet.rowCount === rowNumber) {
         worksheet.getRow(rowNumber).height = 30;
         bold = true;
       }
@@ -313,7 +372,7 @@ exports.SmetaGrafikService = class {
       });
     });
 
-    const folder_path = path.join(__dirname, `../../../../../public/exports`);
+    const folder_path = path.join(__dirname, `../../../../public/exports`);
 
     try {
       await fs.access(folder_path, fs.constants.W_OK);
@@ -321,7 +380,7 @@ exports.SmetaGrafikService = class {
       await fs.mkdir(folder_path);
     }
 
-    const fileName = `groups.${new Date().getTime()}.xlsx`;
+    const fileName = `smeta.${new Date().getTime()}.xlsx`;
 
     const filePath = `${folder_path}/${fileName}`;
 

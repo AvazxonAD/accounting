@@ -60,7 +60,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id } = req.query;
+    const { main_schet_id, excel } = req.query;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
@@ -73,6 +73,22 @@ exports.Controller = class {
 
     if (!result) {
       return res.error(req.i18n.t("grafikNotFound"), 404);
+    }
+
+    if (excel === "true") {
+      const { fileName, filePath } =
+        await SmetaGrafikService.getByIdExcel(result);
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);
