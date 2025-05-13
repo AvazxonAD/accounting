@@ -1,6 +1,7 @@
 const { SmetaGrafikDB } = require("./db");
-const { sum, HelperFunctions } = require("@helper/functions");
+const { HelperFunctions } = require("@helper/functions");
 const { db } = require(`@db/index`);
+const ExcelJS = require(`exceljs`);
 
 exports.SmetaGrafikService = class {
   static now = new Date();
@@ -225,6 +226,108 @@ exports.SmetaGrafikService = class {
     }
 
     return result;
+  }
+
+  static async getByIdExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("responsibles");
+
+    worksheet.mergeCells("A1", "P1");
+
+    worksheet.getCell(`A1`).value = ``;
+
+    worksheet.getRow("A1").values = [
+      `№`,
+      `Смета номи`,
+      "Смета рақами",
+      "Январ",
+      "Феврал",
+      "Март",
+      "Апрел",
+      "Май",
+      "Июн",
+      "Июл",
+      "Август",
+      "Сентябр",
+      "Октябр",
+      "Ноябр",
+      "Декабр",
+      "Жами",
+    ];
+
+    worksheet.columns = [
+      { header: "ID", key: "id", width: 10 },
+      { header: "Nomi", key: "name", width: 40 },
+      { header: "Schet", key: "schet", width: 30 },
+      { header: "Iznos foiz", key: "iznos_foiz", width: 30 },
+      { header: "Debet", key: "provodka_debet", width: 30 },
+      { header: "Kredit", key: "provodka_kredit", width: 30 },
+      { header: "Subschet", key: "provodka_subschet", width: 30 },
+      { header: "Gruh raqami", key: "group_number", width: 30 },
+      { header: "Rim raqami", key: "roman_numeral", width: 30 },
+      { header: "Asosiy guruh", key: "pod_group", width: 30 },
+    ];
+
+    data.forEach((item) => {
+      worksheet.addRow({
+        id: item.id,
+        name: item.name,
+        schet: item.schet,
+        iznos_foiz: item.iznos_foiz,
+        provodka_debet: item.provodka_debet,
+        provodka_kredit: item.provodka_kredit,
+        provodka_subschet: item.provodka_subschet,
+        group_number: item.group_number,
+        roman_numeral: item.roman_numeral,
+        pod_group: item.pod_group,
+      });
+    });
+
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      if (rowNumber === 1) {
+        worksheet.getRow(rowNumber).height = 30;
+        bold = true;
+      }
+
+      row.eachCell((cell) => {
+        Object.assign(cell, {
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal: "center",
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+      });
+    });
+
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const fileName = `groups.${new Date().getTime()}.xlsx`;
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
   }
 
   static async update(data) {

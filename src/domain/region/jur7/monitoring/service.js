@@ -326,7 +326,7 @@ exports.Jur7MonitoringService = class {
   }
 
   static async materialExcel(data) {
-    const podpis = data.podpis[0];
+    const podpis = data.podpis[0] || {};
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("material");
 
@@ -559,7 +559,7 @@ exports.Jur7MonitoringService = class {
   }
 
   static async materialExcelWithIznos(data) {
-    const podpis = data.podpis[0];
+    const podpis = data.podpis[0] || {};
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("material");
 
