@@ -168,13 +168,17 @@ exports.InternalDB = class {
                             AND ch.isdeleted = false
                     ) AS ch
                 ) AS childs,
-                row_to_json(rj) AS kimdan,
-                row_to_json(rj2) AS kimga
+                rj.fio AS kimdan,
+                rjp.name AS kimdan_podraz_name,
+                rjp2.name AS kimga_podraz_name,
+                rj2.fio AS kimga
             FROM document_vnutr_peremesh_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             LEFT JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
-            JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
+            JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id
+            JOIN spravochnik_podrazdelenie_jur7 rjp ON rjp.id = rj.spravochnik_podrazdelenie_jur7_id 
+            JOIN spravochnik_podrazdelenie_jur7 rjp2 ON rjp.id = rj2.spravochnik_podrazdelenie_jur7_id 
             WHERE r.id = $1
               AND d.id = $2
               AND d.main_schet_id = $3

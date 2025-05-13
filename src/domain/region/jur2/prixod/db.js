@@ -169,6 +169,8 @@ exports.BankPrixodDB = class {
                 row_to_json(g) AS gazna_number,
                 row_to_json(c) AS contract,
                 row_to_json(cg) AS contract_grafik,
+                s.smeta_name,
+                s.smeta_number,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -209,6 +211,7 @@ exports.BankPrixodDB = class {
             LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organization_by_raschet_schet_id
             LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
             LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
+            LEFT JOIN smeta s ON s.id = cg.smeta_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.id = $3

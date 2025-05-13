@@ -208,6 +208,8 @@ exports.PrixodDB = class {
                 row_to_json(g) AS gazna_number,
                 row_to_json(c) AS contract,
                 row_to_json(cg) AS contract_grafik,
+                s.smeta_name,
+                s.smeta_number,
                 (
                     SELECT JSON_AGG(row_to_json(child))
                     FROM (
@@ -261,7 +263,8 @@ exports.PrixodDB = class {
                 d.organization_by_raschet_schet_id::INTEGER,
                 d.organization_by_raschet_schet_gazna_id::INTEGER,
                 d.shartnoma_grafik_id::INTEGER,
-                row_to_json(rj) AS responsible 
+                rj.fio AS responsible,
+                rjp.name AS podraz_name
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -270,7 +273,9 @@ exports.PrixodDB = class {
             LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organization_by_raschet_schet_id
             LEFT JOIN shartnomalar_organization c ON c.id = d.id_shartnomalar_organization
             LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
+            LEFT JOIN smeta s ON s.id = cg.smeta_id
             JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimga_id
+            JOIN spravochnik_podrazdelenie_jur7 rjp ON rjp.id = rj.spravochnik_podrazdelenie_jur7_id 
             WHERE r.id = $1
               AND d.id = $2
               AND d.main_schet_id = $3

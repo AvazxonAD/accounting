@@ -14,6 +14,8 @@ exports.ShowServiceDB = class {
                 row_to_json(g) AS gazna_number,
                 row_to_json(c) AS contract,
                 row_to_json(cg) AS contract_grafik,
+                s.smeta_name,
+                s.smeta_number,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -57,6 +59,7 @@ exports.ShowServiceDB = class {
             LEFT JOIN shartnoma_grafik cg ON cg.id = d.shartnoma_grafik_id
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
+            LEFT JOIN smeta s ON s.id = cg.smeta_id
             WHERE r.id = $1 AND d.id = $2 AND d.main_schet_id = $3 ${!isdeleted ? ignore : ""}
         `;
 

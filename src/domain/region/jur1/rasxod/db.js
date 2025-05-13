@@ -162,6 +162,8 @@ exports.KassaRasxodDB = class {
                 row_to_json(cg) AS contract_grafik,
                 d.main_zarplata_id,
                 mp.fio AS zarplata_fio,
+                s.smeta_name,
+                s.smeta_number,
                 (
                     SELECT JSON_AGG(row_to_json(ch))
                     FROM (
@@ -195,6 +197,7 @@ exports.KassaRasxodDB = class {
             LEFT JOIN organization_by_raschet_schet ac ON ac.id = d.organ_gazna_id
             LEFT JOIN shartnoma_grafik cg ON cg.id = d.contract_grafik_id
             LEFT JOIN main_zarplata AS mp ON mp.id = d.main_zarplata_id
+            LEFT JOIN smeta s ON s.id = cg.smeta_id
             WHERE r.id = $1
                 AND d.main_schet_id = $2 
                 AND d.id = $3

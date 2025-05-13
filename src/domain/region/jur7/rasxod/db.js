@@ -151,22 +151,24 @@ exports.RasxodDB = class {
                 d.j_o_num,
                 (
                 SELECT JSON_AGG(row_to_json(ch))
-                FROM (
-                    SELECT  
-                        ch.*,
-                        row_to_json(n) AS product,
-                        row_to_json(g) AS group,
-                        TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
-                    FROM document_rasxod_jur7_child AS ch
-                    JOIN naimenovanie_tovarov_jur7 n ON ch.naimenovanie_tovarov_jur7_id = n.id
-                    JOIN group_jur7 g ON g.id = n.group_jur7_id
-                    WHERE ch.document_rasxod_jur7_id = d.id
-                        AND ch.isdeleted = false
-                ) AS ch
+                  FROM (
+                      SELECT  
+                          ch.*,
+                          row_to_json(n) AS product,
+                          row_to_json(g) AS group,
+                          TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
+                      FROM document_rasxod_jur7_child AS ch
+                      JOIN naimenovanie_tovarov_jur7 n ON ch.naimenovanie_tovarov_jur7_id = n.id
+                      JOIN group_jur7 g ON g.id = n.group_jur7_id
+                      WHERE ch.document_rasxod_jur7_id = d.id
+                          AND ch.isdeleted = false
+                  ) AS ch
                 ) AS childs,
-                row_to_json(rj) AS responsible 
+                rj.fio AS responsible,
+                rjp.name AS podraz_name
             FROM document_rasxod_jur7 AS d
             JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id
+            JOIN spravochnik_podrazdelenie_jur7 rjp ON rjp.id = rj.spravochnik_podrazdelenie_jur7_id 
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
             WHERE r.id = $1
