@@ -437,8 +437,8 @@ exports.SmetaGrafikService = class {
               smeta.oy_12,
               data.old_data.year,
               data.old_data.main_schet_id,
-              data.old_data.order_number,
               data.id,
+              data.old_data.order_number,
               this.now,
               this.now,
             ],
@@ -448,6 +448,7 @@ exports.SmetaGrafikService = class {
       }
 
       for (let smeta of data.old_data.smetas) {
+        console.log(smeta.id);
         const check = data.smetas.find((item) => smeta.id === item.id);
         if (!check) {
           await SmetaGrafikDB.deleteChild([smeta.id], client);
