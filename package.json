@@ -49,6 +49,7 @@
   },
   "_moduleAliases": {
     "@budjet": "./src/domain/admin/spravochnik/budjet",
+    "@constants": "./src/domain/region/constants",
     "@main_book_schet": "./src/domain/admin/spravochnik/main.book.schet",
     "@group": "./src/domain/admin/spravochnik/group",
     "@admin_main_book": "./src/domain/admin/main.book",

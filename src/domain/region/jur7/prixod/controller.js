@@ -12,6 +12,8 @@ const { PrixodJur7Schema } = require("./schema");
 const { SaldoService } = require(`@jur7_saldo/service`);
 const { MainSchetService } = require(`@main_schet/service`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
+const { RegionService } = require("@region/service");
+const { PodpisService } = require("../../spravochnik/podpis/service");
 
 exports.Controller = class {
   static async rasxodDocs(req, res) {
@@ -238,7 +240,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { budjet_id, main_schet_id } = req.query;
+    const { budjet_id, main_schet_id, akt } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -255,6 +257,29 @@ exports.Controller = class {
     });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (akt === "true") {
+      const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const { fileName, filePath } = await PrixodJur7Service.aktExcel({
+        ...data,
+        region,
+        podpis,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, null, data);

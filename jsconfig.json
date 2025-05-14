@@ -3,6 +3,7 @@
     "baseUrl": "./src",
     "paths": {
       "@budjet/*": ["domain/admin/spravochnik/budjet/*"],
+      "@constants/*": ["domain/region/constants/*"],
       "@video_module/*": ["domain/admin/spravochnik/video.module/*"],
       "@role/*": ["domain/admin/spravochnik/role/*"],
       "@smeta/*": ["domain/admin/smeta/*"],

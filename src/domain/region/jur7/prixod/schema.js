@@ -179,6 +179,7 @@ exports.PrixodJur7Schema = class {
       }),
       query: Joi.object({
         budjet_id: Joi.number().integer().min(1).required(),
+        akt: Joi.string().trim().valid("true", "false"),
         main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });

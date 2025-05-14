@@ -193,6 +193,7 @@ routes
   .use("/features", protect, require("@features/index"))
 
   .use("/dashboard", protect, require("@region_dashboard/index"))
+  .use("/constants", protect, require("@constants/index"))
 
   // Admin routes
 
