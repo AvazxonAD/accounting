@@ -54,6 +54,21 @@ exports.Schema = class {
     }).options({ stripUnknown: true });
   }
 
+  static act() {
+    return Joi.object({
+      query: Joi.object({
+        month: Joi.number().integer().min(1).required().max(12),
+        year: Joi.number().integer().min(1901).required(),
+        excel: Joi.string().trim().valid("true", "false"),
+        title: Joi.string().trim().required(),
+        comment: Joi.string().trim().required(),
+        iznos: Joi.string().trim().valid("true", "false"),
+        main_schet_id: Joi.number().integer().min(1).required(),
+        responsible_id: Joi.number().integer().min(1).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static capSchema() {
     return Joi.object({
       query: Joi.object({

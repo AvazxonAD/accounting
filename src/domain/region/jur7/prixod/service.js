@@ -14,6 +14,35 @@ const { Saldo159Service } = require(`@saldo_159/service`);
 const { SaldoService } = require("../saldo/service");
 
 exports.PrixodJur7Service = class {
+  static groupByNameSchetSubSchet(childs) {
+    const grouped = {};
+
+    for (const item of childs) {
+      const key = `${item.product_name}-${item.schet}-${item.sub_schet}`;
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          product_name: item.product_name,
+          schet: item.schet,
+          sub_schet: item.sub_schet,
+          edin: item.edin,
+          kol: 0,
+          sena: item.sena,
+          summa: 0,
+          eski_iznos_summa: 0,
+          items: [],
+        };
+      }
+
+      grouped[key].kol += item.kol;
+      grouped[key].summa += item.summa;
+      grouped[key].eski_iznos_summa += +item.eski_iznos_summa;
+      grouped[key].items.push(item);
+    }
+
+    return Object.values(grouped);
+  }
+
   static async prixodReport(data) {
     const result = await PrixodDB.prixodReport([
       data.region_id,
@@ -31,6 +60,10 @@ exports.PrixodJur7Service = class {
         return item;
       })
     );
+
+    for (let item of result) {
+      item.groupped = this.groupByNameSchetSubSchet(item.childs);
+    }
 
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("jur_7_prixod");
@@ -82,7 +115,7 @@ exports.PrixodJur7Service = class {
         sub_schet: "",
       });
 
-      for (let i of item.childs) {
+      for (let i of item.groupped) {
         worksheet.addRow({
           doc_num: item.doc_num,
           doc_date: returnSleshDate(new Date(item.doc_date)),
@@ -600,6 +633,7 @@ exports.PrixodJur7Service = class {
   }
 
   static async getById(data) {
+    console.log(data.region_id, data.id, data.main_schet_id);
     const result = await PrixodDB.getById(
       [data.region_id, data.id, data.main_schet_id],
       data.isdeleted

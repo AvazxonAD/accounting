@@ -13,6 +13,7 @@ router
   .get(
     "/material/report",
     validator(Controller.materialReport, Schema.getMaterialSchema())
-  );
+  )
+  .get("/act/report", validator(Controller.act, Schema.act()));
 
 module.exports = router;

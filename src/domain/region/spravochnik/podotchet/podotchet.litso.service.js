@@ -31,9 +31,16 @@ const getByAllPodotChetService = async (name, rayon, region_id) => {
 const createPodotChetService = async (data) => {
   try {
     const result = await pool.query(
-      `INSERT INTO spravochnik_podotchet_litso(name, rayon, user_id, created_at, updated_at) VALUES($1, $2, $3, $4, $5) RETURNING *
+      `INSERT INTO spravochnik_podotchet_litso(name, rayon, position, user_id, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6) RETURNING *
     `,
-      [data.name, data.rayon, data.user_id, tashkentTime(), tashkentTime()]
+      [
+        data.name,
+        data.rayon,
+        data.position,
+        data.user_id,
+        tashkentTime(),
+        tashkentTime(),
+      ]
     );
     return result.rows[0];
   } catch (error) {
@@ -51,9 +58,8 @@ const getAllPodotChetService = async (region_id, offset, limit, search) => {
     }
     const result = await pool.query(
       ` WITH data AS (
-        SELECT s_p_l.id, 
-              s_p_l.name, 
-              s_p_l.rayon
+        SELECT
+          s_p_l.*
         FROM spravochnik_podotchet_litso AS  s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id
@@ -85,9 +91,7 @@ const getByIdPodotchetService = async (
   try {
     let query = `--sql
       SELECT 
-          s_p_l.id, 
-          s_p_l.name, 
-          s_p_l.rayon 
+          s_p_l.*
       FROM spravochnik_podotchet_litso AS s_p_l
       JOIN users ON s_p_l.user_id = users.id
       JOIN regions ON users.region_id = regions.id
@@ -112,11 +116,11 @@ const getByIdPodotchetService = async (
 const updatePodotchetService = async (data) => {
   try {
     const result = await pool.query(
-      ` UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2, updated_at = $4
-        WHERE id = $3
+      ` UPDATE  spravochnik_podotchet_litso SET name = $1, rayon = $2, position = $3, updated_at = $4
+        WHERE id = $5
         RETURNING *
       `,
-      [data.name, data.rayon, data.id, tashkentTime()]
+      [data.name, data.rayon, data.position, tashkentTime(), data.id]
     );
     return result.rows[0];
   } catch (error) {

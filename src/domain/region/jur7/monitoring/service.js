@@ -558,6 +558,299 @@ exports.Jur7MonitoringService = class {
     return { fileName, filePath };
   }
 
+  static async act(data) {
+    const Workbook = new ExcelJS.Workbook();
+    const worksheet = Workbook.addWorksheet("act");
+
+    worksheet.mergeCells(`A1`, `L1`);
+    worksheet.getCell(`A1`).value = "Товар-моддий бойликларни санокдан ўтказиш";
+
+    worksheet.mergeCells(`A2`, `L2`);
+    worksheet.getCell(`A2`).value = "Далолатномаси";
+
+    worksheet.mergeCells(`I3`, `L3`);
+    worksheet.getCell(`I3`).value =
+      `${HelperFunctions.returnStringDate(new Date(data.to))}`;
+
+    worksheet.mergeCells(`A4`, `L4`);
+    worksheet.getCell(`A4`).value = data.title;
+
+    worksheet.mergeCells(`A5`, `L5`);
+    worksheet.getCell(`A5`).value =
+      `Моддий жавобгар шахс ${data.responsibles[0].fio} нинг`;
+
+    worksheet.mergeCells(`A6`, `L6`);
+    worksheet.getCell(`A6`).value = "Тилхати";
+
+    worksheet.mergeCells(`A7`, `L7`);
+    worksheet.getCell(`A7`).value = data.comment;
+
+    worksheet.mergeCells(`A8`, `L8`);
+    worksheet.getCell(`A8`).value = data.responsibles[0].fio;
+    worksheet.getCell(`L9`).value = `(Имзо)`;
+
+    worksheet.mergeCells(`A11`, `A12`);
+    worksheet.getCell(`A11`).value = "№";
+
+    worksheet.mergeCells(`B11`, `B12`);
+    worksheet.getCell(`B11`).value = "Номер счет";
+
+    worksheet.mergeCells(`C11`, `C12`);
+    worksheet.getCell(`C11`).value =
+      "Товар-моддий бойликларни номи, тури ва маркаси";
+
+    worksheet.mergeCells(`D11`, `D12`);
+    worksheet.getCell(`D11`).value = `Един из`;
+
+    worksheet.mergeCells(`E11`, `F11`);
+    worksheet.getCell(`E11`).value = `Ҳисоб бўйнида`;
+    worksheet.getCell(`E12`).value = `Сони`;
+    worksheet.getCell(`F12`).value = `Суммаси`;
+
+    worksheet.mergeCells(`G11`, `H11`);
+    worksheet.getCell(`G11`).value = `Ҳақиқатда`;
+    worksheet.getCell(`G12`).value = `Сони`;
+    worksheet.getCell(`H12`).value = `Суммаси`;
+
+    worksheet.mergeCells(`I11`, `J11`);
+    worksheet.getCell(`I11`).value = `Камомад`;
+    worksheet.getCell(`I12`).value = `Сони`;
+    worksheet.getCell(`J12`).value = `Суммаси`;
+
+    worksheet.mergeCells(`K11`, `L11`);
+    worksheet.getCell(`K11`).value = `Ортиқча`;
+    worksheet.getCell(`K12`).value = `Сони`;
+    worksheet.getCell(`L12`).value = `Суммаси`;
+
+    worksheet.columns = [
+      { key: "order", width: 10 },
+      { key: "schet", width: 14 },
+      { key: "name", width: 40 },
+      { key: "edin", width: 10 },
+      { key: "to_kol", width: 20 },
+      { key: "to_summa", width: 25 },
+      { key: "empty1", width: 20 },
+      { key: "empty2", width: 25 },
+      { key: "empty3", width: 20 },
+      { key: "empty4", width: 25 },
+      { key: "empty5", width: 20 },
+      { key: "empty6", width: 25 },
+    ];
+
+    let index = 1;
+    let column = 13;
+    const itogo = { kol: 0, summa: 0 };
+
+    for (let schet of data.responsibles[0].products) {
+      const schetCell = worksheet.getCell(`A${column}`);
+      schetCell.value = `Счет: ${schet.schet}`;
+      schetCell.note = JSON.stringify({
+        bold: true,
+        horizontal: "left",
+      });
+      column++;
+
+      for (let product of schet.products) {
+        worksheet.addRow({
+          order: index,
+          schet: schet.schet,
+          name: product.name,
+          edin: product.edin,
+          to_kol: product.to.kol,
+          to_summa: product.to.summa,
+          empty1: "",
+          empty2: "",
+          empty3: "",
+          empty4: "",
+          empty5: "",
+          empty6: "",
+        });
+
+        column++;
+        index++;
+      }
+
+      const itogoCell = worksheet.getCell(`C${column}`);
+      itogoCell.value = `Итого по счет ${schet.schet} :      `;
+      itogoCell.note = JSON.stringify({
+        bold: true,
+        horizontal: "left",
+        border: "false",
+      });
+
+      const itogoKolCell = worksheet.getCell(`E${column}`);
+      itogoKolCell.value = schet.itogo.to_kol;
+      itogoKolCell.note = JSON.stringify({
+        bold: true,
+        horizontal: "left",
+        border: "false",
+      });
+
+      const itogoSummaCell = worksheet.getCell(`F${column}`);
+      itogoSummaCell.value = schet.itogo.to_summa;
+      itogoSummaCell.note = JSON.stringify({
+        bold: true,
+        horizontal: "left",
+        border: "false",
+      });
+
+      itogo.kol += schet.itogo.to_kol;
+      itogo.summa += schet.itogo.to_summa;
+      column++;
+    }
+
+    const itogoCell = worksheet.getCell(`C${column + 1}`);
+    itogoCell.value = `Итого`;
+    itogoCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+      border: "false",
+    });
+
+    const itogoKolCell = worksheet.getCell(`E${column + 1}`);
+    itogoKolCell.value = itogo.kol;
+    itogoKolCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+      border: "false",
+    });
+
+    const itogoSummaCell = worksheet.getCell(`F${column + 1}`);
+    itogoSummaCell.value = itogo.summa;
+    itogoSummaCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+      border: "false",
+    });
+
+    // css
+    worksheet.getRow(1).height = 30;
+    worksheet.getRow(2).height = 30;
+    worksheet.getRow(3).height = 30;
+    worksheet.getRow(4).height = 80;
+    worksheet.getRow(5).height = 40;
+    worksheet.getRow(6).height = 40;
+    worksheet.getRow(7).height = 60;
+    worksheet.getRow(8).height = 40;
+    worksheet.getRow(11).height = 30;
+    worksheet.getRow(12).height = 30;
+
+    worksheet.eachRow((row, row_number) => {
+      let size = 12;
+      let bold = false;
+      let horizontal = "center";
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      if (row_number < 13) {
+        size = 14;
+      }
+
+      if (row_number === 6) {
+        size = 25;
+      }
+
+      if (row_number === 8) {
+        horizontal = "left";
+      }
+
+      if (row_number < 13) {
+        bold = true;
+      }
+
+      if (row_number === 8) {
+        border = {
+          bottom: { style: "thin" },
+        };
+      }
+
+      if (row_number === 9) {
+        border = {};
+      }
+
+      row.eachCell((cell, column) => {
+        const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if (column > 1) {
+          cell.numFmt = "#,##0.00";
+        }
+
+        if (column === 6 && row_number > 12) {
+          horizontal = "right";
+        } else {
+          horizontal = "center";
+        }
+
+        if (row_number < 13) {
+          bold = true;
+        } else if (cellData.bold && row_number > 12) {
+          bold = true;
+        } else {
+          bold = false;
+        }
+
+        if (cellData.border === "false" && row_number > 12) {
+          border = {};
+        } else {
+          border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        }
+
+        Object.assign(cell, {
+          font: {
+            size,
+            bold,
+            color: { argb: "FF000000" },
+            name: "Times New Roman",
+          },
+          alignment: { vertical: "middle", horizontal, wrapText: true },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border,
+        });
+
+        if (row_number > 10) {
+          if (typeof cell.value === "string") {
+            const lineCount = Math.ceil(cell.value.length / 30);
+            const newHeight = lineCount * 15;
+            if (newHeight > row.height) {
+              row.height = newHeight;
+            }
+          }
+        }
+
+        if (Object.keys(cellData).length !== 0) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const folder_path = path.join(__dirname, "../../../../../public/exports");
+    const fileName = `act_${new Date().getTime()}.xlsx`;
+
+    try {
+      await access(folder_path, constants.W_OK);
+    } catch (error) {
+      await mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+    await Workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
   static async materialExcelWithIznos(data) {
     const podpis = data.podpis[0] || {};
     const Workbook = new ExcelJS.Workbook();

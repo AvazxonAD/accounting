@@ -4,6 +4,7 @@ const fs = require("fs").promises;
 const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const { REPORT_RASXOD_SCHET } = require("./constants");
+const ErrorResponse = require(`@helper/error.response`);
 
 exports.HelperFunctions = class {
   static getFromTo(data) {
@@ -1142,9 +1143,10 @@ exports.HelperFunctions = class {
 
 exports.errorCatch = (error, res) => {
   console.log(error.stack.red);
-  return res.status(error?.statusCode || 500).send({
-    error: error.message || "internal server error",
-  });
+  const status_code = error?.statusCode || 500;
+  const messagge = error.message || "internal server error";
+
+  return res.error(messagge, status_code);
 };
 
 exports.tashkentTime = () => {
