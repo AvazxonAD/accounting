@@ -68,6 +68,9 @@ exports.Controller = class {
       item.summa_s_nds = item.summa + item.nds_summa;
 
       item.group = await GroupService.getById({ id: item.group_jur7_id });
+      if (!item.group) {
+        return res.error(req.i18n.t("groupNotFound"), 404);
+      }
 
       item.iznos = item.group.iznos_foiz > 0 ? true : false;
       item.iznos_schet = item.group.schet;
