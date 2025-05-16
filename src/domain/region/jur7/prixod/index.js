@@ -27,7 +27,6 @@ router
   .post(
     "/read",
     uploadExcel.single("file"),
-    Middleware.jur7Block,
     validator(Controller.readFile, PrixodJur7Schema.readFile())
   )
   .get(
