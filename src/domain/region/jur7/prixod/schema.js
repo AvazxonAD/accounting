@@ -241,7 +241,7 @@ exports.PrixodJur7Schema = class {
         .required()
         .messages({ "*": lang.t("validation.kol") }),
       summa: Joi.number()
-        .min(1)
+        .min(0)
         .required()
         .messages({ "*": lang.t("validation.summa") }),
       inventar_num: Joi.any().messages({
