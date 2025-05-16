@@ -858,9 +858,7 @@ exports.SaldoService = class {
         );
 
         const filtered = updatedProducts.filter(
-          (item) =>
-            item.data.iznos_summa !== 0 ||
-            (item.data.kol !== 0 && item.data.summa !== 0)
+          (item) => item.data.iznos_summa !== 0 || item.data.kol !== 0
         );
 
         return filtered.length
