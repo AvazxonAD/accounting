@@ -532,6 +532,10 @@ exports.Jur7MonitoringService = class {
           border,
         });
 
+        if (cell.note) {
+          cell.note = undefined;
+        }
+
         // Matn uzunligiga qarab katak balandligini oshirish
         if (typeof cell.value === "string") {
           const lineCount = Math.ceil(cell.value.length / 30); // Har 30 belgidan keyin yangi qator

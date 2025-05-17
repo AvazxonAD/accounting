@@ -110,7 +110,7 @@ exports.Controller = class {
   }
 
   static async materialReport(req, res) {
-    const { month, main_schet_id, year, excel, iznos, responsible_id } =
+    const { month, main_schet_id, year, excel, iznos, responsible_id, to } =
       req.query;
     const region_id = req.user.region_id;
 
@@ -165,7 +165,7 @@ exports.Controller = class {
     const result = Object.values(resultMap);
 
     const from = HelperFunctions.returnDate({ year, month });
-    const to = HelperFunctions.returnDate({ year, month, end: true });
+
     const history = await Jur7MonitoringService.history({
       year,
       region_id,
