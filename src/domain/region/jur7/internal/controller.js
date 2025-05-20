@@ -241,6 +241,7 @@ exports.Controller = class {
       region_id,
       id,
     });
+    
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
