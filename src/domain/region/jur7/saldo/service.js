@@ -288,18 +288,36 @@ exports.SaldoService = class {
       result.data = result.data.filter((item) => item.to.kol !== 0);
     }
 
-    result.summa = 0;
-    result.iznos_summa = 0;
-    result.kol = 0;
+    result.from_summa = 0;
+    result.from_kol = 0;
+    result.internal_rasxod_summa = 0;
+    result.internal_rasxod_kol = 0;
+    result.internal_prixod_summa = 0;
+    result.internal_prixod_kol = 0;
+    result.to_summa = 0;
+    result.to_iznos_summa = 0;
+    result.to_kol = 0;
 
-    result.page_summa = 0;
-    result.page_iznos_summa = 0;
-    result.page_kol = 0;
+    result.page_from_summa = 0;
+    result.page_from_kol = 0;
+    result.page_internal_rasxod_summa = 0;
+    result.page_internal_rasxod_kol = 0;
+    result.page_internal_prixod_summa = 0;
+    result.page_internal_prixod_kol = 0;
+    result.page_to_summa = 0;
+    result.page_to_iznos_summa = 0;
+    result.page_to_kol = 0;
 
     result.data.forEach((item) => {
-      result.summa += item.to.summa;
-      result.iznos_summa += item.to.iznos_summa;
-      result.kol += item.to.kol;
+      result.from_summa = item.from.summa;
+      result.from_kol = item.from.kol;
+      result.internal_rasxod_summa = item.internal.rasxod_summa;
+      result.internal_rasxod_kol = item.internal.rasxod_kol;
+      result.internal_prixod_summa = item.internal.prixod_summa;
+      result.internal_prixod_kol = item.internal.prixod_kol;
+      result.to_summa = item.to.summa;
+      result.to_iznos_summa = item.to.iznos_summa;
+      result.to_kol = item.to.kol;
     });
 
     result.data = HelperFunctions.paginate({
@@ -309,9 +327,15 @@ exports.SaldoService = class {
     });
 
     result.data.forEach((item) => {
-      result.page_summa += item.to.summa;
-      result.page_iznos_summa += item.to.iznos_summa;
-      result.page_kol += item.to.kol;
+      result.page_from_summa = item.from.summa;
+      result.page_from_kol = item.from.kol;
+      result.page_internal_rasxod_summa = item.internal.rasxod_summa;
+      result.page_internal_rasxod_kol = item.internal.rasxod_kol;
+      result.page_internal_prixod_summa = item.internal.prixod_summa;
+      result.page_internal_prixod_kol = item.internal.prixod_kol;
+      result.page_to_summa = item.to.summa;
+      result.page_to_iznos_summa = item.to.iznos_summa;
+      result.page_to_kol = item.to.kol;
     });
 
     return result;
