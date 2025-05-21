@@ -334,6 +334,8 @@ exports.SaldoService = class {
       result.data = this.groupedSaldo(result.data);
     }
 
+    const total = result.data.length;
+
     result.from_summa = 0;
     result.from_kol = 0;
     result.internal_rasxod_summa = 0;
@@ -355,38 +357,34 @@ exports.SaldoService = class {
     result.page_to_kol = 0;
 
     result.data.forEach((item) => {
-      result.from_summa = item.from.summa;
-      result.from_kol = item.from.kol;
-      result.internal_rasxod_summa = item.internal.rasxod_summa;
-      result.internal_rasxod_kol = item.internal.rasxod_kol;
-      result.internal_prixod_summa = item.internal.prixod_summa;
-      result.internal_prixod_kol = item.internal.prixod_kol;
-      result.to_summa = item.to.summa;
-      result.to_iznos_summa = item.to.iznos_summa;
-      result.to_kol = item.to.kol;
+      result.from_summa += item.from.summa;
+      result.from_kol += item.from.kol;
+      result.internal_rasxod_summa += item.internal.rasxod_summa;
+      result.internal_rasxod_kol += item.internal.rasxod_kol;
+      result.internal_prixod_summa += item.internal.prixod_summa;
+      result.internal_prixod_kol += item.internal.prixod_kol;
+      result.to_summa += item.to.summa;
+      result.to_iznos_summa += item.to.iznos_summa;
+      result.to_kol += item.to.kol;
     });
 
-    const total = result.data.length;
-    if (data.rasxod === "ture") {
-      result.data = HelperFunctions.paginate({
-        array: result.data,
-        page: data.page,
-        limit: data.limit,
-      });
-    }
+    result.data = HelperFunctions.paginate({
+      array: result.data,
+      page: data.page,
+      limit: data.limit,
+    });
 
-    if (data.rasxod)
-      result.data.forEach((item) => {
-        result.page_from_summa = item.from.summa;
-        result.page_from_kol = item.from.kol;
-        result.page_internal_rasxod_summa = item.internal.rasxod_summa;
-        result.page_internal_rasxod_kol = item.internal.rasxod_kol;
-        result.page_internal_prixod_summa = item.internal.prixod_summa;
-        result.page_internal_prixod_kol = item.internal.prixod_kol;
-        result.page_to_summa = item.to.summa;
-        result.page_to_iznos_summa = item.to.iznos_summa;
-        result.page_to_kol = item.to.kol;
-      });
+    result.data.forEach((item) => {
+      result.page_from_summa += item.from.summa;
+      result.page_from_kol += item.from.kol;
+      result.page_internal_rasxod_summa += item.internal.rasxod_summa;
+      result.page_internal_rasxod_kol += item.internal.rasxod_kol;
+      result.page_internal_prixod_summa += item.internal.prixod_summa;
+      result.page_internal_prixod_kol += item.internal.prixod_kol;
+      result.page_to_summa += item.to.summa;
+      result.page_to_iznos_summa += item.to.iznos_summa;
+      result.page_to_kol += item.to.kol;
+    });
 
     return { ...result, total };
   }

@@ -227,6 +227,7 @@ exports.PrixodJur7Schema = class {
         .messages({ "*": lang.t("validation.ndsFoiz") }),
       group_jur7_id: Joi.number()
         .required()
+        .integer()
         .messages({ "*": lang.t("validation.groupId") }),
       name: Joi.string()
         .trim()

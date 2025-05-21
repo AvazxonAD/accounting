@@ -5,7 +5,6 @@ const { SaldoSchema } = require("./schema");
 const { HelperFunctions } = require("@helper/functions");
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { CODE, SALDO_PASSWORD } = require("@helper/constants");
-const { RegionService } = require("@region/service");
 const { MainSchetService } = require("@main_schet/service");
 const ErrorResponse = require("@helper/error.response");
 
