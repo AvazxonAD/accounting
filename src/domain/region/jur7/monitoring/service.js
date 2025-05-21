@@ -1146,6 +1146,51 @@ exports.Jur7MonitoringService = class {
     return result;
   }
 
+  static groupedMaterial(arr) {
+    const map = new Map();
+
+    arr.forEach((item) => {
+      const key = `${item.prixod_id}_${item.name}`;
+
+      if (map.has(key)) {
+        const existing = map.get(key);
+
+        // from
+        existing.from.kol += item.from.kol;
+        existing.from.summa += item.from.summa;
+        existing.from.iznos_summa += item.from.iznos_summa;
+        existing.from.sena += item.from.sena;
+
+        // internal
+        existing.internal.kol += item.internal.kol;
+        existing.internal.summa += item.internal.summa;
+        existing.internal.iznos_summa += item.internal.iznos_summa;
+        existing.internal.sena += item.internal.sena;
+        existing.internal.prixod_kol += item.internal.prixod_kol;
+        existing.internal.rasxod_kol += item.internal.rasxod_kol;
+        existing.internal.prixod_summa += item.internal.prixod_summa;
+        existing.internal.rasxod_summa += item.internal.rasxod_summa;
+        existing.internal.prixod_iznos_summa +=
+          item.internal.prixod_iznos_summa;
+        existing.internal.rasxod_iznos_summa +=
+          item.internal.rasxod_iznos_summa;
+
+        // to
+        existing.to.kol += item.to.kol;
+        existing.to.summa += item.to.summa;
+        existing.to.iznos_summa += item.to.iznos_summa;
+        existing.to.sena += item.to.sena;
+        if (item.to.month_iznos)
+          existing.to.month_iznos =
+            (existing.to.month_iznos || 0) + item.to.month_iznos;
+      } else {
+        map.set(key, JSON.parse(JSON.stringify(item)));
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
   static async getMaterial(data) {
     const result = await Jur7MonitoringDB.getMaterial(
       [data.year, data.month, data.region_id, data.main_schet_id],

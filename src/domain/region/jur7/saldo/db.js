@@ -282,6 +282,7 @@ exports.SaldoDB = class {
                 s.isdeleted,
                 s.type,
                 JSON_BUILD_OBJECT(
+                    'doc_id', s.prixod_id,
                     'docNum', s.doc_num,
                     'docDate', s.doc_date,
                     'docId', s.prixod_id
@@ -306,23 +307,7 @@ exports.SaldoDB = class {
               ${whereClouse}
         )
         SELECT
-            COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data,
-            (
-                SELECT
-                    COALESCE(COUNT(s.id), 0)::INTEGER
-                FROM saldo_naimenovanie_jur7 s 
-                JOIN users AS u ON u.id = s.user_id
-                JOIN regions AS r ON r.id = u.region_id
-                JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
-                JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
-                JOIN group_jur7 g ON g.id = n.group_jur7_id    
-                WHERE r.id = $1
-                  AND s.month = $2
-                  AND s.year = $3
-                  AND s.isdeleted = false
-                  AND s.main_schet_id = $4
-                    ${whereClouse}
-            ) AS total
+            COALESCE(JSON_AGG(ROW_TO_JSON(data)), '[]'::JSON) AS data
         FROM data
     `;
 

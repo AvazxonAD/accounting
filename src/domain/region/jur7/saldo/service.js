@@ -10,10 +10,54 @@ const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { Jur7MonitoringService } = require(`@jur7_monitoring/service`);
-const { FORMERR } = require("dns");
 const fs = require("fs").promises;
 
 exports.SaldoService = class {
+  static groupedSaldo(arr) {
+    const map = new Map();
+
+    arr.forEach((item) => {
+      const key = `${item.prixodData.docId}_${item.group_id}_${item.name}`;
+
+      if (map.has(key)) {
+        const existing = map.get(key);
+
+        // from
+        existing.from.kol += item.from.kol;
+        existing.from.summa += item.from.summa;
+        existing.from.iznos_summa += item.from.iznos_summa;
+        existing.from.sena += item.from.sena;
+
+        // internal
+        existing.internal.kol += item.internal.kol;
+        existing.internal.summa += item.internal.summa;
+        existing.internal.iznos_summa += item.internal.iznos_summa;
+        existing.internal.sena += item.internal.sena;
+        existing.internal.prixod_kol += item.internal.prixod_kol;
+        existing.internal.rasxod_kol += item.internal.rasxod_kol;
+        existing.internal.prixod_summa += item.internal.prixod_summa;
+        existing.internal.rasxod_summa += item.internal.rasxod_summa;
+        existing.internal.prixod_iznos_summa +=
+          item.internal.prixod_iznos_summa;
+        existing.internal.rasxod_iznos_summa +=
+          item.internal.rasxod_iznos_summa;
+
+        // to
+        existing.to.kol += item.to.kol;
+        existing.to.summa += item.to.summa;
+        existing.to.iznos_summa += item.to.iznos_summa;
+        existing.to.sena += item.to.sena;
+        if (item.to.month_iznos)
+          existing.to.month_iznos =
+            (existing.to.month_iznos || 0) + item.to.month_iznos;
+      } else {
+        map.set(key, JSON.parse(JSON.stringify(item)));
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
   static returnDocDate(data) {
     const dates = String(data.doc_date).split("");
     const checkSlesh = dates.find((data) => data === "/");
@@ -284,8 +328,10 @@ exports.SaldoService = class {
       }
     }
 
-    if (data.rasxod) {
+    if (data.rasxod === "true") {
       result.data = result.data.filter((item) => item.to.kol !== 0);
+    } else {
+      result.data = this.groupedSaldo(result.data);
     }
 
     result.from_summa = 0;
@@ -320,25 +366,29 @@ exports.SaldoService = class {
       result.to_kol = item.to.kol;
     });
 
-    result.data = HelperFunctions.paginate({
-      array: result.data,
-      page: data.page,
-      limit: data.limit,
-    });
+    const total = result.data.length;
+    if (data.rasxod === "ture") {
+      result.data = HelperFunctions.paginate({
+        array: result.data,
+        page: data.page,
+        limit: data.limit,
+      });
+    }
 
-    result.data.forEach((item) => {
-      result.page_from_summa = item.from.summa;
-      result.page_from_kol = item.from.kol;
-      result.page_internal_rasxod_summa = item.internal.rasxod_summa;
-      result.page_internal_rasxod_kol = item.internal.rasxod_kol;
-      result.page_internal_prixod_summa = item.internal.prixod_summa;
-      result.page_internal_prixod_kol = item.internal.prixod_kol;
-      result.page_to_summa = item.to.summa;
-      result.page_to_iznos_summa = item.to.iznos_summa;
-      result.page_to_kol = item.to.kol;
-    });
+    if (data.rasxod)
+      result.data.forEach((item) => {
+        result.page_from_summa = item.from.summa;
+        result.page_from_kol = item.from.kol;
+        result.page_internal_rasxod_summa = item.internal.rasxod_summa;
+        result.page_internal_rasxod_kol = item.internal.rasxod_kol;
+        result.page_internal_prixod_summa = item.internal.prixod_summa;
+        result.page_internal_prixod_kol = item.internal.prixod_kol;
+        result.page_to_summa = item.to.summa;
+        result.page_to_iznos_summa = item.to.iznos_summa;
+        result.page_to_kol = item.to.kol;
+      });
 
-    return result;
+    return { ...result, total };
   }
 
   static async calculateKol(data) {

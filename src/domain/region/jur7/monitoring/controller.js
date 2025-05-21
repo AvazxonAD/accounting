@@ -333,6 +333,12 @@ exports.Controller = class {
       }
     }
 
+    for (let responsible of result) {
+      for (let schet of responsible.products) {
+        schet.products = Jur7MonitoringService.groupedMaterial(schet.products);
+      }
+    }
+
     if (excel === "true") {
       const podpis = await PodpisService.get({
         region_id,

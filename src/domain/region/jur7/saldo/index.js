@@ -36,13 +36,6 @@ router
 
   .get("/check", validator(Controller.check, SaldoSchema.check()))
 
-  .get("/:id", validator(Controller.getById, SaldoSchema.getById()))
-
-  // old
-  .get(
-    "/report/responsible",
-    Middleware.jur7Block,
-    validator(Controller.reportByResponsible, SaldoSchema.reportByResponsible())
-  );
+  .get("/:id", validator(Controller.getById, SaldoSchema.getById()));
 
 module.exports = router;

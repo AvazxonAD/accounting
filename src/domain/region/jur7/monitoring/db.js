@@ -383,6 +383,7 @@ exports.Jur7MonitoringDB = class {
               g.iznos_foiz,
               TO_CHAR(d.doc_date, 'DD-MM-YYYY') AS        doc_date,
               d.doc_num,
+              d.prixod_id,
               JSON_BUILD_OBJECT(
                 'sena', d.sena::FLOAT,
                 'summa', d.summa::FLOAT,
