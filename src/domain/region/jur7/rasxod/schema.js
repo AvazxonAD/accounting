@@ -121,6 +121,7 @@ exports.RasxodSchema = class {
       }),
       query: Joi.object({
         main_schet_id: Joi.number().integer().min(1).required(),
+        akt: Joi.string().trim().valid("true", "false"),
       }),
     }).options({ stripUnknown: true });
   }

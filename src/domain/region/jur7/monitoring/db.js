@@ -808,7 +808,9 @@ exports.Jur7MonitoringDB = class {
       FROM document_vnutr_peremesh_jur7 d
       JOIN document_vnutr_peremesh_jur7_child ch ON d.id = ch.document_vnutr_peremesh_jur7_id 
       WHERE d.isdeleted = false
-        AND ch.isdeleted = false;
+        AND ch.isdeleted = false
+      
+      ORDER BY schet
     `;
 
     const result = await db.query(query, params);

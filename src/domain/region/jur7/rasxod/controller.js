@@ -4,6 +4,8 @@ const { ProductService } = require("@product/service");
 const { Jur7RsxodService } = require("./service");
 const { SaldoService } = require("@jur7_saldo/service");
 const { ValidatorFunctions } = require(`@helper/database.validator`);
+const { PodpisService } = require("@podpis/service");
+const { RegionService } = require("@region/service");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -28,7 +30,7 @@ exports.Controller = class {
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
-    if (!check_saldo) {
+    if (!check_saldo.result.length) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
@@ -83,7 +85,7 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id } = req.query;
+    const { main_schet_id, akt } = req.query;
 
     await ValidatorFunctions.mainSchet({
       main_schet_id,
@@ -98,6 +100,29 @@ exports.Controller = class {
     });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (akt === "true") {
+      const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
+
+      const region = await RegionService.getById({ id: region_id });
+
+      const { fileName, filePath } = await Jur7RsxodService.aktExcel({
+        ...data,
+        region,
+        podpis,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.sendFile(filePath);
     }
 
     return res.success("Doc successfully get", 200, null, data);
@@ -138,7 +163,7 @@ exports.Controller = class {
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
-    if (!check_saldo) {
+    if (!check_saldo.result.length) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
@@ -225,7 +250,7 @@ exports.Controller = class {
       year: new Date(data.doc_date).getFullYear(),
       month: new Date(data.doc_date).getMonth() + 1,
     });
-    if (!check_saldo) {
+    if (!check_saldo.result.length) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 

@@ -17,12 +17,17 @@ const createpodpis = async (req, res) => {
     const user_id = req.user.id;
     const region_id = req.user.region_id;
     const data = validationResponse(podpisValidation, req.body);
-    await getByAllPodpisService(
+
+    const check = await getByAllPodpisService(
       region_id,
       data.type_document,
       data.doljnost_name,
       data.fio_name
     );
+    if (check) {
+      return res.error(req.i18n.t("docExists"), 409);
+    }
+
     const result = await createPodpisService({ ...data, user_id });
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
   } catch (error) {

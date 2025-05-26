@@ -633,7 +633,6 @@ exports.PrixodJur7Service = class {
   }
 
   static async getById(data) {
-    console.log(data.region_id, data.id, data.main_schet_id);
     const result = await PrixodDB.getById(
       [data.region_id, data.id, data.main_schet_id],
       data.isdeleted
@@ -663,7 +662,7 @@ exports.PrixodJur7Service = class {
     worksheet.getRow(5).values = [
       "Наименование",
       "Ед.изм",
-      "Полковник",
+      "Кол.",
       "Цена",
       "Сумма",
       "Дебет",
@@ -787,13 +786,15 @@ exports.PrixodJur7Service = class {
 
         if ((column === 4 || column === 5) && rowNumber > 5) {
           horizontal = "right";
-        }
-
-        if (
+        } else if (
           ((column !== 4 && column !== 5) || rowNumber > bold_count) &&
           rowNumber > 5 &&
           rowNumber < column
         ) {
+          horizontal = `center`;
+        } else if (rowNumber > bold_count + 2 && column === 8) {
+          horizontal = `right`;
+        } else {
           horizontal = `center`;
         }
 
@@ -815,6 +816,10 @@ exports.PrixodJur7Service = class {
           };
         }
 
+        if ((column > 2 && column < 6) || column === 8) {
+          cell.numFmt = "#,##0.00";
+        }
+
         Object.assign(cell, {
           font: { size: 13, name: "Times New Roman", bold },
           alignment: {
@@ -830,7 +835,9 @@ exports.PrixodJur7Service = class {
           border,
         });
 
-        cell.note = undefined;
+        if (cellData && Object.keys(cellData).length > 0) {
+          cell.note = undefined;
+        }
       });
     });
 

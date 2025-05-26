@@ -113,9 +113,7 @@ const getByAllPodpisService = async (
        WHERE r.id = $1 AND s_p.doljnost_name = $2 AND s_p.type_document = $3 AND s_p.fio_name = $4`,
       [region_id, doljnost_name, type_doc, fio_name]
     );
-    if (result.rows[0]) {
-      throw new ErrorResponse(`This data already exist`, 409);
-    }
+
     return result.rows[0];
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode);

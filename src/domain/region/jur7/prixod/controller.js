@@ -182,7 +182,8 @@ exports.Controller = class {
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
-    if (!check_saldo) {
+
+    if (!check_saldo.result.length) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
@@ -410,7 +411,7 @@ exports.Controller = class {
       year: new Date(doc_date).getFullYear(),
       month: new Date(doc_date).getMonth() + 1,
     });
-    if (!check_saldo) {
+    if (!check_saldo.result.length) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
@@ -473,7 +474,7 @@ exports.Controller = class {
       year: new Date(old_data.doc_date).getFullYear(),
       month: new Date(old_data.doc_date).getMonth() + 1,
     });
-    if (!check_saldo) {
+    if (!check_saldo.result.length) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
