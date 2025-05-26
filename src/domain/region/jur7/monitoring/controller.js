@@ -125,6 +125,7 @@ exports.Controller = class {
         return res.error(req.i18n.t("responsibleNotFound"), 404);
       }
     }
+
     const region = await RegionService.getById({ id: region_id });
 
     const data = await Jur7MonitoringService.getMaterial({
@@ -334,6 +335,9 @@ exports.Controller = class {
     }
 
     for (let responsible of result) {
+      responsible.products.sort((a, b) => {
+        return parseInt(a.schet) - parseInt(b.schet);
+      });
       for (let schet of responsible.products) {
         schet.products = Jur7MonitoringService.groupedMaterial(schet.products);
       }
