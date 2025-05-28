@@ -9,7 +9,7 @@ i18next
   .init(
     {
       backend: {
-        loadPath: join(__dirname, "../locales/json/{{lng}}.json"),
+        loadPath: join(__dirname, "./locales/json/{{lng}}.json"),
       },
       lng: "uz",
       fallbackLng: "uz",

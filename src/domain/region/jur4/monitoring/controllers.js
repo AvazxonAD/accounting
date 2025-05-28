@@ -301,13 +301,10 @@ exports.Controller = class {
     const from = HelperFunctions.returnDate({ year, month });
 
     for (let podotchet of data) {
-      const internal = await PodotchetMonitoringDB.getSumma([
-        region_id,
-        schet.schet,
-        main_schet_id,
-        from,
-        to,
-      ]);
+      const internal = await PodotchetMonitoringDB.getSumma(
+        [region_id, schet.schet, main_schet_id, from, to],
+        podotchet.id
+      );
 
       const podotchet_saldo = saldo.childs.find(
         (item) => item.podotchet_id === podotchet.id

@@ -64,5 +64,5 @@
       "@public/*": ["../public/*"]
     }
   },
-  "include": ["src", "locales"]
+  "include": ["src", "src/locales"]
 }
