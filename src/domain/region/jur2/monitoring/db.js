@@ -252,6 +252,29 @@ exports.BankMonitoringDB = class {
     return result;
   }
 
+  static async capDataPrixod(params) {
+    const query = `--sql
+        SELECT
+            op.schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS   summa
+        FROM bank_prixod_child ch
+        JOIN bank_prixod AS d ON d.id = ch.id_bank_prixod
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+        GROUP BY op.schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async daysReport(params) {
     const query = `--sql
             WITH

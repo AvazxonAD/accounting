@@ -664,14 +664,17 @@ exports.HelperFunctions = class {
     worksheet.getCell("D2").value = data.budjet.name;
 
     worksheet.mergeCells("A3", "G3");
-    worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
+    worksheet.getCell("A3").value =
+      `${data.title} Счёт-№ ${data.schet}.  От ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells("A4", "G4");
-    worksheet.getCell("A4").value =
-      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+    worksheet.getCell("A4").value = ``;
 
     worksheet.mergeCells("A6", "C6");
     worksheet.getCell("A6").value = `Бош китобга тушадиган ёзувлар`;
+
+    worksheet.mergeCells("I6", "K6");
+    worksheet.getCell("I6").value = `Приходлар`;
 
     worksheet.getRow(7).values = [
       "Дебет",
@@ -681,19 +684,28 @@ exports.HelperFunctions = class {
       "Счет",
       "Субсчет",
       "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
     ];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
       { key: "rasxod", width: 20 },
       { key: "summa", width: 20 },
-      { key: "ignore", width: 20 },
+      { key: "ignore1", width: 20 },
       { key: "r_prixod", width: 20 },
       { key: "r_rasxod", width: 20 },
       { key: "r_summa", width: 20 },
+      { key: "ignore2", width: 20 },
+      { key: "p_prixod", width: 20 },
+      { key: "p_rasxod", width: 20 },
+      { key: "p_summa", width: 20 },
     ];
 
     let column = 8;
+    let prixod_column = 8;
 
     // rasxod main
     for (let rasxod in data.rasxods) {
@@ -707,17 +719,46 @@ exports.HelperFunctions = class {
       }
     }
 
+    // prixod main
+    let itogo_prixod = 0;
+    for (let prixod of data.prixods) {
+      worksheet.getCell(`I${prixod_column}`).value = data.schet;
+      worksheet.getCell(`J${prixod_column}`).value = prixod.schet;
+      worksheet.getCell(`K${prixod_column}`).value = prixod.summa;
+
+      itogo_prixod += prixod.summa;
+
+      prixod_column++;
+    }
+
     // itogo
     worksheet.mergeCells(`A${column}`, `B${column}`);
-    const itogoCellTitle = worksheet.getCell(`A${column}`);
-    itogoCellTitle.value = `Жами КТ:`;
-    itogoCellTitle.note = JSON.stringify({
+    const itogoRasxodCellTitle = worksheet.getCell(`A${column}`);
+    itogoRasxodCellTitle.value = `Жами КТ:`;
+    itogoRasxodCellTitle.note = JSON.stringify({
       bold: true,
-      horizontal: "left",
     });
 
-    worksheet.getCell(`C${column}`).value = data.rasxods.summa;
+    const itogoRasxodCellRasxod = worksheet.getCell(`C${column}`);
+    itogoRasxodCellRasxod.value = data.rasxods.summa;
+    itogoRasxodCellRasxod.note = JSON.stringify({
+      bold: true,
+    });
     column++;
+
+    worksheet.mergeCells(`I${prixod_column}`, `J${prixod_column}`);
+    const itogoPrixodCellTitle = worksheet.getCell(`I${prixod_column}`);
+    itogoPrixodCellTitle.value = `Жами ДБ:`;
+    itogoPrixodCellTitle.note = JSON.stringify({
+      bold: true,
+    });
+
+    const itogoRasxodCellPrixod = worksheet.getCell(`K${prixod_column}`);
+    itogoRasxodCellPrixod.value = itogo_prixod;
+    itogoRasxodCellPrixod.note = JSON.stringify({
+      bold: true,
+    });
+    prixod_column++;
 
     let rasxod_column = 8;
     // deep rasxod
@@ -776,24 +817,18 @@ exports.HelperFunctions = class {
       }
     }
 
-    let podpis_column = rasxod_column > column ? rasxod_column : column;
-    podpis_column++;
+    let podpis_column = rasxod_column > column ? rasxod_column + 3 : column + 3;
 
     for (let podpis of data.podpis) {
-      worksheet.mergeCells(`A${podpis_column}`, `B${podpis_column}`);
+      worksheet.mergeCells(`A${podpis_column}`, `D${podpis_column}`);
       const positionCell = worksheet.getCell(`A${podpis_column}`);
-      positionCell.value = podpis.position;
+      positionCell.value = ` ${podpis.position} ${podpis.fio}`;
       positionCell.note = JSON.stringify({
         horizontal: "left",
+        bold: true,
+        border: null,
       });
 
-      worksheet.mergeCells(`D${podpis_column}`, `F${podpis_column}`);
-      const fioCell = worksheet.getCell(`D${podpis_column}`);
-      fioCell.value = podpis.fio;
-      fioCell.note = JSON.stringify({
-        horizontal: "left",
-        height: 30,
-      });
       podpis_column += 4;
     }
 
@@ -803,6 +838,12 @@ exports.HelperFunctions = class {
       let horizontal = "center";
       let height = 20;
       let argb = "FFFFFFFF";
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
 
       if (rowNumber === 1) {
         height = 50;
@@ -816,10 +857,22 @@ exports.HelperFunctions = class {
         bold = true;
       }
 
+      const _podpis = podpis_column - (data.podpis.length * 4 + 3);
+      if (rowNumber >= _podpis) {
+        border = { bottom: { style: "thin" } };
+        horizontal = "left";
+      }
+
       worksheet.getRow(rowNumber).height = height;
 
       row.eachCell((cell, column) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if (rowNumber > 7 && column === 11) {
+          horizontal = "right";
+        } else {
+          horizontal = "center";
+        }
 
         if (column === 3 && rowNumber > 6 && !cellData.horizontal) {
           horizontal = "right";
@@ -828,19 +881,18 @@ exports.HelperFunctions = class {
         if (cellData.bold) {
           bold = true;
         } else if (
-          !cellData.bold &&
-          rowNumber > 7 &&
-          column > 3 &&
-          cell.value !== "Кредит буйича жами:"
+          cell.value === "Жами КТ:" ||
+          cell.value === "Жами ДБ:" ||
+          cell.value === "Кредит буйича жами:"
         ) {
+          bold = true;
+        } else if (!cellData.bold && rowNumber > 7) {
           bold = false;
         }
 
         if (cellData.horizontal) {
           horizontal = cellData.horizontal;
-        }
-
-        if (
+        } else if (
           cell.value === "Модда" ||
           cell.value === "Статьяси" ||
           cell.value === "Сумма"
@@ -851,6 +903,10 @@ exports.HelperFunctions = class {
 
         if (cellData.height) {
           worksheet.getRow(rowNumber).height = cellData.height;
+        }
+
+        if (rowNumber >= _podpis) {
+          horizontal = "left";
         }
 
         Object.assign(cell, {
@@ -867,12 +923,7 @@ exports.HelperFunctions = class {
             fgColor: { argb },
           },
 
-          border: {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            bottom: { style: "thin" },
-            right: { style: "thin" },
-          },
+          border,
         });
 
         // clean note

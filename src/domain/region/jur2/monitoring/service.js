@@ -27,8 +27,8 @@ exports.BankMonitoringService = class {
         data.limit,
       ],
       data.search,
-      data.order_by,
-      data.order_type
+      data.order_by || "doc_date",
+      data.order_type || "ASC"
     );
 
     let page_prixod_sum = 0;
@@ -97,7 +97,14 @@ exports.BankMonitoringService = class {
       }
     }
 
-    return result;
+    const prixods = await BankMonitoringDB.capDataPrixod([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+    ]);
+
+    return { rasxods: result, prixods };
   }
 
   static async daysReport(data) {

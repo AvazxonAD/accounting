@@ -108,7 +108,18 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const data = await BankMonitoringService.cap({
+    const { summa_from, summa_to } = await BankMonitoringService.get({
+      ...req.query,
+      region_id,
+      main_schet_id,
+      offset: 0,
+      limit: 999999999999,
+      from,
+      to,
+      saldo,
+    });
+
+    const { rasxods, prixods } = await BankMonitoringService.cap({
       region_id,
       main_schet_id,
       from,
@@ -133,7 +144,8 @@ exports.Controller = class {
       const podpis = await PodpisService.get({ region_id, type: "cap" });
 
       const { fileName, filePath } = await HelperFunctions.capExcel({
-        rasxods: data,
+        rasxods,
+        prixods,
         main_schet,
         report_title,
         from,
@@ -145,6 +157,8 @@ exports.Controller = class {
         file_name: "bank",
         schet: main_schet.jur2_schet,
         order: 2,
+        summa_from,
+        summa_to,
       });
 
       res.setHeader(
@@ -158,7 +172,15 @@ exports.Controller = class {
       return res.sendFile(filePath);
     }
 
-    return res.success(req.i18n.t("getSuccess"), 200, req.query, data);
+    return res.success(
+      req.i18n.t("getSuccess"),
+      200,
+      { summa_from, summa_to },
+      {
+        rasxods,
+        prixods,
+      }
+    );
   }
 
   static async daysReport(req, res) {
