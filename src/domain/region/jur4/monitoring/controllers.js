@@ -13,7 +13,7 @@ const { RegionService } = require("@region/service");
 const { PodpisService } = require("@podpis/service");
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 const { PodotchetService } = require("@podotchet/service");
-const { REPORT_TYPE } = require("@helper/constants");
+const { REPORT_TYPE, LIMIT } = require("@helper/constants");
 
 exports.Controller = class {
   static async daysReport(req, res) {
@@ -205,7 +205,25 @@ exports.Controller = class {
       return res.error(req.i18n.t(`mainSchetNotFound`), 404);
     }
 
-    const data = await PodotchetMonitoringService.cap({
+    const saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const { summa_from, summa_to } =
+      await PodotchetMonitoringService.monitoring({
+        ...req.query,
+        offset: 0,
+        limit: LIMIT,
+        region_id,
+        schet: schet.schet,
+        saldo,
+      });
+
+    const { rasxods, prixods } = await PodotchetMonitoringService.cap({
       ...req.query,
       region_id,
       schet: schet.schet,
@@ -229,7 +247,6 @@ exports.Controller = class {
       const podpis = await PodpisService.get({ region_id, type: "cap" });
 
       const { filePath, fileName } = await HelperFunctions.capExcel({
-        rasxods: data,
         main_schet,
         report_title,
         from,
@@ -237,10 +254,97 @@ exports.Controller = class {
         region,
         budjet,
         podpis,
+        summa_from,
+        summa_to,
+        rasxods,
+        prixods,
         title: "Podotchet Monitoring",
         file_name: "podotchet",
         schet: schet.schet,
         order: 4,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+
+      return res.download(filePath, (err) => {
+        if (err) {
+          res.error(err.message, err.statusCode);
+        }
+      });
+    }
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
+  }
+
+  static async reportBySchets(req, res) {
+    const region_id = req.user.region_id;
+    const { report_title_id, main_schet_id, excel, schet_id, from, to } =
+      req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur4_schets.find(
+      (item) => item.id === Number(schet_id)
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t(`mainSchetNotFound`), 404);
+    }
+
+    const saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const { summa_from, summa_to } =
+      await PodotchetMonitoringService.monitoring({
+        ...req.query,
+        offset: 0,
+        limit: LIMIT,
+        region_id,
+        schet: schet.schet,
+        saldo,
+      });
+
+    const data = await PodotchetMonitoringService.reportBySchets({
+      ...req.query,
+      region_id,
+      schet: schet.schet,
+    });
+
+    if (excel === "true") {
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
+
+      const { filePath, fileName } = await HelperFunctions.reportBySchetExcel({
+        data,
+        main_schet,
+        from,
+        to,
+        podpis,
+        file_name: "podotchet",
+        schet: schet.schet,
+        order: 4,
+        summa_from,
+        summa_to,
+        report_title,
       });
 
       res.setHeader(

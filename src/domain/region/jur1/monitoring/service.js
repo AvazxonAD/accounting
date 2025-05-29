@@ -5,6 +5,26 @@ const path = require("path");
 const { HelperFunctions } = require("@helper/functions");
 
 exports.KassaMonitoringService = class {
+  static async reportBySchets(data) {
+    const prixods = await KassaMonitoringDB.reportBySchetPrixods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+    ]);
+
+    const rasxods = await KassaMonitoringDB.reportBySchetRasxods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+    ]);
+
+    const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
+
+    return result;
+  }
+
   static async getSumma(data) {
     const summa = await KassaMonitoringDB.getSumma([
       data.region_id,
@@ -27,8 +47,8 @@ exports.KassaMonitoringService = class {
         data.limit,
       ],
       data.search,
-      data.order_by,
-      data.order_type
+      data.order_by || "doc_date",
+      data.order_type || "ASC"
     );
 
     let page_prixod_sum = 0;
@@ -81,6 +101,13 @@ exports.KassaMonitoringService = class {
       data.region_id,
     ]);
 
+    const prixods = await KassaMonitoringDB.capDataPrixods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+    ]);
+
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
         acc[item.schet] = { summa: 0, items: [] };
@@ -98,7 +125,7 @@ exports.KassaMonitoringService = class {
       }
     }
 
-    return result;
+    return { rasxods: result, prixods };
   }
 
   static async daysReport(data) {

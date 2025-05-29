@@ -9,6 +9,81 @@ const { REPORT_TYPE } = require("@helper/constants");
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.Controller = class {
+  static async reportBySchets(req, res) {
+    const { from, to, main_schet_id, excel, report_title_id, budjet_id } =
+      req.query;
+    const region_id = req.user.region_id;
+
+    const report_title = await ReportTitleService.getById({
+      id: report_title_id,
+    });
+    if (!report_title) {
+      return res.error(req.i18n.t("reportTitleNotFound"), 404);
+    }
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+    if (!main_schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 400);
+    }
+
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const { summa_from, summa_to } = await KassaMonitoringService.get({
+      ...req.query,
+      region_id,
+      offset: 0,
+      limit: 100000000,
+      saldo,
+    });
+
+    const data = await KassaMonitoringService.reportBySchets({
+      region_id,
+      main_schet_id,
+      saldo,
+      from,
+      to,
+    });
+
+    if (excel === "true") {
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
+
+      const { fileName, filePath } = await HelperFunctions.reportBySchetExcel({
+        data,
+        main_schet,
+        from,
+        to,
+        podpis,
+        file_name: "kassa",
+        schet: main_schet.jur1_schet,
+        order: 1,
+        summa_from,
+        summa_to,
+        report_title,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, req.query, data);
+  }
+
   static async get(req, res) {
     const region_id = req.user.region_id;
     const { page, limit, main_schet_id } = req.query;
@@ -96,7 +171,15 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const data = await KassaMonitoringService.cap({
+    const { summa_from, summa_to } = await KassaMonitoringService.get({
+      ...req.query,
+      region_id,
+      offset: 0,
+      limit: 100000000,
+      saldo,
+    });
+
+    const { rasxods, prixods } = await KassaMonitoringService.cap({
       region_id,
       main_schet_id,
       saldo,
@@ -115,7 +198,8 @@ exports.Controller = class {
       }
 
       const { fileName, filePath } = await HelperFunctions.capExcel({
-        rasxods: data,
+        rasxods,
+        prixods,
         main_schet,
         report_title,
         from,
@@ -127,6 +211,8 @@ exports.Controller = class {
         file_name: "kassa",
         schet: main_schet.jur1_schet,
         order: 1,
+        summa_from,
+        summa_to,
       });
 
       res.setHeader(

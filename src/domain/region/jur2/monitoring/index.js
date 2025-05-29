@@ -27,6 +27,10 @@ router
     "/cap",
     checkJur2Saldo(BankSaldoService.getDateSaldo),
     validator(Controller.cap, BankMonitoringSchema.cap())
+  )
+  .get(
+    "/by-schet",
+    validator(Controller.reportBySchets, BankMonitoringSchema.reportBySchets())
   );
 
 module.exports = router;

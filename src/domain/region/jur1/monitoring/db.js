@@ -174,6 +174,29 @@ exports.KassaMonitoringDB = class {
     return result;
   }
 
+  static async capDataPrixods(params) {
+    const query = `--sql
+            SELECT
+                op.schet,
+                COALESCE(SUM(ch.summa), 0)::FLOAT AS       summa
+            FROM kassa_prixod_child ch
+            JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
+            JOIN users AS u ON u.id = d.user_id
+            JOIN regions AS r ON r.id = u.region_id
+            JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+            WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.main_schet_id = $1
+                AND d.doc_date BETWEEN $2 AND $3
+                AND r.id = $4
+            GROUP BY op.schet
+        `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getSumma(
     params,
     search,
@@ -326,6 +349,52 @@ exports.KassaMonitoringDB = class {
             AND d.main_schet_id = $1
             AND d.doc_date BETWEEN $2 AND $3
             AND r.id = $4
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetPrixods(params) {
+    const query = `--sql
+        SELECT
+            op.schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS       summa
+        FROM kassa_prixod_child ch
+        JOIN kassa_prixod AS d ON d.id = ch.kassa_prixod_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+        GROUP BY op.schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetRasxods(params) {
+    const query = `--sql
+        SELECT
+            op.schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS       summa
+        FROM kassa_rasxod_child ch
+        JOIN kassa_rasxod AS d ON d.id = ch.kassa_rasxod_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        JOIN spravochnik_operatsii op ON ch.spravochnik_operatsii_id = op.id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+        GROUP BY op.schet
     `;
 
     const result = await db.query(query, params);

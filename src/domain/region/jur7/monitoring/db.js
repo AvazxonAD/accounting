@@ -363,6 +363,102 @@ exports.Jur7MonitoringDB = class {
     return result;
   }
 
+  static async capDataPrixods(params) {
+    const query = `--sql
+        SELECT 
+            ch.debet_schet,
+            ch.kredit_schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+        FROM document_prixod_jur7_child ch
+        JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE r.id = $1 
+            AND d.isdeleted = false 
+            AND d.doc_date BETWEEN $2 AND $3
+            AND d.main_schet_id = $4
+            AND ch.isdeleted = false
+        GROUP BY ch.debet_schet,
+            ch.kredit_schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetsRasxods(params) {
+    const query = `--sql
+        SELECT 
+            ch.debet_schet,
+            ch.kredit_schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+        FROM document_rasxod_jur7_child ch
+        JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE r.id = $1 
+            AND d.isdeleted = false 
+            AND d.doc_date BETWEEN $2 AND $3
+            AND d.main_schet_id = $4
+            AND ch.isdeleted = false
+        GROUP BY ch.debet_schet,
+            ch.kredit_schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetsInternals(params) {
+    const query = `--sql
+      SELECT 
+          ch.debet_schet,
+          ch.kredit_schet,
+          COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+      FROM document_vnutr_peremesh_jur7_child ch
+      JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
+      JOIN users AS u ON u.id = d.user_id
+      JOIN regions AS r ON r.id = u.region_id
+      WHERE r.id = $1 
+          AND d.isdeleted = false 
+          AND d.doc_date BETWEEN $2 AND $3
+          AND d.main_schet_id = $4
+          AND ch.isdeleted = false
+      GROUP BY ch.debet_schet,
+          ch.kredit_schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetsPrixods(params) {
+    const query = `--sql
+        SELECT 
+            ch.debet_schet,
+            ch.kredit_schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+        FROM document_prixod_jur7_child ch
+        JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE r.id = $1 
+            AND d.isdeleted = false 
+            AND d.doc_date BETWEEN $2 AND $3
+            AND d.main_schet_id = $4
+            AND ch.isdeleted = false
+        GROUP BY ch.debet_schet,
+            ch.kredit_schet
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getMaterial(params, responsible_id = null) {
     let resposnible_filter = ``;
     if (responsible_id) {

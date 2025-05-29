@@ -15,6 +15,10 @@ router
     "/prixod",
     validator(Controller.prixodReport, KassaRasxodSchema.prixodReport())
   )
+  .get(
+    "/by-schet",
+    validator(Controller.reportBySchets, KassaRasxodSchema.reportBySchets())
+  )
   .get("/cap", validator(Controller.cap, KassaRasxodSchema.cap()));
 
 module.exports = router;

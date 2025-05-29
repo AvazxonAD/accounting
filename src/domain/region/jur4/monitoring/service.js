@@ -68,6 +68,14 @@ exports.PodotchetMonitoringService = class {
       data.schet,
     ]);
 
+    const prixods = await PodotchetMonitoringDB.capDataPrixods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+      data.schet,
+    ]);
+
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
         acc[item.schet] = { summa: 0, items: [] };
@@ -84,6 +92,28 @@ exports.PodotchetMonitoringService = class {
         result.summa += result[rasxod].summa;
       }
     }
+
+    return { rasxods: result, prixods };
+  }
+
+  static async reportBySchets(data) {
+    const rasxods = await PodotchetMonitoringDB.reportBySchetsRasxods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+      data.schet,
+    ]);
+
+    const prixods = await PodotchetMonitoringDB.reportBySchetsPrixods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+      data.schet,
+    ]);
+
+    const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
 
     return result;
   }

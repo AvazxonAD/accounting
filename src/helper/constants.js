@@ -23,3 +23,5 @@ exports.REPORT_TYPE = {
 exports.JURNAL_SCHETS = ["jur1_schet", "jur2_schet"];
 
 exports.SALDO_PASSWORD = "smart-base-e-moliya-fvv";
+
+exports.LIMIT = 999999999999999;

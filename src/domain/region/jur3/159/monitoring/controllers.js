@@ -2,19 +2,96 @@ const { Monitoring159Service } = require("./services");
 const { MainSchetService } = require("@main_schet/service");
 const { OrganizationService } = require("@organization/service");
 const { BudjetService } = require("@budjet/service");
-const { ContractService } = require("@contract/service");
-const { RegionDB } = require("@region/db");
-const { MainSchetDB } = require("@main_schet/db");
-const { OrganizationDB } = require("@organization/db");
-const { Monitoring159DB } = require("./db");
 const { RegionService } = require("@region/service");
 const { ReportTitleService } = require(`@report_title/service`);
 const { PodpisService } = require(`@podpis/service`);
 const { REPORT_TYPE } = require("@helper/constants");
 const { Saldo159Service } = require(`@saldo_159/service`);
 const { HelperFunctions } = require("@helper/functions");
+const { LIMIT } = require("@helper/constants");
 
 exports.Controller = class {
+  static async reportBySchets(req, res) {
+    const region_id = req.user.region_id;
+    const { from, main_schet_id, report_title_id, excel, to, schet_id } =
+      req.query;
+
+    const main_schet = await MainSchetService.getById({
+      region_id,
+      id: main_schet_id,
+    });
+
+    const schet = main_schet?.jur3_schets_159.find(
+      (item) => item.id === schet_id
+    );
+    if (!main_schet || !schet) {
+      return res.error(req.i18n.t("mainSchetNotFound"), 404);
+    }
+
+    const saldo = await Saldo159Service.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
+    const { summa_from, summa_to } = await Monitoring159Service.monitoring({
+      ...req.query,
+      offset: 0,
+      limit: LIMIT,
+      region_id,
+      schet: schet.schet,
+      saldo,
+    });
+
+    const data = await Monitoring159Service.reportBySchets({
+      ...req.query,
+      schet: schet.schet,
+      region_id,
+    });
+
+    if (excel === "true") {
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t(`reportTitleNotFound`), 404);
+      }
+
+      const podpis = await PodpisService.get({
+        region_id,
+        type: REPORT_TYPE.cap,
+      });
+
+      const { filePath, fileName } = await HelperFunctions.reportBySchetExcel({
+        data,
+        main_schet,
+        from,
+        to,
+        podpis,
+        file_name: "159",
+        schet: schet.schet,
+        order: 3,
+        summa_from,
+        summa_to,
+        report_title,
+      });
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, data);
+  }
+
   static async daysReport(req, res) {
     const region_id = req.user.region_id;
     const {
@@ -220,7 +297,16 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const data = await Monitoring159Service.cap({
+    const { summa_from, summa_to } = await Monitoring159Service.monitoring({
+      ...req.query,
+      offset: 0,
+      limit: LIMIT,
+      region_id,
+      schet: schet.schet,
+      saldo,
+    });
+
+    const { rasxods, prixods } = await Monitoring159Service.cap({
       ...req.query,
       schet: schet.schet,
       region_id,
@@ -246,8 +332,11 @@ exports.Controller = class {
         type: REPORT_TYPE.cap,
       });
 
-      const { filePath, fileName } = await Monitoring159Service.capExcel({
-        rasxods: data,
+      const { filePath, fileName } = await HelperFunctions.jur3CapExcel({
+        rasxods,
+        prixods,
+        summa_from,
+        summa_to,
         main_schet,
         report_title,
         from,
@@ -272,7 +361,7 @@ exports.Controller = class {
       return res.sendFile(filePath);
     }
 
-    return res.success(req.i18n.t("getSuccess"), 200, data);
+    return res.success(req.i18n.t("getSuccess"), 200, { prixods, rasxods });
   }
 
   static async prixodRasxod(req, res) {

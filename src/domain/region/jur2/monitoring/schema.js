@@ -1,6 +1,27 @@
 const Joi = require("joi");
 
 exports.BankMonitoringSchema = class {
+  static reportBySchets() {
+    return Joi.object({
+      query: Joi.object({
+        report_title_id: Joi.number().integer().required().min(1),
+        main_schet_id: Joi.number().integer().required().min(1),
+        month: Joi.number().integer().required().min(1).max(12).required(),
+        year: Joi.number().integer().required().min(1901).required(),
+        budjet_id: Joi.number().integer().required().min(1),
+        from: Joi.string()
+          .trim()
+          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+          .required(),
+        to: Joi.string()
+          .trim()
+          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+          .required(),
+        excel: Joi.string().trim(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static get() {
     return Joi.object({
       query: Joi.object({

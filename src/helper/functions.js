@@ -668,7 +668,8 @@ exports.HelperFunctions = class {
       `${data.title} Счёт-№ ${data.schet}.  От ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells("A4", "G4");
-    worksheet.getCell("A4").value = ``;
+    worksheet.getCell("A4").value =
+      `Остаток к началу дня:                    ${this.returnStringSumma(Math.round(data.summa_from * 100) / 100)}`;
 
     worksheet.mergeCells("A6", "C6");
     worksheet.getCell("A6").value = `Бош китобга тушадиган ёзувлар`;
@@ -817,7 +818,14 @@ exports.HelperFunctions = class {
       }
     }
 
-    let podpis_column = rasxod_column > column ? rasxod_column + 3 : column + 3;
+    let itogo_column = column + 1;
+    worksheet.mergeCells(`A${itogo_column}`, `G${itogo_column}`);
+    worksheet.getCell(`A${itogo_column}`).value =
+      `Остаток к концу дня:               ${this.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
+    itogo_column++;
+
+    let podpis_column =
+      rasxod_column > itogo_column ? rasxod_column + 3 : itogo_column + 3;
 
     for (let podpis of data.podpis) {
       worksheet.mergeCells(`A${podpis_column}`, `D${podpis_column}`);
@@ -907,6 +915,484 @@ exports.HelperFunctions = class {
 
         if (rowNumber >= _podpis) {
           horizontal = "left";
+        }
+
+        if (rowNumber === 4) {
+          horizontal = "left";
+        }
+
+        if (rowNumber === itogo_column - 1) {
+          horizontal = "left";
+          bold = true;
+        }
+
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb },
+          },
+
+          border,
+        });
+
+        // clean note
+        if (cell.note) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const fileName = `${data.file_name}_shapka_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../public/exports");
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
+  static reportBySchetsGroup(data) {
+    const allSchets = new Set([
+      ...data.prixods.map((p) => p.schet),
+      ...data.rasxods.map((r) => r.schet),
+    ]);
+
+    const result = Array.from(allSchets).map((schet) => {
+      const prixodObj = data.prixods.find((p) => p.schet === schet);
+      const rasxodObj = data.rasxods.find((r) => r.schet === schet);
+
+      return {
+        schet,
+        prixod: prixodObj?.summa || 0,
+        rasxod: rasxodObj?.summa || 0,
+      };
+    });
+
+    return result;
+  }
+
+  static async reportBySchetExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Hisobot");
+
+    worksheet.mergeCells(`A1`, "D1");
+    worksheet.getCell(`A1`).value =
+      `${data.report_title.name} №${data.order}. Счет: ${data.schet}. Ҳисоб раками: ${data.main_schet.account_number}`;
+
+    worksheet.mergeCells(`A2`, "D2");
+    worksheet.getCell(`A2`).value =
+      `За период с ${this.returnStringDate(new Date(data.from))} по ${this.returnStringDate(new Date(data.to))}`;
+
+    worksheet.mergeCells(`A4`, "D4");
+    worksheet.getCell(`A4`).value =
+      `Остаток к началу дня: ${this.returnStringSumma(data.summa_from)}`;
+
+    worksheet.getRow(6).values = ["Счет", "Приход", "Расход"];
+
+    worksheet.columns = [
+      { key: "schet", width: 30 },
+      { key: "prixod", width: 30 },
+      { key: "rasxod", width: 30 },
+    ];
+
+    let itogo_prixod = 0;
+    let itogo_rasxod = 0;
+
+    for (let item of data.data) {
+      worksheet.addRow({
+        schet: item.schet,
+        prixod: item.prixod,
+        rasxod: item.rasxod,
+      });
+
+      itogo_prixod += item.prixod;
+      itogo_rasxod += item.rasxod;
+    }
+
+    const itogo_column = worksheet.rowCount + 1;
+    worksheet.getCell(`A${itogo_column}`).value = "Жами:";
+    worksheet.getCell(`B${itogo_column}`).value = itogo_prixod;
+    worksheet.getCell(`C${itogo_column}`).value = itogo_rasxod;
+
+    const to_column = worksheet.rowCount + 2;
+    worksheet.mergeCells(`A${to_column}`, `D${to_column}`);
+    worksheet.getCell(`A${to_column}`).value =
+      `Остаток в конце дня: ${this.returnStringSumma(data.summa_to)}`;
+
+    let podpis_column = worksheet.rowCount + 5;
+    for (let podpis of data.podpis) {
+      worksheet.mergeCells(`A${podpis_column}`, `D${podpis_column}`);
+      const positionCell = worksheet.getCell(`A${podpis_column}`);
+      positionCell.value = ` ${podpis.position} ${podpis.fio}`;
+      podpis_column += 4;
+    }
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let argb = "FFFFFFFF";
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      if (
+        rowNumber < 7 ||
+        rowNumber === to_column ||
+        rowNumber === itogo_column
+      ) {
+        bold = true;
+        worksheet.getRow(rowNumber).height = 40;
+      }
+
+      if (rowNumber === 4 || rowNumber === to_column) {
+        horizontal = "left";
+      }
+
+      if (rowNumber > to_column) {
+        horizontal = "left";
+        worksheet.getRow(rowNumber).height = 40;
+        border = {
+          bottom: { style: "thin" },
+        };
+      }
+
+      row.eachCell((cell) => {
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb },
+          },
+
+          border,
+        });
+
+        // clean note
+        if (cell.note) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const fileName = `${data.file_name}_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../public/exports");
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
+  static async jur3CapExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Hisobot");
+
+    // main section
+    worksheet.mergeCells("A1", "G1");
+    worksheet.getCell("A1").value =
+      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+
+    worksheet.mergeCells("A2", "C2");
+    worksheet.getCell("A2").value =
+      `${data.report_title.name}  №  ${data.order}`;
+
+    worksheet.mergeCells("D2", "G2");
+    worksheet.getCell("D2").value = data.budjet.name;
+
+    worksheet.mergeCells("A3", "G3");
+    worksheet.getCell("A3").value =
+      `${data.title} Счёт-№ ${data.schet}.  От ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+
+    worksheet.mergeCells("A4", "G4");
+    worksheet.getCell("A4").value =
+      `Остаток к началу дня:                    ${this.returnStringSumma(Math.round(data.summa_from * 100) / 100)}`;
+
+    worksheet.mergeCells("A6", "C6");
+    worksheet.getCell("A6").value = `Бош китобга тушадиган ёзувлар`;
+
+    worksheet.mergeCells("I6", "K6");
+    worksheet.getCell("I6").value = `Приходлар`;
+
+    worksheet.getRow(7).values = [
+      "Дебет",
+      "Кредит",
+      "Сумма",
+      "",
+      "Счет",
+      "Субсчет",
+      "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
+    ];
+
+    worksheet.columns = [
+      { key: "prixod", width: 20 },
+      { key: "rasxod", width: 20 },
+      { key: "summa", width: 20 },
+      { key: "ignore1", width: 20 },
+      { key: "r_prixod", width: 20 },
+      { key: "r_rasxod", width: 20 },
+      { key: "r_summa", width: 20 },
+      { key: "ignore2", width: 20 },
+      { key: "p_prixod", width: 20 },
+      { key: "p_rasxod", width: 20 },
+      { key: "p_summa", width: 20 },
+    ];
+
+    let column = 8;
+    let prixod_column = 8;
+
+    // rasxod main
+    for (let rasxod in data.rasxods) {
+      if (rasxod !== "summa" && data.rasxods[rasxod].summa !== 0) {
+        worksheet.addRow({
+          prixod: rasxod,
+          rasxod: data.schet,
+          summa: data.rasxods[rasxod].summa,
+        });
+        column++;
+      }
+    }
+
+    // prixod main
+    let itogo_prixod = 0;
+    for (let prixod of data.prixods) {
+      worksheet.getCell(`I${prixod_column}`).value = data.schet;
+      worksheet.getCell(`J${prixod_column}`).value = prixod.schet;
+      worksheet.getCell(`K${prixod_column}`).value = prixod.summa;
+
+      itogo_prixod += prixod.summa;
+
+      prixod_column++;
+    }
+
+    // itogo
+    worksheet.mergeCells(`A${column}`, `B${column}`);
+    const itogoRasxodCellTitle = worksheet.getCell(`A${column}`);
+    itogoRasxodCellTitle.value = `Жами КТ:`;
+    itogoRasxodCellTitle.note = JSON.stringify({
+      bold: true,
+    });
+
+    const itogoRasxodCellRasxod = worksheet.getCell(`C${column}`);
+    itogoRasxodCellRasxod.value = data.rasxods.summa;
+    itogoRasxodCellRasxod.note = JSON.stringify({
+      bold: true,
+    });
+    column++;
+
+    worksheet.mergeCells(`I${prixod_column}`, `J${prixod_column}`);
+    const itogoPrixodCellTitle = worksheet.getCell(`I${prixod_column}`);
+    itogoPrixodCellTitle.value = `Жами ДБ:`;
+    itogoPrixodCellTitle.note = JSON.stringify({
+      bold: true,
+    });
+
+    const itogoRasxodCellPrixod = worksheet.getCell(`K${prixod_column}`);
+    itogoRasxodCellPrixod.value = itogo_prixod;
+    itogoRasxodCellPrixod.note = JSON.stringify({
+      bold: true,
+    });
+    prixod_column++;
+
+    let rasxod_column = 8;
+    // deep rasxod
+    for (let rasxod in data.rasxods) {
+      if (
+        rasxod !== "summa" &&
+        data.rasxods[rasxod].summa !== 0 &&
+        rasxod === REPORT_RASXOD_SCHET[0]
+      ) {
+        // rasxod
+        worksheet.mergeCells(`E6`, `G6`);
+        const titleCelll = worksheet.getCell(`E6`);
+        titleCelll.value = `${rasxod}-счёт суммаси расшифровкаси`;
+        titleCelll.note = JSON.stringify({
+          bold: true,
+          horizontal: "center",
+        });
+
+        for (let item of data.rasxods[rasxod].items) {
+          const r_prixodCell = worksheet.getCell(`E${rasxod_column}`);
+          r_prixodCell.value = item.schet;
+          r_prixodCell.note = JSON.stringify({
+            horizontal: "center",
+          });
+
+          const r_rasxodCell = worksheet.getCell(`F${rasxod_column}`);
+          r_rasxodCell.value = item.sub_schet;
+          r_rasxodCell.note = JSON.stringify({
+            horizontal: "center",
+          });
+
+          const r_summaCell = worksheet.getCell(`G${rasxod_column}`);
+          r_summaCell.value = item.summa;
+          r_summaCell.note = JSON.stringify({
+            horizontal: "right",
+          });
+
+          rasxod_column++;
+        }
+
+        worksheet.mergeCells(`E${rasxod_column}`, `F${rasxod_column}`);
+        const rasxodTitleCell = worksheet.getCell(`E${rasxod_column}`);
+        rasxodTitleCell.value = `Кредит буйича жами:`;
+        rasxodTitleCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "left",
+        });
+
+        const rasxodCell = worksheet.getCell(`G${rasxod_column}`);
+        rasxodCell.value = data.rasxods[rasxod].summa || 0;
+        rasxodCell.note = JSON.stringify({
+          bold: true,
+          horizontal: "right",
+        });
+        rasxod_column += 2;
+      }
+    }
+
+    let itogo_column = column + 1;
+    worksheet.mergeCells(`A${itogo_column}`, `G${itogo_column}`);
+    worksheet.getCell(`A${itogo_column}`).value =
+      `Остаток к концу дня:               ${this.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
+    itogo_column++;
+
+    let podpis_column =
+      rasxod_column > itogo_column ? rasxod_column + 3 : itogo_column + 3;
+
+    for (let podpis of data.podpis) {
+      worksheet.mergeCells(`A${podpis_column}`, `D${podpis_column}`);
+      const positionCell = worksheet.getCell(`A${podpis_column}`);
+      positionCell.value = ` ${podpis.position} ${podpis.fio}`;
+      positionCell.note = JSON.stringify({
+        horizontal: "left",
+        bold: true,
+        border: null,
+      });
+
+      podpis_column += 4;
+    }
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let height = 20;
+      let argb = "FFFFFFFF";
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      if (rowNumber === 1) {
+        height = 50;
+      }
+
+      if (rowNumber > 1 && rowNumber < 4) {
+        height = 30;
+      }
+
+      if (rowNumber < 8) {
+        bold = true;
+      }
+
+      const _podpis = podpis_column - (data.podpis.length * 4 + 3);
+      if (rowNumber >= _podpis) {
+        border = { bottom: { style: "thin" } };
+        horizontal = "left";
+      }
+
+      worksheet.getRow(rowNumber).height = height;
+
+      row.eachCell((cell, column) => {
+        const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if (rowNumber > 7 && column === 11) {
+          horizontal = "right";
+        } else {
+          horizontal = "center";
+        }
+
+        if (column === 3 && rowNumber > 6 && !cellData.horizontal) {
+          horizontal = "right";
+        }
+
+        if (cellData.bold) {
+          bold = true;
+        } else if (
+          cell.value === "Жами КТ:" ||
+          cell.value === "Жами ДБ:" ||
+          cell.value === "Кредит буйича жами:"
+        ) {
+          bold = true;
+        } else if (!cellData.bold && rowNumber > 7) {
+          bold = false;
+        }
+
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        } else if (
+          cell.value === "Модда" ||
+          cell.value === "Статьяси" ||
+          cell.value === "Сумма"
+        ) {
+          horizontal = "center";
+          bold = true;
+        }
+
+        if (cellData.height) {
+          worksheet.getRow(rowNumber).height = cellData.height;
+        }
+
+        if (rowNumber >= _podpis) {
+          horizontal = "left";
+        }
+
+        if (rowNumber === 4) {
+          horizontal = "left";
+        }
+
+        if (rowNumber === itogo_column - 1) {
+          horizontal = "left";
+          bold = true;
         }
 
         Object.assign(cell, {

@@ -15,7 +15,10 @@ const router = Router();
 router
   .get("/", validator(Controller.monitoring, monitoringSchema))
   .get("/cap", validator(Controller.cap, capSchema))
-
+  .get(
+    "/by-schets",
+    validator(Controller.reportBySchets, Monitoring159Schema.reportBySchets())
+  )
   .get(
     "/daily",
     validator(Controller.daysReport, Monitoring159Schema.daysReport())

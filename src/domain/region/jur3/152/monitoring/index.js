@@ -16,6 +16,10 @@ router
   .get("/", validator(Controller.monitoring, monitoringSchema))
   .get("/cap", validator(Controller.cap, capSchema))
   .get(
+    "/by-schets",
+    validator(Controller.reportBySchets, Monitoring152Schema.reportBySchets())
+  )
+  .get(
     "/daily",
     validator(Controller.daysReport, Monitoring152Schema.daysReport())
   )
@@ -24,8 +28,6 @@ router
     validator(Controller.aktSverka, Monitoring152Schema.aktSverka())
   )
   .get("/prixod/rasxod", validator(Controller.prixodRasxod, prixodRasxodSchema))
-
-  // old
   .get(
     "/prixod",
     validator(Controller.prixodReport, Monitoring152Schema.prixodReport())

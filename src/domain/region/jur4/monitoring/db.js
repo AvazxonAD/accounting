@@ -553,7 +553,7 @@ exports.PodotchetMonitoringDB = class {
         
         SELECT 
             COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-            op.schet,
+            m.jur2_schet AS schet,
             op.sub_schet
         FROM bank_prixod_child ch
         JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
@@ -570,14 +570,14 @@ exports.PodotchetMonitoringDB = class {
             AND op.schet = $5
             AND ch.id_spravochnik_podotchet_litso IS NOT NULL
             ${where}
-        GROUP BY op.schet,
+        GROUP BY m.jur2_schet,
             op.sub_schet
 
             UNION ALL 
 
             SELECT 
                 COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
-                op.schet,
+                m.jur1_schet AS schet,
                 op.sub_schet
             FROM kassa_prixod_child ch
             JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
@@ -594,9 +594,239 @@ exports.PodotchetMonitoringDB = class {
                 AND op.schet = $5
                 AND d.id_podotchet_litso IS NOT NULL
                 ${where}
-        GROUP BY op.schet,
+        GROUP BY m.jur1_schet,
             op.sub_schet
     `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async capDataPrixods(params, podotcbet_id = null, search = null) {
+    const conditions = [];
+
+    if (podotcbet_id) {
+      params.push(podotcbet_id);
+      conditions.push(`p.id = $${params.length}`);
+    }
+
+    if (search) {
+      params.push(search);
+      conditions.push(`(
+                    d.doc_num = $${params.length} OR 
+                    p.name ILIKE '%' || $${params.length} || '%'
+                )`);
+    }
+
+    const where = conditions.length ? `AND ${conditions.join(` AND `)}` : ``;
+
+    const query = `--sql
+            SELECT 
+                COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                m.jur2_schet AS schet
+            FROM bank_rasxod_child ch
+            JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
+            LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso 
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN main_schet AS m ON m.id = d.main_schet_id
+            WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.main_schet_id = $1
+                AND d.doc_date BETWEEN $2 AND $3
+                AND r.id = $4
+                AND op.schet = $5
+                AND ch.id_spravochnik_podotchet_litso IS NOT NULL
+                ${where}
+            GROUP BY m.jur2_schet
+    
+                UNION ALL 
+    
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                    m.jur1_schet
+                FROM kassa_rasxod_child ch
+                JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+                JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
+                JOIN users u ON d.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN main_schet AS m ON m.id = d.main_schet_id
+                WHERE d.isdeleted = false
+                    AND ch.isdeleted = false
+                    AND d.main_schet_id = $1
+                    AND d.doc_date BETWEEN $2 AND $3
+                    AND r.id = $4
+                    AND op.schet = $5
+                    AND d.id_podotchet_litso IS NOT NULL
+                    ${where}
+            GROUP BY m.jur1_schet
+        `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetsRasxods(
+    params,
+    podotcbet_id = null,
+    search = null
+  ) {
+    const conditions = [];
+
+    if (podotcbet_id) {
+      params.push(podotcbet_id);
+      conditions.push(`p.id = $${params.length}`);
+    }
+
+    if (search) {
+      params.push(search);
+      conditions.push(`(
+                    d.doc_num = $${params.length} OR 
+                    p.name ILIKE '%' || $${params.length} || '%'
+                )`);
+    }
+
+    const where = conditions.length ? `AND ${conditions.join(` AND `)}` : ``;
+
+    const query = `--sql
+            SELECT 
+                COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                op.schet
+            FROM avans_otchetlar_jur4_child ch
+            JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN jur_schets AS own ON own.id = d.schet_id
+            WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.main_schet_id = $1
+                AND d.doc_date BETWEEN $2 AND $3
+                AND r.id = $4
+                AND own.schet = $5
+                AND d.spravochnik_podotchet_litso_id IS NOT NULL
+                ${where}
+            GROUP BY op.schet
+    
+            UNION ALL
+            
+            SELECT 
+                COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                m.jur2_schet AS schet
+            FROM bank_prixod_child ch
+            JOIN bank_prixod AS d ON ch.id_bank_prixod = d.id
+            LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso 
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+            JOIN main_schet AS m ON m.id = d.main_schet_id
+            WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.main_schet_id = $1
+                AND d.doc_date BETWEEN $2 AND $3
+                AND r.id = $4
+                AND op.schet = $5
+                AND ch.id_spravochnik_podotchet_litso IS NOT NULL
+                ${where}
+            GROUP BY m.jur2_schet
+    
+                UNION ALL 
+    
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                    m.jur1_schet AS schet
+                FROM kassa_prixod_child ch
+                JOIN kassa_prixod AS d ON ch.kassa_prixod_id = d.id
+                JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
+                JOIN users u ON d.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN main_schet AS m ON m.id = d.main_schet_id
+                WHERE d.isdeleted = false
+                    AND ch.isdeleted = false
+                    AND d.main_schet_id = $1
+                    AND d.doc_date BETWEEN $2 AND $3
+                    AND r.id = $4
+                    AND op.schet = $5
+                    AND d.id_podotchet_litso IS NOT NULL
+                    ${where}
+            GROUP BY m.jur1_schet
+        `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
+  static async reportBySchetsPrixods(
+    params,
+    podotcbet_id = null,
+    search = null
+  ) {
+    const conditions = [];
+
+    if (podotcbet_id) {
+      params.push(podotcbet_id);
+      conditions.push(`p.id = $${params.length}`);
+    }
+
+    if (search) {
+      params.push(search);
+      conditions.push(`(
+                        d.doc_num = $${params.length} OR 
+                        p.name ILIKE '%' || $${params.length} || '%'
+                    )`);
+    }
+
+    const where = conditions.length ? `AND ${conditions.join(` AND `)}` : ``;
+
+    const query = `--sql
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                    m.jur2_schet AS schet
+                FROM bank_rasxod_child ch
+                JOIN bank_rasxod AS d ON ch.id_bank_rasxod = d.id
+                LEFT JOIN spravochnik_podotchet_litso AS p ON p.id = ch.id_spravochnik_podotchet_litso 
+                JOIN users u ON d.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                JOIN main_schet AS m ON m.id = d.main_schet_id
+                WHERE d.isdeleted = false
+                    AND ch.isdeleted = false
+                    AND d.main_schet_id = $1
+                    AND d.doc_date BETWEEN $2 AND $3
+                    AND r.id = $4
+                    AND op.schet = $5
+                    AND ch.id_spravochnik_podotchet_litso IS NOT NULL
+                    ${where}
+                GROUP BY m.jur2_schet
+        
+                    UNION ALL 
+        
+                    SELECT 
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                        m.jur1_schet
+                    FROM kassa_rasxod_child ch
+                    JOIN kassa_rasxod AS d ON ch.kassa_rasxod_id = d.id
+                    JOIN spravochnik_podotchet_litso AS p ON p.id = d.id_podotchet_litso 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                    JOIN main_schet AS m ON m.id = d.main_schet_id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false
+                        AND d.main_schet_id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND r.id = $4
+                        AND op.schet = $5
+                        AND d.id_podotchet_litso IS NOT NULL
+                        ${where}
+                GROUP BY m.jur1_schet
+            `;
 
     const result = await db.query(query, params);
 

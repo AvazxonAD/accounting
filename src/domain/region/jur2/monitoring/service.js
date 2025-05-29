@@ -5,6 +5,26 @@ const path = require(`path`);
 const { HelperFunctions } = require("@helper/functions");
 
 exports.BankMonitoringService = class {
+  static async reportBySchets(data) {
+    const prixods = await BankMonitoringDB.reportBySchetPrixods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+    ]);
+
+    const rasxods = await BankMonitoringDB.reportBySchetRasxods([
+      data.main_schet_id,
+      data.from,
+      data.to,
+      data.region_id,
+    ]);
+
+    const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
+
+    return result;
+  }
+
   static async getSumma(data) {
     const summa = await BankMonitoringDB.getSumma([
       data.region_id,

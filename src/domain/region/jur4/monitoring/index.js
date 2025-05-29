@@ -22,6 +22,13 @@ router
     "/daily",
     validator(Controller.daysReport, PodotchetMonitoringSchema.daysReport())
   )
+  .get(
+    "/by-schets",
+    validator(
+      Controller.reportBySchets,
+      PodotchetMonitoringSchema.reportBySchets()
+    )
+  )
   .get("/cap", validator(Controller.cap, capSchema));
 
 module.exports = router;

@@ -6,9 +6,11 @@ const { HelperFunctions } = require("@helper/functions");
 const { ReportTitleService } = require("@report_title/service");
 const { PodpisService } = require("@podpis/service");
 const { ValidatorFunctions } = require("@helper/database.validator");
+const { SaldoService } = require("../saldo/service");
+const { LIMIT } = require("../../../../helper/constants");
 
 exports.Controller = class {
-  static async reportBySchet(req, res) {
+  static async reportBySchets(req, res) {
     const { main_schet_id, month, excel, is_year } = req.query;
     const { region_id } = req.user;
     let months;
@@ -22,7 +24,7 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const { schets, itogo } = await Jur7MonitoringService.reportBySchet({
+    const { schets, itogo } = await Jur7MonitoringService.reportBySchets({
       region_id,
       from,
       months,
@@ -78,6 +80,12 @@ exports.Controller = class {
       offset,
     });
 
+    const { from_summa, to_summa } = await SaldoService.getByProduct({
+      ...req.query,
+      region_id,
+      offset,
+    });
+
     const pageCount = Math.ceil(total / limit);
     const meta = {
       pageCount: pageCount,
@@ -89,6 +97,8 @@ exports.Controller = class {
       currentPage: page,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
+      from_summa,
+      to_summa,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
@@ -646,11 +656,18 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const data = await Jur7MonitoringService.cap({
+    const { rasxods, prixods } = await Jur7MonitoringService.cap({
       region_id,
       year,
       month,
       main_schet_id,
+    });
+
+    const { from_summa, to_summa } = await SaldoService.getByProduct({
+      ...req.query,
+      region_id,
+      offset: 0,
+      limit: LIMIT,
     });
 
     const date = HelperFunctions.getMonthStartEnd({ year, month });
@@ -672,17 +689,93 @@ exports.Controller = class {
 
       const podpis = await PodpisService.get({ region_id, type: "cap" });
       const { fileName, filePath } = await Jur7MonitoringService.capExcel({
-        rasxods: data,
+        rasxods,
+        prixods,
+        summa_from: from_summa,
+        summa_to: to_summa,
         report_title,
         from: date[0],
         to: date[1],
         region,
         budjet,
         podpis,
+        rasxods,
+        prixods,
         title: "МАТЕРИАЛ ОМБОРИ ХИСОБОТИ",
         file_name: "material",
         order: 7,
       });
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      return res.download(filePath);
+    }
+    return res.success(req.i18n.t("getSuccess"), 200, null, data);
+  }
+
+  static async reportBySchets(req, res) {
+    const region_id = req.user.region_id;
+    const {
+      year,
+      budjet_id,
+      month,
+      main_schet_id,
+      excel,
+      report_title_id,
+      from,
+      to,
+    } = req.query;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const data = await Jur7MonitoringService.reportBySchetsData({
+      region_id,
+      year,
+      month,
+      main_schet_id,
+    });
+
+    const { from_summa, to_summa } = await SaldoService.getByProduct({
+      ...req.query,
+      region_id,
+      offset: 0,
+      limit: LIMIT,
+    });
+
+    if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
+
+      const budjet = await BudjetService.getById({ id: budjet_id });
+      if (!budjet) {
+        return res.error(req.i18n.t("budjetNotFound"), 400);
+      }
+
+      const report_title = await ReportTitleService.getById({
+        id: report_title_id,
+      });
+      if (!report_title) {
+        return res.error(req.i18n.t("reportTitleNotFound"), 404);
+      }
+
+      const podpis = await PodpisService.get({ region_id, type: "cap" });
+      const { fileName, filePath } =
+        await Jur7MonitoringService.reportBySchetExcelData({
+          ...data,
+          from,
+          region,
+          to,
+          podpis,
+          file_name: "jur7",
+          order: 7,
+          summa_from: from_summa,
+          summa_to: to_summa,
+          report_title,
+        });
       res.setHeader(
         "Content-Type",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
