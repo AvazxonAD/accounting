@@ -718,7 +718,7 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, null, data);
   }
 
-  static async reportBySchets(req, res) {
+  static async reportBySchetsData(req, res) {
     const region_id = req.user.region_id;
     const {
       year,

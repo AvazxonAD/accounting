@@ -94,7 +94,7 @@ exports.Schema = class {
     }).options({ stripUnknown: true });
   }
 
-  static reportBySchets() {
+  static reportBySchetsData() {
     return Joi.object({
       query: Joi.object({
         budjet_id: Joi.number().integer().min(1).required(),

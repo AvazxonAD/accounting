@@ -86,21 +86,21 @@ exports.Jur7MonitoringService = class {
       month: data.month,
     });
 
-    const rasxods = await Jur7MonitoringDB.capData([
+    const rasxods = await Jur7MonitoringDB.reportBySchetsRasxods([
       data.region_id,
       date[0],
       date[1],
       data.main_schet_id,
     ]);
 
-    const internals = await Jur7MonitoringDB.capData([
+    const internals = await Jur7MonitoringDB.reportBySchetsInternals([
       data.region_id,
       date[0],
       date[1],
       data.main_schet_id,
     ]);
 
-    const prixods = await Jur7MonitoringDB.capDataPrixods([
+    const prixods = await Jur7MonitoringDB.reportBySchetsPrixods([
       data.region_id,
       date[0],
       date[1],

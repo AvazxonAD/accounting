@@ -9,7 +9,7 @@ router
   .get("/cap/report", validator(Controller.cap, Schema.capSchema()))
   .get(
     "/by-schets",
-    validator(Controller.reportBySchets, Schema.reportBySchets())
+    validator(Controller.reportBySchetsData, Schema.reportBySchetsData())
   )
   .get("/", validator(Controller.monitoring, Schema.monitoring()))
   .get("/schet", validator(Controller.reportBySchets, Schema.reportBySchets()))
