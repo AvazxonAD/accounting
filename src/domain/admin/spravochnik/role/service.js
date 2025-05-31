@@ -16,11 +16,8 @@ exports.RoleService = class {
     }
     let result = null;
     await db.transaction(async (client) => {
-      result = await RoleDB.createRole(
-        [name, tashkentTime(), tashkentTime()],
-        client
-      );
-      const regions = await RegionDB.getRegion([0, 99999999], null, client);
+      result = await RoleDB.createRole([name, tashkentTime(), tashkentTime()], client);
+      const regions = await RegionDB.get([0, 99999999], null, client);
       const params = regions.data.reduce((acc, obj) => {
         return acc.concat(result.id, obj.id, tashkentTime(), tashkentTime());
       }, []);

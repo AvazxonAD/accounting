@@ -64,16 +64,7 @@ exports.Controller = class {
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const {
-      page,
-      limit,
-      main_schet_id,
-      organ_id,
-      pudratchi_bool,
-      search,
-      order_by,
-      order_type,
-    } = req.query;
+    const { page, limit, main_schet_id, organ_id, pudratchi_bool, search, order_by, order_type } = req.query;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 

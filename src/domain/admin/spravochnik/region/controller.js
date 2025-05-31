@@ -18,10 +18,7 @@ exports.Controller = class {
 
     let result = null;
     await db.transaction(async (client) => {
-      result = await RegionDB.createRegion(
-        [name, tashkentTime(), tashkentTime()],
-        client
-      );
+      result = await RegionDB.createRegion([name, tashkentTime(), tashkentTime()], client);
 
       const { data: roles } = await RoleDB.getRole([0, 999999], null, client);
 
@@ -40,12 +37,12 @@ exports.Controller = class {
     });
   }
 
-  static async getRegion(req, res) {
+  static async get(req, res) {
     const { page, limit, search } = req.query;
 
     const offset = (page - 1) * limit;
 
-    const { data, total } = await RegionDB.getRegion([offset, limit], search);
+    const { data, total } = await RegionDB.get([offset, limit], search);
 
     const ids = data.map((item) => item.id);
     logRequest("get", { type: "region", id: ids, user_id: req.user.id });

@@ -10,10 +10,7 @@ const {
 const { pool } = require("@db/index");
 const ErrorResponse = require("@helper/error.response");
 const xlsx = require("xlsx");
-const {
-  operatsiiValidation,
-  operatsiiQueryValidation,
-} = require("@helper/validation");
+const { operatsiiValidation, operatsiiQueryValidation } = require("@helper/validation");
 const { SmetaDB } = require("@smeta/db");
 const { errorCatch } = require("@helper/functions");
 const { resFunc } = require("@helper/functions");
@@ -41,15 +38,9 @@ const Controller = class {
   }
 
   static async templateFile(req, res) {
-    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile(
-      "operatsii.xlsx",
-      req.i18n
-    );
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile("operatsii.xlsx", req.i18n);
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
@@ -66,14 +57,8 @@ const Controller = class {
     if (excel === "true") {
       const { fileName, filePath } = await OperatsiiService.export(data);
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -124,16 +109,10 @@ const createOperatsii = async (req, res) => {
 // get all
 const getOperatsii = async (req, res) => {
   try {
-    const {
-      page,
-      limit,
-      type_schet,
-      search,
-      meta_search,
-      schet,
-      sub_schet,
-      budjet_id,
-    } = validationResponse(operatsiiQueryValidation, req.query);
+    const { page, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id } = validationResponse(
+      operatsiiQueryValidation,
+      req.query
+    );
     const offset = (page - 1) * limit;
     const { result, total } = await getAllOperatsiiService(
       offset,
@@ -256,9 +235,7 @@ const importToExcel = async (req, res) => {
       [rowData.name, rowData.schet, rowData.sub_schet, rowData.type_schet]
     );
     if (!result.rows[0]) {
-      return next(
-        new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500)
-      );
+      return next(new ErrorResponse("Server xatolik. Malumot kiritilmadi", 500));
     }
   }
 

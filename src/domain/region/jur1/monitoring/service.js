@@ -26,26 +26,14 @@ exports.KassaMonitoringService = class {
   }
 
   static async getSumma(data) {
-    const summa = await KassaMonitoringDB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.from,
-      data.to,
-    ]);
+    const summa = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from, data.to]);
 
     return summa;
   }
 
   static async get(data) {
     const result = await KassaMonitoringDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit],
       data.search,
       data.order_by || "doc_date",
       data.order_type || "ASC"
@@ -75,10 +63,7 @@ exports.KassaMonitoringService = class {
       true
     );
 
-    const summa_to = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, from, data.to],
-      data.search
-    );
+    const summa_to = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.to], data.search);
 
     return {
       data: result.data || [],
@@ -94,19 +79,9 @@ exports.KassaMonitoringService = class {
   }
 
   static async cap(data) {
-    let result = await KassaMonitoringDB.capData([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    let result = await KassaMonitoringDB.capData([data.main_schet_id, data.from, data.to, data.region_id]);
 
-    const prixods = await KassaMonitoringDB.capDataPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const prixods = await KassaMonitoringDB.capDataPrixods([data.main_schet_id, data.from, data.to, data.region_id]);
 
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
@@ -129,12 +104,7 @@ exports.KassaMonitoringService = class {
   }
 
   static async daysReport(data) {
-    const result = await KassaMonitoringDB.daysReport([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const result = await KassaMonitoringDB.daysReport([data.main_schet_id, data.from, data.to, data.region_id]);
 
     const summa_from = await KassaMonitoringDB.getSumma(
       [data.region_id, data.main_schet_id, data.from],
@@ -173,12 +143,7 @@ exports.KassaMonitoringService = class {
   }
 
   static async prixodReport(data) {
-    const result = await KassaMonitoringDB.prixodReport([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const result = await KassaMonitoringDB.prixodReport([data.main_schet_id, data.from, data.to, data.region_id]);
 
     let prixod_summa = 0;
     for (let prixod of result) {
@@ -193,12 +158,10 @@ exports.KassaMonitoringService = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -311,11 +274,7 @@ exports.KassaMonitoringService = class {
       row.eachCell((cell, column) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
-        if (
-          (column === 5 || column === 6) &&
-          rowNumber > 8 &&
-          !cellData.horizontal
-        ) {
+        if ((column === 5 || column === 6) && rowNumber > 8 && !cellData.horizontal) {
           horizontal = "right";
         } else if (column > 6 && rowNumber > 8) {
           horizontal = "center";

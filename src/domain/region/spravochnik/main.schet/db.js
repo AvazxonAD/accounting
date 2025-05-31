@@ -176,6 +176,71 @@ exports.MainSchetDB = class {
     return result[0];
   }
 
+  static async getByRegionId(params) {
+    const query = `
+      SELECT
+        m.id,
+        m.account_number, 
+        m.jur1_schet, 
+        m.jur2_schet, 
+        b.name AS budjet_name,
+        b.id AS budjet_id,
+        COALESCE(
+          (
+            SELECT JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', j.id,
+                'schet', j.schet
+              )
+            )
+            FROM jur_schets j
+            WHERE j.main_schet_id = m.id
+              AND j.isdeleted = false
+              AND j.type = '159'
+          )
+        , '[]'::JSON) AS jur3_schets_159,
+        COALESCE(
+          (
+            SELECT JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', j.id,
+                'schet', j.schet
+              )
+            )
+            FROM jur_schets j
+            WHERE j.main_schet_id = m.id
+              AND j.isdeleted = false
+              AND j.type = '152'
+          )
+        , '[]'::JSON) AS jur3_schets_152,
+        COALESCE(
+          (
+            SELECT JSON_AGG(
+              JSON_BUILD_OBJECT(
+                'id', j.id,
+                'schet', j.schet
+              )
+            )
+            FROM jur_schets j
+            WHERE j.main_schet_id = m.id
+              AND j.isdeleted = false
+              AND j.type = 'jur4'
+          )
+        , '[]'::JSON ) AS jur4_schets
+      FROM main_schet m
+      JOIN users u ON m.user_id = u.id
+      JOIN regions r ON u.region_id = r.id
+      JOIN spravochnik_budjet_name b ON b.id = m.spravochnik_budjet_name_id
+      WHERE m.isdeleted = false
+        AND r.id = $1
+        AND b.isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+
+    return result;
+  }
+
   static async getByAccount(params) {
     const query = `--sql
       SELECT
@@ -265,15 +330,9 @@ exports.MainSchetDB = class {
   }
 
   static async delete(params, client) {
-    const result = await client.query(
-      `UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
+    const result = await client.query(`UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
-    await client.query(
-      `UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`,
-      params
-    );
+    await client.query(`UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`, params);
 
     return result.rows[0];
   }

@@ -19,14 +19,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("smetaNotFound"), 404);
     }
 
-    const general_data = need_data[sort_order].sub_childs.find(
-      (item) => item.smeta_id === smeta_id
-    );
+    const general_data = need_data[sort_order].sub_childs.find((item) => item.smeta_id === smeta_id);
 
     if (sort_order === 0 || sort_order === 5) {
-      docs.push(
-        need_data[sort_order].sub_childs.find((item) => item.id === smeta_id)
-      );
+      docs.push(need_data[sort_order].sub_childs.find((item) => item.id === smeta_id));
     } else if (sort_order === 1 || sort_order === 6) {
       const months = sort_order === 1 ? [month] : [1, month];
 
@@ -56,13 +52,9 @@ exports.Controller = class {
       const grafik_index = sort_order === 4 ? 0 : 5;
       const rasxod_index = sort_order === 4 ? 3 : 8;
 
-      const grafik_data = need_data[grafik_index].sub_childs.find(
-        (item) => item.id === smeta_id
-      );
+      const grafik_data = need_data[grafik_index].sub_childs.find((item) => item.id === smeta_id);
 
-      const jur1_jur2_rasxod_data = need_data[rasxod_index].sub_childs.find(
-        (item) => item.id === smeta_id
-      );
+      const jur1_jur2_rasxod_data = need_data[rasxod_index].sub_childs.find((item) => item.id === smeta_id);
 
       docs.push({
         grafik_data,
@@ -233,14 +225,8 @@ exports.Controller = class {
         report_title,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${file_name}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${file_name}"`);
 
       return res.sendFile(file_path);
     }

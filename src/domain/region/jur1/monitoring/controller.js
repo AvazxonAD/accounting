@@ -10,8 +10,7 @@ const { KassaSaldoService } = require(`@jur1_saldo/service`);
 
 exports.Controller = class {
   static async reportBySchets(req, res) {
-    const { from, to, main_schet_id, excel, report_title_id, budjet_id } =
-      req.query;
+    const { from, to, main_schet_id, excel, report_title_id, budjet_id } = req.query;
     const region_id = req.user.region_id;
 
     const report_title = await ReportTitleService.getById({
@@ -70,14 +69,8 @@ exports.Controller = class {
         report_title,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       return res.sendFile(filePath);
     }
 
@@ -144,8 +137,7 @@ exports.Controller = class {
   }
 
   static async cap(req, res) {
-    const { from, to, main_schet_id, excel, report_title_id, budjet_id } =
-      req.query;
+    const { from, to, main_schet_id, excel, report_title_id, budjet_id } = req.query;
     const region_id = req.user.region_id;
 
     const report_title = await ReportTitleService.getById({
@@ -215,14 +207,8 @@ exports.Controller = class {
         summa_to,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       return res.sendFile(filePath);
     }
 
@@ -230,8 +216,7 @@ exports.Controller = class {
   }
 
   static async daysReport(req, res) {
-    const { from, to, main_schet_id, budjet_id, report_title_id, excel } =
-      req.query;
+    const { from, to, main_schet_id, budjet_id, report_title_id, excel } = req.query;
     const region_id = req.user.region_id;
 
     const main_schet = await MainSchetService.getById({
@@ -269,31 +254,24 @@ exports.Controller = class {
         type: REPORT_TYPE.days_report,
       });
 
-      const { fileName, filePath } =
-        await HelperFunctions.daysReportPodotchetExcel({
-          ...data,
-          from,
-          region,
-          to,
-          main_schet,
-          report_title,
-          region_id,
-          title: "Касса кунлик ҳисоботи",
-          file_name: "kassa",
-          podpis,
-          budjet,
-          schet: main_schet.jur1_schet,
-          order: 1,
-        });
+      const { fileName, filePath } = await HelperFunctions.daysReportPodotchetExcel({
+        ...data,
+        from,
+        region,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        title: "Касса кунлик ҳисоботи",
+        file_name: "kassa",
+        podpis,
+        budjet,
+        schet: main_schet.jur1_schet,
+        order: 1,
+      });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -302,8 +280,7 @@ exports.Controller = class {
   }
 
   static async prixodReport(req, res) {
-    const { from, to, main_schet_id, budjet_id, report_title_id, excel } =
-      req.query;
+    const { from, to, main_schet_id, budjet_id, report_title_id, excel } = req.query;
     const region_id = req.user.region_id;
 
     const main_schet = await MainSchetService.getById({
@@ -349,31 +326,24 @@ exports.Controller = class {
         type: REPORT_TYPE.days_report,
       });
 
-      const { fileName, filePath } =
-        await KassaMonitoringService.prixodReportExcel({
-          ...data,
-          from,
-          region,
-          to,
-          main_schet,
-          report_title,
-          region_id,
-          title: "Приход ҳисоботи",
-          file_name: "kassa",
-          podpis,
-          budjet,
-          schet: main_schet.jur1_schet,
-          order: 1,
-        });
+      const { fileName, filePath } = await KassaMonitoringService.prixodReportExcel({
+        ...data,
+        from,
+        region,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        title: "Приход ҳисоботи",
+        file_name: "kassa",
+        podpis,
+        budjet,
+        schet: main_schet.jur1_schet,
+        order: 1,
+      });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }

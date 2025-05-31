@@ -1,4 +1,4 @@
-const { SaldoDB } = require("@admin_saldo/db");
+const { SaldoDB } = require("@admin_jur7/db");
 
 exports.SaldoService = class {
   static async getByResponsibles(data) {
@@ -35,13 +35,9 @@ exports.SaldoService = class {
         product.to.sena = product.to.summa / product.to.kol;
       }
 
-      responsible.products = responsible.products.filter(
-        (item) => item.to.kol !== 0 && item.to.summa !== 0
-      );
+      responsible.products = responsible.products.filter((item) => item.to.kol !== 0 && item.to.summa !== 0);
     }
-    const result = await data.responsibles.filter(
-      (item) => item.products.length !== 0
-    );
+    const result = await data.responsibles.filter((item) => item.products.length !== 0);
 
     return result;
   }

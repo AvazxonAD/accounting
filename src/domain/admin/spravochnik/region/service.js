@@ -1,9 +1,15 @@
-const { RegionDB } = require('./db');
+const { RegionDB } = require("./db");
 
 exports.RegionService = class {
-    static async getById(data) {
-        const result = await RegionDB.getById([data.id], data.isdeleted);
+  static async getById(data) {
+    const result = await RegionDB.getById([data.id], data.isdeleted);
 
-        return result;
-    }
-}
+    return result;
+  }
+
+  static async get(data) {
+    const result = await RegionDB.get([data.offset, data.limit]);
+
+    return result;
+  }
+};

@@ -19,29 +19,15 @@ exports.Controller = class {
 
     const general_data = need_data.find((item) => item.smeta_id === smeta_id);
 
-    const grafik_month = general_data?.by_month.find(
-      (item) => item.id === grafik_id
-    );
+    const grafik_month = general_data?.by_month.find((item) => item.id === grafik_id);
 
-    const grafik_year = general_data?.by_year.find(
-      (item) => item.id === grafik_id
-    );
+    const grafik_year = general_data?.by_year.find((item) => item.id === grafik_id);
 
-    if (
-      (type === "contract_grafik_month" ||
-        type === "rasxod_month" ||
-        type === "remaining_month") &&
-      !grafik_month
-    ) {
+    if ((type === "contract_grafik_month" || type === "rasxod_month" || type === "remaining_month") && !grafik_month) {
       return res.error(req.i18n.t("validationError"), 400);
     }
 
-    if (
-      (type === "contract_grafik_year" ||
-        type === "rasxod_year" ||
-        type === "remaining_year") &&
-      !grafik_year
-    ) {
+    if ((type === "contract_grafik_year" || type === "rasxod_year" || type === "remaining_year") && !grafik_year) {
       return res.error(req.i18n.t("validationError"), 400);
     }
 
@@ -291,14 +277,8 @@ exports.Controller = class {
         meta,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${file_name}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${file_name}"`);
 
       return res.sendFile(file_path);
     }

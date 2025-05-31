@@ -59,23 +59,17 @@ exports.ValidatorFunctions = class {
 
     if (data.schet_id) {
       if (data.type === "159") {
-        schet = main_schet.jur3_schets_159.find(
-          (item) => item.id === data.schet_id
-        );
+        schet = main_schet.jur3_schets_159.find((item) => item.id === data.schet_id);
         if (!schet) {
           schet_check = false;
         }
       } else if (data.type === "152") {
-        schet = main_schet.jur3_schets_152.find(
-          (item) => item.id === data.schet_id
-        );
+        schet = main_schet.jur3_schets_152.find((item) => item.id === data.schet_id);
         if (!schet) {
           schet_check = false;
         }
       } else if (data.type === "jur4") {
-        schet = main_schet.jur4_schets.find(
-          (item) => item.id === data.schet_id
-        );
+        schet = main_schet.jur4_schets.find((item) => item.id === data.schet_id);
         if (!schet) {
           schet_check = false;
         }

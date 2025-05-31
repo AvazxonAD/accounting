@@ -11,10 +11,7 @@ exports.Controller = class {
 
     const { fileName, filePath } = await GroupService.export(data);
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.sendFile(filePath);
@@ -23,10 +20,7 @@ exports.Controller = class {
   static async templateFile(req, res) {
     const { fileName, fileRes } = await GroupService.templateFile();
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
