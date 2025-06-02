@@ -8,7 +8,7 @@ exports.RegionService = class {
   }
 
   static async get(data) {
-    const result = await RegionDB.get([data.offset, data.limit]);
+    const result = await RegionDB.get([data.offset, data.limit], data.search);
 
     return result;
   }

@@ -1,6 +1,6 @@
 const { Joi } = require(`@helper/joi`);
 
-exports.Jur1MonitoringSchema = class {
+exports.Jur2MonitoringSchema = class {
   static get() {
     return Joi.object({
       query: Joi.object({
