@@ -23,13 +23,30 @@ router
     validator(Controller.getByProduct, SaldoSchema.getByProduct())
   )
 
+  .get(
+    "/check-create",
+    Middleware.jur7Block,
+    validator(Controller.checkFirst, SaldoSchema.checkFirst())
+  )
+
+  .delete(
+    "/by-group",
+    Middleware.jur7Block,
+    validator(Controller.deleteByGroup, SaldoSchema.deleteByGroup())
+  )
+
   .delete(
     "/",
     Middleware.jur7Block,
     validator(Controller.delete, SaldoSchema.delete())
   )
+
   .delete("/clean", validator(Controller.cleanData, SaldoSchema.cleanData()))
 
+  .post(
+    "/by-group",
+    validator(Controller.createByGroup, SaldoSchema.createByGroup())
+  )
   .post("/", validator(Controller.create, SaldoSchema.create()))
 
   .get("/template", validator(Controller.templateFile))

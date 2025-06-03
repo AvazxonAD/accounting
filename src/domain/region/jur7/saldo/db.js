@@ -322,10 +322,10 @@ exports.SaldoDB = class {
               DISTINCT
                 s.year,
                 s.month,
-                m.id AS         budjet_id,
+                m.id AS         main_schet_id,
                 m.account_number
             FROM saldo_naimenovanie_jur7 s
-            LEFT JOIN main_schet m ON m.id = s.budjet_id 
+            LEFT JOIN main_schet m ON m.id = s.main_schet_id
             WHERE s.region_id = $1
                 AND s.isdeleted = false
                 AND m.id = $2
@@ -370,6 +370,23 @@ exports.SaldoDB = class {
         AND year = $3
         AND main_schet_id = $4
         AND type != 'prixod'
+    `;
+
+    await db.query(query, params);
+  }
+
+  static async deleteByGroup(params) {
+    const query = `--sql
+      DELETE FROM saldo_naimenovanie_jur7
+      USING naimenovanie_tovarov_jur7
+      WHERE saldo_naimenovanie_jur7.naimenovanie_tovarov_jur7_id = naimenovanie_tovarov_jur7.id
+        AND saldo_naimenovanie_jur7.region_id = $1
+        AND saldo_naimenovanie_jur7.month = $2
+        AND saldo_naimenovanie_jur7.year = $3
+        AND saldo_naimenovanie_jur7.main_schet_id = $4
+        AND saldo_naimenovanie_jur7.type != 'prixod'
+        AND naimenovanie_tovarov_jur7.name = $5
+        AND naimenovanie_tovarov_jur7.group_jur7_id = $6;
     `;
 
     await db.query(query, params);

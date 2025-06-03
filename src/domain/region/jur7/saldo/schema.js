@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { query } = require("winston");
 
 exports.SaldoSchema = class {
   static import() {
@@ -74,6 +75,50 @@ exports.SaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static createByGroup() {
+    return Joi.object({
+      body: Joi.object({
+        data: Joi.array()
+          .required()
+          .min(1)
+          .items(
+            Joi.object({
+              responsible_id: Joi.number()
+                .min(1)
+                .required()
+                .integer()
+                .max(2147483647),
+              group_jur7_id: Joi.number().min(1).integer().required(),
+              doc_date: Joi.string()
+                .trim()
+                .pattern(
+                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+                ),
+              iznos_start: Joi.string()
+                .trim()
+                .pattern(
+                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
+                ),
+              doc_num: Joi.string().allow(null, ""),
+              name: Joi.string().trim().required(),
+              edin: Joi.string().trim().required(),
+              kol: Joi.number().greater(0).required(),
+              summa: Joi.number().min(0).required(),
+              inventar_num: Joi.any(),
+              serial_num: Joi.any(),
+              eski_iznos_summa: Joi.number().min(0).default(0),
+            })
+          ),
+      }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+        budjet_id: Joi.number().integer().min(1).required(),
+        year: Joi.number().min(1901).required(),
+        month: Joi.number().min(1).max(12).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static get() {
     return Joi.object({
       query: Joi.object({
@@ -118,6 +163,16 @@ exports.SaldoSchema = class {
     }).options({ stripUnknown: true });
   }
 
+  static checkFirst() {
+    return Joi.object({
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+        year: Joi.number().min(1901).required(),
+        month: Joi.number().min(1).max(12).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
   static create() {
     return Joi.object({
       body: Joi.object({
@@ -149,6 +204,18 @@ exports.SaldoSchema = class {
       query: Joi.object({
         main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required(),
+      }),
+    }).options({ stripUnknown: true });
+  }
+
+  static deleteByGroup() {
+    return Joi.object({
+      query: Joi.object({
+        year: Joi.number().min(1901).max(2099).required().integer(),
+        month: Joi.number().min(1).max(12).required().integer(),
+        main_schet_id: Joi.number().integer().min(1).required(),
+        group_id: Joi.number().integer().min(1).required(),
+        name: Joi.string().trim().required(),
       }),
     }).options({ stripUnknown: true });
   }

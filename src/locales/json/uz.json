@@ -5,6 +5,7 @@
   "conflictError": "Hujjat bilan bog'liq documentlar bor",
   "success": "{{data}} muvaffaqiyatli",
   "readFileSuccess": "File muvaffaqiyatli oqib olindi",
+  "firstEndSaldoError": "Faqat import qilish vaqtida ushbu amaldan foydalana olasiz!",
   "accountNumberSchetExists": "Ushbu schet raqam allaqachon kiritilgan!",
   "accountNumberSchetNotFound": "Xisob raqamning shchet raqami topilmadi!",
   "jur7Block": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",
