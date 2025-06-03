@@ -9,7 +9,7 @@ const { AccountNumberService } = require("@account_number/service");
 const { HelperFunctions } = require("@helper/functions");
 const { CODE } = require("@helper/constants");
 const { PrixodJur7Schema } = require("./schema");
-const { SaldoService } = require(`@jur7_saldo/service`);
+const { Jur7SaldoService } = require(`@jur7_saldo/service`);
 const { MainSchetService } = require(`@main_schet/service`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { RegionService } = require("@region/service");
@@ -30,15 +30,9 @@ exports.Controller = class {
   }
 
   static async templateImport(req, res) {
-    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile(
-      "prixod.xlsx",
-      req.i18n
-    );
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile("prixod.xlsx", req.i18n);
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
@@ -138,9 +132,7 @@ exports.Controller = class {
       }
 
       if (shartnoma_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === shartnoma_grafik_id
-        );
+        const grafik = contract.grafiks.find((item) => item.id === shartnoma_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t("grafikNotFound"), 404);
         }
@@ -176,7 +168,7 @@ exports.Controller = class {
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
-    const check_saldo = await SaldoService.check({
+    const check_saldo = await Jur7SaldoService.check({
       region_id,
       main_schet_id,
       year: new Date(doc_date).getFullYear(),
@@ -201,12 +193,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("createSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("createSuccess"), 200, result.dates, result.doc);
   }
 
   static async get(req, res) {
@@ -274,14 +261,8 @@ exports.Controller = class {
         podpis,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -367,9 +348,7 @@ exports.Controller = class {
       }
 
       if (shartnoma_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === shartnoma_grafik_id
-        );
+        const grafik = contract.grafiks.find((item) => item.id === shartnoma_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t("grafikNotFound"), 404);
         }
@@ -405,7 +384,7 @@ exports.Controller = class {
       child.old_iznos = child.eski_iznos_summa / child.kol;
     }
 
-    const check_saldo = await SaldoService.check({
+    const check_saldo = await Jur7SaldoService.check({
       region_id,
       main_schet_id,
       year: new Date(doc_date).getFullYear(),
@@ -431,12 +410,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, result.dates, result.doc);
   }
 
   static async delete(req, res) {
@@ -468,7 +442,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const check_saldo = await SaldoService.check({
+    const check_saldo = await Jur7SaldoService.check({
       region_id,
       main_schet_id,
       year: new Date(old_data.doc_date).getFullYear(),
@@ -504,12 +478,7 @@ exports.Controller = class {
       old_data,
     });
 
-    return res.success(
-      req.i18n.t("deleteSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("deleteSuccess"), 200, result.dates, result.doc);
   }
 
   static async getPrixodReport(req, res) {
@@ -525,10 +494,7 @@ exports.Controller = class {
       to,
     });
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.sendFile(filePath);

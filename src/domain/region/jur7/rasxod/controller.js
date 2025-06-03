@@ -2,7 +2,7 @@ const { checkTovarId } = require("@helper/functions");
 const { ResponsibleService } = require("@responsible/service");
 const { ProductService } = require("@product/service");
 const { Jur7RsxodService } = require("./service");
-const { SaldoService } = require("@jur7_saldo/service");
+const { Jur7SaldoService } = require("@jur7_saldo/service");
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { PodpisService } = require("@podpis/service");
 const { RegionService } = require("@region/service");
@@ -24,7 +24,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("responsibleNotFound"), 404);
     }
 
-    const check_saldo = await SaldoService.check({
+    const check_saldo = await Jur7SaldoService.check({
       region_id,
       main_schet_id,
       year: new Date(doc_date).getFullYear(),
@@ -43,7 +43,7 @@ exports.Controller = class {
         return res.error(req.i18n.t("productNotFound"), 404);
       }
 
-      const { data } = await SaldoService.getByProduct({
+      const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,
         region_id,
         to: doc_date,
@@ -74,12 +74,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("createSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("createSuccess"), 200, result.dates, result.doc);
   }
 
   static async getById(req, res) {
@@ -113,14 +108,8 @@ exports.Controller = class {
         podpis,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -157,7 +146,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("responsibleNotFound", 404));
     }
 
-    const check_saldo = await SaldoService.check({
+    const check_saldo = await Jur7SaldoService.check({
       region_id,
       main_schet_id,
       year: new Date(doc_date).getFullYear(),
@@ -177,13 +166,10 @@ exports.Controller = class {
       }
 
       const old_kol =
-        old_data.childs.find(
-          (item) =>
-            item.naimenovanie_tovarov_jur7_id ===
-            child.naimenovanie_tovarov_jur7_id
-        )?.kol || 0;
+        old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol ||
+        0;
 
-      const { data } = await SaldoService.getByProduct({
+      const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,
         region_id,
         to: doc_date,
@@ -217,12 +203,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, result.dates, result.doc);
   }
 
   static async delete(req, res) {
@@ -244,7 +225,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    const check_saldo = await SaldoService.check({
+    const check_saldo = await Jur7SaldoService.check({
       region_id,
       main_schet_id,
       year: new Date(data.doc_date).getFullYear(),
@@ -261,12 +242,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.error(
-      req.i18n.t("deleteSuccess"),
-      200,
-      response.dates,
-      response.doc
-    );
+    return res.error(req.i18n.t("deleteSuccess"), 200, response.dates, response.doc);
   }
 
   static async get(req, res) {

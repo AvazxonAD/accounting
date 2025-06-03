@@ -1,78 +1,99 @@
-const { SaldoDB } = require("@admin_jur7/db");
+// const { SaldoDB } = require("@admin_jur7/db");
 
-exports.SaldoService = class {
-  static async getByResponsibles(data) {
-    const month = new Date(data.to).getMonth() + 1;
-    const year = new Date(data.to).getFullYear();
+// exports.Jur7SaldoService = class {
+//   static async getByResponsibles(data) {
+//     const month = new Date(data.to).getMonth() + 1;
+//     const year = new Date(data.to).getFullYear();
 
-    for (let responsible of data.responsibles) {
-      const products = await SaldoDB.get(
-        [year, month, 0, 99999999],
-        responsible.id,
-        data.search,
-        data.product_id,
-        data.region_id
-      );
-      responsible.products = products.data;
-      for (let product of responsible.products) {
-        product.from = {
-          kol: product.kol,
-          sena: product.sena,
-          summa: product.summa,
-        };
+//     for (let responsible of data.responsibles) {
+//       const products = await SaldoDB.get(
+//         [year, month, 0, 99999999],
+//         responsible.id,
+//         data.search,
+//         data.product_id,
+//         data.region_id
+//       );
+//       responsible.products = products.data;
+//       for (let product of responsible.products) {
+//         product.from = {
+//           kol: product.kol,
+//           sena: product.sena,
+//           summa: product.summa,
+//         };
 
-        product.internal = await SaldoDB.getKolAndSumma(
-          [product.naimenovanie_tovarov_jur7_id],
-          `${year}-${month < 10 ? `0${month}` : month}-01`,
-          data.to,
-          responsible.id
-        );
+//         product.internal = await SaldoDB.getKolAndSumma(
+//           [product.naimenovanie_tovarov_jur7_id],
+//           `${year}-${month < 10 ? `0${month}` : month}-01`,
+//           data.to,
+//           responsible.id
+//         );
 
-        product.to = {
-          kol: product.from.kol + product.internal.kol,
-          summa: product.from.summa + product.internal.summa,
-        };
-        product.to.sena = product.to.summa / product.to.kol;
-      }
+//         product.to = {
+//           kol: product.from.kol + product.internal.kol,
+//           summa: product.from.summa + product.internal.summa,
+//         };
+//         product.to.sena = product.to.summa / product.to.kol;
+//       }
 
-      responsible.products = responsible.products.filter((item) => item.to.kol !== 0 && item.to.summa !== 0);
-    }
-    const result = await data.responsibles.filter((item) => item.products.length !== 0);
+//       responsible.products = responsible.products.filter((item) => item.to.kol !== 0 && item.to.summa !== 0);
+//     }
+//     const result = await data.responsibles.filter((item) => item.products.length !== 0);
 
-    return result;
-  }
+//     return result;
+//   }
 
-  static async getByProduct(data) {
-    const month = new Date(data.to).getMonth() + 1;
-    const year = new Date(data.to).getFullYear();
+//   static async getByProduct(data) {
+//     const month = new Date(data.to).getMonth() + 1;
+//     const year = new Date(data.to).getFullYear();
 
-    const { data: products, total } = await SaldoDB.get(
-      [year, month, data.offset, data.limit],
-      data.responsible_id,
-      data.search,
-      data.product_id,
-      data.region_id
-    );
-    for (let product of products) {
-      product.from = {
-        kol: product.kol,
-        sena: product.sena,
-        summa: product.summa,
-      };
+//     const { data: products, total } = await SaldoDB.get(
+//       [year, month, data.offset, data.limit],
+//       data.responsible_id,
+//       data.search,
+//       data.product_id,
+//       data.region_id
+//     );
 
-      product.internal = await SaldoDB.getKolAndSumma(
-        [product.naimenovanie_tovarov_jur7_id],
-        `${year}-${month < 10 ? `0${month}` : month}-01`,
-        data.to
-      );
+//     const BATCH_SIZE = 50;
+//     const productChunks = this.chunkArray(products, BATCH_SIZE);
 
-      product.to = {
-        kol: product.from.kol + product.internal.kol,
-        summa: product.from.summa + product.internal.summa,
-      };
-      product.to.sena = product.to.summa / product.to.kol;
-    }
+//     for (const chunk of productChunks) {
+//       await Promise.all(
+//         chunk.map(async (product) => {
+//           product.from = {
+//             kol: product.kol,
+//             sena: product.sena,
+//             summa: product.summa,
+//           };
 
-    return { data: products, total };
-  }
-};
+//           const internal = await SaldoDB.getKolAndSumma(
+//             [product.naimenovanie_tovarov_jur7_id],
+//             `${year}-${month < 10 ? `0${month}` : month}-01`,
+//             data.to
+//           );
+
+//           product.internal = internal;
+
+//           const totalKol = product.from.kol + internal.kol;
+//           const totalSumma = product.from.summa + internal.summa;
+
+//           product.to = {
+//             kol: totalKol,
+//             summa: totalSumma,
+//             sena: totalKol !== 0 ? totalSumma / totalKol : 0,
+//           };
+//         })
+//       );
+//     }
+
+//     return { data: products, total };
+//   }
+
+//   static chunkArray(array, size) {
+//     const chunks = [];
+//     for (let i = 0; i < array.length; i += size) {
+//       chunks.push(array.slice(i, i + size));
+//     }
+//     return chunks;
+//   }
+// };

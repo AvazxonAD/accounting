@@ -1,19 +1,15 @@
 const { db } = require("@db/index");
 const { InternalDB } = require("./db");
-const {
-  tashkentTime,
-  returnParamsValues,
-  HelperFunctions,
-} = require("@helper/functions");
+const { tashkentTime, returnParamsValues, HelperFunctions } = require("@helper/functions");
 const { SaldoDB } = require("@jur7_saldo/db");
-const { SaldoService } = require("@jur7_saldo/service");
+const { Jur7SaldoService } = require("@jur7_saldo/service");
 
 exports.Jur7InternalService = class {
   static async delete(data) {
     const result = await db.transaction(async (client) => {
       const doc = await InternalDB.delete([data.id], client);
 
-      const dates = await SaldoService.createSaldoDate({
+      const dates = await Jur7SaldoService.createSaldoDate({
         ...data,
         doc_date: data.old_data.doc_date,
         client,
@@ -52,7 +48,7 @@ exports.Jur7InternalService = class {
 
       await this.createChild({ ...data, docId: doc.id, client, doc: doc });
 
-      const dates = await SaldoService.createSaldoDate({
+      const dates = await Jur7SaldoService.createSaldoDate({
         ...data,
         client,
       });
@@ -171,7 +167,7 @@ exports.Jur7InternalService = class {
         date2: data.old_data.doc_date,
       });
 
-      const dates = await SaldoService.createSaldoDate({
+      const dates = await Jur7SaldoService.createSaldoDate({
         ...data,
         doc_date: date.date,
         client,
@@ -184,23 +180,13 @@ exports.Jur7InternalService = class {
   }
 
   static async getById(data) {
-    const result = await InternalDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      data.isdeleted
-    );
+    const result = await InternalDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
     return result;
   }
 
   static async get(data) {
     const result = await InternalDB.get(
-      [
-        data.region_id,
-        data.from,
-        data.to,
-        data.main_schet_id,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type

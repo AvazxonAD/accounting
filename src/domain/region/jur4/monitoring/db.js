@@ -1,13 +1,7 @@
 const { db } = require("@db/index");
 
 exports.PodotchetMonitoringDB = class {
-  static async getMonitoring(
-    params,
-    podotcbet_id,
-    search,
-    order_by,
-    order_type
-  ) {
+  static async getMonitoring(params, podotcbet_id, search, order_by, order_type) {
     const conditions = [];
 
     if (podotcbet_id) {
@@ -215,14 +209,7 @@ exports.PodotchetMonitoringDB = class {
     return result;
   }
 
-  static async getSumma(
-    params,
-    podotcbet_id = null,
-    search = null,
-    from = null,
-    one_from = null,
-    one_to = null
-  ) {
+  static async getSumma(params, podotcbet_id = null, search = null, from = null, one_from = null, one_to = null) {
     const conditions = [];
 
     let internal_filter = `BETWEEN $4 AND $5`;
@@ -670,11 +657,7 @@ exports.PodotchetMonitoringDB = class {
     return result;
   }
 
-  static async reportBySchetsRasxods(
-    params,
-    podotcbet_id = null,
-    search = null
-  ) {
+  static async reportBySchetsRasxods(params, podotcbet_id = null, search = null) {
     const conditions = [];
 
     if (podotcbet_id) {
@@ -762,11 +745,7 @@ exports.PodotchetMonitoringDB = class {
     return result;
   }
 
-  static async reportBySchetsPrixods(
-    params,
-    podotcbet_id = null,
-    search = null
-  ) {
+  static async reportBySchetsPrixods(params, podotcbet_id = null, search = null) {
     const conditions = [];
 
     if (podotcbet_id) {

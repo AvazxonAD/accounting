@@ -1,7 +1,7 @@
 const Joi = require("joi");
 
 exports.SaldoSchema = class {
-  static get() {
+  static getDoc() {
     return Joi.object({
       query: Joi.object({
         kimning_buynida: Joi.number().integer().min(1),
@@ -16,5 +16,17 @@ exports.SaldoSchema = class {
           .required(),
       }),
     }).options({ stripUnknown: true });
+  }
+
+  static get() {
+    return Joi.object({
+      query: Joi.object({
+        to: Joi.string()
+          .trim()
+          .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+          .required(),
+        search: Joi.string().trim().allow("", null),
+      }),
+    });
   }
 };

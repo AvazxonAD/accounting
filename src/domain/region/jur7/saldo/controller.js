@@ -1,4 +1,4 @@
-const { SaldoService } = require("./service");
+const { Jur7SaldoService } = require("./service");
 const { ResponsibleService } = require("@responsible/service");
 const { GroupService } = require("@group/service");
 const { SaldoSchema } = require("./schema");
@@ -19,7 +19,7 @@ exports.Controller = class {
     const { budjet_id, main_schet_id } = req.query;
 
     // check first saldo
-    const check = await SaldoService.getFirstSaldoDocs({
+    const check = await Jur7SaldoService.getFirstSaldoDocs({
       region_id,
       main_schet_id,
     });
@@ -40,7 +40,7 @@ exports.Controller = class {
     });
 
     // read file
-    const { result: data, header } = await SaldoService.readFile({
+    const { result: data, header } = await Jur7SaldoService.readFile({
       filePath: req.file.path,
     });
     if (!data.length) {
@@ -65,7 +65,7 @@ exports.Controller = class {
       item.doc_num = String(item.doc_num);
 
       if (item.doc_date) {
-        item.doc_date = SaldoService.returnDocDate({ doc_date: item.doc_date });
+        item.doc_date = Jur7SaldoService.returnDocDate({ doc_date: item.doc_date });
       } else {
         item.doc_date = null;
       }
@@ -105,18 +105,12 @@ exports.Controller = class {
         id: doc.responsible_id,
       });
       if (!responsible) {
-        return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`, 404);
       }
 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
-        return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`, 404);
       }
 
       doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
@@ -137,7 +131,7 @@ exports.Controller = class {
       doc.group = group;
     }
 
-    await SaldoService.importData({
+    await Jur7SaldoService.importData({
       ...req.query,
       docs: data,
       user_id,
@@ -150,15 +144,7 @@ exports.Controller = class {
 
   static async getByProduct(req, res) {
     const region_id = req.user.region_id;
-    const {
-      responsible_id,
-      page,
-      product_id,
-      limit,
-      group_id,
-      budjet_id,
-      main_schet_id,
-    } = req.query;
+    const { responsible_id, page, product_id, limit, group_id, budjet_id, main_schet_id } = req.query;
 
     await ValidatorFunctions.budjet({ budjet_id });
 
@@ -208,13 +194,13 @@ exports.Controller = class {
       page_to_summa,
       page_to_iznos_summa,
       page_to_kol,
-    } = await SaldoService.getByProduct({
+    } = await Jur7SaldoService.getByProduct({
       ...req.query,
       region_id,
       offset,
     });
 
-    const end_saldo = await SaldoService.getEndSaldo({
+    const end_saldo = await Jur7SaldoService.getEndSaldo({
       region_id,
       main_schet_id,
     });
@@ -273,7 +259,7 @@ exports.Controller = class {
       main_schet_id,
     });
 
-    const end_saldo = await SaldoService.getEndSaldo({
+    const end_saldo = await Jur7SaldoService.getEndSaldo({
       region_id,
       main_schet_id,
     });
@@ -286,7 +272,7 @@ exports.Controller = class {
       throw new ErrorResponse("deleteSaldoError", 400);
     }
 
-    const check_doc = await SaldoService.checkDoc({
+    const check_doc = await Jur7SaldoService.checkDoc({
       ...req.query,
       ...req.body,
       region_id,
@@ -296,7 +282,7 @@ exports.Controller = class {
       throw new ErrorResponse("prixodCreateSaldo", 400);
     }
 
-    await SaldoService.delete({
+    await Jur7SaldoService.delete({
       ...req.query,
       ...req.body,
       region_id,
@@ -318,7 +304,7 @@ exports.Controller = class {
       main_schet_id,
     });
 
-    await SaldoService.cleanData({ main_schet_id, region_id });
+    await Jur7SaldoService.cleanData({ main_schet_id, region_id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200);
   }
@@ -336,12 +322,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const check = await SaldoService.getById({ id, region_id, main_schet_id });
+    const check = await Jur7SaldoService.getById({ id, region_id, main_schet_id });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const check_doc = await SaldoService.checkDoc({
+    const check_doc = await Jur7SaldoService.checkDoc({
       product_id: check.naimenovanie_tovarov_jur7_id,
     });
     if (check_doc.length) {
@@ -352,19 +338,15 @@ exports.Controller = class {
       });
     }
 
-    const response = await SaldoService.deleteById({ id });
+    const response = await Jur7SaldoService.deleteById({ id });
 
     return res.success(req.i18n.t("deleteSuccess"), 200, null, response);
   }
 
   static async templateFile(req, res) {
-    const { fileName, fileRes } =
-      await HelperFunctions.returnTemplateFile("saldo.xlsx");
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile("saldo.xlsx");
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
@@ -396,7 +378,7 @@ exports.Controller = class {
       total = 1;
     }
 
-    groups = await SaldoService.getByGroup({
+    groups = await Jur7SaldoService.getByGroup({
       ...req.query,
       responsible_id: kimning_buynida,
       region_id,
@@ -435,7 +417,7 @@ exports.Controller = class {
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const last_saldo = await SaldoService.getSaldoCheck({
+    const last_saldo = await Jur7SaldoService.getSaldoCheck({
       region_id,
       main_schet_id,
       year: last_date.year,
@@ -446,7 +428,7 @@ exports.Controller = class {
       throw new ErrorResponse("lastSaldoNotFound", 400);
     }
 
-    const dates = await SaldoService.create({
+    const dates = await Jur7SaldoService.create({
       ...req.body,
       ...req.query,
       region_id,
@@ -464,7 +446,7 @@ exports.Controller = class {
   static async check(req, res) {
     const region_id = req.user.region_id;
 
-    const { meta, result: response } = await SaldoService.check({
+    const { meta, result: response } = await Jur7SaldoService.check({
       region_id,
       ...req.query,
     });
@@ -489,7 +471,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
-    const response = await SaldoService.getById({
+    const response = await Jur7SaldoService.getById({
       ...req.query,
       region_id,
       id,
@@ -505,12 +487,12 @@ exports.Controller = class {
 
     const { iznos_summa } = req.body;
 
-    const check = await SaldoService.getById({ id, region_id, iznos: true });
+    const check = await Jur7SaldoService.getById({ id, region_id, iznos: true });
     if (!check) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const response = await SaldoService.updateIznosSumma({
+    const response = await Jur7SaldoService.updateIznosSumma({
       id,
       iznos_summa,
       doc: check,

@@ -122,6 +122,14 @@ routes
 
   .use("/admin/jur1", protect, require("@admin_jur1/index"))
 
+  .use("/admin/jur2", protect, require("@admin_jur2/index"))
+
+  .use("/admin/jur3-159", protect, require("@admin_jur3_159/index"))
+
+  .use("/admin/jur3-152", protect, require("@admin_jur3_152/index"))
+
+  .use("/admin/jur4", protect, require("@admin_jur4/index"))
+
   .use("/admin/control", protect, require("@admin_control/index"));
 
 module.exports = routes;

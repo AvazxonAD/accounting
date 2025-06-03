@@ -120,15 +120,7 @@ exports.PodotchetMonitoringService = class {
 
   static async monitoring(data) {
     const docs = await PodotchetMonitoringDB.getMonitoring(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.schet,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.schet, data.offset, data.limit],
       data.podotchet_id,
       data.search,
       data.order_by || "doc_date",
@@ -149,7 +141,8 @@ exports.PodotchetMonitoringService = class {
     const summa_from = await PodotchetMonitoringDB.getSumma(
       [data.region_id, data.schet, data.main_schet_id, from, data.from],
       data.podotchet_id,
-      data.search
+      data.search,
+      true
     );
 
     const summa_to = await PodotchetMonitoringDB.getSumma(

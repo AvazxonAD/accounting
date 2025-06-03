@@ -5,12 +5,7 @@ const { RegionDB } = require("@region/db");
 const { ContractDB } = require("@contract/db");
 const { PodpisDB } = require("@podpis/db");
 const { mkdir, access, constants } = require(`fs`).promises;
-const {
-  returnStringDate,
-  returnStringSumma,
-  returnExcelColumn,
-  HelperFunctions,
-} = require("@helper/functions");
+const { returnStringDate, returnStringSumma, returnExcelColumn, HelperFunctions } = require("@helper/functions");
 const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const ExcelJS = require("exceljs");
 const path = require("path");
@@ -30,15 +25,7 @@ exports.Monitoring159Service = class {
   }
   static async monitoring(data) {
     const docs = await Monitoring159DB.monitoring(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.schet,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.schet, data.from, data.to, data.offset, data.limit],
       data.organ_id,
       data.search,
       data.order_by || "doc_date",
@@ -99,13 +86,7 @@ exports.Monitoring159Service = class {
   }
 
   static async cap(data) {
-    let result = await Monitoring159DB.capData([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    let result = await Monitoring159DB.capData([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     const prixods = await Monitoring159DB.capDataPrixods([
       data.main_schet_id,
@@ -210,9 +191,11 @@ exports.Monitoring159Service = class {
     let itogo_prixod = 0;
 
     for (let item of data.organizations) {
-      const saldo = data.saldo.childs.find(
-        (saldo_item) => saldo_item.organization_id === item.id
-      ) || { prixod: 0, rasxod: 0, summa: 0 };
+      const saldo = data.saldo.childs.find((saldo_item) => saldo_item.organization_id === item.id) || {
+        prixod: 0,
+        rasxod: 0,
+        summa: 0,
+      };
 
       const internal = await Monitoring159DB.getSumma(
         [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
@@ -230,9 +213,7 @@ exports.Monitoring159Service = class {
         itogo_rasxod += item.summa;
       }
 
-      data.organizations = data.organizations.filter(
-        (item) => item.summa !== 0
-      );
+      data.organizations = data.organizations.filter((item) => item.summa !== 0);
     }
     return { organizations: data.organizations, itogo_rasxod, itogo_prixod };
   }
@@ -258,13 +239,7 @@ exports.Monitoring159Service = class {
     const organ_id_cell = worksheet.getCell(`D2`);
     organ_id_cell.value = "OrganID";
 
-    const css_array = [
-      title,
-      organ_nameCell,
-      prixodCell,
-      rasxodCell,
-      organ_id_cell,
-    ];
+    const css_array = [title, organ_nameCell, prixodCell, rasxodCell, organ_id_cell];
 
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
@@ -332,8 +307,7 @@ exports.Monitoring159Service = class {
       let horizontal = "center";
       let size = 10;
       if (index === 0) (fill = null), (border = null), (size = 12);
-      if (index === 1)
-        (fill = null), (border = { bottom: { style: "thin" } }), (size = 12);
+      if (index === 1) (fill = null), (border = { bottom: { style: "thin" } }), (size = 12);
       if (index === 4) (fill = null), (border = null), (horizontal = "right");
       if (index > 4) horizontal = "right";
 
@@ -355,10 +329,7 @@ exports.Monitoring159Service = class {
     worksheet.getColumn(3).width = 20;
     worksheet.getColumn(4).width = 20;
     worksheet.getRow(1).height = 30;
-    const filePath = path.join(
-      __dirname,
-      "../../../../../../public/exports/" + fileName
-    );
+    const filePath = path.join(__dirname, "../../../../../../public/exports/" + fileName);
 
     await workbook.xlsx.writeFile(filePath);
 
@@ -387,12 +358,10 @@ exports.Monitoring159Service = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -563,10 +532,7 @@ exports.Monitoring159Service = class {
     });
 
     const fileName = `${data.file_name}_prixod_report_${new Date().getTime()}.xlsx`;
-    const folder_path = path.join(
-      __dirname,
-      "../../../../../../public/exports"
-    );
+    const folder_path = path.join(__dirname, "../../../../../../public/exports");
 
     try {
       await access(folder_path, constants.W_OK);

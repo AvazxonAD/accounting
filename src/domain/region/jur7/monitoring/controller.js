@@ -6,7 +6,7 @@ const { HelperFunctions } = require("@helper/functions");
 const { ReportTitleService } = require("@report_title/service");
 const { PodpisService } = require("@podpis/service");
 const { ValidatorFunctions } = require("@helper/database.validator");
-const { SaldoService } = require("../saldo/service");
+const { Jur7SaldoService } = require("@jur7_saldo/service");
 const { LIMIT } = require("../../../../helper/constants");
 
 exports.Controller = class {
@@ -35,23 +35,16 @@ exports.Controller = class {
     if (excel === "true") {
       const region = await RegionService.getById({ id: region_id });
 
-      const { fileName, filePath } =
-        await Jur7MonitoringService.reportBySchetExcel({
-          schets,
-          region,
-          itogo,
-          ...req.query,
-          to,
-        });
+      const { fileName, filePath } = await Jur7MonitoringService.reportBySchetExcel({
+        schets,
+        region,
+        itogo,
+        ...req.query,
+        to,
+      });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -67,20 +60,14 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const {
-      total,
-      data,
-      prixod_sum,
-      rasxod_sum,
-      page_prixod_sum,
-      page_rasxod_sum,
-    } = await Jur7MonitoringService.monitoring({
-      ...req.query,
-      region_id,
-      offset,
-    });
+    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } =
+      await Jur7MonitoringService.monitoring({
+        ...req.query,
+        region_id,
+        offset,
+      });
 
-    const { from_summa, to_summa } = await SaldoService.getByProduct({
+    const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,
       region_id,
       offset,
@@ -120,8 +107,7 @@ exports.Controller = class {
   }
 
   static async materialReport(req, res) {
-    const { month, main_schet_id, year, excel, iznos, responsible_id, to } =
-      req.query;
+    const { month, main_schet_id, year, excel, iznos, responsible_id, to } = req.query;
     const region_id = req.user.region_id;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
@@ -159,9 +145,7 @@ exports.Controller = class {
 
       const responsibleObj = resultMap[responsibleId];
 
-      const checkProd = responsibleObj.products.find(
-        (item) => item.schet === schet
-      );
+      const checkProd = responsibleObj.products.find((item) => item.schet === schet);
 
       if (!checkProd) {
         responsibleObj.products.push({
@@ -244,9 +228,7 @@ exports.Controller = class {
           };
 
           const productData = history.filter(
-            (item) =>
-              item.responsible_id === responsible.responsible_id &&
-              item.product_id === product.product_id
+            (item) => item.responsible_id === responsible.responsible_id && item.product_id === product.product_id
           );
 
           if (productData.length > 0) {
@@ -261,20 +243,15 @@ exports.Controller = class {
                 product.internal.rasxod_iznos_summa += item.iznos_summa;
               }
             });
-            product.internal.kol =
-              product.internal.prixod_kol - product.internal.rasxod_kol;
-            product.internal.summa =
-              product.internal.prixod_summa - product.internal.rasxod_summa;
-            product.internal.iznos_summa =
-              product.internal.prixod_iznos_summa -
-              product.internal.rasxod_iznos_summa;
+            product.internal.kol = product.internal.prixod_kol - product.internal.rasxod_kol;
+            product.internal.summa = product.internal.prixod_summa - product.internal.rasxod_summa;
+            product.internal.iznos_summa = product.internal.prixod_iznos_summa - product.internal.rasxod_iznos_summa;
           }
 
           product.to = {
             kol: product.from.kol + product.internal.kol,
             summa: product.from.summa + product.internal.summa,
-            iznos_summa:
-              product.from.iznos_summa + product.internal.iznos_summa,
+            iznos_summa: product.from.iznos_summa + product.internal.iznos_summa,
           };
 
           if (product.to.kol !== 0) {
@@ -295,8 +272,7 @@ exports.Controller = class {
               if (month_iznos + product.to.iznos_summa < product.to.summa) {
                 product.to.month_iznos = month_iznos;
               } else {
-                product.to.month_iznos =
-                  month_iznos + product.to.iznos_summa - product.to.summa;
+                product.to.month_iznos = month_iznos + product.to.iznos_summa - product.to.summa;
               }
             } else {
               product.to.month_iznos = 0;
@@ -380,14 +356,8 @@ exports.Controller = class {
         });
       }
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${response.fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${response.fileName}"`);
 
       return res.sendFile(response.filePath);
     }
@@ -396,8 +366,7 @@ exports.Controller = class {
   }
 
   static async act(req, res) {
-    const { month, main_schet_id, year, excel, iznos, responsible_id } =
-      req.query;
+    const { month, main_schet_id, year, excel, iznos, responsible_id } = req.query;
     const region_id = req.user.region_id;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
@@ -433,9 +402,7 @@ exports.Controller = class {
 
       const responsibleObj = resultMap[responsibleId];
 
-      const checkProd = responsibleObj.products.find(
-        (item) => item.schet === schet
-      );
+      const checkProd = responsibleObj.products.find((item) => item.schet === schet);
 
       if (!checkProd) {
         responsibleObj.products.push({
@@ -518,9 +485,7 @@ exports.Controller = class {
           };
 
           const productData = history.filter(
-            (item) =>
-              item.responsible_id === responsible.responsible_id &&
-              item.product_id === product.product_id
+            (item) => item.responsible_id === responsible.responsible_id && item.product_id === product.product_id
           );
 
           if (productData.length > 0) {
@@ -535,20 +500,15 @@ exports.Controller = class {
                 product.internal.rasxod_iznos_summa += item.iznos_summa;
               }
             });
-            product.internal.kol =
-              product.internal.prixod_kol - product.internal.rasxod_kol;
-            product.internal.summa =
-              product.internal.prixod_summa - product.internal.rasxod_summa;
-            product.internal.iznos_summa =
-              product.internal.prixod_iznos_summa -
-              product.internal.rasxod_iznos_summa;
+            product.internal.kol = product.internal.prixod_kol - product.internal.rasxod_kol;
+            product.internal.summa = product.internal.prixod_summa - product.internal.rasxod_summa;
+            product.internal.iznos_summa = product.internal.prixod_iznos_summa - product.internal.rasxod_iznos_summa;
           }
 
           product.to = {
             kol: product.from.kol + product.internal.kol,
             summa: product.from.summa + product.internal.summa,
-            iznos_summa:
-              product.from.iznos_summa + product.internal.iznos_summa,
+            iznos_summa: product.from.iznos_summa + product.internal.iznos_summa,
           };
 
           if (product.to.kol !== 0) {
@@ -569,8 +529,7 @@ exports.Controller = class {
               if (month_iznos + product.to.iznos_summa < product.to.summa) {
                 product.to.month_iznos = month_iznos;
               } else {
-                product.to.month_iznos =
-                  month_iznos + product.to.iznos_summa - product.to.summa;
+                product.to.month_iznos = month_iznos + product.to.iznos_summa - product.to.summa;
               }
             } else {
               product.to.month_iznos = 0;
@@ -634,14 +593,8 @@ exports.Controller = class {
         to,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -651,8 +604,7 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const { year, budjet_id, month, main_schet_id, excel, report_title_id } =
-      req.query;
+    const { year, budjet_id, month, main_schet_id, excel, report_title_id } = req.query;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
@@ -663,7 +615,7 @@ exports.Controller = class {
       main_schet_id,
     });
 
-    const { from_summa, to_summa } = await SaldoService.getByProduct({
+    const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,
       region_id,
       offset: 0,
@@ -705,14 +657,8 @@ exports.Controller = class {
         file_name: "material",
         order: 7,
       });
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       return res.download(filePath);
     }
     return res.success(req.i18n.t("getSuccess"), 200, null, data);
@@ -720,16 +666,7 @@ exports.Controller = class {
 
   static async reportBySchetsData(req, res) {
     const region_id = req.user.region_id;
-    const {
-      year,
-      budjet_id,
-      month,
-      main_schet_id,
-      excel,
-      report_title_id,
-      from,
-      to,
-    } = req.query;
+    const { year, budjet_id, month, main_schet_id, excel, report_title_id, from, to } = req.query;
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
@@ -740,7 +677,7 @@ exports.Controller = class {
       main_schet_id,
     });
 
-    const { from_summa, to_summa } = await SaldoService.getByProduct({
+    const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,
       region_id,
       offset: 0,
@@ -763,27 +700,20 @@ exports.Controller = class {
       }
 
       const podpis = await PodpisService.get({ region_id, type: "cap" });
-      const { fileName, filePath } =
-        await Jur7MonitoringService.reportBySchetExcelData({
-          ...data,
-          from,
-          region,
-          to,
-          podpis,
-          file_name: "jur7",
-          order: 7,
-          summa_from: from_summa,
-          summa_to: to_summa,
-          report_title,
-        });
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      const { fileName, filePath } = await Jur7MonitoringService.reportBySchetExcelData({
+        ...data,
+        from,
+        region,
+        to,
+        podpis,
+        file_name: "jur7",
+        order: 7,
+        summa_from: from_summa,
+        summa_to: to_summa,
+        report_title,
+      });
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       return res.download(filePath);
     }
     return res.success(req.i18n.t("getSuccess"), 200, null, data);

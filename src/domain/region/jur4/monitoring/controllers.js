@@ -17,16 +17,7 @@ const { REPORT_TYPE, LIMIT } = require("@helper/constants");
 
 exports.Controller = class {
   static async daysReport(req, res) {
-    const {
-      from,
-      to,
-      main_schet_id,
-      budjet_id,
-      report_title_id,
-      schet_id,
-      excel,
-      podotchet_id,
-    } = req.query;
+    const { from, to, main_schet_id, budjet_id, report_title_id, schet_id, excel, podotchet_id } = req.query;
     const region_id = req.user.region_id;
 
     const main_schet = await MainSchetService.getById({
@@ -34,9 +25,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur4_schets.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
@@ -77,31 +66,24 @@ exports.Controller = class {
         type: REPORT_TYPE.days_report,
       });
 
-      const { fileName, filePath } =
-        await HelperFunctions.daysReportPodotchetExcel({
-          ...data,
-          from,
-          region,
-          to,
-          main_schet,
-          report_title,
-          region_id,
-          title: "Ҳисобдор шахс кунлик ҳисоботи",
-          file_name: "podotchet",
-          podpis,
-          budjet,
-          schet: main_schet.jur1_schet,
-          order: 1,
-        });
+      const { fileName, filePath } = await HelperFunctions.daysReportPodotchetExcel({
+        ...data,
+        from,
+        region,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        title: "Ҳисобдор шахс кунлик ҳисоботи",
+        file_name: "podotchet",
+        podpis,
+        budjet,
+        schet: main_schet.jur1_schet,
+        order: 1,
+      });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -126,9 +108,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur4_schets.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
@@ -183,24 +163,14 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const {
-      report_title_id,
-      main_schet_id,
-      excel,
-      budjet_id,
-      schet_id,
-      from,
-      to,
-    } = req.query;
+    const { report_title_id, main_schet_id, excel, budjet_id, schet_id, from, to } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur4_schets.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 404);
     }
@@ -213,15 +183,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const { summa_from, summa_to } =
-      await PodotchetMonitoringService.monitoring({
-        ...req.query,
-        offset: 0,
-        limit: LIMIT,
-        region_id,
-        schet: schet.schet,
-        saldo,
-      });
+    const { summa_from, summa_to } = await PodotchetMonitoringService.monitoring({
+      ...req.query,
+      offset: 0,
+      limit: LIMIT,
+      region_id,
+      schet: schet.schet,
+      saldo,
+    });
 
     const { rasxods, prixods } = await PodotchetMonitoringService.cap({
       ...req.query,
@@ -264,14 +233,8 @@ exports.Controller = class {
         order: 4,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.download(filePath, (err) => {
         if (err) {
@@ -284,17 +247,14 @@ exports.Controller = class {
 
   static async reportBySchets(req, res) {
     const region_id = req.user.region_id;
-    const { report_title_id, main_schet_id, excel, schet_id, from, to } =
-      req.query;
+    const { report_title_id, main_schet_id, excel, schet_id, from, to } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur4_schets.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 404);
     }
@@ -307,15 +267,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const { summa_from, summa_to } =
-      await PodotchetMonitoringService.monitoring({
-        ...req.query,
-        offset: 0,
-        limit: LIMIT,
-        region_id,
-        schet: schet.schet,
-        saldo,
-      });
+    const { summa_from, summa_to } = await PodotchetMonitoringService.monitoring({
+      ...req.query,
+      offset: 0,
+      limit: LIMIT,
+      region_id,
+      schet: schet.schet,
+      saldo,
+    });
 
     const data = await PodotchetMonitoringService.reportBySchets({
       ...req.query,
@@ -347,14 +306,8 @@ exports.Controller = class {
         report_title,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.download(filePath, (err) => {
         if (err) {
@@ -379,9 +332,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur4_schets.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur4_schets.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
@@ -410,9 +361,7 @@ exports.Controller = class {
         podotchet.id
       );
 
-      const podotchet_saldo = saldo.childs.find(
-        (item) => item.podotchet_id === podotchet.id
-      );
+      const podotchet_saldo = saldo.childs.find((item) => item.podotchet_id === podotchet.id);
 
       if (!podotchet_saldo) {
         podotchet.summa = internal.summa;
@@ -430,8 +379,7 @@ exports.Controller = class {
       worksheet.pageSetup.margins.footer = 0;
       worksheet.pageSetup.margins.right = 0;
       worksheet.mergeCells("A1:E1");
-      worksheet.getCell("A1").value =
-        `Список Дебеторов / Кредиторов на ${returnStringDate(new Date(to))}`;
+      worksheet.getCell("A1").value = `Список Дебеторов / Кредиторов на ${returnStringDate(new Date(to))}`;
       worksheet.getCell("A2").value = "Подотчетное лицо";
       worksheet.getCell("B2").value = "Управление";
       worksheet.getCell("C2").value = "Дата";
@@ -444,22 +392,12 @@ exports.Controller = class {
         if (column.summa === 0) continue;
         worksheet.getCell(`A${row_number}`).value = column.name;
         worksheet.getCell(`B${row_number}`).value = column.rayon;
-        worksheet.getCell(`C${row_number}`).value = returnStringDate(
-          new Date(to)
-        );
-        worksheet.getCell(`D${row_number}`).value =
-          column.summa > 0 ? column.summa : 0;
-        worksheet.getCell(`E${row_number}`).value =
-          column.summa < 0 ? Math.abs(column.summa) : 0;
+        worksheet.getCell(`C${row_number}`).value = returnStringDate(new Date(to));
+        worksheet.getCell(`D${row_number}`).value = column.summa > 0 ? column.summa : 0;
+        worksheet.getCell(`E${row_number}`).value = column.summa < 0 ? Math.abs(column.summa) : 0;
         itogo_prixod += column.summa > 0 ? column.summa : 0;
         itogo_rasxod += column.summa < 0 ? Math.abs(column.summa) : 0;
-        const css_array = [
-          `A${row_number}`,
-          `B${row_number}`,
-          `C${row_number}`,
-          `D${row_number}`,
-          `E${row_number}`,
-        ];
+        const css_array = [`A${row_number}`, `B${row_number}`, `C${row_number}`, `D${row_number}`, `E${row_number}`];
         css_array.forEach((cell, index) => {
           let horizontal = "center";
           if (index === 0) horizontal = "left";
@@ -490,17 +428,7 @@ exports.Controller = class {
       worksheet.getCell(`A${row_number}`).value = "Итого";
       worksheet.getCell(`D${row_number}`).value = itogo_prixod;
       worksheet.getCell(`E${row_number}`).value = itogo_rasxod;
-      const css_array = [
-        "A1",
-        "A2",
-        "B2",
-        "C2",
-        "D2",
-        "E2",
-        `A${row_number}`,
-        `D${row_number}`,
-        `E${row_number}`,
-      ];
+      const css_array = ["A1", "A2", "B2", "C2", "D2", "E2", `A${row_number}`, `D${row_number}`, `E${row_number}`];
       css_array.forEach((cell, index) => {
         const column = worksheet.getCell(cell);
         let size = 10;
@@ -537,20 +465,11 @@ exports.Controller = class {
       worksheet.getRow(1).height = 35;
       worksheet.getRow(2).height = 20;
 
-      const filePath = path.join(
-        __dirname,
-        "../../../../../public/exports/" + fileName
-      );
+      const filePath = path.join(__dirname, "../../../../../public/exports/" + fileName);
       await workbook.xlsx.writeFile(filePath);
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.download(filePath);
     }

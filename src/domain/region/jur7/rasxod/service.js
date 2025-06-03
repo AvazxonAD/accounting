@@ -1,11 +1,7 @@
 const { db } = require("@db/index");
 const { RasxodDB } = require("./db");
-const {
-  tashkentTime,
-  returnParamsValues,
-  HelperFunctions,
-} = require("@helper/functions");
-const { SaldoService } = require("@jur7_saldo/service");
+const { tashkentTime, returnParamsValues, HelperFunctions } = require("@helper/functions");
+const { Jur7SaldoService } = require("@jur7_saldo/service");
 const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
@@ -38,16 +34,7 @@ exports.Jur7RsxodService = class {
     const comment = worksheet.getCell("A7");
     comment.value = `Описаниэ: ${data.opisanie ? data.opisanie : ""}`;
 
-    worksheet.getRow(8).values = [
-      "Наименование",
-      "Ед.изм",
-      "Кол.",
-      "Цена",
-      "Сумма",
-      "Дебет",
-      "Кредит",
-      "Дата",
-    ];
+    worksheet.getRow(8).values = ["Наименование", "Ед.изм", "Кол.", "Цена", "Сумма", "Дебет", "Кредит", "Дата"];
 
     worksheet.columns = [
       { key: "name", width: 40 },
@@ -165,11 +152,7 @@ exports.Jur7RsxodService = class {
 
         if ((column === 4 || column === 5) && rowNumber > 8) {
           horizontal = "right";
-        } else if (
-          ((column !== 4 && column !== 5) || rowNumber > bold_count) &&
-          rowNumber > 8 &&
-          rowNumber < column
-        ) {
+        } else if (((column !== 4 && column !== 5) || rowNumber > bold_count) && rowNumber > 8 && rowNumber < column) {
           horizontal = `center`;
         } else if (rowNumber > bold_count + 2 && column === 8) {
           horizontal = `right`;
@@ -241,7 +224,7 @@ exports.Jur7RsxodService = class {
     const result = await db.transaction(async (client) => {
       const doc = await RasxodDB.delete([data.id], client);
 
-      const dates = await SaldoService.createSaldoDate({
+      const dates = await Jur7SaldoService.createSaldoDate({
         ...data,
         client,
         doc_date: data.old_data.doc_date,
@@ -280,7 +263,7 @@ exports.Jur7RsxodService = class {
 
       await this.createChild({ ...data, docId: doc.id, client });
 
-      const dates = await SaldoService.createSaldoDate({
+      const dates = await Jur7SaldoService.createSaldoDate({
         ...data,
         client,
       });
@@ -350,7 +333,7 @@ exports.Jur7RsxodService = class {
         date2: data.old_data.doc_date,
       });
 
-      const dates = await SaldoService.createSaldoDate({
+      const dates = await Jur7SaldoService.createSaldoDate({
         ...data,
         client,
         doc_date: date.date,
@@ -363,23 +346,13 @@ exports.Jur7RsxodService = class {
   }
 
   static async getById(data) {
-    const result = await RasxodDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      data.isdeleted
-    );
+    const result = await RasxodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
     return result;
   }
 
   static async get(data) {
     const result = await RasxodDB.get(
-      [
-        data.region_id,
-        data.from,
-        data.to,
-        data.main_schet_id,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type

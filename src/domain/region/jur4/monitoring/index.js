@@ -13,22 +13,10 @@ const { validator } = require("@helper/validator");
 
 router
   .get("/", validator(Controller.getMonitoring, monitoringSchema))
-  .get(
-    "/prixod/rasxod",
-    validator(Controller.prixodRasxodPodotchet, prixodRasxodSchema)
-  )
+  .get("/prixod/rasxod", validator(Controller.prixodRasxodPodotchet, prixodRasxodSchema))
 
-  .get(
-    "/daily",
-    validator(Controller.daysReport, PodotchetMonitoringSchema.daysReport())
-  )
-  .get(
-    "/by-schets",
-    validator(
-      Controller.reportBySchets,
-      PodotchetMonitoringSchema.reportBySchets()
-    )
-  )
+  .get("/daily", validator(Controller.daysReport, PodotchetMonitoringSchema.daysReport()))
+  .get("/by-schets", validator(Controller.reportBySchets, PodotchetMonitoringSchema.reportBySchets()))
   .get("/cap", validator(Controller.cap, capSchema));
 
 module.exports = router;

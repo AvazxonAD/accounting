@@ -1,9 +1,9 @@
 const { RegionService } = require(`@region/service`);
 const { LIMIT } = require(`@helper/constants`);
 const { MainSchetService } = require(`@main_schet/service`);
-const { KassaSaldoService } = require(`@jur1_saldo/service`);
+const { BankSaldoService } = require(`@jur2_saldo/service`);
 const { HelperFunctions } = require(`@helper/functions`);
-const { KassaMonitoringService } = require(`@jur1_monitoring/service`);
+const { BankMonitoringService } = require(`@jur2_monitoring/service`);
 
 exports.Controller = class {
   static async get(req, res) {
@@ -20,7 +20,7 @@ exports.Controller = class {
 
       const mainSchetsWithSaldo = await Promise.all(
         mainSchets.map(async (main_schet) => {
-          const saldo = await KassaSaldoService.getByMonth({
+          const saldo = await BankSaldoService.getByMonth({
             main_schet_id: main_schet.id,
             year,
             month,
@@ -29,7 +29,7 @@ exports.Controller = class {
 
           let summa_from, summa_to;
           if (saldo) {
-            const data = await KassaMonitoringService.get({
+            const data = await BankMonitoringService.get({
               region_id: region.id,
               main_schet_id: main_schet.id,
               from,
