@@ -7,7 +7,7 @@ exports.SaldoDB = class {
                 user_id, 
                 spravochnik_budjet_name_id, 
                 name, 
-                edin, 
+                unit_id, 
                 group_jur7_id, 
                 inventar_num,
                 serial_num,
@@ -80,13 +80,7 @@ exports.SaldoDB = class {
     return result[0];
   }
 
-  static async getKolAndSumma(
-    params,
-    start = null,
-    end = null,
-    responsible_id = null,
-    prixod_id = null
-  ) {
+  static async getKolAndSumma(params, start = null, end = null, responsible_id = null, prixod_id = null) {
     let start_filter = ``;
     let end_filter = ``;
     let between_filter = ``;
@@ -246,9 +240,7 @@ exports.SaldoDB = class {
       conditions.push(`s.budjet_id = $${params.length}`);
     }
 
-    const whereClouse = conditions.length
-      ? `AND ${conditions.join(" AND ")}`
-      : "";
+    const whereClouse = conditions.length ? `AND ${conditions.join(" AND ")}` : "";
 
     const query = `--sql
         WITH data AS (
@@ -258,7 +250,7 @@ exports.SaldoDB = class {
                 s.region_id::INTEGER, 
                 n.id AS product_id,
                 n.name,
-                n.edin,
+                su.name AS edin,
                 n.inventar_num,
                 n.serial_num,
                 g.id AS group_id,
@@ -281,6 +273,7 @@ exports.SaldoDB = class {
                 s.month,
                 s.isdeleted,
                 s.type,
+                g.iznos_foiz,
                 JSON_BUILD_OBJECT(
                     'doc_id', s.prixod_id,
                     'docNum', s.doc_num,
@@ -298,7 +291,8 @@ exports.SaldoDB = class {
             JOIN regions AS r ON r.id = u.region_id
             JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
             JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
-            JOIN group_jur7 g ON g.id = n.group_jur7_id  
+            JOIN group_jur7 g ON g.id = n.group_jur7_id
+            JOIN storage_unit su ON su.id = n.unit_id
             WHERE r.id = $1
               AND s.month = $2
               AND s.year = $3
@@ -536,14 +530,7 @@ exports.SaldoDB = class {
     return result;
   }
 
-  static async get(
-    params,
-    responsible_id = null,
-    search = null,
-    product_id = null,
-    group_id = null,
-    iznos = null
-  ) {
+  static async get(params, responsible_id = null, search = null, product_id = null, group_id = null, iznos = null) {
     let responsible_filter = ``;
     let filter = ``;
     let product_filter = ``;
@@ -741,9 +728,7 @@ exports.SaldoDB = class {
     const flatValues = [];
 
     paramsArray.forEach((row, rowIndex) => {
-      const placeholders = row.map(
-        (_, colIndex) => `$${rowIndex * row.length + colIndex + 1}`
-      );
+      const placeholders = row.map((_, colIndex) => `$${rowIndex * row.length + colIndex + 1}`);
       valuesSql.push(`(${placeholders.join(", ")})`);
       flatValues.push(...row);
     });

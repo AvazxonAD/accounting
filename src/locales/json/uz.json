@@ -9,6 +9,7 @@
   "accountNumberSchetExists": "Ushbu schet raqam allaqachon kiritilgan!",
   "accountNumberSchetNotFound": "Xisob raqamning shchet raqami topilmadi!",
   "jur7Block": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",
+  "unitNotFound": "O‘lchov birligi topilmadi!",
   "saldoAlreadyExists": "Saldo allaqachon import qilingan! Malumotlarni tozalab qaytadan urining",
   "kolError": "Tovar soni noto'g'ri kiritildi!",
   "prixodSchetNotFound": "Prixod schet not found",

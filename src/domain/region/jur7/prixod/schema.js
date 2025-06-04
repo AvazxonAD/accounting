@@ -24,14 +24,8 @@ exports.PrixodJur7Schema = class {
         kimga_id: Joi.number().integer().min(1).required(),
         kimga_name: Joi.string().trim().allow(null),
         id_shartnomalar_organization: Joi.number().min(1).integer().allow(null),
-        organization_by_raschet_schet_id: Joi.number()
-          .min(1)
-          .integer()
-          .allow(null),
-        organization_by_raschet_schet_gazna_id: Joi.number()
-          .min(1)
-          .integer()
-          .allow(null),
+        organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
+        organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
         shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array()
           .required()
@@ -40,9 +34,7 @@ exports.PrixodJur7Schema = class {
               group_jur7_id: Joi.number().required(),
               iznos_start: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               kol: Joi.number().min(1).required(),
               sena: Joi.number().min(0).required(),
               nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
@@ -52,12 +44,10 @@ exports.PrixodJur7Schema = class {
               kredit_sub_schet: Joi.string().trim(),
               data_pereotsenka: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               iznos: Joi.boolean().required(),
               name: Joi.string().trim().required(),
-              edin: Joi.string().trim().required(),
+              unit_id: Joi.number().min(1).integer().required(),
               inventar_num: Joi.string().trim(),
               serial_num: Joi.string().trim(),
               eski_iznos_summa: Joi.number().min(0).default(0),
@@ -88,14 +78,8 @@ exports.PrixodJur7Schema = class {
         kimga_id: Joi.number().integer().min(1).required(),
         kimga_name: Joi.string().trim().allow(null),
         id_shartnomalar_organization: Joi.number().min(1).integer().allow(null),
-        organization_by_raschet_schet_id: Joi.number()
-          .min(1)
-          .integer()
-          .allow(null),
-        organization_by_raschet_schet_gazna_id: Joi.number()
-          .min(1)
-          .integer()
-          .allow(null),
+        organization_by_raschet_schet_id: Joi.number().min(1).integer().allow(null),
+        organization_by_raschet_schet_gazna_id: Joi.number().min(1).integer().allow(null),
         shartnoma_grafik_id: Joi.number().min(1).integer().allow(null),
         childs: Joi.array()
           .required()
@@ -104,9 +88,7 @@ exports.PrixodJur7Schema = class {
               group_jur7_id: Joi.number().required(),
               iznos_start: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               kol: Joi.number().min(1).required(),
               sena: Joi.number().min(0).required(),
               nds_foiz: Joi.number().min(1).allow(0).max(99).default(0),
@@ -116,12 +98,10 @@ exports.PrixodJur7Schema = class {
               kredit_sub_schet: Joi.string().trim(),
               data_pereotsenka: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               iznos: Joi.boolean().required(),
               name: Joi.string().trim().required(),
-              edin: Joi.string().trim().required(),
+              edin_id: Joi.number().min(1).integer().required(),
               inventar_num: Joi.string().trim(),
               serial_num: Joi.string().trim(),
               eski_iznos_summa: Joi.number().min(0).default(0),
@@ -155,19 +135,9 @@ exports.PrixodJur7Schema = class {
         budjet_id: Joi.number().integer().min(1).required(),
         main_schet_id: Joi.number().integer().min(1).required(),
         orderBy: Joi.string().trim().default("DESC").valid("ASC", "DESC"),
-        orderType: Joi.string()
-          .trim()
-          .default("doc_num")
-          .valid("doc_num", "doc_date"),
-        order_by: Joi.string()
-          .trim()
-          .default("doc_date")
-          .valid("doc_num", "doc_date", "id"),
-        order_type: Joi.string()
-          .trim()
-          .allow(null, "")
-          .default("DESC")
-          .valid("ASC", "DESC"),
+        orderType: Joi.string().trim().default("doc_num").valid("doc_num", "doc_date"),
+        order_by: Joi.string().trim().default("doc_date").valid("doc_num", "doc_date", "id"),
+        order_type: Joi.string().trim().allow(null, "").default("DESC").valid("ASC", "DESC"),
       }),
     }).options({ stripUnknown: true });
   }

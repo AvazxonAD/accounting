@@ -7,6 +7,7 @@ const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { CODE, SALDO_PASSWORD } = require("@helper/constants");
 const { MainSchetService } = require("@main_schet/service");
 const ErrorResponse = require("@helper/error.response");
+const { UnitService } = require("@unit/service");
 
 exports.Controller = class {
   static async checkFirst(req, res) {
@@ -143,27 +144,28 @@ exports.Controller = class {
         id: doc.responsible_id,
       });
       if (!responsible) {
-        return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id} Qator: ${index}`,
-          404
-        );
+        return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id} Qator: ${index}`, 404);
       }
 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
-        return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id} Qator: ${index}`,
-          404
-        );
+        return res.error(`${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id} Qator: ${index}`, 404);
+      }
+
+      const unit = await UnitService.getByNameSearch({ name: doc.edin?.trim() });
+      if (!unit) {
+        const new_unit = await UnitService.create({ name: doc.edin?.trim() });
+        doc.unit_id = new_unit.id;
+      } else {
+        doc.unit_id = unit.id;
       }
 
       doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
 
-      if (doc.iznos_start && group.iznos_foiz > 0) {
-        const dates = doc.iznos_start.split(".");
-        doc.iznos_start = new Date(`${dates[2]}-${dates[1]}-${dates[0]}`);
+      if (group.iznos_foiz > 0) {
+        doc.iznos_start = doc.doc_date;
       } else {
-        doc.iznos_start = new Date();
+        doc.iznos_start = null;
       }
 
       doc.doc_num = doc.doc_num ? doc.doc_num : "saldo";
@@ -205,12 +207,7 @@ exports.Controller = class {
     });
 
     if (first && end) {
-      if (
-        first.year !== end.year ||
-        first.month !== end.month ||
-        first.year !== year ||
-        first.month !== month
-      ) {
+      if (first.year !== end.year || first.month !== end.month || first.year !== year || first.month !== month) {
         return res.error(req.i18n.t("firstEndSaldoError"), 400);
       }
     }
@@ -238,18 +235,12 @@ exports.Controller = class {
         id: doc.responsible_id,
       });
       if (!responsible) {
-        return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`, 404);
       }
 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
-        return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`, 404);
       }
 
       doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
@@ -285,15 +276,7 @@ exports.Controller = class {
 
   static async getByProduct(req, res) {
     const region_id = req.user.region_id;
-    const {
-      responsible_id,
-      page,
-      product_id,
-      limit,
-      group_id,
-      budjet_id,
-      main_schet_id,
-    } = req.query;
+    const { responsible_id, page, product_id, limit, group_id, budjet_id, main_schet_id } = req.query;
 
     await ValidatorFunctions.budjet({ budjet_id });
 
@@ -373,15 +356,15 @@ exports.Controller = class {
       limit,
       nextPage: page >= pageCount ? null : page + 1,
       backPage: page === 1 ? null : page - 1,
-      from_summa,
-      from_kol,
+      from_summa: Math.round(from_summa * 100) / 100,
+      from_kol: Math.round(from_kol * 100) / 100,
       internal_rasxod_summa,
       internal_rasxod_kol,
       internal_prixod_summa,
       internal_prixod_kol,
-      to_summa,
+      to_summa: Math.round(to_summa * 100) / 100,
       to_iznos_summa,
-      to_kol,
+      to_kol: Math.round(to_kol * 100) / 100,
       page_from_summa,
       page_from_kol,
       page_internal_rasxod_summa,
@@ -536,13 +519,9 @@ exports.Controller = class {
   }
 
   static async templateFile(req, res) {
-    const { fileName, fileRes } =
-      await HelperFunctions.returnTemplateFile("saldo.xlsx");
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile("saldo.xlsx");
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);

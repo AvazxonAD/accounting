@@ -1,79 +1,26 @@
-const { UnitDB } = require('./db');
-const { tashkentTime } = require('@helper/functions');
+const { UnitDB } = require("./db");
 
 exports.UnitService = class {
-    static async createUnit(req, res) {
-        const { name } = req.body;
-        const check = await UnitDB.getByNameUnit([name])
-        if(check){
-            return res.status(409).json({
-                message: "this data already exists"
-            })
-        }
-        const result = await UnitDB.createUnit([name, tashkentTime(), tashkentTime()]);
-        return res.status(201).json({
-            message: "Unit created successfully",
-            data: result
-        });
-    }
+  static async getById(data) {
+    const unit = await UnitDB.getById([data.id], data.isdeleted);
 
-    static async getUnit(req, res) {
-        const data = await UnitDB.getUnit();
-        return res.status(200).json({
-            message: "Units successfully fetched",
-            data: data || []
-        });
-    }
+    return unit;
+  }
 
-    static async getByIdUnit(req, res) {
-        const id = req.params.id;
-        const data = await UnitDB.getByIdUnit([id], true);
-        if (!data) {
-            return res.status(404).json({
-                message: "Unit not found"
-            });
-        }
-        return res.status(200).json({
-            message: "Unit successfully fetched",
-            data
-        });
-    }
+  static async getByName(data) {
+    const unit = await UnitDB.getByName([data.name], data.isdeleted);
 
-    static async updateUnit(req, res) {
-        const { name } = req.body;
-        const id = req.params.id;
-        const old_unit = await UnitDB.getByIdUnit([id]);
-        if (!old_unit) {
-            return res.status(404).json({
-                message: "Unit not found"
-            });
-        }
-        if(old_unit.name !== name){
-            const check = await UnitDB.getByNameUnit([name])
-            if(check){
-                return res.status(409).json({
-                    message: "this data already exists"
-                })
-            }
-        }
-        const result = await UnitDB.updateUnit([name, tashkentTime(), id]);
-        return res.status(200).json({
-            message: 'Unit successfully updated',
-            data: result
-        });
-    }
+    return unit;
+  }
 
-    static async deleteUnit(req, res) {
-        const id = req.params.id;
-        const unit = await UnitDB.getByIdUnit([id]);
-        if (!unit) {
-            return res.status(404).json({
-                message: "Unit not found"
-            });
-        }
-        await UnitDB.deleteUnit([id]);
-        return res.status(200).json({
-            message: 'Unit successfully deleted'
-        });
-    }
+  static async getByNameSearch(data) {
+    const unit = await UnitDB.getByNameSearch([data.name], data.isdeleted);
+
+    return unit;
+  }
+
+  static async create(data) {
+    const result = await UnitDB.create([data.name, new Date(), new Date()]);
+    return result;
+  }
 };

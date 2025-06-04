@@ -251,45 +251,23 @@ exports.PrixodJur7Service = class {
   static async createProduct(data) {
     const result = [];
     for (let doc of data.childs) {
-      if (doc.iznos) {
-        for (let i = 1; i <= doc.kol; i++) {
-          const product = await PrixodDB.createProduct(
-            [
-              data.user_id,
-              data.budjet_id,
-              doc.name,
-              doc.edin,
-              doc.group_jur7_id,
-              doc.inventar_num,
-              doc.serial_num,
-              doc.iznos,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            data.client
-          );
+      const product = await PrixodDB.createProduct(
+        [
+          data.user_id,
+          data.budjet_id,
+          doc.name,
+          doc.unit_id,
+          doc.group_jur7_id,
+          doc.inventar_num,
+          doc.serial_num,
+          doc.iznos,
+          tashkentTime(),
+          tashkentTime(),
+        ],
+        data.client
+      );
 
-          result.push({ ...product, ...doc, kol: 1 });
-        }
-      } else {
-        const product = await PrixodDB.createProduct(
-          [
-            data.user_id,
-            data.budjet_id,
-            doc.name,
-            doc.edin,
-            doc.group_jur7_id,
-            doc.inventar_num,
-            doc.serial_num,
-            doc.iznos,
-            tashkentTime(),
-            tashkentTime(),
-          ],
-          data.client
-        );
-
-        result.push({ ...product, ...doc });
-      }
+      result.push({ ...product, ...doc });
     }
 
     return result;
@@ -341,22 +319,6 @@ exports.PrixodJur7Service = class {
         ...data,
         client,
       });
-
-      // check jur3
-      for (let child of data.childs) {
-        const schet = data.jur_schets.find((item) => item.schet === child.kredit_schet);
-
-        if (schet) {
-          if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
-          }
-        }
-      }
 
       return { doc, dates };
     });
@@ -503,38 +465,6 @@ exports.PrixodJur7Service = class {
         doc_date: _date.date,
       });
 
-      // check jur3
-      for (let child of data.childs) {
-        const schet = data.jur_schets.find((item) => item.schet === child.kredit_schet);
-
-        if (schet) {
-          if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
-          }
-        }
-      }
-
-      for (let child of data.old_data.childs) {
-        const schet = data.jur_schets.find((item) => item.schet === child.kredit_schet);
-
-        if (schet) {
-          if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              doc_date: data.old_data.doc_date,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
-          }
-        }
-      }
-
       return { doc, dates };
     });
 
@@ -560,21 +490,6 @@ exports.PrixodJur7Service = class {
         doc_date: data.old_data.doc_date,
         client,
       });
-
-      for (let child of data.childs) {
-        const schet = data.jur_schets.find((item) => item.schet === child.kredit_schet);
-
-        if (schet) {
-          if (schet.type === "jur3") {
-            await Saldo159Service.createSaldoDate({
-              ...data,
-              schet_id: schet.id,
-              main_schet_id: schet.main_schet_id,
-              client,
-            });
-          }
-        }
-      }
 
       return { doc, dates };
     });

@@ -1,8 +1,8 @@
-const { db } = require('@db/index');
+const { db } = require("@db/index");
 
 exports.UnitDB = class {
-    static async createUnit(params) {
-        const query = `
+  static async create(params) {
+    const query = `
             INSERT INTO storage_unit (
                 name, 
                 created_at, 
@@ -11,57 +11,73 @@ exports.UnitDB = class {
             VALUES ($1, $2, $3) 
             RETURNING *
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
 
-    static async getByIdUnit(params, isdeleted) {
-        const query = `
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
+  static async getById(params, isdeleted) {
+    const query = `
             SELECT id, name 
             FROM storage_unit 
-            WHERE id = $1 ${!isdeleted ? 'AND isdeleted = false' : ''}
+            WHERE id = $1 ${!isdeleted ? "AND isdeleted = false" : ""}
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async getUnit() {
-        const query = `
+  static async getUnit(search) {
+    const query = `
             SELECT id, name 
             FROM storage_unit 
             WHERE isdeleted = false
+              AND name ILIKE '%' || $1 || '%'
+            ORDER BY name ASC 
         `;
-        const result = await db.query(query);
-        return result;
-    }
+    const result = await db.query(query, [search]);
+    return result;
+  }
 
-    static async getByNameUnit(params) {
-        const query = `
+  static async getByNameSearch(params) {
+    const query = `
+      SELECT * 
+      FROM storage_unit 
+      WHERE name ILIKE '%' || $1 || '%' AND isdeleted = false
+    `;
+
+    const result = await db.query(query, params);
+    return result[0];
+  }
+
+  static async getByName(params) {
+    const query = `
             SELECT * 
             FROM storage_unit 
             WHERE name = $1 AND isdeleted = false
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
 
-    static async updateUnit(params) {
-        const query = `
+    const result = await db.query(query, params);
+    return result[0];
+  }
+
+  static async updateUnit(params) {
+    const query = `
             UPDATE storage_unit 
             SET name = $1, updated_at = $2
             WHERE id = $3 AND isdeleted = false 
             RETURNING *
         `;
-        const result = await db.query(query, params);
-        return result[0];
-    }
+    const result = await db.query(query, params);
+    return result[0];
+  }
 
-    static async deleteUnit(params) {
-        const query = `
+  static async deleteUnit(params) {
+    const query = `
             UPDATE storage_unit 
             SET isdeleted = true 
             WHERE id = $1 AND isdeleted = false
         `;
-        await db.query(query, params);
-    }
-}
+    await db.query(query, params);
+  }
+};

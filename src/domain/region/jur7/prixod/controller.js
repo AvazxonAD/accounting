@@ -14,6 +14,7 @@ const { MainSchetService } = require(`@main_schet/service`);
 const { ValidatorFunctions } = require(`@helper/database.validator`);
 const { RegionService } = require("@region/service");
 const { PodpisService } = require("../../spravochnik/podpis/service");
+const { UnitService } = require("@unit/service");
 
 exports.Controller = class {
   static async rasxodDocs(req, res) {
@@ -165,7 +166,12 @@ exports.Controller = class {
         return res.error(req.i18n.t("groupNotFound"), 404);
       }
 
-      child.old_iznos = child.eski_iznos_summa / child.kol;
+      const unit = await UnitService.getById({ id: child.unit_id });
+      if (!unit) {
+        return res.error(req.i18n.t("unitNotFound"), 404);
+      }
+
+      child.old_iznos = child.eski_iznos_summa;
     }
 
     const check_saldo = await Jur7SaldoService.check({
@@ -179,16 +185,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
-
     const result = await PrixodJur7Service.create({
       ...req.body,
       ...req.query,
       user_id,
-      jur_schets,
       childs,
       region_id,
     });
@@ -381,7 +381,12 @@ exports.Controller = class {
         return res.error(req.i18n.t("groupNotFound"), 404);
       }
 
-      child.old_iznos = child.eski_iznos_summa / child.kol;
+      const unit = await UnitService.getById({ id: child.unit_id });
+      if (!unit) {
+        return res.error(req.i18n.t("unitNotFound"), 404);
+      }
+
+      child.old_iznos = child.eski_iznos_summa;
     }
 
     const check_saldo = await Jur7SaldoService.check({
@@ -394,16 +399,10 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
-
     const result = await PrixodJur7Service.update({
       ...req.body,
       ...req.query,
       user_id,
-      jur_schets,
       id,
       childs,
       old_data,
@@ -463,10 +462,6 @@ exports.Controller = class {
         });
       }
     }
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
 
     const result = await PrixodJur7Service.deleteDoc({
       ...old_data,
@@ -474,7 +469,6 @@ exports.Controller = class {
       id,
       region_id,
       user_id,
-      jur_schets,
       old_data,
     });
 

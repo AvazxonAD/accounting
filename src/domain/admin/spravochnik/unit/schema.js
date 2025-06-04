@@ -1,28 +1,34 @@
-const Joi = require('joi')
+const Joi = require("joi");
 
-exports.createUnitSchema = Joi.object({
-  body : Joi.object({
-    name: Joi.string().trim()
-  })
+exports.createSchema = Joi.object({
+  body: Joi.object({
+    name: Joi.string().trim(),
+  }),
 }).options({ stripUnknown: true });
 
 exports.updateUnitSchema = Joi.object({
   body: Joi.object({
-    name: Joi.string().trim()
+    name: Joi.string().trim(),
   }),
   params: Joi.object({
-    id: Joi.number().integer().min(1).required()
-  })
-})
+    id: Joi.number().integer().min(1).required(),
+  }),
+});
 
-exports.getByIdUnitSchema = Joi.object({
+exports.getByIdSchema = Joi.object({
   params: Joi.object({
-    id: Joi.number().integer().min(1).required()
-  })
+    id: Joi.number().integer().min(1).required(),
+  }),
 }).options({ stripUnknown: true });
 
 exports.deleteUnitSchema = Joi.object({
   params: Joi.object({
-    id: Joi.number().integer().min(1).required()
-  })
+    id: Joi.number().integer().min(1).required(),
+  }),
+}).options({ stripUnknown: true });
+
+exports.getUnitSchema = Joi.object({
+  query: Joi.object({
+    search: Joi.string().trim().allow(""),
+  }),
 }).options({ stripUnknown: true });

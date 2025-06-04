@@ -7,7 +7,7 @@ exports.PrixodDB = class {
                 user_id, 
                 spravochnik_budjet_name_id, 
                 name, 
-                edin, 
+                unit_id, 
                 group_jur7_id, 
                 inventar_num,
                 serial_num,
