@@ -136,6 +136,7 @@ exports.Controller = class {
     }
 
     // check responsible and group
+    let index = 5;
     for (let doc of data) {
       const responsible = await ResponsibleService.getById({
         region_id,
@@ -143,7 +144,7 @@ exports.Controller = class {
       });
       if (!responsible) {
         return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
+          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id} Qator: ${index}`,
           404
         );
       }
@@ -151,7 +152,7 @@ exports.Controller = class {
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
         return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
+          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id} Qator: ${index}`,
           404
         );
       }
@@ -172,6 +173,7 @@ exports.Controller = class {
       doc.iznos_schet = group.schet;
       doc.iznos_sub_schet = group.provodka_subschet;
       doc.group = group;
+      index++;
     }
 
     await Jur7SaldoService.importData({

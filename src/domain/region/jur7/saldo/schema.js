@@ -83,22 +83,15 @@ exports.SaldoSchema = class {
           .min(1)
           .items(
             Joi.object({
-              responsible_id: Joi.number()
-                .min(1)
-                .required()
-                .integer()
-                .max(2147483647),
+              responsible_id: Joi.number().min(1).required().integer().max(2147483647),
               group_jur7_id: Joi.number().min(1).integer().required(),
               doc_date: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               iznos_start: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)
+                .allow(null, ""),
               doc_num: Joi.string().allow(null, ""),
               name: Joi.string().trim().required(),
               edin: Joi.string().trim().required(),
@@ -129,10 +122,7 @@ exports.SaldoSchema = class {
         search: Joi.string().trim().allow(null, ""),
         budjet_id: Joi.number().integer().min(1).required(),
         main_schet_id: Joi.number().integer().min(1).required(),
-        type: Joi.string()
-          .trim()
-          .valid("responsible", "group", "product")
-          .default("responsible"),
+        type: Joi.string().trim().valid("responsible", "group", "product").default("responsible"),
         to: Joi.string()
           .trim()
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/)

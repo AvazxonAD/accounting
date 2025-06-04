@@ -117,116 +117,6 @@ exports.Jur7SaldoService = class {
     return { result, header };
   }
 
-  static async importData(data) {
-    await db.transaction(async (client) => {
-      const saldo_create = [];
-      for (let doc of data.docs) {
-        if (doc.summa !== 0) {
-          doc.sena = doc.summa / doc.kol;
-        } else {
-          doc.sena = 0;
-        }
-
-        if (doc.iznos) {
-          for (let i = 1; i <= doc.kol; i++) {
-            const product = await SaldoDB.createProduct(
-              [
-                data.user_id,
-                data.budjet_id,
-                doc.name,
-                doc.edin,
-                doc.group_jur7_id,
-                doc.inventar_num,
-                doc.serial_num,
-                doc.iznos,
-                tashkentTime(),
-                tashkentTime(),
-              ],
-              client
-            );
-
-            if (doc.eski_iznos_summa && doc.eski_iznos_summa > 0) {
-              doc.old_iznos = doc.eski_iznos_summa / doc.kol;
-            }
-
-            saldo_create.push({
-              ...doc,
-              product_id: product.id,
-              kol: 1,
-              summa: doc.sena,
-            });
-          }
-        } else {
-          const product = await SaldoDB.createProduct(
-            [
-              data.user_id,
-              data.budjet_id,
-              doc.name,
-              doc.edin,
-              doc.group_jur7_id,
-              doc.inventar_num,
-              doc.serial_num,
-              doc.iznos,
-              tashkentTime(),
-              tashkentTime(),
-            ],
-            client
-          );
-
-          saldo_create.push({ product_id: product.id, ...doc });
-        }
-      }
-
-      const { year, month, full_date } = data.date_saldo;
-
-      for (let doc of saldo_create) {
-        let old_iznos = 0;
-        let iznos_summa = 0;
-        let month_iznos_summa = 0;
-
-        if (doc.iznos) {
-          month_iznos_summa = doc.sena * (doc.iznos_foiz / 100);
-          old_iznos = doc.old_iznos >= doc.sena ? doc.sena : doc.old_iznos;
-        }
-
-        await SaldoDB.create(
-          [
-            data.user_id,
-            doc.product_id,
-            doc.kol,
-            doc.sena,
-            doc.summa,
-            month,
-            year,
-            full_date,
-            doc?.doc_date || full_date,
-            doc?.doc_num || "saldo",
-            doc.responsible_id,
-            data.region_id,
-            null,
-            doc.iznos,
-            iznos_summa,
-            doc.iznos_schet,
-            doc.iznos_sub_schet,
-            old_iznos,
-            doc.iznos_start,
-            month_iznos_summa,
-            doc.group.schet,
-            doc.group.provodka_subschet,
-            doc.group.provodka_kredit,
-            doc.group.provodka_subschet,
-            data.budjet_id,
-            data.main_schet_id,
-            "import",
-            tashkentTime(),
-            tashkentTime(),
-          ],
-          client
-        );
-      }
-    });
-  }
-
   static async getByProduct(data) {
     const { year, month } = HelperFunctions.returnMonthAndYear({
       doc_date: data.to,
@@ -1100,6 +990,10 @@ exports.Jur7SaldoService = class {
         }
 
         if (doc.iznos) {
+          if (!Number.isInteger(doc.kol)) {
+            console.log(doc);
+          }
+
           for (let i = 1; i <= doc.kol; i++) {
             const product = await SaldoDB.createProduct(
               [
@@ -1144,6 +1038,12 @@ exports.Jur7SaldoService = class {
           saldo_create.push({ product_id: product.id, ...doc });
         }
       }
+
+      let test_kol = 0;
+      saldo_create.forEach((doc) => {
+        test_kol += doc.kol;
+      });
+      throw new Error(`Test kol: ${test_kol}`);
 
       let dates = [];
 

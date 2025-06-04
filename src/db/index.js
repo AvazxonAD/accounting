@@ -85,9 +85,7 @@ class Db {
     const files_archive = fs.readdirSync(folder_path_archive);
     const files = fs.readdirSync(folder_path);
 
-    const sql_files_archive = files_archive.filter((file) =>
-      file.endsWith(".sql")
-    );
+    const sql_files_archive = files_archive.filter((file) => file.endsWith(".sql"));
 
     const sql_files = files.filter((file) => file.endsWith(".sql"));
 
@@ -113,9 +111,7 @@ class Db {
 
         try {
           await client.query("BEGIN");
-          await client.query(`INSERT INTO migrations(file_name) VALUES($1)`, [
-            file,
-          ]);
+          await client.query(`INSERT INTO migrations(file_name) VALUES($1)`, [file]);
 
           try {
             filePath = `${folder_path_archive}/${file}`;
