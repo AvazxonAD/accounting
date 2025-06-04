@@ -15,7 +15,7 @@
   "prixodSchetNotFound": "Prixod schet not found",
   "cleanSuccess": "Malumotlar tozalandi!",
   "dateError": "Sana noto'g'ri kiritildi!",
-  "firstSaldoError": "Faqat birinchi qoldiqni ish boshlangandan so'ng faqat pulini ozgartira olasiz qolgan amallar avtomat boladi!",
+  "firstSaldoError": "Bu amalni faqat birinchi qoldiqni kiritganizda, ish boshlanganda foydalana olasiz!",
   "endSaldoError": "Faqat birinchi qoldiqni ish boshlangandan so'ng faqat pulini ozgartira olasiz qolgan amallar avtomat boladi!",
   "deleteSaldoError": "Faqat oxirgi qoldiqni ochira olasiz!",
   "ReportTitleAlreadyExists": "Ushbu hujjat sarlavhasi avval kiritilgan!",

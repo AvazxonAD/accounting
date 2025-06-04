@@ -369,23 +369,6 @@ exports.SaldoDB = class {
     await db.query(query, params);
   }
 
-  static async deleteByGroup(params) {
-    const query = `--sql
-      DELETE FROM saldo_naimenovanie_jur7
-      USING naimenovanie_tovarov_jur7
-      WHERE saldo_naimenovanie_jur7.naimenovanie_tovarov_jur7_id = naimenovanie_tovarov_jur7.id
-        AND saldo_naimenovanie_jur7.region_id = $1
-        AND saldo_naimenovanie_jur7.month = $2
-        AND saldo_naimenovanie_jur7.year = $3
-        AND saldo_naimenovanie_jur7.main_schet_id = $4
-        AND saldo_naimenovanie_jur7.type != 'prixod'
-        AND naimenovanie_tovarov_jur7.name = $5
-        AND naimenovanie_tovarov_jur7.group_jur7_id = $6;
-    `;
-
-    await db.query(query, params);
-  }
-
   static async createSaldoDate(params, client) {
     const query = `--sql
             INSERT INTO saldo_date(
@@ -677,7 +660,7 @@ exports.SaldoDB = class {
 
     const data = await _db.query(query, params);
 
-    return data.rows[0] || data[0];
+    return data?.rows ? data.rows[0] : data[0];
   }
 
   static async create(params, client) {

@@ -16,7 +16,7 @@ router
 
   .get("/check-create", Middleware.jur7Block, validator(Controller.checkFirst, SaldoSchema.checkFirst()))
 
-  .delete("/by-group", Middleware.jur7Block, validator(Controller.deleteByGroup, SaldoSchema.deleteByGroup()))
+  .delete("/:id", Middleware.jur7Block, validator(Controller.deleteById, SaldoSchema.deleteById()))
 
   .delete("/", Middleware.jur7Block, validator(Controller.delete, SaldoSchema.delete()))
 

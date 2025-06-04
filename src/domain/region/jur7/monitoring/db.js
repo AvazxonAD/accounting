@@ -527,12 +527,7 @@ exports.Jur7MonitoringDB = class {
     return result;
   }
 
-  static async getSummaReport(
-    params,
-    operator,
-    responsible_id = null,
-    product_id = null
-  ) {
+  static async getSummaReport(params, operator, responsible_id = null, product_id = null) {
     let internal_filter = ``;
     if (params.length === 3) {
       internal_filter = `${operator} $3`;

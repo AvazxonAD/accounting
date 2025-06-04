@@ -866,10 +866,6 @@ exports.Jur7SaldoService = class {
     await SaldoDB.deleteByMonth([data.region_id, data.month, data.year, data.main_schet_id]);
   }
 
-  static async deleteByGroup(data) {
-    await SaldoDB.deleteByGroup([data.region_id, data.month, data.year, data.main_schet_id, data.name, data.group_id]);
-  }
-
   static async importData(data) {
     await db.transaction(async (client) => {
       const saldo_create = [];

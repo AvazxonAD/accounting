@@ -7,17 +7,11 @@ const router = Router();
 
 router
   .get("/cap/report", validator(Controller.cap, Schema.capSchema()))
-  .get(
-    "/by-schets",
-    validator(Controller.reportBySchetsData, Schema.reportBySchetsData())
-  )
+  .get("/by-schets", validator(Controller.reportBySchetsData, Schema.reportBySchetsData()))
   .get("/", validator(Controller.monitoring, Schema.monitoring()))
   .get("/schet", validator(Controller.reportBySchets, Schema.reportBySchets()))
   .get("/saldo/date", validator(Controller.getSaldoDate, Schema.getSaldoDate()))
-  .get(
-    "/material/report",
-    validator(Controller.materialReport, Schema.getMaterialSchema())
-  )
+  .get("/material/report", validator(Controller.materialReport, Schema.getMaterialSchema()))
   .get("/act/report", validator(Controller.act, Schema.act()));
 
 module.exports = router;

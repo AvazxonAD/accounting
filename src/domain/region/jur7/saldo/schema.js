@@ -182,6 +182,11 @@ exports.SaldoSchema = class {
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
       }),
+      query: Joi.object({
+        year: Joi.number().min(1901).max(2099).required().integer(),
+        month: Joi.number().min(1).max(12).required().integer(),
+        main_schet_id: Joi.number().integer().min(1).required(),
+      }),
     }).options({ stripUnknown: true });
   }
 
@@ -194,18 +199,6 @@ exports.SaldoSchema = class {
       query: Joi.object({
         main_schet_id: Joi.number().integer().min(1).required(),
         budjet_id: Joi.number().integer().min(1).required(),
-      }),
-    }).options({ stripUnknown: true });
-  }
-
-  static deleteByGroup() {
-    return Joi.object({
-      query: Joi.object({
-        year: Joi.number().min(1901).max(2099).required().integer(),
-        month: Joi.number().min(1).max(12).required().integer(),
-        main_schet_id: Joi.number().integer().min(1).required(),
-        group_id: Joi.number().integer().min(1).required(),
-        name: Joi.string().trim().required(),
       }),
     }).options({ stripUnknown: true });
   }

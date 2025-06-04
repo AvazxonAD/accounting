@@ -269,7 +269,7 @@ exports.Controller = class {
 
             if (diffInDays >= 30) {
               const month_iznos = product.to.summa * (product.iznos_foiz / 100);
-              if (month_iznos + product.to.iznos_summa < product.to.summa) {
+              if (month_iznos + product.to.iznos_summa <= product.to.summa) {
                 product.to.month_iznos = month_iznos;
               } else {
                 product.to.month_iznos = month_iznos + product.to.iznos_summa - product.to.summa;
@@ -324,9 +324,6 @@ exports.Controller = class {
       responsible.products.sort((a, b) => {
         return parseInt(a.schet) - parseInt(b.schet);
       });
-      for (let schet of responsible.products) {
-        schet.products = Jur7MonitoringService.groupedMaterial(schet.products);
-      }
     }
 
     if (excel === "true") {
@@ -578,9 +575,9 @@ exports.Controller = class {
     }
 
     for (let responsible of result) {
-      for (let schet of responsible.products) {
-        schet.products = Jur7MonitoringService.groupedMaterial(schet.products);
-      }
+      responsible.products.sort((a, b) => {
+        return parseInt(a.schet) - parseInt(b.schet);
+      });
     }
 
     if (excel === "true") {

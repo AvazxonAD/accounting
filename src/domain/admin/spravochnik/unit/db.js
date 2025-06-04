@@ -27,15 +27,20 @@ exports.UnitDB = class {
     return result[0];
   }
 
-  static async getUnit(search) {
+  static async getUnit(search = null) {
+    const params = [];
+    if (search) {
+      params.push(search);
+    }
+
     const query = `
             SELECT id, name 
             FROM storage_unit 
             WHERE isdeleted = false
-              AND name ILIKE '%' || $1 || '%'
+              ${search ? "AND name ILIKE '%' || $1 || '%'" : ""}
             ORDER BY name ASC 
         `;
-    const result = await db.query(query, [search]);
+    const result = await db.query(query, params);
     return result;
   }
 
