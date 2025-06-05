@@ -51,7 +51,7 @@ exports.Jur7SaldoService = class {
   }
 
   static returnDocDate(data) {
-    const dates = String(data.doc_date).split("");
+    const dates = String(data.doc_date).trim().split("");
     const checkSlesh = dates.find((data) => data === "/");
     const checkDotNet = dates.find((data) => data === ".");
     if (checkDotNet) {
