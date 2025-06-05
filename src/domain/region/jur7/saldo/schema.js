@@ -47,7 +47,7 @@ exports.SaldoSchema = class {
         .required()
         .messages({ "*": lang.t("validation.edin") }),
       kol: Joi.number()
-        .greater(0)
+        .min(0)
         .required()
         .messages({ "*": lang.t("validation.kol") }),
       summa: Joi.number()
@@ -80,7 +80,7 @@ exports.SaldoSchema = class {
       body: Joi.object({
         data: Joi.array()
           .required()
-          .min(1)
+          .min(0)
           .items(
             Joi.object({
               responsible_id: Joi.number().min(1).required().integer().max(2147483647),

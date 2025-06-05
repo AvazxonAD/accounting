@@ -1,5 +1,6 @@
 {
   "notFound": "{{data}} topilmadi!",
+  "saldoSummaKolIznosError": "Tovarning barcha summa va miqdori 0 ga teng!",
   "bankNotFound": "Bank topilmadi topilmadi!",
   "bankAlreadyExists": "Bank avval kiritilgan!",
   "conflictError": "Hujjat bilan bog'liq documentlar bor",

@@ -100,6 +100,14 @@ exports.Controller = class {
       item.eski_iznos_summa = Number(item.eski_iznos_summa);
       item.doc_num = item.doc_num ? String(item.doc_num) : "saldo";
 
+      if (item.kol === 0 && item.summa === 0 && item.eski_iznos_summa === 0) {
+        return res.error(req.i18n.t("saldoSummaKolIznosError"), 400, {
+          code: CODE.EXCEL_IMPORT.code,
+          doc: real_data,
+          header,
+        });
+      }
+
       if (item.doc_date) {
         item.doc_date = Jur7SaldoService.returnDocDate({
           doc_date: item.doc_date,
@@ -265,6 +273,10 @@ exports.Controller = class {
       const unit = await UnitService.getById({ id: doc.unit_id });
       if (!unit) {
         throw new ErrorResponse("unitNotFound", 404);
+      }
+
+      if (item.kol === 0 && item.summa === 0 && item.eski_iznos_summa === 0) {
+        return res.error(req.i18n.t("saldoSummaKolIznosError"), 400);
       }
     }
 

@@ -870,7 +870,7 @@ exports.Jur7SaldoService = class {
     await db.transaction(async (client) => {
       const saldo_create = [];
       for (let doc of data.docs) {
-        if (doc.summa !== 0) {
+        if (doc.summa !== 0 && doc.kol !== 0) {
           doc.sena = doc.summa / doc.kol;
         } else {
           doc.sena = 0;
