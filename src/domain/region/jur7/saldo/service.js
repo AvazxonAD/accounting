@@ -784,8 +784,8 @@ exports.Jur7SaldoService = class {
             last_iznos_summa = 0;
           }
 
-          if (product.product.id === 2592110) {
-            console.log(iznos_summa, month_iznos_summa, product.data.summa);
+          if (product.iznos) {
+            console.log(iznos_summa);
           }
 
           saldoData.push([

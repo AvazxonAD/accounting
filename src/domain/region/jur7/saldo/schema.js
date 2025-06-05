@@ -94,7 +94,7 @@ exports.SaldoSchema = class {
                 .allow(null, ""),
               doc_num: Joi.string().allow(null, ""),
               name: Joi.string().trim().required(),
-              edin: Joi.string().trim().required(),
+              unit_id: Joi.number().min(1).integer().required(),
               kol: Joi.number().greater(0).required(),
               summa: Joi.number().min(0).required(),
               inventar_num: Joi.any(),

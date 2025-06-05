@@ -261,6 +261,11 @@ exports.Controller = class {
       doc.iznos_schet = group.schet;
       doc.iznos_sub_schet = group.provodka_subschet;
       doc.group = group;
+
+      const unit = await UnitService.getById({ id: doc.unit_id });
+      if (!unit) {
+        throw new ErrorResponse("unitNotFound", 404);
+      }
     }
 
     await Jur7SaldoService.importData({
