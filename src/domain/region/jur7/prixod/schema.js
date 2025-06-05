@@ -101,7 +101,7 @@ exports.PrixodJur7Schema = class {
                 .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               iznos: Joi.boolean().required(),
               name: Joi.string().trim().required(),
-              edin_id: Joi.number().min(1).integer().required(),
+              unit_id: Joi.number().min(1).integer().required(),
               inventar_num: Joi.string().trim(),
               serial_num: Joi.string().trim(),
               eski_iznos_summa: Joi.number().min(0).default(0),
