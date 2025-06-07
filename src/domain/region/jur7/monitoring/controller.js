@@ -124,10 +124,6 @@ exports.Controller = class {
 
     const region = await RegionService.getById({ id: region_id });
 
-    // const data = await Jur7MonitoringService.getMaterial({
-    //   ...req.query,
-    //   region_id,
-    // });
     const { data } = await Jur7SaldoService.getByProduct({
       ...req.query,
       region_id,
@@ -138,8 +134,8 @@ exports.Controller = class {
     const resultMap = {};
 
     data.forEach((product) => {
-      const responsibleId = product.kimning_buynida;
-      const schet = product.schet;
+      const responsibleId = product.responsible_id;
+      const schet = product.debet_schet;
 
       if (!resultMap[responsibleId]) {
         resultMap[responsibleId] = {
