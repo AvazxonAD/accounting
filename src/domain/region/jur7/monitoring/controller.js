@@ -124,9 +124,15 @@ exports.Controller = class {
 
     const region = await RegionService.getById({ id: region_id });
 
-    const data = await Jur7MonitoringService.getMaterial({
+    // const data = await Jur7MonitoringService.getMaterial({
+    //   ...req.query,
+    //   region_id,
+    // });
+    const { data } = await Jur7SaldoService.getByProduct({
       ...req.query,
       region_id,
+      page: 1,
+      limit: LIMIT,
     });
 
     const resultMap = {};
@@ -158,19 +164,6 @@ exports.Controller = class {
     });
 
     const result = Object.values(resultMap);
-
-    const from = HelperFunctions.returnDate({ year, month });
-
-    const history = await Jur7MonitoringService.history({
-      year,
-      region_id,
-      main_schet_id,
-      month,
-      from,
-      to,
-      responsible_id,
-    });
-
     const itogo = {
       from_kol: 0,
       from_summa: 0,
@@ -214,73 +207,6 @@ exports.Controller = class {
         };
 
         for (let product of schet.products) {
-          product.internal = {
-            kol: 0,
-            summa: 0,
-            iznos_summa: 0,
-            sena: 0,
-            prixod_kol: 0,
-            rasxod_kol: 0,
-            prixod_summa: 0,
-            rasxod_summa: 0,
-            prixod_iznos_summa: 0,
-            rasxod_iznos_summa: 0,
-          };
-
-          const productData = history.filter(
-            (item) => item.responsible_id == responsible.responsible_id && item.product_id == product.product_id
-          );
-
-          if (productData.length > 0) {
-            productData.forEach((item) => {
-              if (item.type === "prixod" || item.type === "prixod_internal") {
-                product.internal.prixod_kol += item.kol;
-                product.internal.prixod_summa += item.summa;
-                product.internal.prixod_iznos_summa += item.iznos_summa;
-              } else {
-                product.internal.rasxod_kol += item.kol;
-                product.internal.rasxod_summa += item.summa;
-                product.internal.rasxod_iznos_summa += item.iznos_summa;
-              }
-            });
-            product.internal.kol = product.internal.prixod_kol - product.internal.rasxod_kol;
-            product.internal.summa = product.internal.prixod_summa - product.internal.rasxod_summa;
-            product.internal.iznos_summa = product.internal.prixod_iznos_summa - product.internal.rasxod_iznos_summa;
-          }
-
-          product.to = {
-            kol: product.from.kol + product.internal.kol,
-            summa: product.from.summa + product.internal.summa,
-            iznos_summa: product.from.iznos_summa + product.internal.iznos_summa,
-          };
-
-          if (product.to.kol !== 0) {
-            product.to.sena = product.to.summa / product.to.kol;
-          } else {
-            product.to.sena = product.to.summa;
-          }
-
-          if (product.iznos) {
-            const docDate = new Date(product.doc_date);
-            const now = new Date(`${year}-${month}-01`);
-
-            const diffInMs = now - docDate;
-            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
-
-            if (diffInDays >= 30) {
-              const month_iznos = product.to.summa * (product.iznos_foiz / 100);
-              if (month_iznos + product.to.iznos_summa <= product.to.summa) {
-                product.to.month_iznos = month_iznos;
-              } else {
-                product.to.month_iznos = month_iznos + product.to.iznos_summa - product.to.summa;
-              }
-            } else {
-              product.to.month_iznos = 0;
-            }
-
-            product.to.iznos_summa += product.to.month_iznos;
-          }
-
           // schet
           schet.itogo.from_kol += product.from.kol;
           schet.itogo.from_summa += product.from.summa;
@@ -359,7 +285,7 @@ exports.Controller = class {
       return res.sendFile(response.filePath);
     }
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+    return res.success(req.i18n.t("getSuccess"), 200, itogo, result);
   }
 
   static async act(req, res) {

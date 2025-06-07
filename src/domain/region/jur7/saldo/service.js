@@ -192,6 +192,10 @@ exports.Jur7SaldoService = class {
         }
 
         product.to.iznos_summa += product.to.month_iznos;
+
+        if (product.to.iznos_summa >= product.to.summa) {
+          product.to.iznos_summa = product.to.summa;
+        }
       }
     }
 

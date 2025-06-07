@@ -293,7 +293,12 @@ exports.Controller = class {
 
   static async getByProduct(req, res) {
     const region_id = req.user.region_id;
-    const { responsible_id, page, product_id, limit, group_id, budjet_id, main_schet_id } = req.query;
+    const { page, product_id, limit, group_id, budjet_id, main_schet_id } = req.query;
+
+    let { kimning_buynida, responsible_id } = req.query;
+    if (!responsible_id && kimning_buynida) {
+      responsible_id = kimning_buynida;
+    }
 
     await ValidatorFunctions.budjet({ budjet_id });
 
@@ -345,6 +350,7 @@ exports.Controller = class {
       page_to_kol,
     } = await Jur7SaldoService.getByProduct({
       ...req.query,
+      responsible_id,
       region_id,
       offset,
     });
