@@ -228,7 +228,7 @@ exports.Controller = class {
           };
 
           const productData = history.filter(
-            (item) => item.responsible_id === responsible.responsible_id && item.product_id === product.product_id
+            (item) => item.responsible_id == responsible.responsible_id && item.product_id == product.product_id
           );
 
           if (productData.length > 0) {
