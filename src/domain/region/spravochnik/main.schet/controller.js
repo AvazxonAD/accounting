@@ -31,20 +31,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("docExists"), 409);
     }
 
-    const dup3_159 = HelperFunctions.findDuplicateByKey(
-      jur3_schets_159,
-      "schet"
-    );
+    const dup3_159 = HelperFunctions.findDuplicateByKey(jur3_schets_159, "schet");
     if (dup3_159) {
       return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
         schet: dup3_159,
       });
     }
 
-    const dup3_152 = HelperFunctions.findDuplicateByKey(
-      jur3_schets_152,
-      "schet"
-    );
+    const dup3_152 = HelperFunctions.findDuplicateByKey(jur3_schets_152, "schet");
     if (dup3_152) {
       return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
         schet: dup3_152,
@@ -58,20 +52,20 @@ exports.Controller = class {
       });
     }
 
-    for (let column_name of Object.keys({ jur1_schet, jur2_schet })) {
-      const check = await MainSchetService.checkSchet({
-        budjet_id: spravochnik_budjet_name_id,
-        region_id,
-        column: req.body[column_name],
-        column_name,
-      });
+    // for (let column_name of Object.keys({ jur1_schet, jur2_schet })) {
+    //   const check = await MainSchetService.checkSchet({
+    //     budjet_id: spravochnik_budjet_name_id,
+    //     region_id,
+    //     column: req.body[column_name],
+    //     column_name,
+    //   });
 
-      if (check) {
-        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-          schet: check[column_name],
-        });
-      }
-    }
+    //   if (check) {
+    //     return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+    //       schet: check[column_name],
+    //     });
+    //   }
+    // }
 
     const result = await MainSchetService.create({ ...req.body, user_id });
 
@@ -162,20 +156,14 @@ exports.Controller = class {
       }
     }
 
-    const dup3_159 = HelperFunctions.findDuplicateByKey(
-      jur3_schets_159,
-      "schet"
-    );
+    const dup3_159 = HelperFunctions.findDuplicateByKey(jur3_schets_159, "schet");
     if (dup3_159) {
       return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
         schet: dup3_159,
       });
     }
 
-    const dup3_152 = HelperFunctions.findDuplicateByKey(
-      jur3_schets_152,
-      "schet"
-    );
+    const dup3_152 = HelperFunctions.findDuplicateByKey(jur3_schets_152, "schet");
     if (dup3_152) {
       return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
         schet: dup3_152,
@@ -189,41 +177,39 @@ exports.Controller = class {
       });
     }
 
-    if (old_data.jur1_schet !== jur1_schet) {
-      const check = await MainSchetService.checkSchet({
-        budjet_id: spravochnik_budjet_name_id,
-        region_id,
-        column: jur1_schet,
-        column_name: "jur1_schet",
-      });
+    // if (old_data.jur1_schet !== jur1_schet) {
+    //   const check = await MainSchetService.checkSchet({
+    //     budjet_id: spravochnik_budjet_name_id,
+    //     region_id,
+    //     column: jur1_schet,
+    //     column_name: "jur1_schet",
+    //   });
 
-      if (check) {
-        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-          schet: check["jur1_schet"],
-        });
-      }
-    }
+    //   if (check) {
+    //     return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+    //       schet: check["jur1_schet"],
+    //     });
+    //   }
+    // }
 
-    if (old_data.jur2_schet !== jur2_schet) {
-      const check = await MainSchetService.checkSchet({
-        budjet_id: spravochnik_budjet_name_id,
-        region_id,
-        column: jur2_schet,
-        column_name: "jur2_schet",
-      });
+    // if (old_data.jur2_schet !== jur2_schet) {
+    //   const check = await MainSchetService.checkSchet({
+    //     budjet_id: spravochnik_budjet_name_id,
+    //     region_id,
+    //     column: jur2_schet,
+    //     column_name: "jur2_schet",
+    //   });
 
-      if (check) {
-        return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
-          schet: check["jur1_schet"],
-        });
-      }
-    }
+    //   if (check) {
+    //     return res.error(req.i18n.t("accountNumberSchetExists"), 400, {
+    //       schet: check["jur1_schet"],
+    //     });
+    //   }
+    // }
 
     for (let jur3 of jur3_schets_159) {
       if (jur3.id) {
-        const check = old_data.jur3_schets_159.find(
-          (item) => item.id === jur3.id
-        );
+        const check = old_data.jur3_schets_159.find((item) => item.id === jur3.id);
         if (!check) {
           return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
         }
@@ -232,9 +218,7 @@ exports.Controller = class {
 
     for (let jur3 of jur3_schets_152) {
       if (jur3.id) {
-        const check = old_data.jur3_schets_152.find(
-          (item) => item.id === jur3.id
-        );
+        const check = old_data.jur3_schets_152.find((item) => item.id === jur3.id);
         if (!check) {
           return res.error(req.i18n.t("accountNumberSchetNotFound"), 404);
         }

@@ -33,6 +33,6 @@ exports.Controller = class {
 
     const result = await FeaturesService.checkSchets({ region_id, budjet_id });
 
-    return res.success(req.i18n.t("getSuccess"), 200, null, result);
+    return res.success(req.i18n.t("getSuccess"), 200, null, []);
   }
 };

@@ -903,12 +903,9 @@ exports.Jur7SaldoService = class {
       const month = data.date_saldo.full_date.getMonth() + 1;
 
       for (let doc of saldo_create) {
-        let old_iznos = 0;
-        let iznos_summa = 0;
-        let month_iznos_summa = 0;
+        let old_iznos = doc.eski_iznos_summa;
 
         if (doc.iznos) {
-          month_iznos_summa = doc.summa * (doc.iznos_foiz / 100);
           old_iznos = old_iznos >= doc.summa ? doc.summa : old_iznos;
         }
 
@@ -928,12 +925,12 @@ exports.Jur7SaldoService = class {
             data.region_id,
             null,
             doc.iznos,
-            iznos_summa,
+            old_iznos,
             doc.iznos_schet,
             doc.iznos_sub_schet,
             old_iznos,
             doc.iznos_start,
-            month_iznos_summa,
+            0,
             doc.group.schet,
             doc.group.provodka_subschet,
             doc.group.provodka_kredit,
