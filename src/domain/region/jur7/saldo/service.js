@@ -181,12 +181,8 @@ exports.Jur7SaldoService = class {
         const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
         if (diffInDays >= 30) {
-          const month_iznos = product.to.summa * (product.iznos_foiz / 100);
-          if (month_iznos + product.to.iznos_summa <= product.to.summa) {
-            product.to.month_iznos = month_iznos;
-          } else {
-            product.to.month_iznos = month_iznos + product.to.iznos_summa - product.to.summa;
-          }
+          const month_iznos = product.to.summa * (product.iznos_foiz / 100 / 12);
+          product.to.month_iznos = month_iznos;
         } else {
           product.to.month_iznos = 0;
         }
@@ -770,7 +766,7 @@ exports.Jur7SaldoService = class {
           if (iznos_date) {
             sena = product.data.kol !== 0 ? product.data.summa / product.data.kol : product.data.summa;
 
-            month_iznos_summa = product.data.summa * (product.group.iznos_foiz / 100);
+            month_iznos_summa = product.data.summa * (product.group.iznos_foiz / 100 / 12);
 
             if (product.data.kol !== 0) {
               iznos_summa = month_iznos_summa + product.data.iznos_summa;

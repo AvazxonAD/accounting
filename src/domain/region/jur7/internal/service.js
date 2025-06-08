@@ -89,12 +89,6 @@ exports.Jur7InternalService = class {
 
       let month_iznos_summa = 0;
 
-      if (child.iznos) {
-        // month_iznos_summa = child.sena * (child.product.group.iznos_foiz / 100);
-        // month_iznos_summa =
-        //   month_iznos_summa >= child.sena ? child.sena : month_iznos_summa;
-      }
-
       await SaldoDB.create(
         [
           data.user_id,

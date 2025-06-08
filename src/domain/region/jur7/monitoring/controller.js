@@ -444,7 +444,7 @@ exports.Controller = class {
             const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
             if (diffInDays >= 30) {
-              const month_iznos = product.to.summa * (product.iznos_foiz / 100);
+              const month_iznos = product.to.summa * (product.iznos_foiz / 100 / 12);
               if (month_iznos + product.to.iznos_summa < product.to.summa) {
                 product.to.month_iznos = month_iznos;
               } else {
