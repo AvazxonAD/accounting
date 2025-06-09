@@ -175,6 +175,11 @@ exports.Jur7InternalService = class {
 
   static async getById(data) {
     const result = await InternalDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
+
+    if (result) {
+      result.schets_sums = HelperFunctions.jur7DebetKreditSums(result.childs);
+    }
+
     return result;
   }
 

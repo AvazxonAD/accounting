@@ -9,6 +9,12 @@ const { Jur7MonitoringService } = require(`@jur7_monitoring/service`);
 const fs = require("fs").promises;
 
 exports.Jur7SaldoService = class {
+  static async getByIdProduct(data) {
+    const result = await SaldoDB.getByIdProduct([data.id, data.region_id]);
+
+    return result;
+  }
+
   static groupedSaldo(arr) {
     const map = new Map();
 

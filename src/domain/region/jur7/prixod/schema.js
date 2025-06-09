@@ -48,6 +48,8 @@ exports.PrixodJur7Schema = class {
               iznos: Joi.boolean().required(),
               name: Joi.string().trim().required(),
               unit_id: Joi.number().min(1).integer().required(),
+              saldo_id: Joi.number().min(1).integer(),
+              product_id: Joi.number().min(1).integer(),
               inventar_num: Joi.string().trim(),
               serial_num: Joi.string().trim(),
               eski_iznos_summa: Joi.number().min(0).default(0),

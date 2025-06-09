@@ -76,17 +76,10 @@ exports.Controller = class {
     }
 
     if (excel === "true") {
-      const { fileName, filePath } =
-        await SmetaGrafikService.getByIdExcel(result);
+      const { fileName, filePath } = await SmetaGrafikService.getByIdExcel(result);
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }

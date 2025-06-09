@@ -7,6 +7,41 @@ const { REPORT_RASXOD_SCHET } = require("./constants");
 const ErrorResponse = require(`@helper/error.response`);
 
 exports.HelperFunctions = class {
+  static jur7DebetKreditSums(childs) {
+    const debetlar = {};
+    const kreditlar = {};
+
+    childs.forEach((item) => {
+      const debetSchet = item.debet_schet;
+      const kreditSchet = item.kredit_schet;
+      const summa = item.summa || 0;
+
+      if (!debetlar[debetSchet]) {
+        debetlar[debetSchet] = {
+          schet: debetSchet,
+          summa: 0,
+        };
+      }
+      debetlar[debetSchet].summa += summa;
+
+      if (!kreditlar[kreditSchet]) {
+        kreditlar[kreditSchet] = {
+          schet: kreditSchet,
+          summa: 0,
+        };
+      }
+      kreditlar[kreditSchet].summa += summa;
+    });
+
+    const debetArray = Object.values(debetlar);
+    const kreditArray = Object.values(kreditlar);
+
+    return {
+      debet: debetArray,
+      kredit: kreditArray,
+    };
+  }
+
   static getFromTo(data) {
     const from = new Date(data.year, data.month - 1, 1);
     const to = new Date(data.year, data.month, 0); // oyning oxirgi kuni
@@ -73,9 +108,7 @@ exports.HelperFunctions = class {
       month: doc_date.getMonth() + 1,
     });
 
-    const future_saldoDate = new Date(
-      `${next_date.year}-${next_date.month}-01`
-    );
+    const future_saldoDate = new Date(`${next_date.year}-${next_date.month}-01`);
 
     const current_saldoDate = new Date(`${data.year}-${data.month}-01`);
 
@@ -168,12 +201,10 @@ exports.HelperFunctions = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -237,9 +268,7 @@ exports.HelperFunctions = class {
         schet: doc.schet,
         sub_schet: doc.sub_schet,
         contract_doc_num: doc.contract_doc_num || "",
-        contract_doc_date: doc.contract_doc_date
-          ? this.returnLocalDate(new Date(doc.contract_doc_date))
-          : "",
+        contract_doc_date: doc.contract_doc_date ? this.returnLocalDate(new Date(doc.contract_doc_date)) : "",
         comment: doc.comment || "",
       });
       column++;
@@ -257,9 +286,7 @@ exports.HelperFunctions = class {
         schet: doc.schet,
         sub_schet: doc.sub_schet,
         contract_doc_num: doc.contract_doc_num || "",
-        contract_doc_date: doc.contract_doc_date
-          ? this.returnLocalDate(new Date(doc.contract_doc_date))
-          : "",
+        contract_doc_date: doc.contract_doc_date ? this.returnLocalDate(new Date(doc.contract_doc_date)) : "",
         comment: doc.comment || "",
       });
       column++;
@@ -351,11 +378,7 @@ exports.HelperFunctions = class {
       row.eachCell((cell, columnNumber) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
-        if (
-          (columnNumber === 6 || columnNumber === 7) &&
-          rowNumber > 8 &&
-          !cellData.horizontal
-        ) {
+        if ((columnNumber === 6 || columnNumber === 7) && rowNumber > 8 && !cellData.horizontal) {
           horizontal = "right";
         } else if (columnNumber > 7 && rowNumber > 8) {
           horizontal = "center";
@@ -422,12 +445,10 @@ exports.HelperFunctions = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -582,11 +603,7 @@ exports.HelperFunctions = class {
       row.eachCell((cell, column) => {
         const cellData = cell.note ? JSON.parse(cell.note) : {};
 
-        if (
-          (column === 5 || column === 6) &&
-          rowNumber > 8 &&
-          !cellData.horizontal
-        ) {
+        if ((column === 5 || column === 6) && rowNumber > 8 && !cellData.horizontal) {
           horizontal = "right";
         } else if (column > 6 && rowNumber > 8) {
           horizontal = "center";
@@ -655,12 +672,10 @@ exports.HelperFunctions = class {
 
     // main section
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -766,11 +781,7 @@ exports.HelperFunctions = class {
     let rasxod_column = 8;
     // deep rasxod
     for (let rasxod in data.rasxods) {
-      if (
-        rasxod !== "summa" &&
-        data.rasxods[rasxod].summa !== 0 &&
-        rasxod === REPORT_RASXOD_SCHET[0]
-      ) {
+      if (rasxod !== "summa" && data.rasxods[rasxod].summa !== 0 && rasxod === REPORT_RASXOD_SCHET[0]) {
         // rasxod
         worksheet.mergeCells(`E6`, `G6`);
         const titleCelll = worksheet.getCell(`E6`);
@@ -826,8 +837,7 @@ exports.HelperFunctions = class {
       `Остаток к концу дня:               ${this.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
     itogo_column++;
 
-    let podpis_column =
-      rasxod_column > itogo_column ? rasxod_column + 3 : itogo_column + 3;
+    let podpis_column = rasxod_column > itogo_column ? rasxod_column + 3 : itogo_column + 3;
 
     for (let podpis of data.podpis) {
       worksheet.mergeCells(`A${podpis_column}`, `D${podpis_column}`);
@@ -890,11 +900,7 @@ exports.HelperFunctions = class {
 
         if (cellData.bold) {
           bold = true;
-        } else if (
-          cell.value === "Жами КТ:" ||
-          cell.value === "Жами ДБ:" ||
-          cell.value === "Кредит буйича жами:"
-        ) {
+        } else if (cell.value === "Жами КТ:" || cell.value === "Жами ДБ:" || cell.value === "Кредит буйича жами:") {
           bold = true;
         } else if (!cellData.bold && rowNumber > 7) {
           bold = false;
@@ -902,11 +908,7 @@ exports.HelperFunctions = class {
 
         if (cellData.horizontal) {
           horizontal = cellData.horizontal;
-        } else if (
-          cell.value === "Модда" ||
-          cell.value === "Статьяси" ||
-          cell.value === "Сумма"
-        ) {
+        } else if (cell.value === "Модда" || cell.value === "Статьяси" || cell.value === "Сумма") {
           horizontal = "center";
           bold = true;
         }
@@ -969,10 +971,7 @@ exports.HelperFunctions = class {
   }
 
   static reportBySchetsGroup(data) {
-    const allSchets = new Set([
-      ...data.prixods.map((p) => p.schet),
-      ...data.rasxods.map((r) => r.schet),
-    ]);
+    const allSchets = new Set([...data.prixods.map((p) => p.schet), ...data.rasxods.map((r) => r.schet)]);
 
     const result = Array.from(allSchets).map((schet) => {
       const prixodObj = data.prixods.find((p) => p.schet === schet);
@@ -1001,8 +1000,7 @@ exports.HelperFunctions = class {
       `За период с ${this.returnStringDate(new Date(data.from))} по ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells(`A4`, "D4");
-    worksheet.getCell(`A4`).value =
-      `Остаток к началу дня: ${this.returnStringSumma(data.summa_from)}`;
+    worksheet.getCell(`A4`).value = `Остаток к началу дня: ${this.returnStringSumma(data.summa_from)}`;
 
     worksheet.getRow(6).values = ["Счет", "Приход", "Расход"];
 
@@ -1033,8 +1031,7 @@ exports.HelperFunctions = class {
 
     const to_column = worksheet.rowCount + 2;
     worksheet.mergeCells(`A${to_column}`, `D${to_column}`);
-    worksheet.getCell(`A${to_column}`).value =
-      `Остаток в конце дня: ${this.returnStringSumma(data.summa_to)}`;
+    worksheet.getCell(`A${to_column}`).value = `Остаток в конце дня: ${this.returnStringSumma(data.summa_to)}`;
 
     let podpis_column = worksheet.rowCount + 5;
     for (let podpis of data.podpis) {
@@ -1056,11 +1053,7 @@ exports.HelperFunctions = class {
         right: { style: "thin" },
       };
 
-      if (
-        rowNumber < 7 ||
-        rowNumber === to_column ||
-        rowNumber === itogo_column
-      ) {
+      if (rowNumber < 7 || rowNumber === to_column || rowNumber === itogo_column) {
         bold = true;
         worksheet.getRow(rowNumber).height = 40;
       }
@@ -1124,12 +1117,10 @@ exports.HelperFunctions = class {
 
     // main section
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -1235,11 +1226,7 @@ exports.HelperFunctions = class {
     let rasxod_column = 8;
     // deep rasxod
     for (let rasxod in data.rasxods) {
-      if (
-        rasxod !== "summa" &&
-        data.rasxods[rasxod].summa !== 0 &&
-        rasxod === REPORT_RASXOD_SCHET[0]
-      ) {
+      if (rasxod !== "summa" && data.rasxods[rasxod].summa !== 0 && rasxod === REPORT_RASXOD_SCHET[0]) {
         // rasxod
         worksheet.mergeCells(`E6`, `G6`);
         const titleCelll = worksheet.getCell(`E6`);
@@ -1295,8 +1282,7 @@ exports.HelperFunctions = class {
       `Остаток к концу дня:               ${this.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
     itogo_column++;
 
-    let podpis_column =
-      rasxod_column > itogo_column ? rasxod_column + 3 : itogo_column + 3;
+    let podpis_column = rasxod_column > itogo_column ? rasxod_column + 3 : itogo_column + 3;
 
     for (let podpis of data.podpis) {
       worksheet.mergeCells(`A${podpis_column}`, `D${podpis_column}`);
@@ -1359,11 +1345,7 @@ exports.HelperFunctions = class {
 
         if (cellData.bold) {
           bold = true;
-        } else if (
-          cell.value === "Жами КТ:" ||
-          cell.value === "Жами ДБ:" ||
-          cell.value === "Кредит буйича жами:"
-        ) {
+        } else if (cell.value === "Жами КТ:" || cell.value === "Жами ДБ:" || cell.value === "Кредит буйича жами:") {
           bold = true;
         } else if (!cellData.bold && rowNumber > 7) {
           bold = false;
@@ -1371,11 +1353,7 @@ exports.HelperFunctions = class {
 
         if (cellData.horizontal) {
           horizontal = cellData.horizontal;
-        } else if (
-          cell.value === "Модда" ||
-          cell.value === "Статьяси" ||
-          cell.value === "Сумма"
-        ) {
+        } else if (cell.value === "Модда" || cell.value === "Статьяси" || cell.value === "Сумма") {
           horizontal = "center";
           bold = true;
         }
@@ -1574,15 +1552,9 @@ exports.HelperFunctions = class {
   static saldoSumma(data) {
     let summa = { prixod_summa: 0, rasxod_summa: 0 };
     if (data.prixod) {
-      summa.prixod_summa = data.childs.reduce(
-        (acc, item) => (acc += item.summa),
-        0
-      );
+      summa.prixod_summa = data.childs.reduce((acc, item) => (acc += item.summa), 0);
     } else if (data.rasxod) {
-      summa.rasxod_summa = data.childs.reduce(
-        (acc, item) => (acc += item.summa),
-        0
-      );
+      summa.rasxod_summa = data.childs.reduce((acc, item) => (acc += item.summa), 0);
     }
 
     return summa;
@@ -1709,11 +1681,7 @@ exports.childsSumma = (args) => {
 
 exports.checkUniqueIds = (array) => {
   const ids = array.map((item) =>
-    item.id
-      ? item.id
-      : item.spravochnik_main_book_schet_id
-        ? item.spravochnik_main_book_schet_id
-        : item.smeta_grafik_id
+    item.id ? item.id : item.spravochnik_main_book_schet_id ? item.spravochnik_main_book_schet_id : item.smeta_grafik_id
   );
   const uniqueIds = new Set(ids);
   return ids.length === uniqueIds.size;
@@ -1829,11 +1797,7 @@ exports.checkSchetsEquality = (childs) => {
 exports.checkTovarId = (array) => {
   let test;
   for (let item of array) {
-    test = array.filter(
-      (element) =>
-        element.naimenovanie_tovarov_jur7_id ===
-        item.naimenovanie_tovarov_jur7_id
-    );
+    test = array.filter((element) => element.naimenovanie_tovarov_jur7_id === item.naimenovanie_tovarov_jur7_id);
     if (test.length > 1) {
       test = true;
     } else {
@@ -1844,8 +1808,7 @@ exports.checkTovarId = (array) => {
 };
 
 exports.filterLogs = (array) => {
-  const logPattern =
-    /(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\s*(\w+)\.\s*id:(\d+)\.\s*user_id:(\d+)/;
+  const logPattern = /(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\s*(\w+)\.\s*id:(\d+)\.\s*user_id:(\d+)/;
   const logs = array
     .map((line) => {
       const match = line.match(logPattern);

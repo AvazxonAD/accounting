@@ -191,18 +191,10 @@ exports.PrixodJur7Service = class {
         if (rowNumber > 2 && (index === 1 || index === 3 || index === 5 || index === 9)) {
           horizontal = "left";
         }
-        if (
-          rowNumber > 2 &&
-          (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)
-        ) {
+        if (rowNumber > 2 && (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)) {
           horizontal = "right";
         }
-        if (
-          rowNumber > 2 &&
-          index === 8 &&
-          cell.value !== "" &&
-          "" === worksheet.getRow(rowNumber).getCell(index - 1).value
-        ) {
+        if (rowNumber > 2 && index === 8 && cell.value !== "" && "" === worksheet.getRow(rowNumber).getCell(index - 1).value) {
           bold = true;
         }
         if (fill && border) {
@@ -251,23 +243,26 @@ exports.PrixodJur7Service = class {
   static async createProduct(data) {
     const result = [];
     for (let doc of data.childs) {
-      const product = await PrixodDB.createProduct(
-        [
-          data.user_id,
-          data.budjet_id,
-          doc.name,
-          doc.unit_id,
-          doc.group_jur7_id,
-          doc.inventar_num,
-          doc.serial_num,
-          doc.iznos,
-          tashkentTime(),
-          tashkentTime(),
-        ],
-        data.client
-      );
-
-      result.push({ ...product, ...doc });
+      if (doc.product_id) {
+        result.push({ id: doc.product_id, ...doc });
+      } else {
+        const product = await PrixodDB.createProduct(
+          [
+            data.user_id,
+            data.budjet_id,
+            doc.name,
+            doc.unit_id,
+            doc.group_jur7_id,
+            doc.inventar_num,
+            doc.serial_num,
+            doc.iznos,
+            tashkentTime(),
+            tashkentTime(),
+          ],
+          data.client
+        );
+        result.push({ ...product, ...doc });
+      }
     }
 
     return result;
@@ -334,9 +329,7 @@ exports.PrixodJur7Service = class {
 
       const summa_s_nds = summa + nds_summa;
 
-      const product_sena = summa_s_nds / child.kol;
-
-      child.old_iznos = child.old_iznos > product_sena ? product_sena : child.old_iznos;
+      child.old_iznos = child.old_iznos > summa_s_nds ? summa_s_nds : child.old_iznos;
 
       await PrixodDB.createChild(
         [
@@ -367,45 +360,45 @@ exports.PrixodJur7Service = class {
         data.client
       );
 
-      const month = new Date(data.doc.doc_date).getMonth() + 1;
-      const year = new Date(data.doc.doc_date).getFullYear();
+      if (!child.saldo_id) {
+        const month = new Date(data.doc.doc_date).getMonth() + 1;
+        const year = new Date(data.doc.doc_date).getFullYear();
 
-      let month_iznos_summa = 0;
-
-      await SaldoDB.create(
-        [
-          data.user_id,
-          child.id,
-          0,
-          0,
-          0,
-          month,
-          year,
-          `${year}-${String(month).padStart(2, "0")}-01`,
-          data.doc.doc_date,
-          data.doc.doc_num,
-          data.kimga_id,
-          data.region_id,
-          data.docId,
-          child.iznos,
-          0,
-          child.iznos_schet,
-          child.iznos_sub_schet,
-          0,
-          child.iznos_start,
-          month_iznos_summa,
-          child.debet_schet,
-          child.debet_sub_schet,
-          child.kredit_schet,
-          child.kredit_sub_schet,
-          data.budjet_id,
-          data.main_schet_id,
-          "prixod",
-          tashkentTime(),
-          tashkentTime(),
-        ],
-        data.client
-      );
+        await SaldoDB.create(
+          [
+            data.user_id,
+            child.id,
+            0,
+            0,
+            0,
+            month,
+            year,
+            `${year}-${String(month).padStart(2, "0")}-01`,
+            data.doc.doc_date,
+            data.doc.doc_num,
+            data.kimga_id,
+            data.region_id,
+            data.docId,
+            child.iznos,
+            0,
+            child.iznos_schet,
+            child.iznos_sub_schet,
+            0,
+            child.iznos_start,
+            0,
+            child.debet_schet,
+            child.debet_sub_schet,
+            child.kredit_schet,
+            child.kredit_sub_schet,
+            data.budjet_id,
+            data.main_schet_id,
+            "prixod",
+            tashkentTime(),
+            tashkentTime(),
+          ],
+          data.client
+        );
+      }
     }
   }
 
@@ -510,6 +503,10 @@ exports.PrixodJur7Service = class {
 
   static async getById(data) {
     const result = await PrixodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
+
+    if (result) {
+      result.schets_sums = HelperFunctions.jur7DebetKreditSums(result.childs);
+    }
 
     return result;
   }

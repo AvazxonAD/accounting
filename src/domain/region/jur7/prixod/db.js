@@ -284,10 +284,7 @@ exports.PrixodDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(
-      `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`,
-      params
-    );
+    await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
     const result = await client.query(
       `UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`,
       params
@@ -303,12 +300,6 @@ exports.PrixodDB = class {
             WHERE document_prixod_jur7_id = $1 AND isdeleted = false
         `;
 
-    const query2 = `--sql
-            UPDATE iznos_tovar_jur7 
-            SET isdeleted = true 
-            WHERE naimenovanie_tovarov_jur7_id = ANY($1)
-        `;
-
     const query3 = `--sql
             DELETE FROM saldo_naimenovanie_jur7  
             WHERE naimenovanie_tovarov_jur7_id = ANY($1)
@@ -321,7 +312,6 @@ exports.PrixodDB = class {
         `;
 
     await client.query(query1, [documentPrixodId]);
-    await client.query(query2, [productIds]);
     await client.query(query3, [productIds]);
     await client.query(query4, [productIds]);
   }

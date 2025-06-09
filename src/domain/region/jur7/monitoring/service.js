@@ -644,8 +644,8 @@ exports.Jur7MonitoringService = class {
               rasxod: Math.round(product.internal.rasxod_summa * 100) / 100,
               to_kol: Math.round(product.to.kol * 100) / 100,
               to_summa: Math.round(product.to.summa * 100) / 100,
-              date: product.doc_date,
-              doc_num: product.doc_num,
+              date: product.prixodData.docDate,
+              doc_num: product.prixodData.docNum,
             });
           }
 
@@ -1107,10 +1107,6 @@ exports.Jur7MonitoringService = class {
     const toCell = worksheet.getCell("I6");
     toCell.value = "ОСТАТОК на кон";
 
-    worksheet.mergeCells("L6", "P6");
-    const toIznosCell = worksheet.getCell("L6");
-    toIznosCell.value = "ОСТАТОК на кон";
-
     const date_prixod = worksheet.getCell("K6");
     date_prixod.value = "Дата приход";
 
@@ -1149,7 +1145,7 @@ exports.Jur7MonitoringService = class {
       { key: "to_kol", width: 15 },
       { key: "to_summa", width: 15 },
       { key: "date", width: 15 },
-      { key: "doc_num", width: 15 },
+      { key: "doc_num", width: 20 },
       { key: "from_iznos", width: 15 },
       { key: "prixod_iznos", width: 15 },
       { key: "month_iznos", width: 15 },
@@ -1186,8 +1182,8 @@ exports.Jur7MonitoringService = class {
               rasxod: Math.round(product.internal.rasxod_summa * 100) / 100,
               to_kol: Math.round(product.to.kol * 100) / 100,
               to_summa: Math.round(product.to.summa * 100) / 100,
-              date: product.doc_date,
-              doc_num: product.doc_num,
+              date: product.prixodData.docDate,
+              doc_num: product.prixodData.docNum,
               from_iznos: Math.round(product.from.iznos_summa * 100) / 100,
               prixod_iznos: Math.round(product.internal.prixod_iznos_summa * 100) / 100,
               month_iznos: Math.round(product.to.month_iznos * 100) / 100,

@@ -1,6 +1,22 @@
 const { db } = require("@db/index");
 
 exports.SaldoDB = class {
+  static async getByIdProduct(params) {
+    const sql = `--sql
+      SELECT
+        n.*
+      FROM naimenovanie_tovarov_jur7 n
+      JOIN users u ON u.id = n.user_id
+      JOIN regions r ON r.id = u.region_id
+      WHERE n.isdeleted = false
+        AND n.id = $1
+        AND r.id = $2
+    `;
+
+    const result = await db.query(sql, params);
+
+    return result[0];
+  }
   static async createProduct(params, client) {
     const query = `--sql
             INSERT INTO naimenovanie_tovarov_jur7 (
@@ -48,6 +64,7 @@ exports.SaldoDB = class {
                 s.iznos_summa::FLOAT,
                 s.kol::FLOAT,
                 s.naimenovanie_tovarov_jur7_id::INTEGER,
+                s.naimenovanie_tovarov_jur7_id AS product_id,
                 s.eski_iznos_summa::FLOAT,
                 s.region_id::INTEGER, 
                 s.kimning_buynida AS responsible_id,

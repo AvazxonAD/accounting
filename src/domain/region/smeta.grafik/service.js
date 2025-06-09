@@ -23,9 +23,7 @@ exports.SmetaGrafikService = class {
     for (let smeta of data.smetas) {
       const itogo = HelperFunctions.smetaSum(smeta);
 
-      const check = data.main_parent.smetas.find(
-        (item) => item.smeta_id === smeta.smeta_id
-      );
+      const check = data.main_parent.smetas.find((item) => item.smeta_id === smeta.smeta_id);
 
       if (check) {
         await SmetaGrafikDB.updateMain(
@@ -80,15 +78,10 @@ exports.SmetaGrafikService = class {
     }
 
     for (let item of data.main_parent.smetas) {
-      const check = data.smetas.find(
-        (smeta) => smeta.smeta_id === item.smeta_id
-      );
+      const check = data.smetas.find((smeta) => smeta.smeta_id === item.smeta_id);
 
       if (!check) {
-        await SmetaGrafikDB.deleteMain(
-          [item.smeta_id, data.main_parent.id],
-          data.client
-        );
+        await SmetaGrafikDB.deleteMain([item.smeta_id, data.main_parent.id], data.client);
       }
     }
   }
@@ -128,15 +121,7 @@ exports.SmetaGrafikService = class {
 
   static async createParent(data) {
     const parent = await SmetaGrafikDB.createParent(
-      [
-        data.user_id,
-        data.year,
-        data.main_schet_id,
-        data.order_number,
-        data.command,
-        this.now,
-        this.now,
-      ],
+      [data.user_id, data.year, data.main_schet_id, data.order_number, data.command, this.now, this.now],
       data.client
     );
 
@@ -145,10 +130,7 @@ exports.SmetaGrafikService = class {
 
   static async create(data) {
     await db.transaction(async (client) => {
-      const order_number = await SmetaGrafikDB.getOrderNumber([
-        data.year,
-        data.main_schet_id,
-      ]);
+      const order_number = await SmetaGrafikDB.getOrderNumber([data.year, data.main_schet_id]);
 
       const parent = await this.createParent({
         ...data,
@@ -183,20 +165,13 @@ exports.SmetaGrafikService = class {
   }
 
   static async getEnd(data) {
-    const result = await SmetaGrafikDB.getEnd([
-      data.region_id,
-      data.year,
-      data.main_schet_id,
-    ]);
+    const result = await SmetaGrafikDB.getEnd([data.region_id, data.year, data.main_schet_id]);
 
     return result;
   }
 
   static async get(data) {
-    const result = await SmetaGrafikDB.get(
-      [data.region_id, data.main_schet_id, data.offset, data.limit],
-      data.year
-    );
+    const result = await SmetaGrafikDB.get([data.region_id, data.main_schet_id, data.offset, data.limit], data.year);
 
     const end = await this.getEnd({ ...data });
 
@@ -216,10 +191,7 @@ exports.SmetaGrafikService = class {
   }
 
   static async getById(data, isdeleted) {
-    const result = await SmetaGrafikDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      isdeleted
-    );
+    const result = await SmetaGrafikDB.getById([data.region_id, data.id, data.main_schet_id], isdeleted);
 
     const end = await this.getEnd({ ...data });
     if (end && result) {
@@ -236,8 +208,7 @@ exports.SmetaGrafikService = class {
 
     worksheet.mergeCells("A1", "O1");
 
-    worksheet.getCell(`A1`).value =
-      `${data.year} года ${data.command} буйруқ Хисоб рақам: ${data.account_number}`;
+    worksheet.getCell(`A1`).value = `${data.year} года ${data.command} буйруқ Хисоб рақам: ${data.account_number}`;
 
     worksheet.getRow(2).values = [
       `№`,

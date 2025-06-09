@@ -158,6 +158,110 @@ exports.SmetaGrafikDB = class {
               d.*,
               m.account_number,
               (
+                SELECT
+                  COALESCE(SUM(s.oy_1), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_1,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_2), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_2,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_3), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_3,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_4), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_4,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_5), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_5,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_6), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_6,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_7), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_7,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_8), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_8, 
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_9), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_9, 
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_10), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_10, 
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_11), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_11,
+              (
+                SELECT
+                  COALESCE(SUM(s.oy_12), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS oy_12,
+              (
+                SELECT
+                  COALESCE(SUM(s.itogo), 0)
+                FROM smeta_grafik s
+                JOIN smeta ON smeta.id = s.smeta_id
+                WHERE s.isdeleted = false
+                  AND s.parent_id = d.id
+              )::FLOAT AS itogo,
+              (
                 SELECT JSON_AGG(
                   JSON_BUILD_OBJECT(
                     'id', s.id,
