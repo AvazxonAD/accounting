@@ -223,7 +223,8 @@ exports.InternalDB = class {
 
     await client.query(
       `--sql
-            DELETE FROM saldo_naimenovanie_jur7  
+            UPDATE saldo_naimenovanie_jur7
+            SET isdeleted = true  
             WHERE prixod_id = $1
         `,
       params
@@ -244,7 +245,8 @@ exports.InternalDB = class {
 
   static async deleteRasxodChild(params, client) {
     const query1 = `--sql
-            DELETE FROM saldo_naimenovanie_jur7  
+            UPDATE saldo_naimenovanie_jur7
+            SET isdeleted = true
             WHERE prixod_id = $1
         `;
 

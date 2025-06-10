@@ -1,7 +1,9 @@
 const { db } = require("@db/index");
 
-exports.SaldoDB = class {
-  static async getByIdProduct(params) {
+exports.Jur7SaldoDB = class {
+  static async getByIdProduct(params, client) {
+    const _db = client || db;
+
     const sql = `--sql
       SELECT
         n.*
@@ -13,9 +15,9 @@ exports.SaldoDB = class {
         AND r.id = $2
     `;
 
-    const result = await db.query(sql, params);
+    const result = await _db.query(sql, params);
 
-    return result[0];
+    return result?.rows ? result.rows[0] : result[0];
   }
   static async createProduct(params, client) {
     const query = `--sql
@@ -270,6 +272,7 @@ exports.SaldoDB = class {
                 su.name AS edin,
                 n.inventar_num,
                 n.serial_num,
+                n.unit_id,
                 g.id AS group_id,
                 g.name AS group_name,
                 g.group_number,
@@ -291,11 +294,24 @@ exports.SaldoDB = class {
                 s.isdeleted,
                 s.type,
                 g.iznos_foiz,
-                JSON_BUILD_OBJECT(
-                    'doc_id', s.prixod_id,
-                    'docNum', s.doc_num,
-                    'docDate', s.doc_date,
-                    'docId', s.prixod_id
+                (
+                  SELECT COALESCE(JSON_AGG(
+                      JSON_BUILD_OBJECT(
+                          'doc_id', dj.id,
+                          'docNum', dj.doc_num,
+                          'docDate', dj.doc_date,
+                          'docId', dj.id
+                      )
+                  ), '[]'::JSON)
+                  FROM document_prixod_jur7 dj
+                  WHERE dj.isdeleted = false
+                    AND dj.id = ANY (
+                        CASE 
+                            WHEN s.prixod_id IS NULL OR s.prixod_id = ''
+                            THEN ARRAY[0]::INTEGER[]
+                            ELSE string_to_array(s.prixod_id, ',')::INTEGER[]
+                        END
+                    )
                 ) AS "prixodData",
                 JSON_BUILD_OBJECT(
                     'sena', s.sena::FLOAT,
@@ -349,7 +365,7 @@ exports.SaldoDB = class {
   }
 
   static async cleanData(params, client) {
-    const query1 = `DELETE FROM saldo_naimenovanie_jur7 WHERE region_id = $1 AND main_schet_id = $2`;
+    const query1 = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE region_id = $1 AND main_schet_id = $2`;
     const query2 = `UPDATE saldo_date SET isdeleted = true WHERE region_id = $1 AND main_schet_id = $2`;
 
     await client.query(query1, params);
@@ -375,7 +391,8 @@ exports.SaldoDB = class {
 
   static async deleteByMonth(params) {
     const query = `--sql
-      DELETE FROM saldo_naimenovanie_jur7
+      UPDATE saldo_naimenovanie_jur7
+      SET isdeleted = true
       WHERE region_id = $1
         AND month = $2
         AND year = $3
@@ -666,18 +683,26 @@ exports.SaldoDB = class {
       type_filter = `AND type = '${type}'`;
     }
 
-    const query = `DELETE FROM saldo_naimenovanie_jur7 WHERE year = $1 AND month = $2 AND region_id = $3 ${type_filter}`;
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE year = $1 AND month = $2 AND region_id = $3 ${type_filter}`;
 
     await _db.query(query, params);
   }
 
   static async deleteById(params, client) {
     const _db = client || db;
-    const query = `DELETE FROM saldo_naimenovanie_jur7 WHERE id = $1`;
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE id = $1`;
 
     const data = await _db.query(query, params);
 
     return data?.rows ? data.rows[0] : data[0];
+  }
+
+  static async updatePrixodId(params, client) {
+    const query = `UPDATE saldo_naimenovanie_jur7 SET  prixod_id = $1 WHERE id = $2 RETURNING id`;
+
+    const result = await client.query(query, params);
+
+    return result.rows[0];
   }
 
   static async create(params, client) {
@@ -774,7 +799,7 @@ exports.SaldoDB = class {
   }
 
   static async deleteByPrixodId(params, client) {
-    const query = `DELETE FROM saldo_naimenovanie_jur7 WHERE prixod_id = $1 AND main_schet_id = $2`;
+    const query = `UPDATE saldo_naimenovanie_jur7 SET isdeleted = true WHERE prixod_id = $1 AND main_schet_id = $2`;
 
     await client.query(query, params);
   }

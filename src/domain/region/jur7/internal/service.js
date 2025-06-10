@@ -1,7 +1,7 @@
 const { db } = require("@db/index");
 const { InternalDB } = require("./db");
 const { tashkentTime, returnParamsValues, HelperFunctions } = require("@helper/functions");
-const { SaldoDB } = require("@jur7_saldo/db");
+const { Jur7SaldoDB } = require("@jur7_saldo/db");
 const { Jur7SaldoService } = require("@jur7_saldo/service");
 
 exports.Jur7InternalService = class {
@@ -89,7 +89,7 @@ exports.Jur7InternalService = class {
 
       let month_iznos_summa = 0;
 
-      await SaldoDB.create(
+      await Jur7SaldoDB.create(
         [
           data.user_id,
           child.naimenovanie_tovarov_jur7_id,

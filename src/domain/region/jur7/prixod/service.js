@@ -4,7 +4,7 @@ const { tashkentTime, returnLocalDate, returnSleshDate, HelperFunctions } = requ
 const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
-const { SaldoDB } = require("@jur7_saldo/db");
+const { Jur7SaldoDB } = require("@jur7_saldo/db");
 const { Saldo159Service } = require(`@saldo_159/service`);
 const { Jur7SaldoService } = require("../saldo/service");
 
@@ -354,6 +354,7 @@ exports.PrixodJur7Service = class {
           child.iznos_schet,
           child.iznos_sub_schet,
           child.iznos_start,
+          child.saldo_id,
           tashkentTime(),
           tashkentTime(),
         ],
@@ -364,7 +365,7 @@ exports.PrixodJur7Service = class {
         const month = new Date(data.doc.doc_date).getMonth() + 1;
         const year = new Date(data.doc.doc_date).getFullYear();
 
-        await SaldoDB.create(
+        await Jur7SaldoDB.create(
           [
             data.user_id,
             child.id,
@@ -398,6 +399,10 @@ exports.PrixodJur7Service = class {
           ],
           data.client
         );
+      } else {
+        const saldo = await data.client.query(`SELECT * FROM saldo_naimenovanie_jur7 WHERE id = $1`, [child.saldo_id]);
+        const prixod_id = saldo.rows[0].prixod_id + `,${data.docId}`;
+        await Jur7SaldoDB.updatePrixodId([prixod_id, child.saldo_id], data.client);
       }
     }
   }

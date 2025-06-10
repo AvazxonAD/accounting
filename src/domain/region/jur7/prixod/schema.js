@@ -109,6 +109,8 @@ exports.PrixodJur7Schema = class {
               eski_iznos_summa: Joi.number().min(0).default(0),
               iznos_schet: Joi.string().trim().allow(""),
               iznos_sub_schet: Joi.string().trim().allow(""),
+              saldo_id: Joi.number().min(1).integer(),
+              product_id: Joi.number().min(1).integer(),
             })
           ),
       }),

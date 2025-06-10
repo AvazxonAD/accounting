@@ -1,4 +1,5 @@
 const { db } = require("@db/index");
+const { Jur7SaldoDB } = require("../saldo/db");
 
 exports.PrixodDB = class {
   static async createProduct(params, client) {
@@ -80,10 +81,11 @@ exports.PrixodDB = class {
                 iznos_schet,
                 iznos_sub_schet,
                 iznos_start,
+                saldo_id,
                 created_at,
                 updated_at
             ) 
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
         `;
     const result = await client.query(query, params);
     return result.rows[0];
@@ -215,6 +217,7 @@ exports.PrixodDB = class {
                     FROM (
                         SELECT  
                             ch.*,
+                            n.id AS product_id,
                             n.name,
                             n.group_jur7_id,
                             n.inventar_num,
@@ -294,26 +297,61 @@ exports.PrixodDB = class {
   }
 
   static async deletePrixodChild(documentPrixodId, productIds, client) {
-    const query1 = `--sql
+    for (let product_id of productIds) {
+      const check_query = `--sql
+        SELECT 
+          d.id 
+        FROM document_prixod_jur7_child ch
+        JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+        WHERE ch.naimenovanie_tovarov_jur7_id = $1
+          AND ch.isdeleted = false
+          AND d.isdeleted = false
+      `;
+
+      const check = await client.query(check_query, [product_id]);
+
+      if (check.rows.length <= 1) {
+        const saldo_query = `--sql
+                UPDATE saldo_naimenovanie_jur7
+                SET isdeleted = true  
+                WHERE naimenovanie_tovarov_jur7_id = $1
+            `;
+
+        await client.query(saldo_query, [product_id]);
+
+        const product_query = `--sql
+                UPDATE naimenovanie_tovarov_jur7 
+                SET isdeleted = true 
+                WHERE id = $1
+            `;
+
+        await client.query(product_query, [product_id]);
+      } else {
+        const get_saldo_query = `--sql
+          SELECT
+            *
+          FROM saldo_naimenovanie_jur7 s
+          WHERE s.naimenovanie_tovarov_jur7_id = $1
+        `;
+
+        const saldo = await client.query(get_saldo_query, [product_id]);
+
+        const prixod_id = saldo.rows[0].prixod_id
+          .split(",")
+          .filter((val) => val != documentPrixodId)
+          .join(",");
+
+        await Jur7SaldoDB.updatePrixodId([prixod_id, saldo.rows[0].id], client);
+      }
+    }
+
+    const child_query = `--sql
             UPDATE document_prixod_jur7_child 
             SET isdeleted = true 
             WHERE document_prixod_jur7_id = $1 AND isdeleted = false
         `;
 
-    const query3 = `--sql
-            DELETE FROM saldo_naimenovanie_jur7  
-            WHERE naimenovanie_tovarov_jur7_id = ANY($1)
-        `;
-
-    const query4 = `--sql
-            UPDATE naimenovanie_tovarov_jur7 
-            SET isdeleted = true 
-            WHERE id = ANY($1)
-        `;
-
-    await client.query(query1, [documentPrixodId]);
-    await client.query(query3, [productIds]);
-    await client.query(query4, [productIds]);
+    await client.query(child_query, [documentPrixodId]);
   }
 
   static async prixodReport(params) {

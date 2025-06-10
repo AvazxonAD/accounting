@@ -180,6 +180,8 @@ exports.Controller = class {
         if (saldo.responsible_id != kimga_id) return res.error(req.i18n.t("validationError"), 400);
 
         if (saldo.product_id != child.product_id) return res.error(req.i18n.t("validationError"), 400);
+
+        child.saldo = saldo;
       }
 
       if (child.product_id) {
@@ -405,6 +407,26 @@ exports.Controller = class {
       }
 
       child.old_iznos = child.eski_iznos_summa;
+
+      if (child.saldo_id) {
+        const saldo = await Jur7SaldoService.getById({ region_id, id: child.saldo_id, main_schet_id });
+        if (!saldo) return res.error(req.i18n.t("saldoNotFound"), 404);
+
+        if (saldo.responsible_id != kimga_id) return res.error(req.i18n.t("validationError"), 400);
+
+        if (saldo.product_id != child.product_id) return res.error(req.i18n.t("validationError"), 400);
+
+        child.saldo = saldo;
+      }
+
+      if (child.product_id) {
+        const product = await Jur7SaldoService.getByIdProduct({ id: child.product_id, region_id });
+        if (!product) return res.error(req.i18n.t("productNotFound"), 404);
+      }
+
+      if ((child.saldo_id && !child.product_id) || (!child.saldo_id && child.product_id)) {
+        return res.error(req.i18n.t("validationError"), 400);
+      }
     }
 
     const check_saldo = await Jur7SaldoService.check({

@@ -60,12 +60,11 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } =
-      await Jur7MonitoringService.monitoring({
-        ...req.query,
-        region_id,
-        offset,
-      });
+    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } = await Jur7MonitoringService.monitoring({
+      ...req.query,
+      region_id,
+      offset,
+    });
 
     const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,

@@ -1,6 +1,6 @@
 // const { db } = require("@db/index");
 
-// exports.SaldoDB = class {
+// exports.Jur7SaldoDB = class {
 //   static async get(params, responsible_id = null, search = null, product_id = null, region_id = null) {
 //     let responsible_filter = ``;
 //     let filter = ``;

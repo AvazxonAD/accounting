@@ -1,4 +1,4 @@
-// const { SaldoDB } = require("@admin_jur7/db");
+// const { Jur7SaldoDB } = require("@admin_jur7/db");
 
 // exports.Jur7SaldoService = class {
 //   static async getByResponsibles(data) {
@@ -6,7 +6,7 @@
 //     const year = new Date(data.to).getFullYear();
 
 //     for (let responsible of data.responsibles) {
-//       const products = await SaldoDB.get(
+//       const products = await Jur7SaldoDB.get(
 //         [year, month, 0, 99999999],
 //         responsible.id,
 //         data.search,
@@ -21,7 +21,7 @@
 //           summa: product.summa,
 //         };
 
-//         product.internal = await SaldoDB.getKolAndSumma(
+//         product.internal = await Jur7SaldoDB.getKolAndSumma(
 //           [product.naimenovanie_tovarov_jur7_id],
 //           `${year}-${month < 10 ? `0${month}` : month}-01`,
 //           data.to,
@@ -46,7 +46,7 @@
 //     const month = new Date(data.to).getMonth() + 1;
 //     const year = new Date(data.to).getFullYear();
 
-//     const { data: products, total } = await SaldoDB.get(
+//     const { data: products, total } = await Jur7SaldoDB.get(
 //       [year, month, data.offset, data.limit],
 //       data.responsible_id,
 //       data.search,
@@ -66,7 +66,7 @@
 //             summa: product.summa,
 //           };
 
-//           const internal = await SaldoDB.getKolAndSumma(
+//           const internal = await Jur7SaldoDB.getKolAndSumma(
 //             [product.naimenovanie_tovarov_jur7_id],
 //             `${year}-${month < 10 ? `0${month}` : month}-01`,
 //             data.to
