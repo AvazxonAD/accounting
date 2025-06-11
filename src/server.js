@@ -7,6 +7,7 @@ const cors = require("cors");
 const router = require("./index.routes");
 const i18next = require("./i18next");
 const { Db } = require("./db/index");
+const { DbCreate } = require("@helper/db.create");
 
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
@@ -32,10 +33,13 @@ app.use("*", (req, res) => {
 
 app.use(require("./middleware/errorHandler"));
 
-(async () => {
+const startApp = async () => {
   try {
     await Db.connectDB();
     console.log("Connect DB".blue);
+
+    await DbCreate.regionCreate();
+
     app.listen(PORT, () => {
       console.log(`server runing on port : ${PORT}`.blue);
     });
@@ -43,4 +47,6 @@ app.use(require("./middleware/errorHandler"));
     console.error(`Error db connect: error.message`.red);
     throw new Error(error);
   }
-})();
+};
+
+startApp();

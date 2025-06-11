@@ -8,14 +8,7 @@ const createOperatsiiService = async (data) => {
           name,  schet, sub_schet, type_schet, smeta_id, budjet_id
           ) VALUES($1, $2, $3, $4, $5, $6) RETURNING * 
       `,
-      [
-        data.name,
-        data.schet,
-        data.sub_schet,
-        data.type_schet,
-        data.smeta_id,
-        data.budjet_id,
-      ]
+      [data.name, data.schet, data.sub_schet, data.type_schet, data.smeta_id, data.budjet_id]
     );
     return result.rows[0];
   } catch (error) {
@@ -23,11 +16,7 @@ const createOperatsiiService = async (data) => {
   }
 };
 
-const getByNameAndSchetOperatsiiService = async (
-  name,
-  type_schet,
-  smeta_id
-) => {
+const getByNameAndSchetOperatsiiService = async (name, type_schet, smeta_id) => {
   try {
     const result = await pool.query(
       `SELECT * FROM spravochnik_operatsii WHERE name = $1 AND type_schet = $2 AND isdeleted = false AND smeta_id = $3`,
@@ -42,16 +31,7 @@ const getByNameAndSchetOperatsiiService = async (
   }
 };
 
-const getAllOperatsiiService = async (
-  offset,
-  limit,
-  type_schet,
-  search,
-  meta_search,
-  schet,
-  sub_schet,
-  budjet_id
-) => {
+const getAllOperatsiiService = async (offset, limit, type_schet, search, meta_search, schet, sub_schet, budjet_id) => {
   try {
     let schet_filter = ``;
     let sub_schet_filter = "";
@@ -116,6 +96,7 @@ const getAllOperatsiiService = async (
             s.type_schet = 'jur4' OR 
             s.type_schet = 'bank_rasxod' OR 
             s.type_schet = 'jur7' OR 
+            s.type_schet = 'work_trip' OR 
             s.type_schet = 'show_service'
           )
           ${schet_filter}
@@ -184,11 +165,7 @@ const getOperatsiiByChildArray = async (childs, type) => {
   }
 };
 
-const getByIdOperatsiiService = async (
-  id,
-  type_schet = null,
-  ignoreDeleted = false
-) => {
+const getByIdOperatsiiService = async (id, type_schet = null, ignoreDeleted = false) => {
   try {
     const params = [id];
     let ignore = ``;
@@ -237,24 +214,13 @@ const updateOperatsiiService = async (data) => {
       SET name = $1, schet = $2, sub_schet = $3, type_schet = $4, smeta_id = $5, budjet_id = $6
       WHERE id = $7 RETURNING * 
     `,
-    [
-      data.name,
-      data.schet,
-      data.sub_schet,
-      data.type_schet,
-      data.smeta_id,
-      data.budjet_id,
-      data.id,
-    ]
+    [data.name, data.schet, data.sub_schet, data.type_schet, data.smeta_id, data.budjet_id, data.id]
   );
   return result.rows[0];
 };
 
 const deleteOperatsiiService = async (id) => {
-  await pool.query(
-    `UPDATE spravochnik_operatsii SET isdeleted = $1 WHERE id = $2`,
-    [true, id]
-  );
+  await pool.query(`UPDATE spravochnik_operatsii SET isdeleted = $1 WHERE id = $2`, [true, id]);
 };
 
 const getBySchetService = async (schet) => {
@@ -278,9 +244,7 @@ const getBySchetService = async (schet) => {
 
 const getSchetService = async () => {
   try {
-    const result = await pool.query(
-      `SELECT DISTINCT schet FROM spravochnik_operatsii WHERE  isdeleted = false`
-    );
+    const result = await pool.query(`SELECT DISTINCT schet FROM spravochnik_operatsii WHERE  isdeleted = false`);
     return result.rows;
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode);

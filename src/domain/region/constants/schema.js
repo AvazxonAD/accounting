@@ -22,4 +22,12 @@ exports.ConstanstsSchema = class {
       }),
     }).options({ stripUnknown: true });
   }
+
+  static getDistricts() {
+    return Joi.object({
+      query: Joi.object({
+        region_id: Joi.number().integer().min(1),
+      }),
+    }).options({ stripUnknown: true });
+  }
 };

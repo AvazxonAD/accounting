@@ -21,9 +21,7 @@ exports.InternalSchema = class {
             Joi.object({
               iznos_start: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               naimenovanie_tovarov_jur7_id: Joi.number().required(),
               kol: Joi.number().min(1).required(),
               sena: Joi.number().min(0).required(),
@@ -33,9 +31,7 @@ exports.InternalSchema = class {
               kredit_sub_schet: Joi.string().trim(),
               data_pereotsenka: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               iznos: Joi.boolean().default(false),
               iznos_schet: Joi.string().trim().allow(""),
               iznos_sub_schet: Joi.string().trim().allow(""),
@@ -70,9 +66,7 @@ exports.InternalSchema = class {
             Joi.object({
               iznos_start: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               naimenovanie_tovarov_jur7_id: Joi.number().required(),
               kol: Joi.number().min(1).required(),
               sena: Joi.number().min(0).required(),
@@ -82,9 +76,7 @@ exports.InternalSchema = class {
               kredit_sub_schet: Joi.string().trim(),
               data_pereotsenka: Joi.string()
                 .trim()
-                .pattern(
-                  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
-                ),
+                .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
               iznos: Joi.boolean().default(false),
               iznos_schet: Joi.string().trim().allow(""),
               iznos_sub_schet: Joi.string().trim().allow(""),
@@ -116,15 +108,8 @@ exports.InternalSchema = class {
           .pattern(/^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/),
         budjet_id: Joi.number().integer().min(1).required(),
         main_schet_id: Joi.number().integer().min(1).required(),
-        order_by: Joi.string()
-          .trim()
-          .default("doc_date")
-          .valid("doc_num", "doc_date", "id"),
-        order_type: Joi.string()
-          .trim()
-          .allow(null, "")
-          .default("DESC")
-          .valid("ASC", "DESC"),
+        order_by: Joi.string().trim().default("doc_date").valid("doc_num", "doc_date", "id"),
+        order_type: Joi.string().trim().allow(null, "").default("DESC").valid("ASC", "DESC"),
       }),
     }).options({ stripUnknown: true });
   }

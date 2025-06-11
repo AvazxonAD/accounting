@@ -3,9 +3,7 @@ const routes = express.Router();
 
 const { protect } = require("@middleware/auth");
 const { Middleware } = require("@middleware/index");
-const { checkJur2Saldo, checkJur1Saldo, check159Saldo, checkJur4Saldo, check152Saldo } = require(
-  `@middleware/check.saldo`
-);
+const { checkJur2Saldo, checkJur1Saldo, check159Saldo, checkJur4Saldo, check152Saldo } = require(`@middleware/check.saldo`);
 const { Saldo159Service } = require(`@saldo_159/service`);
 const { Saldo152Service } = require(`@saldo_152/service`);
 const { BankSaldoService } = require(`@jur2_saldo/service`);
@@ -42,12 +40,8 @@ routes
 
   // jur4
   .use("/avans", protect, checkJur4Saldo(Jur4SaldoService.getDateSaldo), require("@avans/index"))
-  .use(
-    "/podotchet/monitoring",
-    protect,
-    checkJur4Saldo(Jur4SaldoService.getDateSaldo),
-    require("@pod_monitoring/index")
-  )
+  .use("/work-trip", protect, checkJur4Saldo(Jur4SaldoService.getDateSaldo), require("@work_trip/index"))
+  .use("/podotchet/monitoring", protect, checkJur4Saldo(Jur4SaldoService.getDateSaldo), require("@pod_monitoring/index"))
   .use("/podotchet/saldo", protect, require("@podotchet_saldo/index"))
 
   // auth
@@ -112,6 +106,8 @@ routes
 
   .use("/admin/spravochnik/prixod/schets", protect, require("@prixod_schets/index"))
   .use("/admin/spravochnik/video_module", protect, require("@video_module/index"))
+  .use("/admin/spravochnik/minimum-wage", protect, require("@minimum_wage/index"))
+  .use("/admin/spravochnik/distances", protect, require("@distances/index"))
   .use("/admin/main/book", protect, require("@admin_main_book/index"))
 
   .use("/admin/video", protect, require("@video/index"))

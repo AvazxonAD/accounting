@@ -460,7 +460,8 @@ const operatsiiValidation = Joi.object({
       "kassa_rasxod",
       "jur3",
       "jur4",
-      "jur7"
+      "jur7",
+      "work_trip"
     ),
   smeta_id: Joi.number().min(1),
   budjet_id: Joi.number().min(1).integer(),

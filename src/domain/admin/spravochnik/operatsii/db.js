@@ -19,10 +19,22 @@ exports.OperatsiiDB = class {
             SELECT id, name, schet, sub_schet, type_schet, smeta_id, budjet_id 
             FROM spravochnik_operatsii 
             WHERE id = $1
-                
                 ${type_filter}
                 ${budjet_filter} 
                 ${!isdeleted ? "AND isdeleted = false" : ""}
+              AND (
+                type_schet = 'akt' OR 
+                type_schet = 'bank_prixod' OR 
+                type_schet = 'avans_otchet' OR 
+                type_schet = 'kassa_prixod' OR 
+                type_schet = 'kassa_rasxod' OR 
+                type_schet = 'jur3' OR 
+                type_schet = 'jur4' OR 
+                type_schet = 'bank_rasxod' OR 
+                type_schet = 'jur7' OR 
+                type_schet = 'work_trip' OR 
+                type_schet = 'show_service'
+              )
         `;
 
     const result = await db.query(query, params);
