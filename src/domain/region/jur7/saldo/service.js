@@ -124,10 +124,9 @@ exports.Jur7SaldoService = class {
       budjet_id: data.budjet_id,
     });
 
-    console.log("----------------------");
-    result.data.forEach((item, index) => {
+    result.data.forEach((item) => {
       if (item.prixodData.length === 0) {
-        item.prixodData.push({ doc_date: item.doc_date, doc_id: item.prixod_id || 0, docId: item.prixod_id || 0, doc_num: item.doc_num });
+        item.prixodData.push({ docDate: item.doc_date, doc_id: item.prixod_id || 0, docId: item.prixod_id || 0, doc_num: item.doc_num });
       }
     });
 
