@@ -169,7 +169,8 @@ exports.AvansDB = class {
                         LEFT JOIN spravochnik_podrazdelenie AS s_p ON s_p.id = ch.id_spravochnik_podrazdelenie
                         LEFT JOIN spravochnik_sostav AS s_s ON s_s.id = ch.id_spravochnik_sostav
                         LEFT JOIN spravochnik_type_operatsii AS s_t_o ON s_t_o.id = ch.id_spravochnik_type_operatsii
-                        WHERE ch.avans_otchetlar_jur4_id = $3 
+                        WHERE ch.avans_otchetlar_jur4_id = $3
+                          AND ch.isdeleted = false
                     ) AS a_o_j_4_child
                 ) AS childs
             FROM avans_otchetlar_jur4 AS d
@@ -208,14 +209,8 @@ exports.AvansDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(
-      `UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`,
-      params
-    );
-    const result = await client.query(
-      `UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
+    await client.query(`UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, params);
+    const result = await client.query(`UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
 
     return result.rows[0];
   }

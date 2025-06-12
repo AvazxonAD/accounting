@@ -34,7 +34,7 @@ exports.Jur7RsxodService = class {
     const comment = worksheet.getCell("A7");
     comment.value = `Описаниэ: ${data.opisanie ? data.opisanie : ""}`;
 
-    worksheet.getRow(8).values = ["Наименование", "Ед.изм", "Кол.", "Цена", "Сумма", "Дебет", "Кредит", "Дата"];
+    worksheet.getRow(8).values = ["Наименование", "Ед.изм", "Кол.", "Цена", "Сумма", "Дебет", "Кредит", "Дата пр"];
 
     worksheet.columns = [
       { key: "name", width: 40 },
@@ -212,6 +212,386 @@ exports.Jur7RsxodService = class {
     }
 
     const fileName = `akt.${new Date().getTime()}.xlsx`;
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
+  static async noticeExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("akt");
+
+    worksheet.getCell(`A1`).value = `${data.region.name}`;
+
+    worksheet.mergeCells(`A2`, `H2`);
+    worksheet.getCell(`A2`).value = `"Извещение"`;
+
+    worksheet.mergeCells(`A3`, `H3`);
+    worksheet.getCell("A3").value =
+      `о безвозмездной передаче основных средств -${data.doc_num}.               ${HelperFunctions.returnStringDate(new Date(data.doc_date))}`;
+
+    worksheet.mergeCells(`A4`, `H4`);
+    worksheet.getCell("A4").value = `КОММУ:`;
+
+    worksheet.mergeCells(`A5`, `H5`);
+    worksheet.getCell("A5").value = `Отправитель: ${data.region.name}. Получатель:`;
+
+    worksheet.mergeCells(`A6`, `H6`);
+    worksheet.getCell("A6").value = `Топшириш асоси (фармойиш рақами ва санаси): 2024 йил 23 декабрдаги 564-сонли Фармойишга асосан.`;
+
+    worksheet.mergeCells(`A7`, `H7`);
+    worksheet.getCell("A7").value = `№ доверенност: 03.01.2025 йилдаги № требование: 5                  Дата: `;
+
+    worksheet.getRow(8).values = ["Наименование", "Ед.изм", "Полковник", "Цена", "Сумма", "Дебет", "Кредит", "Дата пр"];
+
+    worksheet.columns = [
+      { key: "name", width: 40 },
+      { key: "edin", width: 15 },
+      { key: "kol", width: 15 },
+      { key: "cost", width: 25 },
+      { key: "summa", width: 25 },
+      { key: "debet", width: 25 },
+      { key: "kredit", width: 25 },
+      { key: "prixod", width: 25 },
+    ];
+
+    for (let child of data.childs) {
+      worksheet.addRow({
+        name: child.product.name,
+        edin: child.edin,
+        kol: child.kol,
+        cost: child.sena,
+        summa: child.summa,
+        debet: `${child.debet_schet} / ${child.debet_sub_schet}`,
+        kredit: `${child.kredit_schet} / ${child.kredit_sub_schet}`,
+        prixod: HelperFunctions.returnLocalDate(child.data_pereotsenka),
+      });
+    }
+    worksheet.addRow([]);
+
+    const start_podpis_column = worksheet.rowCount;
+    worksheet.getCell(`D${worksheet.rowCount}`).value = `Всего: `;
+    worksheet.getCell(`E${worksheet.rowCount}`).value = data.summa;
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value =
+      `Приложение: _____________________________________________________________________________________________`;
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value =
+      `Начальник отдела :                                                               Бухгалтер: `;
+    worksheet.addRow([]);
+
+    const liniya_column = worksheet.rowCount;
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = `Л  и  н  и  я              о  т  р  е  з  а`;
+    worksheet.addRow([]);
+
+    const region_column = worksheet.rowCount;
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = data.region.name;
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = "___________________________________";
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = `№ ______________________________ Подтверждение к извещению №`;
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value =
+      `Перечисленные в извещении материальные ценности получены и взяты на балансовый \n учет в ___________ квартале 20                  г. в сум ____________________________`;
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value =
+      `_________________________________________________________________________________________________`;
+    worksheet.addRow([]);
+
+    const boss_column = worksheet.rowCount;
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `H${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = `Начальник ____________________________  Ст. бухгалтер`;
+    worksheet.addRow([]);
+
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = `center`;
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      if (rowNumber < 9) {
+        bold = true;
+        worksheet.getRow(rowNumber).height = 30;
+      }
+
+      if (start_podpis_column <= rowNumber) {
+        bold = true;
+      }
+
+      if (start_podpis_column < rowNumber) {
+        horizontal = "left";
+        border = {};
+        worksheet.getRow(rowNumber).height = 40;
+      }
+
+      if (rowNumber > 3 && rowNumber < 8) {
+        horizontal = "left";
+      }
+
+      if (rowNumber === liniya_column) {
+        horizontal = "center";
+        border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+        };
+      }
+
+      if (rowNumber === region_column) {
+        border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+        };
+      }
+
+      if (rowNumber === boss_column) {
+        horizontal = "center";
+      }
+
+      row.eachCell((cell, column) => {
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border,
+        });
+      });
+    });
+
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const fileName = `notice.${new Date().getTime()}.xlsx`;
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
+  static async salesNvoiceExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("akt");
+
+    worksheet.mergeCells(`A1`, `K1`);
+    worksheet.getCell(`A1`).value = `"СЧЕТ-ФАКТУРА-НАКЛАДНАЯ"`;
+
+    worksheet.mergeCells(`A2`, `K2`);
+    worksheet.getCell("A2").value = `№ ${data.doc_num}  от ${HelperFunctions.returnStringDate(new Date(data.doc_date))}`;
+
+    worksheet.mergeCells(`A3`, `K3`);
+    worksheet.getCell("A3").value = `31.01.2025 йилдаги 1,2,3,6,8,9,10-сонли Юк хатилар`;
+
+    worksheet.mergeCells(`A4`, `K4`);
+    worksheet.getCell("A4").value = `к товаро-отгрузочным документам № ____________________`;
+
+    worksheet.mergeCells(`A5`, `K5`);
+    worksheet.getCell("A5").value = ``;
+
+    worksheet.mergeCells(`A6`, `E6`);
+    worksheet.getCell("A6").value = `Поставщик: ${data.main_schet.tashkilot_nomi}`;
+
+    worksheet.mergeCells(`A7`, `E7`);
+    worksheet.getCell("A7").value = `Адресс: ${data.main_schet.account_name}`;
+
+    worksheet.mergeCells(`A8`, `E8`);
+    worksheet.getCell("A8").value = `P / C: ${data.main_schet.account_number}`;
+
+    worksheet.mergeCells(`A9`, `E9`);
+    worksheet.getCell("A9").value = `Банк: ${data.main_schet.tashkilot_bank}`;
+
+    worksheet.mergeCells(`A10`, `E10`);
+    worksheet.getCell("A10").value = `MFO: ${data.main_schet.tashkilot_mfo}  INN: ${data.main_schet.tashkilot_inn} ОКЭТ 97920`;
+
+    // br
+
+    worksheet.mergeCells(`G6`, `K6`);
+    worksheet.getCell("G6").value = `Получатель: Хисобдан чикариш`;
+
+    worksheet.mergeCells(`G7`, `K7`);
+    worksheet.getCell("G7").value = `Адресс: `;
+
+    worksheet.mergeCells(`G8`, `K8`);
+    worksheet.getCell("G8").value = `P / C: `;
+
+    worksheet.mergeCells(`G9`, `K9`);
+    worksheet.getCell("G9").value = `Банк: `;
+
+    worksheet.mergeCells(`G10`, `K10`);
+    worksheet.getCell("G10").value = `MFO:   INN:  `;
+
+    worksheet.getRow(12).values = [
+      "№",
+      "Наименование товара (работ, услуг)",
+      "Ед.изм",
+      "Кол-во",
+      "Цена",
+      "Стоимость поставка",
+      "Акцизный налог",
+      "НДС",
+      "Стоимость поставки с НДС",
+    ];
+
+    worksheet.columns = [
+      { key: "order", width: 15 },
+      { key: "name", width: 40 },
+      { key: "edin", width: 15 },
+      { key: "kol", width: 15 },
+      { key: "cost", width: 25 },
+      { key: "summa", width: 25 },
+      { key: "nalog", width: 25 },
+      { key: "nds", width: 25 },
+      { key: "s_nds", width: 25 },
+    ];
+
+    data.childs.forEach((child, index) => {
+      worksheet.addRow({
+        order: String(index + 1),
+        name: child.product.name,
+        edin: child.edin,
+        kol: child.kol,
+        cost: child.sena,
+        summa: child.summa,
+        nalog: `Без акц. налог`,
+        nds: `Без НДС`,
+        s_nds: "",
+      });
+    });
+    worksheet.addRow([]);
+
+    const start_podpis_column = worksheet.rowCount;
+    worksheet.getCell(`D${worksheet.rowCount}`).value = `Итого: `;
+    worksheet.getCell(`E${worksheet.rowCount}`).value = data.summa;
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value =
+      `Прописью: Сто шестьдесят четыре миллиона сто пятьдесят пять тысяч четыреста двадцать \n пять с 00 т`;
+    worksheet.addRow([]);
+
+    const liniya_column = worksheet.rowCount;
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value =
+      `Начальник ФЭО:                                                               Получил: `;
+    worksheet.addRow([]);
+
+    const region_column = worksheet.rowCount;
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = `Бухгалтер: `;
+    worksheet.addRow([]);
+
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.getCell(`A${worksheet.rowCount}`).value = `Отпустил: `;
+    worksheet.addRow([]);
+
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = `center`;
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      if (rowNumber < 9) {
+        bold = true;
+        worksheet.getRow(rowNumber).height = 30;
+      }
+
+      if (start_podpis_column <= rowNumber) {
+        bold = true;
+      }
+
+      if (start_podpis_column < rowNumber) {
+        horizontal = "left";
+        border = {};
+        worksheet.getRow(rowNumber).height = 40;
+      }
+
+      if (rowNumber > 3 && rowNumber < 8) {
+        horizontal = "left";
+      }
+
+      if (rowNumber === liniya_column) {
+        horizontal = "center";
+        border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+        };
+      }
+
+      if (rowNumber === region_column) {
+        border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+        };
+      }
+
+      row.eachCell((cell, column) => {
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFFFFF" },
+          },
+          border,
+        });
+      });
+    });
+
+    const folder_path = path.join(__dirname, `../../../../../public/exports`);
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const fileName = `sales_nvoice.${new Date().getTime()}.xlsx`;
 
     const filePath = `${folder_path}/${fileName}`;
 

@@ -156,10 +156,12 @@ exports.RasxodDB = class {
                           ch.*,
                           row_to_json(n) AS product,
                           row_to_json(g) AS group,
+                          su.name AS edin,
                           TO_CHAR(ch.data_pereotsenka, 'YYYY-MM-DD') AS data_pereotsenka
                       FROM document_rasxod_jur7_child AS ch
                       JOIN naimenovanie_tovarov_jur7 n ON ch.naimenovanie_tovarov_jur7_id = n.id
                       JOIN group_jur7 g ON g.id = n.group_jur7_id
+                      JOIN storage_unit su ON su.id = n.unit_id
                       WHERE ch.document_rasxod_jur7_id = d.id
                           AND ch.isdeleted = false
                   ) AS ch
@@ -199,10 +201,7 @@ exports.RasxodDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(
-      `UPDATE document_rasxod_jur7_child SET isdeleted = true WHERE document_rasxod_jur7_id = $1`,
-      params
-    );
+    await client.query(`UPDATE document_rasxod_jur7_child SET isdeleted = true WHERE document_rasxod_jur7_id = $1`, params);
 
     const data = await client.query(
       `UPDATE document_rasxod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING *`,

@@ -78,17 +78,32 @@ exports.WorkerTripService = class {
   }
 
   static async getById(data) {
-    const result = await WorkerTripDB.getById([data.region_id, data.main_schet_id, data.id], data.isdeleted);
+    const result = await WorkerTripDB.getById([data.region_id, data.main_schet_id, data.schet_id, data.id], data.isdeleted);
 
     return result;
   }
 
   static async update(data) {
-    const summa = childsSumma(data.childs);
-
     const result = await db.transaction(async (client) => {
       const doc = await WorkerTripDB.update(
-        [data.doc_num, data.doc_date, data.opisanie, summa, data.spravochnik_podotchet_litso_id, data.schet_id, tashkentTime(), data.id],
+        [
+          data.doc_num,
+          data.doc_date,
+          data.from_date,
+          data.to_date,
+          data.day_summa,
+          data.hostel_ticket_number,
+          data.hostel_summa,
+          data.from_district_id,
+          data.to_district_id,
+          data.road_ticket_number,
+          data.road_summa,
+          data.summa,
+          data.comment,
+          data.worker_id,
+          this.now,
+          data.id,
+        ],
         client
       );
 

@@ -80,9 +80,9 @@ exports.Controller = class {
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id, akt } = req.query;
+    const { main_schet_id, akt, notice, sales_nvoice } = req.query;
 
-    await ValidatorFunctions.mainSchet({
+    const main_schet = await ValidatorFunctions.mainSchet({
       main_schet_id,
       region_id,
     });
@@ -97,21 +97,37 @@ exports.Controller = class {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
 
-    if (akt === "true") {
+    if (akt === "true" || notice === "true" || sales_nvoice === "true") {
+      let response;
       const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
 
       const region = await RegionService.getById({ id: region_id });
 
-      const { fileName, filePath } = await Jur7RsxodService.aktExcel({
-        ...data,
-        region,
-        podpis,
-      });
+      if (akt === "true") {
+        response = await Jur7RsxodService.aktExcel({
+          ...data,
+          region,
+          podpis,
+        });
+      } else if (notice === "true") {
+        response = await Jur7RsxodService.noticeExcel({
+          ...data,
+          region,
+          podpis,
+        });
+      } else if (sales_nvoice === "true") {
+        response = await Jur7RsxodService.salesNvoiceExcel({
+          ...data,
+          region,
+          podpis,
+          main_schet: main_schet.main_schet,
+        });
+      }
 
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      res.setHeader("Content-Disposition", `attachment; filename="${response.fileName}"`);
 
-      return res.sendFile(filePath);
+      return res.sendFile(response.filePath);
     }
 
     return res.success("Doc successfully get", 200, null, data);
@@ -165,9 +181,7 @@ exports.Controller = class {
         return res.error(req.i18n.t("productNotFound"), 404);
       }
 
-      const old_kol =
-        old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol ||
-        0;
+      const old_kol = old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol || 0;
 
       const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,
