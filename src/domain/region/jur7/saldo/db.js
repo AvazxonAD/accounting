@@ -294,6 +294,9 @@ exports.Jur7SaldoDB = class {
                 s.isdeleted,
                 s.type,
                 g.iznos_foiz,
+                s.doc_date,
+                s.doc_num,
+                s.prixod_id,
                 (
                   SELECT COALESCE(JSON_AGG(
                       JSON_BUILD_OBJECT(
