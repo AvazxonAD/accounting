@@ -201,8 +201,14 @@ exports.WorkerTripDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE work_trip_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, params);
-    const result = await client.query(`UPDATE work_trip SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+    await client.query(
+      `UPDATE work_trip_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`,
+      params
+    );
+    const result = await client.query(
+      `UPDATE work_trip SET  isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
     return result.rows[0];
   }
