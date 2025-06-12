@@ -408,52 +408,53 @@ exports.Jur7RsxodService = class {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("akt");
 
-    worksheet.mergeCells(`A1`, `K1`);
+    worksheet.mergeCells(`A1`, `I1`);
     worksheet.getCell(`A1`).value = `"СЧЕТ-ФАКТУРА-НАКЛАДНАЯ"`;
 
-    worksheet.mergeCells(`A2`, `K2`);
+    worksheet.mergeCells(`A2`, `I2`);
     worksheet.getCell("A2").value = `№ ${data.doc_num}  от ${HelperFunctions.returnStringDate(new Date(data.doc_date))}`;
 
-    worksheet.mergeCells(`A3`, `K3`);
+    worksheet.mergeCells(`A3`, `I3`);
     worksheet.getCell("A3").value = `31.01.2025 йилдаги 1,2,3,6,8,9,10-сонли Юк хатилар`;
 
-    worksheet.mergeCells(`A4`, `K4`);
+    worksheet.mergeCells(`A4`, `I4`);
     worksheet.getCell("A4").value = `к товаро-отгрузочным документам № `;
 
-    worksheet.mergeCells(`A5`, `K5`);
+    worksheet.mergeCells(`A5`, `I5`);
     worksheet.getCell("A5").value = ``;
 
-    worksheet.mergeCells(`A6`, `E6`);
+    // br
+    worksheet.mergeCells(`A6`, `C6`);
     worksheet.getCell("A6").value = `Поставщик: ${data.main_schet.tashkilot_nomi}`;
 
-    worksheet.mergeCells(`A7`, `E7`);
+    worksheet.mergeCells(`A7`, `C7`);
     worksheet.getCell("A7").value = `Адресс: ${data.main_schet.account_name}`;
 
-    worksheet.mergeCells(`A8`, `E8`);
+    worksheet.mergeCells(`A8`, `C8`);
     worksheet.getCell("A8").value = `P / C: ${data.main_schet.account_number}`;
 
-    worksheet.mergeCells(`A9`, `E9`);
+    worksheet.mergeCells(`A9`, `C9`);
     worksheet.getCell("A9").value = `Банк: ${data.main_schet.tashkilot_bank}`;
 
-    worksheet.mergeCells(`A10`, `E10`);
+    worksheet.mergeCells(`A10`, `C10`);
     worksheet.getCell("A10").value =
       `MFO: ${data.main_schet.tashkilot_mfo}                                  INN: ${data.main_schet.tashkilot_inn} ОКЭТ 97920`;
 
     // br
 
-    worksheet.mergeCells(`G6`, `K6`);
+    worksheet.mergeCells(`G6`, `I6`);
     worksheet.getCell("G6").value = `Получатель: Хисобдан чикариш`;
 
-    worksheet.mergeCells(`G7`, `K7`);
+    worksheet.mergeCells(`G7`, `I7`);
     worksheet.getCell("G7").value = `Адресс: `;
 
-    worksheet.mergeCells(`G8`, `K8`);
+    worksheet.mergeCells(`G8`, `I8`);
     worksheet.getCell("G8").value = `P / C: `;
 
-    worksheet.mergeCells(`G9`, `K9`);
+    worksheet.mergeCells(`G9`, `I9`);
     worksheet.getCell("G9").value = `Банк: `;
 
-    worksheet.mergeCells(`G10`, `K10`);
+    worksheet.mergeCells(`G10`, `I10`);
     worksheet.getCell("G10").value = `MFO:                                            INN:  `;
 
     worksheet.getRow(12).values = [
@@ -470,7 +471,7 @@ exports.Jur7RsxodService = class {
 
     worksheet.columns = [
       { key: "order", width: 8 },
-      { key: "name", width: 40 },
+      { key: "name", width: 50 },
       { key: "edin", width: 15 },
       { key: "kol", width: 15 },
       { key: "cost", width: 25 },
@@ -495,26 +496,28 @@ exports.Jur7RsxodService = class {
     });
     worksheet.addRow([]);
 
-    worksheet.getCell(`D${worksheet.rowCount}`).value = `Итого: `;
-    worksheet.getCell(`E${worksheet.rowCount}`).value = data.summa;
+    const end_columns = worksheet.rowCount;
+    worksheet.getCell(`E${worksheet.rowCount}`).value = `Итого: `;
+    worksheet.getCell(`F${worksheet.rowCount}`).value = data.summa;
     worksheet.addRow([]);
     worksheet.addRow([]);
 
-    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    const str_column = worksheet.rowCount;
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `F${worksheet.rowCount}`);
     worksheet.getCell(`A${worksheet.rowCount}`).value =
       `Прописью: Сто шестьдесят четыре миллиона сто пятьдесят пять тысяч четыреста двадцать \n пять с 00 т`;
     worksheet.addRow([]);
 
-    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `E${worksheet.rowCount}`);
     worksheet.getCell(`A${worksheet.rowCount}`).value =
       `Начальник ФЭО:                                                               Получил: `;
     worksheet.addRow([]);
 
-    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `E${worksheet.rowCount}`);
     worksheet.getCell(`A${worksheet.rowCount}`).value = `Бухгалтер: `;
     worksheet.addRow([]);
 
-    worksheet.mergeCells(`A${worksheet.rowCount}`, `K${worksheet.rowCount}`);
+    worksheet.mergeCells(`A${worksheet.rowCount}`, `E${worksheet.rowCount}`);
     worksheet.getCell(`A${worksheet.rowCount}`).value = `Отпустил: `;
     worksheet.addRow([]);
 
@@ -555,13 +558,33 @@ exports.Jur7RsxodService = class {
       }
 
       if (rowNumber === 12) {
+        worksheet.getRow(rowNumber).height = 60;
         bold = true;
       }
 
-      if (rowNumber > 12) {
+      if (end_columns <= rowNumber) {
+        bold = true;
+      }
+
+      if (end_columns < rowNumber) {
+        worksheet.getRow(rowNumber).height = 40;
+      }
+
+      if (rowNumber > 12 && rowNumber < end_columns) {
         border = {
           bottom: { style: "thin" },
         };
+      }
+
+      if (str_column <= rowNumber) {
+        horizontal = "left";
+        border = {
+          bottom: { style: "thin" },
+        };
+      }
+
+      if (rowNumber === str_column) {
+        worksheet.getRow(rowNumber).height = 50;
       }
 
       row.eachCell((cell, column) => {
