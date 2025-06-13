@@ -5,6 +5,8 @@ const { Jur7InternalService } = require("./service");
 const { Jur7SaldoService } = require("@jur7_saldo/service");
 const { MainSchetService } = require("@main_schet/service");
 const { ValidatorFunctions } = require("@helper/database.validator");
+const { PodpisService } = require("@podpis/service");
+const { RegionService } = require("@region/service");
 
 exports.Controller = class {
   static async create(req, res) {
@@ -88,13 +90,18 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(req.i18n.t("createSuccess"), 200, result.dates, result.doc);
+    return res.success(
+      req.i18n.t("createSuccess"),
+      200,
+      result.dates,
+      result.doc
+    );
   }
 
   static async getById(req, res) {
     const region_id = req.user.region_id;
     const id = req.params.id;
-    const { main_schet_id } = req.query;
+    const { main_schet_id, akt } = req.query;
 
     const main_schet = await MainSchetService.getById({
       id: main_schet_id,
@@ -112,6 +119,33 @@ exports.Controller = class {
     });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
+    }
+
+    if (akt === "true") {
+      let response;
+      const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
+
+      const region = await RegionService.getById({ id: region_id });
+
+      console.log(akt);
+      if (akt === "true") {
+        response = await Jur7InternalService.aktExcel({
+          ...data,
+          region,
+          podpis,
+        });
+      }
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${response.fileName}"`
+      );
+
+      return res.sendFile(response.filePath);
     }
 
     return res.success("Doc successfully get", 200, null, data);
@@ -170,8 +204,11 @@ exports.Controller = class {
       }
 
       const old_kol =
-        old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol ||
-        0;
+        old_data.childs.find(
+          (item) =>
+            item.naimenovanie_tovarov_jur7_id ===
+            child.naimenovanie_tovarov_jur7_id
+        )?.kol || 0;
 
       const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,
@@ -207,7 +244,12 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(req.i18n.t("updateSuccess"), 200, result.dates, result.doc);
+    return res.success(
+      req.i18n.t("updateSuccess"),
+      200,
+      result.dates,
+      result.doc
+    );
   }
 
   static async delete(req, res) {
@@ -250,7 +292,12 @@ exports.Controller = class {
       old_data,
     });
 
-    return res.error(req.i18n.t("deleteSuccess"), 200, result.dates, result.doc);
+    return res.error(
+      req.i18n.t("deleteSuccess"),
+      200,
+      result.dates,
+      result.doc
+    );
   }
 
   static async get(req, res) {

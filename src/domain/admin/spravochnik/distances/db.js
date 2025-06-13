@@ -61,6 +61,8 @@ exports.DistancesDB = class {
           ${from_region_id_filter}
           ${to_region_id_filter}
           OFFSET $1 LIMIT $2
+        ORDER BY d.id
+        OFFSET $1 LIMIT $2
       )
       SELECT 
         COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
