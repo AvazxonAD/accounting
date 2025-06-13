@@ -1143,7 +1143,6 @@ exports.Jur7MonitoringService = class {
           }
 
           for (let product of schet.products) {
-            console.log(product.prixodData);
             worksheet.addRow({
               product_name: product.name,
               edin: product.edin,

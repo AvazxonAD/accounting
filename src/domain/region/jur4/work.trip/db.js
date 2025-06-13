@@ -135,6 +135,10 @@ exports.WorkerTripDB = class {
             SELECT 
                 d.*, 
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
+                TO_CHAR(d.from_date, 'YYYY-MM-DD') AS from_date, 
+                TO_CHAR(d.to_date, 'YYYY-MM-DD') AS to_date,
+                fd.name AS from_district_name,
+                td.name AS to_district_name,
                 d.summa::FLOAT, 
                 sp.name AS worker_name,
                 sp.rayon AS worker_rayon,
@@ -156,7 +160,9 @@ exports.WorkerTripDB = class {
             FROM work_trip AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
-            JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id 
+            JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id
+            JOIN districts fd ON fd.id = d.from_district_id
+            JOIN districts td ON td.id = d.to_district_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.schet_id = $3

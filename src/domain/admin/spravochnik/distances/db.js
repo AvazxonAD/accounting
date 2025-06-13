@@ -60,7 +60,6 @@ exports.DistancesDB = class {
           ${to_district_id_filter}
           ${from_region_id_filter}
           ${to_region_id_filter}
-          OFFSET $1 LIMIT $2
         ORDER BY d.id
         OFFSET $1 LIMIT $2
       )

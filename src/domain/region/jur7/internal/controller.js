@@ -90,12 +90,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("createSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("createSuccess"), 200, result.dates, result.doc);
   }
 
   static async getById(req, res) {
@@ -127,7 +122,6 @@ exports.Controller = class {
 
       const region = await RegionService.getById({ id: region_id });
 
-      console.log(akt);
       if (akt === "true") {
         response = await Jur7InternalService.aktExcel({
           ...data,
@@ -136,14 +130,8 @@ exports.Controller = class {
         });
       }
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${response.fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${response.fileName}"`);
 
       return res.sendFile(response.filePath);
     }
@@ -203,12 +191,7 @@ exports.Controller = class {
         return res.error(req.i18n.t("productNotFound"));
       }
 
-      const old_kol =
-        old_data.childs.find(
-          (item) =>
-            item.naimenovanie_tovarov_jur7_id ===
-            child.naimenovanie_tovarov_jur7_id
-        )?.kol || 0;
+      const old_kol = old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol || 0;
 
       const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,
@@ -244,12 +227,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, result.dates, result.doc);
   }
 
   static async delete(req, res) {
@@ -292,12 +270,7 @@ exports.Controller = class {
       old_data,
     });
 
-    return res.error(
-      req.i18n.t("deleteSuccess"),
-      200,
-      result.dates,
-      result.doc
-    );
+    return res.error(req.i18n.t("deleteSuccess"), 200, result.dates, result.doc);
   }
 
   static async get(req, res) {
