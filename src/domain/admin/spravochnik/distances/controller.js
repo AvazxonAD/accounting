@@ -4,7 +4,7 @@ const { ConstanstsService } = require("@constants/service");
 exports.Controller = class {
   // get
   static async get(req, res) {
-    const { page, limit, search, from_district_id, to_district_id } = req.query;
+    const { page, limit, search, from_district_id, to_district_id, from_region_id, to_region_id } = req.query;
 
     const offset = (page - 1) * limit;
 
@@ -19,6 +19,20 @@ exports.Controller = class {
       const to = await ConstanstsService.getByIdDistrict({ id: to_district_id });
       if (!to) {
         return res.error(req.i18n.t("districtNotFound"), 404);
+      }
+    }
+
+    if (from_region_id) {
+      const region = await ConstanstsService.getByIdRegion({ id: from_region_id });
+      if (!region) {
+        return res.error(req.i18n.t("regionNotFound"), 404);
+      }
+    }
+
+    if (to_region_id) {
+      const region = await ConstanstsService.getByIdRegion({ id: to_region_id });
+      if (!region) {
+        return res.error(req.i18n.t("regionNotFound"), 404);
       }
     }
 

@@ -5,7 +5,14 @@ exports.DistancesService = class {
   static now = new Date();
 
   static async get(data) {
-    const result = await DistancesDB.get([data.offset, data.limit], data.search, data.from_district_id, data.to_district_id);
+    const result = await DistancesDB.get(
+      [data.offset, data.limit],
+      data.search,
+      data.from_district_id,
+      data.to_district_id,
+      data.from_region_id,
+      data.to_region_id
+    );
 
     return result;
   }

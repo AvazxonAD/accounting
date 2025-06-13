@@ -29,6 +29,8 @@ exports.DistancesSchema = class {
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(100),
         from_district_id: Joi.number().integer().min(1),
+        from_region_id: Joi.number().integer().min(1),
+        to_region_id: Joi.number().integer().min(1),
         to_district_id: Joi.number().integer().min(1),
         search: Joi.string().trim(),
       }),

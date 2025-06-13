@@ -21,6 +21,14 @@ exports.ConstanstsDB = class {
     return result;
   }
 
+  static async getByIdRegion(params) {
+    const query = `SELECT * FROM _regions WHERE id = $1`;
+
+    const result = await db.query(query, params);
+
+    return result[0];
+  }
+
   static async getDistricts(params, region_id = null) {
     let region_filter = ``;
 

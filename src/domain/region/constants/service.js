@@ -13,6 +13,12 @@ exports.ConstanstsService = class {
     return result;
   }
 
+  static async getByIdRegion(data) {
+    const result = await ConstanstsDB.getByIdRegion([data.id]);
+
+    return result;
+  }
+
   static async getDistricts(data) {
     const result = await ConstanstsDB.getDistricts([], data.region_id);
 

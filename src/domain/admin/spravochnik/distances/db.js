@@ -9,10 +9,12 @@ exports.DistancesDB = class {
     return result.rows[0];
   }
 
-  static async get(params, search = null, from_district_id = null, to_district_id = null) {
+  static async get(params, search = null, from_district_id = null, to_district_id = null, from_region_id = null, to_region_id = null) {
     let search_filter = ``;
     let from_district_id_filter = "";
     let to_district_id_filter = "";
+    let from_region_id_filter = "";
+    let to_region_id_filter = "";
 
     if (search) {
       params.push(search);
@@ -29,19 +31,35 @@ exports.DistancesDB = class {
       to_district_id_filter = `AND td.id = $${params.length}`;
     }
 
+    if (from_region_id) {
+      params.push(from_region_id);
+      from_region_id_filter = `AND fr.id = $${params.length}`;
+    }
+
+    if (to_region_id) {
+      params.push(to_region_id);
+      to_region_id_filter = `AND tr.id = $${params.length}`;
+    }
+
     const query = `--sql
       WITH data AS (
         SELECT 
           d.*,
           fd.name AS from,
+          fd.region_id AS from_region_id,
+          td.region_id AS to_region_id,
           td.name AS to
         FROM distances AS d
         JOIN districts fd ON fd.id = d.from_district_id
         JOIN districts td ON td.id = d.to_district_id
+        JOIN _regions fr  ON fr.id = fd.region_id
+        JOIN  _regions tr ON tr.id = td.region_id
         WHERE d.isdeleted = false
           ${search_filter}
           ${from_district_id_filter}
           ${to_district_id_filter}
+          ${from_region_id_filter}
+          ${to_region_id_filter}
           OFFSET $1 LIMIT $2
       )
       SELECT 
@@ -52,10 +70,14 @@ exports.DistancesDB = class {
           FROM distances AS d
           JOIN districts fd ON fd.id = d.from_district_id
           JOIN districts td ON td.id = d.to_district_id
+          JOIN _regions fr  ON fr.id = fd.region_id
+          JOIN  _regions tr ON tr.id = td.region_id
           WHERE d.isdeleted = false
             ${search_filter}
             ${from_district_id_filter}
             ${to_district_id_filter}
+            ${from_region_id_filter}
+            ${to_region_id_filter}
         )::FLOAT AS total
       FROM data
     `;
