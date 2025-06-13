@@ -9,7 +9,12 @@ exports.DistancesDB = class {
     return result.rows[0];
   }
 
-  static async get(params, search = null, from_district_id = null, to_district_id = null) {
+  static async get(
+    params,
+    search = null,
+    from_district_id = null,
+    to_district_id = null
+  ) {
     let search_filter = ``;
     let from_district_id_filter = "";
     let to_district_id_filter = "";
@@ -42,7 +47,8 @@ exports.DistancesDB = class {
           ${search_filter}
           ${from_district_id_filter}
           ${to_district_id_filter}
-          OFFSET $1 LIMIT $2
+        ORDER BY d.id
+        OFFSET $1 LIMIT $2
       )
       SELECT 
         COALESCE(JSON_AGG(row_to_json(data)), '[]'::JSON) AS data,
