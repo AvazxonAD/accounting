@@ -12,7 +12,16 @@ const { DistancesService } = require("@distances/service");
 
 exports.Controller = class {
   static async create(req, res) {
-    const { worker_id, from_district_id, to_district_id, childs, road_ticket_number, day_summa, hostel_summa, doc_date } = req.body;
+    const {
+      worker_id,
+      from_district_id,
+      to_district_id,
+      childs,
+      road_ticket_number,
+      day_summa,
+      hostel_summa,
+      doc_date,
+    } = req.body;
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, schet_id } = req.query;
@@ -74,7 +83,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
-    const road_summa = !road_ticket_number ? distance.distance_km * (minimum_wage.summa * 0.001) : req.body.road_summa;
+    const road_summa = !road_ticket_number ? distance.distance_km * (minimum_wage.summa * 0.1) : req.body.road_summa;
     const summa = road_summa + day_summa + hostel_summa;
 
     const chils_sum = HelperFunctions.childsSumma(childs);
@@ -180,7 +189,16 @@ exports.Controller = class {
 
   static async update(req, res) {
     const id = req.params.id;
-    const { worker_id, from_district_id, to_district_id, childs, road_ticket_number, day_summa, hostel_summa, doc_date } = req.body;
+    const {
+      worker_id,
+      from_district_id,
+      to_district_id,
+      childs,
+      road_ticket_number,
+      day_summa,
+      hostel_summa,
+      doc_date,
+    } = req.body;
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, schet_id } = req.query;
@@ -252,7 +270,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("schetDifferentError"), 400);
     }
 
-    const road_summa = !road_ticket_number ? distance.distance_km * (minimum_wage.summa * 0.001) : req.body.road_summa;
+    const road_summa = !road_ticket_number ? distance.distance_km * (minimum_wage.summa * 0.1) : req.body.road_summa;
     const summa = road_summa + day_summa + hostel_summa;
 
     const chils_sum = HelperFunctions.childsSumma(childs);
