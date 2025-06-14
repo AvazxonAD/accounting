@@ -32,6 +32,7 @@
   "grafikNotFound": "Grafik topilmadi!",
   "distancesNotFound": "Masofa topilmadi!",
   "distancesExists": "Masofa allaqachon kiritilgan!",
+  "fromDateError": "Boshlanish sanasi tugallash sanasidan kichik bolishi kerak!",
   "districtNotFound": "Masofa topilmadi!",
   "grafikError": "Ushbu grafik bogliq bolgan hujjatlar mavjud!",
   "saldoError": "Tizimni ishlatishinngiz uchun saldo olishinggiz kerak!",

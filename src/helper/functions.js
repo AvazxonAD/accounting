@@ -1630,6 +1630,36 @@ exports.HelperFunctions = class {
     args.map((arg) => (sum += Number(arg.summa)));
     return sum;
   }
+
+  static roadSumma(data) {
+    if (!data.road_ticket_number) {
+      return data.distance.distance_km * (data.minimum_wage.summa * 0.01);
+    } else {
+      return data.road_summa;
+    }
+  }
+
+  static daySumma(data) {
+    const from_date = new Date(data.from_date);
+    const to_date = new Date(data.to_date);
+
+    const difference = Math.abs(to_date - from_date);
+    const total_days = Math.ceil(difference / (1000 * 60 * 60 * 24)) + 1;
+
+    let work_days = 0;
+    let current_date = new Date(from_date);
+
+    while (current_date <= to_date) {
+      if (current_date.getDay() !== 0) {
+        work_days++;
+      }
+      current_date.setDate(current_date.getDate() + 1);
+    }
+
+    const summa = work_days * (data.minimum_wage.summa * 0.1);
+
+    return { total_days, summa, work_days };
+  }
 };
 
 exports.errorCatch = (error, res) => {
