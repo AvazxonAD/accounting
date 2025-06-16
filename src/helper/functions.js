@@ -213,7 +213,8 @@ exports.HelperFunctions = class {
     worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
 
     worksheet.mergeCells("A4", "G4");
-    worksheet.getCell("A4").value = `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+    worksheet.getCell("A4").value =
+      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells(`A6`, `E6`);
     const summa_from = worksheet.getCell(`A6`);
@@ -456,7 +457,8 @@ exports.HelperFunctions = class {
     worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
 
     worksheet.mergeCells("A4", "G4");
-    worksheet.getCell("A4").value = `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+    worksheet.getCell("A4").value =
+      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells(`A6`, `D6`);
     const summa_from = worksheet.getCell(`A6`);
@@ -692,7 +694,19 @@ exports.HelperFunctions = class {
     worksheet.mergeCells("I6", "K6");
     worksheet.getCell("I6").value = `Приходлар`;
 
-    worksheet.getRow(7).values = ["Дебет", "Кредит", "Сумма", "", "Счет", "Субсчет", "Сумма", "", "Дебет", "Кредит", "Сумма"];
+    worksheet.getRow(7).values = [
+      "Дебет",
+      "Кредит",
+      "Сумма",
+      "",
+      "Счет",
+      "Субсчет",
+      "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
+    ];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
@@ -1125,7 +1139,19 @@ exports.HelperFunctions = class {
     worksheet.mergeCells("I6", "K6");
     worksheet.getCell("I6").value = `Приходлар`;
 
-    worksheet.getRow(7).values = ["Дебет", "Кредит", "Сумма", "", "Счет", "Субсчет", "Сумма", "", "Дебет", "Кредит", "Сумма"];
+    worksheet.getRow(7).values = [
+      "Дебет",
+      "Кредит",
+      "Сумма",
+      "",
+      "Счет",
+      "Субсчет",
+      "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
+    ];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
@@ -1250,7 +1276,7 @@ exports.HelperFunctions = class {
       }
     }
 
-    let itogo_column = column + 1;
+    let itogo_column = rasxod_column > column ? rasxod_column + 1 : column + 1;
     worksheet.mergeCells(`A${itogo_column}`, `G${itogo_column}`);
     worksheet.getCell(`A${itogo_column}`).value =
       `Остаток к концу дня:               ${this.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
