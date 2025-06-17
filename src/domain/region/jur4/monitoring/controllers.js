@@ -40,11 +40,15 @@ exports.Controller = class {
       }
     }
 
-    const {} = HelperFunctions.returnMonthAndYear({ doc_date });
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date: from });
+
     const saldo = await Jur4SaldoService.getByMonth({
       ...req.query,
       region_id,
+      year,
+      month,
     });
+
     if (!saldo) {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
@@ -53,6 +57,9 @@ exports.Controller = class {
       ...req.query,
       region_id,
       schet: schet.schet,
+      saldo,
+      year,
+      month,
     });
 
     if (excel) {

@@ -11,22 +11,18 @@ exports.PodotchetMonitoringService = class {
     let rasxodSumma = 0;
     let prixodSumma = 0;
 
+    const from = HelperFunctions.returnDate(data);
+
     const summa_from = await PodotchetMonitoringDB.getSumma(
-      [data.region_id, data.schet, data.main_schet_id, data.from],
+      [data.region_id, data.schet, data.main_schet_id, from, data.from],
       data.podotchet_id,
       null,
-      null,
-      true,
-      null
+      true
     );
 
     const summa_to = await PodotchetMonitoringDB.getSumma(
-      [data.region_id, data.schet, data.main_schet_id, data.to],
-      data.podotchet_id,
-      null,
-      null,
-      null,
-      true
+      [data.region_id, data.schet, data.main_schet_id, data.from, data.to],
+      data.podotchet_id
     );
 
     for (let rasxod of result.rasxods) {
@@ -42,8 +38,8 @@ exports.PodotchetMonitoringService = class {
 
     return {
       ...result,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from.summa + data.saldo.summa,
+      summa_to: summa_to.summa + data.saldo.summa,
     };
   }
 

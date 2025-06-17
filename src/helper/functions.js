@@ -960,13 +960,14 @@ exports.HelperFunctions = class {
     const allSchets = new Set([...data.prixods.map((p) => p.schet), ...data.rasxods.map((r) => r.schet)]);
 
     const result = Array.from(allSchets).map((schet) => {
-      const prixodObj = data.prixods.find((p) => p.schet === schet);
-      const rasxodObj = data.rasxods.find((r) => r.schet === schet);
+      const prixodSum = data.prixods.filter((p) => p.schet === schet).reduce((acc, curr) => acc + curr.summa, 0);
+
+      const rasxodSum = data.rasxods.filter((r) => r.schet === schet).reduce((acc, curr) => acc + curr.summa, 0);
 
       return {
         schet,
-        prixod: prixodObj?.summa || 0,
-        rasxod: rasxodObj?.summa || 0,
+        prixod: prixodSum,
+        rasxod: rasxodSum,
       };
     });
 

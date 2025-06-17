@@ -6,11 +6,7 @@ const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.DashboardService = class {
   static async getBudjet(data) {
-    const result = await DashboardDB.getBudjet(
-      [data.region_id],
-      data.budjet_id,
-      data.main_schet_id
-    );
+    const result = await DashboardDB.getBudjet([data.region_id], data.budjet_id, data.main_schet_id);
 
     return result;
   }
@@ -113,23 +109,14 @@ exports.DashboardService = class {
                 summa: 0,
               };
             } else {
-              const podotchet_saldo = saldo.childs.find(
-                (item) => item.podotchet_id == podotchet.id
-              );
+              const podotchet_saldo = saldo.childs.find((item) => item.podotchet_id == podotchet.id);
 
               if (!podotchet_saldo) {
                 schet.podotchet = {
                   summa: 0,
                 };
               } else {
-                schet.podotchet = await DashboardDB.podotchet([
-                  main_schet.id,
-                  from,
-                  data.to,
-                  podotchet.id,
-                  data.region_id,
-                  schet.schet,
-                ]);
+                schet.podotchet = await DashboardDB.podotchet([main_schet.id, from, data.to, podotchet.id, data.region_id, schet.schet]);
 
                 schet.podotchet.summa += podotchet_saldo.summa;
 

@@ -1,13 +1,7 @@
 const { Router } = require("express");
 const router = Router();
 
-const {
-  monitoringSchema,
-  prixodRasxodSchema,
-  getByIdPodotchetToExcelSchema,
-  capSchema,
-  PodotchetMonitoringSchema,
-} = require("./schemas");
+const { monitoringSchema, prixodRasxodSchema, getByIdPodotchetToExcelSchema, capSchema, PodotchetMonitoringSchema } = require("./schemas");
 const { Controller } = require("./controllers");
 const { validator } = require("@helper/validator");
 

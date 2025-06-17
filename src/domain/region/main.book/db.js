@@ -483,6 +483,35 @@ exports.MainBookDB = class {
         AND own.schet = ANY($6)
         AND d.spravochnik_podotchet_litso_id IS NOT NULL
 
+      UNION ALL
+      
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.comment AS opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'avans_(work_trip)' AS type
+      FROM work_trip_child AS ch
+      JOIN work_trip AS d ON d.id = ch.parent_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND op.schet = $4
+        AND r.id = $5
+        AND own.schet = ANY($6)
+        AND d.worker_id IS NOT NULL
+
       UNION ALL 
 
       SELECT 
@@ -572,6 +601,34 @@ exports.MainBookDB = class {
         AND own.schet = $4
         AND r.id = $5
         AND d.spravochnik_podotchet_litso_id IS NOT NULL
+
+      UNION ALL
+      
+      SELECT 
+          d.id,
+          d.doc_num,
+          TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+          d.comment AS opisanie,
+          d.main_schet_id,
+          ch.summa::FLOAT,
+          op.schet AS debet_schet,
+          own.schet AS kredit_schet,
+          'avans' AS type
+      FROM work_trip_child AS ch
+      JOIN work_trip AS d ON d.id = ch.parent_id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+      JOIN jur_schets AS own ON own.id = d.schet_id
+      JOIN users AS u ON d.user_id = u.id
+      JOIN regions AS r ON r.id = u.region_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND EXTRACT(YEAR FROM d.doc_date) = $1
+        AND EXTRACT(MONTH FROM d.doc_date) = $2
+        AND m.id = $3
+        AND own.schet = $4
+        AND r.id = $5
+        AND d.worker_id IS NOT NULL
 
       UNION ALL 
 
@@ -1527,6 +1584,28 @@ exports.MainBookDB = class {
       JOIN users u ON d.user_id = u.id
       JOIN regions r ON u.region_id = r.id
       JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+      JOIN jur_schets own ON own.id = d.schet_id
+      JOIN main_schet m ON m.id = d.main_schet_id
+      WHERE d.isdeleted = false
+        AND ch.isdeleted = false
+        AND r.id = $1
+        AND m.id = $2
+        AND own.schet = ANY($3)
+        ${date_filter}
+      GROUP BY op.schet, own.schet
+
+      UNION ALL 
+
+      SELECT 
+        COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+        op.schet,
+        own.schet AS own,
+        'avans' AS type
+      FROM work_trip_child ch
+      JOIN work_trip AS d ON ch.parent_id = d.id
+      JOIN users u ON d.user_id = u.id
+      JOIN regions r ON u.region_id = r.id
+      JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
       JOIN jur_schets own ON own.id = d.schet_id
       JOIN main_schet m ON m.id = d.main_schet_id
       WHERE d.isdeleted = false

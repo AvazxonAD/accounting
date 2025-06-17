@@ -127,7 +127,7 @@ exports.DashboardDB = class {
   }
 
   static async podotchet(params) {
-    const query = `
+    const query = `--sql
             WITH 
                 bank_rasxod AS (
                     SELECT 
@@ -209,6 +209,24 @@ exports.DashboardDB = class {
                     FROM avans_otchetlar_jur4_child ch
                     JOIN avans_otchetlar_jur4 AS d ON ch.avans_otchetlar_jur4_id = d.id
                     JOIN spravochnik_podotchet_litso AS p ON p.id = d.spravochnik_podotchet_litso_id 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN jur_schets AS j ON j.id = d.schet_id
+                    JOIN main_schet AS m ON m.id = d.main_schet_id
+                    WHERE d.isdeleted = false
+                        AND ch.isdeleted = false 
+                        AND m.id = $1
+                        AND d.doc_date BETWEEN $2 AND $3
+                        AND p.id = $4
+                        AND r.id = $5
+                        AND j.schet = $6
+                ),
+                work_trip AS (
+                    SELECT 
+                        COALESCE(SUM(ch.summa), 0)::FLOAT AS rasxod_sum
+                    FROM work_trip_child ch
+                    JOIN work_trip AS d ON ch.parent_id = d.id
+                    JOIN spravochnik_podotchet_litso AS p ON p.id = d.worker_id 
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     JOIN jur_schets AS j ON j.id = d.schet_id
