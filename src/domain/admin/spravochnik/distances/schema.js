@@ -4,8 +4,8 @@ exports.DistancesSchema = class {
   static create() {
     return Joi.object({
       body: Joi.object({
-        from_district_id: Joi.number().integer().min(1).required(),
-        to_district_id: Joi.number().integer().min(1).required(),
+        from_region_id: Joi.number().integer().min(1).required(),
+        to_region_id: Joi.number().integer().min(1).required(),
         distance_km: Joi.number().min(1).max(999999.99).precision(2).positive().required(),
       }),
     }).options({ stripUnknown: true });
@@ -28,10 +28,8 @@ exports.DistancesSchema = class {
       query: Joi.object({
         page: Joi.number().min(1).integer().default(1),
         limit: Joi.number().min(1).integer().default(100),
-        from_district_id: Joi.number().integer().min(1),
         from_region_id: Joi.number().integer().min(1),
         to_region_id: Joi.number().integer().min(1),
-        to_district_id: Joi.number().integer().min(1),
         search: Joi.string().trim(),
       }),
     }).options({ stripUnknown: true });

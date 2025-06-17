@@ -198,6 +198,43 @@ exports.PodotchetMonitoringDB = class {
                 AND p.id IS NOT NULL
                 AND own.schet = $5
                 ${where}
+            
+            UNION ALL 
+
+            SELECT  
+                d.id, 
+                d.doc_num,
+                TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date,
+                0::FLOAT AS prixod_sum,
+                ch.summa::FLOAT AS rasxod_sum,
+                d.comment AS opisanie,
+                p.id AS podotchet_id,
+                p.name AS podotchet_name,
+                p.rayon AS podotchet_rayon,
+                u.login,
+                u.fio,
+                u.id AS user_id,
+                op.schet AS provodki_schet,
+                op.sub_schet AS provodki_sub_schet,
+                'avans_(work_trip)' AS type,
+                d.doc_date AS                                                   combined_doc_date,
+                d.id AS                                                         combined_id,
+                d.doc_num AS                                                    combined_doc_num
+            FROM work_trip_child ch
+            JOIN work_trip AS d ON ch.parent_id = d.id
+            JOIN spravochnik_podotchet_litso AS p ON p.id = d.worker_id 
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+            JOIN jur_schets AS own ON own.id = d.schet_id
+            WHERE r.id = $1 
+                AND d.main_schet_id = $2 
+                AND d.isdeleted = false  
+                AND ch.isdeleted = false
+                AND d.doc_date BETWEEN $3 AND $4
+                AND p.id IS NOT NULL
+                AND own.schet = $5
+                ${where}
 
             ${order} 
 
@@ -342,22 +379,45 @@ exports.PodotchetMonitoringDB = class {
                     AND d.main_schet_id = $3
                     AND d.doc_date ${internal_filter}
                     ${where}
+            ),
+
+            work_trip AS (
+                SELECT 
+                    COALESCE(SUM(ch.summa), 0)::FLOAT AS rasxod_sum
+                FROM work_trip_child ch
+                JOIN work_trip AS d ON ch.parent_id = d.id
+                JOIN spravochnik_podotchet_litso AS p ON p.id = d.worker_id 
+                JOIN users u ON d.user_id = u.id
+                JOIN regions r ON u.region_id = r.id
+                JOIN main_schet AS m ON m.id = d.main_schet_id
+                JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+                JOIN jur_schets AS own ON own.id = d.schet_id
+                WHERE r.id = $1  
+                    AND d.isdeleted = false 
+                    AND ch.isdeleted = false
+                    AND p.id IS NOT NULL
+                    AND own.schet = $2
+                    AND d.main_schet_id = $3
+                    AND d.doc_date ${internal_filter}
+                    ${where}
             )
         SELECT 
             (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum ) AS prixod_sum,
-            (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS rasxod_sum,
+            (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum + work_trip.rasxod_sum) AS rasxod_sum,
             bank_rasxod.prixod_sum AS bank_rasxod_sum,
             kassa_rasxod.prixod_sum AS kassa_rasxod_sum,
             bank_prixod.rasxod_sum AS bank_prixod_sum,
             kassa_prixod.rasxod_sum AS kassa_prixod_sum,
             avans_otchet.rasxod_sum AS avans_otchet_sum,
+            work_trip.rasxod_sum  AS work_trip_sum,
             (bank_rasxod.prixod_sum + kassa_rasxod.prixod_sum) - 
-            (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum) AS summa
+            (bank_prixod.rasxod_sum + kassa_prixod.rasxod_sum + avans_otchet.rasxod_sum + work_trip.rasxod_sum) AS summa
         FROM bank_rasxod
         CROSS JOIN bank_prixod
         CROSS JOIN kassa_prixod
         CROSS JOIN kassa_rasxod
         CROSS JOIN avans_otchet
+        CROSS JOIN work_trip
     `;
 
     const result = await db.query(query, params);
@@ -479,11 +539,31 @@ exports.PodotchetMonitoringDB = class {
                         AND own.schet = $5
                         AND p.id IS NOT NULL
                         ${where}
+                ),
+                work_trip AS (
+                    SELECT 
+                        COUNT(ch.id)::INT AS doc_count
+                    FROM work_trip_child ch
+                    JOIN work_trip AS d ON ch.parent_id = d.id
+                    JOIN spravochnik_podotchet_litso AS p ON p.id = d.worker_id 
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN main_schet AS m ON m.id = d.main_schet_id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+                    JOIN jur_schets AS own ON own.id = d.schet_id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false 
+                        AND ch.isdeleted = false
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND own.schet = $5
+                        AND p.id IS NOT NULL
+                        ${where}
                 )
             SELECT 
                 (bank_rasxod.doc_count + kassa_rasxod.doc_count + 
                  bank_prixod.doc_count + kassa_prixod.doc_count + 
-                 avans_otchet.doc_count
+                 avans_otchet.doc_count + work_trip.doc_count
                 ) AS total_docs
             FROM bank_rasxod
             CROSS JOIN bank_prixod
@@ -491,6 +571,7 @@ exports.PodotchetMonitoringDB = class {
             CROSS JOIN kassa_rasxod
             CROSS JOIN avans_otchet
             CROSS JOIN podotchet_saldo
+            CROSS JOIN work_trip
         `;
     const result = await db.query(query, params);
     return result[0].total_docs;
@@ -532,6 +613,29 @@ exports.PodotchetMonitoringDB = class {
             AND r.id = $4
             AND own.schet = $5
             AND d.spravochnik_podotchet_litso_id IS NOT NULL
+            ${where}
+        GROUP BY op.schet,
+            op.sub_schet
+
+        UNION ALL 
+
+        SELECT 
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+            op.schet,
+            op.sub_schet
+        FROM work_trip_child ch
+        JOIN work_trip AS d ON ch.parent_id = d.id
+        JOIN users u ON d.user_id = u.id
+        JOIN regions r ON u.region_id = r.id
+        JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+        JOIN jur_schets AS own ON own.id = d.schet_id
+        WHERE d.isdeleted = false
+            AND ch.isdeleted = false
+            AND d.main_schet_id = $1
+            AND d.doc_date BETWEEN $2 AND $3
+            AND r.id = $4
+            AND own.schet = $5
+            AND d.worker_id IS NOT NULL
             ${where}
         GROUP BY op.schet,
             op.sub_schet
@@ -695,6 +799,27 @@ exports.PodotchetMonitoringDB = class {
                 ${where}
             GROUP BY op.schet
     
+            UNION ALL 
+
+            SELECT 
+                COALESCE(SUM(ch.summa), 0)::FLOAT AS summa,
+                op.schet
+            FROM work_trip_child ch
+            JOIN work_trip AS d ON ch.parent_id = d.id
+            JOIN users u ON d.user_id = u.id
+            JOIN regions r ON u.region_id = r.id
+            JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
+            JOIN jur_schets AS own ON own.id = d.schet_id
+            WHERE d.isdeleted = false
+                AND ch.isdeleted = false
+                AND d.main_schet_id = $1
+                AND d.doc_date BETWEEN $2 AND $3
+                AND r.id = $4
+                AND own.schet = $5
+                AND d.worker_id IS NOT NULL
+                ${where}
+            GROUP BY op.schet
+
             UNION ALL
             
             SELECT 
@@ -945,6 +1070,33 @@ exports.PodotchetMonitoringDB = class {
                     JOIN users u ON d.user_id = u.id
                     JOIN regions r ON u.region_id = r.id
                     JOIN spravochnik_operatsii AS op ON op.id = ch.spravochnik_operatsii_id
+                    JOIN jur_schets AS own ON own.id = d.schet_id
+                    WHERE r.id = $1 
+                        AND d.main_schet_id = $2 
+                        AND d.isdeleted = false   
+                        AND d.doc_date BETWEEN $3 AND $4
+                        AND own.schet = $5
+                        AND so.id IS NOT NULL
+                        ${podotcbet_filter}
+
+                    UNION ALL 
+
+                    SELECT 
+                        op.schet,
+                        op.sub_schet,
+                        ch.summa::FLOAT,
+                        d.doc_num,
+                        d.doc_date,
+                        so.name AS fio,
+                        so.rayon AS rayon,
+                        d.comment,
+                        'avans_(work_trip)' AS type
+                    FROM work_trip_child ch
+                    JOIN work_trip AS d ON ch.parent_id = d.id
+                    JOIN spravochnik_podotchet_litso AS so ON so.id = d.worker_id
+                    JOIN users u ON d.user_id = u.id
+                    JOIN regions r ON u.region_id = r.id
+                    JOIN spravochnik_operatsii AS op ON op.id = ch.schet_id
                     JOIN jur_schets AS own ON own.id = d.schet_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 

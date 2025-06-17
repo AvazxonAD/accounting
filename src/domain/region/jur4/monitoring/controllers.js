@@ -40,6 +40,15 @@ exports.Controller = class {
       }
     }
 
+    const {} = HelperFunctions.returnMonthAndYear({ doc_date });
+    const saldo = await Jur4SaldoService.getByMonth({
+      ...req.query,
+      region_id,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const data = await PodotchetMonitoringService.daysReport({
       ...req.query,
       region_id,
@@ -121,24 +130,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const {
-      data,
-      summa_from,
-      page_rasxod_sum,
-      page_prixod_sum,
-      summa_to,
-      total,
-      page_total_sum,
-      prixod_sum,
-      rasxod_sum,
-      total_sum,
-    } = await PodotchetMonitoringService.monitoring({
-      ...req.query,
-      offset,
-      region_id,
-      schet: schet.schet,
-      saldo,
-    });
+    const { data, summa_from, page_rasxod_sum, page_prixod_sum, summa_to, total, page_total_sum, prixod_sum, rasxod_sum, total_sum } =
+      await PodotchetMonitoringService.monitoring({
+        ...req.query,
+        offset,
+        region_id,
+        schet: schet.schet,
+        saldo,
+      });
 
     const pageCount = Math.ceil(total / limit);
 
@@ -356,10 +355,7 @@ exports.Controller = class {
     const from = HelperFunctions.returnDate({ year, month });
 
     for (let podotchet of data) {
-      const internal = await PodotchetMonitoringDB.getSumma(
-        [region_id, schet.schet, main_schet_id, from, to],
-        podotchet.id
-      );
+      const internal = await PodotchetMonitoringDB.getSumma([region_id, schet.schet, main_schet_id, from, to], podotchet.id);
 
       const podotchet_saldo = saldo.childs.find((item) => item.podotchet_id === podotchet.id);
 

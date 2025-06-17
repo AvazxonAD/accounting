@@ -48,33 +48,15 @@ exports.PodotchetMonitoringService = class {
   }
 
   static async getSumma(data) {
-    const internal = await PodotchetMonitoringDB.getSumma([
-      data.region_id,
-      data.schet,
-      data.main_schet_id,
-      data.from,
-      data.to,
-    ]);
+    const internal = await PodotchetMonitoringDB.getSumma([data.region_id, data.schet, data.main_schet_id, data.from, data.to]);
 
     return internal;
   }
 
   static async cap(data) {
-    let result = await PodotchetMonitoringDB.capData([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    let result = await PodotchetMonitoringDB.capData([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const prixods = await PodotchetMonitoringDB.capDataPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const prixods = await PodotchetMonitoringDB.capDataPrixods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
@@ -97,21 +79,9 @@ exports.PodotchetMonitoringService = class {
   }
 
   static async reportBySchets(data) {
-    const rasxods = await PodotchetMonitoringDB.reportBySchetsRasxods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const rasxods = await PodotchetMonitoringDB.reportBySchetsRasxods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const prixods = await PodotchetMonitoringDB.reportBySchetsPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const prixods = await PodotchetMonitoringDB.reportBySchetsPrixods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
 
