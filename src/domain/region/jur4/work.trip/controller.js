@@ -86,6 +86,7 @@ exports.Controller = class {
 
     const chils_sum = HelperFunctions.childsSumma(childs);
 
+    console.log(road_summa, req.body.road_summa);
     if (summa !== req.body.summa || summa !== chils_sum) {
       return res.error(req.i18n.t("validationError"), 400);
     }

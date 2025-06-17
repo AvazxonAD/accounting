@@ -1633,7 +1633,7 @@ exports.HelperFunctions = class {
 
   static roadSumma(data) {
     if (!data.road_ticket_number) {
-      return data.distance.distance_km * (data.minimum_wage.summa * 0.01);
+      return Number(data.distance.distance_km) * (data.minimum_wage.summa * 0.01);
     } else {
       return data.road_summa;
     }
