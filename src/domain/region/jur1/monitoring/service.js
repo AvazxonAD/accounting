@@ -6,19 +6,9 @@ const { HelperFunctions } = require("@helper/functions");
 
 exports.KassaMonitoringService = class {
   static async reportBySchets(data) {
-    const prixods = await KassaMonitoringDB.reportBySchetPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const prixods = await KassaMonitoringDB.reportBySchetPrixods([data.main_schet_id, data.from, data.to, data.region_id]);
 
-    const rasxods = await KassaMonitoringDB.reportBySchetRasxods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const rasxods = await KassaMonitoringDB.reportBySchetRasxods([data.main_schet_id, data.from, data.to, data.region_id]);
 
     const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
 
@@ -52,16 +42,9 @@ exports.KassaMonitoringService = class {
       month: data.month,
     });
 
-    const internal = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from, data.to],
-      data.search
-    );
+    const internal = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from, data.to], data.search);
 
-    const summa_from = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, from, data.from],
-      data.search,
-      true
-    );
+    const summa_from = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.from], data.search, true);
 
     const summa_to = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.to], data.search);
 
@@ -106,20 +89,11 @@ exports.KassaMonitoringService = class {
   static async daysReport(data) {
     const result = await KassaMonitoringDB.daysReport([data.main_schet_id, data.from, data.to, data.region_id]);
 
-    const summa_from = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from],
-      null,
-      null,
-      true
-    );
+    const from = HelperFunctions.returnDate(data);
 
-    const summa_to = await KassaMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.to],
-      null,
-      null,
-      null,
-      true
-    );
+    const summa_from = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.from], null, true);
+
+    const summa_to = await KassaMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from, data.to]);
 
     let rasxodSumma = 0;
     let prixodSumma = 0;
@@ -137,8 +111,8 @@ exports.KassaMonitoringService = class {
 
     return {
       ...result,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from.summa + data.saldo.summa,
+      summa_to: summa_to.summa + data.saldo.summa,
     };
   }
 
@@ -173,16 +147,7 @@ exports.KassaMonitoringService = class {
     worksheet.getCell("A4").value =
       `от ${HelperFunctions.returnStringDate(new Date(data.from))} до ${HelperFunctions.returnStringDate(new Date(data.to))}`;
 
-    worksheet.getRow(8).values = [
-      "Номер документ",
-      "Номер санаси",
-      "ФИО",
-      "Раён",
-      "Приход",
-      "Счет",
-      "Субсчет",
-      "Описание",
-    ];
+    worksheet.getRow(8).values = ["Номер документ", "Номер санаси", "ФИО", "Раён", "Приход", "Счет", "Субсчет", "Описание"];
 
     worksheet.columns = [
       { key: "doc_num", width: 20 },

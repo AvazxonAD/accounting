@@ -13,13 +13,7 @@ const fs = require(`fs`).promises;
 
 exports.Monitoring159Service = class {
   static async getSumma(data) {
-    const internal = await Monitoring159DB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.schet,
-      data.from,
-      data.to,
-    ]);
+    const internal = await Monitoring159DB.getSumma([data.region_id, data.main_schet_id, data.schet, data.from, data.to]);
 
     return internal;
   }
@@ -88,13 +82,7 @@ exports.Monitoring159Service = class {
   static async cap(data) {
     let result = await Monitoring159DB.capData([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const prixods = await Monitoring159DB.capDataPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const prixods = await Monitoring159DB.capDataPrixods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
@@ -117,21 +105,9 @@ exports.Monitoring159Service = class {
   }
 
   static async reportBySchets(data) {
-    const rasxods = await Monitoring159DB.reportBySchetsRasxods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const rasxods = await Monitoring159DB.reportBySchetsRasxods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const prixods = await Monitoring159DB.reportBySchetsPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const prixods = await Monitoring159DB.reportBySchetsPrixods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
 
@@ -139,30 +115,16 @@ exports.Monitoring159Service = class {
   }
 
   static async daysReport(data) {
-    const result = await Monitoring159DB.daysReport([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const result = await Monitoring159DB.daysReport([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const summa_to = await Monitoring159DB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet, data.to],
+    const summa_to = await Monitoring159DB.getSumma([data.region_id, data.main_schet_id, data.schet, data.from, data.to], data.organ_id);
+
+    const from = HelperFunctions.returnDate(data);
+    const summa_from = await Monitoring159DB.getSumma(
+      [data.region_id, data.main_schet_id, data.schet, from, data.from],
       data.organ_id,
-      null,
-      null,
       null,
       true
-    );
-
-    const summa_from = await Monitoring159DB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet, data.from],
-      data.organ_id,
-      null,
-      null,
-      true,
-      null
     );
 
     let rasxodSumma = 0;
@@ -181,8 +143,8 @@ exports.Monitoring159Service = class {
 
     return {
       ...result,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from.summa + data.saldo.summa,
+      summa_to: summa_to.summa + data.saldo.summa,
     };
   }
 
@@ -197,10 +159,7 @@ exports.Monitoring159Service = class {
         summa: 0,
       };
 
-      const internal = await Monitoring159DB.getSumma(
-        [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
-        item.id
-      );
+      const internal = await Monitoring159DB.getSumma([data.region_id, data.main_schet_id, data.schet, data.from, data.to], item.id);
 
       item.saldo = saldo;
       item.summa = saldo.summa + internal.summa;
@@ -414,9 +373,7 @@ exports.Monitoring159Service = class {
         schet: doc.schet,
         sub_schet: doc.sub_schet,
         contract_doc_num: doc.contract_doc_num || "",
-        contract_doc_date: doc.contract_doc_date
-          ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date))
-          : "",
+        contract_doc_date: doc.contract_doc_date ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date)) : "",
         comment: doc.comment || "",
       });
       column++;

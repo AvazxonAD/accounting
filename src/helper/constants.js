@@ -28,6 +28,8 @@ exports.LIMIT = 999999999999999;
 
 exports.SCHET_TYPE = ["work_trip", "bank_rasxod", "bank_prixod", "kassa_prixod", "kassa_rasxod", "avans_otchet"];
 
+exports.REPORT_TITLE = "Меморалний ордер";
+
 exports.REGIONS = [
   {
     id: 101,

@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs").promises;
 const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
-const { REPORT_RASXOD_SCHET } = require("./constants");
+const { REPORT_RASXOD_SCHET, REPORT_TITLE } = require("./constants");
 const ErrorResponse = require(`@helper/error.response`);
 
 exports.HelperFunctions = class {
@@ -204,7 +204,7 @@ exports.HelperFunctions = class {
     worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title?.name || REPORT_TITLE}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;

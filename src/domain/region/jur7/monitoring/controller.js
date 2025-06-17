@@ -90,6 +90,64 @@ exports.Controller = class {
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);
   }
 
+  static async daysReport(req, res) {
+    const { main_schet_id, excel, from, to, budjet_id } = req.query;
+    const region_id = req.user.region_id;
+
+    const region = await RegionService.getById({ id: region_id });
+
+    const main_schet = await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const budjet = await ValidatorFunctions.budjet({ budjet_id });
+
+    const { data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } = await Jur7MonitoringService.monitoring({
+      ...req.query,
+      region_id,
+      offset: 0,
+      limit: LIMIT,
+    });
+
+    const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
+      ...req.query,
+      region_id,
+      offset: 0,
+      limit: LIMIT,
+    });
+
+    const meta = {
+      prixod_sum,
+      rasxod_sum,
+      page_prixod_sum,
+      page_rasxod_sum,
+      from_summa,
+      to_summa,
+    };
+
+    if (excel === "true") {
+      const { fileName, filePath } = await Jur7SaldoService.daysReportExcel({
+        ...req.query,
+        data,
+        region,
+        from: from,
+        to,
+        main_schet,
+        region_id,
+        budjet,
+        summa_from: from_summa,
+        summa_to: to_summa,
+        prixod_sum,
+        rasxod_sum,
+      });
+
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+      return res.sendFile(filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, meta, data);
+  }
+
   static async getSaldoDate(req, res) {
     const region_id = req.user.region_id;
     const { main_schet_id, year } = req.query;

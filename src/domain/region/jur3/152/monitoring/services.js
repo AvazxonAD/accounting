@@ -48,9 +48,7 @@ exports.Monitoring152Service = class {
       itogo.to.rasxod += organ.to.rasxod;
     }
 
-    const result = await data.saldo.childs.filter(
-      (item) => item.to.prixod !== 0 || item.to.rasxod !== 0
-    );
+    const result = await data.saldo.childs.filter((item) => item.to.prixod !== 0 || item.to.rasxod !== 0);
 
     return { data: result, itogo };
   }
@@ -199,10 +197,7 @@ exports.Monitoring152Service = class {
       });
     });
 
-    const folder_path = path.join(
-      __dirname,
-      `../../../../../../public/exports`
-    );
+    const folder_path = path.join(__dirname, `../../../../../../public/exports`);
 
     try {
       await fs.access(folder_path, fs.constants.W_OK);
@@ -220,28 +215,14 @@ exports.Monitoring152Service = class {
   }
 
   static async getSumma(data) {
-    const internal = await Monitoring152DB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.schet,
-      data.from,
-      data.to,
-    ]);
+    const internal = await Monitoring152DB.getSumma([data.region_id, data.main_schet_id, data.schet, data.from, data.to]);
 
     return internal;
   }
 
   static async monitoring(data) {
     const docs = await Monitoring152DB.monitoring(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.schet,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.schet, data.from, data.to, data.offset, data.limit],
       data.organ_id,
       data.search,
       data.order_by || "doc_date",
@@ -302,21 +283,9 @@ exports.Monitoring152Service = class {
   }
 
   static async cap(data) {
-    let result = await Monitoring152DB.capData([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    let result = await Monitoring152DB.capData([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const prixods = await Monitoring152DB.capDataPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const prixods = await Monitoring152DB.capDataPrixods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
@@ -339,21 +308,9 @@ exports.Monitoring152Service = class {
   }
 
   static async reportBySchets(data) {
-    const rasxods = await Monitoring152DB.reportBySchetsRasxods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const rasxods = await Monitoring152DB.reportBySchetsRasxods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const prixods = await Monitoring152DB.reportBySchetsPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const prixods = await Monitoring152DB.reportBySchetsPrixods([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
     const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
 
@@ -361,30 +318,17 @@ exports.Monitoring152Service = class {
   }
 
   static async daysReport(data) {
-    const result = await Monitoring152DB.daysReport([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-      data.schet,
-    ]);
+    const result = await Monitoring152DB.daysReport([data.main_schet_id, data.from, data.to, data.region_id, data.schet]);
 
-    const summa_to = await Monitoring152DB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet, data.to],
-      data.organ_id,
-      null,
-      null,
-      null,
-      true
-    );
+    const from = HelperFunctions.returnDate(data);
+
+    const summa_to = await Monitoring152DB.getSumma([data.region_id, data.main_schet_id, data.schet, data.from, data.to], data.organ_id);
 
     const summa_from = await Monitoring152DB.getSumma(
-      [data.region_id, data.main_schet_id, data.schet, data.from],
+      [data.region_id, data.main_schet_id, data.schet, from, data.from],
       data.organ_id,
       null,
-      null,
-      true,
-      null
+      true
     );
 
     let rasxodSumma = 0;
@@ -403,8 +347,8 @@ exports.Monitoring152Service = class {
 
     return {
       ...result,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from.summa + data.saldo.summa,
+      summa_to: summa_to.summa + data.saldo.summa,
     };
   }
 
@@ -412,14 +356,9 @@ exports.Monitoring152Service = class {
     let itogo_rasxod = 0;
     let itogo_prixod = 0;
     for (let item of data.organizations) {
-      const saldo = data.saldo.childs.find(
-        (saldo_item) => saldo_item.organization_id === item.id
-      ) || { prixod: 0, rasxod: 0, summa: 0 };
+      const saldo = data.saldo.childs.find((saldo_item) => saldo_item.organization_id === item.id) || { prixod: 0, rasxod: 0, summa: 0 };
 
-      const internal = await Monitoring152DB.getSumma(
-        [data.region_id, data.main_schet_id, data.schet, data.from, data.to],
-        item.id
-      );
+      const internal = await Monitoring152DB.getSumma([data.region_id, data.main_schet_id, data.schet, data.from, data.to], item.id);
 
       item.saldo = saldo;
       item.summa = saldo.summa + internal.summa;
@@ -520,8 +459,7 @@ exports.Monitoring152Service = class {
       let horizontal = "center";
       let size = 10;
       if (index === 0) (fill = null), (border = null), (size = 12);
-      if (index === 1)
-        (fill = null), (border = { bottom: { style: "thin" } }), (size = 12);
+      if (index === 1) (fill = null), (border = { bottom: { style: "thin" } }), (size = 12);
       if (index === 4) (fill = null), (border = null), (horizontal = "right");
       if (index > 4) horizontal = "right";
       Object.assign(item, {
@@ -541,10 +479,7 @@ exports.Monitoring152Service = class {
     worksheet.getColumn(2).width = 20;
     worksheet.getColumn(3).width = 20;
     worksheet.getRow(1).height = 30;
-    const filePath = path.join(
-      __dirname,
-      "../../../../../../public/exports/" + fileName
-    );
+    const filePath = path.join(__dirname, "../../../../../../public/exports/" + fileName);
     await workbook.xlsx.writeFile(filePath);
     return filePath;
   }
@@ -571,12 +506,10 @@ exports.Monitoring152Service = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -629,9 +562,7 @@ exports.Monitoring152Service = class {
         schet: doc.schet,
         sub_schet: doc.sub_schet,
         contract_doc_num: doc.contract_doc_num || "",
-        contract_doc_date: doc.contract_doc_date
-          ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date))
-          : "",
+        contract_doc_date: doc.contract_doc_date ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date)) : "",
         comment: doc.comment || "",
       });
       column++;

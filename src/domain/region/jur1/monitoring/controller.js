@@ -99,22 +99,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const {
-      total_count,
-      data,
-      summa_from,
-      summa_to,
-      prixod_sum,
-      rasxod_sum,
-      page_prixod_sum,
-      page_rasxod_sum,
-      page_total_sum,
-    } = await KassaMonitoringService.get({
-      ...req.query,
-      region_id,
-      offset,
-      saldo,
-    });
+    const { total_count, data, summa_from, summa_to, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum, page_total_sum } =
+      await KassaMonitoringService.get({
+        ...req.query,
+        region_id,
+        offset,
+        saldo,
+      });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -227,11 +218,25 @@ exports.Controller = class {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date: from });
+    const saldo = await KassaSaldoService.getByMonth({
+      ...req.query,
+      region_id,
+      year,
+      month,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const data = await KassaMonitoringService.daysReport({
       region_id,
       main_schet_id,
       from,
       to,
+      year,
+      month,
+      saldo,
     });
 
     if (excel) {

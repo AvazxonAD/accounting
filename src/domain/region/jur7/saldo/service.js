@@ -6,55 +6,194 @@ const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { Jur7MonitoringService } = require(`@jur7_monitoring/service`);
+const { REPORT_TITLE } = require("@helper/constants");
 const fs = require("fs").promises;
 
 exports.Jur7SaldoService = class {
+  static async daysReportExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Hisobot");
+
+    worksheet.mergeCells("A1", "G1");
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+
+    worksheet.mergeCells("A2", "C2");
+    worksheet.getCell("A2").value = `${REPORT_TITLE}  №7`;
+
+    worksheet.mergeCells("D2", "G2");
+    worksheet.getCell("D2").value = data.budjet.name;
+
+    worksheet.mergeCells("A3", "G3");
+    worksheet.getCell("A3").value = `Материалний омбори кунлик ҳисоботи`;
+
+    worksheet.mergeCells("A4", "G4");
+    worksheet.getCell("A4").value =
+      `от ${HelperFunctions.returnStringDate(new Date(data.from))} до ${HelperFunctions.returnStringDate(new Date(data.to))}`;
+
+    worksheet.mergeCells(`A6`, `E6`);
+    const summa_from = worksheet.getCell(`A6`);
+    summa_from.value = `Остаток к началу дня : ${HelperFunctions.returnStringSumma(data.summa_from)}`;
+    summa_from.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    worksheet.getRow(8).values = ["Номер документ", "Номер санаси", "Кимдан", "Кимга", "Приход", "Расход", "Debet", "Кредит", "описание"];
+
+    worksheet.columns = [
+      { key: "doc_num", width: 20 },
+      { key: "doc_date", width: 20 },
+      { key: "from", width: 40 },
+      { key: "to", width: 20 },
+      { key: "prixod", width: 30 },
+      { key: "rasxod", width: 30 },
+      { key: "debet", width: 20 },
+      { key: "kredit", width: 20 },
+      { key: "comment", width: 60 },
+    ];
+
+    let column = 8;
+
+    for (let doc of data.data) {
+      worksheet.addRow({
+        doc_num: doc.doc_num,
+        doc_date: HelperFunctions.returnLocalDate(new Date(doc.doc_date)),
+        from: doc.from_name,
+        to: doc.to_name,
+        prixod: doc.summa_prixod,
+        rasxod: doc.summa_rasxod,
+        debet: doc.schets.map((item) => `${item.debet_schet} // ${item.debet_sub_schet}`).join("\n"),
+        kredit: doc.schets.map((item) => `${item.kredit_schet} // ${item.kredit_sub_schet}`).join("\n"),
+        comment: doc.opisanie || "",
+      });
+      column++;
+    }
+
+    column++;
+    worksheet.mergeCells(`A${column}`, `E${column}`);
+    const itogoTitleCell = worksheet.getCell(`A${column}`);
+    itogoTitleCell.value = `ВСЕГО`;
+    itogoTitleCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    const itogoPrixodCell = worksheet.getCell(`F${column}`);
+    itogoPrixodCell.value = data.prixod_sum;
+    itogoPrixodCell.note = JSON.stringify({
+      bold: true,
+    });
+
+    const itogoRasxodCell = worksheet.getCell(`G${column}`);
+    itogoRasxodCell.value = data.rasxod_sum;
+    itogoRasxodCell.note = JSON.stringify({
+      bold: true,
+    });
+    column += 2;
+
+    worksheet.mergeCells(`A${column}`, `E${column}`);
+    const summa_to = worksheet.getCell(`A${column}`);
+    summa_to.value = `Остаток к консу дня : ${HelperFunctions.returnStringSumma(data.summa_to)}`;
+    summa_to.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+    column += 2;
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let height = null;
+      let argb = "FFFFFFFF";
+
+      if (rowNumber === 1) {
+        height = 50;
+      }
+
+      if (rowNumber > 1 && rowNumber < 9) {
+        height = 30;
+      }
+
+      if (rowNumber < 9) {
+        bold = true;
+      }
+
+      if (rowNumber === 4) {
+        horizontal = "left";
+      }
+
+      if (height) {
+        worksheet.getRow(rowNumber).height = height;
+      }
+
+      row.eachCell((cell, columnNumber) => {
+        const cellData = cell.note ? JSON.parse(cell.note) : {};
+
+        if ((columnNumber === 6 || columnNumber === 7) && rowNumber > 8 && !cellData.horizontal) {
+          horizontal = "right";
+        } else if (columnNumber > 7 && rowNumber > 8) {
+          horizontal = "center";
+        }
+
+        if (cellData.bold) {
+          bold = true;
+        }
+
+        if (cellData.horizontal) {
+          horizontal = cellData.horizontal;
+        }
+
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb },
+          },
+
+          border: {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          },
+        });
+
+        // clean note
+        if (cell.note) {
+          cell.note = undefined;
+        }
+      });
+    });
+
+    const fileName = `jur7_days_report_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../../../../public/exports");
+
+    try {
+      await fs.access(folder_path, fs.constants.W_OK);
+    } catch (error) {
+      await fs.mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
   static async getByIdProduct(data) {
     const result = await Jur7SaldoDB.getByIdProduct([data.id, data.region_id]);
 
     return result;
   }
-
-  // static groupedSaldo(arr) {
-  //   const map = new Map();
-
-  //   arr.forEach((item) => {
-  //     const key = `${item.prixodData.docId}_${item.group_id}_${item.name}`;
-
-  //     if (map.has(key)) {
-  //       const existing = map.get(key);
-
-  //       // from
-  //       existing.from.kol += item.from.kol;
-  //       existing.from.summa += item.from.summa;
-  //       existing.from.iznos_summa += item.from.iznos_summa;
-  //       existing.from.sena += item.from.sena;
-
-  //       // internal
-  //       existing.internal.kol += item.internal.kol;
-  //       existing.internal.summa += item.internal.summa;
-  //       existing.internal.iznos_summa += item.internal.iznos_summa;
-  //       existing.internal.sena += item.internal.sena;
-  //       existing.internal.prixod_kol += item.internal.prixod_kol;
-  //       existing.internal.rasxod_kol += item.internal.rasxod_kol;
-  //       existing.internal.prixod_summa += item.internal.prixod_summa;
-  //       existing.internal.rasxod_summa += item.internal.rasxod_summa;
-  //       existing.internal.prixod_iznos_summa += item.internal.prixod_iznos_summa;
-  //       existing.internal.rasxod_iznos_summa += item.internal.rasxod_iznos_summa;
-
-  //       // to
-  //       existing.to.kol += item.to.kol;
-  //       existing.to.summa += item.to.summa;
-  //       existing.to.iznos_summa += item.to.iznos_summa;
-  //       existing.to.sena += item.to.sena;
-  //       if (item.to.month_iznos) existing.to.month_iznos = (existing.to.month_iznos || 0) + item.to.month_iznos;
-  //     } else {
-  //       map.set(key, JSON.parse(JSON.stringify(item)));
-  //     }
-  //   });
-
-  //   return Array.from(map.values());
-  // }
 
   static returnDocDate(data) {
     const dates = String(data.doc_date).trim().split("");

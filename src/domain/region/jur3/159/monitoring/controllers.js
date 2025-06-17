@@ -13,17 +13,14 @@ const { LIMIT } = require("@helper/constants");
 exports.Controller = class {
   static async reportBySchets(req, res) {
     const region_id = req.user.region_id;
-    const { from, main_schet_id, report_title_id, excel, to, schet_id } =
-      req.query;
+    const { from, main_schet_id, report_title_id, excel, to, schet_id } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === schet_id
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === schet_id);
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -78,14 +75,8 @@ exports.Controller = class {
         report_title,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       return res.sendFile(filePath);
     }
 
@@ -94,25 +85,14 @@ exports.Controller = class {
 
   static async daysReport(req, res) {
     const region_id = req.user.region_id;
-    const {
-      main_schet_id,
-      organ_id,
-      schet_id,
-      excel,
-      budjet_id,
-      from,
-      to,
-      report_title_id,
-    } = req.query;
+    const { main_schet_id, organ_id, schet_id, excel, budjet_id, from, to, report_title_id } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
@@ -128,11 +108,26 @@ exports.Controller = class {
       }
     }
 
+    const { year, month } = HelperFunctions.returnMonthAndYear({ doc_date: from });
+
+    const saldo = await Saldo159Service.getByMonth({
+      ...req.query,
+      region_id,
+      year,
+      month,
+    });
+    if (!saldo) {
+      return res.error(req.i18n.t("saldoNotFound"), 404);
+    }
+
     const data = await Monitoring159Service.daysReport({
       ...req.query,
       region_id,
       organ_id,
       schet: schet.schet,
+      year,
+      month,
+      saldo,
     });
 
     if (excel) {
@@ -163,8 +158,7 @@ exports.Controller = class {
         main_schet,
         report_title,
         region_id,
-        title:
-          "Етказиб берувчи корхоналар билан дебитор-кредиторлик кунлик ҳисоботи",
+        title: "Етказиб берувчи корхоналар билан дебитор-кредиторлик кунлик ҳисоботи",
         file_name: "159",
         podpis,
         budjet,
@@ -172,14 +166,8 @@ exports.Controller = class {
         order: 2,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }
@@ -198,9 +186,7 @@ exports.Controller = class {
       id: query.main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t(`mainSchetNotFound`), 400);
     }
@@ -224,25 +210,15 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const {
-      data,
-      summa_from,
-      page_rasxod_sum,
-      page_prixod_sum,
-      summa_to,
-      total,
-      page_total_sum,
-      prixod_sum,
-      rasxod_sum,
-      total_sum,
-    } = await Monitoring159Service.monitoring({
-      ...query,
-      offset,
-      region_id,
-      organ_id,
-      schet: schet.schet,
-      saldo,
-    });
+    const { data, summa_from, page_rasxod_sum, page_prixod_sum, summa_to, total, page_total_sum, prixod_sum, rasxod_sum, total_sum } =
+      await Monitoring159Service.monitoring({
+        ...query,
+        offset,
+        region_id,
+        organ_id,
+        schet: schet.schet,
+        saldo,
+      });
 
     const pageCount = Math.ceil(total / limit);
 
@@ -267,24 +243,14 @@ exports.Controller = class {
 
   static async cap(req, res) {
     const region_id = req.user.region_id;
-    const {
-      from,
-      main_schet_id,
-      budjet_id,
-      report_title_id,
-      excel,
-      to,
-      schet_id,
-    } = req.query;
+    const { from, main_schet_id, budjet_id, report_title_id, excel, to, schet_id } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === schet_id
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === schet_id);
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
     }
@@ -350,14 +316,8 @@ exports.Controller = class {
         order: 3,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
       return res.sendFile(filePath);
     }
 
@@ -378,9 +338,7 @@ exports.Controller = class {
       id: query.main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === query.schet_id
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === query.schet_id);
 
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 404);
@@ -440,16 +398,7 @@ exports.Controller = class {
   // old
   static async prixodReport(req, res) {
     const region_id = req.user.region_id;
-    const {
-      main_schet_id,
-      organ_id,
-      excel,
-      report_title_id,
-      budjet_id,
-      schet,
-      from,
-      to,
-    } = req.query;
+    const { main_schet_id, organ_id, excel, report_title_id, budjet_id, schet, from, to } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -495,31 +444,24 @@ exports.Controller = class {
         type: REPORT_TYPE.days_report,
       });
 
-      const { fileName, filePath } =
-        await Monitoring159Service.prixodReportExcel({
-          ...data,
-          from,
-          region,
-          to,
-          main_schet,
-          report_title,
-          region_id,
-          title: "Приход ҳисоботи",
-          file_name: "jur3",
-          podpis,
-          budjet,
-          schet: schet,
-          order: 3,
-        });
+      const { fileName, filePath } = await Monitoring159Service.prixodReportExcel({
+        ...data,
+        from,
+        region,
+        to,
+        main_schet,
+        report_title,
+        region_id,
+        title: "Приход ҳисоботи",
+        file_name: "jur3",
+        podpis,
+        budjet,
+        schet: schet,
+        order: 3,
+      });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${fileName}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
       return res.sendFile(filePath);
     }

@@ -6,19 +6,9 @@ const { HelperFunctions } = require("@helper/functions");
 
 exports.BankMonitoringService = class {
   static async reportBySchets(data) {
-    const prixods = await BankMonitoringDB.reportBySchetPrixods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const prixods = await BankMonitoringDB.reportBySchetPrixods([data.main_schet_id, data.from, data.to, data.region_id]);
 
-    const rasxods = await BankMonitoringDB.reportBySchetRasxods([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const rasxods = await BankMonitoringDB.reportBySchetRasxods([data.main_schet_id, data.from, data.to, data.region_id]);
 
     const result = HelperFunctions.reportBySchetsGroup({ prixods, rasxods });
 
@@ -26,26 +16,14 @@ exports.BankMonitoringService = class {
   }
 
   static async getSumma(data) {
-    const summa = await BankMonitoringDB.getSumma([
-      data.region_id,
-      data.main_schet_id,
-      data.from,
-      data.to,
-    ]);
+    const summa = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from, data.to]);
 
     return summa;
   }
 
   static async get(data) {
     const result = await BankMonitoringDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit],
       data.search,
       data.order_by || "doc_date",
       data.order_type || "ASC"
@@ -58,26 +36,16 @@ exports.BankMonitoringService = class {
       page_rasxod_sum += item.rasxod_sum;
     }
 
-    const internal = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from, data.to],
-      data.search
-    );
+    const internal = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from, data.to], data.search);
 
     const from = HelperFunctions.returnDate({
       year: data.year,
       month: data.month,
     });
 
-    const summa_from = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, from, data.from],
-      data.search,
-      true
-    );
+    const summa_from = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.from], data.search, true);
 
-    const summa_to = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, from, data.to],
-      data.search
-    );
+    const summa_to = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.to], data.search);
 
     return {
       summa_from: data.saldo.summa + summa_from.summa,
@@ -93,12 +61,7 @@ exports.BankMonitoringService = class {
   }
 
   static async cap(data) {
-    let result = await BankMonitoringDB.capData([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    let result = await BankMonitoringDB.capData([data.main_schet_id, data.from, data.to, data.region_id]);
 
     result = result.reduce((acc, item) => {
       if (!acc[item.schet]) {
@@ -117,38 +80,18 @@ exports.BankMonitoringService = class {
       }
     }
 
-    const prixods = await BankMonitoringDB.capDataPrixod([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const prixods = await BankMonitoringDB.capDataPrixod([data.main_schet_id, data.from, data.to, data.region_id]);
 
     return { rasxods: result, prixods };
   }
 
   static async daysReport(data) {
-    const result = await BankMonitoringDB.daysReport([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const result = await BankMonitoringDB.daysReport([data.main_schet_id, data.from, data.to, data.region_id]);
 
-    const summa_from = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.from],
-      null,
-      null,
-      true
-    );
+    const from = HelperFunctions.returnDate(data);
+    const summa_from = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, from, data.from], null, true);
 
-    const summa_to = await BankMonitoringDB.getSumma(
-      [data.region_id, data.main_schet_id, data.to],
-      null,
-      null,
-      null,
-      true
-    );
+    const summa_to = await BankMonitoringDB.getSumma([data.region_id, data.main_schet_id, data.from, data.to]);
 
     let rasxodSumma = 0;
     let prixodSumma = 0;
@@ -166,18 +109,13 @@ exports.BankMonitoringService = class {
 
     return {
       ...result,
-      summa_from: summa_from.summa,
-      summa_to: summa_to.summa,
+      summa_from: summa_from.summa + data.saldo.summa,
+      summa_to: summa_to.summa + data.saldo.summa,
     };
   }
 
   static async prixodReport(data) {
-    const result = await BankMonitoringDB.prixodReport([
-      data.main_schet_id,
-      data.from,
-      data.to,
-      data.region_id,
-    ]);
+    const result = await BankMonitoringDB.prixodReport([data.main_schet_id, data.from, data.to, data.region_id]);
 
     let prixod_summa = 0;
 
@@ -193,12 +131,10 @@ exports.BankMonitoringService = class {
     const worksheet = workbook.addWorksheet("Hisobot");
 
     worksheet.mergeCells("A1", "G1");
-    worksheet.getCell("A1").value =
-      `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
+    worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value =
-      `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
@@ -251,9 +187,7 @@ exports.BankMonitoringService = class {
         schet: doc.schet,
         sub_schet: doc.sub_schet,
         contract_doc_num: doc.contract_doc_num || "",
-        contract_doc_date: doc.contract_doc_date
-          ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date))
-          : "",
+        contract_doc_date: doc.contract_doc_date ? HelperFunctions.returnLocalDate(new Date(doc.contract_doc_date)) : "",
         comment: doc.comment || "",
       });
       column++;
