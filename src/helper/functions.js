@@ -1250,7 +1250,7 @@ exports.HelperFunctions = class {
       }
     }
 
-    let itogo_column = column + 1;
+    let itogo_column = rasxod_column > column ? rasxod_column + 1 : column + 1;
     worksheet.mergeCells(`A${itogo_column}`, `G${itogo_column}`);
     worksheet.getCell(`A${itogo_column}`).value =
       `Остаток к концу дня:               ${this.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
