@@ -152,18 +152,12 @@ exports.Controller = class {
         id: doc.responsible_id,
       });
       if (!responsible) {
-        return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id} Qator: ${index}`,
-          404
-        );
+        return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id} Qator: ${index}`, 404);
       }
 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
-        return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id} Qator: ${index}`,
-          404
-        );
+        return res.error(`${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id} Qator: ${index}`, 404);
       }
 
       const unit = await UnitService.getByNameSearch({
@@ -223,24 +217,9 @@ exports.Controller = class {
     });
 
     if (first && end) {
-      if (
-        first.year !== end.year ||
-        first.month !== end.month ||
-        first.year !== year ||
-        first.month !== month
-      ) {
+      if (first.year !== end.year || first.month !== end.month || first.year !== year || first.month !== month) {
         return res.error(req.i18n.t("firstEndSaldoError"), 400);
       }
-    }
-
-    const check_doc = await Jur7SaldoService.checkDoc({
-      region_id,
-      main_schet_id,
-      year: year,
-      month: month,
-    });
-    if (check_doc.length) {
-      throw new ErrorResponse("prixodCreateSaldo", 400);
     }
 
     await ValidatorFunctions.mainSchet({
@@ -256,18 +235,12 @@ exports.Controller = class {
         id: doc.responsible_id,
       });
       if (!responsible) {
-        return res.error(
-          `${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`, 404);
       }
 
       const group = await GroupService.getById({ id: doc.group_jur7_id });
       if (!group) {
-        return res.error(
-          `${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("groupNotFound")} ID => ${doc.group_jur7_id}`, 404);
       }
 
       doc.date_saldo = new Date(`${doc.year}-${doc.month}-01`);
@@ -294,7 +267,7 @@ exports.Controller = class {
         throw new ErrorResponse("unitNotFound", 404);
       }
 
-      if (item.kol === 0 && item.summa === 0 && item.eski_iznos_summa === 0) {
+      if (doc.kol === 0 && doc.summa === 0 && doc.eski_iznos_summa === 0) {
         return res.error(req.i18n.t("saldoSummaKolIznosError"), 400);
       }
     }
@@ -307,13 +280,12 @@ exports.Controller = class {
       date_saldo,
     });
 
-    return res.success(req.i18n.t("importSuccess"), 201);
+    return res.success(req.i18n.t("createSuccess"), 201);
   }
 
   static async getByProduct(req, res) {
     const region_id = req.user.region_id;
-    const { page, product_id, limit, group_id, budjet_id, main_schet_id } =
-      req.query;
+    const { page, product_id, limit, group_id, budjet_id, main_schet_id } = req.query;
 
     let { kimning_buynida, responsible_id } = req.query;
     if (!responsible_id && kimning_buynida) {
@@ -545,13 +517,9 @@ exports.Controller = class {
   }
 
   static async templateFile(req, res) {
-    const { fileName, fileRes } =
-      await HelperFunctions.returnTemplateFile("saldo.xlsx");
+    const { fileName, fileRes } = await HelperFunctions.returnTemplateFile("saldo.xlsx");
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
     return res.send(fileRes);
