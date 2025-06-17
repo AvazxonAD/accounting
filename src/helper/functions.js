@@ -213,8 +213,7 @@ exports.HelperFunctions = class {
     worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
 
     worksheet.mergeCells("A4", "G4");
-    worksheet.getCell("A4").value =
-      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+    worksheet.getCell("A4").value = `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells(`A6`, `E6`);
     const summa_from = worksheet.getCell(`A6`);
@@ -457,8 +456,7 @@ exports.HelperFunctions = class {
     worksheet.getCell("A3").value = `${data.title} Счёт-№ ${data.schet}`;
 
     worksheet.mergeCells("A4", "G4");
-    worksheet.getCell("A4").value =
-      `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
+    worksheet.getCell("A4").value = `от ${this.returnStringDate(new Date(data.from))} до ${this.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells(`A6`, `D6`);
     const summa_from = worksheet.getCell(`A6`);
@@ -694,19 +692,7 @@ exports.HelperFunctions = class {
     worksheet.mergeCells("I6", "K6");
     worksheet.getCell("I6").value = `Приходлар`;
 
-    worksheet.getRow(7).values = [
-      "Дебет",
-      "Кредит",
-      "Сумма",
-      "",
-      "Счет",
-      "Субсчет",
-      "Сумма",
-      "",
-      "Дебет",
-      "Кредит",
-      "Сумма",
-    ];
+    worksheet.getRow(7).values = ["Дебет", "Кредит", "Сумма", "", "Счет", "Субсчет", "Сумма", "", "Дебет", "Кредит", "Сумма"];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
@@ -1139,19 +1125,7 @@ exports.HelperFunctions = class {
     worksheet.mergeCells("I6", "K6");
     worksheet.getCell("I6").value = `Приходлар`;
 
-    worksheet.getRow(7).values = [
-      "Дебет",
-      "Кредит",
-      "Сумма",
-      "",
-      "Счет",
-      "Субсчет",
-      "Сумма",
-      "",
-      "Дебет",
-      "Кредит",
-      "Сумма",
-    ];
+    worksheet.getRow(7).values = ["Дебет", "Кредит", "Сумма", "", "Счет", "Субсчет", "Сумма", "", "Дебет", "Кредит", "Сумма"];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
@@ -1659,7 +1633,7 @@ exports.HelperFunctions = class {
 
   static roadSumma(data) {
     if (!data.road_ticket_number) {
-      return data.distance.distance_km * (data.minimum_wage.summa * 0.01);
+      return Number(data.distance.distance_km) * (data.minimum_wage.summa * 0.01);
     } else {
       return data.road_summa;
     }

@@ -42,7 +42,9 @@ exports.WorkerTripDB = class {
                 FROM work_trip AS d
                 JOIN users AS u ON u.id =  d.user_id
                 JOIN regions AS r ON u.region_id = r.id
-                JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id 
+                JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id
+                JOIN _regions fr  ON fr.id = d.from_region_id
+                JOIN _regions tr ON tr.id = d.to_region_id
                 WHERE r.id = $1 
                     AND d.main_schet_id = $2 
                     AND d.isdeleted = false 
@@ -61,6 +63,8 @@ exports.WorkerTripDB = class {
                     JOIN users AS u ON u.id =  d.user_id
                     JOIN regions AS r ON u.region_id = r.id
                     JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id 
+                    JOIN _regions fr  ON fr.id = d.from_region_id
+                    JOIN _regions tr ON tr.id = d.to_region_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
@@ -75,6 +79,8 @@ exports.WorkerTripDB = class {
                     JOIN users AS u ON u.id =  d.user_id
                     JOIN regions AS r ON u.region_id = r.id
                     JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id 
+                    JOIN _regions fr  ON fr.id = d.from_region_id
+                    JOIN _regions tr ON tr.id = d.to_region_id
                     WHERE r.id = $1 
                         AND d.main_schet_id = $2 
                         AND d.isdeleted = false 
@@ -98,7 +104,7 @@ exports.WorkerTripDB = class {
     const query = `--sql
       INSERT INTO work_trip (
         user_id, doc_num, doc_date, from_date, to_date, day_summa,
-        hostel_ticket_number, hostel_summa, from_district_id, to_district_id,
+        hostel_ticket_number, hostel_summa, from_region_id, to_region_id,
         road_ticket_number, road_summa, summa, comment,
         main_schet_id, schet_id, worker_id, created_at, updated_at
       ) VALUES (
@@ -137,8 +143,8 @@ exports.WorkerTripDB = class {
                 TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
                 TO_CHAR(d.from_date, 'YYYY-MM-DD') AS from_date, 
                 TO_CHAR(d.to_date, 'YYYY-MM-DD') AS to_date,
-                fd.name AS from_district_name,
-                td.name AS to_district_name,
+                fr.name AS from_region_name,
+                tr.name AS to_region_name,
                 d.summa::FLOAT, 
                 sp.name AS worker_name,
                 sp.rayon AS worker_rayon,
@@ -161,8 +167,8 @@ exports.WorkerTripDB = class {
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON u.region_id = r.id
             JOIN spravochnik_podotchet_litso AS sp ON sp.id = d.worker_id
-            JOIN districts fd ON fd.id = d.from_district_id
-            JOIN districts td ON td.id = d.to_district_id
+            JOIN _regions fr  ON fr.id = d.from_region_id
+            JOIN _regions tr ON tr.id = d.to_region_id
             WHERE r.id = $1 
                 AND d.main_schet_id = $2 
                 AND d.schet_id = $3
@@ -183,8 +189,8 @@ exports.WorkerTripDB = class {
         day_summa = $5,
         hostel_ticket_number = $6,
         hostel_summa = $7,
-        from_district_id = $8,
-        to_district_id = $9,
+        from_region_id = $8,
+        to_region_id = $9,
         road_ticket_number = $10,
         road_summa = $11,
         summa = $12,

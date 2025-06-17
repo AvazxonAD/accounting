@@ -1,18 +1,15 @@
 const { checkSchetsEquality, HelperFunctions } = require("@helper/functions");
-const { PodrazdelenieService } = require("@podraz/service");
 const { MainSchetService } = require("@main_schet/service");
 const { WorkerTripService } = require("./service");
 const { PodotchetService } = require("@podotchet/service");
 const { OperatsiiService } = require("@operatsii/service");
-const { SostavService } = require("@sostav/service");
-const { TypeOperatsiiService } = require("@type_operatsii/service");
 const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 const { MinimumWageService } = require("@minimum_wage/service");
 const { DistancesService } = require("@distances/service");
 
 exports.Controller = class {
   static async create(req, res) {
-    const { worker_id, from_district_id, to_district_id, childs, from_date, to_date, hostel_summa, doc_date } = req.body;
+    const { worker_id, from_region_id, to_region_id, childs, from_date, to_date, hostel_summa, doc_date } = req.body;
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, schet_id } = req.query;
@@ -35,9 +32,9 @@ exports.Controller = class {
       return res.error(req.i18n.t("podotchetNotFound"), 404);
     }
 
-    const distance = await DistancesService.getByDistrictId({
-      from_district_id,
-      to_district_id,
+    const distance = await DistancesService.getByRegionId({
+      from_region_id,
+      to_region_id,
     });
     if (!distance) {
       return res.error(req.i18n.t("distancesNotFound"), 404);
@@ -187,7 +184,7 @@ exports.Controller = class {
 
   static async update(req, res) {
     const id = req.params.id;
-    const { worker_id, from_district_id, to_district_id, childs, hostel_summa, doc_date, from_date, to_date } = req.body;
+    const { worker_id, from_region_id, to_region_id, childs, hostel_summa, doc_date, from_date, to_date } = req.body;
     const region_id = req.user.region_id;
     const user_id = req.user.id;
     const { main_schet_id, schet_id } = req.query;
@@ -220,9 +217,9 @@ exports.Controller = class {
       return res.error(req.i18n.t("podotchetNotFound"), 404);
     }
 
-    const distance = await DistancesService.getByDistrictId({
-      from_district_id,
-      to_district_id,
+    const distance = await DistancesService.getByRegionId({
+      from_region_id,
+      to_region_id,
     });
     if (!distance) {
       return res.error(req.i18n.t("distancesNotFound"), 404);
