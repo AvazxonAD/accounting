@@ -106,23 +106,19 @@ exports.ResponsibleService = class {
   }
 
   static async getById(data) {
-    const result = await ResponsibleDB.getById(
-      [data.id],
-      data.region_id,
-      data.isdeleted
-    );
+    const result = await ResponsibleDB.getById([data.id, data.budjet_id], data.region_id, data.isdeleted);
     return result;
   }
 
   static async getByFio(data) {
-    const result = await ResponsibleDB.getByFio([data.region_id, data.fio]);
+    const result = await ResponsibleDB.getByFio([data.region_id, data.fio, data.budjet_id]);
 
     return result;
   }
 
   static async get(data) {
     const result = await ResponsibleDB.get(
-      [data.offset, data.limit],
+      [data.budjet_id, data.offset, data.limit],
       data.region_id,
       data.search,
       data.podraz_id
@@ -133,7 +129,7 @@ exports.ResponsibleService = class {
 
   static async createResponsible(data) {
     const result = await ResponsibleDB.createResponsible(
-      [data.podraz_id, data.fio, data.user_id, tashkentTime(), tashkentTime()],
+      [data.podraz_id, data.fio, data.user_id, data.budjet_id, tashkentTime(), tashkentTime()],
       data.client
     );
 
@@ -148,6 +144,7 @@ exports.ResponsibleService = class {
           podraz_id: item.spravochnik_podrazdelenie_jur7_id,
           user_id: data.user_id,
           fio: item.fio,
+          budjet_id: data.budjet_id,
         });
       });
     }

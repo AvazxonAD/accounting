@@ -6,11 +6,12 @@ exports.ResponsibleDB = class {
             INSERT INTO spravochnik_javobgar_shaxs_jur7 (
                 spravochnik_podrazdelenie_jur7_id, 
                 fio, 
-                user_id, 
+                user_id,
+                budjet_id,
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4, $5) 
+            VALUES ($1, $2, $3, $4, $5, $6) 
             RETURNING id
         `;
 
@@ -27,13 +28,13 @@ exports.ResponsibleDB = class {
     let region_filter = ``;
 
     if (search) {
-      search_filter = `AND s_j_s_j7.fio ILIKE '%' || $${params.length + 1} || '%'`;
+      search_filter = `AND s.fio ILIKE '%' || $${params.length + 1} || '%'`;
       params.push(search);
     }
 
     if (podraz_id) {
       params.push(podraz_id);
-      podraz_filter = `AND s_p_j7.id = $${params.length}`;
+      podraz_filter = `AND sp.id = $${params.length}`;
     }
 
     if (region_id) {
@@ -44,28 +45,30 @@ exports.ResponsibleDB = class {
     const query = `--sql
             WITH data AS (
                 SELECT 
-                    s_j_s_j7.id, 
-                    s_j_s_j7.fio,
-                    s_j_s_j7.spravochnik_podrazdelenie_jur7_id,
-                    s_p_j7.name AS spravochnik_podrazdelenie_jur7_name
-                FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
-                JOIN users AS u ON u.id = s_j_s_j7.user_id
+                    s.id, 
+                    s.fio,
+                    s.spravochnik_podrazdelenie_jur7_id,
+                    sp.name AS spravochnik_podrazdelenie_jur7_name
+                FROM spravochnik_javobgar_shaxs_jur7 AS s
+                JOIN users AS u ON u.id = s.user_id
                 JOIN regions AS r ON r.id = u.region_id
-                JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
-                WHERE s_j_s_j7.isdeleted = false 
+                JOIN spravochnik_podrazdelenie_jur7 AS sp ON sp.id = s.spravochnik_podrazdelenie_jur7_id  
+                WHERE s.isdeleted = false
+                    AND s.budjet_id = $1
                     ${search_filter} 
                     ${podraz_filter}
                     ${region_filter}
-                OFFSET $1 LIMIT $2
+                OFFSET $2 LIMIT $3
             )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
                 (
-                    SELECT COALESCE(COUNT(s_j_s_j7.id), 0)::INTEGER 
-                    FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
-                    JOIN users AS u ON u.id = s_j_s_j7.user_id
+                    SELECT COALESCE(COUNT(s.id), 0)::INTEGER 
+                    FROM spravochnik_javobgar_shaxs_jur7 AS s
+                    JOIN users AS u ON u.id = s.user_id
                     JOIN regions AS r ON r.id = u.region_id
-                    WHERE s_j_s_j7.isdeleted = false 
+                    WHERE s.isdeleted = false 
+                        AND s.budjet_id = $1
                         ${search_filter}
                         ${region_filter}
                 ) AS total
@@ -95,7 +98,8 @@ exports.ResponsibleDB = class {
             JOIN users AS u ON u.id = s.user_id
             JOIN regions AS r ON r.id = u.region_id
             JOIN spravochnik_podrazdelenie_jur7 AS p ON p.id = s.spravochnik_podrazdelenie_jur7_id  
-            WHERE s.id = $1 
+            WHERE s.id = $1
+                AND s.budjet_id = $2
                 ${isdeleted ? `` : ignore}
                 ${region_filter}
         `;
@@ -117,6 +121,7 @@ exports.ResponsibleDB = class {
             WHERE  r.id = $1 
                 AND s.fio = $2
                 AND s.isdeleted = false
+                AND s.budjet_id = $3
         `;
 
     const result = await db.query(query, params);
@@ -142,15 +147,17 @@ exports.ResponsibleDB = class {
   static async getResponsibleReport(params) {
     const query = `--sql
             SELECT 
-                s_j_s_j7.id, 
-                s_j_s_j7.fio,
-                s_j_s_j7.spravochnik_podrazdelenie_jur7_id,
-                s_p_j7.name AS spravochnik_podrazdelenie_jur7_name
-            FROM spravochnik_javobgar_shaxs_jur7 AS s_j_s_j7
-            JOIN users AS u ON u.id = s_j_s_j7.user_id
+                s.id, 
+                s.fio,
+                s.spravochnik_podrazdelenie_jur7_id,
+                sp.name AS spravochnik_podrazdelenie_jur7_name
+            FROM spravochnik_javobgar_shaxs_jur7 AS s
+            JOIN users AS u ON u.id = s.user_id
             JOIN regions AS r ON r.id = u.region_id
-            JOIN spravochnik_podrazdelenie_jur7 AS s_p_j7 ON s_p_j7.id = s_j_s_j7.spravochnik_podrazdelenie_jur7_id  
-            WHERE s_j_s_j7.isdeleted = false AND r.id = $1
+            JOIN spravochnik_podrazdelenie_jur7 AS sp ON sp.id = s.spravochnik_podrazdelenie_jur7_id  
+            WHERE s.isdeleted = false
+              AND r.id = $1
+              AND s.budjet_id = $2
         `;
     const result = await db.query(query, params);
     return result;
