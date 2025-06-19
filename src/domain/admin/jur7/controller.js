@@ -23,6 +23,7 @@ exports.Controller = class {
       const responsible = await ResponsibleService.getById({
         region_id,
         id: kimning_buynida,
+        budjet_id: req.query.budjet_id,
       });
       if (!responsible) {
         return res.error(req.i18n.t("responsibleNotFound"), 404);

@@ -21,6 +21,7 @@ exports.ValidatorFunctions = class {
     const responsible = await ResponsibleService.getById({
       region_id: data.region_id,
       id: data.responsible_id,
+      budjet_id: data.budjet_id,
     });
     if (!responsible) {
       throw new ErrorResponse("responsibleNotFound", 404);

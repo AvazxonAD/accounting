@@ -28,6 +28,7 @@ exports.Controller = class {
     const responsible = await ResponsibleService.getById({
       region_id,
       id: kimdan_id,
+      budjet_id: req.query.budjet_id,
     });
     if (!responsible) {
       return res.error(req.i18n.t("responsibleNotFound", 404));
@@ -36,6 +37,7 @@ exports.Controller = class {
     const responsible2 = await ResponsibleService.getById({
       region_id,
       id: kimga_id,
+      budjet_id: req.query.budjet_id,
     });
     if (!responsible2) {
       return res.error(req.i18n.t("responsibleNotFound"), 404);
@@ -167,6 +169,7 @@ exports.Controller = class {
     const responsible = await ResponsibleService.getById({
       region_id,
       id: kimdan_id,
+      budjet_id: req.query.budjet_id,
     });
     if (!responsible) {
       return res.error(req.i18n.t("responsibleNotFound", 404));
@@ -191,7 +194,9 @@ exports.Controller = class {
         return res.error(req.i18n.t("productNotFound"));
       }
 
-      const old_kol = old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol || 0;
+      const old_kol =
+        old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol ||
+        0;
 
       const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,

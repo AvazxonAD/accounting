@@ -150,6 +150,7 @@ exports.Controller = class {
       const responsible = await ResponsibleService.getById({
         region_id,
         id: doc.responsible_id,
+        budjet_id: req.query.budjet_id,
       });
       if (!responsible) {
         return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id} Qator: ${index}`, 404);
@@ -233,6 +234,7 @@ exports.Controller = class {
       const responsible = await ResponsibleService.getById({
         region_id,
         id: doc.responsible_id,
+        budjet_id: req.query.budjet_id,
       });
       if (!responsible) {
         return res.error(`${req.i18n.t("responsibleNotFound")} ID => ${doc.responsible_id}`, 404);
@@ -305,6 +307,7 @@ exports.Controller = class {
       await ValidatorFunctions.responsibleJur7({
         region_id,
         responsible_id,
+        budjet_id: req.query.budjet_id,
       });
     }
 
@@ -535,6 +538,7 @@ exports.Controller = class {
       const responsible = await ResponsibleService.getById({
         region_id,
         id: kimning_buynida,
+        budjet_id: req.query.budjet_id,
       });
       if (!responsible) {
         return res.error(req.i18n.t("responsibleNotFound"), 404);
