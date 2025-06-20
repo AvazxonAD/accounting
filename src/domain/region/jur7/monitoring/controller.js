@@ -602,6 +602,9 @@ exports.Controller = class {
     }
 
     if (excel === "true") {
+      const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
+      console.log(podpis);
+
       const { fileName, filePath } = await Jur7MonitoringService.act({
         ...req.query,
         responsibles: result,
