@@ -428,6 +428,7 @@ exports.Controller = class {
       region_id,
     });
 
+    console.log(check_doc);
     if (check_doc.length) {
       throw new ErrorResponse("prixodCreateSaldo", 400);
     }
