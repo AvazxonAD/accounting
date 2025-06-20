@@ -344,8 +344,19 @@ exports.Controller = class {
   }
 
   static async turnoverReport(req, res) {
-    const { main_schet_id, excel } = req.query;
+    const { main_schet_id, excel, responsible_id } = req.query;
     const region_id = req.user.region_id;
+
+    if (responsible_id) {
+      const responsible = await ResponsibleService.getById({
+        region_id,
+        id: responsible_id,
+        budjet_id: req.query.budjet_id,
+      });
+      if (!responsible) {
+        return res.error(req.i18n.t("responsibleNotFound"), 404);
+      }
+    }
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 

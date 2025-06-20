@@ -90,6 +90,7 @@ exports.Schema = class {
         iznos: Joi.string().trim().valid("true", "false"),
         budjet_id: Joi.number().min(1).integer(),
         main_schet_id: Joi.number().integer().min(1).required(),
+        responsible_id: Joi.number().integer().min(1),
       }),
     }).options({ stripUnknown: true });
   }
