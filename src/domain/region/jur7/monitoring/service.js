@@ -172,11 +172,26 @@ exports.Jur7MonitoringService = class {
       month: data.month,
     });
 
-    const rasxods = await Jur7MonitoringDB.reportBySchetsRasxods([data.region_id, date[0], date[1], data.main_schet_id]);
+    const rasxods = await Jur7MonitoringDB.reportBySchetsRasxods([
+      data.region_id,
+      date[0],
+      date[1],
+      data.main_schet_id,
+    ]);
 
-    const internals = await Jur7MonitoringDB.reportBySchetsInternals([data.region_id, date[0], date[1], data.main_schet_id]);
+    const internals = await Jur7MonitoringDB.reportBySchetsInternals([
+      data.region_id,
+      date[0],
+      date[1],
+      data.main_schet_id,
+    ]);
 
-    const prixods = await Jur7MonitoringDB.reportBySchetsPrixods([data.region_id, date[0], date[1], data.main_schet_id]);
+    const prixods = await Jur7MonitoringDB.reportBySchetsPrixods([
+      data.region_id,
+      date[0],
+      date[1],
+      data.main_schet_id,
+    ]);
 
     return { prixods, internals, rasxods };
   }
@@ -249,7 +264,8 @@ exports.Jur7MonitoringService = class {
 
     const to_column = worksheet.rowCount + 2;
     worksheet.mergeCells(`A${to_column}`, `D${to_column}`);
-    worksheet.getCell(`A${to_column}`).value = `Остаток в конце дня: ${HelperFunctions.returnStringSumma(data.summa_to)}`;
+    worksheet.getCell(`A${to_column}`).value =
+      `Остаток в конце дня: ${HelperFunctions.returnStringSumma(data.summa_to)}`;
 
     let podpis_column = worksheet.rowCount + 5;
     for (let podpis of data.podpis) {
@@ -508,7 +524,19 @@ exports.Jur7MonitoringService = class {
     worksheet.mergeCells("I6", "K6");
     worksheet.getCell("I6").value = `Приходлар`;
 
-    worksheet.getRow(7).values = ["Дебет", "Кредит", "Сумма", "", "Счет", "Субсчет", "Сумма", "", "Дебет", "Кредит", "Сумма"];
+    worksheet.getRow(7).values = [
+      "Дебет",
+      "Кредит",
+      "Сумма",
+      "",
+      "Счет",
+      "Субсчет",
+      "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
+    ];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
@@ -1565,7 +1593,10 @@ exports.Jur7MonitoringService = class {
   }
 
   static async history(data) {
-    const result = await Jur7MonitoringDB.history([data.from, data.to, data.region_id, data.main_schet_id], data.responsible_id);
+    const result = await Jur7MonitoringDB.history(
+      [data.from, data.to, data.region_id, data.main_schet_id],
+      data.responsible_id
+    );
 
     return result;
   }
@@ -1612,13 +1643,19 @@ exports.Jur7MonitoringService = class {
   }
 
   static async getMaterial(data) {
-    const result = await Jur7MonitoringDB.getMaterial([data.year, data.month, data.region_id, data.main_schet_id], data.responsible_id);
+    const result = await Jur7MonitoringDB.getMaterial(
+      [data.year, data.month, data.region_id, data.main_schet_id],
+      data.responsible_id
+    );
 
     return result;
   }
 
   static async getSaldoDate(data) {
-    const result = await Jur7MonitoringDB.getSaldoDate([data.region_id, data.main_schet_id, data.main_schet_id], data.year);
+    const result = await Jur7MonitoringDB.getSaldoDate(
+      [data.region_id, data.main_schet_id, data.main_schet_id],
+      data.year
+    );
 
     return result;
   }
@@ -1636,7 +1673,13 @@ exports.Jur7MonitoringService = class {
         schet.schet,
       ]);
 
-      schet.internal = await Jur7MonitoringDB.getSummaBySchet([data.year, data.months, data.region_id, data.main_schet_id, schet.schet]);
+      schet.internal = await Jur7MonitoringDB.getSummaBySchet([
+        data.year,
+        data.months,
+        data.region_id,
+        data.main_schet_id,
+        schet.schet,
+      ]);
 
       schet.saldo_to = {
         summa: schet.saldo_from.summa + (schet.internal.prixod - schet.internal.rasxod),

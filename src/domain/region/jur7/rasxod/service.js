@@ -52,7 +52,7 @@ exports.Jur7RsxodService = class {
 
     data.childs.forEach((item) => {
       worksheet.addRow({
-        name: item.name,
+        name: item.product.name,
         edin: item.edin,
         kol: item.kol,
         sena: item.sena,
@@ -240,7 +240,8 @@ exports.Jur7RsxodService = class {
     worksheet.getCell("A5").value = `Отправитель: ${data.region.name}. Получатель:`;
 
     worksheet.mergeCells(`A6`, `H6`);
-    worksheet.getCell("A6").value = `Топшириш асоси (фармойиш рақами ва санаси): 2024 йил 23 декабрдаги 564-сонли Фармойишга асосан.`;
+    worksheet.getCell("A6").value =
+      `Топшириш асоси (фармойиш рақами ва санаси): 2024 йил 23 декабрдаги 564-сонли Фармойишга асосан.`;
 
     worksheet.mergeCells(`A7`, `H7`);
     worksheet.getCell("A7").value = `№ доверенност: 03.01.2025 йилдаги № требование: 5                  Дата: `;
@@ -412,7 +413,8 @@ exports.Jur7RsxodService = class {
     worksheet.getCell(`A1`).value = `"СЧЕТ-ФАКТУРА-НАКЛАДНАЯ"`;
 
     worksheet.mergeCells(`A2`, `I2`);
-    worksheet.getCell("A2").value = `№ ${data.doc_num}  от ${HelperFunctions.returnStringDate(new Date(data.doc_date))}`;
+    worksheet.getCell("A2").value =
+      `№ ${data.doc_num}  от ${HelperFunctions.returnStringDate(new Date(data.doc_date))}`;
 
     worksheet.mergeCells(`A3`, `I3`);
     worksheet.getCell("A3").value = `31.01.2025 йилдаги 1,2,3,6,8,9,10-сонли Юк хатилар`;
