@@ -366,14 +366,8 @@ exports.Controller = class {
         report_title,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${file_name}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${file_name}"`);
 
       return res.sendFile(file_path);
     }
@@ -387,17 +381,20 @@ exports.Controller = class {
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const last_saldo = await MainBookService.getByMonth({
+    const { sub_childs: last_saldo, main_book } = await MainBookService.getByMonth({
       region_id,
       main_schet_id,
       year: last_date.year,
       month: last_date.month,
     });
 
-    if (!last_saldo) {
+    if (!main_book) {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 
+    if (main_book.status === 2) {
+      return res.error(req.i18n.t("mainBookStatus"), 400);
+    }
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
     const { schets, main_schets } = await MainBookService.getUniqueSchets({
