@@ -13,6 +13,7 @@ router
   .get("/schet", validator(Controller.reportBySchets, Schema.reportBySchets()))
   .get("/saldo/date", validator(Controller.getSaldoDate, Schema.getSaldoDate()))
   .get("/material/report", validator(Controller.materialReport, Schema.getMaterialSchema()))
+  .get("/turnover/report", validator(Controller.turnoverReport, Schema.turnoverReport()))
   .get("/act/report", validator(Controller.act, Schema.act()));
 
 module.exports = router;

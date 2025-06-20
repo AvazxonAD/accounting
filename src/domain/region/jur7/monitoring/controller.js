@@ -60,12 +60,11 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } =
-      await Jur7MonitoringService.monitoring({
-        ...req.query,
-        region_id,
-        offset,
-      });
+    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } = await Jur7MonitoringService.monitoring({
+      ...req.query,
+      region_id,
+      offset,
+    });
 
     const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,
@@ -338,6 +337,35 @@ exports.Controller = class {
       res.setHeader("Content-Disposition", `attachment; filename="${response.fileName}"`);
 
       return res.sendFile(response.filePath);
+    }
+
+    return res.success(req.i18n.t("getSuccess"), 200, itogo, result);
+  }
+
+  static async turnoverReport(req, res) {
+    const { main_schet_id, excel } = req.query;
+    const region_id = req.user.region_id;
+
+    await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
+
+    const region = await RegionService.getById({ id: region_id });
+
+    const { data } = await Jur7SaldoService.getByProduct({
+      ...req.query,
+      region_id,
+      page: 1,
+      limit: LIMIT,
+    });
+
+    const { result, itogo } = Jur7MonitoringService.turnoverReportGroup(data);
+
+    if (excel === "true") {
+      const { fileName, filePath } = await Jur7MonitoringService.turnoverReportExcel({ region, schets: result, itogo, ...req.query });
+
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+      return res.sendFile(filePath);
     }
 
     return res.success(req.i18n.t("getSuccess"), 200, itogo, result);

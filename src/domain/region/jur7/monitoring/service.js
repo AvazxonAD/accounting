@@ -6,6 +6,109 @@ const { REPORT_RASXOD_SCHET } = require("@helper/constants");
 const { access, constants, mkdir } = require("fs").promises;
 
 exports.Jur7MonitoringService = class {
+  static turnoverReportGroup(data) {
+    const itogo = {
+      from_kol: 0,
+      from_summa: 0,
+      from_iznos_summa: 0,
+      prixod_iznos_summa: 0,
+      rasxod_iznos_summa: 0,
+      prixod_kol: 0,
+      prixod_summa: 0,
+      rasxod_kol: 0,
+      rasxod_summa: 0,
+      to_iznos_summa: 0,
+      to_kol: 0,
+      to_summa: 0,
+      month_iznos: 0,
+    };
+
+    const initialItogo = () => ({
+      from_kol: 0,
+      from_summa: 0,
+      from_iznos_summa: 0,
+      prixod_iznos_summa: 0,
+      rasxod_iznos_summa: 0,
+      prixod_kol: 0,
+      prixod_summa: 0,
+      rasxod_kol: 0,
+      rasxod_summa: 0,
+      to_iznos_summa: 0,
+      to_kol: 0,
+      to_summa: 0,
+      month_iznos: 0,
+    });
+
+    const addToItogo = (itogo, item) => {
+      itogo.from_kol += item.from.kol;
+      itogo.from_summa += item.from.summa;
+      itogo.from_iznos_summa += item.from.iznos_summa;
+
+      itogo.prixod_iznos_summa += item.internal.prixod_iznos_summa;
+      itogo.rasxod_iznos_summa += item.internal.rasxod_iznos_summa;
+      itogo.prixod_kol += item.internal.prixod_kol;
+      itogo.prixod_summa += item.internal.prixod_summa;
+      itogo.rasxod_kol += item.internal.rasxod_kol;
+      itogo.rasxod_summa += item.internal.rasxod_summa;
+
+      itogo.to_iznos_summa += item.to.iznos_summa;
+      itogo.to_kol += item.to.kol;
+      itogo.to_summa += item.to.summa;
+      itogo.month_iznos += item.to.month_iznos;
+
+      return itogo;
+    };
+
+    const result = [];
+
+    const schetGroups = new Map();
+
+    for (const item of data) {
+      const schetKey = item.debet_schet;
+      const subKey = `${item.responsible_id}_${item.fio}_${item.podraz_name}`;
+
+      if (!schetGroups.has(schetKey)) {
+        schetGroups.set(schetKey, {
+          debet_schet: schetKey,
+          itogo: initialItogo(),
+          products: new Map(),
+        });
+      }
+
+      const schetGroup = schetGroups.get(schetKey);
+      addToItogo(schetGroup.itogo, item);
+
+      if (!schetGroup.products.has(subKey)) {
+        schetGroup.products.set(subKey, {
+          responsible_id: item.responsible_id,
+          fio: item.fio,
+          podraz_name: item.podraz_name,
+          itogo: initialItogo(),
+          products: [],
+        });
+      }
+
+      const subGroup = schetGroup.products.get(subKey);
+      subGroup.products.push(item);
+      addToItogo(subGroup.itogo, item);
+      addToItogo(itogo, item);
+    }
+
+    for (const [, schetGroup] of schetGroups.entries()) {
+      const productsArray = [];
+      for (const [, group] of schetGroup.products.entries()) {
+        productsArray.push(group);
+      }
+      result.push({
+        debet_schet: schetGroup.debet_schet,
+        itogo: schetGroup.itogo,
+        products: productsArray,
+      });
+    }
+
+    return { result, itogo };
+  }
+
   static async uniqueSchets(data) {
     const result = await Jur7MonitoringDB.uniqueSchets([]);
 
@@ -211,6 +314,157 @@ exports.Jur7MonitoringService = class {
     });
 
     const fileName = `${data.file_name}_${new Date().getTime()}.xlsx`;
+    const folder_path = path.join(__dirname, "../../../../../public/exports");
+
+    try {
+      await access(folder_path, constants.W_OK);
+    } catch (error) {
+      await mkdir(folder_path);
+    }
+
+    const filePath = `${folder_path}/${fileName}`;
+
+    await workbook.xlsx.writeFile(filePath);
+
+    return { fileName, filePath };
+  }
+
+  static async turnoverReportExcel(data) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Hisobot");
+
+    worksheet.mergeCells(`A1`, "G1");
+    worksheet.getCell(`A1`).value = `${data.region.name} № 7`;
+    worksheet.addRow({});
+
+    worksheet.mergeCells(`A2`, "G2");
+    worksheet.getCell(`A2`).value = `СВОДНАЯ ОБОРОТЬ ЗА ${HelperFunctions.returnStringDate(new Date(data.to))}`;
+    worksheet.addRow({});
+    worksheet.addRow({});
+
+    worksheet.columns = [
+      { key: "order", width: 30 },
+      { key: "fio", width: 30 },
+      { key: "podraz", width: 30 },
+      { key: "from", width: 30 },
+      { key: "prixod", width: 30 },
+      { key: "rasxod", width: 30 },
+      { key: "to", width: 30 },
+    ];
+    const bold_columns = [1, 2];
+
+    for (let schet of data.schets) {
+      worksheet.addRow({});
+      const schetRow = worksheet.rowCount;
+      bold_columns.push(schetRow);
+      worksheet.getCell(`A${schetRow}`).value = "Счет";
+      worksheet.getCell(`B${schetRow}`).value = schet.debet_schet;
+
+      worksheet.addRow({});
+      worksheet.addRow({});
+      const headerStartRow = worksheet.rowCount - 1;
+      const headerEndRow = worksheet.rowCount;
+      bold_columns.push(headerStartRow, headerEndRow);
+
+      worksheet.mergeCells(`A${headerStartRow}:A${headerEndRow}`);
+      worksheet.getCell(`A${headerEndRow}`).value = "№п.п";
+
+      worksheet.mergeCells(`B${headerStartRow}:B${headerEndRow}`);
+      worksheet.getCell(`B${headerEndRow}`).value = "Фамилия имя отч-ва";
+
+      worksheet.mergeCells(`C${headerStartRow}:C${headerEndRow}`);
+      worksheet.getCell(`C${headerEndRow}`).value = "Подраз дел.";
+
+      worksheet.mergeCells(`D${headerStartRow}:G${headerStartRow}`);
+      worksheet.getCell(`D${headerStartRow}`).value = "Материалный оборот";
+
+      worksheet.getCell(`D${headerEndRow}`).value = "Нач. сальдо";
+      worksheet.getCell(`E${headerEndRow}`).value = "Приход";
+      worksheet.getCell(`F${headerEndRow}`).value = "Расход";
+      worksheet.getCell(`G${headerEndRow}`).value = "Остаток";
+
+      schet.products.forEach((schet_product, index) => {
+        const isAllZero =
+          schet_product.itogo.to_summa === 0 &&
+          schet_product.itogo.from_summa === 0 &&
+          schet_product.itogo.prixod_summa === 0 &&
+          schet_product.itogo.rasxod_summa === 0;
+
+        if (!isAllZero) {
+          worksheet.addRow({
+            order: String(index + 1),
+            fio: schet_product.fio,
+            podraz: schet_product.podraz_name,
+            from: schet_product.itogo.from_summa,
+            prixod: schet_product.itogo.prixod_summa,
+            rasxod: schet_product.itogo.rasxod_summa,
+            to: schet_product.itogo.to_summa,
+          });
+        }
+      });
+
+      worksheet.addRow({});
+      const totalRow = worksheet.rowCount;
+      bold_columns.push(totalRow);
+      worksheet.mergeCells(`A${totalRow}:C${totalRow}`);
+      worksheet.getCell(`A${totalRow}`).value = `Итого по счету ${schet.debet_schet}`;
+      worksheet.getCell(`D${totalRow}`).value = schet.itogo.from_summa;
+      worksheet.getCell(`E${totalRow}`).value = schet.itogo.prixod_summa;
+      worksheet.getCell(`F${totalRow}`).value = schet.itogo.rasxod_summa;
+      worksheet.getCell(`G${totalRow}`).value = schet.itogo.to_summa;
+
+      worksheet.addRow({});
+      worksheet.addRow({});
+    }
+
+    worksheet.addRow({});
+    const grandTotalRow = worksheet.rowCount;
+    worksheet.mergeCells(`A${grandTotalRow}:C${grandTotalRow}`);
+    worksheet.getCell(`A${grandTotalRow}`).value = `Всего:`;
+    worksheet.getCell(`D${grandTotalRow}`).value = data.itogo.from_summa;
+    worksheet.getCell(`E${grandTotalRow}`).value = data.itogo.prixod_summa;
+    worksheet.getCell(`F${grandTotalRow}`).value = data.itogo.rasxod_summa;
+    worksheet.getCell(`G${grandTotalRow}`).value = data.itogo.to_summa;
+    bold_columns.push(worksheet.rowCount);
+
+    // css
+    worksheet.eachRow((row, rowNumber) => {
+      let bold = false;
+      let horizontal = "center";
+      let argb = "FFFFFFFF";
+      let border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      const check_bold = bold_columns.find((item) => item === rowNumber);
+      if (check_bold) {
+        bold = true;
+      }
+
+      row.eachCell((cell) => {
+        Object.assign(cell, {
+          numFmt: "#,##0.00",
+          font: { size: 13, name: "Times New Roman", bold },
+          alignment: {
+            vertical: "middle",
+            horizontal,
+            wrapText: true,
+          },
+          fill: {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb },
+          },
+
+          border,
+        });
+      });
+    });
+
+    const fileName = `turnover_report_${new Date().getTime()}.xlsx`;
     const folder_path = path.join(__dirname, "../../../../../public/exports");
 
     try {

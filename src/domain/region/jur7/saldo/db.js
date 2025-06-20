@@ -279,6 +279,7 @@ exports.Jur7SaldoDB = class {
                 g.provodka_debet,
                 jsh.id AS responsible_id,
                 jsh.fio,
+                jp.name AS podraz_name,
                 s.iznos,
                 s.eski_iznos_summa,
                 s.month_iznos_summa,
@@ -327,6 +328,7 @@ exports.Jur7SaldoDB = class {
             JOIN regions AS r ON r.id = u.region_id
             JOIN naimenovanie_tovarov_jur7 n ON n.id = s.naimenovanie_tovarov_jur7_id  
             JOIN spravochnik_javobgar_shaxs_jur7 jsh ON jsh.id = s.kimning_buynida
+            JOIN spravochnik_podrazdelenie_jur7 jp ON jp.id = jsh.spravochnik_podrazdelenie_jur7_id
             JOIN group_jur7 g ON g.id = n.group_jur7_id
             JOIN storage_unit su ON su.id = n.unit_id
             WHERE r.id = $1
