@@ -974,10 +974,9 @@ exports.Jur7MonitoringService = class {
           cell.note = undefined;
         }
 
-        // Matn uzunligiga qarab katak balandligini oshirish
         if (typeof cell.value === "string") {
-          const lineCount = Math.ceil(cell.value.length / 30); // Har 30 belgidan keyin yangi qator
-          const newHeight = lineCount * 15; // Har bir qator uchun 15px balandlik
+          const lineCount = Math.ceil(cell.value.length / 30);
+          const newHeight = lineCount * 15;
           if (newHeight > row.height) {
             row.height = newHeight;
           }
@@ -1000,77 +999,93 @@ exports.Jur7MonitoringService = class {
     return { fileName, filePath };
   }
 
-  static async act(data) {
+  static async actExcel(data) {
     const Workbook = new ExcelJS.Workbook();
     const worksheet = Workbook.addWorksheet("act");
 
-    worksheet.getCell(`B1`).value = data.region.name;
+    const boss = data.podpis[0] ? `${data.podpis[0].position}  ${data.podpis[0].fio}` : "";
+    const deputy_head = data.podpis[1] ? `${data.podpis[1].position}  ${data.podpis[1].fio}` : "";
 
-    worksheet.getCell(`L1`).value = "ТАСДИКЛАЙМАН";
+    worksheet.getCell(`C1`).value = data.region.name;
 
-    worksheet.getCell(`L2`).value = `${data.region.name} бошлиги`;
+    worksheet.mergeCells(`I1`, `L1`);
+    worksheet.getCell(`I1`).value = `"ТАСДИКЛАЙМАН"    ${data.region.name} ${boss}`;
 
-    worksheet.getCell(`L2`).value = `"______"   ________________${data.year} йил`;
+    worksheet.mergeCells(`K2`, `L2`);
+    worksheet.getCell(`K2`).value = `"______" ____________${data.year} йил`;
 
     worksheet.mergeCells(`A3`, `L3`);
-    worksheet.getCell(`A3`).value = "АКТ _________________ \n снятия остатков";
+    worksheet.getCell(`A3`).value = "АКТ _________________ \n \n \n снятия остатков";
 
     worksheet.mergeCells(`A4`, `L4`);
-    worksheet.getCell(`A4`).value = `"______"   ________________${data.year} йил`;
-
-    worksheet.mergeCells(`A2`, `L2`);
-    worksheet.getCell(`A2`).value = "Далолатномаси";
-
-    worksheet.mergeCells(`I3`, `L3`);
-    worksheet.getCell(`I3`).value = `${HelperFunctions.returnStringDate(new Date(data.to))}`;
-
-    worksheet.mergeCells(`A4`, `L4`);
-    worksheet.getCell(`A4`).value = data.title;
+    worksheet.getCell(`A4`).value = `"______"     __________________${data.year} йил`;
 
     worksheet.mergeCells(`A5`, `L5`);
-    worksheet.getCell(`A5`).value = `Моддий жавобгар шахс ${data.responsibles[0].fio} нинг`;
+    worksheet.getCell(`A5`).value = `${data.region.name} ${deputy_head}`;
 
     worksheet.mergeCells(`A6`, `L6`);
-    worksheet.getCell(`A6`).value = "Тилхати";
+    worksheet.getCell(`A6`).value = `${data.region.name} ${boss}нинг ${data.year} - йил  ____________________________ - сонли буйруғи`;
 
     worksheet.mergeCells(`A7`, `L7`);
-    worksheet.getCell(`A7`).value = data.comment;
+    worksheet.getCell(`A7`).value = `в присутствии ${data.podpis
+      .map((item, index) => {
+        if (index > 1) return `${item.position} ${item.fio}`;
+      })
+      .filter((item) => item)
+      .join(", ")}`;
 
     worksheet.mergeCells(`A8`, `L8`);
-    worksheet.getCell(`A8`).value = data.responsibles[0].fio;
-    worksheet.getCell(`L9`).value = `(Имзо)`;
+    worksheet.getCell(`A8`).value = `и-материально-ответственные лица: `;
 
-    worksheet.mergeCells(`A11`, `A12`);
-    worksheet.getCell(`A11`).value = "№";
+    worksheet.mergeCells(`A9`, `L9`);
+    worksheet.getCell(`A9`).value =
+      `произведено полное вот и все                                         снятие наличия остатков материалных ценностей `;
 
-    worksheet.mergeCells(`B11`, `B12`);
-    worksheet.getCell(`B11`).value = "Номер счет";
+    worksheet.mergeCells(`A10`, `L10`);
+    worksheet.getCell(`A10`).value = `по состоянию на Январь ${data.year} год.`;
 
-    worksheet.mergeCells(`C11`, `C12`);
-    worksheet.getCell(`C11`).value = "Товар-моддий бойликларни номи, тури ва маркаси";
+    worksheet.mergeCells(`A11`, `L11`);
+    worksheet.getCell(`A11`).value = `Подписка \n материально-ответственного лица`;
 
-    worksheet.mergeCells(`D11`, `D12`);
-    worksheet.getCell(`D11`).value = `Един из`;
+    worksheet.mergeCells(`A12`, `L12`);
+    worksheet.getCell(`A12`).value =
+      `Все документы по приходно-расходным операциям по состоянию на ${data.year} года мною предавлены, \n других оправдательных документов на прием и выдачу имушесва (продовольствия) не имею. \n Бездокументального отпуска и према материальных ценностей не производилось.`;
 
-    worksheet.mergeCells(`E11`, `F11`);
-    worksheet.getCell(`E11`).value = `Ҳисоб бўйнида`;
-    worksheet.getCell(`E12`).value = `Сони`;
-    worksheet.getCell(`F12`).value = `Суммаси`;
+    worksheet.mergeCells(`A14`, `L14`);
+    worksheet.getCell(`A14`).value = `Моддий жавобгар шахс ${data.responsibles[0].fio}`;
+    worksheet.getCell(`J15`).value = `(Имзо)`;
 
-    worksheet.mergeCells(`G11`, `H11`);
-    worksheet.getCell(`G11`).value = `Ҳақиқатда`;
-    worksheet.getCell(`G12`).value = `Сони`;
-    worksheet.getCell(`H12`).value = `Суммаси`;
+    worksheet.mergeCells(`A16`, `A17`);
+    worksheet.getCell(`A16`).value = "№";
 
-    worksheet.mergeCells(`I11`, `J11`);
-    worksheet.getCell(`I11`).value = `Камомад`;
-    worksheet.getCell(`I12`).value = `Сони`;
-    worksheet.getCell(`J12`).value = `Суммаси`;
+    worksheet.mergeCells(`B16`, `B17`);
+    worksheet.getCell(`B16`).value = "Номер счет";
 
-    worksheet.mergeCells(`K11`, `L11`);
-    worksheet.getCell(`K11`).value = `Ортиқча`;
-    worksheet.getCell(`K12`).value = `Сони`;
-    worksheet.getCell(`L12`).value = `Суммаси`;
+    worksheet.mergeCells(`C16`, `C17`);
+    worksheet.getCell(`C16`).value = "Товар-моддий бойликларни номи, тури ва маркаси";
+
+    worksheet.mergeCells(`D16`, `D17`);
+    worksheet.getCell(`D16`).value = `Един из`;
+
+    worksheet.mergeCells(`E16`, `F16`);
+    worksheet.getCell(`E16`).value = `Ҳисоб бўйнида`;
+    worksheet.getCell(`E17`).value = `Сони`;
+    worksheet.getCell(`F17`).value = `Суммаси`;
+
+    worksheet.mergeCells(`G16`, `H16`);
+    worksheet.getCell(`G16`).value = `Ҳақиқатда`;
+    worksheet.getCell(`G17`).value = `Сони`;
+    worksheet.getCell(`H17`).value = `Суммаси`;
+
+    worksheet.mergeCells(`I16`, `J16`);
+    worksheet.getCell(`I16`).value = `Камомад`;
+    worksheet.getCell(`I17`).value = `Сони`;
+    worksheet.getCell(`J17`).value = `Суммаси`;
+
+    worksheet.mergeCells(`K16`, `L16`);
+    worksheet.getCell(`K16`).value = `Ортиқча`;
+    worksheet.getCell(`K17`).value = `Сони`;
+    worksheet.getCell(`L17`).value = `Суммаси`;
 
     worksheet.columns = [
       { key: "order", width: 10 },
@@ -1088,16 +1103,12 @@ exports.Jur7MonitoringService = class {
     ];
 
     let index = 1;
-    let column = 13;
+    let column = 18;
     const itogo = { kol: 0, summa: 0 };
 
     for (let schet of data.responsibles[0].products) {
       const schetCell = worksheet.getCell(`A${column}`);
       schetCell.value = `Счет: ${schet.schet}`;
-      schetCell.note = JSON.stringify({
-        bold: true,
-        horizontal: "left",
-      });
       column++;
 
       for (let product of schet.products) {
@@ -1122,138 +1133,146 @@ exports.Jur7MonitoringService = class {
 
       const itogoCell = worksheet.getCell(`C${column}`);
       itogoCell.value = `Итого по счет ${schet.schet} :      `;
-      itogoCell.note = JSON.stringify({
-        bold: true,
-        horizontal: "left",
-        border: "false",
-      });
 
       const itogoKolCell = worksheet.getCell(`E${column}`);
       itogoKolCell.value = schet.itogo.to_kol;
-      itogoKolCell.note = JSON.stringify({
-        bold: true,
-        horizontal: "left",
-        border: "false",
-      });
 
       const itogoSummaCell = worksheet.getCell(`F${column}`);
       itogoSummaCell.value = schet.itogo.to_summa;
-      itogoSummaCell.note = JSON.stringify({
-        bold: true,
-        horizontal: "left",
-        border: "false",
-      });
 
       itogo.kol += schet.itogo.to_kol;
       itogo.summa += schet.itogo.to_summa;
       column++;
     }
 
-    const itogoCell = worksheet.getCell(`C${column + 1}`);
+    column++;
+    const itogoCell = worksheet.getCell(`C${column}`);
     itogoCell.value = `Итого`;
-    itogoCell.note = JSON.stringify({
-      bold: true,
-      horizontal: "left",
-      border: "false",
-    });
 
-    const itogoKolCell = worksheet.getCell(`E${column + 1}`);
+    const itogoKolCell = worksheet.getCell(`E${column}`);
     itogoKolCell.value = itogo.kol;
-    itogoKolCell.note = JSON.stringify({
-      bold: true,
-      horizontal: "left",
-      border: "false",
-    });
 
-    const itogoSummaCell = worksheet.getCell(`F${column + 1}`);
+    const itogoSummaCell = worksheet.getCell(`F${column}`);
     itogoSummaCell.value = itogo.summa;
-    itogoSummaCell.note = JSON.stringify({
-      bold: true,
-      horizontal: "left",
-      border: "false",
+    column += 3;
+
+    const border_column = column;
+    worksheet.mergeCells(`A${column}`, `I${column}`);
+    worksheet.getCell(`A${column}`).value =
+      `в настоящем акте                     Двести семьдесят пять 00                        порядковых номеров.`;
+    column++;
+
+    worksheet.mergeCells(`C${column}`, `I${column}`);
+    worksheet.getCell(`C${column}`).value = `количество прописью`;
+    column++;
+
+    worksheet.mergeCells(`A${column}`, `I${column}`);
+    worksheet.getCell(`A${column}`).value = `Наличие снял                     ${deputy_head}`;
+    column++;
+
+    data.podpis.forEach((podpis, index) => {
+      if (index > 1) {
+        if (index === 2) {
+          worksheet.mergeCells(`A${column}`, `I${column}`);
+          worksheet.getCell(`A${column}`).value = `Наличие снял                     ${podpis.fio}`;
+        } else {
+          worksheet.mergeCells(`A${column}`, `I${column}`);
+          worksheet.getCell(`A${column}`).value = `                                            ${podpis.fio}`;
+        }
+        column++;
+      }
     });
 
     // css
-    worksheet.getRow(1).height = 30;
-    worksheet.getRow(2).height = 30;
-    worksheet.getRow(3).height = 30;
-    worksheet.getRow(4).height = 80;
-    worksheet.getRow(5).height = 40;
-    worksheet.getRow(6).height = 40;
-    worksheet.getRow(7).height = 60;
-    worksheet.getRow(8).height = 40;
-    worksheet.getRow(11).height = 30;
-    worksheet.getRow(12).height = 30;
-
     worksheet.eachRow((row, row_number) => {
       let size = 12;
       let bold = false;
       let horizontal = "center";
+      let vertical = "middle";
       let border = {
         top: { style: "thin" },
         left: { style: "thin" },
         bottom: { style: "thin" },
         right: { style: "thin" },
       };
+      worksheet.getRow(row_number).height = 30;
 
-      if (row_number < 13) {
-        size = 14;
+      if (row_number === 2) {
+        worksheet.getRow(row_number).height = 40;
       }
 
-      if (row_number === 6) {
-        size = 25;
+      if (row_number === 3) {
+        size = 16;
+        worksheet.getRow(row_number).height = 80;
       }
 
-      if (row_number === 8) {
-        horizontal = "left";
+      if (row_number === 7) {
+        worksheet.getRow(row_number).height = 50;
       }
 
-      if (row_number < 13) {
+      if (row_number < 5) {
         bold = true;
+        border = {};
       }
 
-      if (row_number === 8) {
+      if (row_number >= 5 && row_number <= 10) {
+        horizontal = "left";
+        vertical = "bottom";
         border = {
           bottom: { style: "thin" },
         };
       }
 
-      if (row_number === 9) {
-        border = {};
+      if (row_number === 8) {
+        bold = true;
       }
 
-      row.eachCell((cell, column) => {
-        const cellData = cell.note ? JSON.parse(cell.note) : {};
+      if (row_number === 11) {
+        size = 16;
+        border = {};
+        worksheet.getRow(row_number).height = 60;
+        bold = true;
+      }
 
-        if (column > 1) {
-          cell.numFmt = "#,##0.00";
-        }
+      if (row_number === 12) {
+        border = {};
+        worksheet.getRow(row_number).height = 60;
+      }
 
-        if (column === 6 && row_number > 12) {
-          horizontal = "right";
-        } else {
-          horizontal = "center";
-        }
+      if (row_number === 14) {
+        border = {};
+        bold = true;
+      }
 
-        if (row_number < 13) {
-          bold = true;
-        } else if (cellData.bold && row_number > 12) {
-          bold = true;
-        } else {
-          bold = false;
-        }
+      if (row_number === 15) {
+        border = { top: { style: "thin" } };
+        bold = true;
+      }
 
-        if (cellData.border === "false" && row_number > 12) {
-          border = {};
-        } else {
-          border = {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            bottom: { style: "thin" },
-            right: { style: "thin" },
-          };
-        }
+      if (border_column === row_number) {
+        border = { bottom: { style: "thin" } };
+        bold = true;
+      }
 
+      if (border_column + 1 === row_number) {
+        bold = true;
+        border = {};
+        vertical = "top";
+        size = 9;
+        horizontal = "left";
+      }
+
+      if (border_column + 2 === row_number) {
+        border = { bottom: { style: "thin" } };
+        horizontal = "left";
+      }
+
+      if (border_column + 2 < row_number) {
+        border = {};
+        horizontal = "left";
+      }
+
+      row.eachCell((cell) => {
         Object.assign(cell, {
           font: {
             size,
@@ -1261,7 +1280,7 @@ exports.Jur7MonitoringService = class {
             color: { argb: "FF000000" },
             name: "Times New Roman",
           },
-          alignment: { vertical: "middle", horizontal, wrapText: true },
+          alignment: { vertical, horizontal, wrapText: true },
           fill: {
             type: "pattern",
             pattern: "solid",
@@ -1270,7 +1289,7 @@ exports.Jur7MonitoringService = class {
           border,
         });
 
-        if (row_number > 10) {
+        if (row_number > 20) {
           if (typeof cell.value === "string") {
             const lineCount = Math.ceil(cell.value.length / 30);
             const newHeight = lineCount * 15;
@@ -1278,10 +1297,6 @@ exports.Jur7MonitoringService = class {
               row.height = newHeight;
             }
           }
-        }
-
-        if (Object.keys(cellData).length !== 0) {
-          cell.note = undefined;
         }
       });
     });

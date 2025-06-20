@@ -60,12 +60,11 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } =
-      await Jur7MonitoringService.monitoring({
-        ...req.query,
-        region_id,
-        offset,
-      });
+    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } = await Jur7MonitoringService.monitoring({
+      ...req.query,
+      region_id,
+      offset,
+    });
 
     const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,
@@ -612,16 +611,18 @@ exports.Controller = class {
     }
 
     if (excel === "true") {
+      const region = await RegionService.getById({ id: region_id });
       const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
-      console.log(podpis);
 
-      const { fileName, filePath } = await Jur7MonitoringService.act({
+      const { fileName, filePath } = await Jur7MonitoringService.actExcel({
         ...req.query,
         responsibles: result,
         month,
         year,
         itogo,
         to,
+        podpis,
+        region,
       });
 
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

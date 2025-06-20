@@ -100,7 +100,7 @@ exports.Controller = class {
 
     if (akt === "true" || notice === "true" || sales_nvoice === "true") {
       let response;
-      const podpis = await PodpisService.get({ region_id, type: "akt_jur7" });
+      const podpis = await PodpisService.get({ region_id, type: "akt_jur7_rasxod" });
 
       const region = await RegionService.getById({ id: region_id });
 
@@ -183,9 +183,7 @@ exports.Controller = class {
         return res.error(req.i18n.t("productNotFound"), 404);
       }
 
-      const old_kol =
-        old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol ||
-        0;
+      const old_kol = old_data.childs.find((item) => item.naimenovanie_tovarov_jur7_id === child.naimenovanie_tovarov_jur7_id)?.kol || 0;
 
       const { data } = await Jur7SaldoService.getByProduct({
         ...req.query,
