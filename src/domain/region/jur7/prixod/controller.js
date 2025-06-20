@@ -411,6 +411,7 @@ exports.Controller = class {
       child.old_iznos = child.eski_iznos_summa;
 
       if (child.saldo_id) {
+        console.log(child.saldo_id);
         const saldo = await Jur7SaldoService.getById({ region_id, id: child.saldo_id, main_schet_id });
         if (!saldo) return res.error(req.i18n.t("saldoNotFound"), 404);
 
@@ -427,7 +428,9 @@ exports.Controller = class {
       }
 
       if ((child.saldo_id && !child.product_id) || (!child.saldo_id && child.product_id)) {
-        return res.error(req.i18n.t("validationError"), 400);
+        child.saldo_id = null;
+        child.product_id = null;
+        // return res.error(req.i18n.t("validationError"), 400);
       }
     }
 
