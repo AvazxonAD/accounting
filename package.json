@@ -132,6 +132,7 @@
     "@config": "./src/delete/config",
     "@user": "./src/domain/auth/user",
     "@access": "./src/domain/auth/access",
+    "@position": "./src/domain/admin/spravochnik/position",
     "@auth": "./src/domain/auth/auth"
   }
 }

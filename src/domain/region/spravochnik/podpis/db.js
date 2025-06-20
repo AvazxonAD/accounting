@@ -15,8 +15,9 @@ exports.PodpisDB = class {
             d.id,
             d.type_document,
             d.numeric_poryadok,
-            d.doljnost_name AS              position,
-            d.fio_name AS                   fio
+            d.numeric_poryadok AS sort_order,
+            d.doljnost_name AS position,
+            d.fio_name AS fio
         FROM spravochnik_podpis_dlya_doc AS d
         JOIN users AS u ON u.id = d.user_id
         JOIN regions AS r ON r.id = u.region_id

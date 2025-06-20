@@ -1006,10 +1006,17 @@ exports.Jur7MonitoringService = class {
 
     worksheet.getCell(`B1`).value = data.region.name;
 
-    worksheet.getCell(`L1`).value = "";
+    worksheet.getCell(`L1`).value = "ТАСДИКЛАЙМАН";
 
-    worksheet.mergeCells(`A1`, `L1`);
-    worksheet.getCell(`A1`).value = "Товар-моддий бойликларни санокдан ўтказиш";
+    worksheet.getCell(`L2`).value = `${data.region.name} бошлиги`;
+
+    worksheet.getCell(`L2`).value = `"______"   ________________${data.year} йил`;
+
+    worksheet.mergeCells(`A3`, `L3`);
+    worksheet.getCell(`A3`).value = "АКТ _________________ \n снятия остатков";
+
+    worksheet.mergeCells(`A4`, `L4`);
+    worksheet.getCell(`A4`).value = `"______"   ________________${data.year} йил`;
 
     worksheet.mergeCells(`A2`, `L2`);
     worksheet.getCell(`A2`).value = "Далолатномаси";

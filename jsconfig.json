@@ -42,7 +42,6 @@
       "@region_prixod_schets/*": ["domain/region/jur8/schet/*"],
       "@pod_monitoring/*": ["domain/region/jur4/monitoring/*"],
       "@operatsii/*": ["domain/admin/spravochnik/operatsii/*"],
-      "@auth/*": ["domain/auth/auth//*"],
       "@user/*": ["domain/auth/user/*"],
       "@admin_users/*": ["domain/admin/users/*"],
       "@video/*": ["domain/admin/video/*"],
@@ -68,7 +67,9 @@
       "@helper/*": ["helper/*"],
       "@db/*": ["db/*"],
       "@config/*": ["delete/config/*"],
-      "@public/*": ["../public/*"]
+      "@public/*": ["../public/*"],
+      "@position/*": ["domain/admin/spravochnik/position/*"],
+      "@auth/*": ["domain/auth/auth//*"]
     }
   },
   "include": ["src", "src/locales"]

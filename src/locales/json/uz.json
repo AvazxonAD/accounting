@@ -84,6 +84,8 @@
   "prixodCreateSaldo": "Saldo prixod orqali kiritilgan agar prixod documentlarni ochirsanggiz saldo avtomat ochiriladi!",
   "deleteSaldo": "Oxirgi saldoni ochirishinggiz mumkin",
   "mainBookStatus": "Otgan oy hisoboti qabul qilinmagan",
+  "positionNotFound": "Lavozim topilmadi",
+  "positionExists": "Lavozim avval kiritilgan",
   "validation": {
     "groupId": "Gruppa id raqami raqam turida bo'lishi zarur!",
     "organizationId": "Hamkor tashkilot id raqami raqam turida bo'lishi zarur!",

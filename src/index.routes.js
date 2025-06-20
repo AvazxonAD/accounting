@@ -108,6 +108,8 @@ routes
   .use("/admin/spravochnik/video_module", protect, require("@video_module/index"))
   .use("/admin/spravochnik/minimum-wage", protect, require("@minimum_wage/index"))
   .use("/admin/spravochnik/distances", protect, require("@distances/index"))
+  .use("/admin/spravochnik/position", protect, require("@position/index"))
+
   .use("/admin/main/book", protect, require("@admin_main_book/index"))
 
   .use("/admin/video", protect, require("@video/index"))
