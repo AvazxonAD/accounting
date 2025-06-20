@@ -1005,6 +1005,8 @@ exports.Jur7MonitoringService = class {
     const worksheet = Workbook.addWorksheet("act");
 
     worksheet.getCell(`B1`).value = data.region.name;
+    
+    worksheet.getCell(`L1`).value = ;
 
     worksheet.mergeCells(`A1`, `L1`);
     worksheet.getCell(`A1`).value = "Товар-моддий бойликларни санокдан ўтказиш";

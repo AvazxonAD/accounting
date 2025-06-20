@@ -60,11 +60,12 @@ exports.Controller = class {
 
     await ValidatorFunctions.mainSchet({ region_id, main_schet_id });
 
-    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } = await Jur7MonitoringService.monitoring({
-      ...req.query,
-      region_id,
-      offset,
-    });
+    const { total, data, prixod_sum, rasxod_sum, page_prixod_sum, page_rasxod_sum } =
+      await Jur7MonitoringService.monitoring({
+        ...req.query,
+        region_id,
+        offset,
+      });
 
     const { from_summa, to_summa } = await Jur7SaldoService.getByProduct({
       ...req.query,
@@ -371,7 +372,12 @@ exports.Controller = class {
     const { result, itogo } = Jur7MonitoringService.turnoverReportGroup(data);
 
     if (excel === "true") {
-      const { fileName, filePath } = await Jur7MonitoringService.turnoverReportExcel({ region, schets: result, itogo, ...req.query });
+      const { fileName, filePath } = await Jur7MonitoringService.turnoverReportExcel({
+        region,
+        schets: result,
+        itogo,
+        ...req.query,
+      });
 
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
@@ -405,6 +411,10 @@ exports.Controller = class {
     });
 
     const resultMap = {};
+
+    if (data.length === 0) {
+      return res.error(req.i18n.t("docNotFound"), 404);
+    }
 
     data.forEach((product) => {
       const responsibleId = product.kimning_buynida;
