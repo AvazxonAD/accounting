@@ -389,6 +389,12 @@ exports.Controller = class {
     });
 
     if (!main_book) {
+      console.log({
+        region_id,
+        main_schet_id,
+        year: last_date.year,
+        month: last_date.month,
+      });
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
     }
 

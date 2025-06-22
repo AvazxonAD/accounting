@@ -1295,16 +1295,18 @@ exports.MainBookDB = class {
         ua.fio AS                 accept_user_fio,
         ua.login AS               accept_user_login
       FROM main_book d
-      JOIN main_schet m ON m.id = d.main_schet_id
-      JOIN users u ON u.id = d.user_id
+      LEFT JOIN main_schet m ON m.id = d.main_schet_id
+      LEFT JOIN users u ON u.id = d.user_id
       LEFT JOIN users ua ON ua.id = d.accept_user_id
-      JOIN regions r ON r.id = u.region_id
+      LEFT JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND d.year = $2
         AND d.month = $3
         AND d.main_schet_id = $4
         AND d.isdeleted = false
     `;
+
+    console.log(params);
 
     const result = await db.query(query, params);
 

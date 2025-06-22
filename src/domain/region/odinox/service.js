@@ -49,8 +49,7 @@ exports.OdinoxService = class {
     const worksheet = workbook.addWorksheet("main book");
 
     worksheet.mergeCells(`A1`, "T1");
-    worksheet.getCell(`A1`).value =
-      `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
+    worksheet.getCell(`A1`).value = `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
 
     worksheet.mergeCells(`A2`, "A3");
     worksheet.getCell(`A3`).value = `№`;
@@ -68,15 +67,13 @@ exports.OdinoxService = class {
     worksheet.getCell(`I2`).value = "Йил учун";
 
     worksheet.getCell("D3").value = "Ажратилган маблағлар";
-    worksheet.getCell("E3").value =
-      "Вазирлик томонидан тўлаб берилган маблағлар";
+    worksheet.getCell("E3").value = "Вазирлик томонидан тўлаб берилган маблағлар";
     worksheet.getCell("F3").value = "Касса расход / Банк расход";
     worksheet.getCell("G3").value = "Ҳақиқатда ҳаражатлар";
     worksheet.getCell("H3").value = "Қолдиқ";
 
     worksheet.getCell("I3").value = "Ажратилган маблағлар";
-    worksheet.getCell("J3").value =
-      "Вазирлик томонидан тўлаб берилган маблағлар";
+    worksheet.getCell("J3").value = "Вазирлик томонидан тўлаб берилган маблағлар";
     worksheet.getCell("K3").value = "Касса расход / Банк расход";
     worksheet.getCell("L3").value = "Ҳақиқатда ҳаражатлар";
     worksheet.getCell("M3").value = "Қолдиқ";
@@ -286,10 +283,7 @@ exports.OdinoxService = class {
 
   static async update(data) {
     const result = await db.transaction(async (client) => {
-      const doc = await OdinoxDB.update(
-        [this.now, 1, data.year, data.month, this.now, data.id],
-        client
-      );
+      const doc = await OdinoxDB.update([this.now, 1, data.year, data.month, this.now, data.id], client);
 
       await OdinoxDB.deleteChildByParentId([data.id], client);
 
@@ -311,14 +305,7 @@ exports.OdinoxService = class {
     for (let child of data.childs) {
       for (let sub_child of child.sub_childs) {
         await OdinoxDB.createChild(
-          [
-            sub_child.smeta_id,
-            sub_child.summa,
-            data.parent_id,
-            child.type_id,
-            this.now,
-            this.now,
-          ],
+          [sub_child.smeta_id, sub_child.summa, data.parent_id, child.type_id, this.now, this.now],
           data.client
         );
       }
@@ -328,17 +315,7 @@ exports.OdinoxService = class {
   static async create(data) {
     const result = await db.transaction(async (client) => {
       const doc = await OdinoxDB.create(
-        [
-          1,
-          data.accept_time,
-          this.now,
-          data.user_id,
-          data.year,
-          data.month,
-          data.main_schet_id,
-          this.now,
-          this.now,
-        ],
+        [1, data.accept_time, this.now, data.user_id, data.year, data.month, data.main_schet_id, this.now, this.now],
         client
       );
 
@@ -357,11 +334,7 @@ exports.OdinoxService = class {
   }
 
   static async getSmeta(data) {
-    const smetas = await OdinoxDB.getSmeta([
-      data.region_id,
-      data.main_schet_id,
-      data.year,
-    ]);
+    const smetas = await OdinoxDB.getSmeta([data.region_id, data.main_schet_id, data.year]);
 
     return smetas;
   }
@@ -379,12 +352,7 @@ exports.OdinoxService = class {
   }
 
   static async getJur1Data(data) {
-    const _data = await OdinoxDB.getJur1Data([
-      data.year,
-      data.months,
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const _data = await OdinoxDB.getJur1Data([data.year, data.months, data.region_id, data.main_schet_id]);
 
     for (let smeta of data.smetas) {
       smeta.summa = 0;
@@ -399,12 +367,7 @@ exports.OdinoxService = class {
   }
 
   static async getJur2Data(data) {
-    const _data = await OdinoxDB.getJur2Data([
-      data.year,
-      data.months,
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const _data = await OdinoxDB.getJur2Data([data.year, data.months, data.region_id, data.main_schet_id]);
 
     for (let smeta of data.smetas) {
       smeta.summa = 0;
@@ -419,17 +382,12 @@ exports.OdinoxService = class {
   }
 
   static async getJur3Data(data) {
-    const _data = await OdinoxDB.getJur3Data([
-      data.year,
-      data.months,
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const _data = await OdinoxDB.getJur3Data([data.year, data.months, data.region_id, data.main_schet_id]);
 
     for (let smeta of data.smetas) {
       smeta.summa = 0;
       _data.forEach((item) => {
-        if (item.sub_schet === smeta.smeta_number) {
+        if (item.sub_schet == smeta.smeta_number) {
           smeta.summa += item.summa;
         }
       });
@@ -440,13 +398,9 @@ exports.OdinoxService = class {
 
   static async getJur4Data(data) {
     for (let smeta of data.smetas) {
-      const grafik_summa = data.grafik.sub_childs.find(
-        (item) => item.id === smeta.id
-      );
+      const grafik_summa = data.grafik.sub_childs.find((item) => item.id === smeta.id);
 
-      const jur3a_akt_avans_summa = data.jur3a_akt_avans.sub_childs.find(
-        (item) => item.id === smeta.id
-      );
+      const jur3a_akt_avans_summa = data.jur3a_akt_avans.sub_childs.find((item) => item.id === smeta.id);
 
       smeta.summa = grafik_summa.summa - jur3a_akt_avans_summa.summa;
     }
@@ -482,10 +436,7 @@ exports.OdinoxService = class {
   }
 
   static async getById(data) {
-    const result = await OdinoxDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      data.isdeleted
-    );
+    const result = await OdinoxDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
 
     if (result) {
       result.childs = await OdinoxDB.getByIdChild([data.id]);
@@ -495,21 +446,13 @@ exports.OdinoxService = class {
   }
 
   static async get(data) {
-    const result = await OdinoxDB.get(
-      [data.region_id, data.main_schet_id, data.offset, data.limit],
-      data.year
-    );
+    const result = await OdinoxDB.get([data.region_id, data.main_schet_id, data.offset, data.limit], data.year);
 
     return result;
   }
 
   static async getByMonth(data) {
-    let result = await OdinoxDB.getByMonth([
-      data.region_id,
-      data.year,
-      data.month,
-      data.main_schet_id,
-    ]);
+    let result = await OdinoxDB.getByMonth([data.region_id, data.year, data.month, data.main_schet_id]);
 
     if (result) {
       result.childs = await OdinoxDB.getByIdChild([result.id]);
@@ -519,10 +462,7 @@ exports.OdinoxService = class {
   }
 
   static async checkCreateCount(data) {
-    const result = await OdinoxDB.checkCreateCount([
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const result = await OdinoxDB.checkCreateCount([data.region_id, data.main_schet_id]);
 
     return result;
   }
