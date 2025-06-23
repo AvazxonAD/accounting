@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 
 exports.KassaRasxodDB = class {
   static async create(params, client) {
-    const query = `
+    const query = `--sql
             INSERT INTO kassa_rasxod(
                 doc_num, 
                 doc_date, 
@@ -235,22 +235,13 @@ exports.KassaRasxodDB = class {
   }
 
   static async deleteChild(params, client) {
-    await client.query(
-      `DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`,
-      params
-    );
+    await client.query(`DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`, params);
   }
 
   static async delete(params, client) {
-    await client.query(
-      `UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`,
-      params
-    );
+    await client.query(`UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`, params);
 
-    const result = await client.query(
-      `UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
+    const result = await client.query(`UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
     return result.rows[0];
   }

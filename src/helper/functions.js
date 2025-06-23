@@ -1634,7 +1634,7 @@ exports.HelperFunctions = class {
 
   static roadSumma(data) {
     if (!data.road_ticket_number) {
-      return Number(data.distance.distance_km) * (data.minimum_wage.summa * 0.01);
+      return Number(data.distance.distance_km) * (data.minimum_wage.summa * 0.001);
     } else {
       return data.road_summa;
     }
@@ -1651,9 +1651,7 @@ exports.HelperFunctions = class {
     let current_date = new Date(from_date);
 
     while (current_date <= to_date) {
-      if (current_date.getDay() !== 0) {
-        work_days++;
-      }
+      work_days++;
       current_date.setDate(current_date.getDate() + 1);
     }
 
