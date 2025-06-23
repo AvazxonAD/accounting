@@ -274,7 +274,6 @@ exports.Jur7SaldoService = class {
     });
 
     result.data.forEach((item) => {
-      console.log(item.prixod_id);
       if (!item.prixod_id) {
         item.prixodData.unshift({
           docDate: item.doc_date,

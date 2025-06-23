@@ -385,13 +385,12 @@ exports.PrixodDB = class {
       const check = await client.query(check_query, [product_id]);
 
       if (check.rows.length <= 1) {
-        const product_query = `--sql
-                UPDATE naimenovanie_tovarov_jur7 
-                SET isdeleted = true 
-                WHERE id = $1
-            `;
-
-        await client.query(product_query, [product_id]);
+        // const product_query = `--sql
+        //         UPDATE naimenovanie_tovarov_jur7
+        //         SET isdeleted = true
+        //         WHERE id = $1
+        //     `;
+        // await client.query(product_query, [product_id]);
       } else {
         const get_saldo_query = `--sql
           SELECT

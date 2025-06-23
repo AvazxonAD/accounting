@@ -422,8 +422,7 @@ exports.PrixodJur7Service = class {
           prixod_id = saldo.rows[0].prixod_id + `,${data.docId}`;
         }
 
-        console.log("----------", prixod_id);
-        throw new Error();
+        prixod_id = [...new Set(prixod_id.split(","))].join(",");
         await Jur7SaldoDB.updatePrixodId([prixod_id, child.saldo_id], data.client);
       }
     }
