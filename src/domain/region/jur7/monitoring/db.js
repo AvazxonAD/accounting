@@ -58,7 +58,20 @@ exports.Jur7MonitoringDB = class {
         'prixod' AS                                                   type,
         d.doc_date AS                                                 combined_doc_date,
         d.id AS                                                       combined_id,
-        d.doc_num AS                                                  combined_doc_num
+        d.doc_num AS                                                  combined_doc_num,
+        (
+          SELECT JSON_AGG(row_to_json(ch))
+          FROM (
+              SELECT 
+                  ch.debet_schet,
+                  ch.debet_sub_schet,
+                  ch.kredit_schet,
+                  ch.kredit_sub_schet
+              FROM document_prixod_jur7_child AS ch
+              WHERE  ch.document_prixod_jur7_id = d.id
+                  AND ch.isdeleted = false
+          ) AS ch
+        ) AS provodki_array
       FROM document_prixod_jur7 d
       JOIN spravochnik_organization AS f ON f.id = d.kimdan_id
       JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
@@ -122,7 +135,20 @@ exports.Jur7MonitoringDB = class {
         'internal' AS                                                 type,
         d.doc_date AS                                                 combined_doc_date,
         d.id AS                                                       combined_id,
-        d.doc_num AS                                                  combined_doc_num
+        d.doc_num AS                                                  combined_doc_num,
+        (
+          SELECT JSON_AGG(row_to_json(ch))
+          FROM (
+              SELECT 
+                  ch.debet_schet,
+                  ch.debet_sub_schet,
+                  ch.kredit_schet,
+                  ch.kredit_sub_schet
+              FROM document_vnutr_peremesh_jur7_child AS ch
+              WHERE  ch.document_vnutr_peremesh_jur7_id = d.id
+                  AND ch.isdeleted = false
+          ) AS ch
+        ) AS provodki_array
       FROM document_vnutr_peremesh_jur7 d
       JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
       JOIN spravochnik_javobgar_shaxs_jur7 t ON t.id = d.kimga_id
@@ -180,7 +206,20 @@ exports.Jur7MonitoringDB = class {
         'rasxod' AS                                                   type,
         d.doc_date AS                                                 combined_doc_date,
         d.id AS                                                       combined_id,
-        d.doc_num AS                                                  combined_doc_num
+        d.doc_num AS                                                  combined_doc_num,
+        (
+          SELECT JSON_AGG(row_to_json(ch))
+          FROM (
+              SELECT 
+                  ch.debet_schet,
+                  ch.debet_sub_schet,
+                  ch.kredit_schet,
+                  ch.kredit_sub_schet
+              FROM document_rasxod_jur7_child AS ch
+              WHERE  ch.document_rasxod_jur7_id = d.id
+                  AND ch.isdeleted = false
+          ) AS ch
+        ) AS provodki_array
       FROM document_rasxod_jur7 d
       JOIN spravochnik_javobgar_shaxs_jur7 f ON f.id = d.kimdan_id
       JOIN users AS u ON u.id = d.user_id

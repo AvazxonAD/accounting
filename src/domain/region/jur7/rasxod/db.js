@@ -85,7 +85,20 @@ exports.RasxodDB = class {
                     TO_CHAR(d.doc_date, 'YYYY-MM-DD') AS doc_date, 
                     d.opisanie, 
                     d.summa, 
-                    rj.fio AS kimdan_name
+                    rj.fio AS kimdan_name,
+                    (
+                      SELECT JSON_AGG(row_to_json(ch))
+                      FROM (
+                          SELECT 
+                              ch.debet_schet,
+                              ch.debet_sub_schet,
+                              ch.kredit_schet,
+                              ch.kredit_sub_schet
+                          FROM document_rasxod_jur7_child AS ch
+                          WHERE  ch.document_rasxod_jur7_id = d.id
+                              AND ch.isdeleted = false
+                      ) AS ch
+                    ) AS provodki_array
                 FROM document_rasxod_jur7 AS d
                 LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 

@@ -134,7 +134,20 @@ exports.PrixodDB = class {
               rj.fio AS kimga_name,
               d.shartnoma_grafik_id::INTEGER,
               d.organization_by_raschet_schet_id::INTEGER,
-              d.organization_by_raschet_schet_gazna_id::INTEGER
+              d.organization_by_raschet_schet_gazna_id::INTEGER,
+              (
+                SELECT JSON_AGG(row_to_json(ch))
+                FROM (
+                    SELECT 
+                        ch.debet_schet,
+                        ch.debet_sub_schet,
+                        ch.kredit_schet,
+                        ch.kredit_sub_schet
+                    FROM document_prixod_jur7_child AS ch
+                    WHERE  ch.document_prixod_jur7_id = d.id
+                        AND ch.isdeleted = false
+                ) AS ch
+              ) AS provodki_array
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id

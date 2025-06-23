@@ -58,6 +58,7 @@ exports.ResponsibleDB = class {
                     ${search_filter} 
                     ${podraz_filter}
                     ${region_filter}
+                ORDER BY s.fio
                 OFFSET $2 LIMIT $3
             )
             SELECT 

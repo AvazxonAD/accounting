@@ -87,7 +87,20 @@ exports.InternalDB = class {
                     d.summa, 
                     rj.fio AS kimdan_name,
                     row_to_json(rj2) AS kimga,
-                    row_to_json(rj) AS kimdan
+                    row_to_json(rj) AS kimdan,
+                    (
+                      SELECT JSON_AGG(row_to_json(ch))
+                      FROM (
+                          SELECT 
+                              ch.debet_schet,
+                              ch.debet_sub_schet,
+                              ch.kredit_schet,
+                              ch.kredit_sub_schet
+                          FROM document_vnutr_peremesh_jur7_child AS ch
+                          WHERE  ch.document_vnutr_peremesh_jur7_id = d.id
+                              AND ch.isdeleted = false
+                      ) AS ch
+                    ) AS provodki_array
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
