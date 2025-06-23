@@ -1030,6 +1030,8 @@ exports.MainBookDB = class {
             type_schet = 'jur3' OR 
             type_schet = 'jur4' OR 
             type_schet = 'bank_rasxod' OR 
+            type_schet = 'jur7' OR 
+            type_schet = 'work_trip' OR 
             type_schet = 'show_service'
           )
       
