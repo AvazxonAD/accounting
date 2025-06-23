@@ -1,11 +1,6 @@
 const { PrixodDB } = require("./db");
 const { db } = require("@db/index");
-const {
-  tashkentTime,
-  returnLocalDate,
-  returnSleshDate,
-  HelperFunctions,
-} = require("@helper/functions");
+const { tashkentTime, returnLocalDate, returnSleshDate, HelperFunctions } = require("@helper/functions");
 const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
@@ -44,19 +39,11 @@ exports.PrixodJur7Service = class {
   }
 
   static async prixodReport(data) {
-    const result = await PrixodDB.prixodReport([
-      data.region_id,
-      data.from,
-      data.to,
-      data.main_schet_id,
-    ]);
+    const result = await PrixodDB.prixodReport([data.region_id, data.from, data.to, data.main_schet_id]);
 
     await Promise.all(
       result.map(async (item) => {
-        item.childs = await PrixodDB.prixodReportChild([
-          item.id,
-          data.main_schet_id,
-        ]);
+        item.childs = await PrixodDB.prixodReportChild([item.id, data.main_schet_id]);
         return item;
       })
     );
@@ -126,9 +113,7 @@ exports.PrixodJur7Service = class {
           cost: i.sena,
           amount: i.summa,
           c_doc_num: item.c_doc_num || "",
-          c_doc_date: item.c_doc_date
-            ? returnSleshDate(new Date(item.c_doc_date))
-            : "",
+          c_doc_date: item.c_doc_date ? returnSleshDate(new Date(item.c_doc_date)) : "",
           schet: i.schet,
           sub_schet: i.sub_schet,
         });
@@ -203,17 +188,12 @@ exports.PrixodJur7Service = class {
           horizontal = "right";
           bold = true;
         }
-        if (
-          rowNumber > 2 &&
-          (index === 1 || index === 3 || index === 5 || index === 9)
-        ) {
+        if (rowNumber > 2 && (index === 1 || index === 3 || index === 5 || index === 9)) {
           horizontal = "left";
         }
         if (
           rowNumber > 2 &&
-          (index === 2 ||
-            (index > 5 && index < 11 && index !== 9 && index !== 10) ||
-            index === 12)
+          (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)
         ) {
           horizontal = "right";
         }
@@ -357,8 +337,7 @@ exports.PrixodJur7Service = class {
 
       const summa_s_nds = summa + nds_summa;
 
-      child.old_iznos =
-        child.old_iznos > summa_s_nds ? summa_s_nds : child.old_iznos;
+      child.old_iznos = child.old_iznos > summa_s_nds ? summa_s_nds : child.old_iznos;
 
       await PrixodDB.createChild(
         [
@@ -394,7 +373,7 @@ exports.PrixodJur7Service = class {
         const month = new Date(data.doc.doc_date).getMonth() + 1;
         const year = new Date(data.doc.doc_date).getFullYear();
 
-        await Jur7SaldoDB.create(
+        const _saldo = await Jur7SaldoDB.create(
           [
             data.user_id,
             child.id,
@@ -428,11 +407,13 @@ exports.PrixodJur7Service = class {
           ],
           data.client
         );
-      } else {
-        const saldo = await data.client.query(
-          `SELECT * FROM saldo_naimenovanie_jur7 WHERE id = $1`,
-          [child.saldo_id]
+
+        await data.client.query(
+          `UPDATE document_prixod_jur7_child SET saldo_id = $1 WHERE document_prixod_jur7_id = $2`,
+          [_saldo.id, data.docId]
         );
+      } else {
+        const saldo = await data.client.query(`SELECT * FROM saldo_naimenovanie_jur7 WHERE id = $1`, [child.saldo_id]);
 
         let prixod_id;
         if (!saldo.rows[0].prixod_id) {
@@ -441,10 +422,9 @@ exports.PrixodJur7Service = class {
           prixod_id = saldo.rows[0].prixod_id + `,${data.docId}`;
         }
 
-        await Jur7SaldoDB.updatePrixodId(
-          [prixod_id, child.saldo_id],
-          data.client
-        );
+        console.log("----------", prixod_id);
+        throw new Error();
+        await Jur7SaldoDB.updatePrixodId([prixod_id, child.saldo_id], data.client);
       }
     }
   }
@@ -456,10 +436,7 @@ exports.PrixodJur7Service = class {
   }
 
   static async update(data) {
-    const summa = data.childs.reduce(
-      (acc, child) => acc + child.kol * child.sena,
-      0
-    );
+    const summa = data.childs.reduce((acc, child) => acc + child.kol * child.sena, 0);
 
     const result = await db.transaction(async (client) => {
       const doc = await PrixodDB.update(
@@ -486,7 +463,7 @@ exports.PrixodJur7Service = class {
 
       const productIds = await PrixodDB.getProductsByDocId([data.id], client);
 
-      await PrixodDB.deletePrixodChild(data.id, productIds, client);
+      await PrixodDB.deletePrixodChildUpdate(data.id, productIds, client);
 
       const childs = await this.createProduct({
         childs: data.childs,
@@ -542,14 +519,7 @@ exports.PrixodJur7Service = class {
 
   static async get(data) {
     const result = await PrixodDB.get(
-      [
-        data.region_id,
-        data.from,
-        data.to,
-        data.main_schet_id,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.from, data.to, data.main_schet_id, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type
@@ -559,10 +529,7 @@ exports.PrixodJur7Service = class {
   }
 
   static async getById(data) {
-    const result = await PrixodDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      data.isdeleted
-    );
+    const result = await PrixodDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
 
     if (result) {
       result.schets_sums = HelperFunctions.jur7DebetKreditSums(result.childs);
@@ -589,16 +556,7 @@ exports.PrixodJur7Service = class {
     const comment = worksheet.getCell("A4");
     comment.value = `Описаниэ: ${data.opisanie ? data.opisanie : ""}`;
 
-    worksheet.getRow(5).values = [
-      "Наименование",
-      "Ед.изм",
-      "Кол.",
-      "Цена",
-      "Сумма",
-      "Дебет",
-      "Кредит",
-      "Дата",
-    ];
+    worksheet.getRow(5).values = ["Наименование", "Ед.изм", "Кол.", "Цена", "Сумма", "Дебет", "Кредит", "Дата"];
 
     worksheet.columns = [
       { key: "name", width: 40 },
@@ -716,11 +674,7 @@ exports.PrixodJur7Service = class {
 
         if ((column === 4 || column === 5) && rowNumber > 5) {
           horizontal = "right";
-        } else if (
-          ((column !== 4 && column !== 5) || rowNumber > bold_count) &&
-          rowNumber > 5 &&
-          rowNumber < column
-        ) {
+        } else if (((column !== 4 && column !== 5) || rowNumber > bold_count) && rowNumber > 5 && rowNumber < column) {
           horizontal = `center`;
         } else if (rowNumber > bold_count + 2 && column === 8) {
           horizontal = `right`;
@@ -789,10 +743,7 @@ exports.PrixodJur7Service = class {
   }
 
   static async getByProductId(data) {
-    const result = await PrixodDB.getByProductId([
-      data.product_id,
-      data.main_schet_id,
-    ]);
+    const result = await PrixodDB.getByProductId([data.product_id, data.main_schet_id]);
 
     return result;
   }

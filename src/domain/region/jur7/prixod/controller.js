@@ -411,7 +411,6 @@ exports.Controller = class {
       child.old_iznos = child.eski_iznos_summa;
 
       if (child.saldo_id) {
-        console.log(child.saldo_id);
         const saldo = await Jur7SaldoService.getById({ region_id, id: child.saldo_id, main_schet_id });
         if (!saldo) return res.error(req.i18n.t("saldoNotFound"), 404);
 

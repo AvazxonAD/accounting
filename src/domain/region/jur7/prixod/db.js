@@ -300,7 +300,10 @@ exports.PrixodDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
+    await client.query(
+      `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`,
+      params
+    );
     const result = await client.query(
       `UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`,
       params
@@ -332,6 +335,56 @@ exports.PrixodDB = class {
 
         await client.query(saldo_query, [product_id]);
 
+        const product_query = `--sql
+                UPDATE naimenovanie_tovarov_jur7 
+                SET isdeleted = true 
+                WHERE id = $1
+            `;
+
+        await client.query(product_query, [product_id]);
+      } else {
+        const get_saldo_query = `--sql
+          SELECT
+            *
+          FROM saldo_naimenovanie_jur7 s
+          WHERE s.naimenovanie_tovarov_jur7_id = $1
+        `;
+
+        const saldo = await client.query(get_saldo_query, [product_id]);
+
+        const prixod_id = saldo.rows[0].prixod_id
+          .split(",")
+          .filter((val) => val != documentPrixodId)
+          .join(",");
+
+        await Jur7SaldoDB.updatePrixodId([prixod_id, saldo.rows[0].id], client);
+      }
+    }
+
+    const child_query = `--sql
+            UPDATE document_prixod_jur7_child 
+            SET isdeleted = true 
+            WHERE document_prixod_jur7_id = $1 AND isdeleted = false
+        `;
+
+    await client.query(child_query, [documentPrixodId]);
+  }
+
+  static async deletePrixodChildUpdate(documentPrixodId, productIds, client) {
+    for (let product_id of productIds) {
+      const check_query = `--sql
+        SELECT 
+          d.id 
+        FROM document_prixod_jur7_child ch
+        JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
+        WHERE ch.naimenovanie_tovarov_jur7_id = $1
+          AND ch.isdeleted = false
+          AND d.isdeleted = false
+      `;
+
+      const check = await client.query(check_query, [product_id]);
+
+      if (check.rows.length <= 1) {
         const product_query = `--sql
                 UPDATE naimenovanie_tovarov_jur7 
                 SET isdeleted = true 
