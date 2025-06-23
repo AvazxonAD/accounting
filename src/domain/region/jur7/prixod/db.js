@@ -300,10 +300,7 @@ exports.PrixodDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(
-      `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`,
-      params
-    );
+    await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
     const result = await client.query(
       `UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`,
       params
@@ -316,7 +313,7 @@ exports.PrixodDB = class {
     for (let product_id of productIds) {
       const check_query = `--sql
         SELECT 
-          d.id 
+          DISTINCT d.id
         FROM document_prixod_jur7_child ch
         JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
         WHERE ch.naimenovanie_tovarov_jur7_id = $1

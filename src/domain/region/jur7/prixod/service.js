@@ -5,7 +5,6 @@ const fs = require("fs").promises;
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { Jur7SaldoDB } = require("@jur7_saldo/db");
-const { Saldo159Service } = require(`@saldo_159/service`);
 const { Jur7SaldoService } = require("../saldo/service");
 
 exports.PrixodJur7Service = class {
@@ -191,18 +190,10 @@ exports.PrixodJur7Service = class {
         if (rowNumber > 2 && (index === 1 || index === 3 || index === 5 || index === 9)) {
           horizontal = "left";
         }
-        if (
-          rowNumber > 2 &&
-          (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)
-        ) {
+        if (rowNumber > 2 && (index === 2 || (index > 5 && index < 11 && index !== 9 && index !== 10) || index === 12)) {
           horizontal = "right";
         }
-        if (
-          rowNumber > 2 &&
-          index === 8 &&
-          cell.value !== "" &&
-          "" === worksheet.getRow(rowNumber).getCell(index - 1).value
-        ) {
+        if (rowNumber > 2 && index === 8 && cell.value !== "" && "" === worksheet.getRow(rowNumber).getCell(index - 1).value) {
           bold = true;
         }
         if (fill && border) {
@@ -408,10 +399,10 @@ exports.PrixodJur7Service = class {
           data.client
         );
 
-        await data.client.query(
-          `UPDATE document_prixod_jur7_child SET saldo_id = $1 WHERE document_prixod_jur7_id = $2`,
-          [_saldo.id, data.docId]
-        );
+        await data.client.query(`UPDATE document_prixod_jur7_child SET saldo_id = $1 WHERE document_prixod_jur7_id = $2`, [
+          _saldo.id,
+          data.docId,
+        ]);
       } else {
         const saldo = await data.client.query(`SELECT * FROM saldo_naimenovanie_jur7 WHERE id = $1`, [child.saldo_id]);
 
@@ -423,6 +414,7 @@ exports.PrixodJur7Service = class {
         }
 
         prixod_id = [...new Set(prixod_id.split(","))].join(",");
+
         await Jur7SaldoDB.updatePrixodId([prixod_id, child.saldo_id], data.client);
       }
     }

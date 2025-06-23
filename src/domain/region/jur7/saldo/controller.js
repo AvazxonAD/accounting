@@ -356,11 +356,7 @@ exports.Controller = class {
     });
 
     for (let saldo of data) {
-      if (
-        saldo.year === end_saldo.year &&
-        saldo.month === end_saldo.month &&
-        (saldo.type === "import" || saldo.type === "saldo")
-      ) {
+      if (saldo.year === end_saldo.year && saldo.month === end_saldo.month && (saldo.type === "import" || saldo.type === "saldo")) {
         saldo.isdeleted = true;
       }
     }
@@ -503,13 +499,9 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const check_doc = await Jur7SaldoService.checkDoc({
-      product_id: checkById.naimenovanie_tovarov_jur7_id,
-    });
-    if (check_doc.length) {
+    if (checkById.type === "prixod") {
       return res.error(req.i18n.t("saldoRasxodError"), 400, {
         code: CODE.DOCS_HAVE.code,
-        docs: check_doc,
         saldo_id: id,
       });
     }
