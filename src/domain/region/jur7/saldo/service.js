@@ -38,7 +38,17 @@ exports.Jur7SaldoService = class {
       horizontal: "left",
     });
 
-    worksheet.getRow(8).values = ["Номер документ", "Номер санаси", "Кимдан", "Кимга", "Приход", "Расход", "Debet", "Кредит", "описание"];
+    worksheet.getRow(8).values = [
+      "Номер документ",
+      "Номер санаси",
+      "Кимдан",
+      "Кимга",
+      "Приход",
+      "Расход",
+      "Debet",
+      "Кредит",
+      "описание",
+    ];
 
     worksheet.columns = [
       { key: "doc_num", width: 20 },
@@ -264,6 +274,7 @@ exports.Jur7SaldoService = class {
     });
 
     result.data.forEach((item) => {
+      console.log(item.prixod_id);
       if (!item.prixod_id) {
         item.prixodData.unshift({
           docDate: item.doc_date,
@@ -296,7 +307,9 @@ exports.Jur7SaldoService = class {
         rasxod_iznos_summa: 0,
       };
 
-      const productData = history.filter((item) => item.responsible_id == product.responsible_id && item.product_id == product.product_id);
+      const productData = history.filter(
+        (item) => item.responsible_id == product.responsible_id && item.product_id == product.product_id
+      );
 
       if (productData.length > 0) {
         productData.forEach((item) => {
@@ -771,7 +784,11 @@ exports.Jur7SaldoService = class {
     const year = new Date(data.doc_date).getFullYear();
     const month = new Date(data.doc_date).getMonth() + 1;
 
-    const check = await Jur7SaldoDB.getSaldoDate([data.region_id, `${year}-${String(month).padStart(2, "0")}-01`, data.main_schet_id]);
+    const check = await Jur7SaldoDB.getSaldoDate([
+      data.region_id,
+      `${year}-${String(month).padStart(2, "0")}-01`,
+      data.main_schet_id,
+    ]);
 
     let dates = [];
     for (let date of check) {
@@ -992,7 +1009,14 @@ exports.Jur7SaldoService = class {
   }
 
   static async get(data) {
-    const { data: result } = await Jur7SaldoDB.get([data.region_id, data.year, data.month, data.main_schet_id, 0, 99999999]);
+    const { data: result } = await Jur7SaldoDB.get([
+      data.region_id,
+      data.year,
+      data.month,
+      data.main_schet_id,
+      0,
+      99999999,
+    ]);
 
     return result;
   }
