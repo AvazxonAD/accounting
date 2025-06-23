@@ -1306,8 +1306,6 @@ exports.MainBookDB = class {
         AND d.isdeleted = false
     `;
 
-    console.log(params);
-
     const result = await db.query(query, params);
 
     return result[0];
