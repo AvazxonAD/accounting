@@ -73,7 +73,7 @@ exports.Controller = class {
 
     const road_summa = HelperFunctions.roadSumma({ ...req.body, distance, minimum_wage });
 
-    if (new Date(from_date) >= new Date(to_date)) {
+    if (new Date(from_date) > new Date(to_date)) {
       return res.error(req.i18n.t("fromDateError"), 400);
     }
 
@@ -258,7 +258,7 @@ exports.Controller = class {
 
     const road_summa = HelperFunctions.roadSumma({ ...req.body, distance, minimum_wage });
 
-    if (new Date(from_date) >= new Date(to_date)) {
+    if (new Date(from_date) > new Date(to_date)) {
       return res.error(req.i18n.t("fromDateError"), 400);
     }
 
