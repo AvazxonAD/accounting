@@ -144,16 +144,19 @@ exports.Controller = class {
       }
     }
 
-    const from = HelperFunctions.returnDate(req.query);
-    const to = HelperFunctions.returnDate({ ...req.query, end: true });
+    const date = HelperFunctions.getDate({
+      year: last_date.year,
+      month: last_date.month,
+    });
 
     const docs = await Monitoring152Service.monitoring({
       region_id,
       main_schet_id,
       schet: schet.schet,
-      ...req.query,
-      from,
-      to,
+      from: date[0],
+      to: date[1],
+      year: last_date.year,
+      month: last_date.month,
       offset: 0,
       limit: 99999999,
     });
