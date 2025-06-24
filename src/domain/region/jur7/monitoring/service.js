@@ -172,11 +172,26 @@ exports.Jur7MonitoringService = class {
       month: data.month,
     });
 
-    const rasxods = await Jur7MonitoringDB.reportBySchetsRasxods([data.region_id, date[0], date[1], data.main_schet_id]);
+    const rasxods = await Jur7MonitoringDB.reportBySchetsRasxods([
+      data.region_id,
+      date[0],
+      date[1],
+      data.main_schet_id,
+    ]);
 
-    const internals = await Jur7MonitoringDB.reportBySchetsInternals([data.region_id, date[0], date[1], data.main_schet_id]);
+    const internals = await Jur7MonitoringDB.reportBySchetsInternals([
+      data.region_id,
+      date[0],
+      date[1],
+      data.main_schet_id,
+    ]);
 
-    const prixods = await Jur7MonitoringDB.reportBySchetsPrixods([data.region_id, date[0], date[1], data.main_schet_id]);
+    const prixods = await Jur7MonitoringDB.reportBySchetsPrixods([
+      data.region_id,
+      date[0],
+      date[1],
+      data.main_schet_id,
+    ]);
 
     return { prixods, internals, rasxods };
   }
@@ -249,7 +264,8 @@ exports.Jur7MonitoringService = class {
 
     const to_column = worksheet.rowCount + 2;
     worksheet.mergeCells(`A${to_column}`, `D${to_column}`);
-    worksheet.getCell(`A${to_column}`).value = `Остаток в конце дня: ${HelperFunctions.returnStringSumma(data.summa_to)}`;
+    worksheet.getCell(`A${to_column}`).value =
+      `Остаток в конце дня: ${HelperFunctions.returnStringSumma(data.summa_to)}`;
 
     let podpis_column = worksheet.rowCount + 5;
     for (let podpis of data.podpis) {
@@ -489,14 +505,14 @@ exports.Jur7MonitoringService = class {
     worksheet.getCell("A1").value = `${data.region.name} Фавқулодда вазиятлар бошкармаси`;
 
     worksheet.mergeCells("A2", "C2");
-    worksheet.getCell("A2").value = `${data.report_title.name}  №  ${data.order}`;
+    worksheet.getCell("A2").value = `${data.report_title.name}  № 7`;
 
     worksheet.mergeCells("D2", "G2");
     worksheet.getCell("D2").value = data.budjet.name;
 
     worksheet.mergeCells("A3", "G3");
     worksheet.getCell("A3").value =
-      `${data.title} Счёт-№ ${data.schet}.  От ${HelperFunctions.returnStringDate(new Date(data.from))} до ${HelperFunctions.returnStringDate(new Date(data.to))}`;
+      `МАТЕРИАЛ ОМБОРИ ХИСОБОТИ От ${HelperFunctions.returnStringDate(new Date(data.from))} до ${HelperFunctions.returnStringDate(new Date(data.to))}`;
 
     worksheet.mergeCells("A4", "G4");
     worksheet.getCell("A4").value =
@@ -508,7 +524,19 @@ exports.Jur7MonitoringService = class {
     worksheet.mergeCells("I6", "K6");
     worksheet.getCell("I6").value = `Приходлар`;
 
-    worksheet.getRow(7).values = ["Дебет", "Кредит", "Сумма", "", "Счет", "Субсчет", "Сумма", "", "Дебет", "Кредит", "Сумма"];
+    worksheet.getRow(7).values = [
+      "Дебет",
+      "Кредит",
+      "Сумма",
+      "",
+      "Счет",
+      "Субсчет",
+      "Сумма",
+      "",
+      "Дебет",
+      "Кредит",
+      "Сумма",
+    ];
 
     worksheet.columns = [
       { key: "prixod", width: 20 },
@@ -584,27 +612,30 @@ exports.Jur7MonitoringService = class {
 
     let rasxod_column = 8;
     // deep rasxod
-    for (let rasxod in data.rasxods) {
-      if (rasxod !== "summa" && data.rasxods[rasxod].summa !== 0 && rasxod === REPORT_RASXOD_SCHET[0]) {
-        // rasxod
-        worksheet.mergeCells(`E6`, `G6`);
-        const titleCelll = worksheet.getCell(`E6`);
-        titleCelll.value = `${rasxod}-счёт суммаси расшифровкаси`;
-        titleCelll.note = JSON.stringify({
-          bold: true,
-          horizontal: "center",
-        });
 
+    worksheet.mergeCells(`E6`, `G6`);
+    const titleCelll = worksheet.getCell(`E6`);
+    titleCelll.value = `${REPORT_RASXOD_SCHET[0]}-счёт суммаси расшифровкаси`;
+    titleCelll.note = JSON.stringify({
+      bold: true,
+      horizontal: "center",
+    });
+
+    for (let rasxod in data.rasxods) {
+      const schet = rasxod.split("-")[0];
+      const kredit_schet = rasxod.split("-")[1];
+      if (schet !== "summa" && data.rasxods[rasxod].summa !== 0 && schet === REPORT_RASXOD_SCHET[0]) {
+        let rasxod_summa = 0;
         for (let item of data.rasxods[rasxod].items) {
-          const r_prixodCell = worksheet.getCell(`E${rasxod_column}`);
-          r_prixodCell.value = item.schet;
-          r_prixodCell.note = JSON.stringify({
+          const kredit_schet = worksheet.getCell(`E${rasxod_column}`);
+          kredit_schet.value = item.kredit_schet;
+          kredit_schet.note = JSON.stringify({
             horizontal: "center",
           });
 
-          const r_rasxodCell = worksheet.getCell(`F${rasxod_column}`);
-          r_rasxodCell.value = item.sub_schet;
-          r_rasxodCell.note = JSON.stringify({
+          const kredit_sub_schet = worksheet.getCell(`F${rasxod_column}`);
+          kredit_sub_schet.value = item.kredit_sub_schet;
+          kredit_sub_schet.note = JSON.stringify({
             horizontal: "center",
           });
 
@@ -614,28 +645,45 @@ exports.Jur7MonitoringService = class {
             horizontal: "right",
           });
 
+          rasxod_summa += item.summa;
           rasxod_column++;
         }
 
         worksheet.mergeCells(`E${rasxod_column}`, `F${rasxod_column}`);
         const rasxodTitleCell = worksheet.getCell(`E${rasxod_column}`);
-        rasxodTitleCell.value = `Кредит буйича жами:`;
+        rasxodTitleCell.value = `Кредит-${kredit_schet} буйича жами:`;
         rasxodTitleCell.note = JSON.stringify({
           bold: true,
           horizontal: "left",
         });
 
         const rasxodCell = worksheet.getCell(`G${rasxod_column}`);
-        rasxodCell.value = data.rasxods[rasxod].summa || 0;
+        rasxodCell.value = rasxod_summa;
         rasxodCell.note = JSON.stringify({
           bold: true,
           horizontal: "right",
         });
+
         rasxod_column += 2;
       }
     }
 
-    let itogo_column = column + 1;
+    worksheet.mergeCells(`E${rasxod_column}`, `F${rasxod_column}`);
+    const rasxodTitleCell = worksheet.getCell(`E${rasxod_column}`);
+    rasxodTitleCell.value = `Кредит буйича жами:`;
+    rasxodTitleCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "left",
+    });
+
+    const rasxodCell = worksheet.getCell(`G${rasxod_column}`);
+    rasxodCell.value = data.rasxods.summa;
+    rasxodCell.note = JSON.stringify({
+      bold: true,
+      horizontal: "right",
+    });
+
+    let itogo_column = rasxod_column > column ? rasxod_column + 2 : column + 1;
     worksheet.mergeCells(`A${itogo_column}`, `G${itogo_column}`);
     worksheet.getCell(`A${itogo_column}`).value =
       `Остаток к концу дня:               ${HelperFunctions.returnStringSumma(Math.round(data.summa_to * 100) / 100)}`;
@@ -704,7 +752,12 @@ exports.Jur7MonitoringService = class {
 
         if (cellData.bold) {
           bold = true;
-        } else if (cell.value === "Жами КТ:" || cell.value === "Жами ДБ:" || cell.value === "Кредит буйича жами:") {
+        } else if (
+          cell.value === "Жами КТ:" ||
+          cell.value === "Жами ДБ:" ||
+          cell.value === "Кредит буйича жами:" ||
+          (typeof cell.value === "string" ? cell.value.includes("жами") : false)
+        ) {
           bold = true;
         } else if (!cellData.bold && rowNumber > 7) {
           bold = false;
@@ -758,7 +811,7 @@ exports.Jur7MonitoringService = class {
       });
     });
 
-    const fileName = `${data.file_name}_shapka_${new Date().getTime()}.xlsx`;
+    const fileName = `jur7_shapka_${new Date().getTime()}.xlsx`;
     const folder_path = path.join(__dirname, "../../../../../public/exports");
 
     try {
@@ -1024,7 +1077,8 @@ exports.Jur7MonitoringService = class {
     worksheet.getCell(`A5`).value = `${data.region.name} ${deputy_head}`;
 
     worksheet.mergeCells(`A6`, `L6`);
-    worksheet.getCell(`A6`).value = `${data.region.name} ${boss}нинг ${data.year} - йил  ____________________________ - сонли буйруғи`;
+    worksheet.getCell(`A6`).value =
+      `${data.region.name} ${boss}нинг ${data.year} - йил  ____________________________ - сонли буйруғи`;
 
     worksheet.mergeCells(`A7`, `L7`);
     worksheet.getCell(`A7`).value = `в присутствии ${data.podpis
@@ -1591,7 +1645,10 @@ exports.Jur7MonitoringService = class {
   }
 
   static async history(data) {
-    const result = await Jur7MonitoringDB.history([data.from, data.to, data.region_id, data.main_schet_id], data.responsible_id);
+    const result = await Jur7MonitoringDB.history(
+      [data.from, data.to, data.region_id, data.main_schet_id],
+      data.responsible_id
+    );
 
     return result;
   }
@@ -1638,13 +1695,19 @@ exports.Jur7MonitoringService = class {
   }
 
   static async getMaterial(data) {
-    const result = await Jur7MonitoringDB.getMaterial([data.year, data.month, data.region_id, data.main_schet_id], data.responsible_id);
+    const result = await Jur7MonitoringDB.getMaterial(
+      [data.year, data.month, data.region_id, data.main_schet_id],
+      data.responsible_id
+    );
 
     return result;
   }
 
   static async getSaldoDate(data) {
-    const result = await Jur7MonitoringDB.getSaldoDate([data.region_id, data.main_schet_id, data.main_schet_id], data.year);
+    const result = await Jur7MonitoringDB.getSaldoDate(
+      [data.region_id, data.main_schet_id, data.main_schet_id],
+      data.year
+    );
 
     return result;
   }
@@ -1662,7 +1725,13 @@ exports.Jur7MonitoringService = class {
         schet.schet,
       ]);
 
-      schet.internal = await Jur7MonitoringDB.getSummaBySchet([data.year, data.months, data.region_id, data.main_schet_id, schet.schet]);
+      schet.internal = await Jur7MonitoringDB.getSummaBySchet([
+        data.year,
+        data.months,
+        data.region_id,
+        data.main_schet_id,
+        schet.schet,
+      ]);
 
       schet.saldo_to = {
         summa: schet.saldo_from.summa + (schet.internal.prixod - schet.internal.rasxod),

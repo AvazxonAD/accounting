@@ -361,7 +361,7 @@ exports.Jur7MonitoringDB = class {
         SELECT 
             ch.debet_schet,
             ch.kredit_schet,
-            ch.debet_sub_schet,
+            ch.kredit_sub_schet,
             COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
         FROM document_rasxod_jur7_child ch
         JOIN document_rasxod_jur7 d ON d.id = ch.document_rasxod_jur7_id
@@ -374,14 +374,14 @@ exports.Jur7MonitoringDB = class {
             AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet,
-            ch.debet_sub_schet
+            ch.kredit_sub_schet
 
         UNION ALL 
 
         SELECT 
             ch.debet_schet,
             ch.kredit_schet,
-            ch.debet_sub_schet,
+            ch.kredit_sub_schet,
             COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
         FROM document_vnutr_peremesh_jur7_child ch
         JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
@@ -394,7 +394,7 @@ exports.Jur7MonitoringDB = class {
             AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet,
-            ch.debet_sub_schet
+            ch.kredit_sub_schet
     `;
 
     const result = await db.query(query, params);
@@ -407,7 +407,7 @@ exports.Jur7MonitoringDB = class {
         SELECT 
             ch.debet_schet,
             ch.kredit_schet,
-            COALESCE(SUM(ch.summa), 0)::FLOAT AS        summa  
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa  
         FROM document_prixod_jur7_child ch
         JOIN document_prixod_jur7 d ON d.id = ch.document_prixod_jur7_id
         JOIN users AS u ON u.id = d.user_id
@@ -419,6 +419,25 @@ exports.Jur7MonitoringDB = class {
             AND ch.isdeleted = false
         GROUP BY ch.debet_schet,
             ch.kredit_schet
+
+        UNION ALL
+        
+        SELECT 
+            ch.debet_schet,
+            ch.kredit_schet,
+            COALESCE(SUM(ch.summa), 0)::FLOAT AS summa  
+        FROM document_vnutr_peremesh_jur7_child ch
+        JOIN document_vnutr_peremesh_jur7 d ON d.id = ch.document_vnutr_peremesh_jur7_id
+        JOIN users AS u ON u.id = d.user_id
+        JOIN regions AS r ON r.id = u.region_id
+        WHERE r.id = $1 
+            AND d.isdeleted = false 
+            AND d.doc_date BETWEEN $2 AND $3
+            AND d.main_schet_id = $4
+            AND ch.isdeleted = false
+        GROUP BY ch.debet_schet,
+            ch.kredit_schet,
+            ch.debet_sub_schet
     `;
 
     const result = await db.query(query, params);
