@@ -165,7 +165,7 @@ exports.KassaSaldoDB = class {
         SELECT 
             d.*,
             d.summa::FLOAT,
-            m.account_number.
+            m.account_number,
             u.login,
             u.fio
         FROM kassa_saldo AS d
@@ -225,26 +225,17 @@ exports.KassaSaldoDB = class {
   }
 
   static async delete(params) {
-    const result = await db.query(
-      `UPDATE kassa_saldo SET isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
+    const result = await db.query(`UPDATE kassa_saldo SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
     return result[0];
   }
 
   static async deleteByMonth(params, client) {
-    await client.query(
-      `UPDATE kassa_saldo SET isdeleted = true WHERE year = $1 AND month = $2 AND main_schet_id = $3`,
-      params
-    );
+    await client.query(`UPDATE kassa_saldo SET isdeleted = true WHERE year = $1 AND month = $2 AND main_schet_id = $3`, params);
   }
 
   static async deleteSaldoDateByMonth(params, client) {
-    await client.query(
-      `UPDATE date_saldo_jur1 SET isdeleted = true WHERE year = $1 AND month = $2 AND main_schet_id = $3`,
-      params
-    );
+    await client.query(`UPDATE date_saldo_jur1 SET isdeleted = true WHERE year = $1 AND month = $2 AND main_schet_id = $3`, params);
   }
 
   static async cleanData(params) {

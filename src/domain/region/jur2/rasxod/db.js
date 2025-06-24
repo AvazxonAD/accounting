@@ -134,7 +134,7 @@ exports.BankRasxodDB = class {
                         WHERE  ch.id_bank_rasxod = d.id 
                             AND ch.isdeleted = false
                     ) AS ch
-                ) AS provodki_array
+                ) AS provodki_array,
                 u.login,
                 u.fio
                 FROM bank_rasxod AS d
@@ -287,22 +287,13 @@ exports.BankRasxodDB = class {
   }
 
   static async deleteChild(params, client) {
-    await client.query(
-      `DELETE FROM bank_rasxod_child  WHERE id_bank_rasxod = $1`,
-      params
-    );
+    await client.query(`DELETE FROM bank_rasxod_child  WHERE id_bank_rasxod = $1`, params);
   }
 
   static async delete(params, client) {
-    await client.query(
-      `UPDATE bank_rasxod_child SET isdeleted = true WHERE id_bank_rasxod = $1`,
-      params
-    );
+    await client.query(`UPDATE bank_rasxod_child SET isdeleted = true WHERE id_bank_rasxod = $1`, params);
 
-    const result = await client.query(
-      `UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
+    const result = await client.query(`UPDATE bank_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
     return result.rows[0];
   }
