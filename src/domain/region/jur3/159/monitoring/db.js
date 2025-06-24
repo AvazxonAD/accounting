@@ -194,13 +194,7 @@ exports.Monitoring159DB = class {
     return result[0];
   }
 
-  static async monitoring(
-    params,
-    organ_id,
-    search = null,
-    order_by,
-    order_type
-  ) {
+  static async monitoring(params, organ_id, search = null, order_by, order_type) {
     let organ_filter = "";
     let search_filter = ``;
     let order = ``;
@@ -626,14 +620,7 @@ exports.Monitoring159DB = class {
     return result[0].total;
   }
 
-  static async getSumma(
-    params,
-    organ_id = null,
-    search = null,
-    from = null,
-    one_from = null,
-    one_to = null
-  ) {
+  static async getSumma(params, organ_id = null, search = null, from = null, one_from = null, one_to = null) {
     let organ_filter = "";
     let search_filter = ``;
     let internal_filter = `BETWEEN $4 AND $5`;

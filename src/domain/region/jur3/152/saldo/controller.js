@@ -16,9 +16,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_152.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -52,9 +50,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_152.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -84,18 +80,12 @@ exports.Controller = class {
       user_id,
     });
 
-    return res.success(
-      req.i18n.t("createSuccess"),
-      201,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("createSuccess"), 201, { dates: result.dates }, result.doc);
   }
 
   static async getData(req, res) {
     const region_id = req.user.region_id;
-    const { first, year, month, main_schet_id, schet_id, budjet_id } =
-      req.query;
+    const { first, year, month, main_schet_id, schet_id, budjet_id } = req.query;
 
     const budjet = await BudjetService.getById({ id: budjet_id });
     if (!budjet) {
@@ -107,9 +97,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_152.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -127,12 +115,7 @@ exports.Controller = class {
         organ.organization_id = organ.id;
       }
 
-      return res.success(
-        req.i18n.t("getSuccess"),
-        200,
-        null,
-        organizations.data
-      );
+      return res.success(req.i18n.t("getSuccess"), 200, null, organizations.data);
     }
 
     const last_date = HelperFunctions.lastDate({ ...req.query });
@@ -149,9 +132,7 @@ exports.Controller = class {
     }
 
     for (let organ of organizations.data) {
-      const check = last_saldo.childs.find(
-        (item) => item.organization_id === organ.id
-      );
+      const check = last_saldo.childs.find((item) => item.organization_id === organ.id);
       if (!check) {
         last_saldo.childs.push({
           ...organ,
@@ -163,19 +144,16 @@ exports.Controller = class {
       }
     }
 
-    const date = HelperFunctions.getDate({
-      year: last_date.year,
-      month: last_date.month,
-    });
+    const from = HelperFunctions.returnDate(req.query);
+    const to = HelperFunctions.returnDate({ ...req.query, end: true });
 
     const docs = await Monitoring152Service.monitoring({
       region_id,
       main_schet_id,
       schet: schet.schet,
-      from: date[0],
-      to: date[1],
-      year: last_date.year,
-      month: last_date.month,
+      ...req.query,
+      from,
+      to,
       offset: 0,
       limit: 99999999,
     });
@@ -218,9 +196,7 @@ exports.Controller = class {
       }
 
       if (schet_id) {
-        const schet = main_schet?.jur3_schets_152.find(
-          (item) => item.id === Number(schet_id)
-        );
+        const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
         if (!schet) {
           check = false;
         }
@@ -290,9 +266,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_152.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -319,9 +293,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_152.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -342,10 +314,7 @@ exports.Controller = class {
       });
 
       if (!check) {
-        return res.error(
-          `${req.i18n.t("organizationNotFound")} ID => ${organization.organization_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("organizationNotFound")} ID => ${organization.organization_id}`, 404);
       }
     }
 
@@ -358,12 +327,7 @@ exports.Controller = class {
       id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, { dates: result.dates }, result.doc);
   }
 
   static async delete(req, res) {
@@ -382,9 +346,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_152.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_152.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }

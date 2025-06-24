@@ -1,7 +1,13 @@
 const { Controller } = require("./controllers");
 const { validator } = require("@helper/validator");
 
-const { monitoringSchema, prixodRasxodSchema, capSchema, consolidatedSchema, Monitoring159Schema } = require("./schema");
+const {
+  monitoringSchema,
+  prixodRasxodSchema,
+  capSchema,
+  consolidatedSchema,
+  Monitoring159Schema,
+} = require("./schema");
 
 const { Router } = require("express");
 const router = Router();

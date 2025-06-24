@@ -210,15 +210,25 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const { data, summa_from, page_rasxod_sum, page_prixod_sum, summa_to, total, page_total_sum, prixod_sum, rasxod_sum, total_sum } =
-      await Monitoring159Service.monitoring({
-        ...query,
-        offset,
-        region_id,
-        organ_id,
-        schet: schet.schet,
-        saldo,
-      });
+    const {
+      data,
+      summa_from,
+      page_rasxod_sum,
+      page_prixod_sum,
+      summa_to,
+      total,
+      page_total_sum,
+      prixod_sum,
+      rasxod_sum,
+      total_sum,
+    } = await Monitoring159Service.monitoring({
+      ...query,
+      offset,
+      region_id,
+      organ_id,
+      schet: schet.schet,
+      saldo,
+    });
 
     const pageCount = Math.ceil(total / limit);
 

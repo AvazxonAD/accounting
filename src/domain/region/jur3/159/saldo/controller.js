@@ -16,9 +16,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -52,9 +50,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -84,12 +80,7 @@ exports.Controller = class {
       user_id,
     });
 
-    return res.success(
-      req.i18n.t("createSuccess"),
-      201,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("createSuccess"), 201, { dates: result.dates }, result.doc);
   }
 
   static async getData(req, res) {
@@ -106,9 +97,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -126,12 +115,7 @@ exports.Controller = class {
         organ.organization_id = organ.id;
       }
 
-      return res.success(
-        req.i18n.t("getSuccess"),
-        200,
-        null,
-        organizations.data
-      );
+      return res.success(req.i18n.t("getSuccess"), 200, null, organizations.data);
     }
 
     const last_date = HelperFunctions.lastDate({ ...req.query });
@@ -148,9 +132,7 @@ exports.Controller = class {
     }
 
     for (let organ of organizations.data) {
-      const check = last_saldo.childs.find(
-        (item) => item.organization_id === organ.id
-      );
+      const check = last_saldo.childs.find((item) => item.organization_id === organ.id);
       if (!check) {
         last_saldo.childs.push({
           ...organ,
@@ -162,19 +144,16 @@ exports.Controller = class {
       }
     }
 
-    const date = HelperFunctions.getDate({
-      year: last_date.year,
-      month: last_date.month,
-    });
+    const from = HelperFunctions.returnDate(req.query);
+    const to = HelperFunctions.returnDate({ ...req.query, end: true });
 
     const docs = await Monitoring159Service.monitoring({
       region_id,
       main_schet_id,
       schet: schet.schet,
-      year: last_date.year,
-      month: last_date.month,
-      from: date[0],
-      to: date[1],
+      ...req.query,
+      from,
+      to,
       offset: 0,
       limit: 99999999,
     });
@@ -217,9 +196,7 @@ exports.Controller = class {
       }
 
       if (schet_id) {
-        const schet = main_schet?.jur3_schets_159.find(
-          (item) => item.id === Number(schet_id)
-        );
+        const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
         if (!schet) {
           check = false;
         }
@@ -289,9 +266,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -318,9 +293,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
@@ -341,10 +314,7 @@ exports.Controller = class {
       });
 
       if (!check) {
-        return res.error(
-          `${req.i18n.t("organizationNotFound")} ID => ${organization.organization_id}`,
-          404
-        );
+        return res.error(`${req.i18n.t("organizationNotFound")} ID => ${organization.organization_id}`, 404);
       }
     }
 
@@ -357,12 +327,7 @@ exports.Controller = class {
       id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, { dates: result.dates }, result.doc);
   }
 
   static async delete(req, res) {
@@ -381,9 +346,7 @@ exports.Controller = class {
       id: main_schet_id,
     });
 
-    const schet = main_schet?.jur3_schets_159.find(
-      (item) => item.id === Number(schet_id)
-    );
+    const schet = main_schet?.jur3_schets_159.find((item) => item.id === Number(schet_id));
     if (!main_schet || !schet) {
       return res.error(req.i18n.t("mainSchetNotFound"), 400);
     }
