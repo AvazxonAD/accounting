@@ -171,7 +171,9 @@ exports.BankSaldoDB = class {
         SELECT 
             d.*,
             d.summa::FLOAT,
-            m.account_number
+            m.account_number,
+            u.login,
+            u.fio
         FROM bank_saldo AS d
         JOIN main_schet m ON d.main_schet_id = m.id
         JOIN users AS u ON d.user_id = u.id

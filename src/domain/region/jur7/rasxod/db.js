@@ -98,7 +98,9 @@ exports.RasxodDB = class {
                           WHERE  ch.document_rasxod_jur7_id = d.id
                               AND ch.isdeleted = false
                       ) AS ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    u.login,
+                    u.fio
                 FROM document_rasxod_jur7 AS d
                 LEFT JOIN spravochnik_organization AS so ON so.id = d.kimga_id
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 
@@ -214,7 +216,10 @@ exports.RasxodDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE document_rasxod_jur7_child SET isdeleted = true WHERE document_rasxod_jur7_id = $1`, params);
+    await client.query(
+      `UPDATE document_rasxod_jur7_child SET isdeleted = true WHERE document_rasxod_jur7_id = $1`,
+      params
+    );
 
     const data = await client.query(
       `UPDATE document_rasxod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING *`,

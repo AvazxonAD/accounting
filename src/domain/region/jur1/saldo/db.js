@@ -165,7 +165,9 @@ exports.KassaSaldoDB = class {
         SELECT 
             d.*,
             d.summa::FLOAT,
-            m.account_number
+            m.account_number.
+            u.login,
+            u.fio
         FROM kassa_saldo AS d
         JOIN main_schet m ON m.id = d.main_schet_id
         JOIN users AS u ON d.user_id = u.id

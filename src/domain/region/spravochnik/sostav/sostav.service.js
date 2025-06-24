@@ -46,7 +46,12 @@ const getSostavService = async (region_id, offset, limit, search) => {
       params.push(search);
     }
     const result = await pool.query(
-      ` WITH data AS (SELECT spravochnik_sostav.id, spravochnik_sostav.name, spravochnik_sostav.rayon 
+      `--sql
+       WITH data AS (
+          SELECT
+            spravochnik_sostav.*,
+            users.login,
+            users.fio
           FROM spravochnik_sostav
           JOIN users ON spravochnik_sostav.user_id = users.id
           JOIN regions ON users.region_id = regions.id  

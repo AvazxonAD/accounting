@@ -135,6 +135,8 @@ exports.BankRasxodDB = class {
                             AND ch.isdeleted = false
                     ) AS ch
                 ) AS provodki_array
+                u.login,
+                u.fio
                 FROM bank_rasxod AS d
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id

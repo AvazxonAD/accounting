@@ -72,7 +72,7 @@ exports.KassaRasxodDB = class {
       order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
-    const query = `
+    const query = `--sql
                 WITH data AS (
                     SELECT 
                         d.*, 
@@ -94,7 +94,9 @@ exports.KassaRasxodDB = class {
                                 WHERE  ch.kassa_rasxod_id = d.id 
                                     AND ch.isdeleted = false
                             ) AS ch
-                        ) AS provodki_array
+                        ) AS provodki_array,
+                        u.login,
+                        u.fio
                     FROM kassa_rasxod AS d
                     JOIN users AS u ON u.id = d.user_id
                     JOIN regions AS r ON r.id = u.region_id
@@ -235,13 +237,22 @@ exports.KassaRasxodDB = class {
   }
 
   static async deleteChild(params, client) {
-    await client.query(`DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`, params);
+    await client.query(
+      `DELETE FROM kassa_rasxod_child  WHERE kassa_rasxod_id = $1`,
+      params
+    );
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`, params);
+    await client.query(
+      `UPDATE kassa_rasxod_child SET isdeleted = true WHERE kassa_rasxod_id = $1`,
+      params
+    );
 
-    const result = await client.query(`UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+    const result = await client.query(
+      `UPDATE kassa_rasxod SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
     return result.rows[0];
   }

@@ -59,7 +59,9 @@ const getAllPodotChetService = async (region_id, offset, limit, search) => {
     const result = await pool.query(
       ` WITH data AS (
         SELECT
-          s_p_l.*
+          s_p_l.*,
+          u.login,
+          u.fio
         FROM spravochnik_podotchet_litso AS  s_p_l
         JOIN users AS u ON s_p_l.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id

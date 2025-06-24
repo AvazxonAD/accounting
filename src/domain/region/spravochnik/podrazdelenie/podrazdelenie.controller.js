@@ -35,7 +35,7 @@ const createPodrazdelenie = async (req, res, next) => {
 };
 
 // get all
-const getPodrazdelenie = async (req, res) => {
+const get = async (req, res) => {
   try {
     const region_id = req.user.region_id;
     const { page, limit, search } = validationResponse(
@@ -170,7 +170,7 @@ const importToExcel = async (req, res, next) => {
 module.exports = {
   getByIdPodrazdelenie,
   createPodrazdelenie,
-  getPodrazdelenie,
+  get,
   deletePodrazdelenie,
   updatePodrazdelenie,
   importToExcel,

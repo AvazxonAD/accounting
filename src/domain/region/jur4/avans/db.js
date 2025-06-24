@@ -39,7 +39,9 @@ exports.AvansDB = class {
                             JOIN spravochnik_operatsii AS so ON so.id = a_j_ch.spravochnik_operatsii_id
                             WHERE  a_j_ch.avans_otchetlar_jur4_id = d.id 
                         ) AS a_j_ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    u.login,
+                    u.fio
                 FROM avans_otchetlar_jur4 AS d
                 JOIN users AS u ON u.id =  d.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -207,8 +209,14 @@ exports.AvansDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`, params);
-    const result = await client.query(`UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+    await client.query(
+      `UPDATE avans_otchetlar_jur4_child SET isdeleted = true WHERE avans_otchetlar_jur4_id = $1`,
+      params
+    );
+    const result = await client.query(
+      `UPDATE avans_otchetlar_jur4 SET  isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
     return result.rows[0];
   }

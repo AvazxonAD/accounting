@@ -224,7 +224,9 @@ exports.OrganizationDB = class {
                         FROM organization_by_raschet_schet a  
                         WHERE a.isdeleted = false
                             AND a.spravochnik_organization_id = so.id
-                    ), '[]'::JSON) AS account_numbers
+                    ), '[]'::JSON) AS account_numbers,
+                    u.login,
+                    u.fio
                 FROM spravochnik_organization AS so  
                 JOIN users AS u ON so.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id

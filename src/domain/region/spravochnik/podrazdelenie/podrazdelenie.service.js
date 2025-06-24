@@ -42,10 +42,12 @@ const getAllPodrazdelenieService = async (region_id, offset, limit, search) => {
       params.push(search);
     }
     const result = await pool.query(
-      ` WITH data AS (
-        SELECT s_p.id, 
-              s_p.name, 
-              s_p.rayon
+      `--sql
+       WITH data AS (
+        SELECT
+          s_p.*,
+          u.login,
+          u.fio
         FROM spravochnik_podrazdelenie AS  s_p
         JOIN users AS u ON s_p.user_id = u.id
         JOIN regions AS r ON u.region_id = r.id

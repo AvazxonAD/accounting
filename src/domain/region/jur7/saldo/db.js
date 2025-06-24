@@ -99,7 +99,13 @@ exports.Jur7SaldoDB = class {
     return result[0];
   }
 
-  static async getKolAndSumma(params, start = null, end = null, responsible_id = null, prixod_id = null) {
+  static async getKolAndSumma(
+    params,
+    start = null,
+    end = null,
+    responsible_id = null,
+    prixod_id = null
+  ) {
     let start_filter = ``;
     let end_filter = ``;
     let between_filter = ``;
@@ -259,7 +265,9 @@ exports.Jur7SaldoDB = class {
       conditions.push(`s.budjet_id = $${params.length}`);
     }
 
-    const whereClouse = conditions.length ? `AND ${conditions.join(" AND ")}` : "";
+    const whereClouse = conditions.length
+      ? `AND ${conditions.join(" AND ")}`
+      : "";
 
     const query = `--sql
         WITH data AS (
@@ -322,7 +330,10 @@ exports.Jur7SaldoDB = class {
                     'summa', s.summa::FLOAT,
                     'iznos_summa', s.iznos_summa::FLOAT,
                     'kol', s.kol::FLOAT
-                ) AS from
+                ) AS from,
+                u.login,
+                u.fio,
+                u.id AS user_id
             FROM saldo_naimenovanie_jur7 s 
             JOIN users AS u ON u.id = s.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -553,7 +564,14 @@ exports.Jur7SaldoDB = class {
     return result;
   }
 
-  static async get(params, responsible_id = null, search = null, product_id = null, group_id = null, iznos = null) {
+  static async get(
+    params,
+    responsible_id = null,
+    search = null,
+    product_id = null,
+    group_id = null,
+    iznos = null
+  ) {
     let responsible_filter = ``;
     let filter = ``;
     let product_filter = ``;
@@ -615,7 +633,9 @@ exports.Jur7SaldoDB = class {
                         'iznos_summa', s.iznos_summa,
                         'iznos_schet', s.iznos_schet,
                         'iznos_sub_schet', s.iznos_sub_schet
-                    ) AS from
+                    ) AS from,
+                    u.login,
+                    u.fio
             FROM saldo_naimenovanie_jur7 s 
             JOIN users AS u ON u.id = s.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -759,7 +779,9 @@ exports.Jur7SaldoDB = class {
     const flatValues = [];
 
     paramsArray.forEach((row, rowIndex) => {
-      const placeholders = row.map((_, colIndex) => `$${rowIndex * row.length + colIndex + 1}`);
+      const placeholders = row.map(
+        (_, colIndex) => `$${rowIndex * row.length + colIndex + 1}`
+      );
       valuesSql.push(`(${placeholders.join(", ")})`);
       flatValues.push(...row);
     });

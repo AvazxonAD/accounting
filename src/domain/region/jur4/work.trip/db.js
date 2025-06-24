@@ -38,7 +38,9 @@ exports.WorkerTripDB = class {
                             JOIN spravochnik_operatsii AS so ON so.id = ch.schet_id
                             WHERE  ch.parent_id = d.id 
                         ) AS ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    u.login,
+                    u.fio
                 FROM work_trip AS d
                 JOIN users AS u ON u.id =  d.user_id
                 JOIN regions AS r ON u.region_id = r.id
@@ -211,8 +213,14 @@ exports.WorkerTripDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE work_trip_child SET isdeleted = true WHERE parent_id = $1`, params);
-    const result = await client.query(`UPDATE work_trip SET  isdeleted = true WHERE id = $1 RETURNING id`, params);
+    await client.query(
+      `UPDATE work_trip_child SET isdeleted = true WHERE parent_id = $1`,
+      params
+    );
+    const result = await client.query(
+      `UPDATE work_trip SET  isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
     return result.rows[0];
   }

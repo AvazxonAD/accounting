@@ -138,7 +138,9 @@ exports.Jur8MonitoringDB = class {
             FROM jur8_monitoring_child ch
             WHERE parent_id = d.id
               AND isdeleted = false
-          )::FLOAT AS summa
+          )::FLOAT AS summa,
+          u.login,
+          u.fio
         FROM jur8_monitoring AS d
         JOIN users u ON u.id = d.user_id
         JOIN regions r ON r.id = u.region_id

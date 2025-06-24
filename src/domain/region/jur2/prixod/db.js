@@ -67,7 +67,7 @@ exports.BankPrixodDB = class {
       order = `ORDER BY d.${order_by} ${order_type}`;
     }
 
-    const query = `
+    const query = `--sql
             WITH data AS (
                 SELECT 
                     d.id,
@@ -100,7 +100,9 @@ exports.BankPrixodDB = class {
                             WHERE  ch.id_bank_prixod = d.id
                                 AND ch.isdeleted = false
                         ) AS ch
-                    ) AS provodki_array 
+                    ) AS provodki_array,
+                    u.login,
+                    u.fio
                 FROM bank_prixod AS d
                 JOIN users AS u ON d.user_id = u.id
                 JOIN regions AS r ON u.region_id = r.id

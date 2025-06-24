@@ -238,7 +238,9 @@ exports.ContractDB = class {
                                     WHERE g.id_shartnomalar_organization = d.id
                                         AND g.isdeleted = false
                                 ) AS garfik
-                        ) AS grafiks
+                        ) AS grafiks,
+                        u.login,
+                        u.fio
                     FROM shartnomalar_organization AS d
                     JOIN users AS u ON d.user_id = u.id
                     JOIN regions AS r ON u.region_id = r.id

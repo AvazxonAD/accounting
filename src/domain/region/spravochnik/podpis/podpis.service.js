@@ -10,7 +10,15 @@ const createPodpisService = async (data) => {
           doljnost_name, fio_name, created_at, updated_at
        ) VALUES($1, $2, $3, $4, $5, $6, $7) 
        RETURNING *`,
-      [data.user_id, data.type_document, data.numeric_poryadok, data.doljnost_name, data.fio_name, tashkentTime(), tashkentTime()]
+      [
+        data.user_id,
+        data.type_document,
+        data.numeric_poryadok,
+        data.doljnost_name,
+        data.fio_name,
+        tashkentTime(),
+        tashkentTime(),
+      ]
     );
     return result.rows[0];
   } catch (error) {
@@ -35,8 +43,9 @@ const getAllPodpisService = async (region_id, offset, limit, search, type) => {
       `--sql
         WITH data AS (
           SELECT 
-            s_p.id, s_p.type_document, s_p.numeric_poryadok, 
-            s_p.doljnost_name, s_p.fio_name
+            s_p.*,
+            u.login,
+            u.fio
           FROM spravochnik_podpis_dlya_doc AS s_p
           JOIN users AS u ON u.id = s_p.user_id
           JOIN regions AS r ON r.id = u.region_id
@@ -90,7 +99,12 @@ const getByIdPodpisService = async (region_id, id, ignoreDelete = false) => {
   }
 };
 
-const getByAllPodpisService = async (region_id, type_doc, doljnost_name, fio_name) => {
+const getByAllPodpisService = async (
+  region_id,
+  type_doc,
+  doljnost_name,
+  fio_name
+) => {
   try {
     const result = await pool.query(
       `SELECT s_p.id
@@ -115,7 +129,14 @@ const updatePodpisService = async (data) => {
            doljnost_name = $3, fio_name = $4, updated_at = $6
        WHERE id = $5 AND isdeleted = false
        RETURNING *`,
-      [data.type_document, data.numeric_poryadok, data.doljnost_name, data.fio_name, data.id, tashkentTime()]
+      [
+        data.type_document,
+        data.numeric_poryadok,
+        data.doljnost_name,
+        data.fio_name,
+        data.id,
+        tashkentTime(),
+      ]
     );
     return result.rows[0];
   } catch (error) {
@@ -125,7 +146,10 @@ const updatePodpisService = async (data) => {
 
 const deletePodpisService = async (id) => {
   try {
-    await pool.query(`UPDATE spravochnik_podpis_dlya_doc SET isdeleted = true, updated_at = $2 WHERE id = $1`, [id, tashkentTime()]);
+    await pool.query(
+      `UPDATE spravochnik_podpis_dlya_doc SET isdeleted = true, updated_at = $2 WHERE id = $1`,
+      [id, tashkentTime()]
+    );
   } catch (error) {
     throw new ErrorResponse(error, error.statusCode);
   }

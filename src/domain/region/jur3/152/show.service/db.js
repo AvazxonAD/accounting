@@ -182,7 +182,9 @@ exports.ShowServiceDB = class {
                     ) AS provodki_array,
                     d.organization_by_raschet_schet_id::INTEGER,
                     d.organization_by_raschet_schet_gazna_id::INTEGER,
-                    d.shartnoma_grafik_id::INTEGER
+                    d.shartnoma_grafik_id::INTEGER,
+                    u.login,
+                    u.fio
                 FROM kursatilgan_hizmatlar_jur152 AS d
                 JOIN users AS u ON u.id = d.user_id
                 JOIN regions AS r ON u.region_id = r.id

@@ -127,7 +127,9 @@ exports.Saldo152DB = class {
               ) AS ch
             ), '[]'::JSON ) AS childs,
             m.account_number,
-            op.schet
+            op.schet,
+            u.login,
+            u.fio
         FROM saldo_152 AS d  
         JOIN main_schet m ON d.main_schet_id = m.id
         JOIN jur_schets op ON op.id = d.schet_id

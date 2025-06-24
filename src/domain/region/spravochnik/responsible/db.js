@@ -48,7 +48,10 @@ exports.ResponsibleDB = class {
                     s.id, 
                     s.fio,
                     s.spravochnik_podrazdelenie_jur7_id,
-                    sp.name AS spravochnik_podrazdelenie_jur7_name
+                    sp.name AS spravochnik_podrazdelenie_jur7_name,
+                    u.id AS user_id,
+                    u.login,
+                    u.user_fio
                 FROM spravochnik_javobgar_shaxs_jur7 AS s
                 JOIN users AS u ON u.id = s.user_id
                 JOIN regions AS r ON r.id = u.region_id

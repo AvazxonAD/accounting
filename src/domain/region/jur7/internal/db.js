@@ -100,7 +100,9 @@ exports.InternalDB = class {
                           WHERE  ch.document_vnutr_peremesh_jur7_id = d.id
                               AND ch.isdeleted = false
                       ) AS ch
-                    ) AS provodki_array
+                    ) AS provodki_array,
+                    u.login,
+                    u.fio
                 FROM document_vnutr_peremesh_jur7 AS d
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj2 ON rj2.id = d.kimga_id
                 JOIN spravochnik_javobgar_shaxs_jur7 AS rj ON rj.id = d.kimdan_id 

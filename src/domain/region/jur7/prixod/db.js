@@ -147,7 +147,9 @@ exports.PrixodDB = class {
                     WHERE  ch.document_prixod_jur7_id = d.id
                         AND ch.isdeleted = false
                 ) AS ch
-              ) AS provodki_array
+              ) AS provodki_array,
+              u.login,
+              u.fio
             FROM document_prixod_jur7 AS d
             JOIN users AS u ON u.id = d.user_id
             JOIN regions AS r ON r.id = u.region_id
@@ -300,7 +302,10 @@ exports.PrixodDB = class {
   }
 
   static async delete(params, client) {
-    await client.query(`UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`, params);
+    await client.query(
+      `UPDATE document_prixod_jur7_child SET isdeleted = true WHERE document_prixod_jur7_id = $1`,
+      params
+    );
     const result = await client.query(
       `UPDATE document_prixod_jur7 SET isdeleted = true WHERE id = $1 AND isdeleted = false RETURNING id`,
       params

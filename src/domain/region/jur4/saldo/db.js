@@ -127,7 +127,9 @@ exports.Jur4SaldoDB = class {
               ) AS ch
             ), '[]'::JSON ) AS childs,
             m.account_number,
-            op.schet
+            op.schet,
+            u.login,
+            u.fio
         FROM podotchet_saldo AS d  
         JOIN main_schet m ON d.main_schet_id = m.id
         JOIN jur_schets op ON op.id = d.schet_id

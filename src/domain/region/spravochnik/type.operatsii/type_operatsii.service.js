@@ -48,9 +48,10 @@ const getAlltypeOperatsiiService = async (region_id, offset, limit, search) => {
     const result = await pool.query(
       `
               WITH data AS (
-          SELECT s_t_o.id, 
-                s_t_o.rayon, 
-                s_t_o.name 
+          SELECT
+            s_t_o.*,
+            users.login,
+            users.fio 
           FROM spravochnik_type_operatsii AS s_t_o
           JOIN users ON s_t_o.user_id = users.id
           JOIN regions ON users.region_id = regions.id  

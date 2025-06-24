@@ -143,7 +143,9 @@ exports.MainSchetDB = class {
                   AND j.isdeleted = false
                   AND j.type = 'jur4'
               )
-            , '[]'::JSON ) AS jur4_schets
+            , '[]'::JSON ) AS jur4_schets,
+            u.login,
+            u.fio
           FROM main_schet m
           JOIN users u ON m.user_id = u.id
           JOIN regions r ON u.region_id = r.id
@@ -330,9 +332,15 @@ exports.MainSchetDB = class {
   }
 
   static async delete(params, client) {
-    const result = await client.query(`UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`, params);
+    const result = await client.query(
+      `UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`,
+      params
+    );
 
-    await client.query(`UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`, params);
+    await client.query(
+      `UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`,
+      params
+    );
 
     return result.rows[0];
   }

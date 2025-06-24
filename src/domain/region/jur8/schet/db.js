@@ -28,7 +28,9 @@ exports.RegionJur8SchetsDB = class {
                 SELECT 
                     rd.*, 
                     d.schet, 
-                    d.name
+                    d.name.
+                    u.login,
+                    u.fio
                 FROM region_prixod_schets AS rd
                 JOIN prixod_schets AS d ON d.id = rd.schet_id
                 JOIN users AS u ON u.id = rd.user_id
