@@ -2,37 +2,20 @@ const { AktDB } = require("./db");
 const ExcelJS = require("exceljs");
 const path = require("path");
 const { access, constants, mkdir } = require("fs").promises;
-const {
-  childsSumma,
-  HelperFunctions,
-  tashkentTime,
-} = require("@helper/functions");
+const { childsSumma, HelperFunctions, tashkentTime } = require("@helper/functions");
 const { db } = require("@db/index");
 const { Saldo159Service } = require(`@saldo_159/service`);
 
 exports.AktService = class {
   static async getSchets(data) {
-    const result = await AktDB.getSchets([
-      data.region_id,
-      data.main_schet_id,
-      data.from,
-      data.to,
-    ]);
+    const result = await AktDB.getSchets([data.region_id, data.main_schet_id, data.from, data.to]);
 
     return result;
   }
 
   static async get(data) {
     const result = await AktDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.schet_id,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.schet_id, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type
@@ -119,10 +102,7 @@ exports.AktService = class {
   }
 
   static async getById(data) {
-    const result = await AktDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
-      data.isdeleted
-    );
+    const result = await AktDB.getById([data.region_id, data.main_schet_id, data.id], data.isdeleted);
 
     return result;
   }
@@ -161,10 +141,8 @@ exports.AktService = class {
       });
 
       if (
-        new Date(data.doc_date).getFullYear() !==
-          new Date(data.old_data.doc_date).getFullYear() ||
-        new Date(data.doc_date).getMonth() + 1 !==
-          new Date(data.old_data.doc_date).getMonth() + 1
+        new Date(data.doc_date).getFullYear() !== new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !== new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
           await Saldo159Service.createSaldoDate({
@@ -176,9 +154,7 @@ exports.AktService = class {
       }
 
       const uniqueDates = dates.filter(
-        (item, index, self) =>
-          index ===
-          self.findIndex((t) => t.year === item.year && t.month === item.month)
+        (item, index, self) => index === self.findIndex((t) => t.year === item.year && t.month === item.month)
       );
 
       return { doc, dates: uniqueDates };
@@ -214,13 +190,7 @@ exports.AktService = class {
     }
 
     for (let schet of data.schets) {
-      const capData = await AktDB.cap([
-        data.from,
-        data.to,
-        data.region_id,
-        schet.schet,
-        data.main_schet_id,
-      ]);
+      const capData = await AktDB.cap([data.from, data.to, data.region_id, schet.schet, data.main_schet_id]);
       let row_number = 4;
       worksheet = workbook.addWorksheet(`${schet.schet}`);
       worksheet.pageSetup.margins.left = 0;
@@ -357,7 +327,7 @@ exports.AktService = class {
       worksheet.getColumn(6).width = 5;
     }
 
-    const folder_path = path.join(__dirname, "../../../../../public/exports/");
+    const folder_path = path.join(__dirname, "../../../../../../public/exports/");
     try {
       await access(folder_path, constants.W_OK);
     } catch (error) {
