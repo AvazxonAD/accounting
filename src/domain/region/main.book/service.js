@@ -4,7 +4,6 @@ const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
 const { HelperFunctions, sum } = require(`@helper/functions`);
-const axios = require(`axios`);
 
 exports.MainBookService = class {
   static now = new Date();
@@ -478,22 +477,28 @@ exports.MainBookService = class {
   static async getJur5Data(data) {
     const ZARPL_URL = process.env.ZARPL_URL;
     let response;
+
     try {
       const url = `${ZARPL_URL}/api/Nachislenie/get-jurnal5-glavniy-kniga?regionId=${data.region_id}&year=${data.year}&month=${data.month}&mainSchetId=${data.main_schet_id}`;
-      // const url = `${ZARPL_URL}/api/Nachislenie/get-jurnal5-glavniy-kniga?regionId=1&year=2025&month=6&mainSchetId=8`;
-      response = await axios.get(url);
-    } catch (error) {
-      console.log(error.data);
-    }
+      response = await fetch(url);
 
-    if (response.status === 200) {
-      for (let schet of response.data.schetChild) {
-        const find = data.schets.find((i) => i.schet === schet.schet);
-        find.rasxod += schet.summa;
+      if (response.ok) {
+        const result = await response.json(); // JSON formatga o‘tkazamiz
+
+        for (let schet of result.schetChild) {
+          const find = data.schets.find((i) => i.schet === schet.schet);
+          if (find) {
+            find.rasxod += schet.summa;
+          }
+        }
+
+        return data.schets;
+      } else {
+        console.error("Xatolik:", response.statusText);
+        return data.schets;
       }
-
-      return data.schets;
-    } else {
+    } catch (error) {
+      console.error("Tarmoq xatosi:", error.message);
       return data.schets;
     }
   }
