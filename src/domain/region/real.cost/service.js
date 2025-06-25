@@ -22,11 +22,7 @@ exports.RealCostService = class {
   }
 
   static async getSmeta(data) {
-    const smetas = await RealCostDB.getSmeta([
-      data.region_id,
-      data.main_schet_id,
-      data.year,
-    ]);
+    const smetas = await RealCostDB.getSmeta([data.region_id, data.main_schet_id, data.year]);
 
     return { smetas };
   }
@@ -50,10 +46,7 @@ exports.RealCostService = class {
 
   static async byMonth(data) {
     for (let smeta of data.smetas) {
-      smeta.by_month = await RealCostDB.byMonth(
-        [data.region_id, data.main_schet_id, data.year, smeta.id],
-        data.month
-      );
+      smeta.by_month = await RealCostDB.byMonth([data.region_id, data.main_schet_id, data.year, smeta.id], data.month);
 
       if (smeta.id === 228) {
       }
@@ -61,8 +54,7 @@ exports.RealCostService = class {
       for (let contract of smeta.by_month) {
         contract.contract_grafik_summa = Number(contract[`oy_${data.month}`]);
 
-        contract.remaining_summa =
-          contract.contract_grafik_summa - contract.rasxod_summa;
+        contract.remaining_summa = contract.contract_grafik_summa - contract.rasxod_summa;
       }
     }
 
@@ -71,11 +63,7 @@ exports.RealCostService = class {
 
   static async byYear(data) {
     for (let smeta of data.smetas) {
-      smeta.by_year = await RealCostDB.byMonth(
-        [data.region_id, data.main_schet_id, data.year, smeta.id],
-        null,
-        data.month
-      );
+      smeta.by_year = await RealCostDB.byMonth([data.region_id, data.main_schet_id, data.year, smeta.id], null, data.month);
 
       for (let contract of smeta.by_year) {
         contract.contract_grafik_summa = 0;
@@ -83,8 +71,7 @@ exports.RealCostService = class {
           contract.contract_grafik_summa += Number(contract[`oy_${i}`]);
         }
 
-        contract.remaining_summa =
-          contract.contract_grafik_summa - contract.rasxod_summa;
+        contract.remaining_summa = contract.contract_grafik_summa - contract.rasxod_summa;
       }
     }
 
@@ -94,17 +81,7 @@ exports.RealCostService = class {
   static async create(data) {
     const result = await db.transaction(async (client) => {
       const doc = await RealCostDB.create(
-        [
-          1,
-          data.accept_time,
-          this.now,
-          data.user_id,
-          data.year,
-          data.month,
-          data.main_schet_id,
-          this.now,
-          this.now,
-        ],
+        [1, data.accept_time, this.now, data.user_id, data.year, data.month, data.main_schet_id, this.now, this.now],
         client
       );
 
@@ -119,14 +96,7 @@ exports.RealCostService = class {
   static async createChild(data) {
     for (let child of data.childs) {
       const doc = await RealCostDB.createChild(
-        [
-          child.smeta_id,
-          child.month_summa,
-          child.year_summa,
-          data.parent_id,
-          this.now,
-          this.now,
-        ],
+        [child.smeta_id, child.month_summa, child.year_summa, data.parent_id, true, this.now, this.now],
         data.client
       );
 
@@ -165,48 +135,31 @@ exports.RealCostService = class {
   }
 
   static async getByMonth(data) {
-    let result = await RealCostDB.getByMonth([
-      data.region_id,
-      data.year,
-      data.month,
-      data.main_schet_id,
-    ]);
+    let result = await RealCostDB.getByMonth([data.region_id, data.year, data.month, data.main_schet_id]);
 
     return result;
   }
 
   static async checkCreateCount(data) {
-    const result = await RealCostDB.checkCreateCount([
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const result = await RealCostDB.checkCreateCount([data.region_id, data.main_schet_id]);
 
     return result;
   }
 
   static async getEnd(data) {
-    const result = await RealCostDB.getEnd([
-      data.region_id,
-      data.main_schet_id,
-    ]);
+    const result = await RealCostDB.getEnd([data.region_id, data.main_schet_id]);
 
     return result;
   }
 
   static async get(data) {
-    const result = await RealCostDB.get(
-      [data.region_id, data.main_schet_id, data.offset, data.limit],
-      data.year
-    );
+    const result = await RealCostDB.get([data.region_id, data.main_schet_id, data.offset, data.limit], data.year);
 
     return result;
   }
 
   static async getById(data) {
-    const result = await RealCostDB.getById(
-      [data.region_id, data.id, data.main_schet_id],
-      data.isdeleted
-    );
+    const result = await RealCostDB.getById([data.region_id, data.id, data.main_schet_id], data.isdeleted);
 
     if (result) {
       result.childs = await RealCostDB.getByIdChild([data.id]);
@@ -225,8 +178,7 @@ exports.RealCostService = class {
     const worksheet = workbook.addWorksheet("main book");
 
     worksheet.mergeCells(`A1`, "O1");
-    worksheet.getCell(`A1`).value =
-      `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
+    worksheet.getCell(`A1`).value = `${HelperFunctions.returnStringYearMonth({ year: data.year, month: data.month })}`;
 
     worksheet.mergeCells(`A2`, "A3");
     worksheet.getCell(`A3`).value = `№`;
@@ -281,12 +233,9 @@ exports.RealCostService = class {
       let row = startRow;
       if (dataList.length) {
         for (let item of dataList) {
-          worksheet.getCell(`${columns[0]}${row}`).value =
-            `${item.doc_num}   ${item.doc_date}`;
-          worksheet.getCell(`${columns[1]}${row}`).value =
-            `Номи: ${item.name}. Инн: ${item.inn}`;
-          worksheet.getCell(`${columns[2]}${row}`).value =
-            item.contract_grafik_summa;
+          worksheet.getCell(`${columns[0]}${row}`).value = `${item.doc_num}   ${item.doc_date}`;
+          worksheet.getCell(`${columns[1]}${row}`).value = `Номи: ${item.name}. Инн: ${item.inn}`;
+          worksheet.getCell(`${columns[2]}${row}`).value = item.contract_grafik_summa;
           worksheet.getCell(`${columns[3]}${row}`).value = item.rasxod_summa;
           worksheet.getCell(`${columns[4]}${row}`).value = item.remaining_summa;
           row++;
@@ -318,13 +267,11 @@ exports.RealCostService = class {
     worksheet.getCell(`D${column}`).value = data.meta.month_summa;
     worksheet.getCell(`J${column}`).value = data.meta.year_summa;
 
-    worksheet.getCell(`G${column}`).value =
-      data.meta.by_month.contract_grafik_summa;
+    worksheet.getCell(`G${column}`).value = data.meta.by_month.contract_grafik_summa;
     worksheet.getCell(`H${column}`).value = data.meta.by_month.rasxod_summa;
     worksheet.getCell(`I${column}`).value = data.meta.by_month.remaining_summa;
 
-    worksheet.getCell(`M${column}`).value =
-      data.meta.by_year.contract_grafik_summa;
+    worksheet.getCell(`M${column}`).value = data.meta.by_year.contract_grafik_summa;
     worksheet.getCell(`N${column}`).value = data.meta.by_year.rasxod_summa;
     worksheet.getCell(`O${column}`).value = data.meta.by_year.remaining_summa;
 
@@ -393,10 +340,7 @@ exports.RealCostService = class {
 
   static async update(data) {
     const result = await db.transaction(async (client) => {
-      const doc = await RealCostDB.update(
-        [this.now, 1, data.year, data.month, this.now, data.id],
-        client
-      );
+      const doc = await RealCostDB.update([this.now, 1, data.year, data.month, this.now, data.id], client);
 
       const ids = data.old_data.childs.map((item) => item.id);
 

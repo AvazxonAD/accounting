@@ -18,10 +18,7 @@ exports.Jur8MonitoringDB = class {
   }
 
   static async deleteChild(params, client) {
-    await client.query(
-      `UPDATE jur8_monitoring_child SET isdeleted = true WHERE parent_id = $1`,
-      params
-    );
+    await client.query(`UPDATE jur8_monitoring_child SET isdeleted = true WHERE parent_id = $1`, params);
   }
 
   static async delete(params, client) {

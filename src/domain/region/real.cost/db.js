@@ -92,10 +92,11 @@ exports.RealCostDB = class {
                 month_summa,
                 year_summa,
                 parent_id,
+                is_year,
                 created_at,
                 updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
 
             RETURNING id
         `;

@@ -92,8 +92,8 @@ exports.SmetaGrafikDB = class {
                   WHERE sub.isdeleted = false
                     AND sub.parent_id = s.id
                 )::FLOAT AS summa,
-                u.login,
-                u.fio
+                users.login,
+                users.fio
               FROM smeta_grafik_parent AS s
               JOIN users ON s.user_id = users.id
               JOIN regions ON regions.id = users.region_id  
