@@ -1054,6 +1054,17 @@ exports.MainBookDB = class {
           0 AS rasxod
       FROM jur_schets 
       WHERE isdeleted = false
+
+      UNION
+      
+      SELECT
+          DISTINCT ON (schet)
+          schet,
+          0 AS prixod,
+          0 AS rasxod
+      FROM spravochnik_zarplata 
+      WHERE isdeleted = false
+        AND schet IS NOT NULL 
     `;
 
     const result = await db.query(query, params);

@@ -1,4 +1,3 @@
-const { BudjetService } = require("@budjet/service");
 const { MainBookService } = require("./service");
 const { HelperFunctions } = require(`@helper/functions`);
 const { ReportTitleService } = require(`@report_title/service`);
@@ -366,14 +365,8 @@ exports.Controller = class {
         report_title,
       });
 
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${file_name}"`
-      );
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${file_name}"`);
 
       return res.sendFile(file_path);
     }
@@ -387,13 +380,12 @@ exports.Controller = class {
 
     const last_date = HelperFunctions.lastDate({ year, month });
 
-    const { sub_childs: last_saldo, main_book } =
-      await MainBookService.getByMonth({
-        region_id,
-        main_schet_id,
-        year: last_date.year,
-        month: last_date.month,
-      });
+    const { sub_childs: last_saldo, main_book } = await MainBookService.getByMonth({
+      region_id,
+      main_schet_id,
+      year: last_date.year,
+      month: last_date.month,
+    });
 
     if (!main_book) {
       return res.error(req.i18n.t("lastSaldoNotFound"), 400);
@@ -487,7 +479,16 @@ exports.Controller = class {
 
       // jurnal 5
       if (type.id === 5) {
-        type.sub_childs = JSON.parse(JSON.stringify(schets));
+        type.sub_childs = await MainBookService.getJur5Data({
+          ...req.query,
+          schets: JSON.parse(JSON.stringify(schets)),
+          main_schet_id,
+          from,
+          to,
+          region_id,
+          main_schets: main_schets,
+          jur3AndJur4Schets,
+        });
       }
 
       // jurnal 7
