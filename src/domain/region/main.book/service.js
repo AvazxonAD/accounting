@@ -479,7 +479,7 @@ exports.MainBookService = class {
     let response;
 
     try {
-      const url = `${ZARPL_URL}/api/Nachislenie/get-jurnal5-glavniy-kniga?regionId=${data.region_id}&year=${data.year}&month=${data.month}&mainSchetId=${data.main_schet_id}`;
+      const url = `${ZARPL_URL}/Nachislenie/get-jurnal5-glavniy-kniga?regionId=${data.region_id}&year=${data.year}&month=${data.month}&mainSchetId=${data.main_schet_id}`;
       response = await fetch(url);
 
       if (response.ok) {
