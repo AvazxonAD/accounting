@@ -26,6 +26,8 @@ exports.SALDO_PASSWORD = "smart-base-e-moliya-fvv";
 
 exports.LIMIT = 999999999999999;
 
+exports.PAGE = 1;
+
 exports.SCHET_TYPE = ["work_trip", "bank_rasxod", "bank_prixod", "kassa_prixod", "kassa_rasxod", "avans_otchet"];
 
 exports.REPORT_TITLE = "Меморалний ордер";

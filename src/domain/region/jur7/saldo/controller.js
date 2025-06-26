@@ -343,6 +343,7 @@ exports.Controller = class {
       page_to_summa,
       page_to_iznos_summa,
       page_to_kol,
+      to_month_iznos,
     } = await Jur7SaldoService.getByProduct({
       ...req.query,
       responsible_id,
@@ -388,6 +389,7 @@ exports.Controller = class {
       page_to_summa,
       page_to_iznos_summa,
       page_to_kol,
+      to_month_iznos,
     };
 
     return res.success(req.i18n.t("getSuccess"), 200, meta, data);

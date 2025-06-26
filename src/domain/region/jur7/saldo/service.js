@@ -10,6 +10,38 @@ const { REPORT_TITLE } = require("@helper/constants");
 const fs = require("fs").promises;
 
 exports.Jur7SaldoService = class {
+  static groupByIznosSchet(data) {
+    const result = {};
+    let total_iznos_summa = 0;
+
+    data.forEach((item) => {
+      const iznosKey = `${item.iznos_schet}_${item.iznos_sub_schet}`;
+
+      if (!result[iznosKey]) {
+        result[iznosKey] = {
+          key: iznosKey,
+          group_id: item.group_id,
+          iznos_schet: item.iznos_schet,
+          iznos_sub_schet: item.iznos_sub_schet,
+          summa: 0,
+        };
+      }
+
+      result[iznosKey].summa += item.to.month_iznos;
+    });
+
+    const grouped_data = Object.values(result);
+
+    grouped_data.forEach((item) => {
+      total_iznos_summa += item.summa;
+    });
+
+    return {
+      grouped_data: grouped_data.filter((item) => item.summa !== 0),
+      total_iznos_summa,
+    };
+  }
+
   static async daysReportExcel(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Hisobot");
@@ -346,6 +378,8 @@ exports.Jur7SaldoService = class {
         if (product.to.iznos_summa >= product.to.summa) {
           product.to.iznos_summa = product.to.summa;
         }
+      } else {
+        product.to.month_iznos = 0;
       }
     }
 
@@ -364,6 +398,7 @@ exports.Jur7SaldoService = class {
     result.to_summa = 0;
     result.to_iznos_summa = 0;
     result.to_kol = 0;
+    result.to_month_iznos = 0;
 
     result.page_from_summa = 0;
     result.page_from_kol = 0;
@@ -385,6 +420,7 @@ exports.Jur7SaldoService = class {
       result.to_summa += item.to.summa;
       result.to_iznos_summa += item.to.iznos_summa;
       result.to_kol += item.to.kol;
+      result.to_month_iznos += item.to.month_iznos;
     });
 
     result.data = HelperFunctions.paginate({
