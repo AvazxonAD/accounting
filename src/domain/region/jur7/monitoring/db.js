@@ -974,7 +974,7 @@ exports.Jur7MonitoringDB = class {
       FROM saldo_naimenovanie_jur7
       WHERE  isdeleted = false
           AND year = $1
-          AND month = $2
+          AND month = ANY($2)
           AND region_id = $3
           AND main_schet_id = $4
           AND debet_schet = $5
