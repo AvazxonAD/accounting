@@ -3,28 +3,19 @@ const { HelperFunctions } = require("@helper/functions");
 
 exports.RegionJur8SchetsService = class {
   static async getBySchetId(data) {
-    const result = await RegionJur8SchetsDB.getBySchetId([
-      data.schet_id,
-      data.region_id,
-    ]);
+    const result = await RegionJur8SchetsDB.getBySchetId([data.schet_id, data.region_id, data.main_schet_id]);
 
     return result;
   }
 
   static async get(data) {
-    const result = await RegionJur8SchetsDB.get(
-      [data.region_id, data.offset, data.limit],
-      data.search
-    );
+    const result = await RegionJur8SchetsDB.get([data.region_id, data.main_schet_id, data.offset, data.limit], data.search);
 
     return result;
   }
 
   static async getById(data) {
-    const result = await RegionJur8SchetsDB.getById(
-      [data.id, data.region_id],
-      data.isdeleted
-    );
+    const result = await RegionJur8SchetsDB.getById([data.id, data.region_id, data.main_schet_id], data.isdeleted);
 
     return result;
   }
@@ -39,6 +30,7 @@ exports.RegionJur8SchetsService = class {
     const result = await RegionJur8SchetsDB.create([
       data.schet_id,
       data.user_id,
+      data.main_schet_id,
       HelperFunctions.tashkentTime(),
       HelperFunctions.tashkentTime(),
     ]);
@@ -47,11 +39,7 @@ exports.RegionJur8SchetsService = class {
   }
 
   static async update(data) {
-    const result = await RegionJur8SchetsDB.update([
-      data.schet_id,
-      HelperFunctions.tashkentTime(),
-      data.id,
-    ]);
+    const result = await RegionJur8SchetsDB.update([data.schet_id, HelperFunctions.tashkentTime(), data.id]);
 
     return result;
   }

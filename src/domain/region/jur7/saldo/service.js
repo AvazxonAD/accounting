@@ -1016,9 +1016,11 @@ exports.Jur7SaldoService = class {
         year: data.year,
         month: data.month,
       });
+
       const dates = await this.createSaldoDate({
         ...data,
         doc_date: date,
+        client,
       });
 
       return dates;

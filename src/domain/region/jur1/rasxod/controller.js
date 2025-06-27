@@ -15,17 +15,8 @@ exports.Controller = class {
     const main_schet_id = req.query.main_schet_id;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
-    const {
-      id_podotchet_litso,
-      childs,
-      doc_date,
-      organ_id,
-      contract_id,
-      contract_grafik_id,
-      organ_account_id,
-      organ_gazna_id,
-      type,
-    } = req.body;
+    const { id_podotchet_litso, childs, doc_date, organ_id, contract_id, contract_grafik_id, organ_account_id, organ_gazna_id, type } =
+      req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -45,10 +36,7 @@ exports.Controller = class {
       }
     }
 
-    if (
-      (type === "organ" && !organ_id) ||
-      (type === "podotchet" && !id_podotchet_litso)
-    ) {
+    if ((type === "organ" && !organ_id) || (type === "podotchet" && !id_podotchet_litso)) {
       return res.error(req.i18n.t("validationError", 400));
     }
 
@@ -69,9 +57,7 @@ exports.Controller = class {
       });
 
       if (contract_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === contract_grafik_id
-        );
+        const grafik = contract.grafiks.find((item) => item.id === contract_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t("grafikNotFound"), 404);
         }
@@ -147,37 +133,12 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
-
-    for (let child of childs) {
-      const schet = jur_schets.find((item) => item.schet === child.schet);
-
-      if (schet) {
-        if (schet.type === "jur4") {
-          // const saldo = await Jur4SaldoService.getByMonth({
-          //   main_schet_id,
-          //   year,
-          //   month,
-          //   region_id,
-          //   schet_id: schet.id,
-          // });
-          // if (!saldo) {
-          //   return res.error(req.i18n.t("saldoNotFound"), 404);
-          // }
-        }
-      }
-    }
-
     const result = await KassaRasxodService.create({
       ...req.body,
       ...req.query,
-      jur_schets,
-      main_schet_id,
       region_id,
       user_id,
+      budjet_id: main_schet.budjet_id,
     });
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
@@ -211,8 +172,7 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const { data, total_count, summa, page_summa } =
-      await KassaRasxodService.get({ region_id, offset, ...req.query });
+    const { data, total_count, summa, page_summa } = await KassaRasxodService.get({ region_id, offset, ...req.query });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -259,17 +219,8 @@ exports.Controller = class {
     const region_id = req.user.region_id;
     const id = req.params.id;
     const user_id = req.user.id;
-    const {
-      id_podotchet_litso,
-      childs,
-      doc_date,
-      organ_id,
-      contract_id,
-      contract_grafik_id,
-      organ_account_id,
-      organ_gazna_id,
-      type,
-    } = req.body;
+    const { id_podotchet_litso, childs, doc_date, organ_id, contract_id, contract_grafik_id, organ_account_id, organ_gazna_id, type } =
+      req.body;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -298,10 +249,7 @@ exports.Controller = class {
       }
     }
 
-    if (
-      (type === "organ" && !organ_id) ||
-      (type === "podotchet" && !id_podotchet_litso)
-    ) {
+    if ((type === "organ" && !organ_id) || (type === "podotchet" && !id_podotchet_litso)) {
       return res.error(req.i18n.t("validationError", 400));
     }
 
@@ -322,9 +270,7 @@ exports.Controller = class {
       });
 
       if (contract_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === contract_grafik_id
-        );
+        const grafik = contract.grafiks.find((item) => item.id === contract_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t("grafikNotFound"), 404);
         }
@@ -401,38 +347,14 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
-
-    for (let child of childs) {
-      const schet = jur_schets.find((item) => item.schet === child.schet);
-
-      if (schet) {
-        if (schet.type === "jur4") {
-          // const saldo = await Jur4SaldoService.getByMonth({
-          //   main_schet_id,
-          //   year,
-          //   month,
-          //   region_id,
-          //   schet_id: schet.id,
-          // });
-          // if (!saldo) {
-          //   return res.error(req.i18n.t("saldoNotFound"), 404);
-          // }
-        }
-      }
-    }
-
     const result = await KassaRasxodService.update({
       ...req.body,
       ...req.query,
+      ...req.params,
       user_id,
-      jur_schets,
       region_id,
       old_data: doc,
-      id,
+      budjet_id: main_schet.budjet_id,
     });
 
     return res.success(req.i18n.t("updateSuccess"), 200, null, result);
@@ -474,38 +396,13 @@ exports.Controller = class {
       return res.error(req.i18n.t("saldoNotFound"), 404);
     }
 
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
-
-    for (let child of doc.childs) {
-      const schet = jur_schets.find((item) => item.schet === child.schet);
-
-      if (schet) {
-        if (schet.type === "jur4") {
-          // const saldo = await Jur4SaldoService.getByMonth({
-          //   main_schet_id,
-          //   year,
-          //   month,
-          //   region_id,
-          //   schet_id: schet.id,
-          // });
-          // if (!saldo) {
-          //   return res.error(req.i18n.t("saldoNotFound"), 404);
-          // }
-        }
-      }
-    }
-
     const result = await KassaRasxodService.delete({
-      id,
-      ...doc,
       ...req.query,
+      ...req.params,
+      ...doc,
       region_id,
-      jur_schets,
-      main_schet_id,
       user_id,
+      budjet_id: main_schet.budjet_id,
     });
 
     return res.success(req.i18n.t("getSuccess"), 200, null, result);

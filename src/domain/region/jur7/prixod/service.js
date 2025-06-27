@@ -6,6 +6,7 @@ const ExcelJS = require("exceljs");
 const path = require("path");
 const { Jur7SaldoDB } = require("@jur7_saldo/db");
 const { Jur7SaldoService } = require("../saldo/service");
+const { jurBlocks } = require(`@helper/jur.block`);
 
 exports.PrixodJur7Service = class {
   static groupByNameSchetSubSchet(childs) {
@@ -242,8 +243,9 @@ exports.PrixodJur7Service = class {
   static async createProduct(data) {
     const result = [];
     for (let doc of data.childs) {
-      if (doc.product_id) {
-        result.push({ id: doc.product_id, ...doc });
+      if (doc.product_id || doc.saldo_id) {
+        const product_id = doc.product_id || doc.saldo.product_id;
+        result.push({ id: product_id, ...doc });
       } else {
         const product = await PrixodDB.createProduct(
           [
@@ -263,6 +265,18 @@ exports.PrixodJur7Service = class {
         result.push({ ...product, ...doc });
       }
     }
+
+    return result;
+  }
+
+  static async getProductIds(data) {
+    const productIds = await PrixodDB.getProductsByDocId([data.id]);
+
+    return productIds;
+  }
+
+  static async checkPrixodDoc(data) {
+    const result = await PrixodDB.checkPrixodDoc([data.product_id]);
 
     return result;
   }
@@ -313,6 +327,9 @@ exports.PrixodJur7Service = class {
         ...data,
         client,
       });
+
+      // blocking
+      await jurBlocks({ ...data, client });
 
       return { doc, dates };
     });
@@ -413,17 +430,11 @@ exports.PrixodJur7Service = class {
           prixod_id = saldo.rows[0].prixod_id + `,${data.docId}`;
         }
 
-        prixod_id = [...new Set(prixod_id.split(","))].join(",");
+        prixod_id = [...new Set(String(prixod_id).split(","))].join(",");
 
         await Jur7SaldoDB.updatePrixodId([prixod_id, child.saldo_id], data.client);
       }
     }
-  }
-
-  static async getProductIds(data) {
-    const productIds = await PrixodDB.getProductsByDocId([data.id]);
-
-    return productIds;
   }
 
   static async update(data) {
@@ -476,14 +487,11 @@ exports.PrixodJur7Service = class {
         doc_date: _date.date,
       });
 
+      // blocking
+      await jurBlocks({ ...data, client });
+
       return { doc, dates };
     });
-
-    return result;
-  }
-
-  static async checkPrixodDoc(data) {
-    const result = await PrixodDB.checkPrixodDoc([data.product_id]);
 
     return result;
   }
@@ -501,6 +509,9 @@ exports.PrixodJur7Service = class {
         doc_date: data.old_data.doc_date,
         client,
       });
+
+      // blocking
+      await jurBlocks({ ...data, client });
 
       return { doc, dates };
     });

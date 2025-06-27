@@ -7,6 +7,21 @@ const { REPORT_RASXOD_SCHET, REPORT_TITLE } = require("./constants");
 const ErrorResponse = require(`@helper/error.response`);
 
 exports.HelperFunctions = class {
+  static smallDate(data) {
+    let doc_date;
+    if (data.old_data) {
+      if (new Date(data.old_data.doc_date) > new Date(data.doc_date)) {
+        doc_date = data.doc_date;
+      } else {
+        doc_date = data.old_data.doc_date;
+      }
+    } else {
+      doc_date = data.doc_date;
+    }
+
+    return doc_date;
+  }
+
   static async jurBlocks(data) {
     const jur_schets = await MainSchetService.getJurSchets({
       region_id: data.region_id,

@@ -412,11 +412,15 @@ exports.Controller = class {
 
       if (child.saldo_id) {
         const saldo = await Jur7SaldoService.getById({ region_id, id: child.saldo_id, main_schet_id });
+        child.saldo = saldo;
         if (!saldo) return res.error(req.i18n.t("saldoNotFound"), 404);
 
         if (saldo.responsible_id != kimga_id) return res.error(req.i18n.t("validationError"), 400);
 
-        if (saldo.product_id != child.product_id) return res.error(req.i18n.t("validationError"), 400);
+        if (saldo.product_id != child.product_id) {
+          child.product_id = saldo.product_id;
+          // return res.error(req.i18n.t("validationError"), 400);
+        }
 
         child.saldo = saldo;
       }

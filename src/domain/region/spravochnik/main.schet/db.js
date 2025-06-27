@@ -19,7 +19,7 @@ exports.MainSchetDB = class {
   }
 
   static async getJurSchets(params) {
-    const query = `
+    const query = `--sql
       SELECT
         sch.*
       FROM jur_schets sch
@@ -28,6 +28,7 @@ exports.MainSchetDB = class {
       JOIN regions r ON r.id = u.region_id
       WHERE r.id = $1
         AND sch.isdeleted = false
+        AND sch.main_schet_id = $2
     `;
 
     const result = await db.query(query, params);
@@ -56,6 +57,7 @@ exports.MainSchetDB = class {
     const query = `--sql
             SELECT 
                 m.*, 
+                m.spravochnik_budjet_name_id AS budjet_id, 
                 COALESCE(
                   (
                     SELECT JSON_AGG(row_to_json(j))
@@ -332,15 +334,9 @@ exports.MainSchetDB = class {
   }
 
   static async delete(params, client) {
-    const result = await client.query(
-      `UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`,
-      params
-    );
+    const result = await client.query(`UPDATE main_schet SET isdeleted = true WHERE id = $1 RETURNING id`, params);
 
-    await client.query(
-      `UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`,
-      params
-    );
+    await client.query(`UPDATE jur_schets SET isdeleted = true WHERE main_schet_id = $1`, params);
 
     return result.rows[0];
   }

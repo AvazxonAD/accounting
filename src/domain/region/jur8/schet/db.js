@@ -5,11 +5,12 @@ exports.RegionJur8SchetsDB = class {
     const query = `--sql
             INSERT INTO region_prixod_schets (
                 schet_id, 
-                user_id, 
+                user_id,
+                main_schet_id,
                 created_at, 
                 updated_at
             ) 
-            VALUES ($1, $2, $3, $4) 
+            VALUES ($1, $2, $3, $4, $5) 
             RETURNING id
         `;
     const result = await db.query(query, params);
@@ -38,8 +39,9 @@ exports.RegionJur8SchetsDB = class {
                 WHERE rd.isdeleted = false 
                     ${search_filter}
                     AND r.id = $1
+                    AND rd.main_schet_id = $2
                 ORDER BY rd.created_at DESC
-                OFFSET $2 LIMIT $3
+                OFFSET $3 LIMIT $4
             )
             SELECT 
                 COALESCE( JSON_AGG( row_to_json( data ) ), '[]'::JSON ) AS data,
@@ -52,6 +54,7 @@ exports.RegionJur8SchetsDB = class {
                     WHERE rd.isdeleted = false 
                         ${search_filter}
                         AND r.id = $1
+                        AND rd.main_schet_id = $2
                 ) AS total
             FROM data
         `;
@@ -72,6 +75,7 @@ exports.RegionJur8SchetsDB = class {
             JOIN regions AS r ON r.id = u.region_id
             WHERE rd.id = $1
               AND r.id = $2
+              AND rd.main_schet_id = $3
               ${isdeleted ? `` : ignore}
         `;
     const result = await db.query(query, params);
@@ -87,6 +91,7 @@ exports.RegionJur8SchetsDB = class {
             WHERE rd.schet_id = $1
               AND rd.isdeleted = false
               AND r.id = $2
+              AND rd.main_schet_id = $3
         `;
     const result = await db.query(query, params);
     return result[0];

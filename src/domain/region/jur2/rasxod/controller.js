@@ -12,7 +12,6 @@ const { GaznaService } = require("@gazna/service");
 const { AccountNumberService } = require("@account_number/service");
 const { BankSaldoService } = require(`@jur2_saldo/service`);
 const { BudjetService } = require("@budjet/service");
-const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
 
 exports.Controller = class {
   static async import(req, res) {
@@ -27,12 +26,6 @@ exports.Controller = class {
 
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
-
-    const jur_schets = await MainSchetService.getJurSchets({
-      region_id,
-      main_schet_id,
-    });
-
     const main_schet = await MainSchetService.getById({
       region_id,
       id: main_schet_id,
@@ -51,23 +44,6 @@ exports.Controller = class {
           return res.error(req.i18n.t("operatsiiNotFound"), 404);
         }
         child.schet = operatsii.schet;
-
-        const schet = jur_schets.find((item) => item.schet === child.schet);
-
-        if (schet) {
-          if (schet.type === "jur4") {
-            // const saldo = await Jur4SaldoService.getByMonth({
-            //   main_schet_id,
-            //   year,
-            //   month,
-            //   region_id,
-            //   schet_id: schet.id,
-            // });
-            // if (!saldo) {
-            //   return res.error(req.i18n.t("saldoNotFound"), 404);
-            // }
-          }
-        }
       }
     }
 
@@ -87,7 +63,6 @@ exports.Controller = class {
       ...req.query,
       docs,
       user_id,
-      jur_schets,
       main_schet,
       region_id,
       doc_date: date,
@@ -172,12 +147,7 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, { dates: result.dates }, result.doc);
   }
 
   static async fio(req, res) {
@@ -247,9 +217,7 @@ exports.Controller = class {
       }
 
       if (shartnoma_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === shartnoma_grafik_id
-        );
+        const grafik = contract.grafiks.find((item) => item.id === shartnoma_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t("grafikNotFound"), 404);
         }
@@ -380,26 +348,12 @@ exports.Controller = class {
       region_id,
     });
 
-    return res.success(
-      req.i18n.t("createSuccess"),
-      201,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("createSuccess"), 201, { dates: result.dates }, result.doc);
   }
 
   static async get(req, res) {
     const region_id = req.user.region_id;
-    const {
-      page,
-      limit,
-      from,
-      to,
-      main_schet_id,
-      search,
-      order_by,
-      order_type,
-    } = req.query;
+    const { page, limit, from, to, main_schet_id, search, order_by, order_type } = req.query;
 
     const main_schet = await MainSchetService.getById({
       region_id,
@@ -425,18 +379,17 @@ exports.Controller = class {
 
     const offset = (page - 1) * limit;
 
-    const { data, total_count, summa, page_summa } =
-      await BankRasxodService.get({
-        search,
-        region_id,
-        main_schet_id,
-        from,
-        to,
-        offset,
-        limit,
-        order_by,
-        order_type,
-      });
+    const { data, total_count, summa, page_summa } = await BankRasxodService.get({
+      search,
+      region_id,
+      main_schet_id,
+      from,
+      to,
+      offset,
+      limit,
+      order_by,
+      order_type,
+    });
 
     const pageCount = Math.ceil(total_count / limit);
 
@@ -535,9 +488,7 @@ exports.Controller = class {
       }
 
       if (shartnoma_grafik_id) {
-        const grafik = contract.grafiks.find(
-          (item) => item.id === shartnoma_grafik_id
-        );
+        const grafik = contract.grafiks.find((item) => item.id === shartnoma_grafik_id);
         if (!grafik) {
           return res.error(req.i18n.t("grafikNotFound"), 404);
         }
@@ -670,12 +621,7 @@ exports.Controller = class {
       id,
     });
 
-    return res.success(
-      req.i18n.t("updateSuccess"),
-      200,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("updateSuccess"), 200, { dates: result.dates }, result.doc);
   }
 
   static async delete(req, res) {
@@ -753,11 +699,6 @@ exports.Controller = class {
       user_id,
     });
 
-    return res.success(
-      req.i18n.t("deleteSuccess"),
-      200,
-      { dates: result.dates },
-      result.doc
-    );
+    return res.success(req.i18n.t("deleteSuccess"), 200, { dates: result.dates }, result.doc);
   }
 };

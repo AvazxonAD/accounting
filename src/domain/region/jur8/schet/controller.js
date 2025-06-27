@@ -1,11 +1,15 @@
 const { RegionJur8SchetsService } = require("./service");
 const { Jur8SchetsService } = require(`@prixod_schets/service`);
+const { ValidatorFunctions } = require(`@helper/database.validator`);
 
 exports.Controller = class {
   static async create(req, res) {
     const { schet_id } = req.body;
     const user_id = req.user.id;
     const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ main_schet_id, region_id });
 
     const schet = await Jur8SchetsService.getById({ id: schet_id });
     if (!schet) {
@@ -15,6 +19,7 @@ exports.Controller = class {
     const check = await RegionJur8SchetsService.getBySchetId({
       schet_id,
       region_id,
+      main_schet_id,
     });
     if (check) {
       return res.error(req.i18n.t("docExists"), 409);
@@ -23,6 +28,7 @@ exports.Controller = class {
     const result = await RegionJur8SchetsService.create({
       schet_id,
       user_id,
+      main_schet_id,
     });
 
     return res.success(req.i18n.t("createSuccess"), 201, null, result);
@@ -31,14 +37,17 @@ exports.Controller = class {
   static async get(req, res) {
     const { page, limit, search } = req.query;
     const region_id = req.user.region_id;
-
+    const { main_schet_id } = req.query;
     const offset = (page - 1) * limit;
+
+    await ValidatorFunctions.mainSchet({ main_schet_id, region_id });
 
     const { data, total } = await RegionJur8SchetsService.get({
       offset,
       limit,
       region_id,
       search,
+      main_schet_id,
     });
 
     const pageCount = Math.ceil(total / limit);
@@ -57,11 +66,15 @@ exports.Controller = class {
   static async getById(req, res) {
     const id = req.params.id;
     const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
+
+    await ValidatorFunctions.mainSchet({ main_schet_id, region_id });
 
     const data = await RegionJur8SchetsService.getById({
       id,
       region_id,
       isdeleted: true,
+      main_schet_id,
     });
     if (!data) {
       return res.error(req.i18n.t("docNotFound"), 404);
@@ -74,8 +87,11 @@ exports.Controller = class {
     const { schet_id } = req.body;
     const id = req.params.id;
     const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
 
-    const old_data = await RegionJur8SchetsService.getById({ id, region_id });
+    await ValidatorFunctions.mainSchet({ main_schet_id, region_id });
+
+    const old_data = await RegionJur8SchetsService.getById({ id, region_id, main_schet_id });
     if (!old_data) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }
@@ -89,6 +105,7 @@ exports.Controller = class {
       const check = await RegionJur8SchetsService.getBySchetId({
         schet_id,
         region_id,
+        main_schet_id,
       });
       if (check) {
         return res.error(req.i18n.t("docExists"), 409);
@@ -103,8 +120,11 @@ exports.Controller = class {
   static async delete(req, res) {
     const id = req.params.id;
     const region_id = req.user.region_id;
+    const { main_schet_id } = req.query;
 
-    const check = await RegionJur8SchetsService.getById({ id, region_id });
+    await ValidatorFunctions.mainSchet({ main_schet_id, region_id });
+
+    const check = await RegionJur8SchetsService.getById({ id, region_id, main_schet_id });
     if (!check) {
       return res.error(req.i18n.t("docNotFound"), 404);
     }

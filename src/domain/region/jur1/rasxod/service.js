@@ -2,7 +2,7 @@ const { db } = require("@db/index");
 const { KassaRasxodDB } = require("./db");
 const { tashkentTime, HelperFunctions } = require("@helper/functions");
 const { KassaSaldoService } = require(`@jur1_saldo/service`);
-const { Jur4SaldoService } = require(`@podotchet_saldo/service`);
+const { jurBlocks } = require("@helper/jur.block");
 
 exports.KassaRasxodService = class {
   static async create(data) {
@@ -44,23 +44,8 @@ exports.KassaRasxodService = class {
         client,
       });
 
-      // jur4
-      for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
-
-        if (schet) {
-          if (schet.type === "jur4") {
-            // await Jur4SaldoService.createSaldoDate({
-            //   ...data,
-            //   schet_id: schet.id,
-            //   main_schet_id: schet.main_schet_id,
-            //   client,
-            // });
-          }
-        }
-      }
+      // blocking
+      await jurBlocks({ ...data, client });
 
       return { doc, dates };
     });
@@ -95,14 +80,7 @@ exports.KassaRasxodService = class {
 
   static async get(data) {
     const result = await KassaRasxodDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type
@@ -117,10 +95,7 @@ exports.KassaRasxodService = class {
   }
 
   static async getById(data) {
-    const result = await KassaRasxodDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
-      data.iseleted
-    );
+    const result = await KassaRasxodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
 
     return result;
   }
@@ -167,10 +142,8 @@ exports.KassaRasxodService = class {
       });
 
       if (
-        new Date(data.doc_date).getFullYear() !==
-          new Date(data.old_data.doc_date).getFullYear() ||
-        new Date(data.doc_date).getMonth() + 1 !==
-          new Date(data.old_data.doc_date).getMonth() + 1
+        new Date(data.doc_date).getFullYear() !== new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !== new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
           await KassaSaldoService.createSaldoDate({
@@ -182,46 +155,11 @@ exports.KassaRasxodService = class {
       }
 
       const uniqueDates = dates.filter(
-        (item, index, self) =>
-          index ===
-          self.findIndex((t) => t.year === item.year && t.month === item.month)
+        (item, index, self) => index === self.findIndex((t) => t.year === item.year && t.month === item.month)
       );
 
-      // check jur4
-      for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
-
-        if (schet) {
-          if (schet.type === "jur4") {
-            // await Jur4SaldoService.createSaldoDate({
-            //   ...data,
-            //   schet_id: schet.id,
-            //   main_schet_id: schet.main_schet_id,
-            //   client,
-            // });
-          }
-        }
-      }
-
-      for (let child of data.old_data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
-
-        if (schet) {
-          if (schet.type === "jur4") {
-            // await Jur4SaldoService.createSaldoDate({
-            //   ...data,
-            //   doc_date: data.old_data.doc_date,
-            //   schet_id: schet.id,
-            //   main_schet_id: schet.main_schet_id,
-            //   client,
-            // });
-          }
-        }
-      }
+      // blocking
+      await jurBlocks({ ...data, client });
 
       return { doc, dates: uniqueDates };
     });
@@ -238,23 +176,8 @@ exports.KassaRasxodService = class {
         client,
       });
 
-      // check jur4
-      for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
-
-        if (schet) {
-          if (schet.type === "jur4") {
-            // await Jur4SaldoService.createSaldoDate({
-            //   ...data,
-            //   schet_id: schet.id,
-            //   main_schet_id: schet.main_schet_id,
-            //   client,
-            // });
-          }
-        }
-      }
+      // blocking
+      await jurBlocks({ ...data, client });
 
       return { doc, dates };
     });

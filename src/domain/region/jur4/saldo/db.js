@@ -78,13 +78,7 @@ exports.Jur4SaldoDB = class {
     await client.query(query, params);
   }
 
-  static async get(
-    params,
-    main_schet_id = null,
-    year = null,
-    month = null,
-    schet_id = null
-  ) {
+  static async get(params, main_schet_id = null, year = null, month = null, schet_id = null) {
     let conditions = [];
 
     if (main_schet_id) {
@@ -336,10 +330,7 @@ exports.Jur4SaldoDB = class {
   }
 
   static async deleteSaldoDateByMonth(params, client) {
-    await client.query(
-      `UPDATE date_saldo_159 SET isdeleted = true WHERE doc_id = $1`,
-      params
-    );
+    await client.query(`UPDATE date_saldo_159 SET isdeleted = true WHERE doc_id = $1`, params);
   }
 
   static async getDateSaldo(params) {

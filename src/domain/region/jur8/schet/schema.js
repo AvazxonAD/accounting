@@ -6,6 +6,9 @@ exports.RegionJur8SchetsSchema = class {
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
       }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+      }),
     }).options({ stripUnknown: true });
   }
 
@@ -13,6 +16,9 @@ exports.RegionJur8SchetsSchema = class {
     return Joi.object({
       body: Joi.object({
         schet_id: Joi.number().integer().min(1).required(),
+      }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -25,6 +31,9 @@ exports.RegionJur8SchetsSchema = class {
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
       }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
+      }),
     }).options({ stripUnknown: true });
   }
 
@@ -34,6 +43,7 @@ exports.RegionJur8SchetsSchema = class {
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(10),
         search: Joi.string().trim(),
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }
@@ -42,6 +52,9 @@ exports.RegionJur8SchetsSchema = class {
     return Joi.object({
       params: Joi.object({
         id: Joi.number().integer().min(1).required(),
+      }),
+      query: Joi.object({
+        main_schet_id: Joi.number().integer().min(1).required(),
       }),
     }).options({ stripUnknown: true });
   }

@@ -52,17 +52,11 @@ exports.MainSchetService = class {
       );
 
       for (let schet of data.jur3_schets_159) {
-        await MainSchetDB.createSchet(
-          [schet.schet, "159", doc.id, HelperFunctions.tashkentTime(), HelperFunctions.tashkentTime()],
-          client
-        );
+        await MainSchetDB.createSchet([schet.schet, "159", doc.id, HelperFunctions.tashkentTime(), HelperFunctions.tashkentTime()], client);
       }
 
       for (let schet of data.jur3_schets_152) {
-        await MainSchetDB.createSchet(
-          [schet.schet, "152", doc.id, HelperFunctions.tashkentTime(), HelperFunctions.tashkentTime()],
-          client
-        );
+        await MainSchetDB.createSchet([schet.schet, "152", doc.id, HelperFunctions.tashkentTime(), HelperFunctions.tashkentTime()], client);
       }
 
       for (let schet of data.jur4_schets) {
@@ -180,7 +174,7 @@ exports.MainSchetService = class {
   }
 
   static async getJurSchets(data) {
-    const result = await MainSchetDB.getJurSchets([data.region_id]);
+    const result = await MainSchetDB.getJurSchets([data.region_id, data.main_schet_id]);
 
     return result;
   }
