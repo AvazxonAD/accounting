@@ -690,6 +690,7 @@ exports.Controller = class {
         prixods,
         grouped_data,
         total_iznos_summa,
+        to_month_iznos,
       });
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
