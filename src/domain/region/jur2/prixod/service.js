@@ -37,9 +37,7 @@ exports.BankPrixodService = class {
       });
 
       for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur3") {
@@ -98,14 +96,7 @@ exports.BankPrixodService = class {
 
   static async get(data) {
     const result = await BankPrixodDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type
@@ -120,10 +111,7 @@ exports.BankPrixodService = class {
   }
 
   static async getById(data) {
-    const result = await BankPrixodDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
-      data.isdeleted
-    );
+    const result = await BankPrixodDB.getById([data.region_id, data.main_schet_id, data.id], data.isdeleted);
 
     return result;
   }
@@ -167,10 +155,8 @@ exports.BankPrixodService = class {
       });
 
       if (
-        new Date(data.doc_date).getFullYear() !==
-          new Date(data.old_data.doc_date).getFullYear() ||
-        new Date(data.doc_date).getMonth() + 1 !==
-          new Date(data.old_data.doc_date).getMonth() + 1
+        new Date(data.doc_date).getFullYear() !== new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !== new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
           await BankSaldoService.createSaldoDate({
@@ -182,16 +168,12 @@ exports.BankPrixodService = class {
       }
 
       const uniqueDates = dates.filter(
-        (item, index, self) =>
-          index ===
-          self.findIndex((t) => t.year === item.year && t.month === item.month)
+        (item, index, self) => index === self.findIndex((t) => t.year === item.year && t.month === item.month)
       );
 
       // check jur3
       for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur3") {
@@ -213,9 +195,7 @@ exports.BankPrixodService = class {
       }
 
       for (let child of data.old_data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur3") {
@@ -255,9 +235,7 @@ exports.BankPrixodService = class {
 
       // check jur3
       for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur3") {

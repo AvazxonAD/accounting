@@ -46,9 +46,7 @@ exports.KassaPrixodService = class {
 
       // jur4
       for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur4") {
@@ -95,14 +93,7 @@ exports.KassaPrixodService = class {
 
   static async get(data) {
     const result = await KassaPrixodDB.get(
-      [
-        data.region_id,
-        data.main_schet_id,
-        data.from,
-        data.to,
-        data.offset,
-        data.limit,
-      ],
+      [data.region_id, data.main_schet_id, data.from, data.to, data.offset, data.limit],
       data.search,
       data.order_by,
       data.order_type
@@ -117,10 +108,7 @@ exports.KassaPrixodService = class {
   }
 
   static async getById(data) {
-    const result = await KassaPrixodDB.getById(
-      [data.region_id, data.main_schet_id, data.id],
-      data.iseleted
-    );
+    const result = await KassaPrixodDB.getById([data.region_id, data.main_schet_id, data.id], data.iseleted);
 
     return result;
   }
@@ -167,10 +155,8 @@ exports.KassaPrixodService = class {
       });
 
       if (
-        new Date(data.doc_date).getFullYear() !==
-          new Date(data.old_data.doc_date).getFullYear() ||
-        new Date(data.doc_date).getMonth() + 1 !==
-          new Date(data.old_data.doc_date).getMonth() + 1
+        new Date(data.doc_date).getFullYear() !== new Date(data.old_data.doc_date).getFullYear() ||
+        new Date(data.doc_date).getMonth() + 1 !== new Date(data.old_data.doc_date).getMonth() + 1
       ) {
         dates = dates.concat(
           await KassaSaldoService.createSaldoDate({
@@ -182,16 +168,12 @@ exports.KassaPrixodService = class {
       }
 
       const uniqueDates = dates.filter(
-        (item, index, self) =>
-          index ===
-          self.findIndex((t) => t.year === item.year && t.month === item.month)
+        (item, index, self) => index === self.findIndex((t) => t.year === item.year && t.month === item.month)
       );
 
       // check jur4
       for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur4") {
@@ -206,9 +188,7 @@ exports.KassaPrixodService = class {
       }
 
       for (let child of data.old_data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur4") {
@@ -240,9 +220,7 @@ exports.KassaPrixodService = class {
 
       // check jur4
       for (let child of data.childs) {
-        const schet = data.jur_schets.find(
-          (item) => item.schet === child.schet
-        );
+        const schet = data.jur_schets.find((item) => item.schet === child.schet);
 
         if (schet) {
           if (schet.type === "jur4") {
